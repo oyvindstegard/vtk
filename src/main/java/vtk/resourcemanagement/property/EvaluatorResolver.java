@@ -81,12 +81,12 @@ public class EvaluatorResolver {
 
     private PropertyEvaluator createSimplePropertyEvaluator(final SimplePropertyDescription desc,
             final StructuredResourceDescription resourceDesc) {
-        return new JSONPropertyEvaluator(resourceDesc, desc);
+        return new FieldSelectPropertyEvaluator(resourceDesc, desc);
     }
 
     private PropertyEvaluator createJSONPropertyEvaluator(JSONPropertyDescription desc,
             StructuredResourceDescription resourceDesc) {
-        return new JSONPropertyEvaluator(resourceDesc, desc);
+        return new FieldSelectPropertyEvaluator(resourceDesc, desc);
     }
 
     private PropertyEvaluator createDerivedPropertyEvaluator(final DerivedPropertyDescription desc,
@@ -94,12 +94,12 @@ public class EvaluatorResolver {
         return new DerivedPropertyEvaluator(desc, resourceDesc);
     }
 
-    private class JSONPropertyEvaluator implements PropertyEvaluator {
+    private class FieldSelectPropertyEvaluator implements PropertyEvaluator {
 
         private final StructuredResourceDescription resourceDesc;
         private final PropertyDescription propertyDesc;
 
-        private JSONPropertyEvaluator(StructuredResourceDescription resourceDesc, PropertyDescription desc) {
+        private FieldSelectPropertyEvaluator(StructuredResourceDescription resourceDesc, PropertyDescription desc) {
             this.resourceDesc = resourceDesc;
             this.propertyDesc = desc;
         }
@@ -112,7 +112,6 @@ public class EvaluatorResolver {
         @SuppressWarnings("unchecked")
         @Override
         public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
-
             Object value = null;
             String affectingService = propertyDesc.getAffectingService();
             if (affectingService != null) {
@@ -137,7 +136,11 @@ public class EvaluatorResolver {
                     throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
                 }
                 String expression = "properties." + property.getDefinition().getName();
-                value = JsonStreamer.toJson(Json.select(json, expression));
+                if (propertyDesc instanceof JSONPropertyDescription) {
+                    value = JsonStreamer.toJson(Json.select(json, expression));
+                } else {
+                    value = Json.select(json, expression);
+                }
                 if (emptyValue(value)) {
                     if (propertyDesc.isOverrides()) {
                         // XXX Consider the order of how this is done
