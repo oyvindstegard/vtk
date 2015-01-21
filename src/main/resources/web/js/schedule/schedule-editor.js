@@ -327,7 +327,7 @@ function courseSchedule() {
                        ((prevId || nextId) ? "</div>" : ""),
         sessionContent = vrtxEdit.htmlFacade.jsonToHtml(this.isMedisin, id, sessionId, id, session, this.vrtxResourcesFixedUrl, { "vrtxResourcesFixed": sequences[sequenceId] }, descs, this.i18n, this.embeddedAdminService);
 
-     this.deleteUserEnrichments(session);
+     this.deleteUserResourcesEnrichments(session);
      var rawOrigTP = jQuery.extend(true, {}, session);
 
      if(!session.vrtxOrphan) {
@@ -470,9 +470,9 @@ function courseSchedule() {
           for(var k = 0, sessLen = sessions.length; k < sessLen; k++) {
             if(!sessions[k].vrtxOrphan) {
               this.deleteUnwantedSessionProps(sessions[k]);
-              this.deleteUserEnrichments(sessions[k]);
+              this.deleteUserResourcesEnrichments(sessions[k]);
             } else {
-              this.deleteUserEnrichments(sessions[k]);
+              this.deleteUserResourcesEnrichments(sessions[k]);
             }
           }
         }
@@ -516,7 +516,7 @@ function courseSchedule() {
   /*
    * DELETE !(uid) from staff and vrtxStaff
    */
-  this.deleteUserEnrichments = function(session) {
+  this.deleteUserResourcesEnrichments = function(session) {
     if(session.staff) {
       for(var i = 0, len = session.staff.length; i < len; i++) {
         this.deleteUserEnrichment(session.staff[i]);
@@ -527,12 +527,20 @@ function courseSchedule() {
         this.deleteUserEnrichment(session.vrtxStaff[i]);
       }
     }
+    if(session.vrtxResources) {
+      for(var i = 0, len = session.vrtxResources.length; i < len; i++) {
+        this.deleteResourceEnrichment(session.vrtxResources[i]);
+      }
+    }
   };
   this.deleteUserEnrichment = function(user) {
     delete user.name;
     delete user.firstName;
     delete user.lastName;
     delete user.url;
+  };
+  this.deleteResourceEnrichment = function(resource) {
+    delete resource.userReadRestricted;
   };
   this.checkUnsavedChanges = function() {
     this.saveLastSession();
