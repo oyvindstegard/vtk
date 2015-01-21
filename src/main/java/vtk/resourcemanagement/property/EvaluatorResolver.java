@@ -137,7 +137,24 @@ public class EvaluatorResolver {
                 }
                 String expression = "properties." + property.getDefinition().getName();
                 if (propertyDesc instanceof JSONPropertyDescription) {
-                    value = JsonStreamer.toJson(Json.select(json, expression));
+                    value = Json.select(json, expression);
+                    
+                    if (value != null) {
+                        if (propertyDesc.isMultiple()) {
+                            if (!(value instanceof List<?>)) {
+                                throw new PropertyEvaluationException(
+                                        "Value " + value + " is not a list");
+                            }
+                            List<Object> tmp = new ArrayList<>();
+                            for (Object o: (List<?>) value) {
+                                if (o != null) {
+                                    tmp.add(JsonStreamer.toJson(o));
+                                } else tmp.add(null);
+                            }
+                            value = tmp;
+                        }
+                        else value = JsonStreamer.toJson(value);
+                    }
                 } else {
                     value = Json.select(json, expression);
                 }
@@ -400,7 +417,6 @@ public class EvaluatorResolver {
     }
 
     private void setPropValue(Property property, Object value) {
-
         if (property.getType() == Type.BINARY) {
             // Store the value of the property
 
@@ -420,6 +436,7 @@ public class EvaluatorResolver {
             property.setValue(v);
 
         } else {
+            System.out.println("__set_prop_value: " + property + " -> " + value);
             List<Object> values = new ArrayList<Object>();
             if (value instanceof Collection<?> || value instanceof Value[]) {
                 values.addAll((Collection<?>) value);
@@ -429,6 +446,7 @@ public class EvaluatorResolver {
             ValueFormatter vf = property.getDefinition().getValueFormatter();
             List<Value> result = new ArrayList<Value>();
             for (Object object : values) {
+                System.out.println("__vf: " + vf.getClass());
                 Value v = vf.stringToValue(object.toString(), null, null);
                 result.add(v);
             }
