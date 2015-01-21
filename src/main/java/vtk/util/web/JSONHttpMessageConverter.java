@@ -52,8 +52,8 @@ import vtk.util.text.JsonStreamer;
 public class JSONHttpMessageConverter extends AbstractHttpMessageConverter<Json.Container> {
 
     public JSONHttpMessageConverter() {
-		super(MediaType.APPLICATION_JSON);
-	}
+        super(MediaType.APPLICATION_JSON);
+    }
     
     @Override
     protected boolean supports(Class<?> clazz) {
@@ -75,8 +75,7 @@ public class JSONHttpMessageConverter extends AbstractHttpMessageConverter<Json.
             throws IOException, HttpMessageNotWritableException {
 
         JsonStreamer streamer = new JsonStreamer(new OutputStreamWriter(outputMessage.getBody()), 2, true);
-        if (t.isArray()) streamer.array(t.asArray());
-        else streamer.object(t.asObject());
+        streamer.value(t);
         outputMessage.getBody().flush();
     }
     
