@@ -141,7 +141,7 @@ function updateIframeHeight(minH) {
         var iframeElm = $(iframe);
         if(iframeElm.filter(":visible").length) {
           try {
-            var computedHeight = Math.max(minHeight, Math.ceil(iframe.contentWindow.document.body.offsetHeight) + 15);
+            var computedHeight = Math.max(minHeight, Math.ceil(iframe.contentWindow.document.body.offsetHeight) + 2);
             computedHeight = (computedHeight - ($.browser.msie ? 4 : 0));
             iframe.style.height = computedHeight + 'px';
           } catch(ex) {}
