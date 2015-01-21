@@ -1442,7 +1442,7 @@ function swapContentTmp(moveBtn, move) {
     curElmInputs[i].value = movedElmInputs[i].value;
     movedElmInputs[i].value = tmp;
   }
-  swapEnrichmentTmp(curElm, movedElm, curElmInputs, movedElmInputs);
+  swapUserEnrichment(curElm, movedElm, curElmInputs, movedElmInputs);
   
   movedElmInputs.filter(":first")[0].focus();
 }
@@ -1518,7 +1518,7 @@ function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, ha
            "hasEnrichedUrl": hasEnrichedUrl };
 }
 
-function swapEnrichmentTmp(curElm, movedElm, curElmInputs, movedElmInputs) {
+function swapUserEnrichment(curElm, movedElm, curElmInputs, movedElmInputs) {
   var curElmEnrichment = curElm.find(".vrtx-multiple-inputfield-enrichment");
   var movedElmEnrichment = movedElm.find(".vrtx-multiple-inputfield-enrichment");
   if(curElmEnrichment.length) {
