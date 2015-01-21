@@ -1226,6 +1226,11 @@ VrtxEditor.prototype.showHideSelect = function showHideSelect(select, init) {
  *
  */
 
+var userEnrichmentSeperators = {
+  url: "%%URL%%",
+  text: "%%TEXT%%"
+};
+
 function getMultipleFieldsBoxesTemplates() {
   if (!vrtxEditor.multipleFieldsBoxesDeferred) {
     vrtxEditor.multipleFieldsBoxesDeferred = $.Deferred();
@@ -1343,6 +1348,7 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
     browseButton = vrtxEditor.htmlFacade.getMultipleInputfieldsInteractionsButton("browse", "-resource-ref", idstr, "", vrtxAdmin.multipleFormGroupingMessages.browse);
   }
   
+  // Add form field with possible JSON multiple and user enrichments
   var isEnriched = false;
   var hasEnrichedText = false;
   var hasEnrichedUrl = false;
@@ -1447,28 +1453,26 @@ function swapContentTmp(moveBtn, move) {
   movedElmInputs.filter(":first")[0].focus();
 }
 
-/* User Enrichments */
-
 function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, hasEnrichedUrl) {
-  var urlSep = "%%URL%%";
-  var textSep = "%%TEXT%%";
-  
   var enrichedUrl = "";
   var enrichedText = "";
+  var sep = userEnrichmentSeperators;
+  
+  // Extract user enrichments if exists
   if(value && value.length) {
     var valueIsMultiple = typeof value === "object";
     var lastVal = valueIsMultiple ? value[value.length - 1] : value;
-    if(lastVal.indexOf(urlSep) !== -1) {
-      var enrichedUrl = lastVal.split(urlSep);
-      if(enrichedUrl[1].indexOf(textSep) !== -1) {
-        enrichedText = enrichedUrl[1].split(textSep)[0];
+    if(lastVal.indexOf(sep.url) !== -1) {
+      var enrichedUrl = lastVal.split(sep.url);
+      if(enrichedUrl[1].indexOf(sep.text) !== -1) {
+        enrichedText = enrichedUrl[1].split(sep.text)[0];
         enrichedUrl = enrichedUrl[0];
       } else {
         enrichedText = "";
       }
       value = [ value[0] ];
-    } else if(lastVal.indexOf(textSep) !== -1) {
-      var enrichedText = lastVal.split(textSep)[0];
+    } else if(lastVal.indexOf(sep.text) !== -1) {
+      var enrichedText = lastVal.split(sep.text)[0];
       value = [ value[0] ];
     } else {
       if(!valueIsMultiple) {
@@ -1478,6 +1482,8 @@ function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, ha
   } else {
     value = [ "" ];
   }
+  
+  // Prepare JSON multiple and user enrichments for template
   var i = 0;
   var enrichedTextProp = null;
   var val = "";
@@ -1833,6 +1839,7 @@ VrtxEditor.prototype.htmlFacade = {
     var multiples = [];
     var rtEditors = [];
     var vrtxEdit = vrtxEditor;
+    var sep = userEnrichmentSeperators;
     
     for(var name in descs) {
       var desc = descs[name];
@@ -1868,10 +1875,10 @@ VrtxEditor.prototype.htmlFacade = {
           if(val && val.length) {
             for(var j = 0, propsLen = val.length; j < propsLen; j++) {
               for(i = 0; i < descPropsLen; i++) {
-                if(desc.props[i].type === "enrichedText") {
-                  propsVal += (val[j][descProps[i].name] || "") + "%%TEXT%%";
-                } else if(desc.props[i].type === "enrichedUrl") {
-                  propsVal += (val[j][descProps[i].name] || "") + "%%URL%%";
+                if(desc.props[i].type === "enrichedUrl") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.url;
+                } else if(desc.props[i].type === "enrichedText") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.text;
                 } else {
                   propsVal += (val[j][descProps[i].name] || "") + "###";
                 }
