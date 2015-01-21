@@ -148,8 +148,7 @@
         {{^enrichedText}}
         {{^enrichedUrl}}
           <div class="vrtx-multipleinputfield-json-wrapper">
-            {{#title}}<label for="{{ idstr }}{{name}}-{{ i }}">{{ title }}</label>{{/title}}
-            <input class="vrtx-textfield vrtx-multipleinputfield-field {{#hasEnrichedText}}vrtx-multipleinputfield-field-enriched{{/hasEnrichedText}} {{ type }}" value="{{ val }}" type="text" size="{{ size }}" id="{{ idstr }}{{name}}-{{ i }}"{{#isReadOnly}} readonly="readonly"{{/isReadOnly}} />
+            <input class="vrtx-textfield vrtx-multipleinputfield-field {{#hasEnrichedText}}vrtx-multipleinputfield-field-enriched{{/hasEnrichedText}} {{ type }}" value="{{ val }}" {{#title}}placeholder="{{ title }}"{{/title}} type="text" size="{{ size }}" id="{{ idstr }}{{name}}-{{ i }}"{{#isReadOnly}} readonly="readonly"{{/isReadOnly}} />
           </div>
         {{/enrichedUrl}}
         {{/enrichedText}}

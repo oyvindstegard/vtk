@@ -427,54 +427,6 @@ function courseSchedule() {
       }
       
       session.isEnhanced = true;
-      
-      // Accordions for session
-      var externalStaff = contentElm.find(".vrtxStaffExternal");
-      if(externalStaff.length) {
-        externalStaff.children().filter(":not(label:first-child)").wrapAll("<div />");
-        var optsExternalStaff = {
-          elem: externalStaff,
-          headerSelector: externalStaff.find("> label"),
-          onActivate: function (e, ui, accordion) {},
-          animationSpeed: 200
-        };
-        var accResources = new VrtxAccordion(optsExternalStaff);
-        accResources.create();
-        externalStaff.addClass("fast").attr("tabindex", "0");
-        externalStaff.keydown(function(e) {
-          if((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
-            $(this).find("> label").click();
-            e.stopPropagation();
-          }
-        });
-      }
-      
-      var resources = contentElm.find(".vrtx-fixed-resources-semester");
-      if(resources.length) {
-        // Enhance vrtxResources for putting it inside fixed resources for semester
-        var resourcesList = contentElm.find(".vrtxResources");
-        if(resourcesList.length) {
-          resourcesList.removeClass("divide-top");
-          resourcesList.find("> label").text(this.i18n.links + " (" + this.i18n["vrtxResources-info"] + ")");
-          resources.append(resourcesList.remove()[0].outerHTML);
-        }
-        resources.children().filter(":not(label:first-child)").wrapAll("<div />");
-        var optsResources = {
-          elem: resources,
-          headerSelector: resources.find("> label"),
-          onActivate: function (e, ui, accordion) {},
-          animationSpeed: 200
-        };
-        var accResources = new VrtxAccordion(optsResources);
-        accResources.create();
-        resources.addClass("fast").attr("tabindex", "0");
-        resources.keydown(function(e) {
-          if((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
-            $(this).find("> label").click();
-            e.stopPropagation();
-          }
-        });
-      }
     }
   };
   this.loadingUpdate = function(msg) {

@@ -127,18 +127,6 @@ h2 {
   margin-left: 0px;
 }
 
-.vrtx-multipleinputfield label {
-  display: none;
-}
-
-.vrtx-multipleinputfield.first label {
-  display: block;
-}
-
-.vrtx-multipleinputfield.vrtx-multipleinputfield-json-has-title.first button {
-  margin-top: 30px;
-}
-
 /* Hide multiple inputfield if has enrichment */
 .vrtx-multipleinputfield-field.vrtx-multipleinputfield-field-enriched {
   display: none;

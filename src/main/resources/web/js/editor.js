@@ -1283,7 +1283,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
 
   // Config
   var size = inputField.attr("size");
-  
+    
   var isDropdown = inputField.hasClass("vrtx-multiple-dropdown");
   isMovable = !isDropdown && isMovable;
 
