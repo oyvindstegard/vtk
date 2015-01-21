@@ -74,9 +74,10 @@ public class JSONHttpMessageConverter extends AbstractHttpMessageConverter<Json.
     protected void writeInternal(Json.Container t, HttpOutputMessage outputMessage) 
             throws IOException, HttpMessageNotWritableException {
 
-        JsonStreamer streamer = new JsonStreamer(new OutputStreamWriter(outputMessage.getBody()), 2, true);
-        streamer.value(t);
-        outputMessage.getBody().flush();
+        try (OutputStreamWriter writer = new OutputStreamWriter(outputMessage.getBody(), "UTF-8")) {
+            JsonStreamer streamer = new JsonStreamer(writer, 2, true);
+            streamer.value(t);
+        }
     }
     
 }
