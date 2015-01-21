@@ -98,13 +98,6 @@
   margin-top: 15px;
 }
 
-.vrtx-fixed-resources-semester,
-.vrtx-fixed-resources-semester + .vrtxResources,
-.vrtx-grouped .vrtx-fixed-resources-semester,
-.vrtx-grouped .vrtx-fixed-resources-semester + .vrtxResources {
-  margin-top: 0;
-}
-
 .vrtx-add-button,
 .vrtx-grouped-horizontal,
 .vrtx-string.author {
