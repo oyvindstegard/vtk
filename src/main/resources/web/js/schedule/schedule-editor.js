@@ -661,9 +661,9 @@ function courseSchedule() {
       if(sessionOnly) {
         editorProperties.prepend("<h4 class='property-label'>" + sessionOnly.title + "</h4>" + html);
         csRef.enhanceSession("single", "one", editorProperties);
-        var newButtonsHtml = "<input class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-save-view-button' type='submit' value='" + csRef.i18n.saveView + "' />" +
-                             "<input class='vrtx-focus-button vrtx-embedded-button' id='vrtx-embedded-save-button' type='submit' value='" + csRef.i18n.save + "' />" +
-                             "<input class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-cancel-button' type='submit' value='" + csRef.i18n.cancel + "' />";
+        var newButtonsHtml = "<button class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-save-view-button'>" + csRef.i18n.saveView + "</button>" +
+                             "<button class='vrtx-focus-button vrtx-embedded-button' id='vrtx-embedded-save-button'>" + csRef.i18n.save + "</button>" +
+                             "<button class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-cancel-button'>" + csRef.i18n.cancel + "</button>";
                              
         editorSubmitButtons.on("click", "#vrtx-embedded-save-view-button", function(e) { /* Save and view shortcut */
           editorSubmitButtons.find("#saveAndViewButton").trigger("click");
@@ -677,7 +677,7 @@ function courseSchedule() {
         });
       } else {
         editorProperties.prepend(html);
-        var newButtonsHtml = "<input class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-cancel-button' type='submit' value='Avbryt' />";
+        var newButtonsHtml = "<button class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-cancel-button'>" + csRef.i18n.cancel + "</button>";
       }
       editorSubmitButtons.prepend(newButtonsHtml);
       contents.find("#vrtx-editor-title-submit-buttons").show();
