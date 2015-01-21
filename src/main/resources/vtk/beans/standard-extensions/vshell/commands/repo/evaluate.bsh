@@ -52,7 +52,8 @@ void execute(context, args, out) {
     number = 0;
 
     searcher.iterateMatching(token, search, new Searcher.MatchCallback() {
-            public boolean matching(PropertySet propset) {
+            public boolean matching(Searcher.MatchingResult result) {
+                PropertySet propset = result.propertySet();
 
                 number++;
                 orig = repo.retrieve(token, propset.getURI(), true);
