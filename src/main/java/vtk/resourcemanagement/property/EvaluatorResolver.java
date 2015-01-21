@@ -436,7 +436,6 @@ public class EvaluatorResolver {
             property.setValue(v);
 
         } else {
-            System.out.println("__set_prop_value: " + property + " -> " + value);
             List<Object> values = new ArrayList<Object>();
             if (value instanceof Collection<?> || value instanceof Value[]) {
                 values.addAll((Collection<?>) value);
@@ -446,7 +445,6 @@ public class EvaluatorResolver {
             ValueFormatter vf = property.getDefinition().getValueFormatter();
             List<Value> result = new ArrayList<Value>();
             for (Object object : values) {
-                System.out.println("__vf: " + vf.getClass());
                 Value v = vf.stringToValue(object.toString(), null, null);
                 result.add(v);
             }
