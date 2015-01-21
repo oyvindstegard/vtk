@@ -31,7 +31,7 @@ void execute(context, args, out) {
         return;
     }
     search = new vtk.repository.search.Search();
-    search.removeAllFilterFlags();
+    search.clearAllFilterFlags();
     search.setPropertySelect(vtk.repository.search.PropertySelect.ALL);
     search.setQuery(query);
     if (limit != null && limit >= 0) {

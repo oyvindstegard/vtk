@@ -44,6 +44,7 @@ void execute(context, args, out) {
 
     before = System.currentTimeMillis();
     search = new vtk.repository.search.Search();
+    search.clearAllFilterFlags();
     search.setQuery(query);
     search.setLimit(Integer.MAX_VALUE);
 
