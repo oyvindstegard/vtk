@@ -1867,7 +1867,7 @@ VrtxEditor.prototype.htmlFacade = {
       switch(desc.type) {
         case "json":
           for(var i = 0, descPropsLen = descProps.length; i < descPropsLen; i++) {
-            descProps[i].title = i18n[name + "-" + descProps[i].name];
+            descProps[i].title = i18n[name + "-" + descProps[i].name]; // Placeholder
             if(desc.multiple && desc.props[i].type === "resource_ref" && !isMedisin) {
               browsable = true;
             }
