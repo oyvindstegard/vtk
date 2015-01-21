@@ -231,6 +231,7 @@ public class EvaluatorResolver {
 
             try {
                 Object value = getEvaluatedValue(propertyDesc, property, ctx);
+                
                 if (emptyValue(value)) {
                     // Evaluated value returned empty, check any default
                     // value that might exist, than finally check for any
@@ -301,8 +302,7 @@ public class EvaluatorResolver {
             }
             Json.MapContainer json; 
             try {
-                Json.Container container = ctx.getContent().getContentRepresentation(Json.Container.class);
-                json = container.asObject(); 
+                json = ctx.getContent().getContentRepresentation(Json.MapContainer.class);
             } catch (Exception e) {
                 throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
             }
