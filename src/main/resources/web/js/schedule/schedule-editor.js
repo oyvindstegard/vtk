@@ -26,6 +26,7 @@ function courseSchedule() {
   this.vrtxResourcesFixedUrl = "";
   this.sessionsLookup = {};
   this.i18n = scheduleI18n;
+  this.cancelled = false;
   this.embeddedAdminService = "?vrtx=admin&mode=actions-listing&types=resource&actions=view,edit-title,delete&global-actions=upload";
   
   // Last edited sessions
@@ -543,6 +544,9 @@ function courseSchedule() {
     delete resource.userReadRestricted;
   };
   this.checkUnsavedChanges = function() {
+    if(this.cancelled) {
+      return false;
+    }
     this.saveLastSession();
     for(var type in this.sessionsLookup) {
       for(var session in this.sessionsLookup[type]) {
@@ -696,6 +700,7 @@ function courseSchedule() {
         var dataString = form.serialize();
         vrtxAdmin.serverFacade.postHtml(url, dataString, {
           success: function (results, status, resp) {
+            csRef.cancelled = true;
             csRef.sessionOnlyWindowClose(true);
           }
         });
