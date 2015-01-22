@@ -135,7 +135,7 @@ h2 {
 /* Enrichment user text or link */
 .vrtx-multipleinputfield .vrtx-multiple-inputfield-enrichment {
   padding: 6px 0 0 0;
-  width: 120px;
+  width: 140px;
   margin-right: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -148,7 +148,7 @@ h2 {
 
 /* Setup user enrichment */
 .vrtxStaff .vrtx-multipleinputfield-field {
-  width: 102px;
+  width: 122px;
   margin-right: 20px;
 }
 
