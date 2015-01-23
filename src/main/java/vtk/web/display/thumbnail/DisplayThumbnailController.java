@@ -108,7 +108,6 @@ public class DisplayThumbnailController implements Controller, LastModified {
                 setNoCache(response);
                 response.setStatus(404);
             }
-            return null;
         } else {
             ContentStream binaryStream = thumbnail.getBinaryStream();
             String mimetype = thumbnail.getBinaryContentType();
@@ -116,8 +115,9 @@ public class DisplayThumbnailController implements Controller, LastModified {
             int length = (int) binaryStream.getLength();
             response.setContentLength(length);
             StreamUtil.pipe(binaryStream.getStream(), response.getOutputStream(), length, true);
-            return null;
         }
+
+        return null;
     }
 
     private void setNoCache(HttpServletResponse response) {
