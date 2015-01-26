@@ -1,14 +1,16 @@
 /*
  *  VrtxAnimation (by USIT/GPL|GUAN)
  *
- *  PE uses CSS for moving pixels in animations (we like fine-grained control over it with JS and after-functions)
+ *  Uses CSS in animations if "useCSSAnim" is explicitly set to "true"
+ *  (we like fine-grained control over it with JS and after-functions)
  *
  *  * Requires Dejavu OOP library
  *
- *  Horizontal [rightIn() + leftOut()] - hides content and animates marginLeft in CSS/JS
- *  Vertical [topDown() + bottomUp()] - hides content and animates marginTop in CSS and uses jQuery slideUp/slideDown in JS
+ *  Horizontal animation [rightIn() +  leftOut()] - hides content and animates marginLeft in CSS/JS
+ *  Vertical animation   [topDown() + bottomUp()] - hides content and animates marginTop in CSS
+ *                                                         uses jQuery slideUp/slideDown in JS
  *
- *  TODO: transfer minus-right/left-margin from element to wrapper until animation ends,
+ *  TODO: Transfer minus-right/left-margin from element to wrapper until animation ends,
  *        and handle case where element initially have margin-top
  *  TODO: PE support CSS tranform2d and transform3d (GPU-accel.)
  *
