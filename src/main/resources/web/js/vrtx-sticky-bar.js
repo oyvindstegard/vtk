@@ -4,14 +4,14 @@
  *  * Requires Dejavu OOP library
  */
 
-var VrtxStickyBarInterface = dejavu.Interface.declare({
-  $name: "VrtxStickyBarInterface",
-  destroy: function () {}     
-});
-
+/* Public
+ * ----------------------
+ * initialize(opts)
+ * destroy()
+ */
+ 
 var VrtxStickyBar = dejavu.Class.declare({
   $name: "VrtxStickyBar",
-  $implements: [VrtxStickyBarInterface],
   __opts: {},
   initialize: function(opts) {
     this.__opts = opts;

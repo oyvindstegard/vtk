@@ -8,22 +8,25 @@
  *
  */
 
-var VrtxAccordionInterface = dejavu.Interface.declare({
-  $name: "VrtxAccordionInterface",
-  create: function() {},
-  destroy: function() {},
-  refresh: function() {},
-  closeActiveHidden: function() {},
-  __getFieldString: function(field) {},
-  __findMultiContentMatch: function(elm) {},
-  __findSingleContentMatch: function(elm) {},
-  __headerCheckNoContentOrNoTitle: function(elm) {},
-  updateHeader: function(elem, isJson, init) {}
-});
+/* Public
+ * ----------------------
+ * initialize(opts)
+ * create()
+ * destroy()
+ * refresh()
+ * closeActiveHidden()              - Close active hidden Accordion header
+ * updateHeader(elem, isJson, init) - Update Accordion header
+ *
+ * Private
+ * ----------------------
+ * __getFieldString(field)              - Get either input value or CK data
+ * __findMultiContentMatch(elm)         - All need to have content for a match
+ * __findSingleContentMatch(elm)        - One need to have content for a match 
+ * __headerCheckNoContentOrNoTitle(elm) - Returns text for use in header when no title or no content
+ */
 
 var VrtxAccordion = dejavu.Class.declare({
   $name: "VrtxAccordion",
-  $implements: [VrtxAccordionInterface],
   $constants: {
     headerMultipleCheckClass: ".header-empty-check-and",
     headerSingleCheckClass: ".header-empty-check-or",

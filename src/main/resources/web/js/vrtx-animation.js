@@ -6,9 +6,6 @@
  *
  *  * Requires Dejavu OOP library
  *
- *  Horizontal animation [rightIn() +  leftOut()] - hides content and animates marginLeft in CSS/JS
- *  Vertical animation   [topDown() + bottomUp()] - hides content and animates marginTop in CSS
- *                                                         uses jQuery slideUp/slideDown in JS
  *
  *  TODO: Transfer minus-right/left-margin from element to wrapper until animation ends,
  *        and handle case where element initially have margin-top
@@ -20,24 +17,26 @@
  *  It seems that CSS vs. JS is comparable in speed and each have its pros and cons
  */
  
-var VrtxAnimationInterface = dejavu.Interface.declare({
-  $name: "VrtxAnimationInterface",
-  __opts: {},
-  __prepareMove: function(dir) {},
-  __afterMove: function() {},
-  __horizontalMove: function(dir) {},
-  __verticalMove: function(dir) {},
-  rightIn: function() {},
-  leftOut: function() {},
-  topDown: function() {},
-  bottomUp: function() {},
-  update: function(opts) {},
-  updateElem: function(elem) {}
-});
+/* Public
+ * ----------------------
+ * initialize(opts)
+ * rightIn()        - Shows content and animates marginLeft in CSS/JS
+ * leftOut()        - Hides content and animates marginLeft in CSS/JS
+ * topDown()        - Shows content and animates marginTop in CSS; uses jQuery slideDown in JS
+ * bottomUp()       - Hides content and animates marginTop in CSS; uses jQuery slideUp in JS
+ * update(opts)     - Update opts
+ * updateElem(elem) - Update elem that is being animated
+ *
+ * Private
+ * ----------------------
+ * __prepareMove()    - Prepare for animation
+ * __afterMove()      - Runs after animation is complete
+ * __horizontalMove() - Animate horizontally
+ * __verticalMove()   - Animate vertically
+ */
  
 var VrtxAnimation = dejavu.Class.declare({
   $name: "VrtxAnimation",
-  $implements: [VrtxAnimationInterface],
   $constants: {
     animationSpeed: /(iphone|ipad|android)/.test(window.navigator.userAgent.toLowerCase()) ? 0 : 200,
     easeIn: !/msie (8|9.)/.test(window.navigator.userAgent.toLowerCase()) ? "easeInQuad" : "linear",

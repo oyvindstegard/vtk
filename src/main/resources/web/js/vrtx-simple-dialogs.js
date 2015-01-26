@@ -9,17 +9,22 @@
  *     - requiresTree: true
  *     - requiresDatepicker: true
  */
-
-var VrtxSimpleDialogInterface = dejavu.Interface.declare({
-  $name: "VrtxSimpleDialogInterface",
-  open: function() {},
-  close: function() {},
-  destroy: function() {}
-});
+ 
+/* Public
+ * ----------------------
+ * initialize(opts)
+ * open()
+ * close()
+ * destroy()
+ *
+ * Private
+ * ----------------------
+ * __generateButtons()
+ * __addDOM()
+ */
 
 var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
   $name: "AbstractVrtxSimpleDialog",        // Meta-attribute useful for debugging
-  $implements: [VrtxSimpleDialogInterface],
   __opts: {},
   __dialogOpts: {},
   initialize: function(opts) {              // Constructor
