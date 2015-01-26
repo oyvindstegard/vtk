@@ -1916,7 +1916,10 @@ VrtxEditor.prototype.htmlFacade = {
               var folderType = fr.folderType;
               var folderName = fr.folderName;
               var folderRoot = fr.folderRoot;
-              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'><label>" + i18n[name + "-" + folderType] + "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n[name + "-" + folderType + "-info"] + "'></abbr></label>";
+              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'>" + 
+                      "<label>" + i18n[name + "-" + folderType] +
+                        (i18n[name + "-" + folderType + "-info"] ? "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n[name + "-" + folderType + "-info"] + "'></abbr>" : "") +
+                      "</label>";
               if(folderUrl && folderUrl.length) {
                 /* Iframe placeholder */
                 html += "<div class='admin-fixed-resources-iframe' data-src='" + folderUrl + embeddedAdminService + "'></div>";
