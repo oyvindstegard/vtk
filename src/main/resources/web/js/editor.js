@@ -1898,7 +1898,8 @@ VrtxEditor.prototype.htmlFacade = {
               readOnly: readOnly
             });
           }
-          html += vrtxEdit.htmlFacade.getStringField({ title: i18n[name],
+          var nameI18n = isMedisin && name === "vrtxResources" ? name + "NotFixed" : name;
+          html += vrtxEdit.htmlFacade.getStringField({ title: i18n[nameI18n],
                                                        name: (desc.autocomplete ? "vrtx-autocomplete-" + desc.autocomplete + " " : "") + name + " " + name + "-" + sessionId,
                                                        id: name + "-" + sessionId,
                                                        val: val,
