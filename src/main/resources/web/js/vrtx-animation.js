@@ -15,7 +15,7 @@
  *  About performance (see also Paul Irish comments):
  *  http://greensock.com/css-performance
  *
- *  It seems that CSS vs. JS is comparable in speed and each have it's pros and cons
+ *  It seems that CSS vs. JS is comparable in speed and each have its pros and cons
  */
  
 var VrtxAnimationInterface = dejavu.Interface.declare({
