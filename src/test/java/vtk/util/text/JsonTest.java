@@ -35,13 +35,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import vtk.util.io.StreamUtil;
 import vtk.util.text.Json.Container;
-import vtk.util.text.Json.MapContainer;
 
 /**
  * Test {@link vtk.util.text.Json}.
@@ -135,7 +135,136 @@ public class JsonTest {
         assertEquals((Long)4000l, last.longValue("id"));
         assertEquals("Indonesia", last.stringValue("country"));
         assertEquals(10, last.arrayValue("numbers").size());
-        }
+    }
+    
+    @Test
+    public void illegalType() {
+        Json.Container c = Json.parseToContainer("{\"a\":\"value\", \"b\":true, " 
+                + "\"n\":133.33, \"x\":null, \"y\":{}, \"z\":[]}");
+        Json.MapContainer json = c.asObject();
+
+        // String
+        assertNotNull(json.stringValue("a"));
+        try {
+            json.stringValue("b");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        try {
+            json.stringValue("x");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        
+        // Boolean
+        assertNotNull(json.booleanValue("b"));
+        try {
+            json.booleanValue("a");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        try {
+            json.booleanValue("x");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        
+        // Long
+        assertNotNull(json.longValue("n"));
+        try {
+            json.longValue("a");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        try {
+            json.longValue("x");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        
+        // Integer
+        assertNotNull(json.intValue("n"));
+        try {
+            json.intValue("a");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        try {
+            json.intValue("x");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+
+        // Double
+        assertNotNull(json.doubleValue("n"));
+        try {
+            json.doubleValue("a");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        try {
+            json.doubleValue("x");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        
+        // JSON object
+        assertNotNull(json.objectValue("y"));
+        try {
+            json.objectValue("a");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        try {
+            json.objectValue("x");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        
+        // JSON array
+        assertNotNull(json.arrayValue("z"));
+        try {
+            json.arrayValue("a");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        try {
+            json.arrayValue("x");
+            fail("Expected ValueException");
+        } catch (Json.ValueException ve) {}
+        
+    }
+    
+    @Test
+    public void mapContainerOptMethods() {
+        Json.Container c = Json.parseToContainer("{\"a\":\"value\", \"b\":null, \"n\":133.33}");
+        Json.MapContainer json = c.asObject();
+        
+        // Null value as default value
+
+        // Long
+        assertNull(json.optLongValue("non-existing", null));
+        assertEquals((Long)1L, json.optLongValue("a", 1L));
+        assertEquals((Long)1L, json.optLongValue("b", 1L));
+        assertEquals((Long)1L, json.optLongValue("non-existing", 1L));
+        assertEquals((Long)133L, json.optLongValue("n", 0L));
+        
+        // Integer
+        assertNull(json.optIntValue("non-existing", null));
+        assertEquals((Integer)1, json.optIntValue("a", 1));
+        assertEquals((Integer)1, json.optIntValue("b", 1));
+        assertEquals((Integer)1, json.optIntValue("non-existing", 1));
+        assertEquals((Integer)133, json.optIntValue("n", 0));
+        
+        // Double
+        assertNull(json.optDoubleValue("non-existing", null));
+        assertEquals((Double)1d, json.optDoubleValue("a", 1d));
+        assertEquals((Double)1d, json.optDoubleValue("b", 1d));
+        assertEquals((Double)1d, json.optDoubleValue("non-existing", 1d));
+        assertEquals((Double)133.33d, json.optDoubleValue("n", 0d));
+        
+        // Boolean
+        assertNull(json.optBooleanValue("non-existing", null));
+        assertTrue(json.optBooleanValue("a", true));
+        assertTrue(json.optBooleanValue("b", true));
+        assertTrue(json.optBooleanValue("non-existing", true));
+        assertTrue(json.optBooleanValue("n", true));
+        
+        // String
+        assertNull(json.optStringValue("non-existing", null));
+        assertEquals("value", json.optStringValue("a", "default"));
+        assertEquals("default", json.optStringValue("b", "default"));
+        assertEquals("default", json.optStringValue("non-existing", "default"));
+        assertEquals("default", json.optStringValue("n", "default"));
+        
+    }
     
     // Compare performance between vtk.util.text.JSON and vtk.util.text.Json
     @Ignore

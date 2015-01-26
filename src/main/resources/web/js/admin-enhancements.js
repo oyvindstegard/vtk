@@ -1373,7 +1373,7 @@ VrtxAdmin.prototype.initScrollBreadcrumbs = function initScrollBreadcrumbs() {
     vrtxAdm.crumbsInner.addClass("animate");
   }, 120);
 
-  eventListen(vrtxAdm.cachedDoc, "keydown", ".vrtx-breadcrumb-level", function (ref) {
+  eventListen(vrtxAdm.cachedDoc, "keypress", ".vrtx-breadcrumb-level", function (ref) {
     window.location.href = $(ref).find("a").attr("href");
   }, "clickOrEnter", 10);
   
@@ -3067,19 +3067,26 @@ function checkStillAdmin(options) {
   }
 }
 
-function autocompleteUsernames(selector) {
+function autocompleteUsernames(elms, useEnrichment) {
   var _$ = vrtxAdmin._$;
-  var autocompleteTextfields = _$(selector).find('.vrtx-textfield');
+  var autocompleteTextfields = elms.find('.vrtx-textfield');
   var i = autocompleteTextfields.length;
   while (i--) {
-    permissionsAutocomplete(_$(autocompleteTextfields[i]).attr("id"), 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+    var id = _$(autocompleteTextfields[i]).attr("id");
+    permissionsAutocomplete(id, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+    if(typeof useEnrichment === "boolean" && useEnrichment) {
+      enrichedUsersAutocomplete(id, ".vrtx-button.add");
+    }
   }
 }
 
-function autocompleteUsername(selector, subselector) {
+function autocompleteUsername(selector, subselector, useEnrichment) {
   var autocompleteTextfield = vrtxAdmin._$(selector).find('input#' + subselector);
   if (autocompleteTextfield.length) {
     permissionsAutocomplete(subselector, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+    if(typeof useEnrichment === "boolean" && useEnrichment) {
+      enrichedUsersAutocomplete(subselector, ".vrtx-button.add");
+    }
   }
 }
 

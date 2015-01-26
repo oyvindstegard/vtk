@@ -223,7 +223,8 @@ public final class Json {
      * @param expression the expression, which cannot be null. The empty string
      * will return the instance itself.
      * @return the selected value, which may be any kind of object that can
-     * exist in the JSON data structure.
+     * exist in the JSON data structure. If the value does not exist, <code>null</code> is
+     * returned.
      */
     public static Object select(Map<String,Object> object, String expression) {
         if (expression.isEmpty()) {
@@ -315,7 +316,6 @@ public final class Json {
     
     /**
      * Container of JSON arrays based on list.
-     * TODO complete with methods for gets of optional values with default arg.
      */
     public static final class ListContainer extends ArrayList<Object> implements Container {
 
@@ -341,46 +341,86 @@ public final class Json {
             throw new ValueException("This is not a MapContainer");
         }
         
+        /**
+         * Get map representation of JSON object at index.
+         * @param idx the index of the JSON object in this array.
+         * @return a {@code MapContainer} 
+         * @throws ValueException if object at index is not a JSON object/map.
+         */
         public MapContainer objectValue(int idx) {
             Object o = get(idx);
-            if (o == null) return null;
             if (! (o instanceof MapContainer)) {
                 throw new ValueException("Not a MapContainer");
             }
             return (MapContainer)o;
         }
-        
+
+        /**
+         * Get sub-array at index idx
+         * @param idx index of sub-array in this array
+         * @return a {@code ListContainer} representing the JSON array.
+         * @throws ValueException if object at idx is not a JSON array/list.
+         */
         public ListContainer arrayValue(int idx) {
             Object o = get(idx);
-            if (o == null) return null;
             if (! (o instanceof ListContainer)) {
                 throw new ValueException("Not a ListContainer");
             }
             return (ListContainer)o;
         }
-        
-        public Long longValue(int idx) {
-            return Json.coerceLong(get(idx));
-        }
-        
-        public Integer intValue(int idx) {
-            return Json.coerceInt(get(idx));
-        }
-        
-        public Double doubleValue(int idx) {
-            return Json.coerceDouble(get(idx));
-        }
 
-        public Boolean booleanValue(int idx) {
-            return Json.coerceBoolean(get(idx));
-        }
-        
-        public String stringValue(int idx) {
-            return Json.coerceString(get(idx));
+        /**
+         * Get long value at index.
+         * @param idx index of long value in this array.
+         * @return long value.
+         * @throws ValueException if value is a JSON null or not a JSON number.
+         */
+        public Long longValue(int idx) {
+            return Json.asLong(get(idx));
         }
 
         /**
-         * 
+         * Get int value at index.
+         * @param idx
+         * @return int value
+         * @throws ValueException if value is a JSON null or not a JSON number.
+         */
+        public Integer intValue(int idx) {
+            return Json.asInteger(get(idx));
+        }
+
+        /**
+         * Get double value at index.
+         * @param idx
+         * @return double value
+         * @throws ValueException if value is a JSON null or not a JSON number.
+         */
+        public Double doubleValue(int idx) {
+            return Json.asDouble(get(idx));
+        }
+
+        /**
+         * Get boolean value at index.
+         * @param idx
+         * @return boolean value
+         * @throws ValueException if value is a JSON null or not a JSON boolean.
+         */
+        public Boolean booleanValue(int idx) {
+            return Json.asBoolean(get(idx));
+        }
+        
+        /**
+         * Get string value at index.
+         * @param idx
+         * @return 
+         * @throws ValueException if value is a JSON null or not a JSON string.
+         */
+        public String stringValue(int idx) {
+            return Json.asString(get(idx));
+        }
+
+        /**
+         * Check for JSON null value at index.
          * @param idx
          * @return <code>true</code> if value is a <em>JSON null</em> value.
          */
@@ -389,6 +429,7 @@ public final class Json {
         }
 
         /**
+         * Check that array element at index exists (actual
          * @param idx
          * @return <code>true</code> if idx is not out of bounds.
          */
@@ -401,7 +442,22 @@ public final class Json {
     /**
      * A <code>java.util.LinkedHashMap</code> extension with utility methods for easier
      * access to map values in a JSON-centric fashion.
-     * TODO complete with methods for gets of optional values with default arg.
+     * 
+     * <p>
+     * Regarding <code>null</code> values: value-type-specific getter methods
+     * like {@link #intValue(java.lang.String) } will fail with a
+     * {@link ValueException} if the actual value is JSON <code>null</code> or the
+     * key does not exist. For cases where lenient interpretation of parsed JSON
+     * data is preferred, or where items in JSON objects are optional, one may use
+     * the opt-methods with suitable default values provided. Or one can just use the
+     * general methods inherited from {@code java.util.Map}, like
+     * {@link java.util.Map#get(java.lang.Object) get}.
+     *
+     * <p>Regarding type conversion: the value-type-specific getter methods do no
+     * type conversion. As an example, trying to get a numeric value from a string value
+     * will fail, even though the string may be parseable as a number. Conversely,
+     * non-string JSON types are <em>not</em> automatically converted to strings upon
+     * request for string values.
      */
     public static final class MapContainer extends LinkedHashMap<String,Object> implements Container {
 
@@ -426,48 +482,171 @@ public final class Json {
         public MapContainer asObject() {
             return this;
         }
-        
+
+        /**
+         * Get a JSON object value for key as a {@code MapContainer}.
+         * @param key
+         * @return 
+         * @throws ValueException if not object value or key does not exist.
+         */
         public MapContainer objectValue(String key) {
             Object o = get(key);
-            if (o == null) return null;
             if (! (o instanceof MapContainer)) {
-                throw new ValueException("Object with key '" + key + "' is not a MapContainer.");
+                throw new ValueException("Key does not exist or is not an object value: '" + key + "'");
             }
             return (MapContainer)o;
         }
         
+        /**
+         * Return array value for key.
+         * @param key
+         * @return 
+         * @throws ValueException if not array value or key does not exist.
+         */
         public ListContainer arrayValue(String key) {
             Object o = get(key);
-            if (o == null) return null;
             if (! (o instanceof ListContainer)) {
-                throw new ValueException("Object with key '" + key + "' is not a ListContainer.");
+                throw new ValueException("Key does not exist or is not an array value: '" + key + "'");
             }
             return (ListContainer)o;
         }
         
+        /**
+         * Optional {@code long} value with default.
+         * @param key
+         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
+         * invalid value type.
+         * @return the value, but if key does not exist, has
+         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         */
+        public Long optLongValue(String key, Long defaultValue) {
+            try {
+                Long value = longValue(key);
+                return value != null ? value : defaultValue;
+            } catch (ValueException ve) {
+                return defaultValue;
+            }
+        }
+        
+        /**
+         * Get Long value by key.
+         * @param key
+         * @return long value
+         * @throws ValueException if key does not exist, value is a JSON null or value not a JSON number.
+         */
         public Long longValue(String key) {
-            return Json.coerceLong(get(key));
-        }
-        
-        public Integer intValue(String key) {
-            return Json.coerceInt(get(key));
-        }
-        
-        public Double doubleValue(String key) {
-            return Json.coerceDouble(get(key));
-        }
-
-        public Boolean booleanValue(String key) {
-            return Json.coerceBoolean(get(key));
-        }
-        
-        public String stringValue(String key) {
-            return Json.coerceString(get(key));
+            return Json.asLong(get(key));
         }
 
         /**
+         * Optional {@code int } value with default.
          * @param key
-         * @return <code>true</code> if key exists and has a <em>JSON null</em> value.
+         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
+         * @return the value, but if key does not exist, has
+         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         */
+        public Integer optIntValue(String key, Integer defaultValue) {
+            try {
+                Integer value = intValue(key);
+                return value != null ? value : defaultValue;
+            } catch (ValueException ve) {
+                return defaultValue;
+            }
+        }
+
+        /**
+         * Get int value by key.
+         * @param key
+         * @return int value
+         * @throws ValueException if key does not exist, value is a JSON null or value not a JSON number.
+         */
+        public Integer intValue(String key) {
+            return Json.asInteger(get(key));
+        }
+        
+        /**
+         * Optional {@code double} value with default.
+         * @param key
+         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
+         * @return the value, but if key does not exist, has
+         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         */
+        public Double optDoubleValue(String key, Double defaultValue) {
+            try {
+                Double value = doubleValue(key);
+                return value != null ? value : defaultValue;
+            } catch (ValueException ve) {
+                return defaultValue;
+            }
+        }
+        
+        /**
+         * Get double value by key.
+         * @param key
+         * @return double value
+         * @throws ValueException if key does not exist, value is a JSON null or value not a JSON number.
+         */
+        public Double doubleValue(String key) {
+            return Json.asDouble(get(key));
+        }
+        
+        /**
+         * Optional {@code boolean} value with default.
+         * @param key
+         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
+         * @return the value, but if key does not exist, has
+         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         */
+        public Boolean optBooleanValue(String key, Boolean defaultValue) {
+            try {
+                Boolean value = booleanValue(key);
+                return value != null ? value : defaultValue;
+            } catch (ValueException ve) {
+                return defaultValue;
+            }
+        }
+        
+        /**
+         * Get boolean value by key.
+         * @param key
+         * @return JSON boolean value as a {@code Boolean}
+         * @throws ValueException if key does not exist, value is a JSON null or value not a JSON boolean.
+         */
+        public Boolean booleanValue(String key) {
+            return Json.asBoolean(get(key));
+        }
+        
+        /**
+         * Optional {@code String} value with default.
+         * @param key
+         * @param defaultValue value to return in case of null-value, wrong data type or non-existing key.
+         * @return the value, but if key does not exist, has
+         * a JSON null-value or has an incompatible value type, then the {@code defaultValue} is returned.
+         * @see #stringValue(java.lang.String) 
+         */
+        public String optStringValue(String key, String defaultValue) {
+            try {
+                String value = stringValue(key);
+                return value != null ? value : defaultValue;
+            } catch (ValueException ve) {
+                return defaultValue;
+            }
+        }
+
+        /**
+         * Get string value by key.
+         * @param key
+         * @return 
+         * @throws ValueException if key does not exist, value is a JSON null or value not a JSON string.
+         */
+        public String stringValue(String key) {
+            return Json.asString(get(key));
+        }
+
+        /**
+         * Check if value is a JSON null value.
+         * @param key
+         * @return <code>true</code> if key <em>exists</em> and has a <em>JSON null</em> value
          */
         public boolean isNull(String key) {
             if (containsKey(key)) {
@@ -483,13 +662,15 @@ public final class Json {
          * @return <code>true</code> if object has the key. Note that the value may
          * still be <code>null</code>, if it's a JSON null.
          */
-        public boolean exists(String key) {
+        public boolean has(String key) {
             return containsKey(key);
         }
 
         /**
          * Select element by expression on this object.
-         * @see Json#select(java.util.Map, java.lang.String) 
+         * 
+         * <p>Works like {@link #select(java.util.Map, java.lang.String) } with first
+         * parameter replaced by this object.
          * @param expression
          * @return 
          */
@@ -498,42 +679,37 @@ public final class Json {
         }
     }
     
-    private static Long coerceLong(Object o) {
-        if (o == null) return null;
+    private static Long asLong(Object o) {
         if (!(o instanceof Number)) {
-            throw new ValueException("Not a Number");
+            throw new ValueException("Not a Number: " + o);
         }
         return ((Number)o).longValue();
     }
     
-    private static Integer coerceInt(Object o) {
-        if (o == null) return null;
+    private static Integer asInteger(Object o) {
         if (!(o instanceof Number)) {
-            throw new ValueException("Not a Number");
+            throw new ValueException("Not a Number: "+ o);
         }
         return ((Number)o).intValue();
     }
 
-    private static Double coerceDouble(Object o) {
-        if (o == null) return null;
+    private static Double asDouble(Object o) {
         if (!(o instanceof Number)) {
-            throw new ValueException("Not a Number");
+            throw new ValueException("Not a Number: " + o);
         }
         return ((Number)o).doubleValue();
     }
     
-    private static Boolean coerceBoolean(Object o) {
-        if (o == null) return null;
+    private static Boolean asBoolean(Object o) {
         if (!(o instanceof Boolean)) {
-            throw new ValueException("Not a Boolean");
+            throw new ValueException("Not a Boolean: " + o);
         }
         return (Boolean)o;
     }
     
-    private static String coerceString(Object o) {
-        if (o == null) return null;
+    private static String asString(Object o) {
         if (! (o instanceof String)) {
-            return o.toString();
+            throw new ValueException("Not a String: " + o);
         }
         return (String)o;
     }

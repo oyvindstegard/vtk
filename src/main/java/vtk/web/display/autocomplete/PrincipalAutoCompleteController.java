@@ -49,7 +49,7 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
 
         List<Suggestion> suggestions = new ArrayList<Suggestion>(completions.size());
         for (Principal principal : completions) {
-            Suggestion suggestion = new Suggestion(2);
+            Suggestion suggestion = new Suggestion(3);
 
             // XXX: Only list uio.no and pseudo users
             if (principal.isUser()) {
@@ -63,13 +63,14 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
                 if (principal.getType() == Type.GROUP || principal.getType() == Type.PSEUDO) {
                     suggestion.setField(this.invert ? 0 : 1, principal.getUnqualifiedName() + "@webid.uio.no");
                     suggestion.setField(this.invert ? 1 : 0, principal.getDescription());
-
+                    suggestion.setField(2, principal.getURL());
                 } else {
                     continue;
                 }
             } else {
                 suggestion.setField(this.invert ? 0 : 1, principal.getUnqualifiedName());
                 suggestion.setField(this.invert ? 1 : 0, principal.getDescription());
+                suggestion.setField(2, principal.getURL());
             }
 
             suggestions.add(suggestion);

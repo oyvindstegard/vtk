@@ -56,3 +56,42 @@ function splitAutocompleteSuggestion(id) {
     }
   });
 }
+
+function enrichedUsersAutocomplete(id, focusClassAfterSelection) {
+  var hasSelected = false;
+  var fieldId = "#" + id;
+  var field = $(fieldId);
+  var fieldParent = field.parent();
+  
+  // Have selected autocomplete result
+  field.result(function(event, data, formatted) {
+    hasSelected = true;
+    
+    // Hide inputfield
+    field.hide();
+    
+    // Add user enrichment
+    var userEnriched = formatted.split(";");
+    var url = userEnriched[2];
+    var name = userEnriched[0];
+    if(url != "") {
+      var userEnrichmentHtml = "<a target='_blank' class='vrtx-multiple-inputfield-enrichment' href='" + url + "'>" + name + "</a>";
+    } else {
+      var userEnrichmentHtml = "<span class='vrtx-multiple-inputfield-enrichment'>" + name + "</span>";
+    }
+    $($.parseHTML(userEnrichmentHtml)).insertAfter(fieldParent);
+    
+    // Set focus on add button if exists
+    var focusElm = fieldParent.closest(".vrtx-multipleinputfields").find(focusClassAfterSelection);
+    if(focusElm.length) {
+      focusElm[0].focus();
+    }
+  });
+  
+  // Not have selected autocomplete result on "focusout"
+  $(document).on("focusout", fieldId, function() {
+    if(!hasSelected) {
+      field.val("");
+    }
+  });
+}

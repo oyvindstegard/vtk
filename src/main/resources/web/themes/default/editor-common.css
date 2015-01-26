@@ -48,7 +48,7 @@ h2 {
 .properties .vrtx-simple-html.divide-top,
 .properties .vrtx-checkbox.divide-top {
   background: url(images/line-dotted.gif) repeat-x top left !important;
-  margin-top: 15px !important;
+  margin-top: 30px !important;
   padding-top: 15px !important;
 }
 
@@ -127,16 +127,29 @@ h2 {
   margin-left: 0px;
 }
 
-.vrtx-multipleinputfield label {
+/* Hide multiple inputfield if has enrichment */
+.vrtx-multipleinputfield-field.vrtx-multipleinputfield-field-enriched {
   display: none;
 }
 
-.vrtx-multipleinputfield.first label {
-  display: block;
+/* Enrichment user text or link */
+.vrtx-multipleinputfield .vrtx-multiple-inputfield-enrichment {
+  padding: 6px 0 0 0;
+  width: 140px;
+  margin-right: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.vrtx-multipleinputfield.vrtx-multipleinputfield-json-has-title.first  button {
-  margin-top: 30px;
+.vrtx-multipleinputfield a.vrtx-multiple-inputfield-enrichment {
+  color: #005aab;
+}
+
+/* Setup user enrichment */
+.vrtxStaff .vrtx-multipleinputfield-field {
+  width: 122px;
+  margin-right: 20px;
 }
 
 .vrtx-multipleinputfield > * {
@@ -152,9 +165,6 @@ h2 {
 .vrtx-multipleinputfield .vrtx-button.movedown {
   padding-left: 9px;
   padding-right: 9px;
-  /* Inline block version
-  position: relative;
-  bottom: -3px; */
 }
 
 .vrtx-multipleinputfield .vrtx-button.moveup:hover,

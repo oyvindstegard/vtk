@@ -26,6 +26,7 @@ function courseSchedule() {
   this.vrtxResourcesFixedUrl = "";
   this.sessionsLookup = {};
   this.i18n = scheduleI18n;
+  this.cancelled = false;
   this.embeddedAdminService = "?vrtx=admin&mode=actions-listing&types=resource&actions=view,edit-title,delete&global-actions=upload";
   
   // Last edited sessions
@@ -69,7 +70,7 @@ function courseSchedule() {
         if(fixedResources) {
           sequences[sequence.id] = jQuery.extend(true, [], fixedResources);
           this.deleteUnwantedFixedResourcesProps(sequence);
-        }   
+        }
         sessions = sessions.concat(sequence.sessions);
       }
       
@@ -327,6 +328,7 @@ function courseSchedule() {
                        ((prevId || nextId) ? "</div>" : ""),
         sessionContent = vrtxEdit.htmlFacade.jsonToHtml(this.isMedisin, id, sessionId, id, session, this.vrtxResourcesFixedUrl, { "vrtxResourcesFixed": sequences[sequenceId] }, descs, this.i18n, this.embeddedAdminService);
 
+     this.deleteUserResourcesEnrichments(session);
      var rawOrigTP = jQuery.extend(true, {}, session);
 
      if(!session.vrtxOrphan) {
@@ -426,42 +428,6 @@ function courseSchedule() {
       }
       
       session.isEnhanced = true;
-      
-      // Accordions for session
-      var externalStaff = contentElm.find(".vrtxStaffExternal");
-      if(externalStaff.length) {
-        externalStaff.children().filter(":not(label:first-child)").wrapAll("<div />");
-        var optsExternalStaff = {
-          elem: externalStaff,
-          headerSelector: externalStaff.find("> label"),
-          onActivate: function (e, ui, accordion) {},
-          animationSpeed: 200
-        };
-        var accResources = new VrtxAccordion(optsExternalStaff);
-        accResources.create();
-        externalStaff.addClass("fast");
-      }
-      
-      var resources = contentElm.find(".vrtx-fixed-resources-semester");
-      if(resources.length) {
-        // Enhance vrtxResources for putting it inside fixed resources for semester
-        var resourcesList = contentElm.find(".vrtxResources");
-        if(resourcesList.length) {
-          resourcesList.removeClass("divide-top");
-          resourcesList.find("> label").text(this.i18n.links + " (" + this.i18n["vrtxResources-info"] + ")");
-          resources.append(resourcesList.remove()[0].outerHTML);
-        }
-        resources.children().filter(":not(label:first-child)").wrapAll("<div />");
-        var optsResources = {
-          elem: resources,
-          headerSelector: resources.find("> label"),
-          onActivate: function (e, ui, accordion) {},
-          animationSpeed: 200
-        };
-        var accResources = new VrtxAccordion(optsResources);
-        accResources.create();
-        resources.addClass("fast");
-      }
     }
   };
   this.loadingUpdate = function(msg) {
@@ -482,7 +448,7 @@ function courseSchedule() {
     }
   };
   /*
-   * DELETE vrtxEditableDescription and !(vrtx-props + id + dtStart + dtEnd) from sessions
+   * DELETE unwanted properties from session and sequence
    */
   this.deleteUnwantedProps = function() {
     for(var type in this.retrievedScheduleData) {
@@ -505,6 +471,9 @@ function courseSchedule() {
           for(var k = 0, sessLen = sessions.length; k < sessLen; k++) {
             if(!sessions[k].vrtxOrphan) {
               this.deleteUnwantedSessionProps(sessions[k]);
+              this.deleteUserResourcesEnrichments(sessions[k]);
+            } else {
+              this.deleteUserResourcesEnrichments(sessions[k]);
             }
           }
         }
@@ -513,7 +482,7 @@ function courseSchedule() {
     }
   };
  /*
-   * DELETE !folderUrl from objects in vrtxResourcesFixed (if no objects have folderUrl => delete whole vrtxResourcesFixed)
+   * DELETE !folderUrl from objects in vrtxResourcesFixed (if no objects have folderUrl DELETE whole vrtxResourcesFixed)
    */
   this.deleteUnwantedFixedResourcesProps = function(sequence) {
     var newFixedResources = [];
@@ -545,7 +514,39 @@ function courseSchedule() {
       }
     }
   };
+  /*
+   * DELETE !(uid) from staff and vrtxStaff
+   */
+  this.deleteUserResourcesEnrichments = function(session) {
+    if(session.staff) {
+      for(var i = 0, len = session.staff.length; i < len; i++) {
+        this.deleteUserEnrichment(session.staff[i]);
+      }
+    }
+    if(session.vrtxStaff) {
+      for(var i = 0, len = session.vrtxStaff.length; i < len; i++) {
+        this.deleteUserEnrichment(session.vrtxStaff[i]);
+      }
+    }
+    if(session.vrtxResources) {
+      for(var i = 0, len = session.vrtxResources.length; i < len; i++) {
+        this.deleteResourceEnrichment(session.vrtxResources[i]);
+      }
+    }
+  };
+  this.deleteUserEnrichment = function(user) {
+    delete user.name;
+    delete user.firstName;
+    delete user.lastName;
+    delete user.url;
+  };
+  this.deleteResourceEnrichment = function(resource) {
+    delete resource.userReadRestricted;
+  };
   this.checkUnsavedChanges = function() {
+    if(this.cancelled) {
+      return false;
+    }
     this.saveLastSession();
     for(var type in this.sessionsLookup) {
       for(var session in this.sessionsLookup[type]) {
@@ -672,9 +673,9 @@ function courseSchedule() {
       if(sessionOnly) {
         editorProperties.prepend("<h4 class='property-label'>" + sessionOnly.title + "</h4>" + html);
         csRef.enhanceSession("single", "one", editorProperties);
-        var newButtonsHtml = "<input class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-save-view-button' type='submit' value='" + csRef.i18n.saveView + "' />" +
-                             "<input class='vrtx-focus-button vrtx-embedded-button' id='vrtx-embedded-save-button' type='submit' value='" + csRef.i18n.save + "' />" +
-                             "<input class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-cancel-button' type='submit' value='" + csRef.i18n.cancel + "' />";
+        var newButtonsHtml = "<button class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-save-view-button'>" + csRef.i18n.saveView + "</button>" +
+                             "<button class='vrtx-focus-button vrtx-embedded-button' id='vrtx-embedded-save-button'>" + csRef.i18n.save + "</button>" +
+                             "<button class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-cancel-button'>" + csRef.i18n.cancel + "</button>";
                              
         editorSubmitButtons.on("click", "#vrtx-embedded-save-view-button", function(e) { /* Save and view shortcut */
           editorSubmitButtons.find("#saveAndViewButton").trigger("click");
@@ -688,7 +689,7 @@ function courseSchedule() {
         });
       } else {
         editorProperties.prepend(html);
-        var newButtonsHtml = "<input class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-cancel-button' type='submit' value='Avbryt' />";
+        var newButtonsHtml = "<button class='vrtx-button vrtx-embedded-button' id='vrtx-embedded-cancel-button'>" + csRef.i18n.cancel + "</button>";
       }
       editorSubmitButtons.prepend(newButtonsHtml);
       contents.find("#vrtx-editor-title-submit-buttons").show();
@@ -699,6 +700,7 @@ function courseSchedule() {
         var dataString = form.serialize();
         vrtxAdmin.serverFacade.postHtml(url, dataString, {
           success: function (results, status, resp) {
+            csRef.cancelled = true;
             csRef.sessionOnlyWindowClose(true);
           }
         });

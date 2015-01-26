@@ -54,7 +54,7 @@ import java.util.Map;
  *
  * <p>Note: There is currently no built-in protection against stack overflow
  * error if you try to serialize self-referencing container structures (maps/lists
- * containing directl or indirect reference cycles)
+ * containing direct or indirect reference cycles)
  * TODO add simple checking to detect ref-cycles between lists/maps on recursive
  * calls.
  * 
@@ -259,7 +259,7 @@ public class JsonStreamer {
      */
     public JsonStreamer beginObject() throws IOException {
         Context ctx = contexts.peek();
-        if (ctx.state == OBJECT){
+        if (ctx.state == OBJECT) {
             throw new IllegalStateException("Cannot begin object without key in object state");
         }
         
