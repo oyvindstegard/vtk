@@ -62,6 +62,11 @@ public class DisplayEmbedMediaController implements Controller {
 
         mediaPlayer.addMediaPlayer(model, uri.toString());
 
+        String autoplay = request.getParameter("autoplay");
+        if (autoplay != null && autoplay.equals("true")) {
+            model.put("autoplay", autoplay);
+        }
+
         if (resource.isReadRestricted()) {
             response.addHeader("X-Frame-Options", "DENY");
         }
