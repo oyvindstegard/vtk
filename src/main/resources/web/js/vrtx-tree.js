@@ -102,7 +102,8 @@ var VrtxTree = dejavu.Class.declare({
       if(isLast) {
         scrollOpts.complete = tree.__opts.afterTrav(link);
       }
-      $(tree.__opts.scrollToContent).finish().scrollTo(Math.max(0, (link.position().top - tree.$static.leafScrollTopAdjust)), tree.$static.leafScrollDelay, scrollOpts);
+      var newTop = Math.max(0, (link.position().top - tree.$static.leafScrollTopAdjust));
+      $(tree.__opts.scrollToContent).finish().scrollTo(newTop, tree.$static.leafScrollDelay, scrollOpts);
     }
   }
 });
