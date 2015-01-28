@@ -18,7 +18,7 @@
  */
  
 /* Public
- * ----------------------
+ * ----------------------------------------------------------------------------------------
  * initialize(opts)
  * rightIn()        - Shows content and animates marginLeft in CSS/JS
  * leftOut()        - Hides content and animates marginLeft in CSS/JS
@@ -28,7 +28,7 @@
  * updateElem(elem) - Update elem that is being animated
  *
  * Private
- * ----------------------
+ * ----------------------------------------------------------------------------------------
  * __prepareMove()    - Prepare for animation
  * __afterMove()      - Runs after animation is complete
  * __horizontalMove() - Animate horizontally

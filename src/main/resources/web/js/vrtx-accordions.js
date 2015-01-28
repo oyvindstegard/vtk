@@ -9,7 +9,7 @@
  */
 
 /* Public
- * ----------------------
+ * ----------------------------------------------------------------------------------------
  * initialize(opts)
  * create()
  * destroy()
@@ -18,7 +18,7 @@
  * updateHeader(elem, isJson, init) - Update Accordion header
  *
  * Private
- * ----------------------
+ * ----------------------------------------------------------------------------------------
  * __getFieldString(field)              - Get either input value or CK data
  * __findMultiContentMatch(elm)         - All need to have content for a match
  * __findSingleContentMatch(elm)        - One need to have content for a match 
