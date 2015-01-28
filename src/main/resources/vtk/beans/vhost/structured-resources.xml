@@ -188,36 +188,7 @@
   </bean>
 
   <bean id="structuredResources.valDirective" class="vtk.text.tl.ValHandler">
-    <constructor-arg>
-      <map>
-        <entry>
-          <key>
-            <value type="java.lang.Class">vtk.repository.PropertyImpl</value>
-          </key>
-          <bean class="vtk.resourcemanagement.view.tl.PropertyValueFormatHandler">
-            <constructor-arg>
-              <ref bean="valueFormatterRegistry" />
-            </constructor-arg>
-          </bean>
-        </entry>
-        <entry>
-          <key>
-            <value type="java.lang.Class">vtk.repository.resourcetype.Value</value>
-          </key>
-          <bean class="vtk.resourcemanagement.view.tl.PropertyValueFormatHandler">
-            <constructor-arg ref="valueFormatterRegistry" />
-          </bean>
-        </entry>
-        <entry>
-          <key>
-            <value type="java.lang.Class">vtk.repository.resourcetype.Value[]</value>
-          </key>
-          <bean class="vtk.resourcemanagement.view.tl.PropertyValueFormatHandler">
-            <constructor-arg ref="valueFormatterRegistry" />
-          </bean>
-        </entry>
-      </map>
-    </constructor-arg>
+    <constructor-arg ref="decorating.valDirective.valueFormatters" />
     <constructor-arg ref="structuredResources.tlFunctions" />
   </bean>
 
@@ -329,7 +300,8 @@
     <property name="category" value="structuredResources.customFunction" />
   </bean>
 
-  <bean id="structuredResources.requestContextFunction" class="vtk.resourcemanagement.view.tl.RequestContextFunction">
+  <bean id="structuredResources.requestContextFunction" 
+        class="vtk.resourcemanagement.view.tl.RequestContextFunction">
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
         <constructor-arg value="request-context" />

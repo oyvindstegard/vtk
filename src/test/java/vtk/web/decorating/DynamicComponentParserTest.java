@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -42,18 +42,17 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import vtk.text.tl.DefineHandler;
 import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.IfHandler;
 import vtk.text.tl.ValHandler;
 import vtk.text.tl.expr.Function;
 import vtk.util.io.InputSource;
-import vtk.web.decorating.DecoratorComponent;
-import vtk.web.decorating.DynamicComponentLibrary;
 import vtk.web.decorating.components.MockDecoratorResponse;
 import vtk.web.decorating.components.MockStringDecoratorRequest;
 
-public class DynamicComponentLibraryTest {
+public class DynamicComponentParserTest {
 
     @Before
     public void setUp() throws Exception {
@@ -76,7 +75,7 @@ public class DynamicComponentLibraryTest {
             "[parameter param2 \"my second parameter\"]" +
             "[if request.parameters.param1][val request.parameters.param1]" +
             "[elseif request.parameters.param2][val request.parameters.param2]" + 
-            "[else]no parameters[endif]" +
+            "[else][error \"no parameters\"]content after error[endif]" +
             "[/component]";
         
         InputSource inputSource = new InputSource() {
@@ -99,13 +98,8 @@ public class DynamicComponentLibraryTest {
             }
         };
         
-        DynamicComponentLibrary lib = new DynamicComponentLibrary("lib", handlers, inputSource);
-        
-        List<DecoratorComponent> components = lib.components();
-        assertEquals(1, components.size());
-        
-        
-        DecoratorComponent component = components.get(0);
+        DynamicComponentParser parser = new DynamicComponentParser(handlers);
+        DecoratorComponent component = parser.compile("ns", "name", inputSource);
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("param1", "foo");
@@ -120,6 +114,12 @@ public class DynamicComponentLibraryTest {
         resp = new MockDecoratorResponse();
         component.render(req, resp);
         assertEquals("bar", resp.getResult());
+
+        params = new HashMap<String, Object>();
+        req = new MockStringDecoratorRequest("<html></html>", params);
+        resp = new MockDecoratorResponse();
+        component.render(req, resp);
+        assertEquals("no parameters", resp.getResult());
     }
 
 }

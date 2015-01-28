@@ -49,19 +49,20 @@
   </bean>
 
   <bean id="decorating.ssiNodeFilter" class="vtk.web.decorating.ComponentInvokingNodeFilter">
-    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
+    <property name="componentResolver">
+      <bean class="vtk.web.decorating.AggregatedComponentResolver">
+      <constructor-arg>
+        <list>
+          <ref bean="decorating.documentComponentResolver" />
+          <ref bean="decorating.userDefinedComponentResolver" />
+        </list>
+      </constructor-arg>
+      </bean>
+    </property>
     <property name="ssiDirectiveComponentMap">
       <map>
         <entry key="include" value-ref="decorating.includeComponent" />
       </map>
-    </property>
-    <property name="availableComponentNamespaces">
-      <set>
-        <ref bean="decorating.cssNamespace" />
-        <ref bean="decorating.includeNamespace" />
-        <ref bean="decorating.resourceNamespace" />
-        <ref bean="decorating.userDefinedComponentLibrary.namespace" />
-      </set>
     </property>
     <property name="contentComponentParser" ref="decorating.dollarSyntaxTemplateParser" />
     <property name="parseAttributes" value="true" />
@@ -146,98 +147,26 @@
   <bean id="decorating.dollarSyntaxTemplateParser" class="vtk.web.decorating.DollarSyntaxComponentParser">
   </bean>
 
-  <bean id="decorating.dynamicTemplateFactory"
-            class="vtk.web.decorating.DynamicDecoratorTemplateFactory">
-    <property name="repository" ref="repository" />
-    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
-    <property name="aspectsPropdef" ref="resourceAspectsPropDef" />
-    <property name="fieldConfig" ref="visualProfileAspect.fieldConfig" />
-    <property name="token" ref="trustedToken" />
-    <property name="functions" ref="decorating.tlFunctions" />
-  </bean>
-
-  <bean id="decorating.tlFunctions"
-        class="org.springframework.beans.factory.config.SetFactoryBean">
-    <property name="sourceSet">
-      <set>
-        <ref bean="templateLanguage.toStringFunction" />
-        <ref bean="templateLanguage.toIntFunction" />
-        <ref bean="templateLanguage.concatFunction" />
-        <ref bean="templateLanguage.splitFunction" />
-        <ref bean="templateLanguage.lengthFunction" />
-        <ref bean="templateLanguage.getFunction" />
-        <ref bean="structuredResources.requestContextFunction" />
-      </set>
-    </property>
-  </bean>
-
-
   <bean name="decorating.defaultComponentResolver"
         class="vtk.web.decorating.AggregatedComponentResolver">
     <constructor-arg>
       <list>
         <!-- components defined in bean context with certain namespaces: -->
-        <bean class="vtk.web.decorating.BeanContextComponentResolver">
-          <property name="availableComponentNamespaces"
-                    ref="decorating.defaultComponentNamespaces" />
-        </bean>
-        <!-- user-defined components in repository: -->
+        <ref bean="decorating.builtinComponentResolver" />
+        <!-- user-defined (dynamic) components: -->
         <ref bean="decorating.userDefinedComponentResolver" />
       </list>
     </constructor-arg>
   </bean>
 
-  <bean id="decorating.userDefinedComponentResolver" class="vtk.web.decorating.DynamicComponentResolver">
-    <constructor-arg ref="decorating.userDefinedComponentLibrary" />
+  <bean id="decorating.builtinComponentResolver" 
+        class="vtk.web.decorating.BeanContextComponentResolver">
+    <property name="availableComponentNamespaces"
+              ref="decorating.defaultBuiltinComponentNamespaces" />
   </bean>
 
-  <bean id="decorating.userDefinedComponentLibrary.directives"
-        class="org.springframework.beans.factory.config.ListFactoryBean">
-    <property name="sourceList">
-      <list>
-        <ref bean="structuredResources.ifDirective" />
-        <ref bean="structuredResources.valDirective" />
-        <ref bean="structuredResources.listDirective" />
-        <ref bean="structuredResources.defDirective" />
-        <ref bean="structuredResources.captureDirective" />
-      </list>
-    </property>
-  </bean>
 
-  <bean id="decorating.userDefinedComponentLibrary.namespace" class="java.lang.String">
-    <constructor-arg type="java.lang.String" value="lib" />
-  </bean>
-
-  <bean id="decorating.userDefinedComponentLibrary" class="vtk.web.decorating.DynamicComponentLibrary">
-    <constructor-arg ref="decorating.userDefinedComponentLibrary.namespace" />
-    <constructor-arg ref="decorating.userDefinedComponentLibrary.directives" />
-    <constructor-arg ref="decorating.userDefinedComponentLibrary.inputSource" />
-  </bean>
-
-  <bean id="decorating.userDefinedComponentLibrary.refreshTrigger"
-        class="vtk.util.repository.MethodInvokingRepositoryEventTrigger">
-    <property name="repository" ref="repository" />
-    <property name="uri" value="${decorating.userDefinedComponentLibrary}" />
-    <property name="targetObject" ref="decorating.userDefinedComponentLibrary" />
-    <property name="method" value="compile" />
-  </bean>
-
-  <bean id="decorating.userDefinedComponentLibrary.inputSource.uri"
-        class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-    <property name="staticMethod" value="vtk.repository.Path.fromString" />
-    <property name="arguments">
-      <value>${decorating.userDefinedComponentLibrary}</value>
-    </property>
-  </bean>
-
-  <bean id="decorating.userDefinedComponentLibrary.inputSource"
-        class="vtk.util.repository.RepositoryInputSource">
-    <constructor-arg ref="decorating.userDefinedComponentLibrary.inputSource.uri" />
-    <constructor-arg ref="repository" />
-    <constructor-arg ref="trustedToken" />
-  </bean>
-
-  <bean id="decorating.defaultComponentNamespaces"
+  <bean id="decorating.defaultBuiltinComponentNamespaces"
         class="org.springframework.beans.factory.config.SetFactoryBean">
     <property name="sourceSet">
       <set>
@@ -248,55 +177,34 @@
         <ref bean="article.componentNamespace" />
         <ref bean="event.componentNamespace" />
         <ref bean="structuredResources.componentNamespace" />
-        <ref bean="decorating.userDefinedComponentLibrary.namespace" />
       </set>
     </property>
   </bean>
 
-  <bean id="decorating.userDefinedComponentLibrary.listComponentsService"
-        class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="previewService" />
-    <property name="assertions">
-      <list>
-        <bean class="vtk.web.service.RequestURIRegexpAssertion">
-          <property name="pattern" value="${decorating.userDefinedComponentLibrary}" />
-        </bean>
-      </list>
-    </property>
-    <property name="handler" ref="decorating.userDefinedComponentLibrary.debugController" />
-  </bean>
 
-  <bean id="decorating.userDefinedComponentLibrary.debugController"
-        class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="decorating.userDefinedComponents" />
-  </bean>
-
-
-
-  <bean name="decorating.documentComponentResolver"
-        class="vtk.web.decorating.AggregatedComponentResolver">
+  <bean id="decorating.documentComponentResolver" class="vtk.web.decorating.AggregatedComponentResolver">
     <constructor-arg>
       <list>
-        <!-- components defined in bean context with certain namespaces: -->
-        <bean class="vtk.web.decorating.BeanContextComponentResolver">
-          <property name="availableComponentNamespaces"
-                    ref="decorating.documentComponentNamespaces" />
-        </bean>
-        <!-- user-defined components in repository: -->
+        <ref bean="decorating.builtinDocumentComponentResolver" />
         <ref bean="decorating.userDefinedComponentResolver" />
       </list>
     </constructor-arg>
   </bean>
 
+  <bean name="decorating.builtinDocumentComponentResolver"
+        class="vtk.web.decorating.BeanContextComponentResolver">
+    <property name="availableComponentNamespaces"
+              ref="decorating.builtinDocumentComponentNamespaces" />
+  </bean>
 
-  <bean id="decorating.documentComponentNamespaces"
+
+  <bean id="decorating.builtinDocumentComponentNamespaces"
         class="org.springframework.beans.factory.config.SetFactoryBean">
     <property name="sourceSet">
       <set>
         <ref bean="decorating.resourceNamespace" />
         <ref bean="decorating.includeNamespace" />
         <ref bean="decorating.cssNamespace" />
-        <ref bean="decorating.userDefinedComponentLibrary.namespace" />
       </set>
     </property>
   </bean>
@@ -450,14 +358,6 @@
   </bean>
   
 
-  <bean id="decorating.userDefinedComponents.viewResolver" parent="adminViewResolver">
-    <property name="views">
-      <map>
-        <entry key="decorating.userDefinedComponents" value-ref="decorating.userDefinedComponents.listView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="listDecoratorComponentsViewResolver"
         class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
@@ -468,20 +368,9 @@
     </property>
   </bean>
 
-  <bean id="decorating.userDefinedComponents.listView" parent="freemarkerView">
-    <property name="url" value="pages/list-user-defined-components.ftl" />
-    <property name="attributesMap">
-      <map>
-        <entry key="componentLib" value-ref="decorating.userDefinedComponentLibrary" />
-      </map>
-    </property>
-  </bean>
-
-
   <bean id="listDecoratorComponentsView" parent="freemarkerView">
     <property name="url" value="pages/list-decorator-components.ftl" />
   </bean>
-
 
   <bean id="listDocumentDecoratorComponentsView" parent="listDecoratorComponentsView">
     <property name="attributesMap">

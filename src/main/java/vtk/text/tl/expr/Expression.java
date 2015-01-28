@@ -192,11 +192,7 @@ public class Expression {
     }
 
     public Object evaluate(Context ctx) {
-        try {
-            return this.exp.eval(ctx);
-        } catch (Throwable t) {
-            throw new RuntimeException("Error evaluating expression: " + this.tokens, t);
-        }
+        return this.exp.eval(ctx);
     }
     
     

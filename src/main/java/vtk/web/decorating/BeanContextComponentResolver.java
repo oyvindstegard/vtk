@@ -61,7 +61,6 @@ public class BeanContextComponentResolver
     private ApplicationContext applicationContext;
     private Map<String, DecoratorComponent> components = new HashMap<>();
     private Set<String> availableComponentNamespaces = new HashSet<>();
-    private Set<String> prohibitedComponentNamespaces = new HashSet<>();
     private ResourceTypeDefinition resourceType;
 
     @Override
@@ -71,10 +70,6 @@ public class BeanContextComponentResolver
 
     public void setAvailableComponentNamespaces(Set<String> availableComponentNamespaces) {
         this.availableComponentNamespaces = availableComponentNamespaces;
-    }
-
-    public void setInhibitedComponentNamespaces(Set<String> prohibitedComponentNamespaces) {
-        this.prohibitedComponentNamespaces = prohibitedComponentNamespaces;
     }
 
     public void setResourceType(ResourceTypeDefinition resourceType) {
@@ -90,10 +85,6 @@ public class BeanContextComponentResolver
         if (this.availableComponentNamespaces == null) {
             throw new BeanInitializationException(
                     "JavaBean property 'availableComponentNamespaces' not specified");
-        }
-        if (this.prohibitedComponentNamespaces == null) {
-            throw new BeanInitializationException(
-                    "JavaBean property 'prohibitedComponentNamespaces' not specified");
         }
     }
 
@@ -130,11 +121,6 @@ public class BeanContextComponentResolver
                     continue;
                 }
             }
-            if (this.prohibitedComponentNamespaces != null) {
-                if (this.prohibitedComponentNamespaces.contains(namespace)) {
-                    continue;
-                }
-            }
             result.add(component);
         }
         return result;
@@ -156,19 +142,14 @@ public class BeanContextComponentResolver
                 throw new IllegalStateException("Component " + component
                         + " has invalid namespace (NULL)");
             }
+            
             if (!this.availableComponentNamespaces.contains(component.getNamespace())) {
                 if (!this.availableComponentNamespaces.contains("*")) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Component " + component + " not added.");
-                        continue;
                     }
+                    continue;
                 }
-            }
-            if (this.prohibitedComponentNamespaces.contains(component.getNamespace())) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Component " + component + " not added (prohibited namespace).");
-                }
-                continue;
             }
             if (name == null) {
                 throw new IllegalStateException("Component " + component

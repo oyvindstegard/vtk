@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,14 +39,12 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.DirectiveState;
@@ -62,54 +60,29 @@ import vtk.text.tl.Token;
 import vtk.util.io.InputSource;
 import vtk.web.decorating.components.DynamicDecoratorComponent;
 
-public class DynamicComponentLibrary {
-    private static Log logger = LogFactory.getLog(DynamicComponentLibrary.class);
+public class DynamicComponentParser {
 
-    private String namespace = null;
-    private List<DecoratorComponent> components = new ArrayList<DecoratorComponent>();
-    private List<String> errors = null;
-    List<DirectiveHandler> directiveHandlers;
+    private List<DirectiveHandler> directiveHandlers;
     
-    private InputSource inputSource;
-
-    public DynamicComponentLibrary(String namespace, List<DirectiveHandler> directiveHandlers, 
-            InputSource inputSource) throws IOException {
-        this.namespace = namespace;
-        this.directiveHandlers = new ArrayList<DirectiveHandler>(directiveHandlers);
-        this.inputSource = inputSource;
-        try {
-            compile();
-        } catch (Exception e) {
-            logger.warn("Failed to compile component(s) in " + inputSource + ": " 
-                    + e.getClass().getSimpleName() + ": " + e.getMessage());
-        }
-    }
-
-    public List<String> errors() {
-        return errors;
+    public DynamicComponentParser(List<DirectiveHandler> handlers) {
+        this.directiveHandlers = new ArrayList<>(handlers);
     }
     
-    public List<DecoratorComponent> components() {
-        return components;
-    }
-    
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void compile() throws IOException {
-        InputStream inputStream = inputSource.getInputStream();
+    public DecoratorComponent compile(final String namespace, final String name, 
+            final InputSource source) throws IOException {
+        InputStream inputStream = source.getInputStream();
         Reader reader = new InputStreamReader(inputStream);
 
-        final List<DynamicDecoratorComponent.Builder> builders = 
-                new ArrayList<DynamicDecoratorComponent.Builder>();
-        final Map<String, Object> messages = new HashMap<String, Object>();
+        List<DirectiveHandler> handlers = 
+                new ArrayList<DirectiveHandler>(this.directiveHandlers);
         
-        List<DirectiveHandler> handlers = new ArrayList<DirectiveHandler>(this.directiveHandlers);
+        final DynamicDecoratorComponent.Builder builder = 
+                DynamicDecoratorComponent.newBuilder()
+                    .namespace(namespace).name(name);
+        
+        final AtomicInteger componentTags = new AtomicInteger(0);
 
-        
         DirectiveHandler componentHandler = new DirectiveHandler() {
-            private DynamicDecoratorComponent.Builder cur = null;
             @Override
             public String[] tokens() {
                 return new String[] { 
@@ -122,23 +95,22 @@ public class DynamicComponentLibrary {
             }
             
             @Override
-            public void directive(Directive directive, TemplateContext context) {
+            public void directive(Directive directive, 
+                    TemplateContext context) {
+
                 String name = directive.name();
-                if (cur != null) {
-                    cur.context(directive);
-                }
+                builder.context(directive);
+                
                 if ("component".equals(name)) {
-                    cur = DynamicDecoratorComponent.newBuilder();
-                    componentStart(directive, context, cur);
+                    componentStart(directive, context, builder);
                 } else if ("/component".equals(name)) {
-                    componentEnd(context, cur);
-                    builders.add(cur);
+                    componentEnd(context, builder);
                 } else if ("description".equals(name)) {
                     descriptionStart(directive, context);
                 } else if ("/description".equals(name)) {
-                    descriptionEnd(context, cur);
+                    descriptionEnd(context, builder);
                 } else if ("parameter".equals(name)) {
-                    parameter(directive, context, cur);
+                    parameter(directive, context, builder);
                 } else if ("error".equals(name)) {
                     error(directive, context);
                 } else if ("messages".equals(name)) {
@@ -150,19 +122,24 @@ public class DynamicComponentLibrary {
                 }
             }
             
-            private void componentStart(Directive directive, TemplateContext context, DynamicDecoratorComponent.Builder builder) {
+            private void componentStart(Directive directive, 
+                    TemplateContext context, 
+                    DynamicDecoratorComponent.Builder builder) {
+
                 if (context.level() != 0) {
                     context.error("[component] cannot be a child of "
                             + "[" + context.top().directive().name() + "]");
                     return;
                 }
+                if (componentTags.incrementAndGet() != 1) {
+                    context.error("Only one [component] allowed");
+                    return;
+                }
                 context.push(new DirectiveState(directive));
-                if (directive.args().size() > 0)
-                    builder.name(directive.args().get(0).getRawValue());
-                builder.namespace(namespace);
             }
             
-            private void componentEnd(TemplateContext context, DynamicDecoratorComponent.Builder builder) {
+            private void componentEnd(TemplateContext context, 
+                    DynamicDecoratorComponent.Builder builder) {
                 DirectiveState state = context.pop();
                 if (state == null || !"component".equals(state.directive().name())) {
                     context.error("Misplaced [/component]");
@@ -180,7 +157,8 @@ public class DynamicComponentLibrary {
                 context.push(new DirectiveState(directive));
             }
             
-            private void descriptionEnd(TemplateContext context, DynamicDecoratorComponent.Builder builder) {
+            private void descriptionEnd(TemplateContext context, 
+                    DynamicDecoratorComponent.Builder builder) {
                 DirectiveState state = context.pop();
                 if (state == null || !"description".equals(state.directive().name())) {
                     context.error("Misplaced [/description]");
@@ -200,7 +178,8 @@ public class DynamicComponentLibrary {
                 builder.description(out.toString());
             }
             
-            private void parameter(Directive directive, TemplateContext context, DynamicDecoratorComponent.Builder builder) {
+            private void parameter(Directive directive, TemplateContext context, 
+                    DynamicDecoratorComponent.Builder builder) {
                 DirectiveState state = context.top();
                 if (state == null || !"component".equals(state.directive().name())) {
                     context.error("Misplaced [parameter]");
@@ -244,7 +223,7 @@ public class DynamicComponentLibrary {
                     return;
                 }
                 context.push(new DirectiveState(directive));
-            }            
+            }
             
             private void messagesEnd(TemplateContext context) {
                 DirectiveState state = context.pop();
@@ -263,11 +242,13 @@ public class DynamicComponentLibrary {
                         return; 
                     }
                 }
+                Map<String, Object> messages = new HashMap<>();
                 addMessages(out.toString(), messages);
+                builder.messages(messages);
             }
             
             private void unknown(Directive directive, TemplateContext context) {
-                final String msg = inputSource + ":" 
+                final String msg = source + ":" 
                         + directive.line() + ": Unknown directive: [" 
                         + directive.name() + "]";
                 context.add(new Node() {
@@ -279,7 +260,6 @@ public class DynamicComponentLibrary {
                     }
                 });
             }
-            
         };
         
         handlers.add(componentHandler);
@@ -299,53 +279,45 @@ public class DynamicComponentLibrary {
         };
         
         final List<String> errors = new ArrayList<String>();
-        TemplateParser parser = new TemplateParser(reader, handlers, componentHandler, validator, new TemplateHandler() {
+        TemplateParser parser = new TemplateParser(reader, handlers, 
+                componentHandler, validator, new TemplateHandler() {
             @Override
             public void success(NodeList nodeList) { }
             @Override
             public void error(String message, int line) {
-                errors.add(inputSource + ":" + line + ": " + message);
+                errors.add(source + ":" + line + ": " + message);
             }
         });
 
         parser.parse();
         
-        if (errors.isEmpty()) {
-            List<DecoratorComponent> list = new ArrayList<DecoratorComponent>();
-            for (DynamicDecoratorComponent.Builder builder: builders) {
-                try {
-                    builder.messages(messages);
-                    list.add(builder.build());
-                } catch (Exception e) {
-                    String name = builder.name();
-                    if (name != null) {
-                        String message = e.getMessage();
-                        Directive context = builder.context();
-                        if (context != null) {
-                            message = inputSource + ":" + context.line() + ": " + message;
-                        }
-                        message = "Error compiling component " + name + ": " + message;
-                        list.add(errorComponent(name, message));
-                    } else {
-                        if (builder.context() != null)
-                            errors.add(inputSource + ":" + builder.context().line() + ": " + e.getMessage());
-                        else errors.add(inputSource + ": " + e.getMessage());
-                    }
-                }
-            }
-            this.components = Collections.unmodifiableList(list);
-        }
         if (!errors.isEmpty()) {
-            this.errors = Collections.unmodifiableList(errors);
-            logger.info("Failed to compile component(s) in " + inputSource + ": " + errors);
+            return errorComponent(namespace, name, errors);
         }
-        else {            
-            this.errors = null;
-            logger.info("Compiled " + components.size() + " components in " + inputSource);
+        
+        try {
+            DynamicDecoratorComponent component = builder.build();
+            return component;
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Directive context = builder.context();
+            if (context != null) {
+                message = source + ":" + context.line() + ": " + message;
+            }
+            message = "Error compiling component " + name + ": " + message;
+            return errorComponent(namespace, name, message);
         }
     }
     
-    private DecoratorComponent errorComponent(String name, final String message) {
+    private DecoratorComponent errorComponent(String namespace, String name, List<String> messages) {
+        String message = "";
+        for (String s: messages) 
+            if (message.length() > 0) { message = (message + ", " + s); } 
+            else message = s;
+        return errorComponent(namespace, name, message);
+    }
+    
+    private DecoratorComponent errorComponent(String namespace, String name, final String message) {
         DynamicDecoratorComponent.Builder builder = DynamicDecoratorComponent.newBuilder();
         builder.name(name);
         builder.namespace(namespace);
@@ -390,6 +362,4 @@ public class DynamicComponentLibrary {
                 cur.put(elems[elems.length -1], val);
             }
         } catch (Exception e) { e.printStackTrace(); }
-    }
-    
-}
+    }}
