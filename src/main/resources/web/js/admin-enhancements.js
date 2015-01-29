@@ -365,12 +365,16 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       nodeType: "div",
       simultanSliding: true
     });
+    
+    // Ajax post if rename (with redirect)
+    var isRename = resourceMenuLeftServices[i] === "renameService";
+    
     vrtxAdm.completeFormAsync({
       selector: "form#" + resourceMenuLeftServices[i] + "-form input[type=submit]",
       errorContainer: "errorContainer",
       errorContainerInsertAfter: "h3",
-      post: resourceMenuLeftServices[i] === "renameService",
-      funcComplete: (resourceMenuLeftServices[i] === "renameService" ? function(p) {
+      post: isRename,
+      funcComplete: (isRename ? function(p) {
         var currentPath = location.pathname;
         var isCollection = /\/$/.test(currentPath);
         var newName = $("form#renameService-form .vrtx-textfield").val();
