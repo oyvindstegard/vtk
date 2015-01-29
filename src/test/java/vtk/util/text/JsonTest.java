@@ -149,6 +149,30 @@ public class JsonTest {
         assertEquals(25.08, o.select("numbers[1]"));
     }
     
+    @Test(expected = Json.JsonParseException.class)
+    public void emptyStream() throws IOException {
+        Json.Container c = Json.parseToContainer(new ByteArrayInputStream(new byte[0]));
+        
+    }
+    
+    @Test(expected = Json.JsonParseException.class)
+    public void emptyString() {
+        Json.Container c = Json.parseToContainer("");
+    }
+    
+    @Test(expected = Json.JsonParseException.class)
+    public void whitespaceOnly() {
+        Json.Container c = Json.parseToContainer("    \t  ");
+    }
+    
+    @Test
+    public void whitespaceBeforeStart() {
+        Json.Container c = Json.parseToContainer("    [0]");
+        assertTrue(c.isArray());
+        assertFalse(c.isEmpty());
+        assertEquals(1, c.size());
+    }
+
     @Test
     public void testParseToContainer() {
         Json.Container c = Json.parseToContainer(jsonTestText);
