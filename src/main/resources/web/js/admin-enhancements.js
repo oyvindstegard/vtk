@@ -366,7 +366,17 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       simultanSliding: true
     });
     vrtxAdm.completeFormAsync({
-      selector: "form#" + resourceMenuLeftServices[i] + "-form input[type=submit]"
+      selector: "form#" + resourceMenuLeftServices[i] + "-form input[type=submit]",
+      errorContainer: "errorContainer",
+      errorContainerInsertAfter: "h3",
+      post: resourceMenuLeftServices[i] === "renameService",
+      funcComplete: function(p) {
+        var newName = $("form#renameService-form .vrtx-textfield").val();
+        var isCollection = /\/$/.test(location.pathname);
+        location.pathname = isCollection
+                              ? location.pathname.replace(/[^\/]+\/$/, "") + newName + "/"
+                              : location.pathname.replace(/[^\/]+$/, "") + newName;
+      }
     });
   }
   var resourceMenuRightServices = ["vrtx-unpublish-document", "vrtx-publish-document"];
