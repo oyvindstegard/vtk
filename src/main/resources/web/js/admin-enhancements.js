@@ -370,13 +370,14 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       errorContainer: "errorContainer",
       errorContainerInsertAfter: "h3",
       post: resourceMenuLeftServices[i] === "renameService",
-      funcComplete: function(p) {
+      funcComplete: (resourceMenuLeftServices[i] === "renameService" ? function(p) {
+        var currentPath = location.pathname;
+        var isCollection = /\/$/.test(currentPath);
         var newName = $("form#renameService-form .vrtx-textfield").val();
-        var isCollection = /\/$/.test(location.pathname);
-        location.pathname = isCollection
-                              ? location.pathname.replace(/[^\/]+\/$/, "") + newName + "/"
-                              : location.pathname.replace(/[^\/]+$/, "") + newName;
-      }
+        var newPath = isCollection ? currentPath.replace(/[^\/]+\/$/, "") + newName + "/"
+                                   : currentPath.replace(/[^\/]+$/, "") + newName;
+        location.pathname = newPath;
+      } : null)
     });
   }
   var resourceMenuRightServices = ["vrtx-unpublish-document", "vrtx-publish-document"];
