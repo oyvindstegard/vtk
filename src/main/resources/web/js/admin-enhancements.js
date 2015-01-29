@@ -374,6 +374,7 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       errorContainer: "errorContainer",
       errorContainerInsertAfter: "h3",
       post: isRename,
+      ignoreDifferentMode: true,
       funcComplete: (isRename ? function(p) {
         var currentPath = location.pathname;
         var isCollection = /\/$/.test(currentPath);
@@ -1679,7 +1680,7 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
             sameMode = true;
           }
         }
-        if (opts.isUndecoratedService || (pageIsMode && !sameMode) || (pageIsRevisions !== remoteIsRevisions)) { // When we need the 'mode=' or 'action=revisions' HTML. TODO: should only run when updateSelector is inside content
+        if (!opts.ignoreDifferentMode && (opts.isUndecoratedService || (pageIsMode && !sameMode) || (pageIsRevisions !== remoteIsRevisions))) { // When we need the 'mode=' or 'action=revisions' HTML. TODO: should only run when updateSelector is inside content
           vrtxAdm.serverFacade.getHtml(modeUrl, {
             success: function (results, status, resp) {
               internalComplete(results);
@@ -2642,8 +2643,7 @@ jQuery.loadCSS = function(url) {
   }
 };
 
-/* A little faster dynamic click handler 
- */
+/* A little faster dynamic click handler */
 jQuery.fn.extend({
   dynClick: function (selector, fn) {
     var nodes = $(this);
@@ -2674,6 +2674,8 @@ vrtxAdmin._$(window).on("resize", vrtxAdmin._$.debounce(vrtxAdmin.windowResizeSc
     }, 1000);
   }
 }));
+
+/* Dialogs - usability/accessability */
 
 if(vrtxAdmin.isTouchDevice) {
   vrtxAdmin._$(window).on("scroll orientationchange",
@@ -2711,10 +2713,10 @@ function repositionDialogsTouchDevices() {
   }
 }
 
-/* Easing 
+/* Easing
  * 
  * TODO: Move to VrtxAnimation when slide and rotate animations (forms and preview) becomes part of it
- * 
+ * TODO: Check if jQuery UI is available
  */
 (function() {
  // based on easing equations from Robert Penner (http://www.robertpenner.com/easing)
