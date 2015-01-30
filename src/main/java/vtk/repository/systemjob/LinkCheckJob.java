@@ -31,10 +31,12 @@
 package vtk.repository.systemjob;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -43,10 +45,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.AuthorizationException;
 import vtk.repository.ContentStream;
@@ -58,7 +56,9 @@ import vtk.repository.Resource;
 import vtk.repository.ResourceLockedException;
 import vtk.repository.SystemChangeContext;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.util.text.JSONDefaultHandler;
+import vtk.util.text.Json;
+import vtk.util.text.JsonBuilder;
+import vtk.util.text.JsonStreamer;
 import vtk.util.web.LinkTypesPrefixes;
 import vtk.web.display.linkcheck.LinkChecker;
 import vtk.web.display.linkcheck.LinkChecker.LinkCheckResult;
@@ -140,30 +140,30 @@ public class LinkCheckJob extends AbstractResourceJob {
         logger.debug("Running with link check state: " + state + " for " + resource.getURI());
         
         ContentStream linksStream = linksProp.getBinaryStream();
-        JSONParser parser = new JSONParser();
+        Json.ParseEvents parser = Json.parseAsEvents(linksStream.getStream());
         
         final URL base = this.urlConstructor.canonicalUrl(resource).setImmutable();
         final AtomicLong n = new AtomicLong(0);
         
         try {
-            parser.parse(new InputStreamReader(linksStream.getStream(), "utf-8"), new JSONDefaultHandler() {
+            parser.begin(new Json.DefaultHandler() {
                 String field = null;
                 
                 String url = null;
                 String type = null;
 
                 @Override
-                public void endJSON() throws ParseException, IOException {
+                public void endJson() throws IOException {
                     state.complete = true;
                 }
                 
                 @Override
-                public boolean startObject() throws ParseException, IOException {
+                public boolean beginObject() throws IOException {
                     return true;
                 }
                 
                  @Override
-                 public boolean startObjectEntry(String key) throws ParseException, IOException {
+                 public boolean beginMember(String key) throws IOException {
                      if ("url".equals(key) || "type".equals(key)) {
                          this.field = key;
                      } else {
@@ -173,7 +173,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                  }
 
                 @Override
-                public boolean primitive(Object value) throws ParseException, IOException {
+                public boolean primitive(Object value) throws IOException {
                     if (value == null) {
                         return true;
                     }
@@ -190,7 +190,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                 }
                 
                 @Override
-                public boolean endObject() throws ParseException, IOException {
+                public boolean endObject() throws IOException {
                     if (n.getAndIncrement() < state.index) {
                         this.field = this.url = this.type = null;
                         return true;
@@ -215,7 +215,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                         break;
                     default:
                         // Mark as broken
-                        Map<String, Object> m = new HashMap<String, Object>();
+                        Map<String, Object> m = new HashMap<>();
                         m.put("link", this.url);
                         if (this.type != null) {
                             m.put("type", this.type);
@@ -239,9 +239,8 @@ public class LinkCheckJob extends AbstractResourceJob {
                     return true;
                 }
 
-                
                 @Override
-                public boolean endObjectEntry() throws ParseException, IOException {
+                public boolean endMember() throws IOException {
                     return true;
                 }
             });
@@ -311,17 +310,17 @@ public class LinkCheckJob extends AbstractResourceJob {
     
     public void refreshBlackList() {
         if (this.blackListConfig != null) {
-            List<Pattern> blackList = new ArrayList<Pattern>();
+            List<Pattern> patterns = new ArrayList<>();
             for (String regexp: this.blackListConfig) {
                 Pattern p = Pattern.compile(regexp);
-                blackList.add(p);
+                patterns.add(p);
             }
-            this.blackList = blackList;
+            this.blackList = patterns;
         }
     }
 
     private static class LinkCheckState {
-        private List<Object> brokenLinks = new ArrayList<Object>();
+        private List<Object> brokenLinks = new ArrayList<>();
         private long index = 0;
         private String timestamp = null;
         private boolean complete = false;
@@ -332,60 +331,43 @@ public class LinkCheckJob extends AbstractResourceJob {
         private static LinkCheckState create(Property statusProp) {
             LinkCheckState s = new LinkCheckState();
             if (statusProp != null) {
-                try {
-                    Object o = JSONValue.parse(new InputStreamReader(statusProp.getBinaryStream().getStream()));
-                    JSONObject status = (JSONObject) o;
-                    if (status != null) {
-                        Object obj = status.get("status");
-                        if (obj != null) {
-                            s.complete = "COMPLETE".equals(obj.toString());
-                        }
-                        obj = status.get("brokenLinks");
-                        if (obj != null) {
-                            List<Object> list = (List<Object>) obj;
-                            for (Object b: list) {
-                                s.brokenLinks.add(b);
-                            }
-                        }
-                        obj = status.get("index");
-                        if (obj != null) {
-                            s.index = (Long)obj;
-                        }
-                        obj = status.get("timestamp");
-                        if (obj != null) {
-                            s.timestamp = obj.toString();
-                        }
+                try (InputStream jsonStream = statusProp.getBinaryStream().getStream()) {
+                    Json.MapContainer status = Json.parseToContainer(jsonStream).asObject();
+                    s.complete = "COMPLETE".equals(status.get("status"));
+                    for (Object b : status.optArrayValue("brokenLinks", Collections.emptyList())) {
+                        s.brokenLinks.add(b);
                     }
+                    s.index = status.optLongValue("index", 0L);
+                    s.timestamp = status.optStringValue("timestamp", null);
                 } catch (Throwable t) { }
             }
             return s;
         }
         
         public void write(Property statusProp) {
-            JSONObject obj = toJSONObject();
             try {
-                statusProp.setBinaryValue(obj.toJSONString().getBytes("utf-8"), "application/json");
+                String jsonString = toJsonString();
+                statusProp.setBinaryValue(jsonString.getBytes("utf-8"), "application/json");
             } catch (UnsupportedEncodingException ex) {
-                // Fuck you Java for checked exceptions.
-                statusProp.setBinaryValue(obj.toJSONString().getBytes(), "application/json");
+                throw new IllegalStateException(ex);
             }
         }
         
         @SuppressWarnings("unchecked")
-        private JSONObject toJSONObject() {
-            JSONObject obj = new JSONObject();
-            if (this.brokenLinks != null) {
-                obj.put("brokenLinks", this.brokenLinks);
-            }
-            obj.put("status", this.complete ? "COMPLETE" : "INCOMPLETE");
-            obj.put("timestamp", this.timestamp);
-            obj.put("index", this.index);
-            return obj;
+        private String toJsonString() {
+            JsonBuilder jb = new JsonBuilder();
+            jb.beginObject()
+                    .memberIfNotNull("brokenLinks", this.brokenLinks)
+                    .member("status", this.complete ? "COMPLETE" : "INCOMPLETE")
+                    .member("timestamp", this.timestamp)
+                    .member("index", this.index)
+              .endObject();
+            return jb.jsonString();
         }
         
         @Override
         public String toString() {
-            return toJSONObject().toJSONString();
+            return toJsonString();
         }
     }
     
@@ -395,7 +377,7 @@ public class LinkCheckJob extends AbstractResourceJob {
         private final String token;
         private final int batchSize;
         private boolean locking = false;
-        private final List<Resource> updateList = new ArrayList<Resource>();
+        private final List<Resource> updateList = new ArrayList<>();
 
         public UpdateBatch(Repository repository, String token, SystemChangeContext context, int batchSize, boolean locking) {
             this.repository = repository;
@@ -479,8 +461,6 @@ public class LinkCheckJob extends AbstractResourceJob {
             this.updateList.clear();
         }
     }
-    
-    
     
     @Required
     public void setLinksPropDef(PropertyTypeDefinition linksPropDef) {

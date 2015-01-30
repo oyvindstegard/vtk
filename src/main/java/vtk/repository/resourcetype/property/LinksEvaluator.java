@@ -34,7 +34,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -62,7 +61,7 @@ import vtk.resourcemanagement.StructuredResourceManager;
 import vtk.resourcemanagement.property.PropertyDescription;
 import vtk.text.html.TagsoupParserFactory;
 import vtk.util.text.Json;
-import vtk.util.text.JsonStreamer;
+import vtk.util.text.JsonBuilder;
 
 public class LinksEvaluator implements LatePropertyEvaluator {
 
@@ -245,31 +244,33 @@ public class LinksEvaluator implements LatePropertyEvaluator {
     }
     
     private static class LinkCollector {
-        private List<Link> links = new ArrayList<Link>();
+        private final List<Link> links = new ArrayList<>();
 
         public boolean link(Link link) {
-            if (this.links.size() >= MAX_LINKS) {
+            if (links.size() >= MAX_LINKS) {
                 return false;
             }
-            this.links.add(link);
+            links.add(link);
             return true;
         }
         public void clear() {
-            this.links.clear();
+            links.clear();
         }
         public boolean isEmpty() {
-            return this.links.isEmpty();
+            return links.isEmpty();
         }
         public byte[] serialize() throws Exception {
-            List<Object> arr = new ArrayList<>();
-            for (Link l: this.links) {
-                Map<String, Object> entry = new HashMap<>();
-                entry.put("url", l.getURL());
-                entry.put("type", l.getType());
-                entry.put("source", l.getSource());
-                arr.add(entry);
+            JsonBuilder jb = new JsonBuilder();
+            jb.beginArray();
+            for (Link l: links) {
+                jb.beginObject()
+                    .member("url", l.getURL())
+                    .member("type", l.getType())
+                    .member("source", l.getSource())
+                  .endObject();
             }
-            return JsonStreamer.toJson(arr).getBytes("utf-8");
+            jb.endArray();
+            return jb.jsonString().getBytes("utf-8");
         }
     }
 

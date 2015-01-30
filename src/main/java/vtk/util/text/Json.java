@@ -31,10 +31,12 @@
 package vtk.util.text;
 
 import java.io.BufferedReader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -44,13 +46,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.simple.parser.ContainerFactory;
+import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
+ * TODO class has become largeish, it may be time to refactor into separate source code files
+ * and put it all in a separate package.
+ * 
  * New JSON utility class using json-simple internally for core parsing.
  * 
- * <p>Supports the same features as the old {@link JSON} utility class, including stripping
+ * <p>Supports the same features as the old {@code JSON} utility class, including stripping
  * of C++-style comments from input. But it is generally a lot faster at parsing, and
  * it exposes no direct binding to the json-simple API.
  */
@@ -148,6 +154,44 @@ public final class Json {
         return (Container)parseInternal(reader, true);
     }
     
+    /**
+     * Set up event based parsing of a JSON string.
+     * @param input the string to parse JSON data from.
+     * @return a {@link ParseEvents} instance which can be used for event based parsing
+     * of the JSON data.
+     */
+    public static ParseEvents parseAsEvents(String input) {
+        return parseAsEvents(new CommentStripFilter(input));
+    }
+    
+    /**
+     * Set up event based parsing of a JSON input stream.
+     * @param input the input stream to parse JSON data from.
+     * @return a {@link ParseEvents} instance which can be used for event based parsing
+     * of the JSON stream.
+     */
+    public static ParseEvents parseAsEvents(InputStream input) {
+        try {
+            Reader reader = new BufferedReader(new InputStreamReader(input, "utf-8"));
+            return Json.parseAsEvents(reader);
+        } catch (UnsupportedEncodingException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+    
+    /**
+     * Set up event based parsing of JSON data from a reader.
+     * @param input the stream reader to parse JSON data from.
+     * @return a {@link ParseEvents} instance which can be used for event based parsing
+     * of the JSON stream.
+     */
+    public static ParseEvents parseAsEvents(Reader input) {
+        if (!(input instanceof CommentStripFilter)) {
+            input = new CommentStripFilter(input);
+        }
+        return new ParseEventsImpl(input);
+    }
+    
     private static Object parseInternal(Reader input, boolean useContainer) throws IOException {
         try {
             if (! (input instanceof CommentStripFilter)) {
@@ -160,7 +204,7 @@ public final class Json {
                 return parser.parse(input, new UnwrappedContainerFactory());
             }
         } catch (ParseException pe) {
-            throw new JsonParseException("Failed to parse JSON string: " + pe.getMessage(), pe);
+            throw new JsonParseException("Failed to parse JSON data: " + pe.toString(), pe);
         }
     }
 
@@ -169,7 +213,7 @@ public final class Json {
      * JSON objects and {@link java.util.ArrayList} for JSON arrays. It therefore
      * presents and "unwrapped" view of JSON data with no special containers.
      */
-    static final class UnwrappedContainerFactory implements ContainerFactory {
+    private static final class UnwrappedContainerFactory implements ContainerFactory {
         @Override
         public Map createObjectContainer() {
             return new HashMap<>();
@@ -184,7 +228,7 @@ public final class Json {
      * Container factory which provides specialized container types for extra
      * functionality.
      */
-    static final class JsonContainerFactory implements ContainerFactory {
+    private static final class JsonContainerFactory implements ContainerFactory {
         @Override
         public Map createObjectContainer() {
             return new MapContainer();
@@ -795,39 +839,294 @@ public final class Json {
         }
     }
     
-    private static Long asLong(Object o) {
+    /**
+     * Cast object to {@link Number} and provide {@link Number#longValue() }, but
+     * throw {@link ValueException} if object is not a {@code Number}.
+     * @param o should be a {@code Number}.
+     * @return an {@code Long} representation of a {@code Number} instance.
+     */
+    public static Long asLong(Object o) {
         if (!(o instanceof Number)) {
             throw new ValueException("Not a Number: " + o);
         }
         return ((Number)o).longValue();
     }
     
-    private static Integer asInteger(Object o) {
+    /**
+     * Cast object to {@link Number} and provide {@link Number#intValue() }, but
+     * throw {@link ValueException} if object is not a {@code Number}.
+     * @param o should be a {@code Number}.
+     * @return an {@code Integer} representation of a {@code Number} instance.
+     */
+    public static Integer asInteger(Object o) {
         if (!(o instanceof Number)) {
             throw new ValueException("Not a Number: "+ o);
         }
         return ((Number)o).intValue();
     }
 
-    private static Double asDouble(Object o) {
+    /**
+     * Cast object to {@link Number} and provide {@link Number#doubleValue() }, but
+     * throw {@link ValueException} if object is not a {@code Number}.
+     * @param o should be a {@code Number}
+     * @return a {@code Double} representation of a {@code Number} instance.
+     */
+    public static Double asDouble(Object o) {
         if (!(o instanceof Number)) {
             throw new ValueException("Not a Number: " + o);
         }
         return ((Number)o).doubleValue();
     }
     
-    private static Boolean asBoolean(Object o) {
+    /**
+     * Cast object to {@link Boolean} and provide {@link Boolean#doubleValue() }, but
+     * throw {@link ValueException} if object is not a {@code Boolean}.
+     * @param o should be a {@code Boolean}
+     * @return a {@code Boolean} value
+     */
+    public static Boolean asBoolean(Object o) {
         if (!(o instanceof Boolean)) {
             throw new ValueException("Not a Boolean: " + o);
         }
         return (Boolean)o;
     }
-    
-    private static String asString(Object o) {
+
+    /**
+     * Cast object to {@code String} and return value, but throw
+     * {@link ValueException} if object is not a {@code String}.
+     * @param o should be a {@code String} instance
+     * @return a {@code String}
+     */
+    public static String asString(Object o) {
         if (! (o instanceof String)) {
             throw new ValueException("Not a String: " + o);
         }
         return (String)o;
+    }
+
+    /**
+     * Interface for a stateful event based JSON parser.
+     */
+    public interface ParseEvents {
+        
+        /**
+         * Begin parsing process using the provided event handler.
+         * @param handler an instace of {@link Handler} provided by client.
+         * @throws IOException in case of errors reading data from input
+         * @throws vtk.util.text.Json.JsonException in case of JSON parsing errors.
+         */
+        void begin(Handler handler) throws IOException, JsonException;
+        
+        /**
+         * Resume parsing process using the provided event handler, which
+         * may be different from the handler used in {@link #begin(vtk.util.text.Json.Handler) begin}.
+         * 
+         * <p>The method will resume processing from the place where an earlier {@link Handler}
+         * stopped processing events.
+         * 
+         * @param handler an instace of {@link Handler} provided by client.
+         * @throws IOException in case of errors reading data from input
+         * @throws vtk.util.text.Json.JsonException in case of JSON parsing errors.
+         */
+        void resume(Handler handler) throws IOException, JsonException;
+
+    }
+    
+    private static final class ParseEventsImpl implements ParseEvents {
+        private final Reader input;
+        private final JSONParser parser;
+        
+        ParseEventsImpl(Reader input) {
+            this.input = input;
+            this.parser = new JSONParser();
+        }
+
+        @Override
+        public void begin(Handler handler) throws IOException, JsonParseException {
+            try {
+                parser.parse(input, new ContentHandlerAdapter(handler));
+            } catch (ParseException pe) {
+                throw new JsonParseException("Failed to parse JSON data: " + pe.toString(), pe);
+            }
+        }
+
+        @Override
+        public void resume(Handler handler) throws IOException, JsonParseException {
+            try {
+                parser.parse(input, new ContentHandlerAdapter(handler), true);
+            } catch (ParseException pe) {
+                throw new JsonParseException("Failed to parse JSON data: " + pe.toString(), pe);
+            }
+        }
+    }
+    
+    /**
+     * Callback interface for event driven JSON parsing.
+     * 
+     * <p>Exceptions thrown from callback code must be unchecked, unless
+     * they are {@link IOException}. This may change in the future.. You can
+     * use {@link JsonException} wrapping the real cause, for instance, and
+     * that will propagate back through {@link ParseEvents} methods. (Or any other
+     * {@code RuntimeException}.)
+     */
+    public interface Handler {
+
+        /**
+         * Called <em>once</em> at start of JSON stream parsing.
+         * @throws IOException 
+         */
+        void beginJson() throws IOException;
+        
+        /**
+         * Called once at end of JSON stream.
+         * @throws IOException 
+         */
+        void endJson() throws IOException;
+        
+        /**
+         * Called at start of every JSON object occuring in stream, including
+         * an outer object.
+         * @return {@code false} to stop processing, {@code true} to continue.
+         * @throws IOException 
+         */
+        boolean beginObject() throws IOException;
+
+        /**
+         * Called at end of every JSON object occuring in stream, including
+         * an outer object.
+         * @return {@code false} to stop processing, {@code true} to continue.
+         * @throws IOException 
+         */
+        boolean endObject() throws IOException;
+
+        /**
+         * Called at start of object member with key as argument.
+         * @param key the member key
+         * @return {@code false} to stop processing, {@code true} to continue.
+         * @throws IOException 
+         */
+        boolean beginMember(String key) throws IOException;
+        
+        /**
+         * Called at end of an object member.
+         * @return {@code false} to stop processing, {@code true} to continue.
+         * @throws IOException 
+         */
+        boolean endMember() throws IOException;
+        
+        /**
+         * Called at start of every JSON array occuring in stream, including
+         * an outer array.
+         * @return {@code false} to stop processing, {@code true} to continue.
+         * @throws IOException 
+         */
+        boolean beginArray() throws IOException;
+        
+        /**
+         * Called at end of every JSON array occuring in stream, including
+         * an outer array.
+         * @return {@code false} to stop processing, {@code true} to continue.
+         * @throws IOException 
+         */
+        boolean endArray() throws IOException;
+        
+        /**
+         * Called for every primitive value occuring in stream, either as part
+         * of a JSON array or a JSON object member value.
+         * @param value the value, which may be a {@code String},
+         * {@code Number}, {@code Boolean} or {@code null}.
+         * @return {@code false} to stop processing, {@code true} to continue.
+         * @throws IOException 
+         */
+        boolean primitive(Object value) throws IOException;
+    }
+
+    /**
+     * Extendable {@link Handler} implementation with default methods which
+     * do nothing and always signal to continue processing.
+     * 
+     * <p>By extending this class, client can choose to override only the
+     * necessary methods, instead of implementing the entire {@code Handler}
+     * interface.
+     */
+    public static class DefaultHandler implements Handler {
+        @Override
+        public void beginJson() throws IOException {}
+        @Override
+        public void endJson() throws IOException {}
+        @Override
+        public boolean beginObject() throws IOException { return true; }
+        @Override
+        public boolean endObject() throws IOException { return true; }
+        @Override
+        public boolean beginMember(String key) throws IOException { return true; }
+        @Override
+        public boolean endMember() throws IOException { return true; }
+        @Override
+        public boolean beginArray() throws IOException { return true; }
+        @Override
+        public boolean endArray() throws IOException { return true; }
+        @Override
+        public boolean primitive(Object value) throws IOException { return true; }
+    }
+    
+    /**
+     * Adapt json-simple callbacks through {@link ContentHandler} interface to
+     * {@link Handler} interface, which in turn calls client code.
+     */
+    private static final class ContentHandlerAdapter implements ContentHandler {
+
+        private Handler handler;
+        
+        ContentHandlerAdapter(Handler handler) {
+            this.handler = handler;
+        }
+        
+        @Override
+        public void startJSON() throws ParseException, IOException {
+            handler.beginJson();
+        }
+
+        @Override
+        public void endJSON() throws ParseException, IOException {
+            handler.endJson();
+        }
+
+        @Override
+        public boolean startObject() throws ParseException, IOException {
+            return handler.beginObject();
+        }
+
+        @Override
+        public boolean endObject() throws ParseException, IOException {
+            return handler.endObject();
+        }
+
+        @Override
+        public boolean startObjectEntry(String key) throws ParseException, IOException {
+            return handler.beginMember(key);
+        }
+
+        @Override
+        public boolean endObjectEntry() throws ParseException, IOException {
+            return handler.endMember();
+        }
+
+        @Override
+        public boolean startArray() throws ParseException, IOException {
+            return handler.beginArray();
+        }
+
+        @Override
+        public boolean endArray() throws ParseException, IOException {
+            return handler.endArray();
+        }
+
+        @Override
+        public boolean primitive(Object value) throws ParseException, IOException {
+            return handler.primitive(value);
+        }
+        
     }
     
     /**
@@ -841,7 +1140,7 @@ public final class Json {
             super(message, cause);
         }
     }
-
+    
     /**
      * Exception thrown when input could not be successfully parsed.
      */
