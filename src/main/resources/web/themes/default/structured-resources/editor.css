@@ -71,6 +71,10 @@
   display: inline;
 }
 
+.vrtx-radio-buttons .vrtx-radio-buttons-false {
+  margin-left: 5px;
+}
+
 .vrtx-grouped-horizontal .vrtx-string,
 .vrtx-grouped-horizontal .vrtx-radio,
 .vrtx-grouped-horizontal .vrtx-resource-ref,
