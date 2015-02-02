@@ -385,6 +385,25 @@
           </excludes>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.jasig.maven</groupId>
+        <artifactId>sass-maven-plugin</artifactId>
+        <version>1.1.1</version>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>update-stylesheets</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sassSourceDirectory>src/main/resources/web/themes/default/scss</sassSourceDirectory>
+          <baseOutputDirectory>target/classes/web/themes/default</baseOutputDirectory>
+          <destination>${project.build.directory}/classes/web/themes/default</destination>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
