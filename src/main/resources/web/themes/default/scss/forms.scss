@@ -2,72 +2,85 @@
  * Vortex - Forms
  *
  */
- 
- /* Desktop */
 
-.forms-new .vrtx-close-dialog {
-  display: none;
-}
-
-/* JS enabled */
-
-.forms-new .ui-dialog .vrtx-close-dialog {
-  display: block;
-}
-
-.forms-new .ui-dialog h1 {
-  display: none;
-}
-
-.forms-new form,
-.forms-new fieldset,
-.forms-new input,
-.forms-new button,
-.forms-new .ui-dialog,
-.forms-new .ui-dialog-buttonpane button {
-  margin: 0;
-  padding: 0;
-}
-
-.forms-new fieldset {
-  background: transparent;
-  border: none;
-}
-
-.forms-new textarea {
-  border: 1px solid #919191;
-  outline: none;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px; 
-  padding: 8px 10px;
-}
-
-.forms-new input[type=button],
-.forms-new input[type=file],
-.forms-new input[type=image],
-.forms-new input[type=reset],
-.forms-new input[type=submit],
-.forms-new input[type=password],
-.forms-new input[type=text],
-.forms-new button,
-.forms-new .ui-dialog .ui-dialog-buttonpane button {
+@mixin resetFont {
   font-family: inherit;
   font-size: 100%;
   font-style: inherit; 
   font-weight: inherit;
 }
+@mixin noMargPadd { margin: 0px; padding: 0px; }
+@mixin borderRadius($radius) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  border-radius: $radius; 
+}
+@mixin borderRadiusImp($radius) {
+  -webkit-border-radius: $radius !important;
+  -moz-border-radius: $radius !important;
+  border-radius: $radius !important;
+}
 
-.forms-new input[type=button]:focus,
-.forms-new input[type=file]:focus,
-.forms-new input[type=image]:focus,
-.forms-new input[type=reset]:focus,
-.forms-new input[type=submit]:focus,
-.forms-new input[type=password]:focus,
-.forms-new input[type=text]:focus,
-.forms-new button:focus,
-.forms-new .ui-dialog .ui-dialog-buttonpane button:focus {
-  outline: none;
+.forms-new {
+  form {
+    @include noMargPadd;
+  }
+  fieldset {
+    @include noMargPadd;
+    background: transparent;
+    border: none;
+  }
+  textarea {
+    border: 1px solid #919191;
+    outline: none;
+    padding: 8px 10px;
+    @include borderRadius(5px);
+  }
+  input {
+    @include noMargPadd;
+    &[type=button],
+    &[type=file],
+    &[type=image],
+    &[type=reset],
+    &[type=submit],
+    &[type=password],
+    &[type=text] {
+      @include resetFont;
+      -webkit-appearance: none; /* Webkit - remove appearance */
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+  button {
+    @include noMargPadd;
+    @include resetFont;
+    &:focus {
+      outline: none;
+    }
+  }
+  
+  .vrtx-close-dialog {
+    display: none;
+  }
+  .ui-dialog {
+    @include noMargPadd;
+    .vrtx-close-dialog {
+      display: block;
+    }
+    h1 {
+      display: none;
+    }
+    .ui-dialog-buttonpane {
+      button {
+        @include resetFont;
+        @include noMargPadd;
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+  }
 }
 
 /* Buttons */
@@ -88,11 +101,9 @@
   overflow: visible;
   cursor: pointer;
   text-decoration: none !important;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
   padding: 5px 15px 6px;
   margin: 0;
+  @include borderRadius(5px);
 }
 
 .button-row li.save,
@@ -214,16 +225,13 @@
 }
 
 .button-row li.save > * {
-  margin: 0;
-  padding: 0;
+  @include noMargPadd;
 }
 
 .button-row li.save > * > * {
   padding: 6px 16px 7px;
   margin: 0 !important;
-  -webkit-border-radius: 0px !important;
-  -moz-border-radius: 0px !important;
-  border-radius: 0px !important;
+  @include borderRadiusImp(0px);
   border: none;
 }
 
@@ -273,11 +281,9 @@
   height: 26px;
   padding: 1px 8px 0 8px;
   display: inline-block;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
   display: block;
   display: inline-block;
+  @include borderRadius(5px);
 }
 
 .forms-new .vrtx-textfield-big {
@@ -333,11 +339,11 @@
   background: none repeat scroll 0 0 #FFFFFF;
   border: 2px solid #848484;
   box-shadow: 1px 1px 5px 2px #848484;
-  border-radius: 7px 7px 7px 7px;
   color: #000000;
   position: fixed;
   padding: 20px;
   z-index: 100000 !important;
+  @include borderRadius(7px);
 }
 
 .forms-new .ui-dialog .ui-dialog-titlebar {
@@ -372,8 +378,7 @@
 .forms-new .ui-dialog .ui-dialog-titlebar-close .ui-icon {
   width: 20px;
   height: 18px;
-  margin: 0;
-  padding: 0;
+  @include noMargPadd;
 }
 
 .forms-new .ui-dialog .ui-dialog-titlebar-close .ui-button-text {
@@ -496,19 +501,5 @@
 }
 
 /* ^ Mozilla hacks */
-
-/* Webkit fixes - typical Apple mobile devices */
-
-.forms-new input[type=button],
-.forms-new input[type=file],
-.forms-new input[type=image],
-.forms-new input[type=password],
-.forms-new input[type=reset],
-.forms-new input[type=submit],
-.forms-new input[type=text] { /* input reset */
-  -webkit-appearance: none;
-}
-
-/* ^ Webkit fixes - typical Apple mobile devices */
 
 /* ^ Vortex - Forms */

@@ -391,16 +391,25 @@
         <version>1.1.1</version>
         <executions>
           <execution>
-            <id>compile</id>
+            <id>compile-scss</id>
             <phase>compile</phase>
             <goals>
               <goal>update-stylesheets</goal>
             </goals>
           </execution>
+          <execution>
+            <id>watch-scss</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>watch</goal>
+            </goals>
+          </execution>
         </executions>
         <configuration>
+          <sassOptions>
+            <style>:compressed</style>
+          </sassOptions>
           <sassSourceDirectory>src/main/resources/web/themes/default/scss</sassSourceDirectory>
-          <baseOutputDirectory>target/classes/web/themes/default</baseOutputDirectory>
           <destination>${project.build.directory}/classes/web/themes/default</destination>
         </configuration>
       </plugin>
