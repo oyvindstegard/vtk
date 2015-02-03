@@ -9,6 +9,8 @@
  *  3. CK
  *
  */
+ 
+@import "base";
 
 /*-----------------------------------------*\
 	1. General
@@ -243,9 +245,7 @@ h2 {
   top: 0px;
   z-index: 9999;
   margin-left: -19px;
-  -webkit-box-shadow:  0px 7px 14px -8px rgba(0, 0, 0, 0.5);
-  -moz-box-shadow:  0px 7px 14px -8px rgba(0, 0, 0, 0.5);
-  box-shadow:  0px 7px 14px -8px rgba(0, 0, 0, 0.5); 
+  @include boxShadow(0px 7px 14px -8px rgba(0, 0, 0, 0.5));
 }
 
 #app-content .vrtx-sticky-editor-title-submit-buttons .sticky-bg-ie8-below {
@@ -620,133 +620,103 @@ div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-pre
 .cke_chrome {
   border-color: #d9d9d9 !important;
   /* Remove rounded corners */
-  -moz-border-radius: 0px !important;
-  -webkit-border-radius: 0px !important;
-  border-radius: 0px !important;
+  @include borderRadiusImp(0px);
   box-shadow: none !important;
   background: #ededed !important;
+  .cke_inner {
+    padding: 10px !important;
+    background: #ededed !important;
+  }
+  .cke_top {
+    background: #ededed !important;
+    padding: 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    -ms-filter: "none" !important;
+  }
+  /* Contains float alternative fix to make help-menu visible on slide-down (overflowing) */
+  .cke_maximized .cke_top {
+    overflow: visible;
+    display: inline-block;
+  }
+  .cke_bottom {
+    background: transparent !important;
+    padding: 10px 0 0 0 !important;
+    margin: 0 0 -5px 0 !important;
+    border-top: none !important;
+    box-shadow: none !important;
+    -ms-filter: "none" !important;
+  }
+  .cke_resizer {
+    background: url(images/resize-ck.png) no-repeat center center !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: inline-block !important;
+    width: 10px !important;
+    height: 9px !important;
+    margin: 0 2px 0 0 !important;
+  }
+  .cke_contents {
+    border: 1px solid #d9d9d9 !important;
+  }
+  .cke_toolgroup {
+    background: #fff !important;
+    margin-bottom: 10px !important;
+    border: 1px solid #bbb !important;
+    box-shadow: none !important;
+    -ms-filter: "none" !important;
+  }
+  .cke_combo_button {
+    background: #fff !important;
+    -ms-filter: "none" !important;
+  }
+  .cke_combo_text {
+    width: 63px;
+  }
+  /* Make scrollbar visible with padding in textarea / CK-source */
+  .cke_source {
+    @include borderBox;
+  }
+  /* Override CK for injected save/help */
+  .vrtx-button {
+    margin: 0 0 0 10px !important;
+  }
+  .vrtx-button,
+  #editor-help-menu a {
+    font: normal 13px/1.3 Arial, sans-serif !important;
+    cursor: pointer !important;  
+  }
+  #editor-help-menu {
+    padding-left: 10px;
+    a {
+      color: $linkColor;
+    }
+    ul.dropdown-shortcut-menu-container li a {
+      border-bottom: 1px solid $buttonBorderColor;
+    }
+  }
 }
 
-.cke_chrome  .cke_inner {
-  padding: 10px !important;
-  background: #ededed !important;
-}
+/* Blue CK dialog button */
 
-.cke_chrome .cke_top {
-  background: #ededed !important;
-  padding: 0 !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-  -ms-filter: "none" !important;
-}
-
-/* Contains float alternative fix to make help-menu visible on slide-down (overflowing) */
-.cke_chrome .cke_maximized .cke_top {
-  overflow: visible;
-  display: inline-block;
-}
-
-.cke_chrome .cke_bottom {
-  background: transparent !important;
-  padding: 10px 0 0 0 !important;
-  margin: 0 0 -5px 0 !important;
-  border-top: none !important;
-  box-shadow: none !important;
-  -ms-filter: "none" !important;
-}
-
-.cke_chrome .cke_resizer {
-  background: url(images/resize-ck.png) no-repeat center center !important;
-  border: none !important;
-  box-shadow: none !important;
-  display: inline-block !important;
-  width: 10px !important;
-  height: 9px !important;
-  margin: 0 2px 0 0 !important;
-}
-
-.cke_chrome .cke_contents {
-  border: 1px solid #d9d9d9 !important;
-}
-
-.cke_chrome .cke_toolgroup {
-  background: #fff !important;
-  margin-bottom: 10px !important;
-  border: 1px solid #bbb !important;
-  box-shadow: none !important;
-  -ms-filter: "none" !important;
-}
-
-.cke_chrome .cke_combo_button {
-  background: #fff !important;
-  -ms-filter: "none" !important;
-}
-
-.cke_chrome .cke_combo_text {
-  width: 63px;
-}
-
-/* Make scrollbar visible with padding in textarea / CK-source */
-.cke_chrome .cke_source {
-  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-  box-sizing: border-box;         /* Opera/IE 8+ */
-}
-
-/* Override CK for injected save/help */
-
-.cke_chrome .vrtx-button {
-  margin: 0 0 0 10px !important;
-}
-
-.cke_chrome .vrtx-button,
-.cke_chrome #editor-help-menu a {
-  font: normal 13px/1.3 Arial, sans-serif !important;
-  cursor: pointer !important;  
-}
-
-.cke_chrome #editor-help-menu {
-  padding-left: 10px;
-}
-
-.cke_chrome #editor-help-menu a {
-  color: #005AAB;
-}
-
-.cke_chrome #editor-help-menu ul.dropdown-shortcut-menu-container li a {
-  border-bottom: 1px solid #CBCBCB;
-}
-
-/* Blue buttons */
-.cke_dialog a.cke_dialog_ui_button_ok {
+@mixin ckDialogButtonStyle {
   text-shadow: none;
   border-color: #2d81c8;
-  background: #71b2e9; /* Old browsers */
-  background: -moz-linear-gradient(top, #71b2e9 0%, #66ace7 26%, #499ce2 74%, #3d95e0 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#71b2e9), color-stop(26%,#66ace7), color-stop(74%,#499ce2), color-stop(100%,#3d95e0)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #71b2e9 0%,#66ace7 26%,#499ce2 74%,#3d95e0 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, #71b2e9 0%,#66ace7 26%,#499ce2 74%,#3d95e0 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, #71b2e9 0%,#66ace7 26%,#499ce2 74%,#3d95e0 100%); /* IE10+ */
-  background: linear-gradient(to bottom, #71b2e9 0%,#66ace7 26%,#499ce2 74%,#3d95e0 100%); /* W3C */
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#71b2e9', endColorstr='#3d95e0',GradientType=0)"; /* IE6-9 */
 }
 
-.cke_dialog a.cke_dialog_ui_button_ok:focus,
-.cke_dialog a.cke_dialog_ui_button_ok:hover {
-  text-shadow: none;
-  border-color: #2d81c8;
-  background: #8ec6ef; /* Old browsers */
-  background: -moz-linear-gradient(top, #8ec6ef 0%, #83c2ed 22%, #56b4ea 83%, #4db0e8 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#8ec6ef), color-stop(22%,#83c2ed), color-stop(83%,#56b4ea), color-stop(100%,#4db0e8)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #8ec6ef 0%,#83c2ed 22%,#56b4ea 83%,#4db0e8 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, #8ec6ef 0%,#83c2ed 22%,#56b4ea 83%,#4db0e8 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, #8ec6ef 0%,#83c2ed 22%,#56b4ea 83%,#4db0e8 100%); /* IE10+ */
-  background: linear-gradient(to bottom, #8ec6ef 0%,#83c2ed 22%,#56b4ea 83%,#4db0e8 100%); /* W3C */
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#8ec6ef', endColorstr='#4db0e8',GradientType=0)"; /* IE6-9 */
-}
-
-.cke_dialog a.cke_dialog_ui_button_ok span {
-  text-shadow: none;
+.cke_dialog {
+  a.cke_dialog_ui_button_ok {
+    @include ckDialogButtonStyle;
+    @include linearGradientBackgroundColors(#71b2e9, #66ace7, #499ce2, #3d95e0, 0%, 26%, 74%, 100%);
+    &:focus,
+    &:hover {
+      @include ckDialogButtonStyle;
+      @include linearGradientBackgroundColors(#8ec6ef, #83c2ed, #56b4ea, #4db0e8, 0%, 22%, 83%, 100%);
+    }
+    span {
+      text-shadow: none;
+    }
+  }
 }
 
 /* ^ Vortex - Editor - Common */
