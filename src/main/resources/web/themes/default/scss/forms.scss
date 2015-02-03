@@ -4,27 +4,9 @@
  * TODO: can remove .vrtx-button class from .vrtx-button-small and use @extends
  *
  */
+ 
+@import "base";
 
-@mixin resetFont {
-  font-family: inherit;
-  font-size: 100%;
-  font-style: inherit; 
-  font-weight: inherit;
-}
-@mixin baseFontImp {
-  font-family: Arial, Helvetica, sans-serif !important;
-}
-@mixin noMargPadd { margin: 0px; padding: 0px; }
-@mixin borderRadius($radius) {
-  -webkit-border-radius: $radius;
-  -moz-border-radius: $radius;
-  border-radius: $radius; 
-}
-@mixin borderRadiusImp($radius) {
-  -webkit-border-radius: $radius !important;
-  -moz-border-radius: $radius !important;
-  border-radius: $radius !important;
-}
 @mixin button {
   background: #e7e7e7;
   color: #000;
@@ -428,8 +410,6 @@
   margin: 10px 0 0 0;
 }
 
-/* ^ Email forms */
-
 /* Mozilla hacks */
 
 .forms-new form::-moz-focus-inner,
@@ -438,7 +418,5 @@
   border: none;
   padding: 0;
 }
-
-/* ^ Mozilla hacks */
 
 /* ^ Vortex - Forms */
