@@ -231,6 +231,7 @@
         <ref bean="templateLanguage.toStringFunction" />
         <ref bean="templateLanguage.concatFunction" />
         <ref bean="templateLanguage.splitFunction" />
+        <ref bean="templateLanguage.trimFunction" />
         <ref bean="templateLanguage.substringFunction" />
         <ref bean="templateLanguage.lengthFunction" />
         <ref bean="templateLanguage.getFunction" />

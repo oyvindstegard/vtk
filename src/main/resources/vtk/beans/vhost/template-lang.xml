@@ -50,6 +50,14 @@
     </constructor-arg>
   </bean>
 
+  <bean id="templateLanguage.trimFunction" class="vtk.text.tl.expr.Trim">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg  value="trim" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
   <bean id="templateLanguage.substringFunction" class="vtk.text.tl.expr.Substring">
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
