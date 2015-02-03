@@ -30,45 +30,57 @@
  */
 package vtk.web.decorating.tl;
 
-import vtk.repository.Path;
-import vtk.repository.Repository;
-import vtk.repository.Resource;
-import vtk.text.tl.Context;
-import vtk.text.tl.Symbol;
-import vtk.text.tl.expr.Function;
-import vtk.util.repository.ResourceToMapConverter;
-import vtk.web.RequestContext;
-import vtk.web.decorating.tl.DomainTypes.Failure;
-import vtk.web.decorating.tl.DomainTypes.Result;
-import vtk.web.decorating.tl.DomainTypes.Success;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-public class RetrieveFunction extends Function {
+/**
+ * Immutable map from String to Object with vararg 
+ * constructor for instantiating with multiple entries:
+ * <p>
+ * <code>
+ *   DomainMap map = new DomainMap(
+ *     "key1", value1,
+ *     "key2", value2,
+ *     ...,
+ *     "keyN", valueN);
+ * </code>
+ */
+public class DomainMap extends AbstractMap<String, Object> {
 
-    public RetrieveFunction(Symbol symbol) {
-        super(symbol, 1);
+    private Set<Map.Entry<String, Object>> entrySet;
+    
+    public DomainMap(Object... mappings) {
+        super();
+        Set<Map.Entry<String, Object>> entrySet = new HashSet<>();
+        if (mappings.length % 2 != 0) 
+            throw new IllegalArgumentException(
+                    "Argument length must be an even number");
+        for (int i = 0; i < mappings.length; i+=2) {
+            final String key = mappings[i].toString();
+            final Object value = mappings[i+1];
+            entrySet.add(new Map.Entry<String, Object>() {
+                @Override
+                public String getKey() { 
+                    return key; 
+                }
+                @Override
+                public Object getValue() { 
+                    return value; 
+                }
+                @Override
+                public Object setValue(Object value) {
+                    throw new UnsupportedOperationException();
+                }
+            });
+        }
+        this.entrySet = Collections.unmodifiableSet(entrySet);
     }
     
-    @Override
-    public Object eval(Context ctx, Object... args) {
-        Object ref = args[0];
-        if (ref == null) {
-            return new Failure<>("Reference is NULL");
-        }
-        
-        RequestContext requestContext = RequestContext.getRequestContext();
-        String token = requestContext.getSecurityToken();
-        Repository repository = requestContext.getRepository();
-        
-        Result<Path> result = DomainTypes.toPath(ref, requestContext);
-        if (!result.isSuccess()) return result;
-        Path uri = result.asSuccess().value();
-
-         try {
-            Resource resource = repository.retrieve(token, uri, true);
-            return new Success<>(ResourceToMapConverter.toMap(resource));
-        } catch (Throwable t) {
-            return new Failure<>(t);
-        }
-    }
-    
+  @Override
+  public Set<java.util.Map.Entry<String, Object>> entrySet() {
+      return entrySet;
+  }
 }

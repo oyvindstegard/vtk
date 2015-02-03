@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, University of Oslo, Norway
+/* Copyright (c) 2010, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,45 +30,22 @@
  */
 package vtk.web.decorating.tl;
 
-import vtk.repository.Path;
-import vtk.repository.Repository;
-import vtk.repository.Resource;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
-import vtk.util.repository.ResourceToMapConverter;
 import vtk.web.RequestContext;
-import vtk.web.decorating.tl.DomainTypes.Failure;
-import vtk.web.decorating.tl.DomainTypes.Result;
-import vtk.web.decorating.tl.DomainTypes.Success;
+import vtk.web.decorating.tl.DomainTypes.RequestContextType;
 
-public class RetrieveFunction extends Function {
+public class RequestContextFunction extends Function {
 
-    public RetrieveFunction(Symbol symbol) {
-        super(symbol, 1);
+    public RequestContextFunction(Symbol symbol) {
+        super(symbol, 0);
     }
-    
+
     @Override
     public Object eval(Context ctx, Object... args) {
-        Object ref = args[0];
-        if (ref == null) {
-            return new Failure<>("Reference is NULL");
-        }
-        
         RequestContext requestContext = RequestContext.getRequestContext();
-        String token = requestContext.getSecurityToken();
-        Repository repository = requestContext.getRepository();
-        
-        Result<Path> result = DomainTypes.toPath(ref, requestContext);
-        if (!result.isSuccess()) return result;
-        Path uri = result.asSuccess().value();
-
-         try {
-            Resource resource = repository.retrieve(token, uri, true);
-            return new Success<>(ResourceToMapConverter.toMap(resource));
-        } catch (Throwable t) {
-            return new Failure<>(t);
-        }
+        return new RequestContextType(requestContext);
     }
-    
+
 }

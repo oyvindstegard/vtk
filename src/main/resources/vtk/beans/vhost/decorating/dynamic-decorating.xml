@@ -89,8 +89,9 @@
         <ref bean="templateLanguage.splitFunction" />
         <ref bean="templateLanguage.lengthFunction" />
         <ref bean="templateLanguage.getFunction" />
-        <ref bean="structuredResources.requestContextFunction" />
+        <ref bean="decorating.requestContextFunction" />
         <ref bean="decorating.retrieveFunction" />
+        <ref bean="decorating.serviceURLFunction" />
       </set>
     </property>
   </bean>
@@ -103,6 +104,42 @@
       </bean>
     </constructor-arg>
   </bean>
+
+  <bean id="decorating.serviceURLFunction"
+        class="vtk.web.decorating.tl.ServiceURLFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="url" />
+      </bean>
+    </constructor-arg>
+    <constructor-arg>
+      <list>
+        <ref bean="viewService" />
+        <ref bean="manageService" />
+      </list>
+    </constructor-arg>
+  </bean>
+
+  <bean id="decorating.requestContextFunction" 
+        class="vtk.web.decorating.tl.RequestContextFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="request-context" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <bean id="decorating.searchFunction" class="vtk.resourcemanagement.view.tl.SearchResultValueProvider">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="search" />
+      </bean>
+    </constructor-arg>
+    <constructor-arg ref="searchParser" />
+    <constructor-arg ref="systemIndexSearcher" />
+    <property name="titlePropDef" ref="titlePropDef" />
+  </bean>
+
 
   <bean id="decorating.userDefinedComponentResolver" class="vtk.web.decorating.CollectionComponentManager">
     <constructor-arg ref="repository" />
