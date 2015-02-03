@@ -8,6 +8,7 @@
 $baseFont: Arial, Helvetica, sans-serif;
 $textColor: #363534;
 $linkColor: #005aab;
+$titleContainerTextColor: #363534;
 
 $bodyBackgroundColor: #f8f8f8;
 $lineTopBackgroundColor: #000;
@@ -16,6 +17,9 @@ $headFooterBackgroundColor: #fff;
 $breadcrumbTabHoverSystemTabMessageBackgroundColor: #4a9ce2;
 $systemMessageLinkColor: #88dfed;
 
+$contentBackgroundColor: #fff;
+$contentTablesEvenBackgroundColor: #f9f9f9;
+$listingDropdownTipFocusBackgroundColor: #ecf3f9;
 $publishedAllowedTextColor: #549401;
 $errorRestrictedTextColor: #ed1c24;
 
@@ -24,13 +28,16 @@ $errorRestrictedTextColor: #ed1c24;
 $buttonTextColor: #000;
 $buttonBackgroundColor: #e7e7e7;
 $buttonBorderColor: #cbcbcb;
-
 $buttonFocusHoverTextColor: #fff;
 $buttonFocusBackgroundColor: #2b81c8;
 $buttonHoverBackgroundColor: #4195db;
 
 $textareaInputBackgroundColor: #fff;
 $textareaInputBorderColor: #919191;
+
+$expandedFormBackgroundColor: #e8e8e8;
+$expandedFormBorderColor: #d9d9d9;
+$buttonExpandedFormBackgroundColor: #f7f7f7;
 
 $disabledTextColor: #888;
 $disabledButtonBackgroundColor: #efefef;

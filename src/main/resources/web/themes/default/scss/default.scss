@@ -606,7 +606,7 @@ a:hover {
 
 #app-content #main,
 #app-content #contents {
-  background-color: #fff;
+  background-color: $contentBackgroundColor;
 }
 
 #app-content #main {
@@ -624,6 +624,7 @@ a:hover {
 
 #title-container {
   position: relative;
+  color: $titleContainerTextColor;
 }
 
 /* Icons 
@@ -928,7 +929,7 @@ ul.button-row-small li.last input[type='submit'] {
 div.dropdown-shortcut-menu-container,
 ul.dropdown-shortcut-menu-container {
   display: none;
-  border: 1px solid #cbcbcb;
+  border: 1px solid $buttonBorderColor;
   border-bottom: none;
   position: absolute;
   top: 80px;
@@ -971,7 +972,7 @@ ul.dropdown-shortcut-menu li.dropdown-init {
 }
 
 ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area {
-  border: 1px solid #cbcbcb;
+  border: 1px solid $buttonBorderColor;
   position: absolute;
   top: 0px;
   right: 0px;
@@ -986,7 +987,7 @@ ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area {
   -moz-border-radius-bottomright: 5px;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
-  background: #e7e7e7 url("images/dropdown-arrow.png") no-repeat 8px 12px;
+  background: $buttonBackgroundColor url("images/dropdown-arrow.png") no-repeat 8px 12px;
 }
 
 ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area {
@@ -998,8 +999,8 @@ ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdow
 
 ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area:focus,
 ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area:hover {
-  background-color: #4195db;
-  border-color: #4195db;
+  background-color: $buttonHoverBackgroundColor;
+  border-color: $buttonHoverBackgroundColor;
   border-width: 0 0 0 1px;
   height: 30px;
   top: 0;
@@ -1033,7 +1034,7 @@ ul.dropdown-shortcut-menu-container li span,
 div.dropdown-shortcut-menu-container ul li form input[type='submit'],
 ul.dropdown-shortcut-menu-container li form input[type='submit'] {
   border: none;
-  border-bottom: 1px solid #cbcbcb; 
+  border-bottom: 1px solid $buttonBorderColor; 
   padding: 8px 14px 7px 14px !important;
   background-color: #fff;
   display: block;
@@ -1053,7 +1054,7 @@ div.dropdown-shortcut-menu-container ul li a:focus,
 ul.dropdown-shortcut-menu-container li a:focus,
 div.dropdown-shortcut-menu-container ul li form input[type='submit']:focus,
 ul.dropdown-shortcut-menu-container li form input[type='submit']:focus {
-  background-color: #ecf3f9;
+  background-color: $listingDropdownTipFocusBackgroundColor;
   cursor: pointer;
 }
 
@@ -1309,7 +1310,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
   margin: 6px 0 0;
   @include boxShadowImp(none);
   border: none;
-  background-color: #ecf3f9;
+  background-color: $listingDropdownTipFocusBackgroundColor;
 }
 
 .tip.vrtx-create-tree .no-create-permission {
@@ -1320,7 +1321,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 }
 
 .tipextra {
-  background-color: #ecf3f9;
+  background-color: $listingDropdownTipFocusBackgroundColor;
   border: 1px solid #c7dadf;
   height: 30px;
 }
@@ -1807,12 +1808,12 @@ body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
 }
 
 #directory-listing tr.even td {
-  background-color: #f9f9f9;
+  background-color: $contentTablesEvenBackgroundColor;
 }
 
 #directory-listing tr.focus td,
 #directory-listing tr:hover td {
-  background-color: #ecf3f9;
+  background-color: $listingDropdownTipFocusBackgroundColor;
   border-top: 1px solid #c7dadf;
   border-bottom: 1px solid #c7dadf;
 }
@@ -2203,7 +2204,7 @@ p.previewUnavailableReasons {
   position: absolute;
   top: 0px;
   left: 0px;
-  background: #fff;
+  background: $contentBackgroundColor;
   display: block;
   width: 100%;
   padding: 2px;
@@ -2331,7 +2332,7 @@ ul#preview-mode {
   overflow: scroll;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  background-color: #fff;
+  background-color: $contentBackgroundColor;
   display: block;
   margin: -622px auto 0;
   border: none;
@@ -2407,7 +2408,7 @@ ul#preview-actions #preview-actions-fullscreen-toggle {
 
 .fullscreen-toggle-open,
 .fullscreen-toggle-open body {
-  background-color: #fff;
+  background-color: $contentBackgroundColor;
 }
 
 .mobile.fullscreen-toggle-open,
@@ -2452,7 +2453,7 @@ ul#preview-actions #preview-actions-fullscreen-toggle {
   position: fixed;
   top: 0px;
   z-index: 9999;
-  background-color: #fff;
+  background-color: $contentBackgroundColor;
   @include boxShadow(0px 7px 14px -8px rgba(0, 0, 0, 0.5));
 }
 
@@ -2536,14 +2537,14 @@ html#vrtx-preview-popup iframe#previewViewIframe {
   padding-bottom: 15px;
   padding-top: 5px;
   margin: 15px 0;
-  border-top: 1px solid #d9d9d9;
-  border-bottom: 1px solid #d9d9d9;
+  border-top: 1px solid $expandedFormBorderColor;
+  border-bottom: 1px solid $expandedFormBorderColor;
 }
 
 #permissions-read-write-admin .permissions-read-wrapper,
 #permissions-read-write-admin .permissions-read-write-wrapper {
   padding-bottom: 15px;
-  border-bottom: 1px solid #d9d9d9; 
+  border-bottom: 1px solid $expandedFormBorderColor; 
 }
 
 /* Remove borders around expanded forms */
@@ -2640,7 +2641,7 @@ body#vrtx-permissions li.users div.errorContainer ul li {
 
 body#vrtx-permissions .removePermission {
   background: url(images/list-remove-red.png) no-repeat 0px 4px;
-  color: #e8e8e8;
+  color: $expandedFormBackgroundColor;
   width: 12px;
   display: inline-block;
   text-indent: -9999px;
@@ -2714,12 +2715,12 @@ table.privilegeTable tr.even td,
 table.privilegeTable tr.even th,
 table.report-urchin-table tr.even td,
 table.report-urchin-table tr.even th {
-  background-color: #F9F9F9;
+  background-color: $contentTablesEvenBackgroundColor;
 }
 
 table.resourceInfo tr:nth-child(even) td,
 table.resourceInfo tr:nth-child(even) th {
-  background-color: #F9F9F9;
+  background-color: $contentTablesEvenBackgroundColor;
 }
 
 table.resourceInfo tr.first td,
@@ -2973,7 +2974,7 @@ h3.resourceInfoHeader {
 }
 
 table.resourceInfo.revisions tr:nth-child(even) td {
-  background-color: #fff;
+  background-color: $contentBackgroundColor;
 }
 
 #vrtx-revisions .resourceInfo th {
@@ -3077,7 +3078,7 @@ table.resourceInfo.revisions tr:nth-child(even) td {
 body > div.infomessage,
 #app-content > div.infomessage,
 #app-content > noscript > div.infomessage {
-  background-color: #fff;
+  background-color: $contentBackgroundColor;
   border: 1px solid #d9d9d9;
   padding: 12px 14px 11px 14px;
   margin: 0 0 25px 0;
@@ -3093,11 +3094,11 @@ body > div.infomessage,
 #app-content > div.infomessage,
 body > div.infomessage,
 #app-content > noscript > div.infomessage {
-  background: #fff url(images/info.png) no-repeat 14px 8px;
+  background: $contentBackgroundColor url(images/info.png) no-repeat 14px 8px;
 }
 
 #app-content > div.errormessage {
-  background: #fff url(images/error.gif) no-repeat 14px 8px;
+  background: $contentBackgroundColor url(images/error.gif) no-repeat 14px 8px;
 }
 
 #vrtx-compat-icon {
@@ -3225,7 +3226,7 @@ body.embedded2 #directory-listing.collection-listing tr.expandedForm h3 {
 }
 
 body.embedded2 #directory-listing tr.even td {
-  background-color: #fff;
+  background-color: $contentBackgroundColor;
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
 }
@@ -3235,14 +3236,14 @@ body.embedded2 #directory-listing tr.even:last-child td {
 }
 
 body.embedded2 #directory-listing tr.odd td {
-  background-color: #f9f9f9;
+  background-color: $contentTablesEvenBackgroundColor;
 }
 
 body.embedded2.forms-new #directory-listing tr.focus td,
 body.embedded2.forms-new #directory-listing tr:focus td,
 body.embedded2.forms-new #directory-listing tr:hover td {
   border: 1px solid #c7dadf;
-  background-color: #ecf3f9;
+  background-color: $listingDropdownTipFocusBackgroundColor;
 }
 
 body.embedded2 #directory-listing.collection-listing tr td:first-child {
@@ -3331,7 +3332,7 @@ html.embedded #app-content {
   margin: 0 auto;
   padding: 20px;
   position: relative;
-  background: #fff;
+  background: $contentBackgroundColor;
   border: 2px solid #848484;
   @include boxShadow(1px 1px 5px 2px #848484);
 }
@@ -3458,15 +3459,15 @@ div.solidExpandedForm,
 tr.expandedForm td {
   margin: 5px -20px 14px -20px;
   padding: 14px 19px;
-  background-color: #e8e8e8 !important;
-  border: 1px solid #d9d9d9 !important;
+  background-color: $expandedFormBackgroundColor !important;
+  border: 1px solid $expandedFormBorderColor !important;
 }
 
 div.globalmenu {
   margin: 0 0 20px 0;
   padding: 13px 15px;
-  background-color: #e8e8e8;
-  border: 1px solid #d9d9d9;
+  background-color: $expandedFormBackgroundColor;
+  border: 1px solid $expandedFormBorderColor;
   clear: left;
 }
 
@@ -3484,7 +3485,7 @@ div.globalmenu .vrtx-button-small,
 div.expandedForm .vrtx-button-small,
 div.solidExpandedForm .vrtx-button-small,
 tr.expandedForm td .vrtx-button-small {
-  background: #f7f7f7;
+  background: $buttonExpandedFormBackgroundColor;
 }
 
 /* Smaller button in resource-info tables */
