@@ -23,5 +23,14 @@
   -moz-border-radius: $radius !important;
   border-radius: $radius !important;
 }
-
+@mixin boxShadow($opts) {
+  -moz-box-shadow: $opts;
+  -webkit-box-shadow: $opts;
+  box-shadow: $opts;
+}
+@mixin boxShadowImp($opts) {
+  -moz-box-shadow: $opts !important;
+  -webkit-box-shadow: $opts !important;
+  box-shadow: $opts !important;
+}
 /* ^ Vortex - Base */

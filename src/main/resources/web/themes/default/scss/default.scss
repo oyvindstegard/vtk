@@ -2,11 +2,6 @@
  *
  *  UiO design - Vortex
  *
- */
-
-@import url(forms.css);
-
-/* 
  * ToC:
  *
  * 1. General
@@ -31,19 +26,27 @@
  *
  */
 
+@import "base";
+@import "forms";
+
+$vortexBodyBackgroundColor: #f8f8f8;
+$vortexBodyTextColor: #363534;
+$vortexLinkColor: #005aab;
+$vortexHeadFooterBackgroundColor: #fff;
+$vortexLineTopBackgroundColor: #000;
+
 /*-----------------------------------------*\
 	1. General
 \*-----------------------------------------*/
 
 html {
-  background-color: #F8F8F8;
+  background-color: $vortexBodyBackgroundColor;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background-color: #f8f8f8;
-  color: #363534;
+  background-color: $vortexBodyBackgroundColor;
+  @include noMargPadd;
+  color: $vortexBodyTextColor;
   font: normal 81.25%/1.3 Arial, Helvetica, sans-serif;
   text-align: center;
   min-width: 1014px;
@@ -119,7 +122,7 @@ table {
 }
 
 a {
-  color: #005aab; /* color: #0b5a9d; */
+  color: $vortexLinkColor; /* color: #0b5a9d; */
   text-decoration: none;
 }
 
@@ -138,13 +141,13 @@ a:hover {
 
 #app-head,
 #app-footer {
-  background-color: #fff;
+  background-color: $vortexHeadFooterBackgroundColor;
   clear: both;
   position: relative;
 }
 
 #app-head-wrapper {
-  background: #fff;
+  background: $vortexHeadFooterBackgroundColor;
   margin-bottom: 20px;
   border-bottom: 1px solid #dad9d9;
 }
@@ -184,7 +187,7 @@ a:hover {
 }
 
 #app-head-wrapper #line-top {
-  background-color: #000;
+  background-color: $vortexLineTopBackgroundColor;
   height: 34px;
 }
 
@@ -882,7 +885,7 @@ ul.publishing-document {
 }
 
 .dropdown-shortcut-menu-container form input[type=submit] {
-  color: #005AAB;
+  color: $vortexLinkColor;
 }
 
 /* Button-row / Dropdown */
@@ -901,9 +904,7 @@ ul.publishing-document {
 .forms-new ul.button-row li input[type='submit'],
 .forms-new ul.button-row-small li a,
 .forms-new ul.button-row-small li input[type='submit'] {
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
-  border-radius: 0;
+  @include borderRadius(0px);
 }
 
 ul.button-row li.first a,
@@ -1084,7 +1085,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button {
 }
 
 div.dropdown-shortcut-menu-container form .vrtx-button button {
-  color: #005aab;
+  color: $vortexLinkColor;
 }
 
 div.dropdown-shortcut-menu-container form .vrtx-button:hover,
@@ -1095,7 +1096,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button:focus {
 div.dropdown-shortcut-menu-container form .vrtx-button button:hover,
 div.dropdown-shortcut-menu-container form .vrtx-button button:focus {
   background: none;
-  color: #005aab;
+  color: $vortexLinkColor;
 }
 
 div.dropdown-shortcut-menu-container form .vrtx-button button {
@@ -1193,12 +1194,8 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 /* Tooltip */
 
 .tip {
-  -moz-box-shadow: 0px 0px 0px 6px rgba(160,160,160,0.5);
-  -webkit-box-shadow: 0px 0px 0px 6px rgba(160,160,160,0.5);
-  box-shadow: 0px 0px 0px 6px rgba(160,160,160,0.5);
-  border-radius: 0px !important;
-  -moz-border-radius: 0px !important;
-  -webkit-border-radius: 0px !important;
+  @include boxShadow(0px 0px 0px 6px rgba(160,160,160,0.5));
+  @include borderRadiusImp(0px);
   border: none !important;
   padding: 14px;
   background-color: #fff;
@@ -1321,10 +1318,8 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 .tip.vrtx-create-tree {
   padding: 0 !important;
-  -moz-box-shadow: none !important;
-  -webkit-box-shadow: none !important;
-  box-shadow: none !important;
   margin: 6px 0 0;
+  @include boxShadowImp(none);
   border: none;
   background-color: #ecf3f9;
 }
@@ -1343,9 +1338,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 }
 
 #TB_window {
-  border-radius: 7px;
-  -moz-border-radius: 7px;
-  -webkit-border-radius: 7px;
+  @include borderRadius(7px);
 }
 
 #TB_closeAjaxWindow {
@@ -2472,9 +2465,7 @@ ul#preview-actions #preview-actions-fullscreen-toggle {
   top: 0px;
   z-index: 9999;
   background-color: #fff;
-  -webkit-box-shadow:  0px 7px 14px -8px rgba(0, 0, 0, 0.5);
-  -moz-box-shadow:  0px 7px 14px -8px rgba(0, 0, 0, 0.5);
-  box-shadow:  0px 7px 14px -8px rgba(0, 0, 0, 0.5); 
+  @include boxShadow(0px 7px 14px -8px rgba(0, 0, 0, 0.5));
 }
 
 .fullscreen-toggle-open #app-content #preview-mode-actions-inner {
@@ -3354,7 +3345,7 @@ html.embedded #app-content {
   position: relative;
   background: #fff;
   border: 2px solid #848484;
-  box-shadow: 1px 1px 5px 2px #848484;
+  @include boxShadow(1px 1px 5px 2px #848484);
 }
 
 html.embedded #app-head-wrapper,
@@ -3643,16 +3634,14 @@ tr.expandedForm td .vrtx-button-small {
   position: relative;
   width: 0;
   z-index: 1;
-  border-radius: 2px;
-  -moz-border-radius: 2px;
-  -webkit-border-radius: 2px;
+  @include borderRadius(2px);
 }
 
 #dialog-uploading-abort {
   position: absolute;
   bottom: 0px;
   right: 0px;
-  color: #005aab;
+  color: $vortexLinkColor;
   font-weight: bold;
   font-size: 0.813em;
   display: none;
