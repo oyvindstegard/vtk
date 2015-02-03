@@ -1,6 +1,8 @@
 /*
  * Vortex - Forms
  *
+ * TODO: can remove .vrtx-button class from .vrtx-button-small and use @extends
+ *
  */
 
 @mixin resetFont {
@@ -103,6 +105,7 @@
     height: 26px;
     padding: 1px 8px 0 8px;
     @include borderRadius(5px);
+    /* IE fix */
     display: inline-block;
     display: block;
     display: inline-block;
@@ -240,15 +243,15 @@
         @include resetFont;
         @include button;
         @include buttonSubmits;
-        &:first-child {
-          @include buttonFocus;
-        }
         &:focus {
           outline: none;
         }
         &:hover,
         &:focus {
           color: #fff;
+        }
+        &:first-child {
+          @include buttonFocus;
         }
         span {
           padding: 0;
@@ -288,21 +291,38 @@
 
 /* Button rows */
 
+@mixin buttonRowInputsAdjustPadding($pT, $pB) {
+  input[type="submit"] {
+    padding-top: $pT;
+    padding-bottom: $pB;
+    &:hover,
+    &:focus {
+      padding-top: calc($pT + 1px);
+      padding-bottom: calc($pB + 1px);
+    }
+  }
+}
+
 .button-row li {
   &> a,
   input[type='submit'] {
     @include button;
   }
+  @include buttonRowInputsAdjustPadding(6px, 7px);
   &.save {
     @include buttonFocus;
-  }
-  input[type="submit"] {
-    padding-top: 6px;
-    padding-bottom: 7px;
-    &:hover,
-    &:focus {
-      padding-top: 7px;
-      padding-bottom: 8px;
+    &> a,
+    input[type="submit"] {
+      border: none;
+    }
+    &> * {
+      @include noMargPadd;
+      &> * {
+        padding: 6px 16px 7px;
+        margin: 0 !important;
+        border: none;
+        @include borderRadiusImp(0px);
+      }
     }
   }
 }
@@ -311,40 +331,13 @@
   &> a,
   input[type='submit'] {
     @include button;
-  }
-  &> a {
     @include buttonSmall;
   }
-  input[type="submit"] {
-    padding-top: 4px;
-    padding-bottom: 5px;
-    &:hover,
-    &:focus {
-      padding-top: 5px;
-      padding-bottom: 6px;
-    }
-  }
+  @include buttonRowInputsAdjustPadding(4px, 5px);
 }
 
-/* Special button */
 
-.button-row li.save > a,
-.button-row li.save input[type="submit"] {
-  border: none;
-}
-
-.button-row li.save > * {
-  @include noMargPadd;
-}
-
-.button-row li.save > * > * {
-  padding: 6px 16px 7px;
-  margin: 0 !important;
-  @include borderRadiusImp(0px);
-  border: none;
-}
-
-/* Add button */
+/* Add button for multiple fields (also used in link-check report) */
 
 .vrtx-multipleinputfields .vrtx-button.add,
 .vrtx-json .vrtx-add-button {
@@ -379,7 +372,7 @@
   background-image: url("images/multiple-add-rollover.png");
 }
 
-/* Email forms */
+/* Email-approval and advanced publish settings forms */
 
 .forms-new .ui-dialog .dialog-error-msg {
   margin: 10px 0 0;
