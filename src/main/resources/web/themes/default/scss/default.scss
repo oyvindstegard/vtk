@@ -29,25 +29,19 @@
 @import "base";
 @import "forms";
 
-$vortexBodyBackgroundColor: #f8f8f8;
-$vortexBodyTextColor: #363534;
-$vortexLinkColor: #005aab;
-$vortexHeadFooterBackgroundColor: #fff;
-$vortexLineTopBackgroundColor: #000;
-
 /*-----------------------------------------*\
 	1. General
 \*-----------------------------------------*/
 
 html {
-  background-color: $vortexBodyBackgroundColor;
+  background-color: $bodyBackgroundColor;
 }
 
 body {
-  background-color: $vortexBodyBackgroundColor;
+  background-color: $bodyBackgroundColor;
+  color: $textColor;
+  font: normal 81.25%/1.3 $baseFont;
   @include noMargPadd;
-  color: $vortexBodyTextColor;
-  font: normal 81.25%/1.3 Arial, Helvetica, sans-serif;
   text-align: center;
   min-width: 1014px;
 }
@@ -122,7 +116,7 @@ table {
 }
 
 a {
-  color: $vortexLinkColor; /* color: #0b5a9d; */
+  color: $linkColor; /* color: #0b5a9d; */
   text-decoration: none;
 }
 
@@ -141,13 +135,13 @@ a:hover {
 
 #app-head,
 #app-footer {
-  background-color: $vortexHeadFooterBackgroundColor;
+  background-color: $headFooterBackgroundColor;
   clear: both;
   position: relative;
 }
 
 #app-head-wrapper {
-  background: $vortexHeadFooterBackgroundColor;
+  background: $headFooterBackgroundColor;
   margin-bottom: 20px;
   border-bottom: 1px solid #dad9d9;
 }
@@ -187,7 +181,7 @@ a:hover {
 }
 
 #app-head-wrapper #line-top {
-  background-color: $vortexLineTopBackgroundColor;
+  background-color: $lineTopBackgroundColor;
   height: 34px;
 }
 
@@ -254,7 +248,7 @@ a:hover {
 .js .navigate-crumbs:focus,
 .js .navigate-crumbs:hover {
   cursor: pointer;
-  background: #4a9ce2 url(images/app-head-breadcrumb-delimiter-rollover-left.png) no-repeat -10px bottom;
+  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/app-head-breadcrumb-delimiter-rollover-left.png) no-repeat -10px bottom;
   top: -1px;
   height: 34px;
 }
@@ -403,7 +397,7 @@ a:hover {
 
 #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level:focus,
 #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level:hover {
-  background: #4a9ce2 url(images/app-head-breadcrumb-delimiter-rollover-left.png) no-repeat left bottom;
+  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/app-head-breadcrumb-delimiter-rollover-left.png) no-repeat left bottom;
   margin-left: -10px;
 }
 
@@ -424,7 +418,7 @@ a:hover {
 #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-left:focus,
 #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-level-1:hover,
 #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-left:hover {
-  background: #4a9ce2;
+  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
   margin-left: -11px;
 }
 
@@ -885,7 +879,7 @@ ul.publishing-document {
 }
 
 .dropdown-shortcut-menu-container form input[type=submit] {
-  color: $vortexLinkColor;
+  color: $linkColor;
 }
 
 /* Button-row / Dropdown */
@@ -1085,7 +1079,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button {
 }
 
 div.dropdown-shortcut-menu-container form .vrtx-button button {
-  color: $vortexLinkColor;
+  color: $linkColor;
 }
 
 div.dropdown-shortcut-menu-container form .vrtx-button:hover,
@@ -1096,7 +1090,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button:focus {
 div.dropdown-shortcut-menu-container form .vrtx-button button:hover,
 div.dropdown-shortcut-menu-container form .vrtx-button button:focus {
   background: none;
-  color: $vortexLinkColor;
+  color: $linkColor;
 }
 
 div.dropdown-shortcut-menu-container form .vrtx-button button {
@@ -1283,7 +1277,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 #vrtx-editor .tip.property-item ul a,
 #vrtx-report-urchin .tip a {
-  color: #549401;
+  color: $publishedAllowedTextColor;
 }
 
 /* Create dialog */
@@ -1441,10 +1435,10 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 #app-tabs ul li a:hover,
 #app-tabs ul li a:focus {
-  background: #4a9ce2;
+  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
   color: #fff;
-  border-color: #4a9ce2; 
-  border-bottom: 1px solid #4a9ce2;
+  border-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor; 
+  border-bottom: 1px solid $breadcrumbTabHoverSystemTabMessageBackgroundColor;
   margin-left: -1px;
   padding-left: 20px;
 }
@@ -1871,7 +1865,7 @@ body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
 #resourceMenuRight span.allowed-for-all,
 #resourceMenuRight span.published,
 #publishing-status span.published {
-  color: #549401;
+  color: $publishedAllowedTextColor;
 }
 
 #directory-listing td span.own-permission {
@@ -1888,7 +1882,7 @@ body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
 #directory-listing td span.restricted,
 #directory-listing td span.restricted a,
 #resourceMenuRight span.restricted {
-  color: #ed1c24;
+  color: $errorRestrictedTextColor;
 }
 
 #directory-listing td.permissions span a:hover {
@@ -2685,7 +2679,7 @@ body#vrtx-permissions .addUser {
 /* ^ Autocomplete */
 
 ul.errors li {
-  color: #ed1c24;
+  color: $errorRestrictedTextColor;
 }
 
 table.resourceInfo,
@@ -3013,7 +3007,7 @@ table.resourceInfo.revisions tr:nth-child(even) td {
 }
 
 #vrtx-revisions .resourceInfo td#vrtx-revisions-current {
-  color: #549401;
+  color: $publishedAllowedTextColor;
 }
 
 .vrtx-revision-amount,
@@ -3119,11 +3113,11 @@ body > div.infomessage,
 /* System message */
 
 #system-message-wrapper {
-  background-color: #4a9ce2;
+  background-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
 }
 
 #system-message-wrapper .system-message {
-  background: #4a9ce2 url(images/info-very-big.png) no-repeat 50px center;
+  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-very-big.png) no-repeat 50px center;
   padding-top: 16px;
   padding-bottom: 16px;
   height: auto !important;
@@ -3137,7 +3131,7 @@ body > div.infomessage,
 }
 
 #system-message-wrapper .system-message-text a {
-  color: #88dfed;
+  color: $systemMessageLinkColor;
   text-decoration:underline;
 }
 
@@ -3168,7 +3162,7 @@ body#vrtx-preview div.tabMessage {
 /* Big */
 
 .tabMessage-big {
-  background: #4a9ce2 url(images/info-white-blue-bg.png) no-repeat 19px center;
+  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-white-blue-bg.png) no-repeat 19px center;
   padding: 12px 0 12px 58px;
   color: #fff;
   margin: 6px -19px 2px;
@@ -3176,7 +3170,7 @@ body#vrtx-preview div.tabMessage {
 }
 
 .tabMessage-big a {
-  color: #88dfed;
+  color: $systemMessageLinkColor;
   text-decoration:underline;
 }
 
@@ -3635,7 +3629,7 @@ tr.expandedForm td .vrtx-button-small {
   position: absolute;
   bottom: 0px;
   right: 0px;
-  color: $vortexLinkColor;
+  color: $linkColor;
   font-weight: bold;
   font-size: 0.813em;
   display: none;

@@ -2,6 +2,39 @@
  * Vortex - Base
  *
  */
+ 
+/* App */
+ 
+$baseFont: Arial, Helvetica, sans-serif;
+$textColor: #363534;
+$linkColor: #005aab;
+
+$bodyBackgroundColor: #f8f8f8;
+$lineTopBackgroundColor: #000;
+$headFooterBackgroundColor: #fff;
+
+$breadcrumbTabHoverSystemTabMessageBackgroundColor: #4a9ce2;
+$systemMessageLinkColor: #88dfed;
+
+$publishedAllowedTextColor: #549401;
+$errorRestrictedTextColor: #ed1c24;
+
+/* Forms */
+
+$buttonTextColor: #000;
+$buttonBackgroundColor: #e7e7e7;
+$buttonBorderColor: #cbcbcb;
+
+$buttonFocusHoverTextColor: #fff;
+$buttonFocusBackgroundColor: #2b81c8;
+$buttonHoverBackgroundColor: #4195db;
+
+$textareaInputBackgroundColor: #fff;
+$textareaInputBorderColor: #919191;
+
+$disabledTextColor: #888;
+$disabledButtonBackgroundColor: #efefef;
+$disabledBorderColor: #ccc;
 
 @mixin resetFont {
   font-family: inherit;
@@ -10,7 +43,7 @@
   font-weight: inherit;
 }
 @mixin baseFontImp {
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: $baseFont !important;
 }
 @mixin noMargPadd { margin: 0px; padding: 0px; }
 @mixin borderRadius($radius) {
@@ -33,4 +66,5 @@
   -webkit-box-shadow: $opts !important;
   box-shadow: $opts !important;
 }
+
 /* ^ Vortex - Base */

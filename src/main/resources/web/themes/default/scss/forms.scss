@@ -5,21 +5,6 @@
  
 @import "base";
 
-$buttonTextColor: #000;
-$buttonBackgroundColor: #e7e7e7;
-$buttonBorderColor: #cbcbcb;
-
-$buttonFocusHoverTextColor: #fff;
-$buttonFocusBackgroundColor: #2b81c8;
-$buttonHoverBackgroundColor: #4195db;
-
-$textareaInputBackgroundColor: #fff;
-$textareaInputBorderColor: #919191;
-
-$disabledTextColor: #888;
-$disabledButtonBackgroundColor: #efefef;
-$disabledBorderColor: #ccc;
-
 @mixin button {
   background: $buttonBackgroundColor;
   color: $buttonTextColor;
