@@ -52,7 +52,7 @@
   color: $disabledTextColor;
 }
 
-/* Form buttons, textfields and dialog */
+/* Buttons, textfields and dialogs */
 
 .forms-new {
   form {
@@ -153,6 +153,8 @@
       @include buttonSubmits;
     }
   }
+
+  /* Dialogs */
  
   .vrtx-close-dialog {
     display: none;
@@ -315,7 +317,7 @@
         padding: 6px 16px 7px;
         margin: 0 !important;
         border: none;
-        @include borderRadiusImp(0px);
+        @include borderRadius(0px !important);
       }
     }
   }

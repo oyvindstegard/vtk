@@ -620,7 +620,7 @@ div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-pre
 .cke_chrome {
   border-color: #d9d9d9 !important;
   /* Remove rounded corners */
-  @include borderRadiusImp(0px);
+  @include borderRadius(0px !important);
   box-shadow: none !important;
   background: #ededed !important;
   

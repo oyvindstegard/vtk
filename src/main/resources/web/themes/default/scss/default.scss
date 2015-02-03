@@ -1186,7 +1186,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 .tip {
   @include boxShadow(0px 0px 0px 6px rgba(160,160,160,0.5));
-  @include borderRadiusImp(0px);
+  @include borderRadius(0px !important);
   border: none !important;
   padding: 14px;
   background-color: #fff;
@@ -1306,7 +1306,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 .tip.vrtx-create-tree {
   padding: 0 !important;
   margin: 6px 0 0;
-  @include boxShadowImp(none);
+  @include boxShadow(none !important);
   border: none;
   background-color: $listingDropdownTipFocusBackgroundColor;
 }
