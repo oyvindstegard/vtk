@@ -218,9 +218,9 @@
 
       <!-- Build info: Provide local hostname as property ${hostname} using a Groovy script. -->
       <plugin>
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <version>1.5</version>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>1.3</version>
         <executions>
           <execution>
             <id>add-hostname-property</id>
@@ -229,12 +229,13 @@
               <goal>execute</goal>
             </goals>
             <configuration>
-              <source>
-                project.properties["hostname"] = java.net.InetAddress.getLocalHost().getHostName()
-              </source>
+              <scripts>
+                <script><![CDATA[
+                  project.properties['hostname'] = java.net.InetAddress.getLocalHost().getHostName()
+                ]]></script>
+              </scripts>
             </configuration>
           </execution>
-          <!-- Show summary of build info during when building: -->
           <execution>
             <id>show-build-info</id>
             <phase>generate-sources</phase>
@@ -242,16 +243,28 @@
               <goal>execute</goal>
             </goals>
             <configuration>
-              <source>
+              <scripts>
+                <script><![CDATA[
                 log.info("Build information - " + project.name)
+                log.info("Build host: " + project.properties['hostname'])
                 log.info("Version: " + project.version)
-                log.info("Revision: " + project.properties["buildNumber"])
-                log.info("Branch: " + project.properties["scmBranch"])
-              </source>
+                log.info("Revision: " + project.properties['buildNumber'])
+                log.info("Branch: " + project.properties['scmBranch'])
+                ]]></script>
+              </scripts>
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>2.3.7</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
       </plugin>
+
       <!-- Build info: provide various bits of build info as properties.  -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
