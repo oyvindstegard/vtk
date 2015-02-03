@@ -229,11 +229,7 @@ a:hover {
 }
 
 .js #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb-inner.animate {
-  -moz-transition: left 300ms ease;
-  -webkit-transition: left 300ms ease;
-  -o-transition: left 300ms ease;
-  -ms-transition: left 300ms ease;
-  transition: left 300ms ease;
+  @include transitions(left 300ms ease);
 }
 
 .js .navigate-crumbs {
@@ -1195,6 +1191,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
   padding: 14px;
   background-color: #fff;
   display: none;
+  
   &.property-label {
     font-size: 1em;
   }
@@ -1228,6 +1225,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
     padding-bottom: 11px;
     margin-bottom: 10px;
     background: url(images/line-dotted.gif) repeat-x bottom left;
+    
     .vrtx-button-small {
       font-size: 0.867em;
       line-height: 1.3;
@@ -2279,38 +2277,16 @@ ul#preview-mode {
   top: 0px;
   z-index: 0;
   
-  /* Move down faster to avoid collision with link */
-  -webkit-transition: top 200ms ease-in-out 0ms,
-                      -webkit-transform 300ms ease-in-out;
-  -moz-transition: top 200ms ease-in-out 0ms,
-                   -moz-transform 300ms ease-in-out;
-  -ms-transition: top 200ms ease-in-out 0ms,
-                  -ms-transform 300ms ease-in-out;
-  -o-transition: top 200ms ease-in-out 0ms,
-                 -o-transform 300ms ease-in-out;
-  transition: top 200ms ease-in-out 0ms,
-              transform 300ms ease-in-out;
+  /* Move down faster to avoid collision with link */         
+  @include transitionsTransforms(top 200ms ease-in-out 0ms, 300ms ease-in-out);
 }
 
 .mobile.horizontal #previewIframeWrapper #previewIframeMobileBg {
-  -webkit-transform: rotate(-90deg);
-  -moz-transform: rotate(-90deg);
-  -ms-transform: rotate(-90deg);
-  -o-transform: rotate(-90deg);
-  transform: rotate(-90deg);
+  @include transforms(rotate(-90deg));
   top: -170px;
   
   /* Move up faster after some delay to avoid collision with link */
-  -webkit-transition: top 200ms ease-in-out 100ms,
-                      -webkit-transform 300ms ease-in-out;
-  -moz-transition: top 200ms ease-in-out 100ms,
-                   -moz-transform 300ms ease-in-out;
-  -ms-transition: top 200ms ease-in-out 100ms,
-                  -ms-transform 300ms ease-in-out;
-  -o-transition: top 200ms ease-in-out 100ms,
-                 -o-transform 300ms ease-in-out;
-  transition: top 200ms ease-in-out 100ms,
-              transform 300ms ease-in-out;
+  @include transitionsTransforms(top 200ms ease-in-out 100ms, 300ms ease-in-out);
 }
 
 /* Move shadow below mobile */
@@ -2319,11 +2295,7 @@ ul#preview-mode {
   left: 4px;
   top: -167px;
   border: 1px solid transparent;
-  -webkit-transition: none;
-  -moz-transition: none;
-  -ms-transition: none;
-  -o-transition: none;
-  transition: none;
+  @include transitions(none);
 }
 
 .mobile body#vrtx-preview #app-content #contents #previewIframeWrapper #previewIframeInnerWrapper {

@@ -17,6 +17,7 @@
   padding: 5px 15px 6px;
   margin: 0;
   @include borderRadius(5px);
+  
   &:hover,
   &:focus,
   &.hover {
@@ -31,6 +32,7 @@
 }
 @mixin buttonSmall {
   padding: 3px 13px 4px;
+  
   &:hover,
   &:focus,
   &.hover {
@@ -69,6 +71,7 @@
   }
   input {
     @include noMargPadd;
+    
     &[type=button],
     &[type=file],
     &[type=image],
@@ -94,6 +97,7 @@
     display: inline-block;
     display: block;
     display: inline-block;
+    
     &[disabled],
     &[readonly] {
       @include disabled;
@@ -114,6 +118,7 @@
   .vrtx-focus-button,
   .vrtx-button-small {
     @include button;
+    
     &[disabled],
     &[readonly] {
       background: $disabledButtonBackgroundColor;
@@ -142,6 +147,7 @@
   #submitButtons {
     padding: 20px 0 0 0;
     clear: left;
+    
     .vrtx-button,
     .vrtx-focus-button {
       @include buttonSubmits;
@@ -169,6 +175,7 @@
       background: url(/vrtx/__vrtx/static-resources/themes/default/images/line-dotted.gif) repeat-x scroll left bottom transparent;
       border: none;
       padding: 0 0 15px 0;
+      
       &.closable {
         padding-bottom: 0px;
         background: none;
@@ -182,6 +189,7 @@
     .ui-dialog-titlebar-close {
       right: 3px;
       top: 3px;
+      
       .ui-button-text {
         display: none;
       }
@@ -215,6 +223,7 @@
     .ui-dialog-content {
       padding: 15px 0;
       min-height: 0 !important;
+      
       ul {
         margin: 10px 0 10px 25px;
         padding: 0;
@@ -226,6 +235,7 @@
         @include resetFont;
         @include button;
         @include buttonSubmits;
+        
         &:focus {
           outline: none;
         }
@@ -254,6 +264,7 @@
     @include baseFontImp;
     font-size: 1em !important;
     text-align: left;
+    
     &.ui-datepicker {
       font-size: 0.9em !important;
     }

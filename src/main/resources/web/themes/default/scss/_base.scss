@@ -5,7 +5,7 @@
  *
  */
  
-/* App */
+/* App colors */
  
 $baseFont: Arial, Helvetica, sans-serif;
 $textColor: #363534;
@@ -25,7 +25,7 @@ $listingDropdownTipFocusBackgroundColor: #ecf3f9;
 $publishedAllowedTextColor: #549401;
 $errorRestrictedTextColor: #ed1c24;
 
-/* Forms */
+/* Forms colors */
 
 $buttonTextColor: #000;
 $buttonBackgroundColor: #e7e7e7;
@@ -45,6 +45,8 @@ $disabledTextColor: #888;
 $disabledButtonBackgroundColor: #efefef;
 $disabledBorderColor: #ccc;
 
+/* Mixins */
+
 @mixin resetFont {
   font-family: inherit;
   font-size: 100%;
@@ -54,32 +56,38 @@ $disabledBorderColor: #ccc;
 @mixin baseFontImp {
   font-family: $baseFont !important;
 }
+
 @mixin noMargPadd { margin: 0px; padding: 0px; }
 @mixin borderRadius($radius) {
   -webkit-border-radius: $radius;
   -moz-border-radius: $radius;
   border-radius: $radius; 
 }
+
 @mixin borderRadiusImp($radius) {
   -webkit-border-radius: $radius !important;
   -moz-border-radius: $radius !important;
   border-radius: $radius !important;
 }
+
 @mixin boxShadow($opts) {
   -moz-box-shadow: $opts;
   -webkit-box-shadow: $opts;
   box-shadow: $opts;
 }
+
 @mixin boxShadowImp($opts) {
   -moz-box-shadow: $opts !important;
   -webkit-box-shadow: $opts !important;
   box-shadow: $opts !important;
 }
+
 @mixin borderBox {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
+
 @mixin linearGradientBackgroundColors($col1, $col2, $col3, $col4, $percent1, $percent2, $percent3, $percent4) {
   background: $col1;
   background: -moz-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
@@ -91,6 +99,30 @@ $disabledBorderColor: #ccc;
   background: -o-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
   background: -ms-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
   background: linear-gradient(to bottom, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-} 
+}
+
+@mixin transitions($opts) {
+  -webkit-transition: $opts;
+  -moz-transition:    $opts;
+  -ms-transition:     $opts;
+  -o-transition:      $opts;
+  transition:         $opts;
+}
+
+@mixin transforms($opts) {
+  -webkit-transform: $opts;
+  -moz-transform:    $opts;
+  -ms-transform:     $opts;
+  -o-transform:      $opts;
+  transform:         $opts;
+}
+
+@mixin transitionsTransforms($optsA, $optsB) {
+  -webkit-transition: $optsA, -webkit-transform $optsB;
+  -moz-transition:    $optsA, -moz-transform    $optsB;
+  -ms-transition:     $optsA, -ms-transform     $optsB;
+  -o-transition:      $optsA, -o-transform      $optsB;
+  transition:         $optsA, transform         $optsB;
+}
 
 /* ^ Vortex - Base */
