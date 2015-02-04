@@ -193,10 +193,6 @@
               <value>log4j.vortex.xml</value>
             </systemProperty>
             <systemProperty>
-              <name>no.uio.webapps.log.path</name>
-              <value>${project.build.directory}</value>
-            </systemProperty>
-            <systemProperty>
               <name>javax.xml.transform.TransformerFactory</name>
               <value>org.apache.xalan.processor.TransformerFactoryImpl</value>
             </systemProperty>
