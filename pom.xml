@@ -160,6 +160,11 @@
         <targetPath>vtk/util</targetPath>
         <filtering>true</filtering>
       </resource>
+      <resource>
+        <directory>src/conf/resin</directory>
+        <targetPath>${project.build.directory}</targetPath>
+        <filtering>true</filtering>
+      </resource>
     </resources>
     
     <testResources>
@@ -167,29 +172,18 @@
         <directory>src/test/resources</directory>
       </testResource>
     </testResources>
+
     <plugins>
       <plugin>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>maven-jetty-plugin</artifactId>
-        <version>6.1.26</version>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.2.7.v20150116</version>
         <configuration>
-          <contextPath>/</contextPath>
-          <connectors>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-              <port>9321</port>
-              <maxIdleTime>600000</maxIdleTime>
-            </connector>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-              <port>9322</port>
-              <maxIdleTime>600000</maxIdleTime>
-            </connector>
-          </connectors>
-          <scanIntervalSeconds>0</scanIntervalSeconds>
+          <!-- Configures Jetty Server: -->
+          <jettyXml>src/conf/jetty/jetty.xml</jettyXml>
+          <!-- Configures web app context: -->
+          <contextXml>src/conf/jetty/jetty-context.xml</contextXml>
           <systemProperties>
-            <systemProperty>
-              <name>org.mortbay.jetty.Request.maxFormContentSize</name>
-              <value>-1</value>
-            </systemProperty>
             <systemProperty>
               <name>org.apache.commons.logging.Log</name>
               <value>org.apache.commons.logging.impl.Log4JLogger</value>
@@ -199,19 +193,13 @@
               <value>log4j.vortex.xml</value>
             </systemProperty>
             <systemProperty>
+              <name>no.uio.webapps.log.path</name>
+              <value>${project.build.directory}</value>
+            </systemProperty>
+            <systemProperty>
               <name>javax.xml.transform.TransformerFactory</name>
               <value>org.apache.xalan.processor.TransformerFactoryImpl</value>
             </systemProperty>
-            <!-- Might need to set these if Jetty fails with ClassNotFoundExceptions for XML parser impl:
-            <systemProperty>
-              <name>javax.xml.parsers.SAXParserFactory</name>
-              <value>org.apache.xerces.jaxp.SAXParserFactoryImpl</value>
-            </systemProperty>
-            <systemProperty>
-              <name>javax.xml.parsers.DocumentBuilderFactory</name>
-              <value>org.apache.xerces.jaxp.DocumentBuilderFactoryImpl</value>
-            </systemProperty>
-            -->
           </systemProperties>
         </configuration>
       </plugin>
@@ -317,14 +305,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.4</version>
-        <configuration>
-          <webResources>
-            <resource>
-              <directory>src/main/resources/war/resin</directory>
-              <filtering>true</filtering>
-            </resource>
-          </webResources>
-        </configuration>
       </plugin>
 
       <!-- Allow deploy with ssh/scp using wagon-ssh -->

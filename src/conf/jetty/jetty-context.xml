@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<!-- Jetty 9 web application context config for Vortex. -->
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+    <Set name="contextPath">/</Set>
+
+    <!-- Avoid excessive JAR scanning by servlet container to avoid slow startup.
+         See: https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
+    <Call name="setAttribute">
+      <Arg>org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern</Arg>
+      <Arg>MATCH_NOTHING</Arg>
+    </Call>
+</Configure>
