@@ -69,9 +69,12 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
             if (description == null) {
                 return false;
             }
-            StructuredResource r = description.buildFromMap(object);
-            return r.isValidDocument(object);
-
+            try {
+                description.buildFromMap(object);
+                return true;
+            } catch (Throwable t) {
+                return false;
+            }
         } catch (Exception e) {
             throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
         }
