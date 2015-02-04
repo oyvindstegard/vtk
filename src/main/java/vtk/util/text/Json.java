@@ -60,6 +60,7 @@ import org.json.simple.parser.ParseException;
  * of C++-style comments from input. But it is generally a lot faster at parsing, and
  * it exposes no direct binding to the json-simple API.
  */
+@SuppressWarnings("unchecked")
 public final class Json {
 
     private Json(){}

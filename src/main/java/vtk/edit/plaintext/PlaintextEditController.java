@@ -93,11 +93,12 @@ import vtk.web.service.ServiceUnlinkableException;
  *  resource content in, if unable to guess.
  * </ul>
  */
+@SuppressWarnings("deprecation")
 public class PlaintextEditController extends SimpleFormController {
 
     private PropertyTypeDefinition updateEncodingProperty;
     
-    private Log logger = LogFactory.getLog(this.getClass().getName());
+    private final Log logger = LogFactory.getLog(this.getClass().getName());
     
     private String manageView;
     private int lockTimeoutSeconds = 300;

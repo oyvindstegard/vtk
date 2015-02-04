@@ -143,9 +143,9 @@ public class VTKServlet extends DispatcherServlet {
         VTKServlet.class.getName() + ".servlet_name";
 
     
-    private Log logger = LogFactory.getLog(this.getClass().getName());
-    private Log requestLogger = LogFactory.getLog(this.getClass().getName() + ".Request");
-    private Log errorLogger = LogFactory.getLog(this.getClass().getName() + ".Error");
+    private final Log logger = LogFactory.getLog(this.getClass().getName());
+    private final Log requestLogger = LogFactory.getLog(this.getClass().getName() + ".Request");
+    private final Log errorLogger = LogFactory.getLog(this.getClass().getName() + ".Error");
 
     private RequestFilter[] requestFilters = new RequestFilter[0];
     private ResponseFilter[] responseFilters = new ResponseFilter[0];
@@ -154,7 +154,7 @@ public class VTKServlet extends DispatcherServlet {
     private RequestContextInitializer requestContextInitializer;
     private ErrorHandler[] errorHandlers = new ErrorHandler[0];
     private Map<String,String> globalHeaders = null;
-    private AtomicLong requests = new AtomicLong(0);
+    private final AtomicLong requests = new AtomicLong(0);
 
     @Override
     public String getServletInfo() {

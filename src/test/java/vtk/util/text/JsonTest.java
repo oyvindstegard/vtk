@@ -66,6 +66,7 @@ import vtk.util.text.Json.MapContainer;
 /**
  * Test {@link vtk.util.text.Json}.
  */
+@SuppressWarnings("unchecked")
 public class JsonTest {
  
     // Mock JSON data

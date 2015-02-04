@@ -49,7 +49,6 @@ import static org.jmock.Expectations.any;
 import static org.jmock.Expectations.returnValue;
 import static org.jmock.Expectations.throwException;
 import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -67,6 +66,7 @@ import org.junit.BeforeClass;
  *
  * TODO test background refresh functionality.
  */
+@SuppressWarnings("unchecked")
 public class EhContentCacheTest {
 
     static {
@@ -113,7 +113,7 @@ public class EhContentCacheTest {
 
         EHCM.addCache(sc);
 
-        EhContentCache<String, String> contentCache = new EhContentCache<String, String>();
+        EhContentCache<String, String> contentCache = new EhContentCache<>();
         contentCache.setCache(sc);
         contentCache.afterPropertiesSet();
         return contentCache;
