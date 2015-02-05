@@ -101,7 +101,7 @@ $(document).ready(function () {
   vrtxEdit.initPreviewImage();
   
   var waitALittle = setTimeout(function() {
-    autocompleteUsernames(".vrtx-autocomplete-username");
+    autocompleteUsernames($(".vrtx-autocomplete-username"));
     autocompleteTags(".vrtx-autocomplete-tag");
     vrtxEdit.initSendToApproval();
     
@@ -1218,6 +1218,11 @@ VrtxEditor.prototype.showHideSelect = function showHideSelect(select, init) {
  *
  */
 
+var userEnrichmentSeperators = {
+  url: "%%URL%%",
+  text: "%%TEXT%%"
+};
+
 function getMultipleFieldsBoxesTemplates() {
   if (!vrtxEditor.multipleFieldsBoxesDeferred) {
     vrtxEditor.multipleFieldsBoxesDeferred = $.Deferred();
@@ -1257,7 +1262,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
 
   // Config
   var size = inputField.attr("size");
-  
+    
   var isDropdown = inputField.hasClass("vrtx-multiple-dropdown");
   isMovable = !isDropdown && isMovable;
 
@@ -1276,9 +1281,11 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
 
   vrtxEditor.multipleFieldsBoxes[name] = { counter: 1, limit: limit };
 
-  var addFormFieldFunc = addFormField, html = "";
+  var addFormFieldFunc = addFormField, html = "", isEnriched = false;
   for (var i = 0, len = formFields.length; i < len; i++) {
-    html += addFormFieldFunc(name, len, $.trim(formFields[i]), size, isBrowsable, isMovable, isDropdown, true, json, isReadOnly);
+    var htmlEnriched = addFormFieldFunc(name, len, $.trim(formFields[i]), size, isBrowsable, isMovable, isDropdown, true, json, isReadOnly);
+    html += htmlEnriched.html;
+    isEnriched = htmlEnriched.isEnriched;
   }
   html = $.parseHTML(html, document, true);
   $(html).insertBefore("#vrtx-" + name + "-add");
@@ -1293,8 +1300,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
 	}
     moreBtn.hide();
   }
-
-  autocompleteUsernames(".vrtx-autocomplete-username");
+  autocompleteUsernames(inputFieldParent.filter(".vrtx-autocomplete-username"), isEnriched);
 }
 
 function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown, init, json, isReadOnly) {
@@ -1321,19 +1327,23 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
     browseButton = vrtxEditor.htmlFacade.getMultipleInputfieldsInteractionsButton("browse", "-resource-ref", idstr, "", vrtxAdmin.multipleFormGroupingMessages.browse);
   }
   
-  if(json && value && value.indexOf("###") !== -1) {
-    value = value.split("###");
-    var j = 0;
-    for(var prop in json) {
-      json[prop].val = value[j];
-      j++;
+  // Add form field with possible JSON multiple and user enrichments
+  var isEnriched = false;
+  var hasEnrichedText = false;
+  var hasEnrichedUrl = false;
+  var jsonProcessed = null;
+  if(json) {
+    if(value && value.indexOf("###") !== -1) {
+      value = value.split("###");
     }
-  } else if(json) {
-    for(var prop in json) {
-      json[prop].val = "";
-    }
+    jsonProcessed = jQuery.extend(true, [], json);
+    var enriched = addFormFieldUserEnrichment(value, jsonProcessed, isEnriched, hasEnrichedText, hasEnrichedUrl);
+    isEnriched = enriched.isEnriched;
+    hasEnrichedText = enriched.hasEnrichedText;
+    hasEnrichedUrl = enriched.hasEnrichedUrl;
   }
-  var html = vrtxEditor.htmlFacade.getMultipleInputfield(name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json, isReadOnly);
+  
+  var html = vrtxEditor.htmlFacade.getMultipleInputfield(name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, jsonProcessed, isReadOnly, hasEnrichedText, hasEnrichedUrl);
 
   vrtxEditor.multipleFieldsBoxes[name].counter++;
 
@@ -1357,7 +1367,7 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
     
     // Setup autocomplete on username fields
     autocompleteUsername(".vrtx-autocomplete-username", idstr + i);
-    autocompleteUsername(".vrtx-autocomplete-username", idstr + "id-" + i); // JSON name='id' fix
+    autocompleteUsername(".vrtx-autocomplete-username", idstr + "id-" + i, isEnriched); // JSON name='id' fix
     
     var focusable = moreBtn.prev().find("input[type='text'], select");
     if(focusable.length) {
@@ -1373,7 +1383,7 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
 	  moreBtn.hide();
     }
   } else {
-    return html;
+    return { "html": html, "isEnriched": isEnriched };
   }
 }
 
@@ -1417,8 +1427,105 @@ function swapContentTmp(moveBtn, move) {
     curElmInputs[i].value = movedElmInputs[i].value;
     movedElmInputs[i].value = tmp;
   }
+  swapUserEnrichment(curElm, movedElm, curElmInputs, movedElmInputs);
+  
   movedElmInputs.filter(":first")[0].focus();
 }
+
+function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, hasEnrichedUrl) {
+  var enrichedUrl = "";
+  var enrichedText = "";
+  var sep = userEnrichmentSeperators;
+  
+  // Extract user enrichments if exists
+  if(value && value.length) {
+    var valueIsMultiple = typeof value === "object";
+    var lastVal = valueIsMultiple ? value[value.length - 1] : value;
+    if(lastVal.indexOf(sep.url) !== -1) {
+      var enrichedUrl = lastVal.split(sep.url);
+      if(enrichedUrl[1].indexOf(sep.text) !== -1) {
+        enrichedText = enrichedUrl[1].split(sep.text)[0];
+        enrichedUrl = enrichedUrl[0];
+      } else {
+        enrichedText = "";
+      }
+      value = [ value[0] ];
+    } else if(lastVal.indexOf(sep.text) !== -1) {
+      var enrichedText = lastVal.split(sep.text)[0];
+      value = [ value[0] ];
+    } else {
+      if(!valueIsMultiple) {
+        value = [ value ];
+      }
+    }
+  } else {
+    value = [ "" ];
+  }
+  
+  // Prepare JSON multiple and user enrichments for template
+  var i = 0;
+  var enrichedTextProp = null;
+  var val = "";
+  for(var prop in json) {
+    switch(json[prop].type) {
+      case "enrichedText":
+        isEnriched = true;
+        json[prop].enrichedText = true; // Access for template
+        enrichedTextProp = prop;
+        if(enrichedText.length) {
+          json[prop].enrichedTextVal = enrichedText;
+          hasEnrichedText = true;
+        }
+        break;
+      case "enrichedUrl":
+        isEnriched = true;
+        json[prop].enrichedUrl = true; // Access for template
+        if(enrichedUrl.length) {
+          json[prop].enrichedUrlVal = enrichedUrl;
+          hasEnrichedUrl = true;
+        }
+        break;
+      default:
+        json[prop].val = value[i];
+        if(json[prop].val != "") {
+          val = json[prop].val;
+        }
+        break;
+    }
+    i++;
+  }
+  if(!hasEnrichedText && !hasEnrichedUrl && enrichedTextProp != null && val != "") {
+    json[enrichedTextProp].enrichedTextVal = val;
+    hasEnrichedText = true;
+  }
+  return { "isEnriched": isEnriched,
+           "hasEnrichedText": hasEnrichedText,
+           "hasEnrichedUrl": hasEnrichedUrl };
+}
+
+function swapUserEnrichment(curElm, movedElm, curElmInputs, movedElmInputs) {
+  var curElmEnrichment = curElm.find(".vrtx-multiple-inputfield-enrichment");
+  var movedElmEnrichment = movedElm.find(".vrtx-multiple-inputfield-enrichment");
+  if(curElmEnrichment.length) {
+    if(movedElmEnrichment.length) {
+      var tmp = curElmEnrichment[0].outerHTML;
+      curElmEnrichment.replaceWith(movedElmEnrichment[0].outerHTML);
+      movedElmEnrichment.replaceWith(tmp);
+    } else {
+      $(curElmInputs[0]).removeClass("vrtx-multipleinputfield-field-enriched");
+      $(movedElmInputs[0]).addClass("vrtx-multipleinputfield-field-enriched");
+      $(curElmEnrichment.remove())
+        .insertAfter(movedElm.find(".vrtx-multipleinputfield-json-wrapper").filter(":last"));
+    }
+  } else if(movedElmEnrichment.length) {
+    $(movedElmInputs[0]).removeClass("vrtx-multipleinputfield-field-enriched");
+    $(curElmInputs[0]).addClass("vrtx-multipleinputfield-field-enriched");
+    $(movedElmEnrichment.remove())
+      .insertAfter(curElm.find(".vrtx-multipleinputfield-json-wrapper").filter(":last"));
+  }
+}
+
+/* ^ User Enrichments */
 
 /* DEHANCE PART */
 function saveMultipleInputFields(content, arrSeperator) {
@@ -1704,16 +1811,14 @@ function scrollToElm(movedElm) {
  */
 VrtxEditor.prototype.htmlFacade = {
   /* 
-   * Turn a block of JSON into HTML (Only working for Schedule per. 14.08.2014)
-   * 
-   * TODO: undefined checks should probably be with typeof against the string
-   * 
+   * Turn a block of JSON into HTML (only working for Schedule)
    */
   jsonToHtml: function(isMedisin, id, sessionId, idForLookup, session, fixedResourcesUrl, fixedResources, descs, i18n, embeddedAdminService) {
     var html = "";
     var multiples = [];
     var rtEditors = [];
     var vrtxEdit = vrtxEditor;
+    var sep = userEnrichmentSeperators;
     
     for(var name in descs) {
       var desc = descs[name];
@@ -1741,7 +1846,7 @@ VrtxEditor.prototype.htmlFacade = {
       switch(desc.type) {
         case "json":
           for(var i = 0, descPropsLen = descProps.length; i < descPropsLen; i++) {
-            descProps[i].title = i18n[name + "-" + descProps[i].name];
+            descProps[i].title = i18n[name + "-" + descProps[i].name]; // Placeholder
             if(desc.multiple && desc.props[i].type === "resource_ref" && !isMedisin) {
               browsable = true;
             }
@@ -1749,7 +1854,13 @@ VrtxEditor.prototype.htmlFacade = {
           if(val && val.length) {
             for(var j = 0, propsLen = val.length; j < propsLen; j++) {
               for(i = 0; i < descPropsLen; i++) {
-                propsVal += (val[j][descProps[i].name] || "") + "###";
+                if(desc.props[i].type === "enrichedUrl") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.url;
+                } else if(desc.props[i].type === "enrichedText") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.text;
+                } else {
+                  propsVal += (val[j][descProps[i].name] || "") + "###";
+                }
               }
               if(j < (propsLen - 1)) propsVal += "$$$";
             }
@@ -1766,7 +1877,8 @@ VrtxEditor.prototype.htmlFacade = {
               readOnly: readOnly
             });
           }
-          html += vrtxEdit.htmlFacade.getStringField({ title: i18n[name],
+          var nameI18n = isMedisin && name === "vrtxResources" ? name + "NotFixed" : name;
+          html += vrtxEdit.htmlFacade.getStringField({ title: i18n[nameI18n],
                                                        name: (desc.autocomplete ? "vrtx-autocomplete-" + desc.autocomplete + " " : "") + name + " " + name + "-" + sessionId,
                                                        id: name + "-" + sessionId,
                                                        val: val,
@@ -1783,7 +1895,10 @@ VrtxEditor.prototype.htmlFacade = {
               var folderType = fr.folderType;
               var folderName = fr.folderName;
               var folderRoot = fr.folderRoot;
-              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'><label>" + i18n[name + "-" + folderType] + "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n[name + "-" + folderType + "-info"] + "'></abbr></label>";
+              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'>" + 
+                      "<label>" + i18n[name + "-" + folderType] +
+                        (i18n[name + "-" + folderType + "-info"] ? "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n[name + "-" + folderType + "-info"] + "'></abbr>" : "") +
+                      "</label>";
               if(folderUrl && folderUrl.length) {
                 /* Iframe placeholder */
                 html += "<div class='admin-fixed-resources-iframe' data-src='" + folderUrl + embeddedAdminService + "'></div>";
@@ -1796,21 +1911,6 @@ VrtxEditor.prototype.htmlFacade = {
               }
               html += "</div>";
             }
-            /* Old
-            html += "<div class='vrtx-simple-html'><label>" + i18n[name] + "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n.vrtxResourcesFixedInfo + "'></abbr></label>";
-            if(!val) { // Create fixed resources folder
-              html += "<a class='vrtx-button create-fixed-resources-folder' id='create-fixed-resources-folder-" + idForLookup + "SID" + sessionId + "' href='javascript:void(0);'>" + i18n[name + "CreateFolder"] + "</a>";
-            } else { // Admin fixed resources folder
-              if(val.length == undefined) { // Object
-                html += "<iframe class='admin-fixed-resources-iframe' src='" + val.folderUrl + embeddedAdminService + "'></iframe>";
-              } else { // Array
-                for(i = 0, len = val.length; i < len; i++) {
-                  html += "<iframe class='admin-fixed-resources-iframe' src='" + val[i].folderUrl + embeddedAdminService + "'></iframe>";
-                }
-              }
-            }
-            html += "</div>";
-            */
           }
           break;
         case "html":
@@ -1844,7 +1944,7 @@ VrtxEditor.prototype.htmlFacade = {
     return { html: html, multiples: multiples, rtEditors: rtEditors };
   },
  /* 
-  * Turn a block of HTML/DOM into JSON (Only working for Schedule per. 14.08.2014)
+  * Turn a block of HTML/DOM into JSON (only working for Schedule)
   */
   htmlToJson: function (isMedisin, sessionElms, sessionId, descs, rawOrig, rawOrigTP, rawPtr) {
     var vrtxEdit = vrtxEditor;
@@ -1854,7 +1954,9 @@ VrtxEditor.prototype.htmlFacade = {
     for(var name in descs) {
       var desc = descs[name],
           val = "";
-      if(desc.type === "json-fixed" || (desc.notMedisin && isMedisin) || (desc.onlyMedisin && !isMedisin)) {
+      // Skip fixed resources and branch: Medisin | Not Medisin
+      if(desc.type === "json-fixed" || (desc.notMedisin && isMedisin) 
+                                    || (desc.onlyMedisin && !isMedisin)) {
         continue;
       } else if(desc.type === "html") {
         // XXX: support multiple CK-fields starting with same name
@@ -1871,6 +1973,7 @@ VrtxEditor.prototype.htmlFacade = {
       } else if(desc.type === "html") {
         val = vrtxEdit.richtextEditorFacade.getInstanceValue(elm.attr("name"));
       } else {
+        // Reconstruct data from flattened string to objects
         val = elm.val(); // To string (string)
         if(desc.multiple && val.length) { // To array (multiple)
           val = val.split("$$$");
@@ -1881,6 +1984,9 @@ VrtxEditor.prototype.htmlFacade = {
             var newProp = null;
             var prop = val[i].split("###");
             for(var j = 0, descPropsLen = desc.props.length; j < descPropsLen; j++) { // Definition
+              if(desc.props[j].type == "enrichedUrl"
+              || desc.props[j].type == "enrichedText") continue;
+              
               if(prop[j] !== "") {
                 if(!newProp) {
                   newProp = {};
@@ -1896,24 +2002,33 @@ VrtxEditor.prototype.htmlFacade = {
         }
       }
 
-      // Changes in Vortex properties
-      if(val && val.length) { // If changes in Vortex properties and differs from TP/UIOWS-data
-        if(editorDetectChangeFunc(sessionId, val, rawOrig[name], name === "vrtxResourcesText") &&
-           editorDetectChangeFunc(sessionId, val, rawOrigTP[name.split("vrtx")[1].toLowerCase()], name === "vrtxResourcesText")) {
-          vrtxAdmin.log({msg: "ADD / CHANGE " + name + (typeof val === "string" ? " " + val : "")});
-          rawPtr[name] = val;
-          hasChanges = true;
+      // Has content
+      if(val && val.length) {
+        if(editorDetectChangeFunc(sessionId, val, rawOrig[name], name === "vrtxResourcesText")) { // Has changed
+          var isChangedFromTP = editorDetectChangeFunc(sessionId, val, rawOrigTP[name.split("vrtx")[1].toLowerCase()], name === "vrtxResourcesText");
+          if(isChangedFromTP) { // Differs from TP
+            vrtxAdmin.log({msg: "ADD / CHANGE " + name + (typeof val === "string" ? " " + val : "")});
+            rawPtr[name] = val;
+            hasChanges = true;
+          } else { // Otherwise Delete
+            if(rawOrig[name] != undefined) { // If exists
+              vrtxAdmin.log({msg: "DEL " + name + (typeof val === "string" ? " " + val : "")});
+              delete rawPtr[name];
+              hasChanges = true;
+            }
+          }
         }
-      } else { // If removed in Vortex properties
-        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) { // If is "vrtxStaff" and has "staff" set to []
+      } else { // Empty
+        // Is "vrtxStaff" and has "staff" set to []
+        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) {
 	      if(rawPtr[name] == undefined || rawPtr[name].length > 0) {
-            vrtxAdmin.log({msg: "DEL EMPTY " + name + (typeof val === "string" ? " " + val : "")});
+            vrtxAdmin.log({msg: "DEL EMPTY " + name});
             rawPtr[name] = [];
             hasChanges = true;
 	      }
-        } else {
-	      if(rawOrig[name] != undefined) {
-            vrtxAdmin.log({msg: "DEL " + name + (typeof val === "string" ? " " + val : "")});
+        } else { // Otherwise Delete
+	      if(rawOrig[name] != undefined) { // If exists
+            vrtxAdmin.log({msg: "DEL " + name});
             delete rawPtr[name];
             hasChanges = true;
 	      }
@@ -1965,7 +2080,7 @@ VrtxEditor.prototype.htmlFacade = {
   /* 
    * Type / fields 
    */
-  getMultipleInputfield: function (name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json, isReadOnly) {
+  getMultipleInputfield: function (name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json, isReadOnly, hasEnrichedText, hasEnrichedUrl) {
     return vrtxAdmin.templateEngineFacade.render(vrtxEditor.multipleFieldsBoxesTemplates["multiple-inputfield"], {
       idstr: idstr,
       i: i,
@@ -1978,7 +2093,9 @@ VrtxEditor.prototype.htmlFacade = {
       isDropdown: isDropdown,
       dropdownArray: "dropdown" + name,
       json: json,
-      isReadOnly: isReadOnly
+      isReadOnly: isReadOnly,
+      hasEnrichedText: hasEnrichedText,
+      hasEnrichedUrl: hasEnrichedUrl
     });
   },
   getTypeHtml: function (elem, inputFieldName) {

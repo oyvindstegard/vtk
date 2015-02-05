@@ -185,10 +185,10 @@ var VrtxAnimation = function(opts) {
    */
   obj.update = function update(opts)         { futureAppliedFn(arguments.callee.toString(), opts); };
   obj.updateElem = function updateElem(elem) { futureAppliedFn(arguments.callee.toString(), elem); };
-  obj.rightIn = function rightIn()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.leftOut = function leftOut()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.topDown = function topDown()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.bottomUp = function bottomUp()         { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.rightIn = function rightIn()           { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.leftOut = function leftOut()           { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.topDown = function topDown()           { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.bottomUp = function bottomUp()         { futureAppliedFn(arguments.callee.toString(), null); };
 };
 
 
@@ -1000,7 +1000,7 @@ VrtxAdmin.prototype.initScrollBreadcrumbs = function initScrollBreadcrumbs() {
     vrtxAdm.crumbsInner.addClass("animate");
   }, 120);
 
-  eventListen(vrtxAdm.cachedDoc, "keydown", ".vrtx-breadcrumb-level", function (ref) {
+  eventListen(vrtxAdm.cachedDoc, "keypress", ".vrtx-breadcrumb-level", function (ref) {
     window.location.href = $(ref).find("a").attr("href");
   }, "clickOrEnter", 10);
   
@@ -1252,7 +1252,6 @@ VrtxAdmin.prototype.inputUpdateEngine = {
     input.parent().find("tester").remove(); // Remove test-subjects
     testSubject.insertAfter(input);
     testSubject.html(val);
-
     var newWidth = Math.min(Math.max(testSubject.width() + comfortZone, minWidth), maxWidth);
     var currentWidth = input.width();
     if (newWidth !== currentWidth) {
@@ -1773,7 +1772,7 @@ VrtxAdmin.prototype.completeSimpleFormAsync = function completeSimpleFormAsync(o
             if(vrtxAdm.animateTableRows && (opts.rowFromFormAnimateOut || opts.rowCheckedAnimateOut)) {
               var trs = opts.rowFromFormAnimateOut ? [form.closest("tr")] : form.find("tr")
                                                                                 .filter(function(i) { 
-                                                                                  return $(this).find("td.checkbox input:checked").length; }
+                                                                                  return $(this).find("td.checkbox input:checked").length; }
                                                                                 );
               var futureAnims = [];
               for(var i = 0, len = trs.length; i < len; i++) {
