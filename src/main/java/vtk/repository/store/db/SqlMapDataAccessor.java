@@ -47,6 +47,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
+
 import vtk.repository.Acl;
 import vtk.repository.ContentStream;
 import vtk.repository.Lock;
@@ -63,9 +64,11 @@ import vtk.repository.Repository.Depth;
 import vtk.repository.ResourceImpl;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.BinaryValue;
+import vtk.repository.resourcetype.BufferedBinaryValue;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
+import vtk.repository.resourcetype.ValueFactory;
 import vtk.repository.store.DataAccessException;
 import vtk.repository.store.DataAccessor;
 import vtk.repository.store.db.SqlDaoUtils.PropHolder;
@@ -74,8 +77,6 @@ import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
 
 import com.ibatis.sqlmap.client.SqlMapExecutor;
-import vtk.repository.resourcetype.BufferedBinaryValue;
-import vtk.repository.resourcetype.ValueFactory;
 
 /**
  * An iBATIS SQL maps implementation of the DataAccessor interface.
@@ -90,6 +91,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     private ResourceTypeTree resourceTypeTree;
     private PrincipalFactory principalFactory;
     private ValueFactory valueFactory;
+    private ResourceTypeMapper resourceTypeMapper;
 
     private Log logger = LogFactory.getLog(this.getClass());
 
@@ -1318,7 +1320,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                     new Long(contentLength)));
         }
 
-        resourceImpl.setResourceType((String) resourceMap.get("resourceType"));
+        String type = (String) resourceMap.get("resourceType");
+        resourceImpl.setResourceType(resourceTypeMapper.resolveResourceType(type));
 
         Integer aclInheritedFrom = (Integer) resourceMap.get("aclInheritedFrom");
         if (aclInheritedFrom == null) {
@@ -1327,6 +1330,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         resourceImpl.setAclInheritedFrom(aclInheritedFrom.intValue());
     }
+    
 
     /**
      * Create property from namespace, name and value.
@@ -1426,7 +1430,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         resourceMap.put("parent", parentPath != null ? parentPath.toString() : null);
         resourceMap.put("aclInheritedFrom", aclInheritedFrom);
         resourceMap.put("uri", r.getURI().toString());
-        resourceMap.put("resourceType", r.getResourceType());
+        resourceMap.put("resourceType", resourceTypeMapper.generateResourceType(r.getResourceType()));
 
         resourceMap.put(PropertyType.COLLECTION_PROP_NAME, r.isCollection() ? "Y" : "N");
         resourceMap.put(PropertyType.OWNER_PROP_NAME, r.getOwner().getQualifiedName());
@@ -1529,6 +1533,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     @Required
     public void setResourceTypeTree(ResourceTypeTree resourceTypeTree) {
         this.resourceTypeTree = resourceTypeTree;
+        this.resourceTypeMapper = new ResourceTypeMapper(resourceTypeTree);
     }
     
     public void setOptimizedAclCopySupported(boolean optimizedAclCopySupported) {

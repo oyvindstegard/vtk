@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import vtk.repository.Acl;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -54,7 +55,6 @@ import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 
 import com.ibatis.sqlmap.client.event.RowHandler;
-import vtk.repository.Acl;
 
 
 
@@ -73,6 +73,7 @@ class PropertySetRowHandler implements RowHandler {
     protected List<Map<String, Object>> rowValueBuffer = new ArrayList<Map<String, Object>>();
 
     private final ResourceTypeTree resourceTypeTree;
+    private final ResourceTypeMapper resourceTypeMapper;
     private final SqlMapIndexDao indexDao;
     private final PrincipalFactory principalFactory;
     
@@ -100,6 +101,7 @@ class PropertySetRowHandler implements RowHandler {
         this.resourceTypeTree = resourceTypeTree;
         this.principalFactory = principalFactory;
         this.indexDao = indexDao;
+        this.resourceTypeMapper = new ResourceTypeMapper(resourceTypeTree);
     }
     
     /**
@@ -311,7 +313,8 @@ class PropertySetRowHandler implements RowHandler {
             propertySet.addProperty(prop);
         }
         
-        propertySet.setResourceType((String)row.get("resourceType"));
+        String type = (String)row.get("resourceType");
+        propertySet.setResourceType(resourceTypeMapper.resolveResourceType(type));
         
         Integer aclInheritedFrom = (Integer)row.get("aclInheritedFrom");
         if (aclInheritedFrom == null) {
