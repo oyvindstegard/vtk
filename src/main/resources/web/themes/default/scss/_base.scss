@@ -1,0 +1,112 @@
+/*
+ * Vortex - Base
+ *
+ */
+ 
+/* App colors */
+ 
+$baseFont: Arial, Helvetica, sans-serif;
+$textColor: #363534;
+$linkColor: #005aab;
+$titleContainerTextColor: #363534;
+
+$bodyBackgroundColor: #f8f8f8;
+$lineTopBackgroundColor: #000;
+$headFooterBackgroundColor: #fff;
+
+$breadcrumbTabHoverSystemTabMessageBackgroundColor: #4a9ce2;
+$systemMessageLinkColor: #88dfed;
+
+$contentBackgroundColor: #fff;
+$contentTablesEvenBackgroundColor: #f9f9f9;
+$listingDropdownTipFocusBackgroundColor: #ecf3f9;
+$publishedAllowedTextColor: #549401;
+$errorRestrictedTextColor: #ed1c24;
+
+/* Forms colors */
+
+$buttonTextColor: #000;
+$buttonBackgroundColor: #e7e7e7;
+$buttonBorderColor: #cbcbcb;
+$buttonFocusHoverTextColor: #fff;
+$buttonFocusBackgroundColor: #2b81c8;
+$buttonHoverBackgroundColor: #4195db;
+
+$textareaInputBackgroundColor: #fff;
+$textareaInputBorderColor: #919191;
+
+$expandedFormBackgroundColor: #e8e8e8;
+$expandedFormBorderColor: #d9d9d9;
+$buttonExpandedFormBackgroundColor: #f7f7f7;
+
+$disabledTextColor: #888;
+$disabledButtonBackgroundColor: #efefef;
+$disabledBorderColor: #ccc;
+
+/* Mixins */
+
+@mixin resetFont {
+  font-family: inherit;
+  font-size: 100%;
+  font-style: inherit; 
+  font-weight: inherit;
+}
+@mixin baseFontImp { font-family: $baseFont !important; }
+@mixin noMargPadd  { margin: 0px; padding: 0px;         }
+
+@mixin borderRadius($radius) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  border-radius: $radius; 
+}
+
+@mixin boxShadow($opts) {
+  -moz-box-shadow: $opts;
+  -webkit-box-shadow: $opts;
+  box-shadow: $opts;
+}
+
+@mixin borderBox {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+@mixin linearGradientBackgroundColors($col1, $col2, $col3, $col4, $percent1, $percent2, $percent3, $percent4) {
+  background: $col1;
+  background: -moz-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop($percent1, $col1),
+                                                              color-stop($percent2, $col2),
+                                                              color-stop($percent3, $col3),
+                                                              color-stop($percent4, $col4));
+  background: -webkit-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: -o-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: -ms-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: linear-gradient(to bottom, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+}
+
+@mixin transitions($opts) {
+  -webkit-transition: $opts;
+  -moz-transition:    $opts;
+  -ms-transition:     $opts;
+  -o-transition:      $opts;
+  transition:         $opts;
+}
+
+@mixin transforms($opts) {
+  -webkit-transform: $opts;
+  -moz-transform:    $opts;
+  -ms-transform:     $opts;
+  -o-transform:      $opts;
+  transform:         $opts;
+}
+
+@mixin transitionsTransforms($optsA, $optsB) {
+  -webkit-transition: $optsA, -webkit-transform $optsB;
+  -moz-transition:    $optsA, -moz-transform    $optsB;
+  -ms-transition:     $optsA, -ms-transform     $optsB;
+  -o-transition:      $optsA, -o-transform      $optsB;
+  transition:         $optsA, transform         $optsB;
+}
+
+/* ^ Vortex - Base */

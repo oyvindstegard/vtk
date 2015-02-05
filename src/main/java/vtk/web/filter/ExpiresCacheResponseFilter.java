@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -89,7 +90,7 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
         if (this.excludedServices != null) {
             Service service = requestContext.getService();
             for (Service excluded : this.excludedServices) {
-                if (service.isDescendantOf(excluded)) {
+                if (service.isDescendantOf(excluded) || service.equals(excluded)) {
                     if (logger.isDebugEnabled()) {
                         logger.debug(uri + ": ignore: service=" + service.getName());
                     }

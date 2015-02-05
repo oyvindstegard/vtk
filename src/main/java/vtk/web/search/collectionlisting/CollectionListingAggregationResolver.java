@@ -40,6 +40,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -47,7 +48,6 @@ import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.repository.ResourceNotFoundException;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.search.ResultSet;
@@ -61,11 +61,6 @@ import vtk.web.service.URL;
 
 /**
  * 
- * XXX If you feel like making changes in this class, don't. Ask rezam first.
- * Don't ruin your day. If rezam should for some reason not be available in time
- * for your deadline, just delete this entire class and start over. Trust me,
- * you'll live longer.
- * 
  * Resolve nested aggregation and manually approved resources for a collection
  * listing.
  * 
@@ -75,13 +70,6 @@ import vtk.web.service.URL;
  * to a configured predefined depth (5 in production as of June 2013), with a
  * configured predefined limit for number of resources to aggregate from in each
  * step (20 in production as of June 2013).
- * 
- * 
- * XXX This class is in serious need of refactoring, to make it understandable
- * and testable. As it is it has no unit tests (!!!) and a real pain in the a$$
- * to figure out.
- * 
- * XXX Also needs proper logging.
  * 
  */
 public class CollectionListingAggregationResolver implements AggregationResolver {
@@ -109,39 +97,6 @@ public class CollectionListingAggregationResolver implements AggregationResolver
      * has it's own defined aggregation
      */
     private int maxRecursiveDepth = DEFAULT_RECURSIVE_DEPTH;
-
-    @Override
-    public CollectionListingAggregatedResources getAggregatedResources(URL url) {
-
-        PropertySet collection = null;
-        String token = null;
-        if (RequestContext.exists()) {
-            token = RequestContext.getRequestContext().getSecurityToken();
-        }
-        try {
-
-            Path path = null;
-            if (getLocalHostUrl().getHost().equals(url.getHost())) {
-                path = url.getPath();
-            }
-            if (path != null) {
-                collection = repository.retrieve(token, path, false);
-            } else if (multiHostSearcher.isMultiHostSearchEnabled()) {
-                collection = multiHostSearcher.retrieve(token, url);
-            }
-        } catch (ResourceNotFoundException rnfe) {
-            // resource doesn'n exist, ignore
-        } catch (Exception e) {
-            // Ignore
-        }
-
-        // Resource not found
-        if (collection == null) {
-            return null;
-        }
-
-        return getAggregatedResources(collection);
-    }
 
     @Override
     public CollectionListingAggregatedResources getAggregatedResources(PropertySet collection) {

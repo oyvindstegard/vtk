@@ -1159,8 +1159,9 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                             if (property.getType() == PropertyType.Type.BINARY) {
                                 parameters.put("binaryContent", v.getBinaryValue().getBytes());
                                 parameters.put("binaryMimeType", v.getBinaryValue().getContentType());
-                            } else if (nativeStringValue.length() > Property.MAX_STRING_LENGTH) {
-                                // Store native string value as UTF-8 encoded binary data
+                                
+                            } else if (nativeStringValue.length() > 512) {
+                                // Store native string value longer than 512 chars as UTF-8 encoded binary data.
                                 final String valueContentType;
                                 switch (property.getType()) {
                                     case IMAGE_REF:

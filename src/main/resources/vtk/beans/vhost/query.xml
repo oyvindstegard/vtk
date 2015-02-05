@@ -66,7 +66,7 @@
     <property name="searchParser" ref="searchParser" />
     <property name="warmupSearchSpecs">
       <list>
-        <value>uri = /* OR type IN collection, lastModified DESC\,uri, 2500</value>
+        <value>(uri = /* OR type IN collection) AND depth = 3, lastModified DESC\,uri, 2500</value>
         <value>navigation:hidden !EXISTS, title ASC, 5000</value>
         <value>type IN structured-article OR type IN structured-event, publish-date DESC, 2500</value>
         <value>acl EXISTS, null</value>
@@ -116,6 +116,7 @@
     <property name="queryAuthorizationFilterFactory" ref="queryAuthorizationFilterFactory"/>
     <property name="publishedPropDef" ref="publishedPropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
+    <property name="hiddenPropDef" ref="hiddenPropDef" />
   </bean>
 
   <!-- Searcher implementation (wrapped in throttler)-->
@@ -127,7 +128,7 @@
         <property name="indexAccessor" ref="systemIndexAccessor"/>
         <property name="documentMapper" ref="documentMapper"/>
         <property name="queryBuilder" ref="queryBuilder"/>
-        <property name="unauthenticatedQueryMaxDirtyAge" value="${indexUnauthenticatedQueryMaxDirtyAge}" />
+        <!--<property name="unauthenticatedQueryMaxDirtyAge" value="${indexUnauthenticatedQueryMaxDirtyAge}" />-->
       </bean>
     </property>
   </bean>

@@ -293,8 +293,8 @@ public class IndexManager implements InitializingBean, DisposableBean {
     }
     
     private IndexWriterConfig newIndexWriterConfig() {
-        IndexWriterConfig cfg = new IndexWriterConfig(Version.LUCENE_4_9, new KeywordAnalyzer());
-        cfg.setMaxThreadStates(1);
+        IndexWriterConfig cfg = new IndexWriterConfig(Version.LATEST, new KeywordAnalyzer());
+        cfg.setMaxThreadStates(1); // We have only at most one writing thread.
         
         // XXX switch to LogByteSizeMergePolicy if problems with (default) TieredMergePolicy arise.
 //        LogByteSizeMergePolicy mp = new LogByteSizeMergePolicy();

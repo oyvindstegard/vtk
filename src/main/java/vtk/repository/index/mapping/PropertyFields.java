@@ -31,18 +31,22 @@
 
 package vtk.repository.index.mapping;
 
+import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED;
+import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_LOWERCASE;
+import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_STORED;
+import static vtk.repository.index.mapping.Fields.FieldSpec.STORED;
+
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
+
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertyImpl;
@@ -51,8 +55,7 @@ import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFactory;
-
-import static vtk.repository.index.mapping.Fields.FieldSpec.*;
+import vtk.util.text.Json;
 
 /**
  * TODO missing JavaDoc for most methods
@@ -144,23 +147,22 @@ public class PropertyFields extends Fields {
         try {
             final List<Object> indexFieldValues = new ArrayList<Object>();
             for (Value jsonValue : jsonPropValues) {
-                JSONObject json = jsonValue.getJSONValue();
-                for (Iterator it = json.entrySet().iterator(); it.hasNext();) {
-                    indexFieldValues.clear();
-                    Map.Entry entry = (Map.Entry) it.next();
-                    final String jsonAttribute = (String) entry.getKey();
-                    final Object value = entry.getValue();
+                Json.MapContainer json = jsonValue.getJSONValue();
+                
+                for (final String jsonAttribute: json.keySet()) {
+                    final Object value = json.get(jsonAttribute);
                     if (value == null) {
                         continue;
                     }
-                    if (value.getClass() == JSONArray.class) {
-                        for (Iterator iter = ((JSONArray) value).iterator(); iter.hasNext();) {
-                            Object nextVal = iter.next();
-                            if (nextVal != null && nextVal.getClass() != JSONObject.class && nextVal.getClass() != JSONArray.class) {
-                                indexFieldValues.add(nextVal);
+                    if (value instanceof List<?>) {
+                        List<Object> list = json.arrayValue(jsonAttribute);
+                        for (Object val: list) {
+                            if (val != null && !(val instanceof List<?>) && !(val instanceof Map<?,?>)) {
+                                indexFieldValues.add(val);
                             }
                         }
-                    } else if (value.getClass() != JSONObject.class) {
+                    }
+                    else if (!(value instanceof Map<?,?>)) {
                         indexFieldValues.add(value);
                     }
                     Type dataType = PropertyFields.jsonFieldDataType(def, jsonAttribute);

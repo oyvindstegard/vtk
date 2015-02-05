@@ -30,18 +30,18 @@
  */
 package vtk.util.text;
 
-import static junit.framework.Assert.assertEquals;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+
 public class SimpleTemplateTest {
 
     @Test
     public void test() {
-        Map<String, String> vars = new HashMap<String, String>();
+        Map<String, String> vars = new HashMap<>();
         vars.put("foo", "bar");
         
         String result = renderUnescape("var: ${foo}", vars);
@@ -93,7 +93,7 @@ public class SimpleTemplateTest {
     
     @Test
     public void testEscapingParseFlags() {
-        Map<String, String> vars = new HashMap<String, String>();
+        Map<String, String> vars = new HashMap<>();
         vars.put("foo", "bar");
         vars.put("\\", "ESCCHAR");
         vars.put("\\\\", "DOUBLE_ESCCHAR");
@@ -133,7 +133,7 @@ public class SimpleTemplateTest {
     
     @Test
     public void testNoEscapeHandlingQueryExpression() {
-        final Map<String,String> vars = new HashMap<String,String>();
+        final Map<String,String> vars = new HashMap<>();
         vars.put("currentFolder", "/query-tests/a\\ folder\\ with\\ spaces");
         
         String testTemplate = "(uri = {$currentFolder}* AND type IN file) OR uri = /query-tests/a\\ folder\\ with\\ spaces";

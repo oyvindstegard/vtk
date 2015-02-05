@@ -39,6 +39,7 @@
   <!-- Decorating and decorator components -->
   <import resource="decorating/decorating.xml" />
   <import resource="decorating/decorator-components.xml" />
+  <import resource="decorating/dynamic-decorating.xml" />
 
   <!-- Default editor -->
   <import resource="editor/editor.xml" />

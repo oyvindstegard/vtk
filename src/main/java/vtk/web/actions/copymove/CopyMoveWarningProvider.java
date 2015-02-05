@@ -157,7 +157,7 @@ public class CopyMoveWarningProvider implements ReferenceDataProvider {
         andQuery.add(aclTypeQuery);
 
         Search search = new Search();
-        search.removeAllFilterFlags();
+        search.clearAllFilterFlags();
         search.setSorting(null);
         search.setQuery(andQuery);
         if (setLimit) {

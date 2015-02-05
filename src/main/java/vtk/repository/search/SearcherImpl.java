@@ -76,7 +76,7 @@ public class SearcherImpl implements Searcher {
     private DocumentMapper documentMapper;
     private LuceneQueryBuilder queryBuilder;
 
-    private int unauthenticatedQueryMaxDirtyAge = 0;
+//    private int unauthenticatedQueryMaxDirtyAge = 0;
     private long totalQueryTimeWarnThreshold = 15000; // Warning threshold in milliseconds
 
     /**
@@ -510,7 +510,6 @@ public class SearcherImpl implements Searcher {
     }
 
     private static final class MatchingResultImpl implements MatchingResult {
-
         private PropertySet ps;
         private Acl acl;
 
@@ -564,8 +563,8 @@ public class SearcherImpl implements Searcher {
      * To get any effect, it should be equal or higher than value set in
      * {@link vtk.repository.index.LuceneIndexManager#setAgingReadOnlyReaderThreshold(int)}
      */
-    public void setUnauthenticatedQueryMaxDirtyAge(int unauthenticatedQueryMaxDirtyAge) {
-        this.unauthenticatedQueryMaxDirtyAge = unauthenticatedQueryMaxDirtyAge;
-    }
+//    public void setUnauthenticatedQueryMaxDirtyAge(int unauthenticatedQueryMaxDirtyAge) {
+//        this.unauthenticatedQueryMaxDirtyAge = unauthenticatedQueryMaxDirtyAge;
+//    }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, University of Oslo, Norway
+/* Copyright (c) 2012–2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,7 @@ package vtk.repository.search.query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
@@ -43,12 +41,15 @@ import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.BooleanClause;
 
 import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 
 import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.integration.junit4.JUnit4Mockery;
+import static org.jmock.Expectations.returnValue;
+import org.jmock.auto.Mock;
+import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import vtk.repository.Namespace;
 import vtk.repository.index.mapping.AclFields;
@@ -62,26 +63,28 @@ import vtk.security.PrincipalFactory;
 import vtk.testing.mocktypes.MockPrincipalFactory;
 import vtk.testing.mocktypes.MockResourceTypeTree;
 
-/*
- *  TODO: Review this test. It is (at least to me) a bit unclear exactly what we are testing, so 
- *  I believe we need to document this more throughly, and make it perfectly clear what is suppose 
- *  to happen at each step in each test...
- * 
+/**
+ * Currently this test class only provides test for search filters.
  */
-
 public class LuceneQueryBuilderTest {
 
-    final String dummyToken = "dummy_token";
-    final IndexSearcher nullIndexSearcher = null;
+    private final String dummyToken = "dummy_token";
 
     private LuceneQueryBuilder luceneQueryBuilder = new LuceneQueryBuilder();
-    private Mockery context = new JUnit4Mockery();
+
+    @Rule
+    public JUnitRuleMockery context = new JUnitRuleMockery();
+
+    @Mock
     private QueryAuthorizationFilterFactory mockQueryAuthorizationFilterFactory;
+
     private TermsFilter dummyAclFilter;
+    private Search search;
+    
+    private Filter iterationQueryFilter;
 
     @Before
     public void setUp() {
-        this.mockQueryAuthorizationFilterFactory = context.mock(QueryAuthorizationFilterFactory.class);
         luceneQueryBuilder.setQueryAuthorizationFilterFactory(mockQueryAuthorizationFilterFactory);
 
         PropertyTypeDefinitionImpl publishedPropDef = new PropertyTypeDefinitionImpl();
@@ -94,6 +97,11 @@ public class LuceneQueryBuilderTest {
         unpublishedCollectionPropDef.setName("unpublishedCollection");
         luceneQueryBuilder.setUnpublishedCollectionPropDef(unpublishedCollectionPropDef);
 
+        PropertyTypeDefinitionImpl hiddenPropDef = new PropertyTypeDefinitionImpl();
+        hiddenPropDef.setNamespace(Namespace.getNamespace("http://www.uio.no/navigation"));
+        hiddenPropDef.setName("hidden");
+        luceneQueryBuilder.setHiddenPropDef(hiddenPropDef);
+        
         // Document mapper dependency
         PrincipalFactory pf = new MockPrincipalFactory();
         DocumentMapper dm = new DocumentMapper();
@@ -112,70 +120,169 @@ public class LuceneQueryBuilderTest {
         dummyAclFilter = new TermsFilter(terms);
 
         luceneQueryBuilder.afterPropertiesSet();
+        
+        search = new Search();
+        search.setQuery(new UriTermQuery("/", TermOperator.EQ));
+        
+        iterationQueryFilter = new QueryWrapperFilter(new TermQuery(new Term("uri", "/")));
     }
-
+    
     @Test
-    public void testGetSearchFilterDefaultExcludesFalseNoAcl() {
-
-        Search search = new Search();
+    public void noAclFilterNoSearchFlags() {
         search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED,
                 Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
-        this.assertGetSearchFilter(null, search, null);
+        assertSearchFilter(null, search, null);
+        
+        // Iteration filter
+        assertIterationFilter(iterationQueryFilter, search, null);
     }
-
+    
     @Test
-    public void testGetSearchFilterDefaultExcludesFalseAndAcl() {
-
-        Search search = new Search();
+    public void onlyAclFilter() {
         search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED,
                 Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
-        this.assertGetSearchFilter(dummyAclFilter, search, dummyAclFilter);
-
+        assertSearchFilter(dummyAclFilter, search, dummyAclFilter);
+        
+        // Iteration filter
+        BooleanFilter bf = new BooleanFilter();
+        bf.add(dummyAclFilter, BooleanClause.Occur.MUST);
+        bf.add(iterationQueryFilter, BooleanClause.Occur.MUST);
+        assertIterationFilter(bf, search, dummyAclFilter);
     }
 
     @Test
-    public void testGetSearchFilterDefaultExcludesNoAcl() {
-
-        Search search = new Search();
-        Filter expected = luceneQueryBuilder.buildUnpublishedFilter();
-        expected = luceneQueryBuilder.addUnpublishedCollectionFilter(expected);
-        this.assertGetSearchFilter(expected, search, null);
-
-    }
-
-    @Test
-    public void testGetSearchFilterDefaultExcludesAndAcl() {
-
-        Search search = new Search();
-        BooleanFilter expected = luceneQueryBuilder.buildUnpublishedFilter();
+    public void aclFilterAndPublished() {
+        search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
+        
+        BooleanFilter expected = new BooleanFilter();
         expected.add(dummyAclFilter, BooleanClause.Occur.MUST);
-        expected = luceneQueryBuilder.addUnpublishedCollectionFilter(expected);
-        this.assertGetSearchFilter(expected, search, dummyAclFilter);
-
+        expected.add(luceneQueryBuilder.getPublishedFilter(), BooleanClause.Occur.MUST);
+        
+        assertSearchFilter(expected, search, dummyAclFilter);
+        
+        // Iteration filter
+        expected.add(iterationQueryFilter, BooleanClause.Occur.MUST);
+        assertIterationFilter(expected, search, dummyAclFilter);
     }
 
-    private void assertGetSearchFilter(final Filter expected, final Search search, final Filter expectedReturnAclQuery) {
+    @Test
+    public void aclFilterAndOnlyPublishedCollections() {
+        search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED);
+        
+        BooleanFilter expected = new BooleanFilter();
+        expected.add(dummyAclFilter, BooleanClause.Occur.MUST);
+        expected.add(luceneQueryBuilder.getUnpublishedCollectionFilter(), BooleanClause.Occur.MUST);
+        
+        assertSearchFilter(expected, search, dummyAclFilter);
 
+        // Iteration filter
+        expected.add(iterationQueryFilter, BooleanClause.Occur.MUST);
+        assertIterationFilter(expected, search, dummyAclFilter);
+    }
+    
+    @Test
+    public void aclFilterAndAllSearchFilters() {
+        BooleanFilter expected = new BooleanFilter();
+        expected.add(dummyAclFilter, BooleanClause.Occur.MUST);
+        expected.add(luceneQueryBuilder.getPublishedFilter(), BooleanClause.Occur.MUST);
+        expected.add(luceneQueryBuilder.getUnpublishedCollectionFilter(), BooleanClause.Occur.MUST);
+        
+        assertSearchFilter(expected, search, dummyAclFilter);
+
+        // Iteration filter
+        expected.add(iterationQueryFilter, BooleanClause.Occur.MUST);
+        assertIterationFilter(expected, search, dummyAclFilter);
+    }
+    
+    @Test
+    public void noAclAndAllSearchFilters() {
+        BooleanFilter expected = new BooleanFilter();
+        expected.add(luceneQueryBuilder.getPublishedFilter(), BooleanClause.Occur.MUST);
+        expected.add(luceneQueryBuilder.getUnpublishedCollectionFilter(), BooleanClause.Occur.MUST);
+        
+        assertSearchFilter(expected, search, null);
+
+        // Iteration filter
+        expected.add(iterationQueryFilter, BooleanClause.Occur.MUST);
+        assertIterationFilter(expected, search, null);
+    }
+
+    @Test
+    public void noAclAndPublishedFilter() {
+        search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
+        assertSearchFilter(luceneQueryBuilder.getPublishedFilter(), search, null);
+        
+        // Iteration filter
+        BooleanFilter expected = new BooleanFilter();
+        expected.add(luceneQueryBuilder.getPublishedFilter(), BooleanClause.Occur.MUST);
+        expected.add(iterationQueryFilter, BooleanClause.Occur.MUST);
+        
+        assertIterationFilter(expected, search, null);
+        
+    }
+    
+    @Test
+    public void noAclAndUnpublishedCollectionsFilter() {
+        search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED);
+        assertSearchFilter(luceneQueryBuilder.getUnpublishedCollectionFilter(), search, null);
+
+    
+        // Iteration filter
+        BooleanFilter expected = new BooleanFilter();
+        expected.add(luceneQueryBuilder.getUnpublishedCollectionFilter(), BooleanClause.Occur.MUST);
+        expected.add(iterationQueryFilter, BooleanClause.Occur.MUST);
+        assertIterationFilter(expected, search, null);
+    }
+    
+    @Test
+    public void iterationWithNoQuery() {
+        search.setQuery(null);
+        BooleanFilter expected = new BooleanFilter();
+        expected.add(dummyAclFilter, BooleanClause.Occur.MUST);
+        expected.add(luceneQueryBuilder.getPublishedFilter(), BooleanClause.Occur.MUST);
+        expected.add(luceneQueryBuilder.getUnpublishedCollectionFilter(), BooleanClause.Occur.MUST);
+        
+        assertIterationFilter(expected, search, dummyAclFilter);
+    }
+    
+    @Test
+    public void iterationAll() {
+        search.setQuery(null);
+        search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED, Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
+        assertIterationFilter(null, search, null);
+    }
+    
+    private void assertSearchFilter(final Filter expected, final Search search, final Filter aclFilter) {
         context.checking(new Expectations() {
             {
-                one(mockQueryAuthorizationFilterFactory).authorizationQueryFilter(dummyToken, nullIndexSearcher);
-                will(returnValue(expectedReturnAclQuery));
+                oneOf(mockQueryAuthorizationFilterFactory).authorizationQueryFilter(dummyToken, null);
+                will(returnValue(aclFilter));
             }
         });
 
-        Filter actual = luceneQueryBuilder.buildSearchFilter(dummyToken, search, nullIndexSearcher);
+        Filter actual = luceneQueryBuilder.buildSearchFilter(dummyToken, search, null);
 
-        // Nothing more to do, requested configuration yields no filter
-        if (!search.hasFilterFlag(Search.FilterFlag.UNPUBLISHED)
-                && expectedReturnAclQuery == null) {
-            assertNull("Filter 'actual' is supposed to be NULL", actual);
-            return;
+        if (expected == null) {
+            assertNull("Filter was expected to be null", actual);
+        } else {
+            assertEquals("Filter is not as expected", expected, actual);
         }
-
-        assertNotNull("Filter 'actual' is NOT supposed to be NULL", actual);
-        assertNotNull("Filter 'expected' is NOT supposed to be NULL", expected);
-        assertTrue("Filter is not as expected", expected.equals(actual));
-
     }
+    
+    private void assertIterationFilter(final Filter expected, final Search search, final Filter aclFilter) {
+        context.checking(new Expectations() {
+            {
+                oneOf(mockQueryAuthorizationFilterFactory).authorizationQueryFilter(dummyToken, null);
+                will(returnValue(aclFilter));
+            }
+        });
 
+        Filter actual = luceneQueryBuilder.buildIterationFilter(dummyToken, search, null);
+        
+        if (expected == null) {
+            assertNull("Filter was expected to be null", actual);
+        } else {
+            assertEquals("Filter is not as expected", expected, actual);
+        }
+    }
 }

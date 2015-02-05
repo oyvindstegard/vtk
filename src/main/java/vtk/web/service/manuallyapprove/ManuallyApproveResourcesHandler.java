@@ -40,12 +40,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -55,6 +54,8 @@ import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.security.SecurityContext;
+import vtk.util.text.Json;
+import vtk.util.text.JsonStreamer;
 import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
@@ -179,13 +180,14 @@ public class ManuallyApproveResourcesHandler implements Controller {
         }
 
         boolean approvedOnly = request.getParameter(APPROVED_ONLY_PARAM) != null;
-        JSONArray arr = new JSONArray();
+        Json.ListContainer arr = new Json.ListContainer();
+
         for (ManuallyApproveResource m : result) {
             boolean approved = m.isApproved();
             if (approvedOnly && !approved) {
                 continue;
             }
-            JSONObject obj = new JSONObject();
+            Json.MapContainer obj = new Json.MapContainer();
             obj.put(TITLE, m.getTitle());
             obj.put(URI, m.getUrl().toString());
             obj.put(SOURCE, m.getSource());
@@ -198,7 +200,8 @@ public class ManuallyApproveResourcesHandler implements Controller {
         response.setContentType("text/plain;charset=utf-8");
         PrintWriter writer = response.getWriter();
         try {
-            writer.write(arr.toString(1));
+            JsonStreamer streamer = new JsonStreamer(writer, 1);
+            streamer.array(arr);
         } finally {
             writer.flush();
             writer.close();

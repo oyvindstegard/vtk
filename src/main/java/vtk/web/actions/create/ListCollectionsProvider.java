@@ -69,7 +69,7 @@ public class ListCollectionsProvider {
         }
         mainQuery.add(new TypeTermQuery("collection", TermOperator.IN));
         Search search = new Search();
-        search.removeAllFilterFlags();
+        search.clearAllFilterFlags();
         search.setQuery(mainQuery);
         search.setLimit(maxLimit);
         ResultSet rs = searcher.execute(token, search);
@@ -96,7 +96,7 @@ public class ListCollectionsProvider {
                 mainQuery.add(new UriDepthQuery(r.getURI().getDepth() + 1));
                 mainQuery.add(new TypeTermQuery("collection", TermOperator.IN));
                 Search search = new Search();
-                search.removeAllFilterFlags();
+                search.clearAllFilterFlags();
                 search.setQuery(mainQuery);
                 search.setLimit(1);
                 if (searcher.execute(token, search).getTotalHits() > 0) {

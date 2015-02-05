@@ -46,6 +46,7 @@ import vtk.util.io.StreamUtil;
  *
  * @author oyvind
  */
+@SuppressWarnings("unchecked")
 public class CommentStripFilterTest {
     
     /**

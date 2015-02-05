@@ -81,7 +81,7 @@ public class UnpublishedReporter extends DocumentReporter {
         sorting.addSortField(new PropertySortField(this.sortPropDef, this.sortOrder));
         
         /* Include unpublished */
-        search.removeAllFilterFlags();
+        search.clearAllFilterFlags();
         
         search.setSorting(sorting);
         search.setQuery(query);

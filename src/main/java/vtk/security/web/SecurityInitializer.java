@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.OrderComparator;
+
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.CookieLinkStore;
@@ -183,7 +184,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
                     c.setPath("/");
                     resp.addCookie(c);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Setting cookie: " + VRTXLINK_COOKIE + ": " + cookieLinkID.toString());
+                        logger.debug("Setting cookie: " + c + ": " + cookieLinkID.toString());
                     }
                 }
                 return true;
@@ -577,7 +578,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
 
                 resp.addCookie(c);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Setting cookie: " + cookie + ": " + handler.getIdentifier());
+                    logger.debug("Setting cookie: " + c + ": " + handler.getIdentifier());
                 }
             }
         }
@@ -587,7 +588,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
             c.setPath("/");
             resp.addCookie(c);
             if (logger.isDebugEnabled()) {
-                logger.debug("Setting cookie: " + VRTXLINK_COOKIE + ": " + cookieLinkID.toString());
+                logger.debug("Setting cookie: " + c + ": " + cookieLinkID.toString());
             }
         }
     }

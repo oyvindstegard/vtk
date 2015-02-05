@@ -45,11 +45,13 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationListener;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.event.RepositoryEvent;
 import vtk.repository.event.ResourceCreationEvent;
 import vtk.repository.event.ResourceDeletionEvent;
+import vtk.repository.event.ResourceMovedEvent;
 
 /**
  *  
@@ -61,7 +63,7 @@ public class MethodInvokingRepositoryEventTrigger
 
     private Repository repository;
     private Path uri;
-    private Pattern uriPattern;
+    private List<Pattern> uriPatterns;
     private Object targetObject;
     private String method;
 
@@ -92,26 +94,34 @@ public class MethodInvokingRepositoryEventTrigger
     public void setUri(String uri) {
         this.uri = Path.fromString(uri);
     }
-    
+        
     public void setUriPattern(String uriPattern) {
-        this.uriPattern = Pattern.compile(uriPattern);
+        this.uriPatterns = new ArrayList<>();
+        uriPatterns.add(Pattern.compile(uriPattern));
     }
     
+    public void setUriPatterns(List<String> uriPatterns) {
+        this.uriPatterns = new ArrayList<>();
+        for (String uriPattern: uriPatterns)
+            this.uriPatterns.add(Pattern.compile(uriPattern));
+    }
 
     @Override
     public void afterPropertiesSet() {
-        if (this.uri == null && this.uriPattern == null) {
+        if (this.uri == null && this.uriPatterns == null) {
             throw new BeanInitializationException(
-                "One of JavaBean properties 'uri' or 'uriPattern' must be specified.");
+                "One of JavaBean properties 'uri', 'uriPattern' or 'uriPatterns' must be specified.");
         }
         if (this.multipleInvocations != null && this.targetObject != null) {
-            throw new BeanInitializationException("Specify only one of properties 'targetObject + method' or 'multipleInvocations'");
+            throw new BeanInitializationException(
+                    "Specify only one of properties 'targetObject + method' or 'multipleInvocations'");
         }
         if (this.multipleInvocations == null && (this.targetObject == null || this.method == null)) {
-            throw new BeanInitializationException("Specify one of properties 'targetObject + method' or 'multipleInvocations'");
+            throw new BeanInitializationException(
+                    "Specify one of properties 'targetObject + method' or 'multipleInvocations'");
         }
 
-        this.methodInvocations = new ArrayList<TargetAndMethod>();
+        this.methodInvocations = new ArrayList<>();
         if (this.multipleInvocations == null) {
             initMethodInvocation(this.targetObject, this.method);
         } else {
@@ -145,24 +155,40 @@ public class MethodInvokingRepositoryEventTrigger
         
         Path resourceURI = event.getURI();
 
+        if (checkEvent(event, resourceURI)) {
+            invoke();
+        }
+        if (event instanceof ResourceMovedEvent) {
+            resourceURI = ((ResourceMovedEvent) event).getFrom().getURI();
+            if (checkEvent(event, resourceURI)) {
+                invoke();
+            }
+        }
+    }
+    
+    private boolean checkEvent(RepositoryEvent event, Path resourceURI) {
         if (this.uri != null) {
             if (((event instanceof ResourceDeletionEvent)
                  || (event instanceof ResourceCreationEvent))
                 && (resourceURI.isAncestorOf(this.uri)
                     || this.uri.isAncestorOf(resourceURI))) {
-                invoke();
-            } else if (this.uri.equals(resourceURI)) {
-                invoke();
+                return true;
             }
-        } else if (this.uriPattern != null) {
-            Matcher matcher = this.uriPattern.matcher(resourceURI.toString());
-            if (matcher.find()) {
-                invoke();
+            else if (this.uri.equals(resourceURI)) {
+                return true;
+            }
+        } 
+        else if (this.uriPatterns != null) {
+            for (Pattern uriPattern: this.uriPatterns) {
+                Matcher matcher = uriPattern.matcher(resourceURI.toString());
+                if (matcher.find()) {
+                    return true;
+                }
             }
         }
+        return false;
     }
-
-
+    
     private void invoke() {
         for (TargetAndMethod tm: this.methodInvocations) {
             Method m = tm.getMethod();

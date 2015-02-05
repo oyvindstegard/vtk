@@ -78,17 +78,27 @@
       
       <#if isCollection>
         $("#save").bind("click", function(e) {
-          var d = new VrtxConfirmDialog({
-            title: "${vrtx.getMsg("editor.new-message.confirm.title")}",
-            msg: "${vrtx.getMsg("editor.new-message.confirm.msg")}",
-            btnTextOk: "${vrtx.getMsg("editor.saveAndPublish")}",
-            btnTextCancel: "${vrtx.getMsg("editor.cancel")}",
-            onOk: function () {
-              $("#save").unbind("click");
-              $("#save").click();
-            }
-          });
-          d.open();
+          var title = $("input#title");
+          var titleText = $.trim(title.val());
+          if(titleText !== "") {
+            var confirmDialog = new VrtxConfirmDialog({
+              title: "${vrtx.getMsg("editor.new-message.confirm.title")}",
+              msg: "${vrtx.getMsg("editor.new-message.confirm.msg")}",
+              btnTextOk: "${vrtx.getMsg("editor.saveAndPublish")}",
+              btnTextCancel: "${vrtx.getMsg("editor.cancel")}",
+              onOk: function () {
+                $("#save").unbind("click");
+                $("#save").click();
+              }
+            });
+            confirmDialog.open();
+          } else {
+            var missingTitleMsgDialog = new VrtxMsgDialog({
+              title: "${vrtx.getMsg("editor.message.missing-title.title")}",
+              msg: "${vrtx.getMsg("editor.message.missing-title.msg")}"
+            });
+            missingTitleMsgDialog.open();
+          }
           e.stopPropagation();
           return false;
         });

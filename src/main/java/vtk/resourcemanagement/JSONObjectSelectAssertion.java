@@ -35,14 +35,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.RepositoryContentEvaluationAssertion;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.Content;
+import vtk.repository.resourcetype.property.PropertyEvaluationException;
 import vtk.security.Principal;
-import vtk.util.text.JSON;
+import vtk.util.text.Json;
 
 /**
  * XXX Not usable as web service assertion.
@@ -85,9 +85,14 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
         if (resource.isCollection()) return false;
         
         try {
-            JSONObject object = content.getContentRepresentation(net.sf.json.JSONObject.class);
-
-            Object o = JSON.select(object, this.expression);
+            Json.MapContainer object; 
+            try {
+                object = content.getContentRepresentation(Json.MapContainer.class);
+            } catch (Exception e) {
+                throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
+            }
+            
+            Object o = Json.select(object, this.expression);
             if (this.expectedValues == null || this.expectedValues.isEmpty()) {
                 return o != null;
             }

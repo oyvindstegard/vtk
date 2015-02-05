@@ -41,9 +41,10 @@ import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
-import vtk.util.text.JSON;
+import vtk.util.text.Json;
 
 public class JSONBackedListResource implements List<Object>, InitializingBean {
     private Repository repository;
@@ -83,7 +84,7 @@ public class JSONBackedListResource implements List<Object>, InitializingBean {
         List<Object> list = null;
         try {
             InputStream inputStream = this.repository.getInputStream(this.token, this.uri, false);
-            Object parsed = JSON.parse(inputStream);
+            Object parsed = Json.parse(inputStream);
             if (!(parsed instanceof List<?>)) {
                 return;
             }
@@ -250,6 +251,14 @@ public class JSONBackedListResource implements List<Object>, InitializingBean {
             return new ArrayList<Object>();
         }
         return this.list.subList(fromIndex, toIndex);
+    }
+    
+    @Override
+    public String toString() {
+        if (this.list == null) {
+            return "[]";
+        }
+        return this.list.toString();
     }
 
     private static final ListIterator<Object> EMPTY_ITERATOR = new ListIterator<Object>() {

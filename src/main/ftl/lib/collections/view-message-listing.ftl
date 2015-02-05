@@ -44,7 +44,9 @@
       <div class="vrtx-result-${i} vrtx-resource">
         <div class="vrtx-title">
           <a class="vrtx-title" href="${messageEntry.url?html}">${title?html}</a>
-          <#if messageEntry.editAuthorized>
+          <#if messageEntry.editLocked>
+            <span class="vrtx-message-listing-locked"><@vrtx.msg code="listing.edit.locked-by" /> ${messageEntry.lockedByNameHref}</span>
+          <#elseif messageEntry.editAuthorized>
             <#-- Don't use messageEntry.url here, since we only allow editing of local resources (not resources from other hosts) -->
             <a class="vrtx-message-listing-edit" href="${vrtx.relativeLinkConstructor(message.URI, 'simpleMessageEditor')}"><@vrtx.msg code="collectionListing.editlink" /></a>
           </#if> 

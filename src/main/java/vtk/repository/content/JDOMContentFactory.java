@@ -39,19 +39,16 @@ import org.jdom.input.SAXBuilder;
 /**
  * Content factory for <code>org.jdom.Document</code> objects.
  */
-public class JDOMContentFactory implements ContentFactory {
+public class JDOMContentFactory implements ContentFactory<Document> {
 
     @Override
-    public Class<?>[] getRepresentationClasses() {
-        return new Class[] {Document.class};
+    public Class<Document> getRepresentationType() {
+        return Document.class;
     }
     
 
     @Override
-    public Document getContentRepresentation(Class clazz,  InputStream content) throws Exception {
-        if (clazz != Document.class) {
-            throw new UnsupportedContentRepresentation("Unsupported representation: " + clazz);
-        }
+    public Document getContentRepresentation(InputStream content) throws Exception {
         SAXBuilder saxBuilder = new SAXBuilder();
         saxBuilder.setValidation(false);
         saxBuilder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);

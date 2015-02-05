@@ -1,11 +1,43 @@
+/* Copyright (c) 2014, University of Oslo, Norway
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ * 
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 
+ *  * Neither the name of the University of Oslo nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *      
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package vtk.web;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Acl;
 import vtk.repository.Privilege;
+import vtk.repository.PropertySet;
 import vtk.repository.Repository;
-import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 import vtk.text.html.HtmlUtil;
@@ -17,14 +49,13 @@ public class ACLTooltipHelper {
     private Repository repository;
     private org.springframework.web.servlet.support.RequestContext springRequestContext;
     
-    public String generateTitle(Resource r, HttpServletRequest request) {
-        return generateTitle(r, null, request);
+    public String generateTitle(PropertySet r, Acl acl, boolean isInheritedAcl, HttpServletRequest request) {
+        return generateTitle(r, acl, isInheritedAcl, null, request);
     }
 
-    public String generateTitle(Resource r, String name, HttpServletRequest request) {
+    public String generateTitle(PropertySet r, Acl acl, boolean isInheritedAcl, String name, HttpServletRequest request) {
         RequestContext requestContext = RequestContext.getRequestContext();
         
-        Acl acl = r.getAcl();
         boolean authorizedToRead = authorizedTo(acl, requestContext.getPrincipal(), Privilege.READ);
         boolean authorizedToAdmin = authorizedTo(acl, requestContext.getPrincipal(), Privilege.ALL);
         
@@ -35,7 +66,7 @@ public class ACLTooltipHelper {
         if(name != null) {
             title.append("<strong id=&quot;title&quot;>" + HtmlUtil.encodeBasicEntities(name) + "</strong>");
         }
-        if (r.isInheritedAcl()) {
+        if (isInheritedAcl) {
             String inheritedPermissionTitle = getLocalizedTitle(request, "report.list-resources.inherited-permissions", null);
             if(name == null) {
                 inheritedPermissionTitle = inheritedPermissionTitle.substring(0, 1).toUpperCase() + inheritedPermissionTitle.substring(1);
@@ -78,7 +109,7 @@ public class ACLTooltipHelper {
 
         title.append("</tbody></table>");
 
-        if (r.isInheritedAcl()) {
+        if (isInheritedAcl) {
             title.append("</span>");
         }
         
@@ -89,7 +120,7 @@ public class ACLTooltipHelper {
         return repository.authorize(principal, acl, privilege);
     }
 
-    private void genEditOrViewButton(HttpServletRequest request, Resource r, boolean authorizedToAdmin,
+    private void genEditOrViewButton(HttpServletRequest request, PropertySet r, boolean authorizedToAdmin,
             boolean authorizedToRead, StringBuilder title) {
         String uriService = this.permissionsService.constructURL(r.getURI()).getPathRepresentation();
         if (authorizedToAdmin) {

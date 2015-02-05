@@ -185,7 +185,7 @@ public class SubFolderMenuComponent extends ListMenuComponent {
         }
         search.setQuery(mainQuery);
         search.setLimit(menuRequest.getSearchLimit());
-        search.setPropertySelect(PropertySelect.ALL);
+        search.setPropertySelect(PropertySelect.ALL_PROPERTIES);
         return search;
     }
 

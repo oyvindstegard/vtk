@@ -37,10 +37,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -52,7 +50,7 @@ import vtk.security.SecurityContext;
 import vtk.text.html.HtmlFragment;
 import vtk.text.html.HtmlPageFilter;
 import vtk.text.html.HtmlPageParser;
-import vtk.util.io.StreamUtil;
+import vtk.util.text.Json;
 import vtk.web.RequestContext;
 import vtk.web.servlet.ResourceAwareLocaleResolver;
 
@@ -91,7 +89,7 @@ public class SharedTextResolver {
     private ResourceAwareLocaleResolver localeResolver;
 
     @SuppressWarnings("unchecked")
-    public Map<String, JSONObject> getSharedTextValues(String docType, PropertyTypeDefinition propDef, boolean view) {
+    public Map<String, Json.MapContainer> getSharedTextValues(String docType, PropertyTypeDefinition propDef, boolean view) {
 
         // No propdef to work on
         if (propDef == null) {
@@ -137,7 +135,7 @@ public class SharedTextResolver {
         return getSharedTextValuesMap(sharedTextPath, sharedTextFileName);
     }
 
-    public Map<String, Map<String, JSONObject>> resolveSharedTexts() throws Exception {
+    public Map<String, Map<String, Json.MapContainer>> resolveSharedTexts() throws Exception {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
@@ -149,10 +147,10 @@ public class SharedTextResolver {
 
         if (propTypeDefs != null) {
 
-            Map<String, Map<String, JSONObject>> sharedTextPropsMap = new HashMap<String, Map<String, JSONObject>>();
+            Map<String, Map<String, Json.MapContainer>> sharedTextPropsMap = new HashMap<>();
 
             for (PropertyTypeDefinition propDef : propTypeDefs) {
-                Map<String, JSONObject> sharedTexts = getSharedTextValues(resource.getResourceType(), propDef, false);
+                Map<String, Json.MapContainer> sharedTexts = getSharedTextValues(resource.getResourceType(), propDef, false);
                 if (sharedTexts != null) {
                     sharedTextPropsMap.put(propDef.getName(), sharedTexts);
                 }
@@ -167,7 +165,7 @@ public class SharedTextResolver {
     }
 
     public String resolveSharedText(Resource resource, Property prop) {
-        Map<String, JSONObject> resolvedsharedTexts = getSharedTextValues(resource.getResourceType(),
+        Map<String, Json.MapContainer> resolvedsharedTexts = getSharedTextValues(resource.getResourceType(),
                 prop.getDefinition(), true);
 
         if (resolvedsharedTexts == null || resolvedsharedTexts.isEmpty()) {
@@ -178,7 +176,7 @@ public class SharedTextResolver {
         Locale locale = localeResolver.resolveResourceLocale(resource);
         String localeString = locale.toString().toLowerCase();
 
-        JSONObject propSharedText;
+        Json.MapContainer propSharedText;
         if (!resolvedsharedTexts.containsKey(key) || (propSharedText = resolvedsharedTexts.get(key)) == null) {
             return null;
         }
@@ -209,7 +207,7 @@ public class SharedTextResolver {
         }
 
         String sharedTextPath = SHARED_TEXT_DEFAULT_PATH.concat("/").concat(docType);
-        Map<String, JSONObject> sharedTextValuesMap = getSharedTextValuesMap(sharedTextPath, propertyName);
+        Map<String, Json.MapContainer> sharedTextValuesMap = getSharedTextValuesMap(sharedTextPath, propertyName);
 
         if (sharedTextValuesMap == null || sharedTextValuesMap.isEmpty()) {
             return sharedTextMap;
@@ -235,10 +233,10 @@ public class SharedTextResolver {
         return sharedTextMap;
     }
 
-    private Map<String, JSONObject> getSharedTextValuesMap(String sharedTextPath, String sharedTextFileName) {
+    private Map<String, Json.MapContainer> getSharedTextValuesMap(String sharedTextPath, String sharedTextFileName) {
 
         // The resulting return object
-        Map<String, JSONObject> sharedTextValuesMap = new LinkedHashMap<String, JSONObject>();
+        Map<String, Json.MapContainer> sharedTextValuesMap = new LinkedHashMap<>();
 
         Path sharedTextResourcePath = getSharedTextResourcepath(sharedTextPath, sharedTextFileName);
         // Invalid path
@@ -259,14 +257,13 @@ public class SharedTextResolver {
             }
 
             InputStream stream = repository.getInputStream(token, sharedTextResourcePath, true);
-            String jsonString = StreamUtil.streamToString(stream, "utf-8");
-            JSONObject document = JSONObject.fromObject(jsonString);
+            Json.MapContainer document = Json.parseToContainer(stream).asObject();
 
-            JSONArray json = document.getJSONObject("properties").getJSONArray("shared-text-box");
+            Json.ListContainer list = document.objectValue("properties").arrayValue("shared-text-box");
 
-            for (Object obj : json) {
-                JSONObject jsonObj = JSONObject.fromObject(obj);
-                sharedTextValuesMap.put(jsonObj.getString("id"), filterDescription(jsonObj));
+            for (Object obj : list) {
+                Json.MapContainer jsonObj = (Json.MapContainer) obj;
+                sharedTextValuesMap.put(jsonObj.stringValue("id"), filterDescription(jsonObj));
             }
 
         } catch (Exception e) {
@@ -285,14 +282,14 @@ public class SharedTextResolver {
         return null;
     }
 
-    private JSONObject filterDescription(JSONObject j) {
+    private Json.MapContainer filterDescription(Json.MapContainer j) {
 
         String[] list = { "description-no", "description-nn", "description-en" };
 
         for (String descriptionKey : list) {
             HtmlFragment fragment;
             try {
-                fragment = htmlParser.parseFragment(j.getString(descriptionKey));
+                fragment = htmlParser.parseFragment(j.stringValue(descriptionKey));
                 fragment.filter(safeHtmlFilter);
                 j.put(descriptionKey, fragment.getStringRepresentation());
             } catch (Exception e) {

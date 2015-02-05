@@ -1,0 +1,733 @@
+/*
+ *
+ *  Vortex - Editor - Common
+ *
+ *  ToC:
+ * 
+ *  1. General
+ *  2. Dimensions and explicit settings
+ *  3. CK
+ *
+ */
+ 
+@import "base";
+
+/*-----------------------------------------*\
+	1. General
+\*-----------------------------------------*/
+
+h2 {
+  background: url(images/line-dotted.gif) repeat-x bottom left;
+  padding-bottom: 15px;
+}
+
+#buttons-or-text {
+  padding: 0 10px;
+  color: #666;
+}
+
+.dropdown-shortcut-menu-container .help-link {
+  margin-right: 0px;
+}
+
+.property-item,
+.html-content,
+.vrtx-string,
+.vrtx-html,
+.vrtx-simple-html,
+.vrtx-radio,
+.vrtx-json,
+.vrtx-resource-ref,
+.vrtx-image-ref,
+.vrtx-media-ref,
+.vrtx-grouped-horizontal,
+.vrtx-grouped {
+  margin-top: 20px;
+}
+
+.properties .vrtx-string.divide-top,
+.properties .vrtx-html.divide-top,
+.properties .vrtx-simple-html.divide-top,
+.properties .vrtx-checkbox.divide-top {
+  background: url(images/line-dotted.gif) repeat-x top left !important;
+  margin-top: 30px !important;
+  padding-top: 15px !important;
+}
+
+.property-item,
+.html-content,
+.vrtx-grouped,
+.vrtx-html.content,
+.vrtx-html.content-study,
+.vrtx-html.responsibilities {
+  clear: left;
+}
+
+.property-label,
+.html-content label,
+.vrtx-string label,
+.vrtx-html label,
+.vrtx-simple-html label,
+.vrtx-radio label,
+.vrtx-json label,
+.vrtx-resource-ref label,
+.vrtx-image-ref label,
+.vrtx-media-ref label,
+.vrtx-grouped-horizontal .header,
+.vrtx-grouped-vertical .header,
+.vrtx-grouped .header,
+.vrtx-json .header {
+  font-size: 1.15em;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.vrtx-grouped-vertical label,
+.vrtx-grouped-horizontal label,
+.vrtx-grouped label,
+.vrtx-json label {
+  font-size: 1em;
+}
+
+.vrtx-image-ref-browse .vrtx-button,
+.vrtx-media-ref .vrtx-button,
+.vrtx-resource-ref .vrtx-button {
+  margin-left: 11px;
+}
+
+.featured-articles-row,
+.aggregation-row,
+.manually-approve-from-row,
+.vrtx-multipleinputfield {
+  margin-bottom: 10px;
+}
+
+.vrtx-multipleinputfield {
+  clear: both;
+  float: left;
+  width: 100%;
+}
+
+.vrtx-multipleinputfield-json-wrapper,
+.vrtx-multipleinputfield .vrtx-dropdown {
+  display: inline-block;
+}
+
+.featured-articles-row .vrtx-textfield,
+.featured-articles-row .vrtx-button,
+.aggregation-row .vrtx-textfield,
+.aggregation-row .vrtx-button,
+.manually-approve-from-row .vrtx-textfield,
+.manually-approve-from-row .vrtx-button,
+.vrtx-multipleinputfield .vrtx-textfield,
+.vrtx-multipleinputfield .vrtx-dropdown,
+.vrtx-multipleinputfield .vrtx-button {
+  margin-right: 20px;
+}
+
+.vrtx-multipleinputfields .vrtx-button {
+  margin-left: 0px;
+}
+
+/* Hide multiple inputfield if has enrichment */
+.vrtx-multipleinputfield-field.vrtx-multipleinputfield-field-enriched {
+  display: none;
+}
+
+/* Enrichment user text or link */
+.vrtx-multipleinputfield .vrtx-multiple-inputfield-enrichment {
+  padding: 6px 0 0 0;
+  width: 140px;
+  margin-right: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.vrtx-multipleinputfield a.vrtx-multiple-inputfield-enrichment {
+  color: #005aab;
+}
+
+/* Setup user enrichment */
+.vrtxStaff .vrtx-multipleinputfield-field {
+  width: 122px;
+  margin-right: 20px;
+}
+
+.vrtx-multipleinputfield > * {
+  float: left;
+}
+
+.vrtx-multipleinputfield .vrtx-button.moveup img,
+.vrtx-multipleinputfield .vrtx-button.movedown img {
+  height: 15px;
+}
+
+.vrtx-multipleinputfield .vrtx-button.moveup,
+.vrtx-multipleinputfield .vrtx-button.movedown {
+  padding-left: 9px;
+  padding-right: 9px;
+}
+
+.vrtx-multipleinputfield .vrtx-button.moveup:hover,
+.vrtx-multipleinputfield .vrtx-button.moveup:focus,
+.vrtx-multipleinputfield .vrtx-button.movedown:hover,
+.vrtx-multipleinputfield .vrtx-button.movedown:focus {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.vrtx-multipleinputfield .vrtx-button.moveup span,
+.vrtx-multipleinputfield .vrtx-button.movedown span,
+.vrtx-json .vrtx-json-element .vrtx-move-up-button span,
+.vrtx-json .vrtx-json-element .vrtx-move-down-button span {
+  display: block;
+  height: 16px;
+  width: 11px;
+}
+
+.vrtx-multipleinputfield .vrtx-button.moveup span,
+.vrtx-json .vrtx-json-element .vrtx-move-up-button span {
+  background: url("images/multiple-move-up.png") no-repeat center center;
+}
+
+.vrtx-multipleinputfield .vrtx-button.movedown span,
+.vrtx-json .vrtx-json-element .vrtx-move-down-button span {
+  background: url("images/multiple-move-down.png") no-repeat center center;
+}
+
+.vrtx-multipleinputfield .vrtx-button.moveup:hover span,
+.vrtx-json .vrtx-json-element .vrtx-move-up-button:hover span,
+.vrtx-multipleinputfield .vrtx-button.moveup:focus span,
+.vrtx-json .vrtx-json-element .vrtx-move-up-button:focus span {
+  background-image: url("images/multiple-move-up-rollover.png");
+}
+
+.vrtx-multipleinputfield .vrtx-button.movedown:hover span,
+.vrtx-json .vrtx-json-element .vrtx-move-down-button:hover span,
+.vrtx-multipleinputfield .vrtx-button.movedown:focus span,
+.vrtx-json .vrtx-json-element .vrtx-move-down-button:focus span {
+  background-image: url("images/multiple-move-down-rollover.png");
+}
+
+/* Sticky title and editor save/cancel buttons */
+
+.properties > *:first-child,
+.properties > .first {
+  margin-top: 0px;
+}
+
+.properties.properties-post > *:first-child {
+  margin-top: 20px;
+}
+
+#vrtx-editor #editor {
+  padding-top: 20px;
+  background: transparent url("images/line-dotted.gif") repeat-x left top;
+}
+
+#vrtx-editor #editor .properties.hidden-props {
+  display: none;
+}
+
+#vrtx-editor-title-submit-buttons-inner-wrapper {
+  padding-top: 10px;
+  background: #fff;
+}
+
+#app-content #main {
+  padding-top: 9px;
+}
+
+#app-content .submit-extra-buttons {
+  clear: none;
+  float: right;
+  margin-top: -42px;
+  padding-top: 0px;
+}
+
+#app-content .submit-extra-buttons #editor-button-row {
+  margin-bottom: -10px;
+}
+
+#app-content .vrtx-sticky-editor-title-submit-buttons {
+  position: fixed;
+  top: 0px;
+  z-index: 9999;
+  margin-left: -19px;
+  @include boxShadow(0px 7px 14px -8px rgba(0, 0, 0, 0.5));
+}
+
+#app-content .vrtx-sticky-editor-title-submit-buttons .sticky-bg-ie8-below {
+  height: 13px;
+  position: absolute;
+  bottom: -13px;
+  left: 0px;
+  width: 100%;
+  background: transparent url(images/sticky-bar-fade-to-grey-ie8-bg.png) repeat-x bottom left;
+  display: block;
+}
+
+#app-content .vrtx-sticky-editor-title-submit-buttons #vrtx-editor-title-submit-buttons-inner-wrapper {
+  padding-left: 19px;
+  padding-right: 19px;
+  position: relative;
+}
+
+#app-content form#backupForm,
+#app-content .animate-optimized {
+  overflow: hidden;
+}
+
+#editor-loading {
+  position: relative;
+  top: 0px;
+  left: 0px;
+  height: 100px;
+  width: 100%;
+  display: block;
+  background: transparent;
+}
+
+html.embedded #editor-loading {
+  height: 100%;
+}
+
+#editor-loading-inner {
+  background: transparent url(images/ajax-loader.gif) no-repeat center left;
+  display: block;
+  padding: 10px 5px 10px 42px;
+  font-size: 1.308em;
+  position: relative;
+  position: absolute;
+  top: 38%;
+  left: 38%;
+  color: #5e5e5e;
+}
+
+html.embedded #vrtx-editor #app-content #editor {
+  padding-top: 15px;
+}
+
+html.embedded #vrtx-editor-title-submit-buttons-inner-wrapper {
+  padding-top: 0;
+}
+
+html.embedded #vrtx-editor-title-submit-buttons .submitButtons,
+html.embedded .submitButtons > * {
+  display: none;
+}
+
+html.embedded .submitButtons .vrtx-embedded-button {
+  display: inline-block;
+}
+
+html.embedded-loading #vrtx-editor #app-content #editor {
+  padding-top: 0px;
+  background: none;
+}
+
+
+/*-----------------------------------------*\
+	2. Dimensions and explicit settings
+\*-----------------------------------------*/
+
+#resource\.programContext\.title,
+#resource\.programOptionContext\.title,
+#resource\.courseContext\.course-name-no,
+#resource\.courseContext\.course-name-nn,
+#resource\.courseContext\.course-name-en,
+div.aggregation input,
+div.manually-approve-from input,
+div.cssUrl input {
+  width: 485px;
+}
+
+div.navigationTitle input {
+  width: 338px;
+}
+
+div.manually-approve-from table input {
+  width: auto;
+}
+
+.properties > div.title input,
+.properties > div.name input,
+.properties > div.userTitle input {
+  width: 525px;
+}
+
+#vrtx-simple-editor div.userTitle input {
+  width: 513px;
+}
+
+div.additionalContent,
+div.introduction,
+div.image-description,
+div.video-description,
+div.audio-description,
+div.description {
+  width: 547px;
+}
+
+div.additionalContent iframe {
+  height: 150px !important;
+}
+
+div.introduction,
+div.image-description,
+div.video-description,
+div.audio-description,
+div.description {
+  margin-bottom: 20px;
+}
+
+div.introduction textarea,
+div.image-description textarea,
+div.video-description textarea,
+div.audio-description textarea,
+div.description textarea {
+  height: 120px;
+}
+
+div.content textarea,
+div.content-study textarea,
+div.additionalContents textarea,
+div.additionalContent textarea,
+div.relatedContent textarea,
+div.selectedPublications textarea,
+div.related-content textarea,
+div.contactInfo textarea,
+div.responsibilities textarea {
+  width: 100%;
+}
+
+div.content textarea {
+  height: 300px;
+}
+
+div.additionalContents textarea,
+div.additionalContent textarea,
+div.relatedContent textarea,
+div.selectedPublications textarea,
+div.related-content textarea,
+div.contactInfo textarea,
+div.responsibilities textarea {
+  height: 160px;
+}
+
+div.introduction iframe,
+div.image-description iframe,
+div.video-description iframe,
+div.audio-description iframe,
+div.description iframe {
+  width: 522px !important;
+}
+
+div.introduction textarea,
+div.image-description textarea,
+div.video-description textarea,
+div.audio-description textarea,
+div.description textarea {
+  width: 543px !important;
+}
+
+/* Event */
+
+.vrtx-textfield.vrtx-date {
+  width: 67px;
+}
+
+.vrtx-textfield.vrtx-hours,
+.vrtx-textfield.vrtx-minutes {
+  width: 17px;
+}
+
+/* ^ Event */
+
+/* Image and caption */
+
+div.caption textarea {
+  height: 107px;
+  width: 352px !important;
+}
+
+.introImageAndCaption .header,
+#additional-content .header,
+.vrtx-grouped .vrtx-json .header {
+  display: none;
+}
+
+form.vrtx-program-frontpage #additional-content .header,
+form.vrtx-program-option-frontpage #additional-content .header {
+  display: block;
+}
+
+.introImageAndCaption label {
+  font-size: 1.15em !important;
+  margin-bottom: 10px !important;
+  display: block !important;
+}
+
+div.introImageAndCaption,
+div#vrtx-resource\.picture {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+div#vrtx-resource\.picture,
+div.introImageAndCaption,
+div.introImageAndCaption .vrtx-image-ref {
+  margin-top: 0px;
+}
+
+div.introImageAndCaption .caption,
+div#vrtx-resource\.picture .caption {
+  width: 355px; 
+}
+
+div.introImageAndCaption iframe,
+div#vrtx-resource\.picture iframe {
+  width: 331px !important;
+}
+
+div.introImageAndCaption .hidePicture .vrtx-radio-buttons label {
+  display: inline !important; 
+}
+
+div.introImageAndCaption .hidePicture .vrtx-radio-buttons label:after {
+  display: block !important;
+  content: ".";
+  visibility: hidden;
+  height: 7px;
+}
+
+div.introImageAndCaption .hidePicture .vrtx-radio-buttons label:last-child:after {
+  height: 15px;
+}
+
+div.introImageAndCaption .hidePicture > label {
+  white-space: nowrap;
+}
+
+div#vrtx-resource\.linkOtherLanguage .vrtx-textfield,
+div.introImageAndCaption div.vrtx-image-ref-browse input#picture.vrtx-textfield,
+div#vrtx-resource\.picture div.input-and-button-container input.vrtx-textfield {
+  width: 200px;
+}
+
+div#vrtx-resource\.linkOtherLanguage .vrtx-textfield,
+div#vrtx-resource\.poster-image div.input-and-button-container\.poster-image .vrtx-textfield,
+div#vrtx-resource\.picture div.input-and-button-container .vrtx-textfield {
+  margin-right: 20px;
+}
+
+div.introImageAndCaption div#picture\.preview,
+div#vrtx-resource\.picture div#resource\.picture\.preview,
+div.introImageAndCaption .caption,
+div.introImageAndCaption .pictureAlt,
+div#vrtx-resource\.picture .caption,
+div#vrtx-resource\.picture .pictureAlt {
+  margin-top: 20px;
+  margin-right: 20px;
+  float: left;
+  clear: none;
+}
+
+div.introImageAndCaption .hidePicture,
+div#vrtx-resource\.picture .hidePicture {
+  margin-top: 20px;
+}
+
+div.introImageAndCaption .hidePicture + .pictureAlt,
+div#vrtx-resource\.picture .hidePicture + .pictureAlt {
+  margin-top: 0px;
+}
+
+.pictureAlt input {
+  width: 230px;
+}
+
+div.introImageAndCaption .vrtx-image-ref-preview {
+  display: block;
+}
+
+.vrtx-image-ref-preview,
+div#resource\.poster-image\.preview,
+div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview,
+div#resource\.picture\.preview {
+  position: relative;
+}
+
+div#resource\.poster-image\.preview,
+div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview {
+  margin-top: 20px;
+}
+
+.vrtx-image-ref-preview span,
+div#resource\.poster-image\.preview span,
+div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview span,
+div#resource\.picture\.preview span {
+  color: #9d9d9d;
+  font-size: 1.15em;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  position: relative;
+  top: 77px;
+  margin-top: -20px;
+  display: none;
+}
+
+.vrtx-image-ref-preview.no-preview span,
+div#resource\.picture\.preview.no-preview span,
+div#resource\.poster-image\.preview.no-preview span,
+div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-preview span {
+  display: block;
+}
+
+/* Image scaling */
+
+.vrtx-image-ref-preview-inner,
+div#resource\.picture\.preview-inner,
+div#resource\.poster-image\.preview-inner,
+div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview-inner {
+  max-width: 170px;
+  max-height: 115px;
+  min-width: 95px;
+  overflow: hidden;
+}
+
+.vrtx-image-ref-preview-inner img,
+div#vrtx-resource\.picture img,
+div#vrtx-resource\.poster-image img,
+div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
+  max-width: 170px;
+  max-height: 115px;
+  margin-top: 0px;
+  overflow: hidden;
+}
+
+.vrtx-image-ref-preview.no-preview img,
+div#resource\.picture\.preview.no-preview img,
+div#resource\.poster-image\.preview.no-preview img,
+div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-preview img {
+  width: 168px;
+  height: 113px;
+  border: 1px solid #D3D3D3;
+}
+
+/* ^ Image scaling */
+
+/* ^ Image and caption */
+
+
+/*------------------------------------*\
+	3. CK
+\*------------------------------------*/
+
+.cke_chrome {
+  border-color: #d9d9d9 !important;
+  /* Remove rounded corners */
+  @include borderRadius(0px !important);
+  box-shadow: none !important;
+  background: #ededed !important;
+  
+  .cke_inner {
+    padding: 10px !important;
+    background: #ededed !important;
+  }
+  .cke_top {
+    background: #ededed !important;
+    padding: 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    -ms-filter: "none" !important;
+  }
+  /* Contains float alternative fix to make help-menu visible on slide-down (overflowing) */
+  .cke_maximized .cke_top {
+    overflow: visible;
+    display: inline-block;
+  }
+  .cke_bottom {
+    background: transparent !important;
+    padding: 10px 0 0 0 !important;
+    margin: 0 0 -5px 0 !important;
+    border-top: none !important;
+    box-shadow: none !important;
+    -ms-filter: "none" !important;
+  }
+  .cke_resizer {
+    background: url(images/resize-ck.png) no-repeat center center !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: inline-block !important;
+    width: 10px !important;
+    height: 9px !important;
+    margin: 0 2px 0 0 !important;
+  }
+  .cke_contents {
+    border: 1px solid #d9d9d9 !important;
+  }
+  .cke_toolgroup {
+    background: #fff !important;
+    margin-bottom: 10px !important;
+    border: 1px solid #bbb !important;
+    box-shadow: none !important;
+    -ms-filter: "none" !important;
+  }
+  .cke_combo_button {
+    background: #fff !important;
+    -ms-filter: "none" !important;
+  }
+  .cke_combo_text {
+    width: 63px;
+  }
+  /* Make scrollbar visible with padding in textarea / CK-source */
+  .cke_source {
+    @include borderBox;
+  }
+  /* Override CK for injected save/help */
+  .vrtx-button {
+    margin: 0 0 0 10px !important;
+  }
+  .vrtx-button,
+  #editor-help-menu a {
+    font: normal 13px/1.3 Arial, sans-serif !important;
+    cursor: pointer !important;  
+  }
+  #editor-help-menu {
+    padding-left: 10px;
+    a {
+      color: $linkColor;
+    }
+    ul.dropdown-shortcut-menu-container li a {
+      border-bottom: 1px solid $buttonBorderColor;
+    }
+  }
+}
+
+/* Blue CK dialog button */
+
+@mixin ckDialogButtonStyle {
+  text-shadow: none;
+  border-color: #2d81c8;
+}
+
+.cke_dialog {
+  a.cke_dialog_ui_button_ok {
+    @include ckDialogButtonStyle;
+    @include linearGradientBackgroundColors(#71b2e9, #66ace7, #499ce2, #3d95e0, 0%, 26%, 74%, 100%);
+    &:focus,
+    &:hover {
+      @include ckDialogButtonStyle;
+      @include linearGradientBackgroundColors(#8ec6ef, #83c2ed, #56b4ea, #4db0e8, 0%, 22%, 83%, 100%);
+    }
+    span {
+      text-shadow: none;
+    }
+  }
+}
+
+/* ^ Vortex - Editor - Common */

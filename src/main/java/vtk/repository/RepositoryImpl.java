@@ -257,9 +257,12 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             throw new IllegalArgumentException("No such revision: " + revision.getID());
         }
 
+        // Permissions on WORKING_COPY are the same as on the 
+        // resource itself. Otherwise, authorize for the given revision:
         if (revision.getType() != Revision.Type.WORKING_COPY) {
             if (!this.authorizationManager.authorize(principal, revision.getAcl(), Privilege.READ)) {
-                throw new AuthorizationException("Principal " + principal + " not authorized by revision ACL for privilege READ");
+                throw new AuthorizationException(
+                        "Principal " + principal + " not authorized by revision ACL for privilege READ");
             }
         }
 

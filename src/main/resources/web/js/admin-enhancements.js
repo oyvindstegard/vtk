@@ -7,15 +7,12 @@
  *  2.  DOM is ready
  *  3.  DOM is fully loaded
  *  4.  General / setup interactions
- *  5.  Create / Upload / Copy / Move
- *  6.  Collectionlisting
- *  7.  Editor
- *  8.  Permissions
- *  9.  Async functions
- *  10. Async helper functions and AJAX server façade
- *  11. Popups and CK browse server integration
- *  12. Utils
- *  13. Override JavaScript / jQuery
+ *  5.  Permissions
+ *  6.  Async functions
+ *  7.  Async helper functions and AJAX server façade
+ *  8.  Popups and CK browse server integration
+ *  9.  Utils
+ *  10. Override JavaScript / jQuery
  *
  */
 
@@ -140,6 +137,8 @@ function VrtxAdmin() {
     timeout: 300000 // 5min
   });
   this.runReadyLoad = true;
+  this.domainsIsReady = $.Deferred();
+  this.domainsInstantIsReady = $.Deferred();
   this.bodyId = "";
   
   this.requiredScriptsLoaded = null;
@@ -186,10 +185,10 @@ var VrtxAnimation = function(opts) {
    */
   obj.update = function update(opts)         { futureAppliedFn(arguments.callee.toString(), opts); };
   obj.updateElem = function updateElem(elem) { futureAppliedFn(arguments.callee.toString(), elem); };
-  obj.rightIn = function rightIn()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.leftOut = function leftOut()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.topDown = function topDown()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.bottomUp = function bottomUp()         { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.rightIn = function rightIn()           { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.leftOut = function leftOut()           { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.topDown = function topDown()           { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.bottomUp = function bottomUp()         { futureAppliedFn(arguments.callee.toString(), null); };
 };
 
 
@@ -216,8 +215,9 @@ vrtxAdmin._$(document).ready(function () {
 
   vrtxAdm.bodyId = vrtxAdm.cachedBody.attr("id") || "";
   vrtxAdm.cachedBody.addClass("js");
-  if(vrtxAdm.isIE8) vrtxAdm.cachedBody.addClass("ie8");
-  
+  if(vrtxAdm.isIE8) {
+    vrtxAdm.cachedBody.addClass("ie8");
+  }
   vrtxAdm.embeddedView();
   
   // Show message in IE6, IE7 and IETrident in compability mode
@@ -240,12 +240,13 @@ vrtxAdmin._$(document).ready(function () {
   vrtxAdm.requiredScriptsLoaded = $.Deferred();
   vrtxAdm.loadScripts(["/js/vrtx-animation.js", "/js/vrtx-tree.js"], vrtxAdm.requiredScriptsLoaded);
   vrtxAdm.clientLastModified = $("#resource-last-modified").text().split(",");
-  
+ 
+  /* Delay some stuff and only run some stuff if not embedded */
   if(!isEmbedded && !isEmbedded2) {
     vrtxAdm.initDropdowns();
     vrtxAdm.initScrollBreadcrumbs();
   }
-  vrtxAdm.initDomainsInstant();
+  vrtxAdm.domainsInstantIsReady.resolve();
   
   if(!isEmbedded && !isEmbedded2) {
     vrtxAdm.initMiscAdjustments();
@@ -263,6 +264,7 @@ vrtxAdmin._$(document).ready(function () {
       vrtxAdm.initResourceMenus();
     }
     vrtxAdm.initDomains();
+    vrtxAdm.domainsIsReady.resolve();
   }, 25);
 
   vrtxAdm.log({ msg: "Document.ready() in " + (getNowTime() - startReadyTime) + "ms." });
@@ -324,18 +326,21 @@ VrtxAdmin.prototype.initTooltips = function initTooltips() {
   }
   $("#main").vortexTips(".tooltips", {
     appendTo: "#contents",
-    containerWidth: 320, xOffset: 20, yOffset: -15
+    containerWidth: 320,
+    xOffset: 20, yOffset: -15
   });
   this.cachedBody.vortexTips(".ui-dialog:visible .tree-create li span.folder", {
     appendTo: ".vrtx-create-tree",
-    containerWidth: 80, xOffset: 10, yOffset: -8,
+    containerWidth: 80,
+    xOffset: 10, yOffset: -8,
     expandHoverToTipBox: true,
     enterOpens: true,
     extra: true
   });
   this.cachedBody.vortexTips("td.permissions span.permission-tooltips", {
     appendTo: "#contents",
-    containerWidth: 340, xOffset: 10, yOffset: -8,
+    containerWidth: 340,
+    xOffset: 10, yOffset: -8,
     expandHoverToTipBox: true,
     enterOpens: true
   });
@@ -360,8 +365,24 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       nodeType: "div",
       simultanSliding: true
     });
+    
+    // Ajax post if rename (with redirect)
+    var isRename = resourceMenuLeftServices[i] === "renameService";
+    
     vrtxAdm.completeFormAsync({
-      selector: "form#" + resourceMenuLeftServices[i] + "-form input[type=submit]"
+      selector: "form#" + resourceMenuLeftServices[i] + "-form input[type=submit]",
+      errorContainer: "errorContainer",
+      errorContainerInsertAfter: "h3",
+      post: isRename,
+      ignoreDifferentMode: true,
+      funcComplete: (isRename ? function(p) {
+        var currentPath = location.pathname;
+        var isCollection = /\/$/.test(currentPath);
+        var newName = $("form#renameService-form .vrtx-textfield").val();
+        var newPath = isCollection ? currentPath.replace(/[^\/]+\/$/, "") + newName + "/"
+                                   : currentPath.replace(/[^\/]+$/, "") + newName;
+        location.pathname = newPath;
+      } : null)
     });
   }
   var resourceMenuRightServices = ["vrtx-unpublish-document", "vrtx-publish-document"];
@@ -378,9 +399,7 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       nodeType: "div",
       simultanSliding: true,
       funcComplete: (isSavingBeforePublish ? function (p) {
-        var publishSaveResource = vrtxAdm.lang === "en" ? "Are you sure you want to save and publish?"
-                                                        : "Er du sikker på at du vil lagre og publisere?";
-        $("#vrtx-publish-document-form h3").text(publishSaveResource);
+        $("#vrtx-publish-document-form h3").text(vrtxAdmin.messages.publish.saveConfirm);
       } : null)
     });
     vrtxAdm.completeFormAsync({
@@ -393,13 +412,17 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
           link: link,
           form: $("#vrtx-publish-document-form"),
           funcComplete: function () {
-            updateClientLastModifiedAlreadyRetrieved();
+            if(typeof updateClientLastModifiedAlreadyRetrieved === "function") {
+              updateClientLastModifiedAlreadyRetrieved();
+            }
             vrtxAdm.globalAsyncComplete();
           }
         });
         return false;
       } : function(link) {
-        updateClientLastModifiedAlreadyRetrieved();
+        if(typeof updateClientLastModifiedAlreadyRetrieved === "function") {
+          updateClientLastModifiedAlreadyRetrieved();
+        }
         vrtxAdm.globalAsyncComplete();
       }),
       post: (!isSavingBeforePublish && (typeof isImageAudioVideo !== "boolean" || !isImageAudioVideo))
@@ -566,12 +589,14 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
     },
     funcComplete: function () {
       apsD.close();
-      updateClientLastModifiedAlreadyRetrieved();
+      if(typeof updateClientLastModifiedAlreadyRetrieved === "function") {
+        updateClientLastModifiedAlreadyRetrieved();
+      }
       vrtxAdm.globalAsyncComplete();
     }
   });
   
-  // Validation of dates
+  // Validation of dates (private function)
   var generateDateObjForValidation = function(dialog, idInfix) {
     var date = dialog.find("#" + idInfix + "-date").val();
     if(!date.length) {
@@ -609,7 +634,9 @@ VrtxAdmin.prototype.globalAsyncComplete = function globalAsyncComplete() {
   vrtxAdm.initResourceTitleDropdown();
   vrtxAdm.initPublishingDropdown();
   vrtxAdm.adjustResourceTitle();
-  vrtxAdm.updateCollectionListingInteraction();
+  if(typeof vrtxAdm.updateCollectionListingInteraction === "function") {
+    vrtxAdm.updateCollectionListingInteraction();
+  }
 };
 
 /**
@@ -657,226 +684,15 @@ VrtxAdmin.prototype.embeddedView = function embeddedView() {
 };
 
 /*
- * Domains init
- *
- * TODO: Too big and complex (HV: ?, CC: ?)
- *
- * * is based on id of body-tag
+ * Domains init (based on id of body-tag) - rest is in domain-specific JS-files in domains/-folder
  *
  */
- 
 VrtxAdmin.prototype.initDomains = function initDomains() {
   var vrtxAdm = this,
       bodyId = vrtxAdm.bodyId;
       _$ = vrtxAdm._$;
       
   switch (bodyId) {
-    case "vrtx-manage-collectionlisting":
-      var tabMenuServices = ["fileUploadService", "createDocumentService", "createCollectionService"];
-      var speedCreationServices = vrtxAdm.isIE8 ? 0 : 350;
-      for (i = tabMenuServices.length; i--;) {
-          if (tabMenuServices[i] !== "fileUploadService") {
-            vrtxAdm.getFormAsync({
-              selector: "ul#tabMenuRight a#" + tabMenuServices[i],
-              selectorClass: "vrtx-admin-form",
-              insertAfterOrReplaceClass: "#active-tab ul#tabMenuRight",
-              nodeType: "div",
-              focusElement: "input[type='text']",
-              funcComplete: function (p) {
-                createFuncComplete();
-              },
-              simultanSliding: true,
-              transitionSpeed: speedCreationServices
-            });
-            vrtxAdm.completeFormAsync({
-              selector: "form#" + tabMenuServices[i] + "-form input[type=submit]",
-              transitionSpeed: speedCreationServices,
-              funcBeforeComplete: function () {
-                createTitleChange("#vrtx-textfield-collection-title", $("#vrtx-textfield-collection-name"), $("#isIndex"));
-                createTitleChange("#vrtx-textfield-file-title", $("#vrtx-textfield-file-name"), $("#isIndex"));
-              }
-            });
-          } else {
-            if (vrtxAdm.isIOS5) { // TODO: feature detection
-              _$("ul#tabMenuRight li." + tabMenuServices[i]).remove();
-            } else {
-              vrtxAdm.getFormAsync({
-                selector: "ul#tabMenuRight a#" + tabMenuServices[i],
-                selectorClass: "vrtx-admin-form",
-                insertAfterOrReplaceClass: "#active-tab ul#tabMenuRight",
-                nodeType: "div",
-                focusElement: "",
-                funcComplete: function (p) {
-                  vrtxAdm.initFileUpload();
-                },
-                simultanSliding: true
-              });
-              vrtxAdm.completeFormAsync({
-                selector: "form#" + tabMenuServices[i] + "-form input[type=submit]",
-                updateSelectors: ["#contents"],
-                errorContainer: "errorContainer",
-                errorContainerInsertAfter: "h3",
-                post: true,
-                funcProceedCondition: ajaxUpload
-              });
-              vrtxAdm.initFileUpload(); // when error message
-            }
-          }
-      }
-      
-      tabMenuServices = ["collectionListing\\.action\\.move-resources", "collectionListing\\.action\\.copy-resources"];
-      resourceMenuServices = ["moveToSelectedFolderService", "copyToSelectedFolderService"];
-      // TODO: This map/lookup-obj is a little hacky..
-      tabMenuServicesInjectMap = {
-        "collectionListing.action.move-resources": "moveToSelectedFolderService",
-        "collectionListing.action.copy-resources": "copyToSelectedFolderService"
-      };
-      
-      // Mark resources for copy / move
-      for (i = tabMenuServices.length; i--;) {
-        vrtxAdm.completeSimpleFormAsync({
-          selector: "input#" + tabMenuServices[i],
-          useClickVal: true,
-          fnComplete: markResourcesCopyMove
-        });
-      }
- 
-      // Copy / move resources
-      for (i = resourceMenuServices.length; i--;) {
-        vrtxAdm.completeSimpleFormAsync({
-          selector: "#resourceMenuRight li." + resourceMenuServices[i] + " button",
-          useClickVal: true,
-          extraParams: "&overwrite",
-          fnBeforePost: function(form, link) {
-            if(link.attr("name") !== "clear-action") {
-              form.find(".vrtx-button-small").hide();
-              form.find(".vrtx-cancel-link").hide();
-              _$("<span class='vrtx-show-processing' />").insertBefore(form.find(".vrtx-cancel-link"));
-            }
-          },
-          fnComplete: resourcesCopyMove
-        });
-      }
-
-      // Publish / unpublish resources
-      vrtxAdm.completeSimpleFormAsync({
-        selector: "input#collectionListing\\.action\\.unpublish-resources, input#collectionListing\\.action\\.publish-resources",
-        updateSelectors: ["#contents"],
-        useClickVal: true,
-        fnComplete: function(resultElm) {
-          vrtxAdm.displayErrorMsg(resultElm.find(".errormessage").html());
-          vrtxAdm.updateCollectionListingInteraction();
-        }
-      });
-      
-      // Delete resources
-      var deletingD = null;
-      vrtxAdm.completeSimpleFormAsync({
-        selector: "input#collectionListing\\.action\\.delete-resources",
-        updateSelectors: ["#contents"],
-        useClickVal: true,
-        rowCheckedAnimateOut: true,
-        minDelay: 800,
-        fnBeforePost: function() {
-          deletingD = new VrtxLoadingDialog({title: vrtxAdm.messages.deleting.inprogress});
-          deletingD.open();
-        },
-        fnCompleteInstant: function() {
-          deletingD.close();
-        },
-        fnComplete: function(resultElm) {
-          vrtxAdm.displayErrorMsg(resultElm.find(".errormessage").html());
-          vrtxAdm.updateCollectionListingInteraction();
-        },
-        fnError: function() {
-          deletingD.close();
-        }
-      });
-      break;
-    case "vrtx-trash-can":
-      var deletingPermanentD = null;
-      var deletingPermanentEmptyFolder = false;
-      vrtxAdm.completeSimpleFormAsync({
-        selector: "input.deleteResourcePermanent",
-        updateSelectors: ["#contents"],
-        rowCheckedAnimateOut: true,
-        minDelay: 800,
-        fnBeforePost: function(form, link) {
-          if (vrtxAdm.trashcanCheckedFiles >= vrtxAdm.cachedContent.find("tbody tr").length) {
-            deletingPermanentEmptyFolder = true;
-          }
-          vrtxAdm.trashcanCheckedFiles = 0;
-          startTime = new Date();
-          deletingPermanentD = new VrtxLoadingDialog({title: vrtxAdm.messages.deleting.inprogress});
-          deletingPermanentD.open();
-        },
-        fnCompleteInstant: function() {
-          deletingPermanentD.close();
-        },
-        fnComplete: function(resultElm) {
-          vrtxAdm.displayErrorMsg(resultElm.find(".errormessage").html());
-          vrtxAdm.updateCollectionListingInteraction();
-          deletingPermanentD.close();
-          if(deletingPermanentEmptyFolder) { // Redirect on empty trash can
-            window.location.href = "./?vrtx=admin";
-          }
-        },
-        fnError: function() {
-          deletingPermanentD.close();
-        }
-      });
-      break;
-    case "vrtx-editor":
-    case "vrtx-edit-plaintext":
-    case "vrtx-visual-profile":
-      if (_$("form#editor").length) {
-        
-        // Dropdowns
-        if(!isEmbedded) {
-          vrtxAdm.dropdownPlain("#editor-help-menu");
-          vrtxAdm.dropdown({
-            selector: "ul#editor-menu",
-            title: vrtxAdm.messages.dropdowns.editorTitle
-          });
-        }
-
-        // Save shortcut and AJAX
-        vrtxAdm.cachedDoc.bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
-          ctrlSEventHandler(_$, e);
-        }));
-    
-        // Save
-        eventListen(vrtxAdm.cachedAppContent, "click", ".vrtx-save-button", function (ref) {
-          var link = _$(ref);
-          vrtxAdm.editorSaveButtonName = link.attr("name");
-          vrtxAdm.editorSaveButton = link;
-          // ! Edit single course schedule session
-          vrtxAdm.editorSaveIsRedirectPreview = (ref.id === "saveAndViewButton" || ref.id === "saveViewAction")
-                                             && (typeof vrtxEditor === "undefined" || !(vrtxEditor.editorForm.hasClass("vrtx-course-schedule") && onlySessionId.length));
-          ajaxSave();
-          _$.when(vrtxAdm.asyncEditorSavedDeferred).done(function () {
-            vrtxAdm.removeMsg("error");
-            // Redirect after save
-            if(vrtxAdm.editorSaveIsRedirectPreview) {
-              if(typeof vrtxEditor !== "undefined") vrtxEditor.needToConfirm = false;
-              var isCollection = _$("#resource-title.true").length;
-              if(isCollection) {
-                window.location.href = "./?vrtx=admin&action=preview";
-              } else {
-                window.location.href = window.location.pathname + "?vrtx=admin";
-              }
-            } else {
-              if(typeof vrtxEditor !== "undefined") {
-                storeInitPropValues($("#app-content > form, #contents"));
-                if(typeof CKEDITOR !== "undefined") {
-                  vrtxEditor.richtextEditorFacade.resetChanged();
-                }
-              }
-            }
-          }).fail(handleAjaxSaveErrors);
-        });
-      }
-      break;
     case "vrtx-preview":
     case "vrtx-revisions":
       eventListen(vrtxAdm.cachedAppContent, "click", "a.vrtx-revision-view, a.vrtx-revision-view-changes", function (ref) {
@@ -923,183 +739,6 @@ VrtxAdmin.prototype.initDomains = function initDomains() {
         });
       }
       break;
-    case "vrtx-permissions":
-      var privilegiesPermissions = ["read", "read-write", "all"];
-      for (i = privilegiesPermissions.length; i--;) {
-        vrtxAdm.getFormAsync({
-          selector: "div.permissions-" + privilegiesPermissions[i] + "-wrapper a.full-ajax",
-          selectorClass: "expandedForm-" + privilegiesPermissions[i],
-          insertAfterOrReplaceClass: "div.permissions-" + privilegiesPermissions[i] + "-wrapper",
-          isReplacing: true,
-          nodeType: "div",
-          funcComplete: initPermissionForm,
-          simultanSliding: false
-        });
-        vrtxAdm.completeFormAsync({
-          selector: "div.permissions-" + privilegiesPermissions[i] + "-wrapper .submitButtons input",
-          isReplacing: true,
-          updateSelectors: [".permissions-" + privilegiesPermissions[i] + "-wrapper",
-                            "#resourceMenuRight"],
-          errorContainer: "errorContainer",
-          errorContainerInsertAfter: ".groups-wrapper",
-          funcProceedCondition: checkStillAdmin,
-          funcComplete: function () {
-            if (vrtxAdm.reloadFromServer) {
-              window.location.reload(true);
-            } else {
-              vrtxAdm.globalAsyncComplete();
-            }
-          },
-          post: true
-        });
-      }
-
-      var privilegiesPermissionsInTable = ["add-comment", "read-processed", "read-write-unpublished"];
-      for (i = privilegiesPermissionsInTable.length; i--;) {
-        vrtxAdm.getFormAsync({
-          selector: ".privilegeTable tr." + privilegiesPermissionsInTable[i] + " a.full-ajax",
-          selectorClass: privilegiesPermissionsInTable[i],
-          insertAfterOrReplaceClass: "tr." + privilegiesPermissionsInTable[i],
-          isReplacing: true,
-          nodeType: "tr",
-          funcComplete: initPermissionForm,
-          simultanSliding: true
-        });
-        vrtxAdm.completeFormAsync({
-          selector: "tr." + privilegiesPermissionsInTable[i] + " .submitButtons input",
-          isReplacing: true,
-          updateSelectors: ["tr." + privilegiesPermissionsInTable[i],
-                            "#resourceMenuRight"],
-          errorContainer: "errorContainer",
-          errorContainerInsertAfter: ".groups-wrapper",
-          funcComplete: function () {
-            vrtxAdm.globalAsyncComplete();
-          },
-          post: true
-        });
-      }
-
-      // Remove/add permissions
-      vrtxAdm.completeSimpleFormAsync({
-        selector: "input.removePermission",
-        updateSelectors: [".principalList"],
-        fnComplete: initSimplifiedPermissionForm
-      });
-      vrtxAdm.completeSimpleFormAsync({
-        selector: "span.addGroup input[type='submit']",
-        updateSelectors: [".principalList"],
-        errorContainer: "errorContainer",
-        errorContainerInsertAfter: ".groups-wrapper",
-        fnComplete: function() {
-          $("input#groupNames").val("");
-          initSimplifiedPermissionForm();
-        }
-      });
-      vrtxAdm.completeSimpleFormAsync({
-        selector: "span.addUser input[type='submit']",
-        updateSelectors: [".principalList"],
-        errorContainer: "errorContainer",
-        errorContainerInsertAfter: ".users-wrapper",
-        fnComplete: function() {
-          $("input#userNames").val("");
-          initSimplifiedPermissionForm();
-        }
-      });
-      
-      var SUBMIT_SET_INHERITED_PERMISSIONS = false;
-      vrtxAdm.cachedDoc.on("click", "#permissions\\.toggleInheritance\\.submit", function (e) {
-        if (!SUBMIT_SET_INHERITED_PERMISSIONS && typeof confirmSetInheritedPermissionsMsg !== "undefined") {
-          var d = new VrtxConfirmDialog({
-            msg: confirmSetInheritedPermissionsMsg,
-            title: confirmSetInheritedPermissionsTitle,
-            onOk: function () {
-              SUBMIT_SET_INHERITED_PERMISSIONS = true;
-              $("#permissions\\.toggleInheritance\\.submit").trigger("click");
-            }
-          });
-          d.open();
-          e.stopPropagation();
-          e.preventDefault();
-        } else {
-          e.stopPropagation();
-        }
-      });
-
-      break;
-    case "vrtx-about":
-      vrtxAdm.zebraTables(".resourceInfo");
-
-      if (!vrtxAdmin.isIE7) { // Turn of tmp. in IE7
-        var propsAbout = ["contentLocale", "commentsEnabled", "userTitle", "keywords", "description",
-                        "verifiedDate", "authorName", "authorEmail", "authorURL", "collection-type",
-                        "contentType", "userSpecifiedCharacterEncoding", "plaintext-edit", "xhtml10-type",
-                        "obsoleted", "editorial-contacts"];
-        for (i = propsAbout.length; i--;) {
-          vrtxAdm.getFormAsync({
-            selector: ".prop-" + propsAbout[i] + " a.vrtx-button-small",
-            selectorClass: "expandedForm-prop-" + propsAbout[i],
-            insertAfterOrReplaceClass: "tr.prop-" + propsAbout[i],
-            isReplacing: true,
-            nodeType: "tr",
-            simultanSliding: true
-          });
-          vrtxAdm.completeFormAsync({
-            selector: ".prop-" + propsAbout[i] + " form input[type=submit]",
-            isReplacing: true
-          });
-        }
-      }
-
-      var takenOwnership = false;
-      vrtxAdm.cachedDoc.on("submit", "#vrtx-admin-ownership-form", function (e) {
-        if (!takenOwnership) {
-          var d = new VrtxConfirmDialog({
-            msg: confirmTakeOwnershipMsg,
-            title: confirmTakeOwnershipTitle,
-            onOk: function () {
-              takenOwnership = true;
-              _$("#vrtx-admin-ownership-form").submit();
-            }
-          });
-          d.open();
-          e.stopPropagation();
-          e.preventDefault();
-        } else {
-          e.stopPropagation();
-        }
-      });
-
-      // Urchin stats
-      vrtxAdm.cachedBody.on("click", "#vrtx-resource-visit-tab-menu a", function (e) {
-        if (vrtxAdm.asyncGetStatInProgress) {
-          return false;
-        }
-        vrtxAdm.asyncGetStatInProgress = true;
-
-        var link = _$(this);
-        var liElm = link.parent();
-        if (liElm.hasClass("first")) {
-          liElm.removeClass("first").addClass("active active-first");
-          liElm.next().removeClass("active active-last").addClass("last");
-        } else {
-          liElm.removeClass("last").addClass("active active-last");
-          liElm.prev().removeClass("active active-first").addClass("first");
-        }
-
-        _$("#vrtx-resource-visit-wrapper").append("<span id='urchin-loading'></span>");
-        _$("#vrtx-resource-visit-chart-stats-info").remove();
-        vrtxAdm.serverFacade.getHtml(this.href, {
-          success: function (results, status, resp) {
-            _$("#urchin-loading").remove();
-            _$("#vrtx-resource-visit").append("<div id='vrtx-resource-visit-chart-stats-info'>" + _$($.parseHTML(results)).find("#vrtx-resource-visit-chart-stats-info").html() + "</div>");
-            vrtxAdm.asyncGetStatInProgress = false;
-          }
-        });
-        e.stopPropagation();
-        e.preventDefault();
-      });
-      
-      break;
     case "vrtx-report-broken-links":
       eventListen(vrtxAdm.cachedDoc, "click", ".vrtx-report-alternative-view-switch input", function (ref) {
         if(!$(ref).is(":checked")) {
@@ -1111,18 +750,6 @@ VrtxAdmin.prototype.initDomains = function initDomains() {
       break;
     default:
       // noop
-      break;
-  }
-};
-
-VrtxAdmin.prototype.initDomainsInstant = function initDomainsInstant() {
-  var vrtxAdm = this;
-      
-  switch (vrtxAdm.bodyId) {
-    case "vrtx-trash-can":
-    case "vrtx-manage-collectionlisting":
-      vrtxAdm.collectionListingInteraction();
-    default: // noop
       break;
   }
 };
@@ -1506,22 +1133,6 @@ VrtxAdmin.prototype.adjustResourceTitle = function adjustResourceTitle() {
   }
 };
 
-function interceptEnterKeyAndReroute(txt, btn, fnOnKeyPress) {
-  vrtxAdmin.cachedAppContent.on("keypress", txt, function (e) {
-    if (isKey(e, [vrtxAdmin.keys.ENTER])) {
-      if ($(this).hasClass("blockSubmit")) { // submit/rerouting can be blocked elsewhere on textfield
-        $(this).removeClass("blockSubmit");
-      } else {
-        $(btn).click(); // click the associated button
-      }
-      if(typeof fnOnKeyPress === "function") {
-        fnOnKeyPress($(this));
-      }
-      e.preventDefault();
-    }
-  });
-}
-
 VrtxAdmin.prototype.mapShortcut = function mapShortcut(selectors, reroutedSelector) {
   eventListen(this.cachedAppContent, "click", selectors, function(ref) {
     $(reroutedSelector).click();
@@ -1540,1568 +1151,134 @@ VrtxAdmin.prototype.logoutButtonAsLink = function logoutButtonAsLink() {
 };
 
 
-/*-------------------------------------------------------------------*\
-    5. Create / Upload / Copy / Move
-       XXX: optimize more and needs more seperation
-\*-------------------------------------------------------------------*/
-
-function createFuncComplete() {
-  var vrtxAdm = vrtxAdmin;
-  
-  // Navigate radio buttons
-  vrtxAdm.cachedDoc.on("keydown", "#active-tab .vrtx-admin-form .radio-buttons input[type='radio']", function(e) {
-    if(isKey(e, [vrtxAdm.keys.LEFT_ARROW, vrtxAdm.keys.UP_ARROW, vrtxAdm.keys.RIGHT_ARROW, vrtxAdm.keys.DOWN_ARROW])) {
-      var checkBox = $(this);
-      var waitAndRefocus = setTimeout(function() {
-        var checked = checkBox.closest(".radio-buttons").find("input:checked");
-        if(checked.length) {
-          checked[0].focus();
-        }
-      }, 15);
-    }
-  });
-  
-  eventListen(vrtxAdm.cachedDoc, "keyup", "#vrtx-div-collection-title input[type='text']", function(ref) {
-    createTitleChange($(ref), $("#vrtx-div-collection-name input[type='text']"), null);
-  }, null, vrtxAdm.keyInputDebounceRate);
-  
-  eventListen(vrtxAdm.cachedDoc, "keyup", "#vrtx-div-file-title input[type='text']", function(ref) {
-    createTitleChange($(ref), $("#vrtx-div-file-name input[type='text']"), $("#isIndex"));
-  }, null, vrtxAdm.keyInputDebounceRate);
-  
-  eventListen(vrtxAdm.cachedDoc, "keyup", "#vrtx-div-file-name input[type='text'], #vrtx-div-collection-name input[type='text']", function(ref) {
-    createFileNameChange($(ref));
-  }, null, vrtxAdm.keyInputDebounceRate);
-
-  vrtxAdm.createResourceReplaceTitle = true;
-
-  // Fix margin left for radio descriptions because radio width variation on different OS-themes
-  var radioDescriptions = $(".radioDescription");
-  if (radioDescriptions.length) {
-    var leftPos = $(".radio-buttons label").filter(":first").position().left;
-    radioDescriptions.css("marginLeft", leftPos + "px");
-  }
-
-  $("#initCreateChangeTemplate").trigger("click");
-  $(".vrtx-admin-form input[type='text']").attr("autocomplete", "off").attr("autocorrect", "off");
-  
-  var notRecommendedTemplates = $("#vrtx-create-templates-not-recommended");
-  if(notRecommendedTemplates.length) {
-    notRecommendedTemplates.hide();
-    $("<a id='vrtx-create-templates-not-recommended-toggle' href='javascript:void(0);'>" + createShowMoreTemplates + "</a>").insertBefore(notRecommendedTemplates);
-    $("#vrtx-create-templates-not-recommended-toggle").click(function(e) {
-      $(this).hide().next().toggle().parent().find(".radio-buttons:first input:first").click();
-      e.stopPropagation();
-      e.preventDefault();
-    });
-  }
-}
-
-function createChangeTemplate(hasTitle) {
-  var checked = $(".radio-buttons input").filter(":checked");
-  var fileTypeEnding = "";
-  if (checked.length) {
-    var templateFile = checked.val();
-    if (templateFile.indexOf(".") !== -1) {
-      var fileType = $("#vrtx-textfield-file-type");
-      if (fileType.length) {
-        fileTypeEnding = templateFile.split(".")[1];
-        fileType.text("." + fileTypeEnding);
-      }
-    }
-  }
-  var indexCheckbox = $("#isIndex");
-  var isIndex = false;
-
-  if (indexCheckbox.length) {
-    if (fileTypeEnding !== "html") {
-      indexCheckbox.parent().hide();
-      if (indexCheckbox.is(":checked")) {
-        indexCheckbox.removeAttr("checked");
-        createCheckUncheckIndexFile($("#vrtx-div-file-name input[type='text']"), indexCheckbox);
-      }
-    } else {
-      indexCheckbox.parent().show();
-      isIndex = indexCheckbox.is(":checked");
-    }
-  }
-
-  var isIndexOrReplaceTitle = false;
-  if (hasTitle) {
-    $("#vrtx-div-file-title").show();
-    isIndexOrReplaceTitle = vrtxAdmin.createResourceReplaceTitle || isIndex;
-  } else {
-    $("#vrtx-div-file-title").hide();
-    isIndexOrReplaceTitle = isIndex;
-  }
-
-  var name = $("#name");
-  growField(name, name.val(), 5, isIndexOrReplaceTitle ? 35 : 100, 530);
-  
-  if (vrtxAdmin.createResourceReplaceTitle) {
-    $(".vrtx-admin-form").addClass("file-name-from-title");
-  }
-}
-
-function createCheckUncheckIndexFile(nameField, indexCheckbox) {
-  if (indexCheckbox.is(":checked")) {
-    vrtxAdmin.createDocumentFileName = nameField.val();
-    growField(nameField, 'index', 5, 35, 530);
-    nameField.val("index");
-    
-    nameField[0].disabled = true;
-    $("#vrtx-textfield-file-type").addClass("disabled");
-  } else {
-    nameField[0].disabled = false;
-    $("#vrtx-textfield-file-type").removeClass("disabled");
-
-    nameField.val(vrtxAdmin.createDocumentFileName);
-    growField(nameField, vrtxAdmin.createDocumentFileName, 5, (vrtxAdmin.createResourceReplaceTitle ? 35 : 100), 530);
-  }
-}
-
-function createTitleChange(titleField, nameField, indexCheckbox) {
-  if (vrtxAdmin.createResourceReplaceTitle) {
-    var nameFieldVal = replaceInvalidChar(titleField.val(), fileTitleSubstitutions, true);
-    if (!indexCheckbox || !indexCheckbox.length || !indexCheckbox.is(":checked")) {
-      if (nameFieldVal.length > 50) {
-        nameFieldVal = nameFieldVal.substring(0, 50);
-      }
-      nameField.val(nameFieldVal);
-      growField(nameField, nameFieldVal, 5, 35, 530);
-    } else {
-      vrtxAdmin.createDocumentFileName = nameFieldVal;
-    }
-  }
-}
-
-function createFileNameChange(nameField) {
-  if (vrtxAdmin.createResourceReplaceTitle) {
-    vrtxAdmin.createResourceReplaceTitle = false;
-  }
-
-  updateField({
-    field: nameField,
-    substitutions: fileTitleSubstitutions,
-    toLowerCase: true,
-    afterUpdate: function(after) {
-      growField(this.field, after, 5, 100, 530);
-    }
-  });
-  $(".file-name-from-title").removeClass("file-name-from-title");
-}
-
-var fileTitleSubstitutions = {
-  " ": "-",
-  "&": "-",
-  "'": "-",
-  "\"": "-",
-  "\\/": "-",
-  "\\\\": "-",
-  "æ": "e",
-  "ø": "o",
-  "å": "a",
-  ",": "",
-  "%": "",
-  "#": "",
-  "\\?": ""
-};
-
-function updateField(opts) {
-  var currentCaretPos = getCaretPos(opts.field[0]);
-  var before = opts.field.val();
-  var after = replaceInvalidChar(before, opts.substitutions, opts.toLowerCase);
-  opts.field.val(after);
-  if(opts.afterUpdate) opts.afterUpdate(after);
-  setCaretToPos(opts.field[0], currentCaretPos - (before.length - after.length));
-  return after;
-}
-
-function replaceInvalidChar(val, substitutions, toLowerCase) {
-  if(toLowerCase) val = val.toLowerCase();
-  for (var key in substitutions) {
-    var replaceThisCharGlobally = new RegExp(key, "g");
-    val = val.replace(replaceThisCharGlobally, substitutions[key]);
-  }
-  return val;
-}
-
-/* Taken from second comment (and jquery.autocomplete.js): 
- * http://stackoverflow.com/questions/499126/jquery-set-cursor-position-in-text-area
- */
-function setCaretToPos(input, pos) {
-  setSelectionRange(input, pos, pos);
-}
-
-function setSelectionRange(field, start, end) {
-  if (field.createTextRange) {
-    var selRange = field.createTextRange();
-    selRange.collapse(true);
-    selRange.moveStart("character", start);
-    selRange.moveEnd("character", end);
-    selRange.select();
-  } else if (field.setSelectionRange) {
-    field.setSelectionRange(start, end);
-  } else {
-    if (field.selectionStart) {
-      field.selectionStart = start;
-      field.selectionEnd = end;
-    }
-  }
-  field.focus();
-}
-
-/* Taken from fourth comment:
- * http://stackoverflow.com/questions/4928586/get-caret-position-in-html-input
- */
-function getCaretPos(input) {
-  if (input.setSelectionRange) {
-    return input.selectionStart;
-  } else if (document.selection && document.selection.createRange) {
-    var range = document.selection.createRange();
-    var bookmark = range.getBookmark();
-    return bookmark.charCodeAt(2) - 2;
-  }
-}
-
-/* 
- * jQuery autoGrowInput plugin 
- * by James Padolsey
- *
- * Modified to simplified function++ for more specific use / event-handling
- * by USIT, 2012
- *
- * See related thread: 
- * http://stackoverflow.com/questions/931207/is-there-a-jquery-autogrow-plugin-for-text-fields
- */
-function growField(input, val, comfortZone, minWidth, maxWidth) {
-  var testSubject = $('<tester/>').css({
-    position: 'absolute',
-    top: -9999,
-    left: -9999,
-    width: 'auto',
-    fontSize: input.css('fontSize'),
-    fontFamily: input.css('fontFamily'),
-    fontWeight: input.css('fontWeight'),
-    letterSpacing: input.css('letterSpacing'),
-    whiteSpace: 'nowrap'
-  });
-  input.parent().find("tester").remove(); // Remove test-subjects
-  testSubject.insertAfter(input);
-  testSubject.html(val);
-
-  var newWidth = Math.min(Math.max(testSubject.width() + comfortZone, minWidth), maxWidth),
-    currentWidth = input.width();
-  if (newWidth !== currentWidth) {
-    input.width(newWidth);
-  }
-}
-
-
 /**
- * Initialize file upload
- *
- * @this {VrtxAdmin}
+ * Input update engine
+ * @namespace
  */
-VrtxAdmin.prototype.initFileUpload = function initFileUpload(isAutoUpload) {
-  var vrtxAdm = vrtxAdmin,
-    _$ = vrtxAdm._$;
-  var form = _$("form[name=fileUploadService]");
-  if (!form.length) return;
-  var inputFile = form.find("#file");
-  
-  if(typeof isAutoUpload !== "undefined" && isAutoUpload) {
-    var btnI18n = vrtxAdm.lang === "en" ? "Upload" : "Last opp";
-  } else {
-    var btnI18n = vrtxAdm.lang === "en" ? "Browse" : "Bla igjennom";
-  }
-
-  _$("<input class='vrtx-textfield vrtx-file-upload' tabindex='-1' id='fake-file' type='text' /><a tabindex='-1' class='vrtx-button vrtx-file-upload'>" + btnI18n+ "...</a>")
-    .insertAfter(inputFile);
-
-  inputFile.change(function (e) {
-    var filePath = _$(this).val();
-    filePath = filePath.substring(filePath.lastIndexOf("\\") + 1);
-    if (vrtxAdm.supportsFileList) {
-      var files = this.files;
-      if (files.length > 1) {
-        var tailMsg = "files selected";
-        if (typeof fileUploadMoreFilesTailMessage !== "undefined") {
-          tailMsg = fileUploadMoreFilesTailMessage;
-        }
-        filePath = files.length + " " + tailMsg;
-      }
+VrtxAdmin.prototype.inputUpdateEngine = {
+  /**
+   * Update
+   *
+   * @this {inputSelectionEngine}
+   */
+  update: function(opts) {
+    var currentCaretPos = this.getCaretPos(opts.input[0]);
+    var before = opts.input.val();
+    var after = this.substitute(before, opts.toLowerCase, opts.substitutions);
+    opts.input.val(after);
+    if(opts.afterUpdate) {
+      opts.afterUpdate(after);
     }
-    form.find("#fake-file").val(filePath);
-  });
-
-  var fileUploadLink = _$("a.vrtx-file-upload");
-  inputFile.hover(function () { fileUploadLink.addClass("hover");
-  }, function () {              fileUploadLink.removeClass("hover"); });
-  inputFile.focus(function () { fileUploadLink.addClass("hover");    })
-  .blur(function() {            fileUploadLink.removeClass("hover"); });
-  
-  $("<a id='upload-focus' style='display: inline-block; outline: none;' tabindex='-1' />").insertBefore("#file");
-  $("#upload-focus")[0].focus();
-
-  if (vrtxAdm.supportsReadOnly(document.getElementById("fake-file"))) {
-    form.find("#fake-file").attr("readOnly", "readOnly");
-  }
-  if (vrtxAdm.supportsMultipleAttribute(document.getElementById("file"))) {
-    inputFile.attr("multiple", "multiple");
-    if (typeof multipleFilesInfoText !== "undefined") {
-      _$("<p id='vrtx-file-upload-info-text'>" + multipleFilesInfoText + "</p>").insertAfter(".vrtx-textfield");
-    }
-  }
-};
-
-function ajaxUpload(options) {
-  var vrtxAdm = vrtxAdmin,
-  _$ = vrtxAdm._$;
-  
-  var futureFormAjax = _$.Deferred();
-  if (typeof _$.fn.ajaxSubmit !== "function") {
-    var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
-    getScriptFn(vrtxAdm.rootUrl + "/jquery/plugins/jquery.form.js").done(function() {
-      futureFormAjax.resolve();
-    }).fail(function(xhr, textStatus, errMsg) {
-      var uploadingFailedD = new VrtxMsgDialog({ title: xhr.status + " " + vrtxAdm.serverFacade.errorMessages.uploadingFilesFailedTitle,
-                                                 msg: vrtxAdm.serverFacade.errorMessages.uploadingFilesFailed
-                                              });
-      uploadingFailedD.open();
-      if(opts.funcAfterComplete) {
-        opts.funcAfterComplete();
-      }
-    });
-  } else {
-    futureFormAjax.resolve();
-  }
-  _$.when(futureFormAjax).done(function() {
-    var fileField = _$("#file");
-    var filePaths = "";
-    var numberOfFiles = 0;
-    var size = 0;
-    if (vrtxAdm.supportsFileList) {
-      var files = fileField[0].files;
-      for (var i = 0, numberOfFiles = files.length; i < numberOfFiles; i++) {
-        filePaths += files[i].name + ",";
-        size += files[i].size;
-      }
+    this.setCaretPos(opts.input[0], currentCaretPos - (before.length - after.length));
+    return after;
+  },
+  /**
+   * Set caret position
+   * 
+   * Credits: http://stackoverflow.com/questions/499126/jquery-set-cursor-position-in-text-area (first)
+   * @this {inputSelectionEngine}
+   */
+  setCaretPos: function(input, pos) {
+    var start = pos;
+    var end = pos;
+    if (input.createTextRange) {
+      var selRange = input.createTextRange();
+      selRange.collapse(true);
+      selRange.moveStart("character", start);
+      selRange.moveEnd("character", end);
+      selRange.select();
+    } else if (input.setSelectionRange) {
+      input.setSelectionRange(start, end);
     } else {
-      filePaths = fileField.val().substring(fileField.val().lastIndexOf("\\") + 1);
-      numberOfFiles = 1;
-    }
-    
-    var checkForm = _$("#fileUploadCheckService-form");
-    var filenamesToCheckField = checkForm.find("input[name='filenamesToBeChecked']");
-    if(!filenamesToCheckField.length) {
-      checkForm.append("<input type='hidden' name='filenamesToBeChecked' value='" + filePaths + "' />");
-    } else {
-      filenamesToCheckField.val(filePaths);
-    }
-    vrtxAdm.removeErrorContainers(options.form, options.errorContainerInsertAfter, options.errorContainer);
-
-    checkForm.ajaxSubmit({
-      success: function(results, status, xhr) {
-        var result = _$.parseHTML(results);
-        var opts = options;
-        var existingFilenamesField = _$(result).find("#file-upload-existing-filenames");
-        if (!existingFilenamesField.length && vrtxAdm.hasErrorContainers(result, opts.errorContainer)) {
-          vrtxAdm.displayErrorContainers(result, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
-        } else {
-          if(existingFilenamesField.length) {
-            var existingFilenamesFixedField = _$(result).find("#file-upload-existing-filenames-fixed");
-            var existingFilenames = existingFilenamesField.text().split("#");
-            var existingFilenamesFixed = existingFilenamesFixedField.text().split("#");
-            userProcessExistingFiles({
-              filenames: existingFilenames,
-              filenamesFixed: existingFilenamesFixed,
-              numberOfFiles: numberOfFiles, 
-              completeFn: function() {
-                ajaxUploadPerform(opts, size);
-              },
-              cancelFn: function() {
-                vrtxAdm.uploadCopyMoveSkippedFiles = {};;
-                var animation = new VrtxAnimation({
-                  elem: opts.form.parent(),
-                  animationSpeed: opts.transitionSpeed,
-                  easeIn: opts.transitionEasingSlideDown,
-                  easeOut: opts.transitionEasingSlideUp,
-                  afterOut: function() {
-                    if(opts.funcAfterComplete) {
-                      opts.funcAfterComplete();
-                    }
-                  }
-                });
-                animation.bottomUp();
-              },
-              isAllSkippedEqualComplete: false
-            });
-          } else {
-            ajaxUploadPerform(opts, size);
-          }
-        }
+      if (input.selectionStart) {
+        input.selectionStart = start;
+        input.selectionEnd = end;
       }
+    }
+    input.focus();
+  },
+  /**
+   * Get caret position
+   * 
+   * Credits: http://stackoverflow.com/questions/4928586/get-caret-position-in-html-input (fourth)
+   * @this {inputSelectionEngine}
+   */
+  getCaretPos: function(input) {
+    if (input.setSelectionRange) {
+      return input.selectionStart;
+    } else if (document.selection && document.selection.createRange) {
+      var range = document.selection.createRange();
+      var bookmark = range.getBookmark();
+      return bookmark.charCodeAt(2) - 2;
+    }
+  },
+  /**
+   * Substitute characters
+   * 
+   * @this {inputSelectionEngine}
+   */
+  substitute: function(val, toLowerCase, substitutions) {
+    if(toLowerCase) {
+      val = val.toLowerCase();
+    }
+    if(typeof substitutions !== "object") {
+      substitutions = this.substitutionsDefault;
+    }
+    for (var key in substitutions) {
+      var replaceRegex = new RegExp(key, "g");
+      val = val.replace(replaceRegex, substitutions[key]);
+    }
+    return val;
+  },
+  /**
+   * Grow dynamically
+   *  
+   * Based on: jQuery autoGrowInput plugin by James Padolsey:
+   * http://stackoverflow.com/questions/931207/is-there-a-jquery-autogrow-plugin-for-text-fields
+   * @this {inputSelectionEngine}
+   */
+  grow: function(input, val, comfortZone, minWidth, maxWidth) {
+    var testSubject = $('<tester/>').css({
+      position: 'absolute',
+      top: -9999,
+      left: -9999,
+      width: 'auto',
+      fontSize: input.css('fontSize'),
+      fontFamily: input.css('fontFamily'),
+      fontWeight: input.css('fontWeight'),
+      letterSpacing: input.css('letterSpacing'),
+      whiteSpace: 'nowrap'
     });
-  });
-  return false;
-}
-
-function ajaxUploadPerform(opts, size) {
-  var vrtxAdm = vrtxAdmin,
-  _$ = vrtxAdm._$;
-
-  var uploadingD = new VrtxLoadingDialog({title: vrtxAdm.messages.upload.inprogress});
-  uploadingD.open();
-  
-  var dialogUploadingD = _$("#dialog-loading-content");
-  // Set role and ARIA on dialog
-  dialogUploadingD.attr("role", "progressbar");
-  dialogUploadingD.attr("aria-valuemin", "0");
-  dialogUploadingD.attr("aria-valuemax", "100");
-  dialogUploadingD.attr("aria-valuenow", "0");
-  dialogUploadingD.append("<div id='dialog-uploading-bar' /><div id='dialog-uploading-percent'>&nbsp;</div><a id='dialog-uploading-focus' style='outline: none;' tabindex='-1' /><a id='dialog-uploading-abort' href='javascript:void(0);'>Avbryt</a>");
-  var dialogUploadingBar = dialogUploadingD.find("#dialog-uploading-bar");
-  
-  // Set focus on element before cancel link
-  var focusElm = dialogUploadingD.find("#dialog-uploading-focus");
-  if(focusElm.length) focusElm.focus();
-  focusElm.keydown(function(e) {
-    if (isKey(e, [vrtxAdm.keys.TAB])) { 
-      $(this).next().addClass("tab-visible")[0].focus();
-      return false;
+    input.parent().find("tester").remove(); // Remove test-subjects
+    testSubject.insertAfter(input);
+    testSubject.html(val);
+    var newWidth = Math.min(Math.max(testSubject.width() + comfortZone, minWidth), maxWidth);
+    var currentWidth = input.width();
+    if (newWidth !== currentWidth) {
+      input.width(newWidth);
     }
-  });
-
-  var uploadXhr = null;
-  var processesD = null;
-  var stillProcesses = false;
-  
-  // Set form to overwrite-mode
-  opts.form.append("<input type='hidden' name='overwrite' value='overwrite' />");
-  
-  opts.form.ajaxSubmit({
-    uploadProgress: function(event, position, total, percent) { // Show upload progress
-      _$("#dialog-uploading-percent").text(percent + "%");
-      dialogUploadingBar.css("width", percent + "%");
-      dialogUploadingD.attr("aria-valuenow", percent);
-      if(percent >= 100) {
-        stillProcesses = true;
-        var waitAndProcess = setTimeout(function() {
-          if(stillProcesses) {
-            uploadingD.close();
-            processesD = new VrtxLoadingDialog({title: vrtxAdm.messages.upload.processes});
-            processesD.open();
-          }
-        }, vrtxAdm.uploadCompleteTimeoutBeforeProcessingDialog);
-      }
-    },
-    beforeSend: function(xhr) {
-      uploadXhr = xhr;
-    },
-    success: function(results, status, xhr) {
-      dialogUploadingBar.css("width", "100%");
-      dialogUploadingD.attr("aria-valuenow", 100);
-
-      var result = _$.parseHTML(results);
-      vrtxAdm.uploadCopyMoveSkippedFiles = {};
-      if (vrtxAdm.hasErrorContainers(result, opts.errorContainer)) {
-        vrtxAdm.displayErrorContainers(result, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
-      } else {
-        var animation = new VrtxAnimation({
-          elem: opts.form.parent(),
-          animationSpeed: opts.transitionSpeed,
-          easeIn: opts.transitionEasingSlideDown,
-          easeOut: opts.transitionEasingSlideUp,
-          afterOut: function(animation) {
-            if(opts.updateSelectors) {
-              for (var i = opts.updateSelectors.length; i--;) {
-                var outer = vrtxAdm.outerHTML(result, opts.updateSelectors[i]);
-                vrtxAdm.cachedBody.find(opts.updateSelectors[i]).replaceWith(outer);
-              }
-            }
-            vrtxAdm.updateCollectionListingInteraction();
-            if (opts.funcComplete) {
-              opts.funcComplete();
-            }
-          }
-        });
-        animation.bottomUp();
-      }
-    },
-    error: function (xhr, textStatus, errMsg) {
-      if(uploadXhr === null) {
-        var uploadingFailedD = new VrtxMsgDialog({ title: xhr.status + " " + vrtxAdm.serverFacade.errorMessages.uploadingFilesFailedTitle,
-                                                   msg: vrtxAdm.serverFacade.errorMessages.uploadingFilesFailed
-                                                 });
-        uploadingFailedD.open();
-      }
-    },
-    complete: function (xhr, textStatus) {
-      stillProcesses = false;
-      if(processesD !== null) {
-        processesD.close();
-      } else {
-        uploadingD.close();
-      }
-      if(opts.funcAfterComplete) {
-        opts.funcAfterComplete();
-      }
-    }
-  });
-    
-  var ajaxUploadAbort = function(e) {
-    if(uploadXhr !== null) {
-      uploadXhr.abort();
-    }
-    uploadingD.close();
-    $(this).prev().removeClass("tab-visible");
-    if(opts.funcAfterComplete) {
-      opts.funcAfterComplete();
-    }
-    e.stopPropagation();
-    e.preventDefault();
-  };
-    
-  vrtxAdm.cachedDoc.off("click", "#dialog-uploading-abort", ajaxUploadAbort)
-                   .on("click", "#dialog-uploading-abort", ajaxUploadAbort);
-}
-
-/*
- * Copy / move
- */
-function markResourcesCopyMove(resultElm, form, url, link) {
-  var vrtxAdm = vrtxAdmin;
-
-  var li = "li." + tabMenuServicesInjectMap[link.attr("id")];
-  var resourceMenuRight = $("#resourceMenuRight");
-  var copyMoveExists = "";
-  for (var key in tabMenuServicesInjectMap) {
-    var copyMove = resourceMenuRight.find("li." + tabMenuServicesInjectMap[key]);
-    if (copyMove.length) {
-      copyMoveExists = copyMove;
-      break;
-    }
+  },
+  /* Default substitutions */
+  substitutionsDefault: {
+    " ": "-",
+    "&": "-",
+    "'": "-",
+    "\"": "-",
+    "\\/": "-",
+    "\\\\": "-",
+    "æ": "e",
+    "ø": "o",
+    "å": "a",
+    ",": "",
+    "%": "",
+    "#": "",
+    "\\?": ""
   }
-  var copyMoveAfter = function() {
-    resourceMenuRight.html(resultElm.find("#resourceMenuRight").html());
-    vrtxAdm.displayInfoMsg(resultElm.find(".infomessage").html());
-  };
-  if (copyMoveExists !== "") {
-    var copyMoveAnimation = new VrtxAnimation({
-      elem: copyMoveExists,
-      outerWrapperElem: resourceMenuRight,
-      useCSSAnim: true,
-      after: function() {
-        copyMoveExists.remove();
-        copyMoveAfter();
-        copyMoveAnimation.update({
-          elem: resourceMenuRight.find(li),
-          useCSSAnim: true,
-          outerWrapperElem: resourceMenuRight
-        });
-        copyMoveAnimation.rightIn();
-      }
-    });
-    copyMoveAnimation.leftOut();
-  } else {
-    copyMoveAfter();
-    var copyMoveAnimation = new VrtxAnimation({
-      elem: resourceMenuRight.find(li),
-      useCSSAnim: true,
-      outerWrapperElem: resourceMenuRight
-    });
-    copyMoveAnimation.rightIn();
-  }
-}
-
-function resourcesCopyMove(resultElm, form, url, link) {
-  var vrtxAdm = vrtxAdmin;
-
-  var cancelFn = function() {
-    form.find(".vrtx-button-small").show();
-    form.find(".vrtx-cancel-link").show();
-    form.find(".vrtx-show-processing").remove();
-    vrtxAdm.uploadCopyMoveSkippedFiles = {};
-  };
-  var li = form.closest("li");
-  var existingFilenamesField = resultElm.find("#copy-move-existing-filenames");
-  var moveToSameFolder = resultElm.find("#move-to-same-folder");
-  if(moveToSameFolder.length) {
-    cancelFn();
-    vrtxAdm.displayErrorMsg(vrtxAdm.messages.move.existing.sameFolder);
-  } else if(existingFilenamesField.length) {
-    var existingFilenames = existingFilenamesField.text().split("#");
-    var numberOfFiles = parseInt(resultElm.find("#copy-move-number-of-files").text(), 10);
-    userProcessExistingFiles({
-      filenames: existingFilenames,
-      numberOfFiles: numberOfFiles, 
-      completeFn: function() {
-        var skippedFiles = "";
-        for(key in vrtxAdm.uploadCopyMoveSkippedFiles) {
-          skippedFiles += key + ",";
-        }
-        form.find("#existing-skipped-files").remove();
-        form.append("<input id='existing-skipped-files' name='existing-skipped-files' type='hidden' value='" + skippedFiles + "' />");
-        cancelFn();
-        link.click();
-      },
-      cancelFn: cancelFn,
-      isAllSkippedEqualComplete: true
-    });
-  } else {
-    form.find("#existing-skipped-files").remove();
-    var copyMoveAnimation = new VrtxAnimation({
-      elem: li,
-      outerWrapperElem: $("#resourceMenuRight"),
-      useCSSAnim: true,
-      after: function() {
-        vrtxAdm.displayErrorMsg(resultElm.find(".errormessage").html());
-        vrtxAdm.cachedContent.html(resultElm.find("#contents").html());
-        vrtxAdm.updateCollectionListingInteraction();
-        li.remove();
-      }
-    });
-    copyMoveAnimation.leftOut();
-  }
-}
-
-function userProcessExistingFiles(opts) {
-  var vrtxAdm = vrtxAdmin;
-
-  var filenamesLen = opts.filenames.length;
-  var userProcessNextFilename = function() {
-    if(opts.filenames.length) {
-      var filename = opts.filenames.pop();
-      var filenameFixed = opts.filenamesFixed ? opts.filenamesFixed.pop() : filename;
-      if(filenamesLen === 1 && opts.numberOfFiles === 1) {
-        var skipOverwriteDialogOpts = {
-          msg: filenameFixed,
-          title: vrtxAdm.messages.upload.existing.title,
-          onOk: userProcessNextFilename, // Keep/overwrite file
-          btnTextOk: vrtxAdm.messages.upload.existing.overwrite
-        };
-      } else {
-        var skipOverwriteDialogOpts = {
-          msg: filenameFixed,
-          title: vrtxAdm.messages.upload.existing.title,
-          onOk: function () {  // Skip file
-            vrtxAdm.uploadCopyMoveSkippedFiles[filename] = "skip";
-            userProcessNextFilename();
-          },
-          btnTextOk: vrtxAdm.messages.upload.existing.skip,
-          extraBtns: [{
-            btnText: vrtxAdm.messages.upload.existing.overwrite,
-            onOk: userProcessNextFilename // Keep/overwrite file
-          }]
-        };
-      }
-      skipOverwriteDialogOpts.onCancel = opts.cancelFn;
-      var userDecideExistingFileDialog = new VrtxConfirmDialog(skipOverwriteDialogOpts);
-      userDecideExistingFileDialog.open();
-    } else { // User has decided for all existing uris
-      var numberOfSkippedFiles = 0;
-       for (skippedFile in vrtxAdm.uploadCopyMoveSkippedFiles) {
-         if (vrtxAdm.uploadCopyMoveSkippedFiles[skippedFile]) {
-           numberOfSkippedFiles++;
-         }
-       }
-       if(opts.numberOfFiles > numberOfSkippedFiles || opts.isAllSkippedEqualComplete) {
-         opts.completeFn();
-       } else {
-         opts.cancelFn();
-      }
-    }
-  };
-  userProcessNextFilename();
-}
-
-/**
- * Check if browser supports 'multiple' attribute
- * Credits: http://miketaylr.com/code/input-type-attr.html (MIT license)
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.supportsMultipleAttribute = function supportsMultipleAttribute(inputfield) {
-  return ( !! (inputfield.multiple === false) && !! (inputfield.multiple !== "undefined")) && !vrtxAdmin.isIOS;
-};
-
-/**
- * Check if browser supports 'readOnly' attribute
- * Credits: http://miketaylr.com/code/input-type-attr.html (MIT license)
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.supportsReadOnly = function supportsReadOnly(inputfield) {
-  return ( !! (inputfield.readOnly === false) && !! (inputfield.readOnly !== "undefined"));
 };
 
 
 /*-------------------------------------------------------------------*\
-    6. Collectionlisting
-       TODO: dynamic event handlers for tab-menu links
-\*-------------------------------------------------------------------*/
-
-/**
- * Initialize collection listing interaction
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.collectionListingInteraction = function collectionListingInteraction() {
-  var vrtxAdm = this,
-    _$ = vrtxAdm._$;
-
-  if (!vrtxAdm.cachedDirectoryListing.length) return;
-  
-  vrtxAdmin.cachedAppContent.on("click", "#vrtx-checkbox-is-index #isIndex", function (e) {
-    createCheckUncheckIndexFile($("#vrtx-div-file-name input[type='text']"), $(this));
-    e.stopPropagation();
-  });
-  vrtxAdmin.cachedAppContent.on("click", ".radio-buttons input", function (e) {
-    var focusedTextField = $(".vrtx-admin-form input[type='text']").filter(":visible:first");
-    if (focusedTextField.length && !focusedTextField.val().length) { // Only focus when empty
-      focusedTextField.focus();
-    }
-    e.stopPropagation();
-  });
-
-  // TODO: generalize dialog jQuery UI function with AJAX markup/text
-  vrtxAdm.cachedDoc.on("click", "a.vrtx-copy-move-to-selected-folder-disclosed", function (e) {
-    var dialogTemplate = $("#vrtx-dialog-template-copy-move-content");
-    if (!dialogTemplate.length) {
-      vrtxAdm.serverFacade.getHtml(this.href, {
-        success: function (results, status, resp) {
-          vrtxAdm.cachedBody.append("<div id='vrtx-dialog-template-copy-move-content'>" + _$($.parseHTML(results)).find("#vrtx-dialog-template-content").html() + "</div>");
-          dialogTemplate = $("#vrtx-dialog-template-copy-move-content");
-          dialogTemplate.hide();
-          var d = new VrtxConfirmDialog({
-            msg: dialogTemplate.find(".vrtx-confirm-copy-move-explanation").text(),
-            title: dialogTemplate.find(".vrtx-confirm-copy-move-confirmation").text(),
-            onOk: function () {
-              dialogTemplate.find(".vrtx-focus-button").trigger("click");
-            }
-          });
-          d.open();
-        }
-      });
-    } else {
-      var d = new VrtxConfirmDialog({
-        msg: dialogTemplate.find(".vrtx-confirm-copy-move-explanation").text(),
-        title: dialogTemplate.find(".vrtx-confirm-copy-move-confirmation").text(),
-        onOk: function () {
-          dialogTemplate.find(".vrtx-focus-button").trigger("click");
-        }
-      });
-      d.open();
-    }
-    e.stopPropagation();
-    e.preventDefault();
-  });
-
-  if (typeof moveUncheckedMessage !== "undefined") {
-    vrtxAdm.placeCopyMoveButtonInActiveTab({
-      formName: "collectionListingForm",
-      btnId: "collectionListing\\.action\\.move-resources",
-      service: "moveResourcesService",
-      msg: moveUncheckedMessage,
-      title: moveTitle
-    });
-    vrtxAdm.placeCopyMoveButtonInActiveTab({
-      formName: "collectionListingForm",
-      btnId: "collectionListing\\.action\\.copy-resources",
-      service: "copyResourcesService",
-      msg: copyUncheckedMessage,
-      title: copyTitle
-    });
-    vrtxAdm.placeDeleteButtonInActiveTab();
-
-    vrtxAdm.placePublishButtonInActiveTab();
-    vrtxAdm.placeUnpublishButtonInActiveTab();
-    vrtxAdm.dropdownPlain("#collection-more-menu");
-  }
-
-  vrtxAdm.placeRecoverButtonInActiveTab();
-  vrtxAdm.placeDeletePermanentButtonInActiveTab();
-  vrtxAdm.initializeCheckUncheckAll();
-};
-
-/**
- * Update collection listing interaction
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.updateCollectionListingInteraction = function updateCollectionListingInteraction() {
-  var vrtxAdm = vrtxAdmin;
-  vrtxAdm.cachedContent = vrtxAdm.cachedAppContent.find("#contents");
-  vrtxAdm.cachedDirectoryListing = vrtxAdm.cachedContent.find("#directory-listing");
-  if(vrtxAdm.cachedDirectoryListing.length) {
-    var tdCheckbox = vrtxAdm.cachedDirectoryListing.find("td.checkbox");
-    if (tdCheckbox.length) {
-      vrtxAdm.cachedDirectoryListing.find("th.checkbox").append("<input type='checkbox' name='checkUncheckAll' />");
-    }
-    vrtxAdm.cachedContent.find("input[type=submit]").hide();
-  }
-};
-
-/**
- * Check / uncheck all initialization
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.initializeCheckUncheckAll = function initializeCheckUncheckAll() {
-  var vrtxAdm = this,
-    _$ = vrtxAdm._$;
-
-  var tdCheckbox = vrtxAdm.cachedDirectoryListing.find("td.checkbox");
-  if (tdCheckbox.length) {
-    var checkUncheckAll = vrtxAdm.cachedDirectoryListing.find("th.checkbox input[type='checkbox']");
-    if(!checkUncheckAll.length) {
-      vrtxAdm.cachedDirectoryListing.find("th.checkbox").append("<input type='checkbox' name='checkUncheckAll' />");
-    }
-  }
-  
-  vrtxAdm.cachedDirectoryListing.on("focusin focusout", "td a, td input", function (e) {
-    $(this).closest("tr")[(e.type === "focusin" ? "add" : "remove") + "Class"]("focus");
-  });
-  
-  // Check / uncheck all
-  vrtxAdm.cachedAppContent.on("click", "th.checkbox input", function (e) {
-    var trigger = this;
-    var checkAll = trigger.checked;
-
-    $(trigger).closest("table").find("tbody tr").filter(function (idx) {
-      var name = "checked";
-      if (checkAll) {
-        $(this).filter(":not(." + name + ")").addClass(name)
-               .find("td.checkbox input").attr(name, true).change();
-      } else {
-        $(this).filter("." + name).removeClass(name)
-               .find("td.checkbox input").attr(name, false).change();
-      }
-    });
-    e.stopPropagation();
-  });
-  // Check / uncheck single
-  vrtxAdm.cachedAppContent.on("click", "td.checkbox input", function (e) {
-    $(this).closest("tr").toggleClass("checked");
-    e.stopPropagation();
-  });
-};
-
-/**
- * Places Copy or Move button in active tab as link and setup dialog
- *
- * @this {VrtxAdmin}
- * @param {object} options Configuration
- * @param {string} options.service The className for service
- * @param {string} options.btnId The id for button
- * @param {string} options.msg The dialog message
- * @param {string} options.title The dialog title
- */
-VrtxAdmin.prototype.placeCopyMoveButtonInActiveTab = function placeCopyMoveButtonInActiveTab(options) {
-  var vrtxAdm = this,
-    _$ = vrtxAdm._$;
-
-  var btn = vrtxAdm.cachedAppContent.find("#" + options.btnId);
-  if (!btn.length) return;
-  btn.hide();
-  var li = vrtxAdm.cachedActiveTab.find("li." + options.service);
-  li.html("<a id='" + options.service + "' href='javascript:void(0);'>" + btn.attr('title') + "</a>");
-  vrtxAdm.cachedActiveTab.find("#" + options.service).click(function (e) {
-    if (!vrtxAdm.cachedDirectoryListing.find("td input[type=checkbox]:checked").length) {
-      var d = new VrtxMsgDialog(options);
-      d.open();
-    } else {
-      vrtxAdm.cachedAppContent.find("#" + options.btnId).click();
-    }
-    e.stopPropagation();
-    e.preventDefault();
-  });
-};
-
-/**
- * Places Delete button in active tab as link and setup dialog
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.placeDeleteButtonInActiveTab = function placeDeleteButtonInActiveTab() {
-  var vrtxAdm = this,
-    _$ = vrtxAdm._$;
-
-  var btn = vrtxAdm.cachedAppContent.find('#collectionListing\\.action\\.delete-resources');
-  if (!btn.length) return;
-  btn.hide();
-  var li = vrtxAdm.cachedActiveTab.find('li.deleteResourcesService');
-  li.html('<a id="deleteResourceService" href="javascript:void(0);">' + btn.attr('title') + '</a>');
-
-  vrtxAdm.cachedActiveTab.find('#deleteResourceService').click(function (e) {
-    var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
-    var boxesSize = boxes.length;
-    if (!boxesSize) {
-      var d = new VrtxMsgDialog({msg: deleteUncheckedMessage, title: deleteTitle});
-      d.open();
-    } else {
-      var list = vrtxAdm.buildFileList(boxes, boxesSize, false);
-      var d = new VrtxConfirmDialog({
-        msg: confirmDelete.replace("(1)", boxesSize) + '<br />' + list,
-        title: confirmDeleteTitle,
-        onOk: function () {
-          vrtxAdm.cachedAppContent.find('#collectionListing\\.action\\.delete-resources').click();
-        }
-      });
-      d.open();
-    }
-    e.stopPropagation();
-    e.preventDefault();
-  });
-};
-
-/**
- * Places Publish button in active tab as link and setup dialog
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.placePublishButtonInActiveTab = function placeDeleteButtonInActiveTab() {
-  if (typeof moreTitle === "undefined") return;
-  var vrtxAdm = this,
-    _$ = vrtxAdm._$;
-
-  var btn = vrtxAdm.cachedAppContent.find('#collectionListing\\.action\\.publish-resources');
-  if (!btn.length) return;
-  btn.hide();
-  var li = vrtxAdm.cachedActiveTab.find('li.publishResourcesService');
-  li.hide();
-  var menu = li.closest("#tabMenuRight");
-  var html = '<li class="more-menu">' +
-    '<div id="collection-more-menu">' +
-    '<span id="collection-more-menu-header">' + moreTitle + '</span>' +
-    '<ul><li><a id="publishTheResourcesService" href="javascript:void(0);">' + btn.attr('title') + '</a></li></ul>' +
-    '</div>' +
-    '</li>';
-
-  menu.append(html);
-  $('#publishTheResourcesService').click(function (e) {
-    var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
-    var boxesSize = boxes.length;
-    if (!boxesSize) {
-      var d = new VrtxMsgDialog({msg: publishUncheckedMessage, title: publishTitle});
-      d.open();
-    } else {
-      var list = vrtxAdm.buildFileList(boxes, boxesSize, false);
-      var d = new VrtxConfirmDialog({
-        msg: confirmPublish.replace("(1)", boxesSize) + '<br />' + list,
-        title: confirmPublishTitle,
-        onOk: function () {
-          vrtxAdm.cachedAppContent.find('#collectionListing\\.action\\.publish-resources').click();
-        }
-      });
-      d.open();
-    }
-    e.stopPropagation();
-    e.preventDefault();
-  });
-};
-
-/**
- * Places Unpublish button in active tab as link and setup dialog
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.placeUnpublishButtonInActiveTab = function placeDeleteButtonInActiveTab() {
-  if (typeof moreTitle === "undefined") return;
-  var vrtxAdm = this,
-    _$ = vrtxAdm._$;
-
-  var btn = vrtxAdm.cachedAppContent.find('#collectionListing\\.action\\.unpublish-resources');
-  if (!btn.length) return;
-  btn.hide();
-  var li = vrtxAdm.cachedActiveTab.find('li.unpublishResourcesService');
-  li.hide();
-  var menu = li.closest("#tabMenuRight");
-  menu.find("#collection-more-menu ul").append('<li><a id="unpublishTheResourcesService" href="javascript:void(0);">' + btn.attr('title') + '</a></li>');
-  $('#unpublishTheResourcesService').click(function (e) {
-    var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
-    var boxesSize = boxes.length;
-    
-    if (!boxesSize) {
-      var d = new VrtxMsgDialog({msg: unpublishUncheckedMessage, title: unpublishTitle});
-      d.open();
-    } else {
-      var list = vrtxAdm.buildFileList(boxes, boxesSize, false);
-      var d = new VrtxConfirmDialog({
-        msg: confirmUnpublish.replace("(1)", boxesSize) + '<br />' + list,
-        title: confirmUnpublishTitle,
-        onOk: function () {
-          vrtxAdm.cachedAppContent.find('#collectionListing\\.action\\.unpublish-resources').click();
-        }
-      });
-      d.open();
-    }
-    e.stopPropagation();
-    e.preventDefault();
-  });
-};
-
-/**
- * Places Recover button in active tab as link and setup dialog
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.placeRecoverButtonInActiveTab = function placeRecoverButtonInActiveTab() {
-  var vrtxAdm = this,
-    _$ = vrtxAdm._$;
-
-  var btn = vrtxAdm.cachedAppContent.find('.recoverResource');
-  if (!btn.length) return;
-  btn.hide();
-  vrtxAdm.cachedActiveTab.prepend('<ul class="list-menu" id="tabMenuRight"><li class="recoverResourceService">' +
-    '<a id="recoverResourceService" href="javascript:void(0);">' + btn.attr('value') + '</a></li></ul>');
-  vrtxAdm.cachedActiveTab.find("#recoverResourceService").click(function (e) {
-    var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
-    var boxesSize = boxes.length;
-    var d = new VrtxMsgDialog({msg: recoverUncheckedMessage, title: recoverTitle});
-    if (!boxesSize) {
-      d.open();
-    } else {
-      vrtxAdm.trashcanCheckedFiles = boxesSize;
-      vrtxAdm.cachedAppContent.find('.recoverResource').click();
-    }
-    e.stopPropagation();
-    e.preventDefault();
-  });
-};
-
-/**
- * Places Delete Permanent button in active tab as link and setup dialog
- *
- * @this {VrtxAdmin}
- */
-VrtxAdmin.prototype.placeDeletePermanentButtonInActiveTab = function placeDeletePermanentButtonInActiveTab() {
-  var vrtxAdm = this,
-    _$ = vrtxAdm._$;
-
-  var btn = vrtxAdm.cachedAppContent.find('.deleteResourcePermanent');
-  if (!btn.length) return;
-  btn.hide();
-  vrtxAdm.cachedActiveTab.find("#tabMenuRight")
-    .append('<li class="deleteResourcePermanentService"><a id="deleteResourcePermanentService" href="javascript:void(0);">' + btn.attr('value') + '</a></li>');
-  vrtxAdm.cachedActiveTab.find('#deleteResourcePermanentService').click(function (e) {
-    var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
-    var boxesSize = boxes.length;
-    if (!boxesSize) {
-      var d = new VrtxMsgDialog({msg: deletePermanentlyUncheckedMessage, title: deletePermTitle});
-      d.open();
-    } else {
-      vrtxAdm.trashcanCheckedFiles = boxesSize;
-      var list = vrtxAdm.buildFileList(boxes, boxesSize, true);
-      var d = new VrtxConfirmDialog({
-        msg: confirmDeletePermanently.replace("(1)", boxesSize) + '<br />' + list,
-        title: confirmDeletePermTitle,
-        onOk: function () {
-          vrtxAdm.cachedContent.find('.deleteResourcePermanent').click();
-        }
-      });
-      d.open();
-    }
-    e.stopPropagation();
-    e.preventDefault();
-  });
-};
-
-/**
- * Builds a file list with ten items based on name- or title-attribute
- *
- * @this {VrtxAdmin}
- * @param {array} boxes The items
- * @param {number} boxesSize The size of the boxes
- * @param {boolean} useTitle Use title- instead of name-attribute?
- * @return {string} The builded HTML
- */
-VrtxAdmin.prototype.buildFileList = function buildFileList(boxes, boxesSize, useTitle) {
-  var boxesSizeExceedsTen = boxesSize > 10;
-  var boxesSizeTmp = boxesSizeExceedsTen ? 10 : boxesSize;
-
-  var fileNameAttr = useTitle ? "title" : "name";
-
-  var list = "<ul>";
-  for (var i = 0; i < boxesSizeTmp; i++) {
-    var name = boxes[i][fileNameAttr].split("/");
-    list += "<li>" + name[name.length - 1] + "</li>";
-  }
-  list += "</ul>";
-  if (boxesSizeExceedsTen) {
-    list += "... " + confirmAnd + " " + (boxesSize - 10) + " " + confirmMore;
-  }
-  return list;
-};
-
-
-/*-------------------------------------------------------------------*\
-    7. Editor and Save-robustness (also for plaintext and vis. profile)
-\*-------------------------------------------------------------------*/
-
-function handleAjaxSaveErrors(xhr, textStatus) {
-  var vrtxAdm = vrtxAdmin,
-  _$ = vrtxAdm._$;
-  
-  if (xhr !== null) {
-    /* Fail in performSave() for exceeding 1500 chars in intro/add.content is handled in editor.js with popup */
-    
-    if(xhr === "UPDATED_IN_BACKGROUND") {
-      var serverTime = serverTimeFormatToClientTimeFormat(vrtxAdmin.serverLastModified);
-      var nowTime = serverTimeFormatToClientTimeFormat(vrtxAdmin.serverNowTime);
-      var ago = "";
-      var agoSeconds = ((+nowTime) - (+serverTime)) / 1000;
-      if(agoSeconds >= 60) {
-        agoMinutes = Math.floor(agoSeconds / 60);
-        agoSeconds = agoSeconds % 60;
-        ago = agoMinutes + " min " + agoSeconds + "s";
-      } else {
-        ago = agoSeconds + "s";
-      }
-      var d = new VrtxConfirmDialog({
-        msg: vrtxAdm.serverFacade.errorMessages.outOfDate.replace(/XX/, ago).replace(/YY/, vrtxAdm.serverModifiedBy),
-        title: vrtxAdm.serverFacade.errorMessages.outOfDateTitle,
-        btnTextOk: vrtxAdm.serverFacade.errorMessages.outOfDateOk,
-        width: 450,
-        onOk: ajaxSaveAsCopy
-      });
-      d.open();
-      return false;
-    } else {
-      var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, false);
-      if(msg === "RE_AUTH") {
-        reAuthenticateRetokenizeForms(true);
-      } else if(msg === "LOCKED") {
-        var d = new VrtxConfirmDialog({
-          msg: vrtxAdm.serverFacade.errorMessages.lockStolen.replace(/XX/, vrtxAdm.lockedBy),
-          title: vrtxAdm.serverFacade.errorMessages.lockStolenTitle,
-          btnTextOk: vrtxAdm.serverFacade.errorMessages.lockStolenOk,
-          width: 450,
-          onOk: ajaxSaveAsCopy
-        });
-        d.open();
-      } else {
-        var customTitle = vrtxAdm.serverFacade.errorMessages.customTitle[xhr.status];
-        var d = new VrtxMsgDialog({
-          msg: msg,
-          title: customTitle ? customTitle : vrtxAdm.serverFacade.errorMessages.title + " " + xhr.status
-        });
-        d.open();
-      }
-    }
-  }
-}
-
-function ajaxSave() {
-  var vrtxAdm = vrtxAdmin,
-    _$ = vrtxAdm._$;
-
-  vrtxAdm.asyncEditorSavedDeferred = _$.Deferred();
-
-  if(typeof CKEDITOR !== "undefined" && typeof vrtxEditor !== "undefined") {
-    vrtxEditor.richtextEditorFacade.updateInstances();
-  }
-  var startTime = new Date();
-  
-  var d = new VrtxLoadingDialog({title: ajaxSaveText});
-  d.open();
-
-  if (typeof vrtxImageEditor !== "undefined" && vrtxImageEditor.save) {
-    vrtxImageEditor.save();
-  }
-  if (typeof performSave !== "undefined") {
-    var ok = performSave();
-    if (!ok) {
-      d.close();
-      vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [null, null]);
-      return false;
-    }
-  }
-  
-  if(!isServerLastModifiedOlderThanClientLastModified(d)) return false;
-  
-  var extraData = {};
-  var skipForm = false;
-  if(typeof vrtxEditor !== "undefined" && vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
-    editorCourseSchedule.saveLastSession();
-    extraData = { "csrf-prevention-token": vrtxEditor.editorForm.find("input[name='csrf-prevention-token']").val(),
-                  "schedule-content": JSON.stringify(editorCourseSchedule.retrievedScheduleData)
-                };
-    skipForm = true;
-  }
-  
-  var futureFormAjax = $.Deferred();
-  if (typeof $.fn.ajaxSubmit !== "function") {
-    var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
-    getScriptFn(vrtxAdm.rootUrl + "/jquery/plugins/jquery.form.js").done(function() {
-      futureFormAjax.resolve();
-    }).fail(function(xhr, textStatus, errMsg) {
-      d.close();
-      vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
-    });
-  } else {
-    futureFormAjax.resolve();
-  }
-  $.when(futureFormAjax).done(function() {
-    _$("#editor").ajaxSubmit({
-      data: extraData,
-      skipForm: skipForm,
-      success: function(results, status, xhr) { 
-        vrtxAdmin.clientLastModified = $($.parseHTML(results)).find("#resource-last-modified").text().split(",");
-        var endTime = new Date() - startTime;
-        var waitMinMs = 800;
-        if (endTime >= waitMinMs) { // Wait minimum 0.8s
-          d.close();
-          vrtxAdmin.asyncEditorSavedDeferred.resolve();
-        } else {
-          var waitMinTimer = setTimeout(function () {
-            d.close();
-            vrtxAdmin.asyncEditorSavedDeferred.resolve();
-          }, Math.round(waitMinMs - endTime));
-        }
-        if(typeof vrtxEditor !== "undefined" && vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
-          editorCourseSchedule.saved(vrtxAdm.editorSaveButtonName === "updateViewAction");
-        }
-      },
-      error: function (xhr, textStatus, errMsg) {
-        d.close();
-        vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
-      }
-    });
-  });
-}
-
-function updateClientLastModifiedAlreadyRetrieved() {
-  vrtxAdmin.clientLastModified = $("#resource-last-modified").text().split(",");
-}
-
-function isServerLastModifiedOlderThanClientLastModified(d) {
-  var olderThanMs = 1000; // Ignore changes in 1 second to avoid most strange cases
-
-  var isOlder = true;
-  vrtxAdmin._$.ajax({
-    type: "GET",
-    url: window.location.pathname + "?vrtx=admin&mode=about" + (gup("service", window.location.search) === "view" ? "&service=view" : ""),
-    async: false,
-    cache: false,
-    success: function (results, status, resp) {
-      var parsedResults = $($.parseHTML(results));
-      vrtxAdmin.serverNowTime = parsedResults.find("#server-now-time").text().split(",");
-      vrtxAdmin.serverLastModified = parsedResults.find("#resource-last-modified").text().split(",");
-      vrtxAdmin.serverModifiedBy = parsedResults.find("#resource-last-modified-by").text();
-      if(isServerLastModifiedNewerThanClientLastModified(olderThanMs)) {
-        d.close();
-        vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, ["UPDATED_IN_BACKGROUND", ""]);
-        isOlder = false;
-      }
-    },
-    error: function (xhr, textStatus, errMsg) {
-      d.close();
-      vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
-      isOlder = false;
-    }
-  });
-  return isOlder;
-}
-
-function isServerLastModifiedNewerThanClientLastModified(olderThanMs) {
-  try {            
-    var serverTime = serverTimeFormatToClientTimeFormat(vrtxAdmin.serverLastModified);
-    var clientTime = serverTimeFormatToClientTimeFormat(vrtxAdmin.clientLastModified);
-    // If server last-modified is newer than client last-modified return true
-    var diff = +serverTime - +clientTime;
-    var isNewer = diff > olderThanMs;
-    vrtxAdmin.log({msg: "\n\tServer: " + serverTime + "\n\tClient: " + clientTime + "\n\tisNewer: " + isNewer + " (" + diff + "ms)"});
-    return isNewer;
-  } catch(ex) { // Parse error, return true (we don't know)
-    vrtxAdmin.log({msg: ex});
-    return true; 
-  }
-}
-
-function serverTimeFormatToClientTimeFormat(time) {
-  return new Date(parseInt(time[0], 10), (parseInt(time[1], 10) - 1), parseInt(time[2], 10),
-                  parseInt(time[3], 10), parseInt(time[4], 10), parseInt(time[5], 10));
-}
-
-/* After reject save */
-
-function ajaxSaveAsCopy() {
-  var vrtxAdm = vrtxAdmin,
-  _$ = vrtxAdm._$;
-
-  if(/\/$/i.test(window.location.pathname)) { // Folder
-    var d = new VrtxMsgDialog({
-      msg: vrtxAdm.serverFacade.errorMessages.cantBackupFolder,
-      title: vrtxAdm.serverFacade.errorMessages.cantBackupFolderTitle,
-      width: 400
-    });
-    d.open();
-    return false;
-  }
-  
-  // POST create the copy
-  var form = $("#backupForm");
-  var url = form.attr("action");
-  var dataString = form.serialize();
-  _$.ajax({
-    type: "POST",
-    url: url,
-    data: dataString,
-    dataType: "html",
-    contentType: "application/x-www-form-urlencoded;charset=UTF-8",
-    success: function (results, status, resp) {
-      var copyUri = resp.getResponseHeader('Location');
-      var copyEditUri = copyUri + window.location.search;
-      
-      // GET editor for the copy to get token etc.
-      _$.ajax({
-        type: "GET",
-        url: copyEditUri,
-        dataType: "html",
-        success: function (results, status, resp) {
-
-          // Update form with the copy token and set action to copy uri
-          var copyEditEditorToken = _$(_$.parseHTML(results)).find("form#editor input[name='csrf-prevention-token']");
-          var editor = _$("form#editor");
-          editor.find("input[name='csrf-prevention-token']").val(copyEditEditorToken.val());
-          editor.attr("action", copyEditUri);
-          vrtxAdm.clientLastModified = vrtxAdm.serverLastModified; // Make sure we can proceed
-          ajaxSave();
-          _$.when(vrtxAdm.asyncEditorSavedDeferred).done(function () {
-            if(typeof vrtxEditor !== "undefined") vrtxEditor.needToConfirm = false;
-            if(!vrtxAdm.editorSaveIsRedirectPreview) {
-              window.location.href = copyEditUri;
-            } else {
-              window.location.href = copyUri + "/?vrtx=admin";
-            }
-          }).fail(handleAjaxSaveErrors);
-        },
-        error: function (xhr, textStatus, errMsg) {
-          handleAjaxSaveErrors(xhr, textStatus);
-        }
-      });
-    },
-    error: function (xhr, textStatus, errMsg) {
-      if(xhr.status === 423) {
-        xhr.status = 4233;
-        handleAjaxSaveErrors(xhr, textStatus);
-      }
-      handleAjaxSaveErrors(xhr, textStatus);
-    }
-  });
-}
-
-function reAuthenticateRetokenizeForms(isEditorSave) {  
-  // Open reauth dialog
-  var d = new VrtxHtmlDialog({
-    name: "reauth-open",
-    html: isEditorSave ? vrtxAdmin.serverFacade.errorMessages.sessionInvalidSave
-                       : vrtxAdmin.serverFacade.errorMessages.sessionInvalid,
-    title: isEditorSave ? vrtxAdmin.serverFacade.errorMessages.sessionInvalidTitleSave
-                        : vrtxAdmin.serverFacade.errorMessages.sessionInvalidTitle,
-    onOk: function() { // Log in      
-      // Loading..
-      var d2 = new VrtxLoadingDialog({title: vrtxAdmin.serverFacade.errorMessages.sessionWaitReauthenticate});
-      d2.open();
-    
-      // Open window to reauthenticate - the user may log in
-      var newW = openRegular("./?vrtx=admin&service=reauthenticate", 1020, 800, "Reauth");
-      newW.focus();
-
-      // Wait for reauthentication (250ms interval)
-      var timerDelay = 250;
-      var timerWaitReauthenticate = setTimeout(function() {
-        var self = arguments.callee;
-        $.ajax({
-          type: "GET",
-          url: "./?vrtx=admin&service=reauthenticate",
-          cache: false,
-          complete: function (xhr, textStatus, errMsg) {
-            if(xhr.status === 0) {
-              setTimeout(self, timerDelay);
-            } else {
-              retokenizeFormsOpenSaveDialog(d2, isEditorSave);
-            }
-          }
-        });
-      }, timerDelay);
-    },
-    btnTextOk: vrtxAdmin.serverFacade.errorMessages.sessionInvalidOk,
-    btnTextCancel: "(" + vrtxAdmin.serverFacade.errorMessages.sessionInvalidOkInfo + ")"													
-  });
-  
-  d.open();
-                           
-  var cancelBtnSpan = $(".ui-dialog[aria-labelledby='ui-dialog-title-dialog-html-reauth-open']").find(".ui-button:last-child span");
-  cancelBtnSpan.unwrap();
-}
-
-function retokenizeFormsOpenSaveDialog(d2, isEditorSave) {
-  // Repopulate all tokens
-  var current = $("input[name='csrf-prevention-token']");
-  var currentLen = current.length;
-  
-  $.ajax({
-    type: "GET",
-    url: window.location.href,
-    cache: true,
-    dataType: "html",
-    success: function (results, status, resp) {
-      var updated = $($.parseHTML(results)).find("input[name='csrf-prevention-token']");
-      for(var i = 0; i < currentLen; i++) {
-        current[i].value = updated[i].value;
-      }
-
-      // Stop loading
-      d2.close();
-      
-      // Open save dialog
-      var d = new VrtxHtmlDialog({
-        name: "reauth-save",
-        html: isEditorSave ? vrtxAdmin.serverFacade.errorMessages.sessionValidatedSave 
-                           : vrtxAdmin.serverFacade.errorMessages.sessionValidated,
-        title: vrtxAdmin.serverFacade.errorMessages.sessionValidatedTitle,
-        onOk: function() { // Trigger save or close
-          if(isEditorSave) {
-            vrtxAdmin.editorSaveButton.click();
-          }
-        },
-        btnTextOk: isEditorSave ? vrtxAdmin.serverFacade.errorMessages.sessionValidatedOkSave
-                                : vrtxAdmin.serverFacade.errorMessages.sessionValidatedOk
-      });
-      d.open();
-    },
-    error: function (xhr, textStatus, errMsg) {
-      d2.close();
-      if(isEditorSave) {
-        handleAjaxSaveErrors(xhr, textStatus);
-      } else {
-        var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, true);
-        if(msg === "RE_AUTH") {
-          reAuthenticateRetokenizeForms(false);
-        } else {
-          vrtxAdmin.displayErrorMsg(msg);
-        }
-      }
-    }
-  });
-}
-
-function ctrlSEventHandler(_$, e) {
-  if (!_$("#dialog-loading:visible").length) {
-    _$(".vrtx-focus-button:last").click();
-  }
-  e.preventDefault();
-  return false;
-}
-
-
-/*-------------------------------------------------------------------*\
-    8. Permissions
-\*-------------------------------------------------------------------*/
-
-function initPermissionForm(selectorClass) {
-  if (!$("." + selectorClass + " .aclEdit").length) return;
-  toggleConfigCustomPermissions(selectorClass);
-  interceptEnterKeyAndReroute("." + selectorClass + " .addUser input[type=text]", "." + selectorClass + " input.addUserButton", function(txt) {
-    txt.unautocomplete();
-  });
-  interceptEnterKeyAndReroute("." + selectorClass + " .addGroup input[type=text]", "." + selectorClass + " input.addGroupButton", function(txt) {
-    txt.unautocomplete();
-  });
-  initSimplifiedPermissionForm();
-}
-
-function initSimplifiedPermissionForm() {
-  permissionsAutocomplete('userNames', 'userNames', vrtxAdmin.permissionsAutocompleteParams, false);
-  splitAutocompleteSuggestion('userNames');
-  permissionsAutocomplete('groupNames', 'groupNames', vrtxAdmin.permissionsAutocompleteParams, false);
-}
-
-function toggleConfigCustomPermissions(selectorClass) {
-  var customInput = $("." + selectorClass + " ul.shortcuts label[for=custom] input");
-  if (!customInput.is(":checked") && customInput.length) {
-    $("." + selectorClass).find(".principalList").addClass("hidden");
-  }
-  var customConfigAnimation = new VrtxAnimation({
-    afterIn: function(animation) {
-      animation.__opts.elem.removeClass("hidden");
-    },
-    afterOut: function(animation) {
-      animation.__opts.elem.addClass("hidden");
-    }
-  });
-  vrtxAdmin.cachedAppContent.on("click", "." + selectorClass + " ul.shortcuts label[for=custom]", function (e) {
-    var elem = $(this).closest("form").find(".principalList.hidden");
-    customConfigAnimation.updateElem(elem);
-    customConfigAnimation.topDown();
-    e.stopPropagation();
-  });
-  vrtxAdmin.cachedAppContent.on("click", "." + selectorClass + " ul.shortcuts label:not([for=custom])", function (e) {
-    var elem = $(this).closest("form").find(".principalList:not(.hidden)");
-    customConfigAnimation.updateElem(elem);
-    customConfigAnimation.bottomUp();
-    e.stopPropagation();
-  });
-}
-
-function checkStillAdmin(options) {
-  var stillAdmin = options.form.find(".still-admin").text();
-  vrtxAdmin.reloadFromServer = false;
-  if (stillAdmin === "false") {
-    vrtxAdmin.reloadFromServer = true;
-    var d = new VrtxConfirmDialog({
-      msg: removeAdminPermissionsMsg,
-      title: removeAdminPermissionsTitle,
-      onOk: vrtxAdmin.completeFormAsyncPost,
-      onOkOpts: options,
-      onCancel: function () {
-        vrtxAdmin.reloadFromServer = false;
-      }
-    });
-    d.open();
-  } else {
-    vrtxAdmin.completeFormAsyncPost(options);
-  }
-}
-
-function autocompleteUsernames(elms, useEnrichment) {
-  var _$ = vrtxAdmin._$;
-  var autocompleteTextfields = elms.find('.vrtx-textfield');
-  var i = autocompleteTextfields.length;
-  while (i--) {
-    var id = _$(autocompleteTextfields[i]).attr("id");
-    permissionsAutocomplete(id, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
-    if(typeof useEnrichment === "boolean" && useEnrichment) {
-      enrichedUsersAutocomplete(id, ".vrtx-button.add");
-    }
-  }
-}
-
-function autocompleteUsername(selector, subselector, useEnrichment) {
-  var autocompleteTextfield = vrtxAdmin._$(selector).find('input#' + subselector);
-  if (autocompleteTextfield.length) {
-    permissionsAutocomplete(subselector, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
-    if(typeof useEnrichment === "boolean" && useEnrichment) {
-      enrichedUsersAutocomplete(subselector, ".vrtx-button.add");
-    }
-  }
-}
-
-function autocompleteTags(selector) {
-  var _$ = vrtxAdmin._$;
-  var autocompleteTextfields = _$(selector).find('.vrtx-textfield');
-  var i = autocompleteTextfields.length;
-  while (i--) {
-    setAutoComplete(_$(autocompleteTextfields[i]).attr("id"), 'tags', vrtxAdmin.tagAutocompleteParams);
-  }
-}
-
-
-/*-------------------------------------------------------------------*\
-    9. Async functions  
+    6. Async functions  
 \*-------------------------------------------------------------------*/
 
 /**
@@ -3502,7 +1679,7 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
             sameMode = true;
           }
         }
-        if (opts.isUndecoratedService || (pageIsMode && !sameMode) || (pageIsRevisions !== remoteIsRevisions)) { // When we need the 'mode=' or 'action=revisions' HTML. TODO: should only run when updateSelector is inside content
+        if (!opts.ignoreDifferentMode && (opts.isUndecoratedService || (pageIsMode && !sameMode) || (pageIsRevisions !== remoteIsRevisions))) { // When we need the 'mode=' or 'action=revisions' HTML. TODO: should only run when updateSelector is inside content
           vrtxAdm.serverFacade.getHtml(modeUrl, {
             success: function (results, status, resp) {
               internalComplete(results);
@@ -3595,7 +1772,7 @@ VrtxAdmin.prototype.completeSimpleFormAsync = function completeSimpleFormAsync(o
             if(vrtxAdm.animateTableRows && (opts.rowFromFormAnimateOut || opts.rowCheckedAnimateOut)) {
               var trs = opts.rowFromFormAnimateOut ? [form.closest("tr")] : form.find("tr")
                                                                                 .filter(function(i) { 
-                                                                                  return $(this).find("td.checkbox input:checked").length; }
+                                                                                  return $(this).find("td.checkbox input:checked").length; }
                                                                                 );
               var futureAnims = [];
               for(var i = 0, len = trs.length; i < len; i++) {
@@ -3682,7 +1859,7 @@ VrtxAdmin.prototype.templateEngineFacade = {
 
 
 /*-------------------------------------------------------------------*\
-    10. Async helper functions and AJAX server façade   
+    7. Async helper functions and AJAX server façade   
 \*-------------------------------------------------------------------*/
 
 /**
@@ -4049,7 +2226,7 @@ VrtxAdmin.prototype.serverFacade = {
 
 
 /*-------------------------------------------------------------------*\
-    11. Popups and CK browse server integration
+    8. Popups and CK browse server integration
 \*-------------------------------------------------------------------*/
 
 // XXX: don't pollute global namespace
@@ -4142,7 +2319,7 @@ function SetUrl(url) {
 
 
 /*-------------------------------------------------------------------*\
-    12. Utils
+    9. Utils
 \*-------------------------------------------------------------------*/
 
 /**
@@ -4315,22 +2492,6 @@ VrtxAdmin.prototype.error = function error(options) {
 };
 
 /**
- * Generate zebra rows in table (PE)
- *
- * @this {VrtxAdmin}
- * @param {string} selector The table selector
- */
-VrtxAdmin.prototype.zebraTables = function zebraTables(selector) {
-  var _$ = this._$;
-  var table = _$("table" + selector);
-  if (!table.length) return;
-  if (this.isIE8) { // http://www.quirksmode.org/css/contents.html
-    table.find("tbody tr:odd").addClass("even"); // hmm.. somehow even is odd and odd is even
-    table.find("tbody tr:first-child").addClass("first");
-  }
-};
-
-/**
  * Get UNIX-time (more accurate if available)
  *
  * @param {boolean} useNsRes Use nanoseconds resolution if available (or just add three zeroes if not)
@@ -4418,7 +2579,7 @@ function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck,
 
 
 /*-------------------------------------------------------------------*\
-    13. Override JavaScript / jQuery
+    10. Override JavaScript / jQuery
 \*-------------------------------------------------------------------*/
 
 /*  Override slideUp() / slideDown() to animate rows in a table
@@ -4481,8 +2642,7 @@ jQuery.loadCSS = function(url) {
   }
 };
 
-/* A little faster dynamic click handler 
- */
+/* A little faster dynamic click handler */
 jQuery.fn.extend({
   dynClick: function (selector, fn) {
     var nodes = $(this);
@@ -4513,6 +2673,8 @@ vrtxAdmin._$(window).on("resize", vrtxAdmin._$.debounce(vrtxAdmin.windowResizeSc
     }, 1000);
   }
 }));
+
+/* Dialogs - usability/accessability */
 
 if(vrtxAdmin.isTouchDevice) {
   vrtxAdmin._$(window).on("scroll orientationchange",
@@ -4550,10 +2712,10 @@ function repositionDialogsTouchDevices() {
   }
 }
 
-/* Easing 
+/* Easing
  * 
  * TODO: Move to VrtxAnimation when slide and rotate animations (forms and preview) becomes part of it
- * 
+ * TODO: Check if jQuery UI is available
  */
 (function() {
  // based on easing equations from Robert Penner (http://www.robertpenner.com/easing)

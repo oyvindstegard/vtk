@@ -39,14 +39,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 import org.springframework.web.servlet.support.RequestContextUtils;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -55,6 +53,7 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.util.repository.PropertyAspectDescription;
 import vtk.util.repository.PropertyAspectField;
 import vtk.util.repository.PropertyAspectResolver;
+import vtk.util.text.Json;
 import vtk.web.RequestContext;
 import vtk.web.actions.UpdateCancelCommand;
 import vtk.web.service.URL;
@@ -78,29 +77,27 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController {
         String token = requestContext.getSecurityToken();
         Resource resource = repository.retrieve(token, uri, false);
         Property property = resource.getProperty(this.propertyDefinition);
-        JSONObject toplevel = null;
+        
+        Json.MapContainer toplevel = null;
         
         if (property != null) {
-            JSONObject propertyValue = property.getJSONValue();
-            if (propertyValue != null && !propertyValue.isNullObject()) {
-                toplevel = propertyValue.getJSONObject(this.toplevelField);
+            Json.MapContainer propertyValue = property.getJSONValue();
+            if (propertyValue != null) {
+                toplevel = propertyValue.objectValue(this.toplevelField);
             }
         }
         Locale requestLocale = RequestContextUtils.getLocale(request);
         
         PropertyAspectResolver resolver = new PropertyAspectResolver(
                 this.propertyDefinition, this.fieldConfig, this.token);
-        JSONObject combined = uri == Path.ROOT ? null 
+        Json.MapContainer combined = uri == Path.ROOT ? null 
                 : resolver.resolve(uri.getParent(), this.toplevelField);
         
         List<FormElement> elements = new ArrayList<FormElement>();
         for (PropertyAspectField field: this.fieldConfig.getFields()) {
             FormElement element = new FormElement(field, requestLocale);
-            if (toplevel != null && !toplevel.isNullObject()) {
+            if (toplevel != null) {
                 Object object = toplevel.get(field.getIdentifier());
-                if (object instanceof JSONNull) {
-                    object = null;
-                }
                 element.setValue(object);
             }
             if (field.isInherited()) {
@@ -127,7 +124,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController {
         
         PropertyAspectResolver resolver = new PropertyAspectResolver(
                 this.propertyDefinition, this.fieldConfig, this.token);
-        JSONObject combined = uri == Path.ROOT ? null 
+        Json.MapContainer combined = uri == Path.ROOT ? null 
                 : resolver.resolve(uri.getParent(), this.toplevelField);
 
         for (PropertyAspectField field: this.fieldConfig.getFields()) {
@@ -162,7 +159,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController {
             return new ModelAndView(getSuccessView());
         }
         
-        JSONObject toplevel = new JSONObject();
+        Json.MapContainer toplevel = new Json.MapContainer();
         for (FormElement element: form.getElements()) {
             Object key = element.getIdentifier();
             Object value = element.getValue();
@@ -174,15 +171,15 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController {
         }
         
         Property property = resource.getProperty(this.propertyDefinition);
-        JSONObject propertyValue = null;
+        Json.MapContainer propertyValue = null;
         if (property == null) {
             property = this.propertyDefinition.createProperty();
             resource.addProperty(property);
-            propertyValue = new JSONObject();
+            propertyValue = new Json.MapContainer();
         } else {
             propertyValue = property.getJSONValue();
-            if (propertyValue == null || propertyValue.isNullObject()) {
-                propertyValue = new JSONObject();
+            if (propertyValue == null) {
+                propertyValue = new Json.MapContainer();
             }
         }
         propertyValue.put(this.toplevelField, toplevel);
@@ -271,7 +268,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController {
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("label", this.desc.getLocalizedValue(v, this.locale));
                 map.put("value", v);
-                boolean selected = this.value == null ? (v == null | v instanceof JSONNull) 
+                boolean selected = this.value == null ? v == null 
                         : this.value.equals(v);
                 map.put("selected", selected);
                 result.add(map);

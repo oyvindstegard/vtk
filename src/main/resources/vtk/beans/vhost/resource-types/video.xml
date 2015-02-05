@@ -144,7 +144,6 @@
       <map>
         <entry key="height" value="100%" />
         <entry key="width" value="100%" />
-        <entry key="autoplay" value="false" />
         <entry key="audioFlashPlayerJsURL" value="${jsBaseURL}/audio-player.js" />
         <entry key="audioFlashPlayerFlashURL" value="${flash.baseURL}/audioplayer.swf" />
         <entry key="strobe" value="${flash.baseURL}/SMP_2.0.2494-patched/10.2/StrobeMediaPlayback.swf" />

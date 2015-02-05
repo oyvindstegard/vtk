@@ -1002,6 +1002,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
     _$ = vrtxAdm._$,
     vrtxEdit = this;
     
+  /* Show / hide for fields */
   var initResetAggregationManuallyApproved = function(_$, checkboxId, name) {
     if (!_$(checkboxId + "\\.true").is(":checked")) {
       _$("#vrtx-resource\\." + name).slideUp(0, "linear");
@@ -1045,38 +1046,37 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
   });
   _$("#resource\\.courseContext\\.course-status").change();
   
+  
   // Show/hide mappings for radios/booleans
   
   // Exchange sub-folder title
-  
   setShowHideBooleanOldEditor("#resource\\.show-subfolder-menu\\.true, #resource\\.show-subfolder-menu\\.unspecified",
     "#vrtx-resource\\.show-subfolder-title",
     "#resource\\.show-subfolder-menu\\.unspecified:checked",
     "");
     
   // Recursive
-
   setShowHideBooleanOldEditor("#resource\\.recursive-listing\\.false, #resource\\.recursive-listing\\.unspecified",
     "#vrtx-resource\\.recursive-listing-subfolders",
     "#resource\\.recursive-listing\\.false:checked",
     "false");
     
   // Calendar title
-
   setShowHideBooleanOldEditor("#resource\\.display-type\\.unspecified, #resource\\.display-type\\.calendar",
     "#vrtx-resource\\.event-type-title",
     "#resource\\.display-type\\.calendar:checked",
     null);
-
   setShowHideBooleanOldEditor("#resource\\.display-type\\.unspecified, #resource\\.display-type\\.calendar",
     "#vrtx-resource\\.hide-additional-content",
     "#resource\\.display-type\\.calendar:checked",
     "calendar");
 
+
+  // Show / hide mappings for selects
   vrtxEdit.setShowHideSelectNewEditor();
   
-  // Documenttype
   
+  // Documenttype domains
   if(vrtxEdit.editorForm.hasClass("vrtx-course-schedule")) {
     editorCourseSchedule = new courseSchedule();
   } else if (vrtxEdit.editorForm.hasClass("vrtx-hvordan-soke")) {
@@ -1101,8 +1101,8 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
     vrtxEdit.accordionGroupedInit(".vrtx-sea-accordion", "fast");
   } else if (vrtxEdit.editorForm.hasClass("vrtx-contact-supervisor")) {
     vrtxAdm.cachedDoc.on("keyup", ".vrtx-string.id input[type='text']", $.debounce(50, true, function () {
-      updateField({
-        field: $(this),
+      vrtxAdm.inputUpdateEngine.update({
+        input: $(this),
         substitutions: {
           "#": "",
           " ": "-"
@@ -1147,21 +1147,13 @@ function toggleShowHideBoolean(props, show, init) {
     if (!vrtxAdmin.isIE9) {
       theProps.addClass("animate-optimized");
     }
-    if (show && !init) {
-      theProps.show();
-    } else {
-      theProps.hide();
-    }
+    theProps[(show && !init) ? "show" : "hide"]();
   } else {
     var animation = new VrtxAnimation({
       animationSpeed: vrtxAdmin.transitionPropSpeed,
       elem: theProps
     });
-    if (show) {
-      animation.topDown();
-    } else {
-      animation.bottomUp();
-    }
+    animation[show ? "topDown" : "bottomUp"]();
   }
 }
 
@@ -1244,37 +1236,24 @@ function getMultipleFieldsBoxesTemplates() {
 
 function initMultipleInputFields() {
   getMultipleFieldsBoxesTemplates();
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-multipleinputfield button.remove", function (e) {
-    if(e.type === "click" || isKey(e, [vrtxAdmin.keys.ENTER])) {
-      removeFormField($(this));
-      e.preventDefault();
-      e.stopPropagation();
+  
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-multipleinputfield button.remove", function (ref) {
+    removeFormField($(ref));
+  }, "clickOrEnter");
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-multipleinputfield button.movedown", function (ref) {
+    swapContentTmp($(ref), 1);
+  }, "clickOrEnter");
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-multipleinputfield button.moveup", function (ref) {
+    swapContentTmp($(ref), -1);
+  }, "clickOrEnter");
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-multipleinputfield button.browse-resource-ref", function (ref) {
+    var m = $(ref).closest(".vrtx-multipleinputfield");
+    var elm = m.find('input.resource_ref');
+    if(!elm.length) {
+      elm = m.find('input');
     }
-  });
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-multipleinputfield button.movedown", function (e) {
-    if(e.type === "click" || isKey(e, [vrtxAdmin.keys.ENTER])) {
-      swapContentTmp($(this), 1);
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-multipleinputfield button.moveup", function (e) {
-    if(e.type === "click" || isKey(e, [vrtxAdmin.keys.ENTER])) {
-      swapContentTmp($(this), -1);
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-multipleinputfield button.browse-resource-ref", function (e) {
-    if(e.type === "click" || isKey(e, [vrtxAdmin.keys.ENTER])) {
-      var m = $(this).closest(".vrtx-multipleinputfield");
-      var elm = m.find('input.resource_ref');
-      if(!elm.length) elm = m.find('input');
-      browseServer(elm.attr('id'), vrtxAdmin.multipleFormGroupingPaths.baseBrowserURL, vrtxAdmin.multipleFormGroupingPaths.baseFolderURL, vrtxAdmin.multipleFormGroupingPaths.basePath, 'File');
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
+    browseServer(elm.attr('id'), vrtxAdmin.multipleFormGroupingPaths.baseBrowserURL, vrtxAdmin.multipleFormGroupingPaths.baseFolderURL, vrtxAdmin.multipleFormGroupingPaths.basePath, 'File');
+  }, "clickOrEnter");
 }
 
 function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, isReadOnly) { // TODO: simplify
@@ -2496,5 +2475,30 @@ VrtxEditor.prototype.initEventHandler = function initEventHandler(selector, opts
     opts.callback.apply(vrtxEdit, opts.callbackParams, false);
   });
 };
+
+function autocompleteUsernames(selector) {
+  var _$ = vrtxAdmin._$;
+  var autocompleteTextfields = _$(selector).find('.vrtx-textfield');
+  var i = autocompleteTextfields.length;
+  while (i--) {
+    permissionsAutocomplete(_$(autocompleteTextfields[i]).attr("id"), 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+  }
+}
+
+function autocompleteUsername(selector, subselector) {
+  var autocompleteTextfield = vrtxAdmin._$(selector).find('input#' + subselector);
+  if (autocompleteTextfield.length) {
+    permissionsAutocomplete(subselector, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+  }
+}
+
+function autocompleteTags(selector) {
+  var _$ = vrtxAdmin._$;
+  var autocompleteTextfields = _$(selector).find('.vrtx-textfield');
+  var i = autocompleteTextfields.length;
+  while (i--) {
+    setAutoComplete(_$(autocompleteTextfields[i]).attr("id"), 'tags', vrtxAdmin.tagAutocompleteParams);
+  }
+}
 
 /* ^ Vortex Editor */

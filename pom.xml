@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <groupId>vtk</groupId>
   <artifactId>vtk</artifactId>
-  <version>59.8-SNAPSHOT</version>
+  <version>60-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>The VTK Web Framework</name>
   <url>http://www.uio.no/tjenester/it/web/vortex/</url>
@@ -160,6 +160,11 @@
         <targetPath>vtk/util</targetPath>
         <filtering>true</filtering>
       </resource>
+      <resource>
+        <directory>src/conf/resin</directory>
+        <targetPath>${project.build.directory}</targetPath>
+        <filtering>true</filtering>
+      </resource>
     </resources>
     
     <testResources>
@@ -167,29 +172,18 @@
         <directory>src/test/resources</directory>
       </testResource>
     </testResources>
+
     <plugins>
       <plugin>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>maven-jetty-plugin</artifactId>
-        <version>6.1.26</version>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.2.7.v20150116</version>
         <configuration>
-          <contextPath>/</contextPath>
-          <connectors>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-              <port>9321</port>
-              <maxIdleTime>600000</maxIdleTime>
-            </connector>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-              <port>9322</port>
-              <maxIdleTime>600000</maxIdleTime>
-            </connector>
-          </connectors>
-          <scanIntervalSeconds>0</scanIntervalSeconds>
+          <!-- Configures Jetty Server: -->
+          <jettyXml>src/conf/jetty/jetty.xml</jettyXml>
+          <!-- Configures web app context: -->
+          <contextXml>src/conf/jetty/jetty-context.xml</contextXml>
           <systemProperties>
-            <systemProperty>
-              <name>org.mortbay.jetty.Request.maxFormContentSize</name>
-              <value>-1</value>
-            </systemProperty>
             <systemProperty>
               <name>org.apache.commons.logging.Log</name>
               <value>org.apache.commons.logging.impl.Log4JLogger</value>
@@ -202,25 +196,15 @@
               <name>javax.xml.transform.TransformerFactory</name>
               <value>org.apache.xalan.processor.TransformerFactoryImpl</value>
             </systemProperty>
-            <!-- Might need to set these if Jetty fails with ClassNotFoundExceptions for XML parser impl:
-            <systemProperty>
-              <name>javax.xml.parsers.SAXParserFactory</name>
-              <value>org.apache.xerces.jaxp.SAXParserFactoryImpl</value>
-            </systemProperty>
-            <systemProperty>
-              <name>javax.xml.parsers.DocumentBuilderFactory</name>
-              <value>org.apache.xerces.jaxp.DocumentBuilderFactoryImpl</value>
-            </systemProperty>
-            -->
           </systemProperties>
         </configuration>
       </plugin>
 
       <!-- Build info: Provide local hostname as property ${hostname} using a Groovy script. -->
       <plugin>
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <version>1.5</version>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>1.3</version>
         <executions>
           <execution>
             <id>add-hostname-property</id>
@@ -229,12 +213,13 @@
               <goal>execute</goal>
             </goals>
             <configuration>
-              <source>
-                project.properties["hostname"] = java.net.InetAddress.getLocalHost().getHostName()
-              </source>
+              <scripts>
+                <script><![CDATA[
+                  project.properties['hostname'] = java.net.InetAddress.getLocalHost().getHostName()
+                ]]></script>
+              </scripts>
             </configuration>
           </execution>
-          <!-- Show summary of build info during when building: -->
           <execution>
             <id>show-build-info</id>
             <phase>generate-sources</phase>
@@ -242,16 +227,28 @@
               <goal>execute</goal>
             </goals>
             <configuration>
-              <source>
+              <scripts>
+                <script><![CDATA[
                 log.info("Build information - " + project.name)
+                log.info("Build host: " + project.properties['hostname'])
                 log.info("Version: " + project.version)
-                log.info("Revision: " + project.properties["buildNumber"])
-                log.info("Branch: " + project.properties["scmBranch"])
-              </source>
+                log.info("Revision: " + project.properties['buildNumber'])
+                log.info("Branch: " + project.properties['scmBranch'])
+                ]]></script>
+              </scripts>
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>2.3.7</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
       </plugin>
+
       <!-- Build info: provide various bits of build info as properties.  -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -304,14 +301,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.4</version>
-        <configuration>
-          <webResources>
-            <resource>
-              <directory>src/main/resources/war/resin</directory>
-              <filtering>true</filtering>
-            </resource>
-          </webResources>
-        </configuration>
       </plugin>
 
       <!-- Allow deploy with ssh/scp using wagon-ssh -->
@@ -385,6 +374,34 @@
           </excludes>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.jasig.maven</groupId>
+        <artifactId>sass-maven-plugin</artifactId>
+        <version>1.1.1</version>
+        <executions>
+          <execution>
+            <id>compile-scss</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>update-stylesheets</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>watch-scss</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>watch</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sassOptions>
+            <style>:compressed</style>
+          </sassOptions>
+          <sassSourceDirectory>src/main/resources/web/themes/default/scss</sassSourceDirectory>
+          <destination>${project.build.directory}/classes/web/themes/default</destination>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -410,12 +427,6 @@
     </dependency>
 
     <!-- JSON -->
-    <dependency>
-      <groupId>net.sf.json-lib</groupId>
-      <artifactId>json-lib</artifactId>
-      <version>2.4</version>
-      <classifier>jdk15</classifier>
-    </dependency>
     <dependency>
       <groupId>com.googlecode.json-simple</groupId>
       <artifactId>json-simple</artifactId>
@@ -568,22 +579,22 @@
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
-      <version>4.10.1</version>
+      <version>4.10.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-common</artifactId>
-      <version>4.10.1</version>
+      <version>4.10.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-icu</artifactId>
-      <version>4.10.1</version>
+      <version>4.10.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-queries</artifactId>
-      <version>4.10.1</version>
+      <version>4.10.3</version>
     </dependency>
     <dependency>
       <groupId>org.freemarker</groupId>

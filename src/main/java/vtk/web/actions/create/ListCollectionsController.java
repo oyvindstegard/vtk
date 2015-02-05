@@ -39,17 +39,18 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
+import vtk.util.text.Json;
+import vtk.util.text.JsonStreamer;
 import vtk.web.JSONTreeHelper;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
@@ -91,7 +92,7 @@ public class ListCollectionsController implements Controller {
         String buttonText = mapServiceParamToButtonText(request.getParameter(PARAMETER_SERVICE));
         Map<String, String> uriParameters = getReportTypeParam(request.getParameter(PARAMETER_REPORT_TYPE));
         
-        JSONArray listNodes = new JSONArray();
+        Json.ListContainer listNodes = new Json.ListContainer();
         for (Resource resource : resources) {
             listNodes.add(generateJSONObjectNode(resource, token, request, uriParameters, buttonText));
         }
@@ -99,10 +100,11 @@ public class ListCollectionsController implements Controller {
     }
     
 
-    private void okRequest(JSONArray arr, HttpServletResponse response) throws IOException {
+    private void okRequest(Json.ListContainer arr, HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/plain;charset=utf-8"); /* XXX: Should be application/json? */
-        writeResponse(arr.toString(1), response);
+        String str = JsonStreamer.toJson(arr, 1);
+        writeResponse(str, response);
     }
 
     private void badRequest(Throwable e, HttpServletResponse response) throws IOException {

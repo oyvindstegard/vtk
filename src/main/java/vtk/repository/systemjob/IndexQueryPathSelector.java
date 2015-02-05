@@ -78,7 +78,7 @@ public class IndexQueryPathSelector implements PathSelector {
         search.setSorting(sort);
         search.setLimit(this.limit);
         if(!useDefaultExcludes){
-            search.removeAllFilterFlags();
+            search.clearAllFilterFlags();
         }
         search.setPropertySelect(PropertySelect.NONE);
         ResultSet results = this.searcher.execute(token, search);

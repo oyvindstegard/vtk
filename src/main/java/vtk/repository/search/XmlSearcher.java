@@ -395,7 +395,7 @@ public class XmlSearcher {
 
         private void parseFields(String fields) {
             if (fields == null || "".equals(fields.trim())) {
-                this.select = PropertySelect.ALL;
+                this.select = PropertySelect.ALL_PROPERTIES;
                 this.reportUri = true;
                 this.reportName = true;
                 this.reportType = true;

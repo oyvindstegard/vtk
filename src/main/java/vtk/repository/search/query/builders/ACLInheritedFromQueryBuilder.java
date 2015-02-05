@@ -67,7 +67,9 @@ public class ACLInheritedFromQueryBuilder implements QueryBuilder {
         Query query = new TermQuery(aclInheritedFromTerm);
         
         if (this.invert) {
-            query = new ConstantScoreQuery(FilterFactory.inversionFilter(new QueryWrapperFilter(query)));
+            query = new ConstantScoreQuery(
+                    FilterFactory.inversionFilter(
+                            new QueryWrapperFilter(query)));
         }
 
         return query;

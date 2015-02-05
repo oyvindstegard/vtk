@@ -43,6 +43,7 @@ import vtk.repository.PropertyEvaluationContext.Type;
 import vtk.repository.resourcetype.PropertyEvaluator;
 import vtk.util.io.StreamUtil;
 import vtk.util.repository.MimeHelper;
+import vtk.util.text.Json;
 
 public class ContentTypeEvaluator implements PropertyEvaluator {
 
@@ -97,7 +98,7 @@ public class ContentTypeEvaluator implements PropertyEvaluator {
                             // XXX: temporary hack:
                             if ("application/json".equals(mapping.get(pattern))) {
                                 try {
-                                    ctx.getContent().getContentRepresentation(net.sf.json.JSONObject.class);
+                                    ctx.getContent().getContentRepresentation(Json.MapContainer.class);
                                     property.setStringValue(mapping.get(pattern));
                                     return true;
                                 } catch (Exception e) { }

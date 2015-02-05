@@ -6,17 +6,20 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Required;
+
+import vtk.repository.Lock;
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
-import vtk.repository.Privilege;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
+import vtk.repository.RepositoryAction;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
 import vtk.util.repository.DocumentPrincipalMetadataRetriever;
+import vtk.web.search.EditInfo;
 
 public class CollectionListingHelper {
 
@@ -24,7 +27,7 @@ public class CollectionListingHelper {
     private DocumentPrincipalMetadataRetriever documentPrincipalMetadataRetriever;
 
     /**
-     * Check if a given principal has edit privileges on a property set
+     * Check if a given principal has edit privileges on a property set and if other principal has locked it
      * 
      * @param repo
      *            The backend used to fetch the actual resource and
@@ -40,30 +43,26 @@ public class CollectionListingHelper {
      *            The principal for whom we perform the check
      * 
      */
-    public boolean checkResourceForEditLink(Repository repo, PropertySet propSet, String token, Principal principal)
+    public EditInfo checkResourceForEditLink(Repository repo, PropertySet propSet, String token, Principal principal)
             throws Exception {
-
+        
+        EditInfo editInfo = new EditInfo(false, false, null);
         if (token == null || principal == null) {
-            return false;
+            return editInfo;
         }
-        String rt = propSet.getResourceType();
-
-        // Attempt check only if resource is NOT from solr AND resource
-        // type is applicable for editing
+        // Attempt check only if resource is NOT from Solr, AND resource-type is applicable for editing
         if (propSet.getPropertyByPrefix(null, MultiHostSearcher.MULTIHOST_RESOURCE_PROP_NAME) == null
-                && isApplicableResourceType(rt)) {
+         && isApplicableResourceType(propSet.getResourceType())) {
             try {
                 Resource res = repo.retrieve(token, propSet.getURI(), true);
                 return checkResourceForEditLink(repo, res, principal);
-            } catch (Exception exception) {
-            }
+            } catch (Exception exception) {}
         }
-
-        return false;
+        return editInfo;
     }
 
     /**
-     * Check if a given principal has edit privileges on a resource
+     * Check if a given principal has edit privileges on a resource and if other principal has locked it
      * 
      * @param repo
      *            The backend used to perform check
@@ -75,14 +74,30 @@ public class CollectionListingHelper {
      *            The principal for whom we perform the check
      * 
      */
-    public boolean checkResourceForEditLink(Repository repo, Resource resource, Principal principal) {
-        if (resource.getLock() != null && !resource.getLock().getPrincipal().equals(principal)) {
-            return false;
+    public EditInfo checkResourceForEditLink(Repository repo, Resource resource, Principal principal) {
+        boolean canEdit = false;
+        boolean canEditLocked = false;
+        Principal lockedBy = null;
+
+        try {
+
+            boolean hasReadWrite = repo.isAuthorized(resource, RepositoryAction.READ_WRITE, principal,
+                    false);
+            if (hasReadWrite) {
+                Lock lock = resource.getLock();
+                boolean locked = lock != null && (principal == null || !principal.equals(lock.getPrincipal()));
+                if (!locked) {
+                    canEdit = true;
+                } else {
+                    canEditLocked = true;
+                    lockedBy = lock.getPrincipal();
+                }
+            }
+        } catch (Exception ex) {
+            // Ignore, just don't allow editing
         }
 
-        return repo.authorize(principal, resource.getAcl(), Privilege.ALL)
-                || repo.authorize(principal, resource.getAcl(), Privilege.READ_WRITE);
-
+        return new EditInfo(canEdit, canEditLocked, lockedBy);
     }
 
     /**

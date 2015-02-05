@@ -44,6 +44,7 @@ void execute(context, args, out) {
 
     before = System.currentTimeMillis();
     search = new vtk.repository.search.Search();
+    search.clearAllFilterFlags();
     search.setQuery(query);
     search.setLimit(Integer.MAX_VALUE);
 
@@ -52,7 +53,8 @@ void execute(context, args, out) {
     number = 0;
 
     searcher.iterateMatching(token, search, new Searcher.MatchCallback() {
-            public boolean matching(PropertySet propset) {
+            public boolean matching(Searcher.MatchingResult result) {
+                PropertySet propset = result.propertySet();
 
                 number++;
                 orig = repo.retrieve(token, propset.getURI(), true);

@@ -38,8 +38,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -58,41 +56,36 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class ContentRepresentationRegistry implements ApplicationContextAware, InitializingBean {
 
-    private Log logger = LogFactory.getLog(this.getClass());
-
     private ApplicationContext applicationContext;
-    private Map<Class<?>, ContentFactory> contentFactories;
+    private Map<Class<?>, ContentFactory<?>> contentFactories;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings("rawtypes")
     public void afterPropertiesSet() {
 
-        this.contentFactories = new HashMap<Class<?>, ContentFactory>();
+        this.contentFactories = new HashMap<>();
 
         Collection<ContentFactory> contentFactoryBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(
                 this.applicationContext, ContentFactory.class, false, false).values();
 
         for (ContentFactory factory : contentFactoryBeans) {
-            Class<?>[] supportedClasses = factory.getRepresentationClasses();
-            for (Class<?> supportedClass : supportedClasses) {
-                this.logger.info("Registering content factory for class '" + supportedClass + "': " + factory);
-
-                this.contentFactories.put(supportedClass, factory);
-            }
+            Class<?> factoryType = factory.getRepresentationType();
+            contentFactories.put(factoryType, factory);
         }
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public <T> T createRepresentation(Class<T> clazz, InputStream content) throws Exception {
 
         ContentFactory factory = this.contentFactories.get(clazz);
 
         if (factory != null) {
-            return factory.getContentRepresentation(clazz, content);
+            return (T) factory.getContentRepresentation(content);
         }
 
         // The default representations:

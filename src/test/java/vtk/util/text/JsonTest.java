@@ -30,22 +30,43 @@
  */
 package vtk.util.text;
 
+import java.io.ByteArrayInputStream;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import static org.junit.Assert.*;
+import org.jmock.Expectations;
+import static org.jmock.Expectations.returnValue;
+import org.jmock.Sequence;
+import org.jmock.auto.Auto;
+import org.jmock.auto.Mock;
+import org.jmock.integration.junit4.JUnitRuleMockery;
+
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+
 import vtk.util.io.StreamUtil;
 import vtk.util.text.Json.Container;
+import vtk.util.text.Json.ListContainer;
+import vtk.util.text.Json.MapContainer;
 
 /**
  * Test {@link vtk.util.text.Json}.
  */
+@SuppressWarnings("unchecked")
 public class JsonTest {
  
     // Mock JSON data
@@ -53,6 +74,15 @@ public class JsonTest {
     
     private String jsonTestText;
     private InputStream jsonInputStream;
+    
+    @Rule
+    public JUnitRuleMockery context = new JUnitRuleMockery();
+    
+    @Mock
+    private Json.Handler jsonHandler;
+    @Auto
+    private Sequence jsonHandlerSeq; 
+    
     
     @Before
     public void setUp() throws IOException {
@@ -85,12 +115,12 @@ public class JsonTest {
         assertEquals(3500, result.size());
         
         Map<String,Object> first = (Map<String,Object>)result.get(0);
-        assertEquals(Long.valueOf(1), first.get("id"));
+        assertEquals(1L, first.get("id"));
         assertEquals("Brazil", first.get("country"));
         assertEquals(10, ((List<Object>)first.get("numbers")).size());
         
         Map<String,Object> last = (Map<String,Object>)result.get(3499);
-        assertEquals(Long.valueOf(4000), last.get("id"));
+        assertEquals(4000L, last.get("id"));
         assertEquals("Indonesia", last.get("country"));
         assertEquals(10, ((List<Object>)last.get("numbers")).size());
     }
@@ -120,6 +150,30 @@ public class JsonTest {
         assertEquals(25.08, o.select("numbers[1]"));
     }
     
+    @Test(expected = Json.JsonParseException.class)
+    public void emptyStream() throws IOException {
+        Json.Container c = Json.parseToContainer(new ByteArrayInputStream(new byte[0]));
+        
+    }
+    
+    @Test(expected = Json.JsonParseException.class)
+    public void emptyString() {
+        Json.Container c = Json.parseToContainer("");
+    }
+    
+    @Test(expected = Json.JsonParseException.class)
+    public void whitespaceOnly() {
+        Json.Container c = Json.parseToContainer("    \t  ");
+    }
+    
+    @Test
+    public void whitespaceBeforeStart() {
+        Json.Container c = Json.parseToContainer("    [0]");
+        assertTrue(c.isArray());
+        assertFalse(c.isEmpty());
+        assertEquals(1, c.size());
+    }
+
     @Test
     public void testParseToContainer() {
         Json.Container c = Json.parseToContainer(jsonTestText);
@@ -224,7 +278,7 @@ public class JsonTest {
     
     @Test
     public void mapContainerOptMethods() {
-        Json.Container c = Json.parseToContainer("{\"a\":\"value\", \"b\":null, \"n\":133.33}");
+        Json.Container c = Json.parseToContainer("{\"a\":\"value\", \"b\":null, \"n\":133.33, \"obj\":{\"n\":1}, \"arr\":[]}");
         Json.MapContainer json = c.asObject();
         
         // Null value as default value
@@ -264,39 +318,146 @@ public class JsonTest {
         assertEquals("default", json.optStringValue("non-existing", "default"));
         assertEquals("default", json.optStringValue("n", "default"));
         
+        // Object value (map)
+        MapContainer expectedObj = new MapContainer();
+        expectedObj.put("n", 1L);
+        
+        assertNull(json.optObjectValue("non-existing", null));
+        assertEquals(Collections.EMPTY_MAP, json.optObjectValue("non-existing", Collections.EMPTY_MAP));
+        assertEquals(Collections.EMPTY_MAP, json.optObjectValue("a", Collections.EMPTY_MAP));
+        assertEquals(expectedObj, json.optObjectValue("obj", Collections.EMPTY_MAP));
+        
+        // Array value (list)
+        ListContainer expectedArr = new ListContainer();
+        
+        assertNull(json.optArrayValue("non-existing", null));
+        assertEquals(Collections.EMPTY_LIST, json.optArrayValue("non-existing", Collections.EMPTY_LIST));
+        assertEquals(Collections.EMPTY_LIST, json.optArrayValue("a", Collections.EMPTY_LIST));
+        assertEquals(expectedArr, json.optArrayValue("arr", Collections.EMPTY_LIST));
     }
     
-    // Compare performance between vtk.util.text.JSON and vtk.util.text.Json
-    @Ignore
     @Test
-    public void testPerformance() {
-        int count=10;
-        Object r1=null, r2=null;
-        for (int i=0; i<count; i++) {
-            r1 = vtk.util.text.JSON.parse(jsonTestText);
-            r2 = Json.parse(jsonTestText);
-        }
-        System.out.println("Warmup complete.");
+    public void toContainerConversionMethods() {
+        Map<String,Object> map1 = new LinkedHashMap<>();
+        Map<String,Object> map2 = new LinkedHashMap<>();
+        List<Object> l1 = new ArrayList<>();
+        l1.add(1);
+        l1.add(map2);
         
-        List<Object> l1 = (List<Object>)r1;
-        List<Object> l2 = (List<Object>)r2;
-        System.out.println("Elements in l1: " + l1.size());
-        System.out.println("Elements in l2: " + l2.size());
+        map1.put("a", "b");
+        map2.put("c", "d");
+        map2.put("e", 0.3);
+        map1.put("map", map2);
+        map1.put("list", l1);
+        
+        MapContainer wrapped = MapContainer.toContainer(map1);
+        assertEquals(map1, wrapped);
+        assertTrue(wrapped.get("map") instanceof MapContainer);
+        assertTrue(wrapped.get("list") instanceof ListContainer);
+        assertTrue(((List<?>)wrapped.get("list")).get(1) instanceof MapContainer);
+    }
+    
+    @Test
+    public void parseAsEvents() throws IOException {
+        
+        String jsonData = "{\"a\":{\"b\":[1,2.1,false]},\"c\":\"s\"}";
+        Json.ParseEvents p = Json.parseAsEvents(new StringReader(jsonData));
 
-        assertEquals(l1.size(), l2.size());
+        context.checking(new Expectations(){{
+            oneOf(jsonHandler).beginJson(); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginMember("a"); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginMember("b"); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginArray(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).primitive(1L); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).primitive(2.1d); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).primitive(false); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endArray(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endMember(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endMember(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginMember("c"); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).primitive("s"); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endMember(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endJson(); inSequence(jsonHandlerSeq);
+        }});
         
-        long start = System.currentTimeMillis();
-        for (int i=0; i<count; i++) {
-            vtk.util.text.JSON.parse(jsonTestText);
-        }
-        long end = System.currentTimeMillis();
-        System.out.println("vtk.util.text.JSON.parse(String) took " + (end-start) + "ms");
+        p.begin(jsonHandler);
+
+    }
+
+    @Test
+    public void parseAsEventsResume() throws IOException {
         
-        start = System.currentTimeMillis();
-        for (int i=0; i<count; i++) {
-            Json.parse(jsonTestText);
-        }
-        end = System.currentTimeMillis();
-        System.out.println("vtk.util.text.Json.parse(String) took " + (end-start) + "ms");
+        String jsonData = "{\"a\":1,\"b\":2}";
+        Json.ParseEvents p = Json.parseAsEvents(new StringReader(jsonData));
+
+        context.checking(new Expectations(){{
+            oneOf(jsonHandler).beginJson(); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginMember("a"); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).primitive(1L); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endMember(); will(returnValue(false)); inSequence(jsonHandlerSeq);
+
+            oneOf(jsonHandler).beginMember("b"); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).primitive(2L); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endMember(); will(returnValue(false)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endJson(); inSequence(jsonHandlerSeq);
+        }});
+        
+        p.begin(jsonHandler);
+        p.resume(jsonHandler);
+        p.resume(jsonHandler);
+    }
+    
+    @Test
+    public void parseAsEventsArrayOuter() throws IOException {
+        String jsonData = "[1,2]";
+        Json.ParseEvents p = Json.parseAsEvents(new StringReader(jsonData));
+
+        context.checking(new Expectations(){{
+            oneOf(jsonHandler).beginJson(); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginArray(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).primitive(1L); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).primitive(2L); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endArray(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endJson(); inSequence(jsonHandlerSeq);
+        }});
+        
+        p.begin(jsonHandler);
+    }    
+
+    @Test
+    public void parseAsEventsInputStream() throws IOException {
+        ByteArrayInputStream bis = new ByteArrayInputStream("{}".getBytes("utf-8"));
+        Json.ParseEvents p = Json.parseAsEvents(bis);
+
+        context.checking(new Expectations(){{
+            oneOf(jsonHandler).beginJson(); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endJson(); inSequence(jsonHandlerSeq);
+        }});
+        
+        p.begin(jsonHandler);
+    }    
+
+    @Test
+    public void parseAsEventsString() throws IOException {
+        Json.ParseEvents p = Json.parseAsEvents("[{}]");
+
+        context.checking(new Expectations(){{
+            oneOf(jsonHandler).beginJson(); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginArray(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).beginObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endObject(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endArray(); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endJson(); inSequence(jsonHandlerSeq);
+        }});
+
+        p.begin(jsonHandler);
     }
 }

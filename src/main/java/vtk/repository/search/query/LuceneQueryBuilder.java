@@ -40,9 +40,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.queries.FilterClause;
 import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.FieldValueFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -100,19 +100,23 @@ public class LuceneQueryBuilder implements InitializingBean {
 
     private ResourceTypeTree resourceTypeTree;
     private DocumentMapper documentMapper;
+    
     private QueryAuthorizationFilterFactory queryAuthorizationFilterFactory;
     private PropertyTypeDefinition publishedPropDef;
     private PropertyTypeDefinition unpublishedCollectionPropDef;
-    private Filter cachedOnlyPublishedFilter;
-
+    private PropertyTypeDefinition hiddenPropDef;
+    private Filter publishedFilter;
+    private Filter unpublishedCollectionFilter;
+    private Filter hiddenFilter;
+    
     @Override
     public void afterPropertiesSet() {
-        // Setup cached filter for published resources
-        Term publishedTerm = documentMapper.getPropertyFields().queryTerm(PropertyFields.propertyFieldName(publishedPropDef, false), "true", PropertyType.Type.BOOLEAN, false);
-        TermsFilter tf = new TermsFilter(publishedTerm);
-        this.cachedOnlyPublishedFilter = FilterFactory.cacheWrapper(tf);
+        // Setup various cached filters
+        this.publishedFilter = buildPublishedFilter();
+        this.unpublishedCollectionFilter = buildUnpublishedCollectionFilter();
+        this.hiddenFilter = buildHiddenFilter();
     }
-
+    
     /**
      * Build a Lucene {@link org.apache.lucene.search.Query} 
      * for a given <code>{@link vtk.repository.search.query.Query}</code>.
@@ -198,7 +202,7 @@ public class LuceneQueryBuilder implements InitializingBean {
         if (builder == null) {
             throw new QueryBuilderException("Unsupported query type: " + query.getClass().getName());
         }
-
+        
         return builder.buildQuery();
     }
 
@@ -311,7 +315,20 @@ public class LuceneQueryBuilder implements InitializingBean {
         }
 
         if (query instanceof PropertyExistsQuery) {
-            PropertyExistsQuery peq = (PropertyExistsQuery) query;
+            PropertyExistsQuery peq = (PropertyExistsQuery)query;
+            if (peq.getPropertyDefinition().equals(hiddenPropDef)
+                    && peq.getComplexValueAttributeSpecifier() == null
+                    && peq.isInverted()) {
+                // Use common cached filter for "navigation:hidden NOT EXISTS" clause
+                return new QueryBuilder() {
+                    
+                    @Override
+                    public org.apache.lucene.search.Query buildQuery() throws QueryBuilderException {
+                        return new ConstantScoreQuery(hiddenFilter);
+                    }
+                };
+            }
+            
             return new PropertyExistsQueryBuilder(peq);
         }
 
@@ -363,52 +380,63 @@ public class LuceneQueryBuilder implements InitializingBean {
             }
         }
         
-        // Add filters for removing default excludes if requested
         if (search.hasFilterFlag(Search.FilterFlag.UNPUBLISHED)) {
-            BooleanFilter bf = buildUnpublishedFilter();
-
-            // Include ACL-filter if non-null:
-            if (filter != null) {
+            if (filter == null) {
+                filter = publishedFilter;
+            } else {
+                BooleanFilter bf = new BooleanFilter();
                 bf.add(filter, BooleanClause.Occur.MUST);
+                bf.add(publishedFilter, BooleanClause.Occur.MUST);
+                filter = bf;
             }
-
-            filter = bf;
         }
-
+        
         if (search.hasFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS)) {
-            filter = addUnpublishedCollectionFilter(filter);
+            if (filter == null) {
+                filter = unpublishedCollectionFilter;
+            } else if (filter instanceof BooleanFilter) {
+                ((BooleanFilter)filter).add(unpublishedCollectionFilter, BooleanClause.Occur.MUST);
+            } else {
+                BooleanFilter bf = new BooleanFilter();
+                bf.add(filter, BooleanClause.Occur.MUST);
+                bf.add(unpublishedCollectionFilter, BooleanClause.Occur.MUST);
+                filter = bf;
+            }
         }
-
+        
         return filter;
-
+    }
+    
+    // Access for test
+    Filter getPublishedFilter() {
+        return publishedFilter;
+    }
+    
+    // Access for test
+    Filter getUnpublishedCollectionFilter() {
+        return unpublishedCollectionFilter;
     }
 
-    BooleanFilter buildUnpublishedFilter() {
-        BooleanFilter bf = new BooleanFilter();
-
-        // Filter to include only published resources:
-        bf.add(this.cachedOnlyPublishedFilter, BooleanClause.Occur.MUST);
-
-        return bf;
+    private Filter buildHiddenFilter() {
+        String fieldName = PropertyFields.propertyFieldName(hiddenPropDef, false);
+        FieldValueFilter fv = new FieldValueFilter(fieldName, true);
+        return FilterFactory.cacheWrapper(fv);
     }
-
-    BooleanFilter addUnpublishedCollectionFilter(Filter filter) {
-        BooleanFilter bf = new BooleanFilter();
-
-        if (filter != null) {
-            bf.add(filter, BooleanClause.Occur.MUST);
-        }
-
-        // Filter to exclude unpublishedCollection resources:
-        // Avoid using cache-wrapper for FieldValueFilter, since that can
-        // lead to memory leaks in Lucene.
-
-        bf.add(new FieldValueFilter(PropertyFields.propertyFieldName(this.unpublishedCollectionPropDef, false), true), 
-                BooleanClause.Occur.MUST);
-
-        return bf;
+    
+    private Filter buildPublishedFilter() {
+        String fieldName = PropertyFields.propertyFieldName(publishedPropDef, false);
+        PropertyFields pf = documentMapper.getPropertyFields();
+        Term publishedTerm = pf.queryTerm(fieldName, "true", PropertyType.Type.BOOLEAN, false);
+        TermsFilter tf = new TermsFilter(publishedTerm);
+        return FilterFactory.cacheWrapper(tf);
     }
-
+    
+    private Filter buildUnpublishedCollectionFilter() {
+        String fieldName = PropertyFields.propertyFieldName(unpublishedCollectionPropDef, false);
+        FieldValueFilter fv = new FieldValueFilter(fieldName, true);
+        return FilterFactory.cacheWrapper(fv);
+    }
+    
     /**
      * Build iteration filter based on search query, token and options.
      * @param token
@@ -420,18 +448,30 @@ public class LuceneQueryBuilder implements InitializingBean {
         Query query = search.getQuery();
         Filter filter = null;
         if (query != null && !(query instanceof MatchAllQuery)) {
-            filter = new QueryWrapperFilter(buildQuery(query, searcher));
+            org.apache.lucene.search.Query topLevelLuceneQuery = buildQuery(query, searcher);
+            if (topLevelLuceneQuery instanceof ConstantScoreQuery
+                    && ((ConstantScoreQuery)topLevelLuceneQuery).getFilter() != null) {
+                    filter = ((ConstantScoreQuery)topLevelLuceneQuery).getFilter();
+            } else {
+                filter = new QueryWrapperFilter(topLevelLuceneQuery);
+            }
         }
 
+        // Add general search filter, which includes security filtering
         Filter searchFilter = buildSearchFilter(token, search, searcher);
         if (searchFilter != null) {
             if (filter == null) {
                 filter = searchFilter;
             } else {
-                BooleanFilter bf = new BooleanFilter();
-                bf.add(new FilterClause(filter, BooleanClause.Occur.MUST));
-                bf.add(new FilterClause(searchFilter, BooleanClause.Occur.MUST));
-                filter = bf;
+                if (searchFilter instanceof BooleanFilter) {
+                    ((BooleanFilter)searchFilter).add(filter, BooleanClause.Occur.MUST);
+                    filter = searchFilter;
+                } else {
+                    BooleanFilter bf = new BooleanFilter();
+                    bf.add(searchFilter, BooleanClause.Occur.MUST);
+                    bf.add(filter, BooleanClause.Occur.MUST);
+                    filter = bf;
+                }
             }
         }
 
@@ -473,8 +513,14 @@ public class LuceneQueryBuilder implements InitializingBean {
     }
     
     @Required
+    public void setHiddenPropDef(PropertyTypeDefinition hiddenPropDef) {
+        this.hiddenPropDef = hiddenPropDef;
+    }
+    
+    @Required
     public void setDocumentMapper(DocumentMapper documentMapper) {
         this.documentMapper = documentMapper;
     }
+
 
 }

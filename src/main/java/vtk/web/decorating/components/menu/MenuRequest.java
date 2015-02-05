@@ -404,7 +404,7 @@ public class MenuRequest {
         }
         search.setQuery(mainQuery);
         search.setLimit(searchLimit);
-        search.setPropertySelect(PropertySelect.ALL);
+        search.setPropertySelect(PropertySelect.ALL_PROPERTIES);
         return search;
     }
 

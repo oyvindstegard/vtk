@@ -30,17 +30,14 @@
  */
 package vtk.resourcemanagement;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import net.sf.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.RepositoryContentEvaluationAssertion;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.Content;
+import vtk.repository.resourcetype.property.PropertyEvaluationException;
 import vtk.security.Principal;
-import vtk.util.text.JSON;
+import vtk.util.text.Json;
 
 /**
  * XXX Not usable as web service assertion.
@@ -48,9 +45,9 @@ import vtk.util.text.JSON;
  */
 public class ValidDocumentAssertion implements RepositoryContentEvaluationAssertion {
 
-	private StructuredResourceManager resourceManager;
+    private StructuredResourceManager resourceManager;
 	
-//	@Override
+    @Override
     public boolean matches(Resource resource, Principal principal) {
         return matches(resource, principal, null);
     }
@@ -63,9 +60,8 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
         if (resource.isCollection()) return false;
         
         try {
-            JSONObject object = content.getContentRepresentation(net.sf.json.JSONObject.class);
-
-            Object o = JSON.select(object, "resourcetype");
+            Json.MapContainer object = content.getContentRepresentation(Json.MapContainer.class);
+            Object o = Json.select(object, "resourcetype");
             if (o == null) {
                 return false;
             }
@@ -73,13 +69,15 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
             if (description == null) {
                 return false;
             }
-            InputStream stream = new ByteArrayInputStream(object.toString().getBytes("utf-8"));
-            StructuredResource r = description.buildResource(stream);
-            return r.isValidDocument(object);
-        } catch (Throwable t) {
-            return false;
+            try {
+                description.buildFromMap(object);
+                return true;
+            } catch (Throwable t) {
+                return false;
+            }
+        } catch (Exception e) {
+            throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
         }
-
     }
 
     @Required

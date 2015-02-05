@@ -16,8 +16,8 @@
         <value>classpath:/vtk/util/vtk_version.properties</value>
         <value>file://${user.home}/*vtk.properties</value>
         <value>file://${user.dir}/*vtk.properties</value>
-        <value>file://${user.home}/*.vrtx.properties</value>
-        <value>file://${user.dir}/*.vrtx.properties</value>
+        <value>file://${user.home}/*vrtx.properties</value>
+        <value>file://${user.dir}/*vrtx.properties</value>
         <!-- Uncomment for in-memory repo testing: -->
         <!--<value>classpath:/vtk/beans/in-memory-vtk.properties</value>-->
       </list>
@@ -59,6 +59,15 @@
     <property name="viewUnauthenticatedParameter" value="x-prevent-decorating"/>
   </bean>
   
+  <bean id="globalHeaders" class="java.util.HashMap">
+    <constructor-arg>
+      <map>
+        <entry key="${versionHeader.name}" value="${versionHeader.value}" />
+      </map>
+    </constructor-arg>
+  </bean>
+
+
   <bean id="services" class="vtk.beans.factory.BeansListingFactoryBean">
     <property name="targetBeansClass" value="vtk.web.service.Service" />
   </bean>

@@ -51,7 +51,6 @@
     <property name="order" value="-1" />
     <property name="assertions">
       <list>
-        <ref bean="resourceIsPublishedAssertion" />
         <ref bean="contentTypeMatchesImage" />
       </list>
     </property>

@@ -72,6 +72,7 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
     private int truncateLimit = 250;
     private String truncation = "...";
     private List<TemplateLink> templateLinks;
+    private boolean onlyReadAll = false;
     private Service viewService;
     private String modelKey = "links";
 
@@ -109,6 +110,9 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
         Repository repository = requestContext.getRepository();
 
         final Resource resource = repository.retrieve(token, requestContext.getResourceURI(), true);
+        
+        if(resource.isReadRestricted() && onlyReadAll) return;
+        
         final Principal principal = requestContext.getPrincipal();
         final Service service = requestContext.getService();
         
@@ -212,6 +216,13 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
             tl.template = SimpleTemplate.compile(templateValue, "%{", "}");
             this.templateLinks.add(tl);
         }
+    }
+    
+    /**
+     * Set if links should only be displayed if resource can be read by all
+     */
+    public void setOnlyReadAll(boolean onlyReadAll) {
+        this.onlyReadAll = onlyReadAll;
     }
 
     public void setTruncateLimit(int truncateLimit) {

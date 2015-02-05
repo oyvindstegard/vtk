@@ -182,8 +182,6 @@
 
   <bean id="jdomContentFactory" class="vtk.repository.content.JDOMContentFactory" />
 
-  <bean id="jtidyContentFactory" class="vtk.repository.content.JTidyContentFactory" />
-  <bean id="imageContentFactory" class="vtk.repository.content.ImageContentFactory" />
   <bean id="audioFileContentFactory" class="vtk.repository.content.AudioFileContentFactory" />
 
   <bean id="htmlInfoContentFactory" class="vtk.repository.content.HtmlInfoContentFactory" />

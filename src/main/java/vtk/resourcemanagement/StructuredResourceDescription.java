@@ -40,8 +40,8 @@ import java.util.Map;
 import java.util.Set;
 
 import vtk.resourcemanagement.property.DerivedPropertyDescription;
-import vtk.resourcemanagement.property.PropertyDescription;
 import vtk.resourcemanagement.property.DerivedPropertyEvaluationDescription.EvaluationElement;
+import vtk.resourcemanagement.property.PropertyDescription;
 
 public final class StructuredResourceDescription {
 
@@ -209,6 +209,10 @@ public final class StructuredResourceDescription {
 
     public StructuredResource buildResource(InputStream source) throws Exception {
         return StructuredResource.create(this, source);
+    }
+    
+    public StructuredResource buildFromMap(Map<String, Object> json) throws Exception {
+        return StructuredResource.createFromMap(this, json);
     }
     
     public String getLocalizedMsg(String key, Locale locale, Object[] param) {

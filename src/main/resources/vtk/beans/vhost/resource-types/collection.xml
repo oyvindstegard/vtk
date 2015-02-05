@@ -14,7 +14,6 @@
     <property name="mixinTypeDefinitions">
       <list>
         <ref bean="introductionMixinResourceTypeDef" />
-        <ref bean="visualProfileMixinResourceTypeDef" />
         <ref bean="navigationMixinResourceTypeDef" />
         <ref bean="additionalContentMixinResourceTypeDef" />
         <ref bean="showSubfolderMixinResourceTypeDef" />

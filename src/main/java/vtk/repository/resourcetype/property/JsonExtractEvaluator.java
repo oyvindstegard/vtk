@@ -32,17 +32,16 @@
 package vtk.repository.resourcetype.property;
 
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
-import vtk.util.text.JSON;
-
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
 import vtk.repository.PropertyEvaluationContext.Type;
-
 import vtk.repository.resourcetype.PropertyEvaluator;
 import vtk.repository.resourcetype.ValueFactory;
+import vtk.util.text.Json;
 
 /**
  * Set property value based on value extracted from JSON content. The value
@@ -64,9 +63,10 @@ public class JsonExtractEvaluator implements PropertyEvaluator {
                 || ctx.getEvaluationType() == Type.Create) {
 
             try {
-                JSONObject json = (JSONObject)ctx.getContent().getContentRepresentation(JSONObject.class);
-                Object o = JSON.select(json, expression);
-                if (o != null && !(o instanceof JSONNull)) {
+                Map<String, Object> json = ctx.getContent().getContentRepresentation(Json.MapContainer.class);
+
+                Object o = Json.select(json, expression);
+                if (o != null) {
                     String stringValue = o.toString();
                     property.setValue(valueFactory.createValue(stringValue, property.getType()));
                     return true;

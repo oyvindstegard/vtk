@@ -126,7 +126,7 @@
             <set>
               <value>OPTIONS</value>
             </set>
-          </property>       
+          </property>
         </bean>
       </list>
     </property>
@@ -135,7 +135,7 @@
 
 
   <!-- View services -->
-  
+
   <bean id="viewService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="webService" />
     <property name="order" value="700" />
@@ -148,7 +148,7 @@
               <value>HEAD</value>
               <value>POST</value>
             </set>
-          </property>       
+          </property>
         </bean>
       </list>
     </property>
@@ -206,36 +206,65 @@
     <property name="handler" ref="displayThumbnailHandler" />
   </bean>
 
-  <bean id="displayThumbnailHandler" class="vtk.web.display.thumbnail.DisplayThumbnailController" />  
+  <!-- displayThumbnailService with no-cache for other resources than image and audio where thumbnail does not exist -->
+  <bean id="displayThumbnailNoCacheService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="displayResourceService" />
+    <property name="order" value="-1" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="vrtx" />
+          <property name="parameterValue" value="thumbnail" />
+        </bean>
+        <bean class="vtk.web.service.ResourcePropertyAssertion">
+          <property name="namespace" ref="DEFAULT_NAMESPACE" />
+          <property name="name" value="thumbnail" />
+          <property name="checkExistenceOnly" value="true" />
+          <property name="invert" value="true" />
+        </bean>
+        <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+          <property name="resourceTypeDefinition" ref="imageResourceTypeDefinition" />
+          <property name="invert" value="true" />
+        </bean>
+        <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+          <property name="resourceTypeDefinition" ref="audioResourceTypeDefinition" />
+          <property name="invert" value="true" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="displayThumbnailHandler" />
+  </bean>
 
-   <!-- Resource-aware locale resolver (for viewService)  -->
+  <bean id="displayThumbnailHandler" class="vtk.web.display.thumbnail.DisplayThumbnailController" />
 
-   <bean id="viewServiceResourceAwareLocaleResolver"
-         class="vtk.web.servlet.ResourceAwareLocaleResolver" parent="repositoryAware">
-     <property name="defaultLocale" value="${view.defaultLocale}" />
-     <property name="trustedToken" ref="trustedToken" />
-   </bean>
+  <!-- Resource-aware locale resolver (for viewService)  -->
+
+  <bean id="viewServiceResourceAwareLocaleResolver"
+        class="vtk.web.servlet.ResourceAwareLocaleResolver" parent="repositoryAware">
+    <property name="defaultLocale" value="${view.defaultLocale}" />
+    <property name="trustedToken" ref="trustedToken" />
+  </bean>
 
 
-   <!-- Global locale resolver: looks for 'localeResolver' service
-        attributes on the current service and ancestors towards the
-        root and uses the first one found. -->
-   <bean id="localeResolver"
-         class="vtk.web.servlet.ServiceDelegatingLocaleResolver">
-     <property name="defaultLocaleResolver" ref="defaultViewCookieLocaleResolver" />
-     <property name="localeTranslationMap" ref="localeTranslationMap" />
-   </bean>
+  <!-- Global locale resolver: looks for 'localeResolver' service
+  attributes on the current service and ancestors towards the
+  root and uses the first one found. -->
+  <bean id="localeResolver"
+        class="vtk.web.servlet.ServiceDelegatingLocaleResolver">
+    <property name="defaultLocaleResolver" ref="defaultViewCookieLocaleResolver" />
+    <property name="localeTranslationMap" ref="localeTranslationMap" />
+  </bean>
 
-   <bean id="defaultViewCookieLocaleResolver"
-         class="org.springframework.web.servlet.i18n.CookieLocaleResolver" >
-     <property name="cookieMaxAge" value="315360000" />
-     <property name="cookieName" value="service.view.locale" />
-     <property name="defaultLocale"> 
-       <bean class="java.util.Locale">
-         <constructor-arg value="${view.defaultLocale}" />
-       </bean>
-     </property>
-   </bean>
+  <bean id="defaultViewCookieLocaleResolver"
+        class="org.springframework.web.servlet.i18n.CookieLocaleResolver" >
+    <property name="cookieMaxAge" value="315360000" />
+    <property name="cookieName" value="service.view.locale" />
+    <property name="defaultLocale">
+      <bean class="java.util.Locale">
+        <constructor-arg value="${view.defaultLocale}" />
+      </bean>
+    </property>
+  </bean>
 
   <bean id="displayIndexFileService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="collectionListing.viewService" />
@@ -260,6 +289,9 @@
       <bean class="vtk.context.CSVSetFactoryBean">
         <property name="csvList" value="${webCache.excludedResourceTypes}" />
       </bean>
+    </property>
+    <property name="excludedServices">
+      <ref bean="displayThumbnailNoCacheService" />
     </property>
   </bean>
 
@@ -304,7 +336,7 @@
         <ref bean="redirectToManageAssertion" />
       </list>
     </property>
-        <property name="handlerInterceptors">
+    <property name="handlerInterceptors">
       <list>
         <!-- Redirect to manage hostname -->
         <bean class="vtk.web.interceptors.ConfigurableRedirector">
@@ -321,7 +353,7 @@
       </bean>
     </property>
   </bean>
-  
+
   <bean id="redirectToManageAssertion" class="vtk.web.service.AndAssertion">
     <property name="assertions">
       <list>
@@ -439,7 +471,7 @@
 
   <!-- Parent assertions -->
 
-  <bean id="vrtxParameterEquals" 
+  <bean id="vrtxParameterEquals"
         class="vtk.web.service.RequestParameterAssertion" abstract="true">
     <property name="parameterName" value="vrtx" />
   </bean>
@@ -449,18 +481,18 @@
   <bean id="uriDoesNotEndWithSlash"
         class="vtk.web.service.RequestURIRegexpAssertion">
     <property name="pattern" value=".*[^/]$" />
-  </bean>   
- 
+  </bean>
+
   <bean id="resourceTypeInHtml" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="htmlResourceTypeDefinition" />
     <property name="exactMatch" value="false" />
-  </bean> 
-  
+  </bean>
+
   <bean id="resourceTypeInXhtml" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="xhtml10ResourceTypeDefinition" />
     <property name="exactMatch" value="false" />
   </bean>
-  
+
   <bean id="resourceTypeIsXhtml" parent="resourceTypeInXhtml" >
     <property name="exactMatch" value="true" />
   </bean>
@@ -474,7 +506,7 @@
     <property name="exactMatch" value="true" />
   </bean>
 
-  <bean id="abstractResourcePrincipalPermissionAssertion" 
+  <bean id="abstractResourcePrincipalPermissionAssertion"
         class="vtk.web.service.ResourcePrincipalPermissionAssertion"
         abstract="true">
     <property name="principalManager" ref="principalManager" />
@@ -518,7 +550,7 @@
     <property name="targetObject" ref="ssl.configurationPropertiesFile" />
     <property name="method" value="load" />
   </bean>
-  
+
   <!-- Canonical URL constructor -->
   <bean id="canonicalUrlConstructor" class="vtk.web.service.CanonicalUrlConstructorImpl">
     <property name="webHostName" value="${webHostName}" />

@@ -54,13 +54,24 @@ JavaScript and plain JS plugins
 │   ├── admin-enhancements.js
 │   ├── audio-player.js
 │   ├── autocomplete
+│   │   ├── autocomplete.js
+│   │   └── autocomplete-permissions.js
 │   ├── browse.js
 │   ├── collectionlisting
 │   │   └── manually-approve.js
 │   ├── cross-doc-com-link.js
+│   ├── domains
+│   │   ├── about.js
+│   │   ├── editors.js
+│   │   ├── listing.js
+│   │   └── permissions.js
 │   ├── datepicker
+│   │   ├── datepicker-admin-old.js
+│   │   ├── datepicker-event-listing.js
+│   │   └── vrtx-datepicker.js
 │   ├── editor.js
 │   ├── frameworks
+│   │   └── dejavu.js
 │   ├── gallery.js
 │   ├── iframe-admin.js
 │   ├── iframe-view.js
@@ -76,6 +87,7 @@ JavaScript and plain JS plugins
 │   │   ├── tablesort-1.5.min.js
 │   │   └── tablesort-customsort.js
 │   ├── reports
+│   │   └── brokern-links.js
 │   ├── schedule
 │   ├── templates
 │   │   ├── manually-approve.mustache

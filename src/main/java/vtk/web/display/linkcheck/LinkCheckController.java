@@ -39,14 +39,14 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.util.text.Json;
+import vtk.util.text.JsonStreamer;
 import vtk.util.web.LinkTypesPrefixes;
 import vtk.web.RequestContext;
 import vtk.web.display.linkcheck.LinkChecker.LinkCheckResult;
@@ -85,9 +85,10 @@ public class LinkCheckController implements Controller {
     }
 
     private void writeResults(List<LinkCheckResult> results, HttpServletResponse response) throws Exception {
-        JSONArray list = new JSONArray();
+        Json.ListContainer list = new Json.ListContainer();
+        
         for (LinkCheckResult result : results) {
-            JSONObject o = new JSONObject();
+            Json.MapContainer o = new Json.MapContainer();
             o.put(LINK, result.getLink());
             o.put(STATUS, result.getStatus().toString());
             if (result.getReason() != null) {
@@ -98,10 +99,12 @@ public class LinkCheckController implements Controller {
         okRequest(list, response);
     }
 
-    private void okRequest(JSONArray arr, HttpServletResponse response) throws IOException {
+    private void okRequest(Json.ListContainer arr, HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/plain;charset=utf-8"); /* XXX: Should be application/json? */
-        writeResponse(arr.toString(1), response);
+        
+        String str = JsonStreamer.toJson(arr, 1);
+        writeResponse(str, response);
     }
 
     private void badRequest(Throwable e, HttpServletResponse response) throws IOException {

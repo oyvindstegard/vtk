@@ -46,6 +46,7 @@ import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.util.io.StreamUtil;
 import vtk.web.RequestContext;
@@ -80,11 +81,12 @@ public class DisplayThumbnailController implements Controller, LastModified {
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
 
-        Resource image = repository.retrieve(token, uri, true);
-        Property thumbnail = image.getProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.THUMBNAIL_PROP_NAME);
+        Resource resource = repository.retrieve(token, uri, true);
+        Property thumbnail = resource.getProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.THUMBNAIL_PROP_NAME);
 
         if (thumbnail == null || StringUtils.isBlank(thumbnail.getBinaryContentType())) {
-            String resourceType = image.getResourceType();
+            String resourceType = resource.getResourceType();
+            TypeInfo type = repository.getTypeInfo(resource);
             if ("image".equals(resourceType)) {
                 if (log.isDebugEnabled()) {
                     String detailedMessage = thumbnail == null ? "no thumbnail found (null)" : "no mimetype set";
@@ -92,15 +94,20 @@ public class DisplayThumbnailController implements Controller, LastModified {
                 }
                 response.sendRedirect(URL.encode(uri).toString());
             } else if ("audio".equals(resourceType)) {
-                InputStream in = this.getClass().getResourceAsStream(ADUIO_LOGO);
+                InputStream in = getClass().getResourceAsStream(ADUIO_LOGO);
                 response.setContentType(AUDIO_LOGO_CONTENT_TYPE);
                 StreamUtil.pipe(in, response.getOutputStream());
-            } else if ("video".equals(resourceType)) {
-                InputStream in = this.getClass().getResourceAsStream(VIDEO_LOGO);
+            } else if (type.isOfType("video")) { // We want placeholder for all kinds of video types.
+                // Avoid caching placeholder thumbnail for videos, because a thumbnail will likely be made.
+                setNoCache(response);
+                InputStream in = getClass().getResourceAsStream(VIDEO_LOGO);
                 response.setContentType(VIDEO_LOGO_CONTENT_TYPE);
                 StreamUtil.pipe(in, response.getOutputStream());
+            } else {
+                // Do not cache empty response.
+                setNoCache(response);
+                response.setStatus(404);
             }
-            return null;
         } else {
             ContentStream binaryStream = thumbnail.getBinaryStream();
             String mimetype = thumbnail.getBinaryContentType();
@@ -108,7 +115,15 @@ public class DisplayThumbnailController implements Controller, LastModified {
             int length = (int) binaryStream.getLength();
             response.setContentLength(length);
             StreamUtil.pipe(binaryStream.getStream(), response.getOutputStream(), length, true);
-            return null;
         }
+
+        return null;
     }
+
+    private void setNoCache(HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+        response.setHeader("Expires", "0");
+        response.setHeader("Pragma", "no-cache");
+    }
+
 }

@@ -34,20 +34,16 @@ import java.io.InputStream;
 
 import org.pdfbox.pdmodel.PDDocument;
 
-public class PDFContentFactory implements ContentFactory {
+public class PDFContentFactory implements ContentFactory<PDDocument> {
 
     @Override
-    public Class<?>[] getRepresentationClasses() {
-        return new Class<?>[] {PDDocument.class};
+    public Class<PDDocument> getRepresentationType() {
+        return PDDocument.class;
     }
 
     @Override
-    public PDDocument getContentRepresentation(Class clazz, InputStream content)
+    public PDDocument getContentRepresentation(InputStream content)
             throws Exception {
-        if (clazz != PDDocument.class) {
-            throw new UnsupportedContentRepresentation("Unsupported representation: " + clazz);
-        }
-        
         return PDDocument.load(content);
     }
 

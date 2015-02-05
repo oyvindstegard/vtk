@@ -30,6 +30,7 @@
  */
 package vtk.repository.search.query.builders;
 
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
@@ -85,17 +86,17 @@ public class PropertyTermQueryBuilder implements QueryBuilder {
             valueType = propDef.getType();
             fieldName = PropertyFields.propertyFieldName(propDef, lowercase);
         }
+
+        Term term = pf.queryTerm(fieldName, fieldValue, valueType, lowercase);
+        Filter filter = new TermFilter(term);
         
-        if (op == TermOperator.EQ || op == TermOperator.EQ_IGNORECASE) {
-            return new TermQuery(pf.queryTerm(fieldName, fieldValue, valueType, lowercase));
-        } else if (op == TermOperator.NE || op == TermOperator.NE_IGNORECASE) {
-            TermFilter tf = new TermFilter(pf.queryTerm(fieldName, fieldValue, valueType, lowercase));
-            Filter f = FilterFactory.inversionFilter(tf);
-            return new ConstantScoreQuery(f);
-        } else {
+        if (op == TermOperator.NE || op == TermOperator.NE_IGNORECASE) {
+            filter = FilterFactory.inversionFilter(filter);
+        } else if (op != TermOperator.EQ && op != TermOperator.EQ_IGNORECASE) {
             throw new QueryBuilderException("Term operator " + op + " not supported by this builder.");
         }
         
+        return new ConstantScoreQuery(filter);
     }
 
 }

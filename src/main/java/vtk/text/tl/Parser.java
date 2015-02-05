@@ -142,7 +142,12 @@ public class Parser {
             case Directive:
                 String name = parseNode.name;
                 List<Token> args = parseNode.arguments;
-                handler.directive(new Directive(name, args, getLineNumber()));
+                try {
+                    handler.directive(new Directive(name, args, getLineNumber()));
+                } catch (Exception e) {
+                    handler.error(e.getMessage(), getLineNumber());
+                    break;
+                }
             }
         }
     }

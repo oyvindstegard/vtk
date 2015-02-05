@@ -30,15 +30,17 @@
  */
 package vtk.web.actions.copymove;
 
-import javax.servlet.http.HttpSession;
-import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertNull;
+
+import javax.servlet.http.HttpSession;
 
 import org.jmock.Expectations;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.Path;
 import vtk.web.AbstractControllerTest;
 
@@ -89,6 +91,9 @@ public class CopyMoveToSelectedFolderControllerTest extends AbstractControllerTe
 		context.checking(new Expectations() {{
 			//allowing(mockRequest).getSession(); will(returnValue(mockHttpSession));
 			allowing(mockRequest).getSession(true); will(returnValue(mockHttpSession));
+                        allowing(mockRequest).getParameter("revision");
+                        allowing(mockRequest).getParameter("vrtxPreviewUnpublished");
+                        
 			//allowing(mockRequest).getSession(false); will(returnValue(mockHttpSession));
 			//allowing(mockRequest).getMethod(); will(returnValue("POST"));
 			//allowing(mockRequest).getParameterNames(); will(returnValue(new Vector<String>().elements()));

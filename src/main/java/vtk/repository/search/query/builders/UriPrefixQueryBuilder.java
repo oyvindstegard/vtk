@@ -31,7 +31,11 @@
 package vtk.repository.search.query.builders;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.TermFilter;
+import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
@@ -59,21 +63,19 @@ public class UriPrefixQueryBuilder implements QueryBuilder {
     
     @Override
     public Query buildQuery() throws QueryBuilderException {
-        Query query = new TermQuery(new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, upQuery.getUri()));
-
-        if (this.upQuery.isIncludeSelf()) {
-            BooleanQuery bq = new BooleanQuery();
-            TermQuery uriTermq = new TermQuery(new Term(ResourceFields.URI_FIELD_NAME, upQuery.getUri()));
-            bq.add(uriTermq, BooleanClause.Occur.SHOULD);
-            bq.add(query, BooleanClause.Occur.SHOULD);
-            query = bq;
+        
+        Filter filter;
+        if (upQuery.isIncludeSelf()) {
+            filter = new TermsFilter(new Term(ResourceFields.URI_FIELD_NAME, upQuery.getUri()),
+                                     new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, upQuery.getUri()));
+        } else {
+            filter = new TermFilter(new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, upQuery.getUri()));
+        }
+        
+        if (upQuery.isInverted()) {
+            filter = FilterFactory.inversionFilter(filter);
         }
 
-        if (this.upQuery.isInverted()) {
-            Filter filter = FilterFactory.inversionFilter(new QueryWrapperFilter(query));
-            return new ConstantScoreQuery(filter);
-        }
-
-        return query;
+        return new ConstantScoreQuery(filter);
     }
 }

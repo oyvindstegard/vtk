@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 University of Oslo, Norway
+/* Copyright (c) 2014–2015 University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -144,17 +144,6 @@ public class JsonStreamerTest {
         assertEquals(expect, sw.toString());
     }
     
-    // This test will fail until support for cycle detection is implemented.
-    // Keep it disabled.
-    @Test
-    @Ignore
-    public void noInfiniteRecursionOnSelfReferencingStructure() throws IOException {
-        Map<String,Object> m = new HashMap<>();
-        m.put("self", m);
-        js.object(m);
-        assertEquals("{\"self\":null}", sw.toString());
-    }
-    
     @Test
     public void booleanValues() throws IOException {
         js.beginArray().value(true).value(false).endArray();
@@ -219,6 +208,17 @@ public class JsonStreamerTest {
     }
     
     @Test
+    public void membersOf() throws IOException {
+        Map<Object,Object> m = new LinkedHashMap<>();
+        m.put("x", "y");
+        m.put(null, "null");
+        m.put(1, 1);
+        
+        js.beginObject().member("a", "b").membersOf(m).endObject();
+        assertEquals("{\"a\":\"b\",\"x\":\"y\",\"null\":\"null\",\"1\":1}", sw.toString());
+    }
+    
+    @Test
     public void objectWithNullValues() throws IOException {
         js.beginObject().member("a", null).key("b").value(null).endObject();
         assertEquals("{\"a\":null,\"b\":null}", sw.toString());
@@ -267,6 +267,205 @@ public class JsonStreamerTest {
     }
     
     @Test
+    public void nullKeyMap() throws IOException {
+        Map<Object,Object> mapWithNullKey = new HashMap<>();
+        mapWithNullKey.put(null, "value of the null key");
+        js.value(mapWithNullKey);
+        assertEquals("{\"null\":\"value of the null key\"}", sw.toString());
+    }
+
+    @Test
+    public void primitiveArrayEmpty() throws IOException {
+        int[] array = new int[0];
+        js.value(array);
+        assertEquals("[]", sw.toString());
+
+    }
+
+    @Test
+    public void primitiveArray_byte() throws IOException {
+        byte[] array = {0};
+        js.value(array);
+        assertEquals("[0]", sw.toString());
+        
+        array = new byte[]{1,-2,Byte.MAX_VALUE};
+        js.value(array);
+        assertEquals("[0],[1,-2," + Byte.MAX_VALUE + "]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArray_short() throws IOException {
+        short[] array = {0};
+        js.value(array);
+        assertEquals("[0]", sw.toString());
+        
+        array = new short[]{1,-2,Short.MAX_VALUE};
+        js.value(array);
+        assertEquals("[0],[1,-2," + Short.MAX_VALUE + "]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArray_int() throws IOException {
+        int[] array = {0};
+        js.value(array);
+        assertEquals("[0]", sw.toString());
+        
+        array = new int[]{1,-2,Integer.MAX_VALUE};
+        js.value(array);
+        assertEquals("[0],[1,-2," + Integer.MAX_VALUE + "]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArray_long() throws IOException {
+        long[] array = {0};
+        js.value(array);
+        assertEquals("[0]", sw.toString());
+        
+        array = new long[]{1,-2,Long.MAX_VALUE};
+        js.value(array);
+        assertEquals("[0],[1,-2," + Long.MAX_VALUE + "]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArray_boolean() throws IOException {
+        boolean[] array = {false};
+        js.value(array);
+        assertEquals("[false]", sw.toString());
+        
+        array = new boolean[]{true,false,true};
+        js.value(array);
+        assertEquals("[false],[true,false,true]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArray_float() throws IOException {
+        float[] array = {0.1f};
+        js.value(array);
+        assertEquals("[0.1]", sw.toString());
+        
+        array = new float[]{0.1f,-0.2f,Float.MAX_VALUE};
+        js.value(array);
+        assertEquals("[0.1],[0.1,-0.2," + Float.MAX_VALUE + "]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArray_double() throws IOException {
+        double[] array = {0.1};
+        js.value(array);
+        assertEquals("[0.1]", sw.toString());
+        
+        array = new double[]{0.1,-0.2,Double.MAX_VALUE};
+        js.value(array);
+        assertEquals("[0.1],[0.1,-0.2," + Double.MAX_VALUE + "]", sw.toString());
+    }
+
+    @Test
+    public void primitiveArray_char() throws IOException {
+        char[] array = "\"test\"".toCharArray();
+        js.value(array);
+        assertEquals("[\"\\\"\",\"t\",\"e\",\"s\",\"t\",\"\\\"\"]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveMultidimArray_int() throws IOException {
+        int[][] array = {{1,2},{3,4},{}};
+        js.value(array);
+        assertEquals("[[1,2],[3,4],[]]", sw.toString());
+        
+        js.value(new int[][][]{{{}}});
+        assertEquals("[[1,2],[3,4],[]],[[[]]]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArrayOfLists() throws IOException {
+        List<Object> objectList = new ArrayList<>();
+        List<boolean[]> boolArrayList = new ArrayList<>();
+        
+        objectList.add("x");
+        objectList.add(1);
+        objectList.add('y');
+        
+        boolArrayList.add(new boolean[]{true,true});
+        boolArrayList.add(new boolean[]{false,false});
+                
+        Object[] array = new Object[]{objectList, boolArrayList};
+        
+        js.value(array);
+        assertEquals("[[\"x\",1,\"y\"],[[true,true],[false,false]]]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArrayOfMaps() throws IOException {
+        Map<String,Object> jsonMap = new LinkedHashMap<>();
+        jsonMap.put("foo", "bar");
+        jsonMap.put("baz", 1);
+        
+        Map<Integer,Integer> intMap = new LinkedHashMap<>();
+        intMap.put(1, -1);
+        intMap.put(2, -2);
+        intMap.put(3, -3);
+        
+        Object[] array = new Object[]{jsonMap, intMap};
+        
+        js.value(array);
+        
+        assertEquals("[{\"foo\":\"bar\",\"baz\":1},{\"1\":-1,\"2\":-2,\"3\":-3}]", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArrayOfObjects() throws IOException {
+        Object[] array = new Object[] {
+            new Object() {
+                @Override
+                public String toString() {
+                    return "type-a-as-string";
+                }
+            },
+            new Object() {
+                @Override
+                public String toString() {
+                    return "type-b-as-string";
+                }
+            },
+            new int[]{1,2,3},
+            new HashMap()
+        };
+        js.value(array);
+        
+        assertEquals("[\"type-a-as-string\",\"type-b-as-string\",[1,2,3],{}]", sw.toString());
+    }
+
+    @Test
+    public void useToStringForUnrecognizedType() throws IOException {
+        Object obj = new Object() {
+            @Override
+            public String toString() {
+                return "some object";
+            }
+        };
+        
+        js.beginObject().member("object", obj).endObject();
+        assertEquals("{\"object\":\"some object\"}", sw.toString());
+    }
+    
+    @Test
+    public void primitiveArrayPrettyPrint() throws IOException {
+        Object[] array = new Object[]{new int[]{1,2}, 
+            new boolean[]{true,false}};
+        String json = JsonStreamer.toJson(array, 1);
+        assertEquals("[\n"
+                + " [\n"
+                + "  1,\n"
+                + "  2\n"
+                + " ],\n"
+                + " [\n"
+                + "  true,\n"
+                + "  false\n"
+                + " ]\n"
+                + "]\n", json);
+    }
+    
+    @Test
     public void toJson() {
         assertEquals("true", JsonStreamer.toJson(true));
         assertEquals("false", JsonStreamer.toJson(false));
@@ -308,6 +507,17 @@ public class JsonStreamerTest {
         js.beginObject().member("a", "b").endJson();
         
         assertEquals("{}{\"a\":\"b\"}", sw.toString());
+    }
+    
+    // This test will fail until support for cycle detection is implemented.
+    // Keep it disabled.
+    @Test
+    @Ignore
+    public void noInfiniteRecursionOnSelfReferencingStructure() throws IOException {
+        Map<String,Object> m = new HashMap<>();
+        m.put("self", m);
+        js.object(m);
+        assertEquals("{\"self\":null}", sw.toString());
     }
     
     @Test(expected = IllegalStateException.class)

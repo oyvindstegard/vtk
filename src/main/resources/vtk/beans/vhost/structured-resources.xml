@@ -188,36 +188,7 @@
   </bean>
 
   <bean id="structuredResources.valDirective" class="vtk.text.tl.ValHandler">
-    <constructor-arg>
-      <map>
-        <entry>
-          <key>
-            <value type="java.lang.Class">vtk.repository.PropertyImpl</value>
-          </key>
-          <bean class="vtk.resourcemanagement.view.tl.PropertyValueFormatHandler">
-            <constructor-arg>
-              <ref bean="valueFormatterRegistry" />
-            </constructor-arg>
-          </bean>
-        </entry>
-        <entry>
-          <key>
-            <value type="java.lang.Class">vtk.repository.resourcetype.Value</value>
-          </key>
-          <bean class="vtk.resourcemanagement.view.tl.PropertyValueFormatHandler">
-            <constructor-arg ref="valueFormatterRegistry" />
-          </bean>
-        </entry>
-        <entry>
-          <key>
-            <value type="java.lang.Class">vtk.repository.resourcetype.Value[]</value>
-          </key>
-          <bean class="vtk.resourcemanagement.view.tl.PropertyValueFormatHandler">
-            <constructor-arg ref="valueFormatterRegistry" />
-          </bean>
-        </entry>
-      </map>
-    </constructor-arg>
+    <constructor-arg ref="decorating.valDirective.valueFormatters" />
     <constructor-arg ref="structuredResources.tlFunctions" />
   </bean>
 
@@ -260,6 +231,7 @@
         <ref bean="templateLanguage.toStringFunction" />
         <ref bean="templateLanguage.concatFunction" />
         <ref bean="templateLanguage.splitFunction" />
+        <ref bean="templateLanguage.trimFunction" />
         <ref bean="templateLanguage.substringFunction" />
         <ref bean="templateLanguage.lengthFunction" />
         <ref bean="templateLanguage.getFunction" />
@@ -267,14 +239,14 @@
         <ref bean="templateLanguage.toUpperCaseFunction" />
         <ref bean="templateLanguage.ceilFunction" />
         <ref bean="templateLanguage.replaceFunction" />
-        <ref bean="structuredResources.requestContextFunction" />
+        <ref bean="decorating.requestContextFunction" />
+        <ref bean="decorating.searchFunction" />
         <ref bean="structuredResources.resourceFunction" />
         <ref bean="structuredResources.jsonResourceFunction" />
         <ref bean="structuredResources.ResourceLocaleFunction" />
         <ref bean="structuredResources.resourcePropFunction" />
         <ref bean="structuredResources.resourcePropObjValFunction" />
         <ref bean="structuredResources.structuredDocumentFunction" />
-        <ref bean="structuredResources.searchFunction" />
         <ref bean="structuredResources.viewURLFunction" />
         <ref bean="structuredResources.toDateFunction" />
         <ref bean="structuredResources.localizedFunction" />
@@ -329,14 +301,6 @@
     <property name="category" value="structuredResources.customFunction" />
   </bean>
 
-  <bean id="structuredResources.requestContextFunction" class="vtk.resourcemanagement.view.tl.RequestContextFunction">
-    <constructor-arg>
-      <bean class="vtk.text.tl.Symbol">
-        <constructor-arg value="request-context" />
-      </bean>
-    </constructor-arg>
-  </bean>
-
   <bean id="structuredResources.resourceFunction" class="vtk.resourcemanagement.view.tl.RetrieveHandler">
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
@@ -384,17 +348,6 @@
         <constructor-arg value="structured-document" />
       </bean>
     </constructor-arg>
-  </bean>
-
-  <bean id="structuredResources.searchFunction" class="vtk.resourcemanagement.view.tl.SearchResultValueProvider">
-    <constructor-arg>
-      <bean class="vtk.text.tl.Symbol">
-        <constructor-arg value="search" />
-      </bean>
-    </constructor-arg>
-    <constructor-arg ref="searchParser" />
-    <constructor-arg ref="systemIndexSearcher" />
-    <property name="titlePropDef" ref="titlePropDef" />
   </bean>
 
   <bean id="structuredResources.viewURLFunction" class="vtk.resourcemanagement.view.tl.ViewURLValueProvider">

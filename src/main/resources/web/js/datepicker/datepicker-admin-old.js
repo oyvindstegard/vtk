@@ -6,7 +6,7 @@
 function initDatePicker(language) {
 
   // i18n (default english)
-  if (language == 'no' || language == 'nn') {
+  if (language === 'no' || language === 'nn') {
     $.datepicker.setDefaults($.datepicker.regional[language]);
   }
 

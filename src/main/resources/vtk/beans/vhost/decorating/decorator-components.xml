@@ -357,6 +357,7 @@
     <property name="referenceDataProviders">
       <list>
         <bean class="vtk.web.referencedata.provider.TemplateLinksProvider">
+          <property name="onlyReadAll" value="true" />
           <property name="templates">
             <map>
               <entry key="Facebook" value="http://www.facebook.com/sharer.php?u=%{url}" />

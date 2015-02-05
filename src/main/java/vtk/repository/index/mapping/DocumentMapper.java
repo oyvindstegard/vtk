@@ -274,11 +274,6 @@ public class DocumentMapper implements InitializingBean {
                         }
                     }
                     
-                    if (select.isIncludeAcl() &&
-                            AclFields.isAclField(fieldInfo.name)) {
-                        return StoredFieldVisitor.Status.YES;
-                    }
-                    
                     // Check for required reserved fields
                     if (ResourceFields.URI_FIELD_NAME.equals(fieldInfo.name)
                             || ResourceFields.RESOURCETYPE_FIELD_NAME.equals(fieldInfo.name)) {

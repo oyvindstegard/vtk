@@ -432,10 +432,15 @@
 
   <select id="loadPropertiesForResource" parameterClass="int" resultMap="Property">
     select
-      p.*,
-      case when binary_content is null then 'N' else 'Y' end as is_binary
+      p.extra_prop_entry_id,
+      p.resource_id,
+      p.name,
+      p.name_space,
+      p.value,
+      p.is_inheritable,
+      case when p.binary_content is null then 'N' else 'Y' end as is_binary
     from extra_prop_entry p
-    where resource_id = #value#
+    where p.resource_id = #value#
     order by p.extra_prop_entry_id
   </select>
 
@@ -443,8 +448,13 @@
   <select id="loadPropertiesForChildren" parameterClass="java.util.Map"
           resultMap="Property">
     select
-      p.*,
-      case when binary_content is null then 'N' else 'Y' end as is_binary
+      p.extra_prop_entry_id,
+      p.resource_id,
+      p.name,
+      p.name_space,
+      p.value,
+      p.is_inheritable,
+      case when p.binary_content is null then 'N' else 'Y' end as is_binary
     from extra_prop_entry p
     where p.resource_id in
       (select resource_id from vortex_resource
@@ -456,7 +466,12 @@
           resultMap="UriAndProperty">
     select
       r.uri,
-      p.*,
+      p.extra_prop_entry_id,
+      p.resource_id,
+      p.name,
+      p.name_space,
+      p.value,
+      p.is_inheritable,
       case when p.binary_content is null then 'N' else 'Y' end as is_binary
     from vortex_resource r inner join extra_prop_entry p on p.resource_id = r.resource_id
     where p.is_inheritable = 'Y'

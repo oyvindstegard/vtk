@@ -13,11 +13,6 @@
         <ref bean="contentTypeMatchesApt" />
       </list>
     </property>
-    <property name="mixinTypeDefinitions">
-      <list>
-        <ref bean="visualProfileMixinResourceTypeDef" />
-      </list>
-    </property>    
     <property name="propertyTypeDefinitions">
       <list> 
         <ref bean="aptTitlePropDef" />

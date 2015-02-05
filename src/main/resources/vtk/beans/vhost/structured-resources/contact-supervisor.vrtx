@@ -3,9 +3,10 @@ resourcetype contact-supervisor {
   properties {
     title : string overrides title,
     contact-supervisor-box : json ( id : string, description : html, contactInfo : html) multiple noextract,
+    related-content : html noextract,
     link-other-language: resource_ref
   }
-  
+
   view-components {
     title {
       ##
@@ -15,7 +16,7 @@ resourcetype contact-supervisor {
       [endif]
       ##
     }
-      
+
     contact-supervisor-box {
       ##
       [def document structured-document()]
@@ -26,9 +27,9 @@ resourcetype contact-supervisor {
           [def description box.description]
           [def contactInfo box.contactInfo]
           [def id box.id]
-             
+
           [def number _index + 1]
-             
+
           [if id != null && id != ""]
             <div class="vrtx-contact-supervisor-box" id="[val id]">
           [else]
@@ -49,7 +50,19 @@ resourcetype contact-supervisor {
       [endif]
       ##
     }
-    
+
+    related-content {
+      ##
+      [def document structured-document()]
+      [def related-content document.properties.related-content]
+      [if related-content != null]
+        <div id="vrtx-related-content">
+          [val related-content # unescaped]
+        </div>
+      [endif]
+      ##
+    }
+
     link-other-language {
       ##
       [def link resource-prop(".", "link-other-language")]
@@ -59,7 +72,7 @@ resourcetype contact-supervisor {
       ##
     }
   }
-  
+
   view {
     ##
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -73,6 +86,7 @@ resourcetype contact-supervisor {
             [call "comp:link-other-language"]
             <h1>[call "comp:title"]</h1>
             [call "comp:contact-supervisor-box"]
+            [call "comp:related-content"]
           </div>
         </div>
       </body>
@@ -92,6 +106,7 @@ resourcetype contact-supervisor {
     header : (en : "Edit contact supervisor", no : "Rediger kontaktveileder", nn : "Rediger kontaktveileder"),
     link-language: (en : "Norwegian", no : "English", nn : "English"),
     link-language-offscreen: (en : "version of this page", no : "version of this page", nn : "version of this page"),
+    related-content : (en : "Related content", no : "Relatert innhold", nn : "Relatert innhald"),
     link-other-language {
       en: (en : "Link to norwegian version", no : "Link to english version", nn : "Link to english version"),
       no: (en : "Lenke til norsk versjon", no : "Lenke til engelsk versjon", nn : "Lenke til engelsk versjon"),

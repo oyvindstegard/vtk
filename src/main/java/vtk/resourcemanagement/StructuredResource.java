@@ -59,11 +59,24 @@ public class StructuredResource {
     @SuppressWarnings("unchecked")
     static StructuredResource create(StructuredResourceDescription desc, InputStream source) throws Exception {
         Object json = Json.parse(source);
+        
+        
         ValidationResult validation = validateInternal(desc, json);
         if (!validation.isValid()) {
             throw new RuntimeException("Invalid document: " + validation.getErrors());
         }
         Map<?,?> jsonObject= (Map<?,?>) json;
+        Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
+        return new StructuredResource(desc, properties);
+    }
+    
+    @SuppressWarnings("unchecked")
+    static StructuredResource createFromMap(StructuredResourceDescription desc, Map<String, Object> json) throws Exception {
+        ValidationResult validation = validateInternal(desc, json);
+        if (!validation.isValid()) {
+            throw new RuntimeException("Invalid document: " + validation.getErrors());
+        }
+        Map<?,?> jsonObject = (Map<?,?>) json;
         Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
         return new StructuredResource(desc, properties);
     }

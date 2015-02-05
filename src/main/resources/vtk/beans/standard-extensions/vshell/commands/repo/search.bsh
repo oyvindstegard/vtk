@@ -31,7 +31,8 @@ void execute(context, args, out) {
         return;
     }
     search = new vtk.repository.search.Search();
-    search.removeAllFilterFlags();
+    search.clearAllFilterFlags();
+    search.setPropertySelect(vtk.repository.search.PropertySelect.ALL);
     search.setQuery(query);
     if (limit != null && limit >= 0) {
         search.setLimit(limit);
@@ -91,11 +92,17 @@ void execute(context, args, out) {
                 for (prop: r.getProperties()) {
                     printProp(prop, out);
                 }
-                printAcl(rs.getAcl(i), rs.isInheritedAcl(i), out);
+                acl = rs.getAcl(i);
+                if (acl != null) {
+                    printAcl(acl, rs.isInheritedAcl(i), out);
+                }
             } else {
                 for (propName: propList) {
                     if ("acl".equals(propName)) {
-                        printAcl(rs.getAcl(i), rs.isInheritedAcl(i), out);
+                        acl = rs.getAcl(i);
+                        if (acl != null) {
+                            printAcl(acl, rs.isInheritedAcl(i), out);
+                        }
                     } else {
                         p = propName;
                         prefix = null;

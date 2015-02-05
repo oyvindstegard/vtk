@@ -5,15 +5,18 @@
  *  * Requires but Lazy-loads TreeView and ScrollTo libraries (if not defined) on open
  */
 
-var VrtxTreeInterface = dejavu.Interface.declare({
-  $name: "VrtxTreeInterface",
-  __opts: {},
-  __openLeaf: function() {}
-});
+/* Public
+ * ----------------------
+ * initialize(opts)
+ *
+ * Private
+ * ----------------------
+ * __openLeaf()     - Open leaf based on array
+ * __scrollToLeaf() - Scroll to leaf
+ */
 
 var VrtxTree = dejavu.Class.declare({
   $name: "VrtxTree",
-  $implements: [VrtxTreeInterface],
   $constants: {
     leafScrollDelay: 250,
     leafScrollTopAdjust: 145,
@@ -99,7 +102,8 @@ var VrtxTree = dejavu.Class.declare({
       if(isLast) {
         scrollOpts.complete = tree.__opts.afterTrav(link);
       }
-      $(tree.__opts.scrollToContent).finish().scrollTo(Math.max(0, (link.position().top - tree.$static.leafScrollTopAdjust)), tree.$static.leafScrollDelay, scrollOpts);
+      var newTop = Math.max(0, (link.position().top - tree.$static.leafScrollTopAdjust));
+      $(tree.__opts.scrollToContent).finish().scrollTo(newTop, tree.$static.leafScrollDelay, scrollOpts);
     }
   }
 });
