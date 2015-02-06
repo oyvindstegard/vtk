@@ -580,13 +580,6 @@ div#resource\.picture\.preview span {
   display: none;
 }
 
-.vrtx-image-ref-preview.no-preview span,
-div#resource\.picture\.preview.no-preview span,
-div#resource\.poster-image\.preview.no-preview span,
-div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-preview span {
-  display: block;
-}
-
 /* Image scaling */
 
 .vrtx-image-ref-preview-inner,
@@ -607,15 +600,6 @@ div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
   max-height: 115px;
   margin-top: 0px;
   overflow: hidden;
-}
-
-.vrtx-image-ref-preview.no-preview img,
-div#resource\.picture\.preview.no-preview img,
-div#resource\.poster-image\.preview.no-preview img,
-div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-preview img {
-  width: 168px;
-  height: 113px;
-  border: 1px solid #D3D3D3;
 }
 
 /* ^ Image scaling */

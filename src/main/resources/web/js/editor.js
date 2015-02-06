@@ -379,6 +379,14 @@ VrtxEditor.prototype.richtextEditorFacade = {
           $(dialogShowEvent.data._.element.$).find('a[href*="void(0)"]').removeAttr('href');
         }
       });
+      if(event.editor.name == "caption" || event.editor.name == "resource.caption") {
+        event.editor.on('change', function() {
+          var ref = $("input.preview-image-inputfield");
+          if(ref.length) {
+            previewImage(ref[0].id, false);
+          }
+        });
+      }
     });
   },
   setupMaximizeMinimize: function() {
@@ -424,6 +432,12 @@ VrtxEditor.prototype.richtextEditorFacade = {
   getInstanceValue: function(name) {
     var inst = this.getInstance(name);
     return inst !== null ? inst.getData() : null;
+  },
+  updateInstance: function(name) {
+    var inst = this.getInstance(name);
+    if(inst !== null) {
+      inst.updateElement();
+    }
   },
   updateInstances: function() {
     for (var instance in CKEDITOR.instances) {
@@ -902,8 +916,9 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
   var previewInputFields = _$("input.preview-image-inputfield"),
       hideImagePreviewCaptionFunc = hideImagePreviewCaption;
   for (i = previewInputFields.length; i--;) {
-    if (previewInputFields[i].value === "") {
-      hideImagePreviewCaptionFunc($(previewInputFields[i]), true);
+    var elm = $(previewInputFields[i]);
+    if (previewInputFields[i].value === "" && !hasImageCaption(elm, true)) {
+      hideImagePreviewCaptionFunc(elm, true);
     }
   }
   
@@ -911,9 +926,9 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
   eventListen(vrtxAdmin.cachedDoc, "blur", "input.preview-image-inputfield", function (ref) {
     previewImage(ref.id, true);
   });
-  eventListen(vrtxAdmin.cachedDoc, "keydown", "input.preview-image-inputfield", function (ref) {
+  eventListen(vrtxAdmin.cachedDoc, "keyup", "input.preview-image-inputfield", function (ref) {
     previewImage(ref.id);
-  }, "clickOrEnter", 50);
+  }, null, 50, true);
 };
 
 function initPictureAddJsonField(elm) {
@@ -976,13 +991,10 @@ function previewImage(urlobj, isBlurEvent) {
     var elm = $("#" + urlobj);
     if (elm.length) {
       var url = elm.val();
-      if (url !== "") {
+      if (url !== "" || hasImageCaption(elm, false)) {
         var parentPreviewNode = previewNode.parent();
         previewNode.find("img").attr("src", url + "?vrtx=thumbnail");
-        if (parentPreviewNode.hasClass("no-preview")) {
-          parentPreviewNode.removeClass("no-preview");
-          previewNode.find("img").attr("alt", "thumbnail");
-        }
+        previewNode.find("img").attr("alt", "thumbnail");
         showImagePreviewCaption(elm);
         if(typeof isBlurEvent === "undefined") elm.focus();
       } else {
@@ -990,6 +1002,22 @@ function previewImage(urlobj, isBlurEvent) {
       } 
     }
   }
+}
+
+function hasImageCaption(input, init) {
+  var captionWrp = input.closest(".introImageAndCaption, #vrtx-resource\\.picture");
+  if(captionWrp.length) {
+    if(init) {
+      var captionTextAreaValue = captionWrp.find(".caption textarea").val();
+      return captionTextAreaValue != "";
+    } else {
+      var captionId = captionWrp.find(".caption textarea")[0].id;
+      vrtxEditor.richtextEditorFacade.updateInstance(captionId)
+      var captionCkValue = vrtxEditor.richtextEditorFacade.getInstanceValue(captionId);
+      return captionCkValue != null && captionCkValue != "";
+    }
+  }
+  return false;
 }
 
 
@@ -2182,8 +2210,7 @@ VrtxEditor.prototype.htmlFacade = {
   },
   getImageRefField: function (elem, inputFieldName) {
     return this.getBrowseField(elem, inputFieldName, "browse-images", "vrtx-image-ref", "", 30, {
-      previewTitle: browseImagesPreview,
-      previewNoImageText: browseImagesNoPreview
+      previewTitle: browseImagesPreview
     });
   },
   getResourceRefField: function (elem, inputFieldName) {

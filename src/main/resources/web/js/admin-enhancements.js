@@ -2546,14 +2546,15 @@ function isKey(e, keyCodes) {
 /**
  * Setup listener for events with handler a function (duplicate outer handler function for perf.)
  *
- * @param {object} listenBase Base element the events bubbles up to (jQElement)
- * @param {string} eventType Type of events
- * @param {object} listenOn Elements should listen on (jQElement's)
- * @param {object} handlerFn Handler function
- * @param {string} handlerFnCheck If should proceed with handler function (event conditions)
- * @param {number} debounceInterval Debounce the events by some milliseconds
+ * @param {object}  listenBase Base element the events bubbles up to (jQElement)
+ * @param {string}  eventType Type of events
+ * @param {object}  listenOn Elements should listen on (jQElement's)
+ * @param {object}  handlerFn Handler function
+ * @param {string}  handlerFnCheck If should proceed with handler function (event conditions)
+ * @param {number}  debounceInterval Debounce the events by some milliseconds
+ * @param {boolean} dontPreventDefault Don't prevent default event action
  */
-function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck, debounceInterval) {
+function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck, debounceInterval, dontPreventDefault) {
   // DEBUG: vrtxAdmin.log({ msg: "Listen for events of type " + eventType.toUpperCase() + " on " + listenOn });
   if(typeof debounceInterval === "number") {
     listenBase.on(eventType, listenOn, $.debounce(debounceInterval, true, function (e) {
@@ -2561,7 +2562,9 @@ function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck,
             || (handlerFnCheck === "clickOrEnter" && (e.type === "click" || isKey(e, [vrtxAdmin.keys.ENTER])))) {
         handlerFn(this);
         // DEBUG: vrtxAdmin.log({ msg: (e.type.toUpperCase() + " for " + (this.id || this.className || this.nodeType)) })
-        e.preventDefault();
+        if(typeof dontPreventDefault !== "boolean" || !dontPreventDefault) {
+          e.preventDefault();
+        }
       }
     }));
   } else {
@@ -2571,7 +2574,9 @@ function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck,
         handlerFn(this);
         // DEBUG: vrtxAdmin.log({ msg: (e.type.toUpperCase() + " for " + (this.id || this.className || this.nodeType)) })
         e.stopPropagation();
-        e.preventDefault();
+        if(typeof dontPreventDefault !== "boolean" || !dontPreventDefault) {
+          e.preventDefault();
+        }
       }
     });
   }
