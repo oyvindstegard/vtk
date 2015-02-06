@@ -2506,9 +2506,8 @@ VrtxEditor.prototype.initEventHandler = function initEventHandler(selector, opts
 function autocompleteUsernames(elms, useEnrichment) {
   var _$ = vrtxAdmin._$;
   var autocompleteTextfields = elms.find('.vrtx-textfield');
-  var i = autocompleteTextfields.length;
-  while (i--) {
-    var id = _$(autocompleteTextfields[i]).attr("id");
+  for (var i = autocompleteTextfields.length; i--;) {
+    var id = autocompleteTextfields[i].id;
     permissionsAutocomplete(id, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
     if(typeof useEnrichment === "boolean" && useEnrichment) {
       enrichedUsersAutocomplete(id, ".vrtx-button.add");
@@ -2529,9 +2528,8 @@ function autocompleteUsername(selector, subselector, useEnrichment) {
 function autocompleteTags(selector) {
   var _$ = vrtxAdmin._$;
   var autocompleteTextfields = _$(selector).find('.vrtx-textfield');
-  var i = autocompleteTextfields.length;
-  while (i--) {
-    setAutoComplete(_$(autocompleteTextfields[i]).attr("id"), 'tags', vrtxAdmin.tagAutocompleteParams);
+  for (var i = autocompleteTextfields.length; i--;) {
+    setAutoComplete(autocompleteTextfields[i].id, 'tags', vrtxAdmin.tagAutocompleteParams);
   }
 }
 
