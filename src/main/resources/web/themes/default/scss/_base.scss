@@ -3,6 +3,8 @@
  *
  */
 
+@import "mixins";
+
 /*
  * App dimensions
  *
@@ -57,130 +59,5 @@ $buttonExpandedFormBackgroundColor: #f7f7f7;
 $disabledTextColor: #888;
 $disabledButtonBackgroundColor: #efefef;
 $disabledBorderColor: #ccc;
-
-/* 
- * Mixins 
- *
- * Commonly used patterns (DRY)
- *
- * Don't overdo it, and generally not for single properties;
- * e.g. "@include floatLeft" causes more text than "float: left",
- * take some time to compile and is not a (good) pattern.
- *
- * Exception for long common properties configurations like e.g.
- * "@include bg(url)" (transparent background image no-repeat top left).
- *
- */
-
-@mixin appHeadLine {
-  margin: 0 auto;
-  position: relative;
-  @include wh($appWidth, 34px);
-}
-
-@mixin resetFont {
-  font-family: inherit;
-  font-size: 100%;
-  font-style: inherit; 
-  font-weight: inherit;
-}
-@mixin noMargPadd  {
-  margin: 0px;
-  padding: 0px;
-}
-@mixin floatBlock {
-  float: left;
-  display: block;
-}
-@mixin floatClearFix {
-  clear: left;
-  float: left;
-  width: 100%;
-}
-@mixin wh($width: 0, $height: 0) {
-  width: $width;
-  height: $height;
-}
-
-@mixin posAbs($top: 0, $left: 0) {
-  position: absolute;
-  top: $top;
-  left: $left;
-}
-@mixin posAbsRight($top: 0, $right: 0) {
-  position: absolute;
-  top: $top;
-  right: $right;
-}
-@mixin posAbsBottom($bottom: 0, $left: 0) {
-  position: absolute;
-  bottom: $bottom;
-  left: $left;
-}
-@mixin posAbsBottomRight($bottom: 0, $right: 0) {
-  position: absolute;
-  bottom: $bottom;
-  right: $right;
-}
-
-@mixin bg($url, $imp: false) {
-  @if $imp == false { background: transparent url($url) no-repeat 0 0; }
-  @else             { background: transparent url($url) no-repeat 0 0 !important; }
-}
-
-@mixin borderRadius($radius) {
-  -webkit-border-radius: $radius;
-  -moz-border-radius: $radius;
-  border-radius: $radius; 
-}
-
-@mixin boxShadow($opts) {
-  -moz-box-shadow: $opts;
-  -webkit-box-shadow: $opts;
-  box-shadow: $opts;
-}
-
-@mixin borderBox {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-@mixin linearGradientBackgroundColors($col1, $col2, $col3, $col4, $percent1, $percent2, $percent3, $percent4) {
-  background: $col1;
-  background: -moz-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop($percent1, $col1),
-                                                              color-stop($percent2, $col2),
-                                                              color-stop($percent3, $col3),
-                                                              color-stop($percent4, $col4));
-  background: -webkit-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-  background: -o-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-  background: -ms-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-  background: linear-gradient(to bottom, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-}
-
-@mixin transitions($opts) {
-  -webkit-transition: $opts;
-  -moz-transition:    $opts;
-  -ms-transition:     $opts;
-  -o-transition:      $opts;
-  transition:         $opts;
-}
-
-@mixin transforms($opts) {
-  -webkit-transform: $opts;
-  -moz-transform:    $opts;
-  -ms-transform:     $opts;
-  -o-transform:      $opts;
-  transform:         $opts;
-}
-
-@mixin transitionsTransforms($optsA, $optsB) {
-  -webkit-transition: $optsA, -webkit-transform $optsB;
-  -moz-transition:    $optsA, -moz-transform    $optsB;
-  -ms-transition:     $optsA, -ms-transform     $optsB;
-  -o-transition:      $optsA, -o-transform      $optsB;
-  transition:         $optsA, transform         $optsB;
-}
 
 /* ^ Vortex - Base */
