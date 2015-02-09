@@ -60,6 +60,12 @@ $disabledBorderColor: #ccc;
  *
  */
 
+@mixin appHeadLine {
+  margin: 0 auto;
+  position: relative;
+  @include wh(970px, 34px);
+}
+
 @mixin resetFont {
   font-family: inherit;
   font-size: 100%;
@@ -69,6 +75,10 @@ $disabledBorderColor: #ccc;
 @mixin noMargPadd  {
   margin: 0px;
   padding: 0px;
+}
+@mixin floatBlock {
+  float: left;
+  display: block;
 }
 @mixin floatClearFix {
   clear: left;
