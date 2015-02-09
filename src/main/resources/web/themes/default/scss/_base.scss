@@ -62,6 +62,7 @@ $disabledBorderColor: #ccc;
   width: $width;
   height: $height;
 }
+
 @mixin posAbs($top: 0, $left: 0) {
   position: absolute;
   top: $top;
@@ -81,6 +82,11 @@ $disabledBorderColor: #ccc;
   position: absolute;
   bottom: $bottom;
   right: $right;
+}
+
+@mixin bg($url, $imp: false) {
+  @if $imp == false { background: url($url) no-repeat 0 0; }
+  @else             { background: url($url) no-repeat 0 0 !important; }
 }
 
 @mixin borderRadius($radius) {
