@@ -53,6 +53,35 @@ $disabledBorderColor: #ccc;
 }
 @mixin baseFontImp { font-family: $baseFont !important; }
 @mixin noMargPadd  { margin: 0px; padding: 0px;         }
+@mixin floatClearFix {
+  clear: left;
+  float: left;
+  width: 100%;
+}
+@mixin wh($width: 0, $height: 0) {
+  width: $width;
+  height: $height;
+}
+@mixin posAbs($top: 0, $left: 0) {
+  position: absolute;
+  top: $top;
+  left: $left;
+}
+@mixin posAbsRight($top: 0, $right: 0) {
+  position: absolute;
+  top: $top;
+  right: $right;
+}
+@mixin posAbsBottom($bottom: 0, $left: 0) {
+  position: absolute;
+  bottom: $bottom;
+  left: $left;
+}
+@mixin posAbsBottomRight($bottom: 0, $right: 0) {
+  position: absolute;
+  bottom: $bottom;
+  right: $right;
+}
 
 @mixin borderRadius($radius) {
   -webkit-border-radius: $radius;

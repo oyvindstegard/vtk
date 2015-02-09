@@ -103,9 +103,7 @@ h2 {
 }
 
 .vrtx-multipleinputfield {
-  clear: both;
-  float: left;
-  width: 100%;
+  @include floatClearFix;
 }
 
 .vrtx-multipleinputfield-json-wrapper,
@@ -182,8 +180,7 @@ h2 {
 .vrtx-json .vrtx-json-element .vrtx-move-up-button span,
 .vrtx-json .vrtx-json-element .vrtx-move-down-button span {
   display: block;
-  height: 16px;
-  width: 11px;
+  @include wh(11px, 16px);
 }
 
 .vrtx-multipleinputfield .vrtx-button.moveup span,
@@ -259,11 +256,8 @@ h2 {
 }
 
 #app-content .vrtx-sticky-editor-title-submit-buttons .sticky-bg-ie8-below {
-  height: 13px;
-  position: absolute;
-  bottom: -13px;
-  left: 0px;
-  width: 100%;
+  @include posAbsBottom(-13px, 0);
+  @include wh(100%, 13px);
   background: transparent url(images/sticky-bar-fade-to-grey-ie8-bg.png) repeat-x bottom left;
   display: block;
 }
@@ -283,8 +277,7 @@ h2 {
   position: relative;
   top: 0px;
   left: 0px;
-  height: 100px;
-  width: 100%;
+  @include wh(100%, 100px);
   display: block;
   background: transparent;
 }
@@ -298,11 +291,9 @@ html.embedded #editor-loading {
   display: block;
   padding: 10px 5px 10px 42px;
   font-size: 1.308em;
-  position: relative;
-  position: absolute;
-  top: 38%;
-  left: 38%;
   color: #5e5e5e;
+  position: relative;
+  @include posAbs(38%, 38%);
 }
 
 html.embedded #vrtx-editor #app-content #editor {
@@ -448,8 +439,7 @@ div.description textarea {
 /* Image and caption */
 
 div.caption textarea {
-  height: 107px;
-  width: 352px !important;
+  @include wh(352px !important, 107px);
 }
 
 .introImageAndCaption .header,
@@ -647,8 +637,7 @@ div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
     border: none !important;
     box-shadow: none !important;
     display: inline-block !important;
-    width: 10px !important;
-    height: 9px !important;
+    @include wh(10px !important, 9px !important);
     margin: 0 2px 0 0 !important;
   }
   .cke_contents {

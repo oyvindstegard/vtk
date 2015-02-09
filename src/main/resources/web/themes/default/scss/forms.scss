@@ -206,8 +206,7 @@
     }
     .ui-dialog-titlebar-close,
     .ui-dialog-titlebar-close .ui-icon {
-      width: 20px;
-      height: 18px;
+      @include wh(20px, 18px);
       @include noMargPadd;
     }
     .vrtx-close-dialog {
@@ -355,8 +354,7 @@
 .vrtx-multipleinputfields .vrtx-button.add span,
 .vrtx-add-button span {
   display: block;
-  height: 13px;
-  width: 13px;
+  @include wh(13px, 13px);
   background: url("images/multiple-add.png") no-repeat center center;
 }
 
@@ -396,8 +394,7 @@
 }
 
 .forms-new #email-approval-form textarea {
-  width: 380px;
-  height: 90px;
+  @include wh(380px, 90px);
 }
 
 .forms-new #email-approval-form .email-help {
