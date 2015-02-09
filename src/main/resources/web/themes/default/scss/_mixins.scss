@@ -86,7 +86,7 @@
   box-sizing: border-box;
 }
 
-@mixin linearGradientBackgroundColors($col1, $col2, $col3, $col4, $percent1, $percent2, $percent3, $percent4) {
+@mixin gradientTopToBottom($col1, $col2, $col3, $col4, $percent1, $percent2, $percent3, $percent4) {
   background: $col1;
   background: -moz-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
   background: -webkit-gradient(linear, left top, left bottom, color-stop($percent1, $col1),

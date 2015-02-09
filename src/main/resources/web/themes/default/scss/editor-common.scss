@@ -690,11 +690,11 @@ div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
 .cke_dialog {
   a.cke_dialog_ui_button_ok {
     @include ckDialogButtonStyle;
-    @include linearGradientBackgroundColors(#71b2e9, #66ace7, #499ce2, #3d95e0, 0%, 26%, 74%, 100%);
+    @include gradientTopToBottom(#71b2e9, #66ace7, #499ce2, #3d95e0, 0%, 26%, 74%, 100%);
     &:focus,
     &:hover {
       @include ckDialogButtonStyle;
-      @include linearGradientBackgroundColors(#8ec6ef, #83c2ed, #56b4ea, #4db0e8, 0%, 22%, 83%, 100%);
+      @include gradientTopToBottom(#8ec6ef, #83c2ed, #56b4ea, #4db0e8, 0%, 22%, 83%, 100%);
     }
     span {
       text-shadow: none;
