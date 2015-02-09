@@ -5,18 +5,6 @@
  
 @import "base";
 
-@mixin tabBlock {
-  color: $textColor;
-  background: url(images/app-content-tabs-bg.png) repeat-x bottom left;
-  font-size: 1.15em;
-  line-height: 1.25em;
-  text-align: center;
-  text-decoration: none;
-  @include floatBlock;
-  padding: 6px 22px 5px 19px; 
-  margin: 0;
-  text-decoration: none;
-}
 @mixin tabBlockActive {
   background: $contentBackgroundColor;
   color: $textColor;
@@ -42,9 +30,6 @@
       @include floatBlock;
       list-style: none;
 
-      &.current a {
-        @include tabBlock;
-      }
       &.activeTab {
         a {
           @include tabBlockActive;
@@ -59,7 +44,16 @@
         }
       }
       a {
-        @include tabBlock;
+        color: $textColor;
+        background: url(images/app-content-tabs-bg.png) repeat-x bottom left;
+        font-size: 1.15em;
+        line-height: 1.25em;
+        text-align: center;
+        text-decoration: none;
+        @include floatBlock;
+        padding: 6px 22px 5px 19px; 
+        margin: 0;
+        text-decoration: none;
         border: 1px solid $tabsBorderColor;
         border-left: none;
 
