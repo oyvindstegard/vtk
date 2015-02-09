@@ -245,6 +245,11 @@
         }
         &:first-child {
           @include buttonFocus;
+
+          &:hover,
+          &:focus {
+            background: $buttonHoverBackgroundColor;
+          }
         }
         span {
           padding: 0;
