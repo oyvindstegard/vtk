@@ -7,11 +7,10 @@
  * 2. App (grid, head, footer, main)
  * 3. Content
  *   3.1 Resource title
- *   3.2 Tabs
- *   3.3 Tab Menus
- *   3.4 Directorylisting
- *   3.5 Other content
- *   3.6 Messages
+ *   3.2 Tab Menus
+ *   3.3 Directorylisting
+ *   3.4 Other content
+ *   3.5 Messages
  * 4. Clearing
  * 5. Forms
  *
@@ -20,6 +19,7 @@
 @import "base";
 @import "forms";
 @import "breadcrumbs";
+@import "tabs";
 @import "embedded";
 
 /*-----------------------------------------*\
@@ -101,7 +101,7 @@ table {
 }
 
 a {
-  color: $linkColor; /* color: #0b5a9d; */
+  color: $linkColor;
   text-decoration: none;
 
   &:focus,
@@ -162,18 +162,13 @@ body {
 
         &:focus,
         &:hover {
-          background: url(images/uio-app-uio-small-black.png) no-repeat 0 -17px;
+          background-position:  0 -17px;
         }
       }
       &.english-uiologo {
         a {
           background-image: url(images/uio-app-uio-small-black-eng.png);
           height: 18px;
-
-          &:focus,
-          &:hover {
-            background-image: url(images/uio-app-uio-small-black-eng.png);
-          }
         }
       }
     }
@@ -210,7 +205,7 @@ body {
       }
     }
     span#tagline {
-      color: #363534;
+      color: $textColor;
       font-size: 0.47em;
       font-weight: normal;
       line-height: 1em;
@@ -1115,82 +1110,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 /* ^ 3.1 Resource title */
 
-/* 3.2 Tabs */
-
-#app-tabs {
-  margin: 1px 0 0 0;
-  padding: 0;
-  position: relative;
-  top: 1px;
-  left: 0px;
-  height: 34px;
-}
-
-#app-tabs ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  @include posAbsBottom;
-  border-left: 1px solid #d8d8d8;
-}
-
-#app-tabs ul li {
-  margin: 0;
-  padding: 0;
-  display: block;
-  list-style: none;
-  float: left;
-}
-
-#app-tabs ul li a,
-#app-tabs ul li.current a {
-  line-height: 1.25em;
-  display: block;
-  float: left;
-  padding: 6px 22px 5px 19px; 
-  margin: 0;
-  background: url(images/app-content-tabs-bg.png) repeat-x bottom left;
-  text-align: center;
-  font-size: 1.15em;
-  text-decoration: none;
-  color: #363534;    
-}
-
-#app-tabs ul li a {
-  border: 1px solid #d8d8d8;
-  border-left: none;
-}
-
-/* Override this class to get different colors and size on a specific tab */
-
-#app-tabs ul li a:hover,
-#app-tabs ul li a:focus {
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
-  color: #fff;
-  border-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor; 
-  border-bottom: 1px solid $breadcrumbTabHoverSystemTabMessageBackgroundColor;
-  margin-left: -1px;
-  padding-left: 20px;
-}
-
-#app-tabs ul li.activeTab a:hover,
-#app-tabs ul li.activeTab a:focus {
-  border-color: #d8d8d8;
-  margin-left: 0px;
-  padding-left: 19px;
-}
-
-#app-tabs ul li.activeTab a,
-#app-tabs ul li.activeTab a:hover,
-#app-tabs ul li.activeTab a:focus {
-  background: #fff;
-  color: #363534;
-  border-bottom: 1px solid #fff;
-}
-
-/* ^ 3.2 Tabs */
-
-/* 3.3 Tab Menus */
+/* 3.2 Tab Menus */
 
 #active-tab {
   margin: 0 0 5px 0;
@@ -1383,9 +1303,9 @@ span.vrtx-help-step-by-step-cmd {
 
 /* ^ Trash can */
 
-/* ^ 3.3 Tab Menus */
+/* ^ 3.2 Tab Menus */
 
-/* 3.4 Directorylisting */
+/* 3.3 Directorylisting */
 
 #vrtx-manage-collectionlisting #contents,
 #vrtx-trash-can #contents,
@@ -1826,9 +1746,9 @@ body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
 
 /* ^ Icons */
 
-/* ^ 3.4 Directorylisting */
+/* ^ 3.3 Directorylisting */
 
-/* 3.5 Other content */
+/* 3.4 Other content */
 
 .vrtx-radio-button > *  {
   margin: 0;
@@ -2746,9 +2666,9 @@ table.resourceInfo.revisions tr:nth-child(even) td {
   margin-right: 20px !important;
 }
 
-/* ^ 3.5 Other content */
+/* ^ 3.4 Other content */
 
-/* 3.6 Messages */
+/* 3.5 Messages */
 
 /* Resource bar messages */
 
@@ -2856,7 +2776,7 @@ body#vrtx-preview .tabMessage-big {
 
 /* ^ Tab message */
 
-/* ^ 3.6 Messages */
+/* ^ 3.5 Messages */
 
 
 /*-----------------------------------------*\

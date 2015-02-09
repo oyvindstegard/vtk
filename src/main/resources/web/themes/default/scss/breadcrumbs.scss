@@ -5,6 +5,8 @@
 
 @import "base";
 
+$breadcrumbLeftRightAnimationSpeed: 300ms;
+
 @mixin breadcrumbBlock {
   font-size: 1.15em;
   margin: 0; 
@@ -12,7 +14,7 @@
   @include floatBlock;
 }
 @mixin breadcrumbBlockInner {
-  color: #363534;
+  color: $textColor;
   text-decoration: none;
   padding: 6px 11px 0 11px;
   height: 26px;
@@ -140,7 +142,7 @@
     float: left;
 
     &.animate {
-      @include transitions(left 300ms ease);
+      @include transitions(left $breadcrumbLeftRightAnimationSpeed ease);
     }
   }
   #navigate-crumbs-left-coverup {

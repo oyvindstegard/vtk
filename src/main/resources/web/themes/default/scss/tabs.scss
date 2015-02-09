@@ -1,0 +1,80 @@
+/*
+ * Vortex - Tabs
+ *
+ */
+ 
+@import "base";
+
+@mixin tabBlock {
+  color: $textColor;
+  background: url(images/app-content-tabs-bg.png) repeat-x bottom left;
+  font-size: 1.15em;
+  line-height: 1.25em;
+  text-align: center;
+  text-decoration: none;
+  @include floatBlock;
+  padding: 6px 22px 5px 19px; 
+  margin: 0;
+  text-decoration: none;
+}
+@mixin tabBlockActive {
+  background: $contentBackgroundColor;
+  color: $textColor;
+  border-bottom: 1px solid $contentBackgroundColor;
+}
+
+#app-tabs {
+  margin: 1px 0 0 0;
+  padding: 0;
+  position: relative;
+  top: 1px;
+  left: 0px;
+  height: 34px;
+
+  ul {
+    @include noMargPadd;
+    @include posAbsBottom;
+    list-style: none;
+    border-left: 1px solid $tabsBorderColor;
+
+    li {
+      @include noMargPadd;
+      @include floatBlock;
+      list-style: none;
+
+      &.current a {
+        @include tabBlock;
+      }
+      &.activeTab {
+        a {
+          @include tabBlockActive;
+          
+          &:hover,
+          &:focus {
+            border-color: $tabsBorderColor;
+            margin-left: 0px;
+            padding-left: 19px;
+            @include tabBlockActive;
+          }
+        }
+      }
+      a {
+        @include tabBlock;
+        border: 1px solid $tabsBorderColor;
+        border-left: none;
+
+        &:hover,
+        &:focus {
+          background: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
+          color: #fff;
+          border-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor; 
+          border-bottom: 1px solid $breadcrumbTabHoverSystemTabMessageBackgroundColor;
+          margin-left: -1px;
+          padding-left: 20px;
+        }
+      }
+    }
+  }
+}
+
+/* ^ Vortex - Tabs */
