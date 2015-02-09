@@ -438,7 +438,7 @@ a:hover {
  */
 
 #app-head-wrapper #line-top #uiologo a {
-  background: url(images/uio-app-uio-small-black.png) no-repeat 0 0;
+  @include bg("images/uio-app-uio-small-black.png");
   display: block;
   overflow: hidden;
   @include posAbs(10px, 15px);
@@ -511,7 +511,7 @@ a:hover {
 }
 
 #app-head .principal {
-  background: url(images/person.png) no-repeat 0 0;
+  @include bg("images/person.png");
   padding-left: 28px; 
   display: inline-block;
 }
@@ -1077,7 +1077,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
   min-height: 86px;
   margin: -12px 0 20px 25px;
   padding: 0 0 0 25px;
-  background: url(images/seperator-grey-gradient-big.png) no-repeat top left;
+  @include bg("images/seperator-grey-gradient-big.png");
 }
 
 #resourceMenuRight.overflow-hidden {
@@ -1323,7 +1323,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 /* ^ Create dialog */
 
 .tooltips {
-  background: url(images/info-icon.png) no-repeat 0 0;
+  @include bg("images/info-icon.png");
   @include wh(15px, 15px);
   display: block;
   display: inline-block;
@@ -2137,7 +2137,7 @@ ul.radio-buttons li > * {
 #vrtx-report-filters ul li.active-filter:hover,
 #preview-mode li.active-mode,
 #preview-mode li.active-mode:hover {
-  background: url(images/report-filter-hover-left.png) no-repeat 0 0;
+  @include bg("images/report-filter-hover-left.png");
 }
 
 #vrtx-report-filters ul li.active-filter span,
@@ -2230,7 +2230,7 @@ ul#preview-mode {
 }
 
 .mobile #previewIframeWrapper #previewIframeMobileBg {
-  background: transparent url(images/preview-mobile-bg.png) no-repeat 0 0;
+  @include bg("images/preview-mobile-bg.png");
   @include wh(400px, 745px);
   margin: -135px auto 0;
   display: block;
@@ -2774,7 +2774,7 @@ h3.resourceInfoHeader {
 
 #vrtx-resource-visit-tab-menu li.active,
 #vrtx-manually-approve-tab-menu li.active {
-  background: url(images/report-tab-active-left.png) no-repeat top left !important;
+  @include bg("images/report-tab-active-left.png", true);
 }
 
 #vrtx-resource-visit-tab-menu li.active a,
@@ -2784,7 +2784,7 @@ h3.resourceInfoHeader {
 
 #vrtx-resource-visit-tab-menu li.active.active-first,
 #vrtx-manually-approve-tab-menu li.active.active-first {
-  background: url(images/report-tab-active-left-first.png) no-repeat top left !important;
+  @include bg("images/report-tab-active-left-first.png", true);
 }
 
 #vrtx-resource-visit-tab-menu li.active.active-first a,

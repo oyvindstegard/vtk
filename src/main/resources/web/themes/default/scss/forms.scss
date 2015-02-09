@@ -261,7 +261,7 @@
     }
   }
   .ui-widget {
-    @include baseFontImp;
+    font-family: $baseFont !important;
     font-size: 1em !important;
     text-align: left;
     
@@ -272,7 +272,7 @@
     select,
     textarea,
     button {
-      @include baseFontImp;
+      font-family: $baseFont !important;
     }
   }
   .ui-widget-overlay {

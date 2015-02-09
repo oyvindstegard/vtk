@@ -3,7 +3,10 @@
  *
  */
  
-/* App colors */
+/* 
+ * App colors
+ *
+ */
  
 $baseFont: Arial, Helvetica, sans-serif;
 $textColor: #363534;
@@ -23,7 +26,7 @@ $listingDropdownTipFocusBackgroundColor: #ecf3f9;
 $publishedAllowedTextColor: #549401;
 $errorRestrictedTextColor: #ed1c24;
 
-/* Forms colors */
+/* Forms */
 
 $buttonTextColor: #000;
 $buttonBackgroundColor: #e7e7e7;
@@ -43,7 +46,19 @@ $disabledTextColor: #888;
 $disabledButtonBackgroundColor: #efefef;
 $disabledBorderColor: #ccc;
 
-/* Mixins */
+/* 
+ * Mixins 
+ *
+ * Commonly used patterns (DRY)
+ *
+ * Don't overdo it, and generally not for single properties;
+ * e.g. "@include floatLeft" causes more text than "float: left",
+ * take some time to compile and is not a (good) pattern.
+ *
+ * Exception for long common properties configurations like e.g.
+ * "@include bg(url)" (transparent background image no-repeat top left).
+ *
+ */
 
 @mixin resetFont {
   font-family: inherit;
@@ -51,8 +66,10 @@ $disabledBorderColor: #ccc;
   font-style: inherit; 
   font-weight: inherit;
 }
-@mixin baseFontImp { font-family: $baseFont !important; }
-@mixin noMargPadd  { margin: 0px; padding: 0px;         }
+@mixin noMargPadd  {
+  margin: 0px;
+  padding: 0px;
+}
 @mixin floatClearFix {
   clear: left;
   float: left;
@@ -85,8 +102,8 @@ $disabledBorderColor: #ccc;
 }
 
 @mixin bg($url, $imp: false) {
-  @if $imp == false { background: url($url) no-repeat 0 0; }
-  @else             { background: url($url) no-repeat 0 0 !important; }
+  @if $imp == false { background: transparent url($url) no-repeat 0 0; }
+  @else             { background: transparent url($url) no-repeat 0 0 !important; }
 }
 
 @mixin borderRadius($radius) {
