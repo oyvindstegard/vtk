@@ -2,6 +2,18 @@
  * Vortex - Base
  *
  */
+
+/*
+ * App dimensions
+ *
+ */
+
+$appMinWidth: 1014px;
+$appWidth: 970px;
+$fluidMinWidth: 1014px;
+$fluidMaxWidth: 1200px;
+$fluidPadding: 50px;
+$fluidGlobalMenuRightAdjust: 5px;
  
 /* 
  * App colors
@@ -63,7 +75,7 @@ $disabledBorderColor: #ccc;
 @mixin appHeadLine {
   margin: 0 auto;
   position: relative;
-  @include wh(970px, 34px);
+  @include wh($appWidth, 34px);
 }
 
 @mixin resetFont {

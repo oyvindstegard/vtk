@@ -1,46 +1,34 @@
 /*
  * Vortex
- *
+ * 
  * ToC:
  *
- * 1. General
- * 2. Head and footer
- *   2.1 Head and footer grid
- *   2.2 Head
- * 3. App content
- *   3.1 App content grid
- *   3.2 Resource title
- *   3.3 Tabs
- *   3.4 Tab Menus
- *   3.5 Directorylisting
- *   3.6 Other content
- *   3.7 Messages
- * 4. Embedding
- * 5. Fluid design
- * 6. Clearing
- * 7. Forms
+ * 1. Tags / typography
+ * 2. App (grid, head, footer, main)
+ * 3. Content
+ *   3.1 Resource title
+ *   3.2 Tabs
+ *   3.3 Tab Menus
+ *   3.4 Directorylisting
+ *   3.5 Other content
+ *   3.6 Messages
+ * 4. Clearing
+ * 5. Forms
  *
  */
 
 @import "base";
 @import "forms";
 @import "breadcrumbs";
+@import "embedded";
 
 /*-----------------------------------------*\
-	1. General
+	1. Tags / typography
 \*-----------------------------------------*/
 
-html {
-  background-color: $bodyBackgroundColor;
-}
-
 body {
-  min-width: 1014px;
-  background-color: $bodyBackgroundColor;
   color: $textColor;
   font: normal 81.25%/1.3 $baseFont;
-  text-align: center;
-  @include noMargPadd;
 }
  
 h1 {
@@ -124,10 +112,19 @@ a {
 
 
 /*-----------------------------------------*\
-	2. Head and footer
+	2. App (grid, head, footer, main)
 \*-----------------------------------------*/
 
-/* 2.1 Head and footer grid */
+html {
+  background-color: $bodyBackgroundColor;
+}
+
+body {
+  min-width: $appMinWidth;
+  background-color: $bodyBackgroundColor;
+  text-align: center;
+  @include noMargPadd;
+}
 
 #app-head,
 #app-footer {
@@ -140,38 +137,7 @@ a {
   background: $headFooterBackgroundColor;
   margin-bottom: 20px;
   border-bottom: 1px solid #dad9d9;
-}
 
-#app-head {
-  background-color: transparent;
-  text-align: left;
-  margin: 0 auto;
-  @include wh(970px, 128px);
-}
-
-#app-footer-wrapper {
-  background-color: transparent;
-  text-align: center;
-  padding: 0;
-  position: relative;
-}
-
-#app-footer {
-  background-color: transparent;
-  color: #5e5e5e;
-  font: normal 0.85em/1.25em Verdana, sans-serif;
-  text-align: right;
-  width: 940px;
-  margin: 0 auto;
-  padding: 0 15px 44px 15px;
-  border: none;
-}
-
-/* ^ 2.1 Head and footer grid */
-
-/* 2.2 Head */
-
-#app-head-wrapper {
   #line-top {
     background-color: $lineTopBackgroundColor;
     height: 34px;
@@ -203,6 +169,7 @@ a {
         a {
           background-image: url(images/uio-app-uio-small-black-eng.png);
           height: 18px;
+
           &:focus,
           &:hover {
             background-image: url(images/uio-app-uio-small-black-eng.png);
@@ -219,6 +186,11 @@ a {
 }
 
 #app-head {
+  background-color: transparent;
+  text-align: left;
+  margin: 0 auto;
+  @include wh($appWidth, 128px);
+
   #app-name {
     @include posAbs(38px, 15px);
     font-size: 2.77em;
@@ -297,28 +269,32 @@ a {
   }
 }
 
-/* ^ 2.2 Head */
+#app-footer-wrapper {
+  background-color: transparent;
+  text-align: center;
+  padding: 0;
+  position: relative;
+}
 
-
-
-/*-----------------------------------------*\
-	3. App content
-\*-----------------------------------------*/
-
-/* 3.1 App content grid */
+#app-footer {
+  background-color: transparent;
+  color: #5e5e5e;
+  font: normal 0.85em/1.25em Verdana, sans-serif;
+  text-align: right;
+  width: $appWidth - 30px;
+  margin: 0 auto;
+  padding: 0 15px 44px 15px;
+  border: none;
+}
 
 #app-content {
-  width: 940px;
-  margin: 0 auto;
   text-align: left;
+  width: $appWidth - 30px;
+  margin: 0 auto;
   padding: 10px 0 0 0;
   margin-bottom: 12px;
   position: relative;
   clear: left;
-}
-
-#app-content h2:first-child {
-  margin-top: 0;
 }
 
 #app-content #main,
@@ -331,9 +307,57 @@ a {
   border: 1px solid #d9d9d9;
 }
 
-/* ^ 3.1 App content grid */
+/* Fluid */
 
-/* 3.2 Resource title */
+.app-fluid {
+  min-width: $fluidMinWidth;
+
+  #app-head-wrapper,
+  #app-footer-wrapper {
+    min-width: $fluidMinWidth;
+    width: 100%;
+  }
+  #app-head-wrapper #line-top #uiologo a {
+    left: $fluidPadding;
+  }
+  #app-head {
+    #app-name {
+      left: $fluidPadding;
+    }
+    #global-menu-top,
+    #global-menu-bottom {
+      right: $fluidPadding + $fluidGlobalMenuRightAdjust;
+    }
+  }
+  #app-head,
+  #app-head-wrapper #line-top #uiologo,
+  #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb,
+  #app-head-wrapper #system-message-wrapper .system-message,
+  #app-footer {
+    width: auto;
+    max-width: $fluidMaxWidth;
+    padding-left: $fluidPadding;
+    padding-right: $fluidPadding;
+  }
+  #app-content {
+    width: auto;
+    min-width: $fluidMinWidth - ($fluidPadding * 2);
+    max-width: $fluidMaxWidth;
+    padding-left: $fluidPadding;
+    padding-right: $fluidPadding;
+  }
+}
+
+
+/*-----------------------------------------*\
+	3. Content
+\*-----------------------------------------*/
+
+#app-content h2:first-child {
+  margin-top: 0;
+}
+
+/* 3.1 Resource title */
 
 .hidden-server-info {
   display: none;
@@ -1089,9 +1113,9 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 /* ^ Tooltip */
 
-/* ^ 3.2 Resource title */
+/* ^ 3.1 Resource title */
 
-/* 3.3 Tabs */
+/* 3.2 Tabs */
 
 #app-tabs {
   margin: 1px 0 0 0;
@@ -1164,10 +1188,9 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
   border-bottom: 1px solid #fff;
 }
 
-/* ^ 3.3 Tabs */
+/* ^ 3.2 Tabs */
 
-
-/* 3.4 Tab Menus */
+/* 3.3 Tab Menus */
 
 #active-tab {
   margin: 0 0 5px 0;
@@ -1360,9 +1383,9 @@ span.vrtx-help-step-by-step-cmd {
 
 /* ^ Trash can */
 
-/* ^ 3.4 Tab Menus */
+/* ^ 3.3 Tab Menus */
 
-/* 3.5 Directorylisting */
+/* 3.4 Directorylisting */
 
 #vrtx-manage-collectionlisting #contents,
 #vrtx-trash-can #contents,
@@ -1803,9 +1826,9 @@ body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
 
 /* ^ Icons */
 
-/* ^ 3.5 Directorylisting */
+/* ^ 3.4 Directorylisting */
 
-/* 3.6 Other content */
+/* 3.5 Other content */
 
 .vrtx-radio-button > *  {
   margin: 0;
@@ -2723,9 +2746,9 @@ table.resourceInfo.revisions tr:nth-child(even) td {
   margin-right: 20px !important;
 }
 
-/* ^ 3.6 Other content */
+/* ^ 3.5 Other content */
 
-/* 3.7 Messages */
+/* 3.6 Messages */
 
 /* Resource bar messages */
 
@@ -2833,217 +2856,11 @@ body#vrtx-preview .tabMessage-big {
 
 /* ^ Tab message */
 
-/* ^ 3.7 Messages */
-
-
-
-/* 4. Embedding */
-
-html.embedded2,
-body.embedded2 {
-  background-color: #fff;
-  text-align: left;
-}
-
-body.embedded2 {
-  min-width: 0;
-  float: left;
-  width: 100%;
-}
-
-body.embedded2.forms-new .ui-widget-overlay {
-  @include wh(100%, 100%);
-  @include posAbs;
-}
-
-body.embedded2 #directory-listing.collection-listing {
-  border-collapse: separate;
-  margin-bottom: 15px;
-}
-
-body.embedded2 #directory-listing.collection-listing tr td {
-  border: 1px solid #f0f0f0;
-}
-
-body.embedded2 #directory-listing.collection-listing tr.expandedForm td {
-  padding-top: 10px;
-  padding-bottom: 15px;
-}
-
-body.embedded2 #directory-listing.collection-listing tr.expandedForm h3 {
-  font-size: 1.35em;
-}
-
-body.embedded2 #directory-listing tr.even td {
-  background-color: $contentBackgroundColor;
-  border-top: 1px solid transparent;
-  border-bottom: 1px solid transparent;
-}
-
-body.embedded2 #directory-listing tr.even:last-child td {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-body.embedded2 #directory-listing tr.odd td {
-  background-color: $contentTablesEvenBackgroundColor;
-}
-
-body.embedded2.forms-new #directory-listing tr.focus td,
-body.embedded2.forms-new #directory-listing tr:focus td,
-body.embedded2.forms-new #directory-listing tr:hover td {
-  border: 1px solid #c7dadf;
-  background-color: $listingDropdownTipFocusBackgroundColor;
-}
-
-body.embedded2 #directory-listing.collection-listing tr td:first-child {
-  border-right: none;
-}
-
-body.embedded2 #directory-listing.collection-listing tr td:last-child {
-  border-left: none;
-}
-
-body.embedded2 .expandedForm {
-  margin: 10px 0 0 0;
-  @include borderBox;
-}
-
-#vrtx-editor-title-submit-buttons h2 {
-  margin: 0;
-  background: none;
-}
-
-.vrtx-close-dialog-editor {
-  background: url("/vrtx/__vrtx/static-resources/themes/default/images/thickbox-close.png") no-repeat scroll center center transparent;
-  display: block;
-  @include wh(20px, 20px);
-  float: right;
-  margin-top: 2px;
-}
-
-html.embedded #vrtx-editor-title-submit-buttons h2 {
-  padding-bottom: 5px;
-}
-
-html.embedded .vrtx-close-dialog-editor {
-  margin-top: 5px;
-}
-
-html.embedded .embedded-editor-fail #contents {
-  height: auto !important;
-}
-
-html.embedded .embedded-editor-fail #app-content {
-  width: 450px;
-}
-
-#editor-fail {
-  background: transparent url("images/line-dotted.gif") repeat-x left top;
-  padding-top: 15px;
-  margin-top: 0;
-  display: block;
-}
-
-html.embedded {
-  overflow-y: scroll;
-}
-
-html.embedded,
-html.embedded body {
-  background: #999999;
-}
-
-html.embedded body {
-  min-width: 0;
-  padding: 20px;
-}
-
-html.embedded #app-content,
-html.embedded #app-content #main {
-  width: auto;
-  min-width: 0;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-}
-
-html.embedded #app-content #main {
-  padding-top: 0 !important;
-}
-
-html.embedded #app-content {
-  width: 780px;
-  margin: 0 auto;
-  padding: 20px;
-  position: relative;
-  background: $contentBackgroundColor;
-  border: 2px solid #848484;
-  @include boxShadow(1px 1px 5px 2px #848484);
-}
-
-html.embedded #app-head-wrapper,
-html.embedded #app-footer-wrapper,
-html.embedded #title-container,
-html.embedded #app-tabs,
-html.embedded #active-tab {
-  display: none;
-}
-
+/* ^ 3.6 Messages */
 
 
 /*-----------------------------------------*\
-	5. Fluid design
-\*-----------------------------------------*/
-
-.app-fluid {
-  min-width: 1014px;
-}
-
-.app-fluid #app-head-wrapper,
-.app-fluid #app-footer-wrapper {
-  min-width: 1014px;
-  width: 100%;
-}
-
-.app-fluid #app-head,
-.app-fluid #app-head-wrapper #line-top #uiologo,
-.app-fluid #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb,
-.app-fluid #app-head-wrapper #system-message-wrapper .system-message,
-.app-fluid #app-footer {
-  width: auto;
-  max-width: 1200px;
-  padding-left: 50px;
-  padding-right: 50px;
-}
-
-.app-fluid #app-content {
-  width: auto;
-  min-width: 914px;
-  max-width: 1200px;
-  padding-left: 50px;
-  padding-right: 50px;
-}
-
-.app-fluid #app-footer {
-  background-position: 50px 24px;
-}
-
-.app-fluid #app-head-wrapper #line-top #uiologo a,
-.app-fluid #app-head #app-name {
-  left: 50px;
-}
-
-.app-fluid #app-head #global-menu-top,
-.app-fluid #app-head #global-menu-bottom {
-  right: 55px;
-}
-
-
-
-/*-----------------------------------------*\
-	6. Clearing
+	4. Clearing
 \*-----------------------------------------*/
 
 #app-head:after,
@@ -3069,7 +2886,7 @@ div.globalmenu:after,
 
 
 /*-----------------------------------------*\
-	7. Forms
+	5. Forms
 \*-----------------------------------------*/
 
 ul.radio-buttons,
