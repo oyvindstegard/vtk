@@ -4,11 +4,9 @@
  * ToC:
  *
  * 1. Tags / typography
- * 2. Content
- *   2.1 Resource title
- *   2.2 Tab Menus
- *   2.3 Other content
- * 3. Misc
+ * 2. Resource bar
+ * 3. Tab bar
+ * 4. Content
  *
  */
 
@@ -114,7 +112,7 @@ a {
 
 
 /*-----------------------------------------*\
-	2. Content
+	2. Resource bar
 \*-----------------------------------------*/
 
 #app-content h2:first-child {
@@ -124,8 +122,6 @@ a {
 .hidden-server-info {
   display: none;
 }
-
-/* 2.1 Resource title */
 
 #title-container {
   position: relative;
@@ -171,8 +167,6 @@ a {
 .ie8 #resource-title {
   display: inline-block;
 }
-
-/* ^ Icons */
 
 /* Resource menus */
 
@@ -312,11 +306,10 @@ a {
   padding: 2px 0 30px 30px !important;
 }
 
-/* ^ Create dialog */
 
-/* ^ 2.1 Resource title */
-
-/* 2.2 Tab Menus */
+/*-----------------------------------------*\
+  3. Tab bar
+\*-----------------------------------------*/
 
 #active-tab {
   margin: 0 0 5px 0;
@@ -325,8 +318,6 @@ a {
     font-weight: bold;
   }
 }
-
-/* Tab Menu 1 (left) */
 
 #tabMenuLeft,
 #tabMenuLeft li {
@@ -338,8 +329,6 @@ a {
   background: url(images/tab-menu-navigate-up.png) no-repeat center left;
   padding: 5px 0 5px 28px;
 }
-
-/* Tab Menu 2 (right) */
 
 #tabMenuRight {
   float: right;
@@ -475,11 +464,10 @@ a {
   vertical-align: top;
 }
 
-/* ^ Tab forms */
 
-/* ^ 2.2 Tab Menus */
-
-/* 2.3 Other content */
+/*-----------------------------------------*\
+  3. Content
+\*-----------------------------------------*/
 
 .vrtx-radio-button > *  {
   margin: 0;
@@ -1416,13 +1404,6 @@ table.resourceInfo.revisions tr:nth-child(even) td {
 .vrtx-report-paging .prev {
   margin-right: 20px !important;
 }
-
-/* ^ 2.3 Other content */
-
-
-/*-----------------------------------------*\
-	3. Misc
-\*-----------------------------------------*/
 
 #app-head:after,
 #app-footer:after,
