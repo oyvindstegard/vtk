@@ -67,19 +67,16 @@
   @if $imp == false { background: transparent url($url) no-repeat 0 0; }
   @else             { background: transparent url($url) no-repeat 0 0 !important; }
 }
-
 @mixin borderRadius($radius) {
   -webkit-border-radius: $radius;
   -moz-border-radius: $radius;
   border-radius: $radius; 
 }
-
 @mixin boxShadow($opts) {
   -moz-box-shadow: $opts;
   -webkit-box-shadow: $opts;
   box-shadow: $opts;
 }
-
 @mixin borderBox {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -106,7 +103,6 @@
   -o-transition:      $opts;
   transition:         $opts;
 }
-
 @mixin transforms($opts) {
   -webkit-transform: $opts;
   -moz-transform:    $opts;
@@ -114,7 +110,6 @@
   -o-transform:      $opts;
   transform:         $opts;
 }
-
 @mixin transitionsTransforms($optsA, $optsB) {
   -webkit-transition: $optsA, -webkit-transform $optsB;
   -moz-transition:    $optsA, -moz-transform    $optsB;
@@ -150,7 +145,6 @@
     }
   }
 }
-
 @mixin listingIcon($type, $firstIsPng: false, $hasUnpublished: true) {
   $resourceType: file-#{$type};
   $class: $type;
