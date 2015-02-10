@@ -97,9 +97,25 @@
     display: inline-block;
     display: block;
     display: inline-block;
+
     &[disabled],
     &[readonly] {
       @include disabled;
+    }
+
+    &.vrtx-date {
+      width: 67px;
+      margin-right: 20px;
+    }
+    &.vrtx-hours,
+    &.vrtx-minutes {
+      width: 17px;
+    }
+    &.vrtx-hours {
+      margin-right: 10px;
+    }
+    &.vrtx-minutes {
+      margin-left: 7px;
     }
   }
   .vrtx-textfield-big {
