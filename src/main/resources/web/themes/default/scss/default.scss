@@ -132,12 +132,14 @@ a {
 
 /* Icons - TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later) */
 
-@mixin resourceTitleIcon($type, $pos, $h1MarginLeft: null, $firstIsPng: false, $hasUnpublished: false) {
+@mixin resourceTitleIcon($type, $pos, $h1MarginLeft: null, $firstIsPng: false, $hasUnpublished: true) {
   $resourceType: file-#{$type};
   $class: $type;
   @if $type == folder {
     $resourceType: #{$type};
     $class: "true";
+  } @elseif $type == text {
+    $resourceType: "file-txt";
   }
   &.#{$class} {
     @if $firstIsPng {
@@ -176,20 +178,20 @@ a {
     }
   }
 
-  @include resourceTitleIcon(folder, 0px 5px, 42px);
-  @include resourceTitleIcon(doc, 0px 2px);
-  @include resourceTitleIcon(pdf, 0px 2px);
-  @include resourceTitleIcon(xls, 0px 2px);
-  @include resourceTitleIcon(text, 0px 2px);
-  @include resourceTitleIcon(ppt, 0px 2px);
-  @include resourceTitleIcon(image, 0px 10px, 39px);
-  @include resourceTitleIcon(audio, 0px 12px, 26px, true);
-  @include resourceTitleIcon(video, 0px 5px, 40px);
-  @include resourceTitleIcon(videoref, 0px 5px, 40px);
-  @include resourceTitleIcon(binary, 0px 3px);
-  @include resourceTitleIcon(dmg, 0px 3px, $firstIsPng: true, $hasUnpublished: false);
-  @include resourceTitleIcon(zip, 0px 3px, $firstIsPng: true, $hasUnpublished: false);
-  @include resourceTitleIcon(jar, 0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(folder,   0px 5px,  42px);
+  @include resourceTitleIcon(doc,      0px 2px);
+  @include resourceTitleIcon(pdf,      0px 2px);
+  @include resourceTitleIcon(xls,      0px 2px);
+  @include resourceTitleIcon(text,     0px 2px);
+  @include resourceTitleIcon(ppt,      0px 2px);
+  @include resourceTitleIcon(image,    0px 10px, 39px);
+  @include resourceTitleIcon(audio,    0px 12px, 26px, $firstIsPng: true);
+  @include resourceTitleIcon(video,    0px 5px,  40px);
+  @include resourceTitleIcon(videoref, 0px 5px,  40px);
+  @include resourceTitleIcon(binary,   0px 3px);
+  @include resourceTitleIcon(dmg,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(zip,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(jar,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
 }
 
 .ie8 #resource-title {
