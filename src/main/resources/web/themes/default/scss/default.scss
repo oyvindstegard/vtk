@@ -827,10 +827,10 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 #active-tab {
   margin: 0 0 5px 0;
-}
 
-#active-tab  ul.list-menu a {
-  font-weight: bold;
+  ul.list-menu a {
+    font-weight: bold;
+  }
 }
 
 /* Tab Menu 1 (left) */
@@ -850,6 +850,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 #tabMenuRight {
   float: right;
+
   li {
     float: left;
     margin: -10px 0 0 30px;
@@ -880,30 +881,14 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
     &.createCollectionService a {
       background: url(images/tab-menu-new-folder.png) no-repeat center left;
     }
+    &.recoverResourceService a,
+    &.deleteResourcePermanentService a {
+      padding-left: 0;
+    }
   }
 }
 
 /* Tab forms */
-
-ol.vrtx-help-step-by-step,
-ul.radio-buttons label {
- font-size: 1.154em;
-}
-
-ol.vrtx-help-step-by-step {
-  margin-left: 0;
-  padding-left: 22px;
-}
-
-ol.vrtx-help-step-by-step li {
-  margin-bottom: 15px;
-}
-
-span.vrtx-help-step-by-step-url,
-span.vrtx-help-step-by-step-cmd {
-  color: #777;
-  font-weight: bold;
-}
 
 .vrtx-admin-form p#vrtx-file-upload-info-text {
   margin: 10px 0 0;
@@ -998,16 +983,6 @@ span.vrtx-help-step-by-step-cmd {
 }
 
 /* ^ Tab forms */
-
-/* Trash can */
-
-#tabMenuRight li.recoverResourceService a,
-#tabMenuRight li.deleteResourcePermanentService a {
-  background: none; /* TODO: need to design icon */
-  padding-left: 0;
-}
-
-/* ^ Trash can */
 
 /* ^ 2.2 Tab Menus */
 
@@ -1465,6 +1440,9 @@ body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
 .vrtx-radio-button:last-child {
   margin-bottom: 0px;
 }
+ul.radio-buttons label {
+ font-size: 1.154em;
+}
 ul.radio-buttons li {
   margin-bottom: 5px;
 }
@@ -1496,6 +1474,21 @@ ul.radio-buttons li > * {
 .vrtx-checkbox input[type='checkbox'] {
   vertical-align: top;
   line-height: 1;
+}
+
+ol.vrtx-help-step-by-step {
+  font-size: 1.154em;
+  margin-left: 0;
+  padding-left: 22px;
+
+  li {
+    margin-bottom: 15px;
+  }
+  span.vrtx-help-step-by-step-url,
+  span.vrtx-help-step-by-step-cmd {
+    color: #777;
+    font-weight: bold;
+  }
 }
 
 #vrtx-report-filters ul.vrtx-report-filter-last {
@@ -1535,6 +1528,8 @@ ul.radio-buttons li > * {
   background: url(images/report-filter-hover-right.png) no-repeat top right;
   display: inline-block;
 }
+
+/* Preview */
 
 body#vrtx-preview {
   overflow-y: scroll;
