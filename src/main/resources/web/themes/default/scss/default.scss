@@ -44,6 +44,10 @@ h2 {
   margin: 15px 0 8px 0;
 }
 
+#app-content h2:first-child {
+  margin-top: 0;
+}
+
 h3,
 caption {
   font-size: 1.538em;
@@ -114,10 +118,6 @@ a {
 /*-----------------------------------------*\
 	2. Resource bar
 \*-----------------------------------------*/
-
-#app-content h2:first-child {
-  margin-top: 0;
-}
 
 .hidden-server-info {
   display: none;
@@ -198,8 +198,7 @@ a {
 
 #resourceMenuRight > li.last {
   background: none;
-  margin: 0;
-  padding: 0;
+  @include noMargPadd;
 }
 
 #resourceMenuRight > li h3 {
@@ -931,8 +930,7 @@ body#vrtx-preview-ssl-mixed-mode #contents ul li {
 body#vrtx-permissions li.groups div.errorContainer ul li,
 body#vrtx-permissions li.users div.errorContainer ul li {
   background: none;
-  margin: 0;
-  padding: 0;
+  @include noMargPadd;
 }
 
 body#vrtx-permissions .removePermission {
