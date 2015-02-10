@@ -119,137 +119,81 @@ a {
   margin-top: 0;
 }
 
-/* 2.1 Resource title */
-
 .hidden-server-info {
   display: none;
 }
+
+/* 2.1 Resource title */
 
 #title-container {
   position: relative;
   color: $titleContainerTextColor;
 }
 
-/* Icons 
- * TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later)
-*/
+/* Icons - TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later) */
+
+@mixin resourceTitleIcon($type, $pos, $h1MarginLeft: null, $firstIsPng: false, $hasUnpublished: false) {
+  $resourceType: file-#{$type};
+  $class: $type;
+  @if $type == folder {
+    $resourceType: #{$type};
+    $class: "true";
+  }
+  &.#{$class} {
+    @if $firstIsPng {
+      background: transparent url("images/#{$resourceType}.png") no-repeat $pos;
+    } @else {
+      background: transparent url("images/#{$resourceType}.gif") no-repeat $pos;
+    }
+    @if $hasUnpublished {
+      &.unpublished {
+        background: transparent url("images/#{$resourceType}-unpublished.png") no-repeat $pos;
+      }
+    }
+    @if $h1MarginLeft != null {
+      h1 {
+        margin-left: $h1MarginLeft;
+      }
+    }
+  }
+}
 
 #resource-title {
   background: transparent url(images/file.gif) no-repeat 0px 3px;
   padding-top: 8px;
   position: relative;
-}
-#resource-title.unpublished {
-  background: transparent url(images/file-unpublished.png) no-repeat 0px 3px;
+
+  &.unpublished {
+    background: transparent url(images/file-unpublished.png) no-repeat 0px 3px;
+  }
+  h1 {
+    margin: 0 0 15px 32px;
+    float: left;
+    min-width: 85px; /* at least as wide as 'Endre navn' in dropdown + 15px */
+
+    .title-split {
+      display: block;
+    }
+  }
+
+  @include resourceTitleIcon(folder, 0px 5px, 42px);
+  @include resourceTitleIcon(doc, 0px 2px);
+  @include resourceTitleIcon(pdf, 0px 2px);
+  @include resourceTitleIcon(xls, 0px 2px);
+  @include resourceTitleIcon(text, 0px 2px);
+  @include resourceTitleIcon(ppt, 0px 2px);
+  @include resourceTitleIcon(image, 0px 10px, 39px);
+  @include resourceTitleIcon(audio, 0px 12px, 26px, true);
+  @include resourceTitleIcon(video, 0px 5px, 40px);
+  @include resourceTitleIcon(videoref, 0px 5px, 40px);
+  @include resourceTitleIcon(binary, 0px 3px);
+  @include resourceTitleIcon(dmg, 0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(zip, 0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(jar, 0px 3px, $firstIsPng: true, $hasUnpublished: false);
 }
 
 .ie8 #resource-title {
   display: inline-block;
-}
-
-#resource-title h1 {
-  margin: 0 0 15px 36px;
-  float: left;
-  min-width: 85px; /* at least as wide as 'Endre navn' in dropdown + 15px */
-}
-#resource-title h1 .title-split {
-  display: block;
-}
-#resource-title.true h1 {
-  margin-left: 42px;
-}
-
-#resource-title.true {
-  background: transparent url(images/folder.gif) no-repeat 0px 5px;
-}
-
-#resource-title.true.unpublished {
-  background: transparent url(images/folder-unpublished.png) no-repeat 0px 5px;
-}
-
-#resource-title.binary {
-  background: transparent url(images/file-binary.gif) no-repeat 0px 3px;
-}
-#resource-title.binary.unpublished { 
-  background: transparent url(images/file-binary-unpublished.png) no-repeat 0px 3px;
-}
-
-#resource-title.dmg {
-  background: transparent url(images/file-dmg.png) no-repeat 0px 3px;
-}
-#resource-title.zip {
-  background: transparent url(images/file-zip.png) no-repeat 0px 3px;
-}
-#resource-title.jar {
-  background: transparent url(images/file-jar.png) no-repeat 0px 3px;
-}
-
-#resource-title.doc {
-  background: transparent url(images/file-doc.gif) no-repeat 0px 2px;
-}
-#resource-title.doc.unpublished {
-  background: transparent url(images/file-doc-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.pdf {
-  background: transparent url(images/file-pdf.gif) no-repeat 0px 2px;
-}
-#resource-title.pdf.unpublished {
-  background: transparent url(images/file-pdf-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.xls {
-  background: transparent url(images/file-xls.gif) no-repeat 0px 2px;
-}
-#resource-title.xls.unpublished {
-  background: transparent url(images/file-xls-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.text {
-  background: transparent url(images/file-txt.gif) no-repeat 0px 2px;
-}
-#resource-title.text.unpublished { 
-  background: transparent url(images/file-txt-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.ppt {
-  background: transparent url(images/file-ppt.gif) no-repeat 0px 2px;
-}
-#resource-title.ppt.unpublished {
-  background: transparent url(images/file-ppt-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.image {
-  background: transparent url(images/file-image.gif) no-repeat 0px 10px;
-}
-#resource-title.image.unpublished {
-  background: transparent url(images/file-image-unpublished.png) no-repeat 0px 10px;
-}
-#resource-title.image h1 {
-  margin-left: 39px;
-}
-
-#resource-title.audio {
-  background: transparent url(images/file-audio.png) no-repeat 0px 12px;
-}
-#resource-title.audio.unpublished {
-  background: transparent url(images/file-audio-unpublished.png) no-repeat 0px 12px;
-}
-#resource-title.audio h1 {
-  margin-left: 26px;
-}
-
-#resource-title.video,
-#resource-title.videoref {
-  background: transparent url(images/file-video.gif) no-repeat 0px 5px;
-}
-#resource-title.video.unpublished,
-#resource-title.videoref.unpublished {
-  background: transparent url(images/file-video-unpublished.png) no-repeat 0px 5px;
-}
-#resource-title.video h1,
-#resource-title.videoref h1 {
-  margin-left: 40px;
 }
 
 /* ^ Icons */
