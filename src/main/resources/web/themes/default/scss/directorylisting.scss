@@ -26,43 +26,6 @@
   font-weight: bold;
 }
 
-@mixin listingIcon($type, $firstIsPng: false, $hasUnpublished: true) {
-  $resourceType: file-#{$type};
-  $class: $type;
-  @if $type == folder {
-    $resourceType: #{$type};
-    $class: "true";
-  } @elseif $type == text {
-    $resourceType: "file-txt";
-  }
-  &.#{$class} {
-    @if $hasUnpublished {
-      &.unpublished {
-        td {
-          &.name a,
-          &.name .unauthorizedListedResource-wrapper,
-          &.name span.vrtx-trash-can-name-text,
-          &.vrtx-report-name a {
-            background: transparent url("images/#{$resourceType}-small-unpublished.png") no-repeat center left;
-          }
-        }
-      }
-    }
-    td {
-      &.name a,
-      &.name .unauthorizedListedResource-wrapper,
-      &.name span.vrtx-trash-can-name-text,
-      &.vrtx-report-name a {
-        @if $firstIsPng {
-          background: transparent url("images/#{$resourceType}-small.png") no-repeat center left;
-        } @else {
-         background: transparent url("images/#{$resourceType}-small.gif") no-repeat center left;
-        }
-      }
-    }
-  }
-}
-
 #directory-listing {
   width: 100%;
   table-layout: fixed;

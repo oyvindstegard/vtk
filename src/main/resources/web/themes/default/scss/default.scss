@@ -134,34 +134,6 @@ a {
 
 /* Icons - TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later) */
 
-@mixin resourceTitleIcon($type, $pos, $h1MarginLeft: null, $firstIsPng: false, $hasUnpublished: true) {
-  $resourceType: file-#{$type};
-  $class: $type;
-  @if $type == folder {
-    $resourceType: #{$type};
-    $class: "true";
-  } @elseif $type == text {
-    $resourceType: "file-txt";
-  }
-  &.#{$class} {
-    @if $firstIsPng {
-      background: transparent url("images/#{$resourceType}.png") no-repeat $pos;
-    } @else {
-      background: transparent url("images/#{$resourceType}.gif") no-repeat $pos;
-    }
-    @if $hasUnpublished {
-      &.unpublished {
-        background: transparent url("images/#{$resourceType}-unpublished.png") no-repeat $pos;
-      }
-    }
-    @if $h1MarginLeft != null {
-      h1 {
-        margin-left: $h1MarginLeft;
-      }
-    }
-  }
-}
-
 #resource-title {
   background: transparent url(images/file.gif) no-repeat 0px 3px;
   padding-top: 8px;
