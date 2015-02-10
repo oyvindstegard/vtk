@@ -9,7 +9,6 @@
  *   2.2 Tab Menus
  *   2.3 Directorylisting
  *   2.4 Other content
- *   2.5 Messages
  * 3. Misc
  *
  */
@@ -22,6 +21,8 @@
 @import "embedded";
 @import "tooltip";
 @import "dropdowns";
+@import "messages";
+@import "upload";
 
 /*-----------------------------------------*\
 	1. Tags / typography
@@ -1889,116 +1890,6 @@ table.resourceInfo.revisions tr:nth-child(even) td {
 
 /* ^ 2.4 Other content */
 
-/* 2.5 Messages */
-
-/* Resource bar messages */
-
-#app-content > div.message,
-body > div.infomessage,
-#app-content > div.infomessage,
-#app-content > noscript > div.infomessage {
-  background-color: $contentBackgroundColor;
-  border: 1px solid #d9d9d9;
-  padding: 12px 14px 11px 14px;
-  margin: 0 0 25px 0;
-}
-
-#app-content > div.infomessage,
-body > div.infomessage,
-#app-content > noscript > div.infomessage,
-#app-content > div.errormessage {
-  padding-left: 46px;
-}
-
-#app-content > div.infomessage,
-body > div.infomessage,
-#app-content > noscript > div.infomessage {
-  background: $contentBackgroundColor url(images/info.png) no-repeat 14px 8px;
-}
-
-#app-content > div.errormessage {
-  background: $contentBackgroundColor url(images/error.gif) no-repeat 14px 8px;
-}
-
-#vrtx-compat-icon {
-  background: url(images/compat-icon.png) no-repeat 0 0;
-  display: inline-block;
-  width: 27px;
-  height: 22px;
-  margin: -10px 0 0 0;
-}
-
-/* ^ Resource bar messages */
-
-/* System message */
-
-#system-message-wrapper {
-  background-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
-}
-
-#system-message-wrapper .system-message {
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-very-big.png) no-repeat 50px center;
-  padding-top: 16px;
-  padding-bottom: 16px;
-  height: auto !important;
-}
-
-#system-message-wrapper .system-message-text {
-  font-size: 1.231em;
-  color: #fff;
-  text-align: left;
-  margin: 0 0 0 45px;
-}
-
-#system-message-wrapper .system-message-text a {
-  color: $systemMessageLinkColor;
-  text-decoration:underline;
-}
-
-.offscreen {
-  @include posAbs(auto, -10000px);
-  @include wh(1px, 1px);
-  overflow: hidden;
-}
-
-/* ^ System message */
-
-/* Tab message */
-
-div.tabMessage {
-  background: url(images/info-small.gif) no-repeat 0 0;
-  padding: 0 0 10px 25px;
-}
-
-body#vrtx-preview div.tabMessage {
-  margin: 0 0 -2px 0;
-  padding: 15px 0 2px 25px;
-  background-position: 0 14px;
-}
-
-/* Big */
-
-.tabMessage-big {
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-white-blue-bg.png) no-repeat 19px center;
-  padding: 12px 0 12px 58px;
-  color: #fff;
-  margin: 6px -19px 2px;
-  font-size: 1.231em;
-}
-
-.tabMessage-big a {
-  color: $systemMessageLinkColor;
-  text-decoration:underline;
-}
-
-body#vrtx-preview .tabMessage-big {
-  margin: 11px -20px 0;
-}
-
-/* ^ Tab message */
-
-/* ^ 2.5 Messages */
-
 
 /*-----------------------------------------*\
 	3. Misc
@@ -2110,137 +2001,6 @@ tr.expandedForm td .vrtx-button-small {
 
 .forms-new .vrtx-minutes {
   margin-left: 7px;
-}
-
-/* Cancel link */
-
-#app-content .vrtx-cancel-link {
-  display: inline-block;
-  font-size: 1px;
-  @include wh(12px, 12px);
-  margin-left: 7px;
-  position: relative;
-  top: -3.8em;
-  color: #F8F8F8;
-  background: url(images/resource-menu-dialog-close.png) no-repeat center center;
-  border: none;
- 
-  &:hover {
-    cursor: pointer;
-  }
-  &:focus {
-    outline: 1px solid #aaa;
-  }
-}
-
-#app-content .vrtx-show-processing {
-  background: url(images/spinner.gif) no-repeat center left;
-  display: block;
-  @include wh(16px, 16px);
-}
-
-/* File upload (JS progressive enhancement)
- *
- * Credits technique: http://www.quirksmode.org/dom/inputfile.html
- */
-
-#file-upload-container {
-  position: relative;
-  z-index: 999;
-}
-
-#file-upload-container .vrtx-textfield {
-  @include posAbs;
-  width: 300px;
-  z-index: 1;
-}
-
-#file-upload-container input#fake-file {
-  @include posAbsRight;
-  width: 295px;
-  z-index: 1;
-}
-
-.js #file-upload-container input#file {
-  z-index: 999;
-  position: relative;
-  left: 328px;
-  background: none;
-  @include wh(87px, 27px);
-  cursor: pointer !important;
-
-  /* Transparent */
-  opacity: 0;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)" !important;
-}
-
-#file-upload-container a.vrtx-file-upload {
-  @include posAbs(0, 330px);
-  z-index: 1;
-}
-
-#dialog-loading-content img {
-  opacity: 0.7;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)" !important;
-}
-
-#dialog-uploading-percent {
-  margin-top: 10px;
-  margin-bottom: -15px;
-  color: #2b2b2b;
-  text-align: center;
-  font-size: 1.231em;
-  position: relative;
-}
-
-#dialog-uploading-bytes {
-  margin-top: 15px;
-  margin-bottom: 0px;
-  color: #777;
-  text-align: center;
-  font-size: 0.8em;
-  position: relative;
-}
-
-#dialog-uploading-bar {
-  background-color: #459CE5;
-  margin-top: -13px;
-  position: relative;
-  z-index: 1;
-  @include wh(0, 13px);
-  @include borderRadius(2px);
-}
-
-#dialog-uploading-abort {
-  @include posAbsBottomRight;
-  color: $linkColor;
-  font-weight: bold;
-  font-size: 0.813em;
-  display: none;
-}
-
-.ui-dialog:hover #dialog-uploading-abort,
-.ui-dialog #dialog-uploading-abort.tab-visible {
-  display: inline;
-}
-
-/* Tooltips */
-
-.tooltip,
-.input-description {
-  display: inline;
-  padding-left: 8px;
-}
-
-/* ^ Tooltips */
-
-/* The only way (it seems) to set cursor:pointer for file upload button in Webkit
- * http://chipsandtv.com/articles/styling-upload-elements
- * http://stackoverflow.com/questions/7554845/the-cursorpointer-property-doesnt-apply-to-file-upload-buttons-in-webkit-browse
- */
-    
-::-webkit-file-upload-button {
-  cursor: pointer;
 }
 
 /* Fix rendering bug in Firefox for hover in table (VTK-2562)

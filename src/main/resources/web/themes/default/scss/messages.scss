@@ -1,0 +1,108 @@
+/* 
+ * Vortex - Messages
+ *
+ */
+
+@import "base";
+
+/* System message */
+
+#app-head-wrapper #system-message-wrapper {
+  background-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
+
+  .system-message {
+    @include appHeadLine;
+    background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-very-big.png) no-repeat 50px center;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    height: auto !important;
+  }
+  .system-message-text {
+    font-size: 1.231em;
+    color: #fff;
+    text-align: left;
+    margin: 0 0 0 45px;
+
+    a {
+      color: $systemMessageLinkColor;
+      text-decoration:underline;
+    }
+  }
+}
+
+.offscreen {
+  @include posAbs(auto, -10000px);
+  @include wh(1px, 1px);
+  overflow: hidden;
+}
+
+/* Resource bar messages */
+
+#app-content > div.message,
+body > div.infomessage,
+#app-content > div.infomessage,
+#app-content > noscript > div.infomessage {
+  background-color: $contentBackgroundColor;
+  border: 1px solid #d9d9d9;
+  padding: 12px 14px 11px 14px;
+  margin: 0 0 25px 0;
+}
+
+#app-content > div.infomessage,
+body > div.infomessage,
+#app-content > noscript > div.infomessage,
+#app-content > div.errormessage {
+  padding-left: 46px;
+}
+
+#app-content > div.infomessage,
+body > div.infomessage,
+#app-content > noscript > div.infomessage {
+  background: $contentBackgroundColor url(images/info.png) no-repeat 14px 8px;
+}
+
+#app-content > div.errormessage {
+  background: $contentBackgroundColor url(images/error.gif) no-repeat 14px 8px;
+}
+
+#vrtx-compat-icon {
+  background: url(images/compat-icon.png) no-repeat 0 0;
+  display: inline-block;
+  width: 27px;
+  height: 22px;
+  margin: -10px 0 0 0;
+}
+
+/* Tab message */
+
+div.tabMessage {
+  background: url(images/info-small.gif) no-repeat 0 0;
+  padding: 0 0 10px 25px;
+}
+
+body#vrtx-preview div.tabMessage {
+  margin: 0 0 -2px 0;
+  padding: 15px 0 2px 25px;
+  background-position: 0 14px;
+}
+
+/* Tab message big */
+
+.tabMessage-big {
+  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-white-blue-bg.png) no-repeat 19px center;
+  padding: 12px 0 12px 58px;
+  color: #fff;
+  margin: 6px -19px 2px;
+  font-size: 1.231em;
+
+  a {
+    color: $systemMessageLinkColor;
+    text-decoration:underline;
+  }
+}
+
+body#vrtx-preview .tabMessage-big {
+  margin: 11px -20px 0;
+}
+
+/* ^ Vortex - Messages */

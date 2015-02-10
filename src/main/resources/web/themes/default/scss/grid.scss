@@ -69,11 +69,6 @@ body {
       }
     }
   }
-  #system-message-wrapper {
-    .system-message {
-      @include appHeadLine;
-    }
-  }
 }
 
 #app-head {

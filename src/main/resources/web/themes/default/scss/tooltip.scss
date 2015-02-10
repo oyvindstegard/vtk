@@ -39,6 +39,12 @@
   color: #666;
 }
 
+.tooltip,
+.input-description {
+  display: inline;
+  padding-left: 8px;
+}
+
 /* Tooltip */
 
 .tip {
