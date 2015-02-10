@@ -1,0 +1,154 @@
+/*
+ * Vortex - Tooltip
+ *
+ */
+
+@import "base";
+
+/* Link */
+
+#title-container abbr {
+  color: #797979;
+  cursor: pointer;
+  border-bottom: 1px dotted #a9a9a9;
+}
+
+.tooltips {
+  @include bg("images/info-icon.png");
+  @include wh(15px, 15px);
+  display: block;
+  display: inline-block;
+  margin: 0 0 0 3px;
+  cursor: pointer;
+  border: none;
+}
+
+.tooltips.label-tooltips {
+  margin: 0 0 -3px 5px;
+}
+
+#permissions-inheritance .tooltips,
+#title-container .tooltips {
+  border-bottom: none;
+  margin-bottom: -3px;
+}
+
+.fixed-resources-permissions-info {
+  display: inline-block;
+  padding-left: 19px;
+  color: #666;
+}
+
+/* Tooltip */
+
+.tip {
+  @include boxShadow(0px 0px 0px 6px rgba(160,160,160,0.5));
+  @include borderRadius(0px !important);
+  border: none !important;
+  padding: 14px;
+  background-color: #fff;
+  display: none;
+  
+  &.property-label {
+    font-size: 1em;
+  }
+  &.file,
+  &.folder {
+    background-repeat: no-repeat;
+    background-position: 15px 16px;
+  }
+  &.file #title {
+    padding-left: 26px;
+  }
+  &.folder #title {
+    padding-left: 30px;
+  }
+  &.allowed-for-all {
+    &.folder               { background-image: url(images/folder-small.gif);                            }
+    &.not-inherited.folder { background-image: url(images/folder-small-own-permissions.gif);            }
+    &.file                 { background-image: url(images/file-small.gif);                              }
+    &.not-inherited.file   { background-image: url(images/file-small-own-permissions.gif);              }
+  }
+  &.restricted {
+    &.folder                    { background-image: url(images/folder-small-restricted.gif);                 }
+    &.not-inherited.folder      { background-image: url(images/folder-small-restricted-own-permissions.gif); }
+    &.file                      { background-image: url(images/file-small-restricted.gif);                   }
+    &.not-inherited.file        { background-image: url(images/file-small-restricted-own-permissions.gif);   }
+  }
+  #title-wrapper {
+    font-size: 1.154em;
+    line-height: 2;
+    display: block;
+    padding-bottom: 11px;
+    margin-bottom: 10px;
+    background: url(images/line-dotted.gif) repeat-x bottom left;
+    
+    .vrtx-button-small {
+      font-size: 0.867em;
+      line-height: 1.3;
+    }
+  }
+  h4 {
+    margin-top: 0px;
+    font-weight: normal;
+  }
+  table {
+    td,
+    th {
+      vertical-align: top;
+    }
+    td {
+      padding: 2px 6px 3px 0;
+    }
+    th {
+      padding-bottom: 3px;
+      padding-right: 10px;
+      font-weight: normal;
+      white-space: nowrap;
+      text-align: left;
+    }
+  }
+  .inherited-permissions {
+    table {
+      th,
+      td {
+        color: #999;
+      }
+    }
+  }
+}
+
+#vrtx-editor .tip.property-item ul,
+#title-container .tip ul {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-left: 10px;
+}
+
+#vrtx-editor .tip.property-item ul a,
+#vrtx-report-urchin .tip a {
+  color: $publishedAllowedTextColor;
+}
+
+.tip.vrtx-create-tree {
+  padding: 0 !important;
+  margin: 6px 0 0;
+  @include boxShadow(none !important);
+  border: none;
+  background-color: $listingDropdownTipFocusBackgroundColor;
+}
+
+.tip.vrtx-create-tree .no-create-permission {
+  display: inline-block;
+  white-space: nowrap;
+  margin: 2px 0 0 10px;
+  padding: 0;
+}
+
+.tipextra {
+  background-color: $listingDropdownTipFocusBackgroundColor;
+  border: 1px solid #c7dadf;
+  height: 30px;
+}
+
+/* ^ Vortex - Tooltip */

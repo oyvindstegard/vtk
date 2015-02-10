@@ -10,8 +10,7 @@
  *   2.3 Directorylisting
  *   2.4 Other content
  *   2.5 Messages
- * 3. Clearing
- * 4. Forms
+ * 3. Misc
  *
  */
 
@@ -21,6 +20,8 @@
 @import "breadcrumbs";
 @import "tabs";
 @import "embedded";
+@import "tooltip";
+@import "dropdowns";
 
 /*-----------------------------------------*\
 	1. Tags / typography
@@ -200,126 +201,6 @@ a {
 
 /* ^ Icons */
 
-ul.list-menu,
-ul.list-menu li,
-.global-menu ul,
-.global-menu ul li,
-#editor-menu,
-#editor-menu li,
-td.vrtx-report-broken-links ul,
-td.vrtx-report-broken-links ul li,
-#editor-button-row,
-#editor-button-row li,
-ul.manage-create,
-ul.manage-create li,
-ul.publishing-document,
-ul.publishing-document li,
-#locale-selection ul,
-#locale-selection ul li,
-#collection-more-menu ul,
-#collection-more-menu ul li,
-#editor-help-menu ul,
-#editor-help-menu ul li {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-#editor-help-menu,
-#collection-more-menu,
-#editor-menu-wrapper,
-#editor-button-row,
-ul.publishing-document {
-  display: inline-block;
-}
-
-#editor-button-row {
-  margin-right: 10px;
-}
-
-/* Language menu / editor help menu */
-
-#locale-selection {
-  background: url(images/globe.png) no-repeat 0px 1px;
-  padding: 0 0 1px 23px;
-  z-index: 100;
-}
-
-#locale-selection ul,
-#locale-selection ul li,
-#collection-more-menu ul,
-#collection-more-menu ul li,
-#editor-help-menu ul,
-#editor-help-menu ul li {
-  display: inline;
-}
-
-#collection-more-menu ul {
-  overflow: hidden;
-}
-
-/* Dropdown */
-
-#tabMenuRight li.more-menu {
-  background: url("images/seperator-grey-gradient.png") no-repeat scroll left top transparent;
-  padding-left: 15px;
-}
-
-#editor-help-menu {
-  margin-left: 5px;
-}
-
-.js #editor-help-menu,
-.js #collection-more-menu,
-.js #locale-selection {
-  position: relative;
-}
-
-.js #tabMenuRight #collection-more-menu li {
-  float: none;
-}
-
-.js #tabMenuRight #collection-more-menu > a,
-.js #tabMenuRight #collection-more-menu li a {
-  margin: 0;
-}
-
-.js #editor-help-menu ul.dropdown-shortcut-menu-container,
-.js #collection-more-menu ul.dropdown-shortcut-menu-container,
-.js #locale-selection ul.dropdown-shortcut-menu-container {
-  display: none;
-  top: 24px;
-  left: auto;
-  right: 0;
-  /* right: -72px; */
-}
-
-.js #locale-selection ul.dropdown-shortcut-menu-container li a,
-.js #locale-selection ul.dropdown-shortcut-menu-container li span {
-  padding-left: 28px !important;
-}
-
-.js #locale-selection ul.dropdown-shortcut-menu-container li.active span {
-  background: url(images/list-active.gif) no-repeat 10px 10px;
-}
-
-.js #locale-selection #locale-selection-header,
-.js #collection-more-menu #collection-more-menu-header,
-.js #editor-help-menu #editor-help-menu-header {
-  background: url(images/arrow-down.png) no-repeat 100% 8px;
-  padding-right: 12px;
-  display: inline-block;
-}
-
-.js #collection-more-menu #collection-more-menu-header {
-  background-position: 100% 13px;
-  padding-left: 0px;
-}
-
-/* ^ Dropdown */
-
-/* ^ Language menu */
-
 /* Resource menus */
 
 #resourceMenuLeft {
@@ -327,221 +208,6 @@ ul.publishing-document {
   clear: left;
   float: left;
 }
-
-.dropdown-shortcut-menu-container form input[type=submit] {
-  color: $linkColor;
-}
-
-/* Button-row / Dropdown */
-
-.forms-new ul.button-row li,
-.forms-new ul.button-row-small li {
-  float: left;
-}
-
-.forms-new ul.button-row li.dropdown-init,
-.forms-new ul.button-row-small li.dropdown-init {
-  float: none;
-}
-
-.forms-new ul.button-row li a,
-.forms-new ul.button-row li input[type='submit'],
-.forms-new ul.button-row-small li a,
-.forms-new ul.button-row-small li input[type='submit'] {
-  @include borderRadius(0px);
-}
-
-ul.button-row li.first a,
-ul.button-row li.first input[type='submit'],
-ul.button-row-small li.first a,
-ul.button-row-small li.first input[type='submit'] {
-  -webkit-border-top-left-radius: 5px;
-  -webkit-border-bottom-left-radius: 5px;
-  -moz-border-radius-topleft: 5px;
-  -moz-border-radius-bottomleft: 5px;
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
-}
-
-ul.button-row li.last a,
-ul.button-row li.last input[type='submit'],
-ul.button-row-small li.last a,
-ul.button-row-small li.last input[type='submit'] {
-  -webkit-border-top-right-radius: 5px;
-  -webkit-border-bottom-right-radius: 5px;
-  -moz-border-radius-topright: 5px;
-  -moz-border-radius-bottomright: 5px;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
-}
-
-div.dropdown-shortcut-menu-container,
-ul.dropdown-shortcut-menu-container {
-  display: none;
-  border: 1px solid $buttonBorderColor;
-  border-bottom: none;
-  @include posAbs(80px, 0);
-  z-index: 99;
-  background-color: #fff;
-}
-
-#resource-title div.dropdown-shortcut-menu-container {
-  top: auto;
-}
-
-.global-menu div.dropdown-shortcut-menu-container,
-#editor-menu-wrapper div.dropdown-shortcut-menu-container {
-  left: auto !important;
-}
-
-.global-menu div.dropdown-shortcut-menu-container {
-  right: 0px;
-  top: 41px;
-}
-
-#editor-menu-wrapper {
-  position: relative;
-}
-
-#editor-menu-wrapper div.dropdown-shortcut-menu-container {
-  right: 7px;
-  top: 32px;
-}
-
-ul.dropdown-shortcut-menu li.dropdown-init {
-  position: relative;
-  padding-right: 26px !important;
-  line-height: 17px;
-}
-
-#editor-menu-wrapper #editor-menu {
-  padding: 0 7px 0 0;
-}
-
-ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area {
-  border: 1px solid $buttonBorderColor;
-  @include posAbsRight;
-  @include wh(25px, 28px);
-  @include noMargPadd;
-  cursor: pointer;
-  -webkit-border-top-right-radius: 5px;
-  -webkit-border-bottom-right-radius: 5px;
-  -moz-border-radius-topright: 5px;
-  -moz-border-radius-bottomright: 5px;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
-  background: $buttonBackgroundColor url("images/dropdown-arrow.png") no-repeat 8px 12px;
-}
-
-ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area {
-  background-image: url("images/dropdown-arrow-small.png");
-  background-position: 8px 11px;
-  @include wh(25px, 24px);
-}
-
-ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area:focus,
-ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area:hover {
-  background-color: $buttonHoverBackgroundColor;
-  border-color: $buttonHoverBackgroundColor;
-  border-width: 0 0 0 1px;
-  height: 30px;
-  top: 0;
-  right: 0;
-  background-image: url("images/dropdown-arrow-hover.png");
-  background-position: 7px 13px;
-  outline: none;
-  cursor: pointer;
-}
-
-ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area:focus,
-ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area:hover {
-  height: 26px;
-  background-image: url("images/dropdown-arrow-small-hover.png");
-  background-position: 7px 12px;
-}
-
-div.dropdown-shortcut-menu-container ul,
-div.dropdown-shortcut-menu-container ul li,
-ul.dropdown-shortcut-menu-container,
-ul.dropdown-shortcut-menu-container li {
-  @include noMargPadd;
-  list-style: none;
-}
-
-div.dropdown-shortcut-menu-container ul li a,
-ul.dropdown-shortcut-menu-container li a,
-div.dropdown-shortcut-menu-container ul li span,
-ul.dropdown-shortcut-menu-container li span,
-div.dropdown-shortcut-menu-container ul li form input[type='submit'],
-ul.dropdown-shortcut-menu-container li form input[type='submit'] {
-  border: none;
-  border-bottom: 1px solid $buttonBorderColor; 
-  padding: 8px 14px 7px 14px !important;
-  background-color: #fff;
-  display: block;
-  white-space: nowrap;
-}
-
-div.dropdown-shortcut-menu-container ul li form,
-ul.dropdown-shortcut-menu-container li form {
-  display: block;
-}
-
-div.dropdown-shortcut-menu-container ul li a:hover,
-ul.dropdown-shortcut-menu-container li a:hover,
-div.dropdown-shortcut-menu-container ul li form input[type='submit']:hover,
-ul.dropdown-shortcut-menu-container li form input[type='submit']:hover,
-div.dropdown-shortcut-menu-container ul li a:focus,
-ul.dropdown-shortcut-menu-container li a:focus,
-div.dropdown-shortcut-menu-container ul li form input[type='submit']:focus,
-ul.dropdown-shortcut-menu-container li form input[type='submit']:focus {
-  background-color: $listingDropdownTipFocusBackgroundColor;
-  cursor: pointer;
-}
-
-div.dropdown-shortcut-menu-container ul li form input[type='submit'],
-ul.dropdown-shortcut-menu-container li form input[type='submit'] {
-  float: left;
-  text-align: left;
-  width: 100%;
-}
-
-div.dropdown-shortcut-menu-container ul li a:hover,
-ul.dropdown-shortcut-menu-container li a:hover,
-div.dropdown-shortcut-menu-container ul li a:focus,
-ul.dropdown-shortcut-menu-container li a:focus {
-  text-decoration: none;
-}
-
-/* Button in dropdown menu  */
-
-div.dropdown-shortcut-menu-container form .vrtx-button {
-  height: auto;
-  background: none;
-}
-
-div.dropdown-shortcut-menu-container form .vrtx-button button {
-  color: $linkColor;
-}
-
-div.dropdown-shortcut-menu-container form .vrtx-button:hover,
-div.dropdown-shortcut-menu-container form .vrtx-button:focus {
-  background: none;
-}
-
-div.dropdown-shortcut-menu-container form .vrtx-button button:hover,
-div.dropdown-shortcut-menu-container form .vrtx-button button:focus {
-  background: none;
-  color: $linkColor;
-}
-
-div.dropdown-shortcut-menu-container form .vrtx-button button {
-  background: none;
-  height: auto;
-  @include noMargPadd;
-}
-
-/* ^ Dropdown */
 
 #resourceMenuRight {
   float: left;
@@ -626,103 +292,6 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 /* ^ Resource menus */
 
-/* Tooltip */
-
-.tip {
-  @include boxShadow(0px 0px 0px 6px rgba(160,160,160,0.5));
-  @include borderRadius(0px !important);
-  border: none !important;
-  padding: 14px;
-  background-color: #fff;
-  display: none;
-  
-  &.property-label {
-    font-size: 1em;
-  }
-  &.file,
-  &.folder {
-    background-repeat: no-repeat;
-    background-position: 15px 16px;
-  }
-  &.file #title {
-    padding-left: 26px;
-  }
-  &.folder #title {
-    padding-left: 30px;
-  }
-  &.allowed-for-all {
-    &.folder               { background-image: url(images/folder-small.gif);                            }
-    &.not-inherited.folder { background-image: url(images/folder-small-own-permissions.gif);            }
-    &.file                 { background-image: url(images/file-small.gif);                              }
-    &.not-inherited.file   { background-image: url(images/file-small-own-permissions.gif);              }
-  }
-  &.restricted {
-    &.folder                    { background-image: url(images/folder-small-restricted.gif);                 }
-    &.not-inherited.folder      { background-image: url(images/folder-small-restricted-own-permissions.gif); }
-    &.file                      { background-image: url(images/file-small-restricted.gif);                   }
-    &.not-inherited.file        { background-image: url(images/file-small-restricted-own-permissions.gif);   }
-  }
-  #title-wrapper {
-    font-size: 1.154em;
-    line-height: 2;
-    display: block;
-    padding-bottom: 11px;
-    margin-bottom: 10px;
-    background: url(images/line-dotted.gif) repeat-x bottom left;
-    
-    .vrtx-button-small {
-      font-size: 0.867em;
-      line-height: 1.3;
-    }
-  }
-  h4 {
-    margin-top: 0px;
-    font-weight: normal;
-  }
-  table {
-    td,
-    th {
-      vertical-align: top;
-    }
-    td {
-      padding: 2px 6px 3px 0;
-    }
-    th {
-      padding-bottom: 3px;
-      padding-right: 10px;
-      font-weight: normal;
-      white-space: nowrap;
-      text-align: left;
-    }
-  }
-  .inherited-permissions {
-    table {
-      th,
-      td {
-        color: #999;
-      }
-    }
-  }
-}
-
-#title-container abbr {
-  color: #797979;
-  cursor: pointer;
-  border-bottom: 1px dotted #a9a9a9;
-}
-
-#vrtx-editor .tip.property-item ul,
-#title-container .tip ul {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  padding-left: 10px;
-}
-
-#vrtx-editor .tip.property-item ul a,
-#vrtx-report-urchin .tip a {
-  color: $publishedAllowedTextColor;
-}
-
 /* Create dialog */
 
 .vrtx-create-tree .vrtx-button-small {
@@ -743,27 +312,6 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 .loading-tree-node {
   background: transparent url(images/spinner.gif) no-repeat center left;
   padding-left: 26px;
-}
-
-.tip.vrtx-create-tree {
-  padding: 0 !important;
-  margin: 6px 0 0;
-  @include boxShadow(none !important);
-  border: none;
-  background-color: $listingDropdownTipFocusBackgroundColor;
-}
-
-.tip.vrtx-create-tree .no-create-permission {
-  display: inline-block;
-  white-space: nowrap;
-  margin: 2px 0 0 10px;
-  padding: 0;
-}
-
-.tipextra {
-  background-color: $listingDropdownTipFocusBackgroundColor;
-  border: 1px solid #c7dadf;
-  height: 30px;
 }
 
 #TB_window {
@@ -792,34 +340,6 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 }
 
 /* ^ Create dialog */
-
-.tooltips {
-  @include bg("images/info-icon.png");
-  @include wh(15px, 15px);
-  display: block;
-  display: inline-block;
-  margin: 0 0 0 3px;
-  cursor: pointer;
-  border: none;
-}
-
-.tooltips.label-tooltips {
-  margin: 0 0 -3px 5px;
-}
-
-#permissions-inheritance .tooltips,
-#title-container .tooltips {
-  border-bottom: none;
-  margin-bottom: -3px;
-}
-
-.fixed-resources-permissions-info {
-  display: inline-block;
-  padding-left: 19px;
-  color: #666;
-}
-
-/* ^ Tooltip */
 
 /* ^ 2.1 Resource title */
 
@@ -2481,7 +2001,7 @@ body#vrtx-preview .tabMessage-big {
 
 
 /*-----------------------------------------*\
-	3. Clearing
+	3. Misc
 \*-----------------------------------------*/
 
 #app-head:after,
@@ -2503,12 +2023,6 @@ div.globalmenu:after,
   height: 0;
   visibility: hidden;
 }
-
-
-
-/*-----------------------------------------*\
-	4. Misc
-\*-----------------------------------------*/
 
 ul.radio-buttons,
 ul.radio-buttons li,
