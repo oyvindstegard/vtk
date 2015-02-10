@@ -257,55 +257,6 @@ a {
   color: #888;
 }
 
-/* ^ Resource menus */
-
-/* Create dialog */
-
-.vrtx-create-tree .vrtx-button-small {
-  margin-top: -2px;
-  margin-bottom: -2px;
-}
-
-.vrtx-create-tree .tree-create {
-  @include posAbs;
-  padding: 0 15px !important;
-}
-
-.vrtx-create-tree a.tree-link {
-  color: #2b2b2b !important;
-  font-size: 1.077em;
-}
-
-.loading-tree-node {
-  background: transparent url(images/spinner.gif) no-repeat center left;
-  padding-left: 26px;
-}
-
-#TB_window {
-  @include borderRadius(7px);
-}
-
-#TB_closeAjaxWindow {
-  display: none;
-}
-
-#TB_title {
-  padding-right: 0px !important;
-  margin: 30px 30px 0 30px !important;
-}
-
-#TB_title.show-close-window {
-  padding-right: 70px !important;
-}
-
-#TB_title.show-close-window #TB_closeAjaxWindow {
-  display: block;
-}
-
-#TB_ajaxContent {
-  padding: 2px 0 30px 30px !important;
-}
-
 
 /*-----------------------------------------*\
   3. Tab bar
@@ -369,6 +320,11 @@ a {
     }
   }
 }
+
+
+/*-----------------------------------------*\
+  3. Content
+\*-----------------------------------------*/
 
 /* Tab forms */
 
@@ -463,11 +419,6 @@ a {
 .vrtx-admin-form #vrtx-checkbox-is-index label {
   vertical-align: top;
 }
-
-
-/*-----------------------------------------*\
-  3. Content
-\*-----------------------------------------*/
 
 .vrtx-radio-button > *  {
   margin: 0;
@@ -1497,6 +1448,53 @@ tr.expandedForm td .vrtx-button-small {
 .forms-new .resourceInfo table .vrtx-button-small:focus,
 .forms-new .resourceInfo table .vrtx-button-small.hover {
   padding: 3px 14px;
+}
+
+/* Create dialog */
+
+.vrtx-create-tree .vrtx-button-small {
+  margin-top: -2px;
+  margin-bottom: -2px;
+}
+
+.vrtx-create-tree .tree-create {
+  @include posAbs;
+  padding: 0 15px !important;
+}
+
+.vrtx-create-tree a.tree-link {
+  color: #2b2b2b !important;
+  font-size: 1.077em;
+}
+
+.loading-tree-node {
+  background: transparent url(images/spinner.gif) no-repeat center left;
+  padding-left: 26px;
+}
+
+#TB_window {
+  @include borderRadius(7px);
+}
+
+#TB_closeAjaxWindow {
+  display: none;
+}
+
+#TB_title {
+  padding-right: 0px !important;
+  margin: 30px 30px 0 30px !important;
+}
+
+#TB_title.show-close-window {
+  padding-right: 70px !important;
+}
+
+#TB_title.show-close-window #TB_closeAjaxWindow {
+  display: block;
+}
+
+#TB_ajaxContent {
+  padding: 2px 0 30px 30px !important;
 }
 
 /* Fix rendering bug in Firefox for hover in table (VTK-2562)
