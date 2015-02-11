@@ -89,35 +89,9 @@ resourcetype semester-page {
       [def properties json-resource(resource-prop(".", "uri")).properties]
       [def fields #("schedule", "exam", "syllabus")]
 
+      [def left #()] [def right #()]
       [def count 0]
-      [def totCount 0]
-      [list fields prop]
-        [def localization prop]
-        [def uri properties.get(prop)]
-        [if uri]
-          [def result retrieve(uri)]
-          
-          [if result.success]
-            [def resource result.value]
-            [def url requestContext.url(resource.uri, "viewService")]
-            [if resource.properties.published && url.success]
-              [def count count + 1]
-              [if count = 1]
-                [def totCount totCount + 1]
-                <div id="vrtx-semester-links">
-                  <ul class="left">
-                    <li><a href="[val url.value]">[localized localization]</a></li>
-              [elseif (count = 3 || count = 5)]
-                [def totCount totCount + 1]
-                <li><a href="[val url.value]">[localized localization]</a></li>
-              [endif]
-            [endif]
-          [endif]
-        [endif]
-      [endlist]
-      [if totCount > 0]</ul>[endif]
 
-      [def count 0]
       [list fields prop]
         [def localization prop]
         [def uri properties.get(prop)]
@@ -128,20 +102,29 @@ resourcetype semester-page {
             [def url requestContext.url(resource.uri, "viewService")]
             [if resource.properties.published && url.success]
               [def count count + 1]
-              [if count = 2]
-                [def totCount totCount + 1]
-                <ul class="right">
-                  <li><a href="[val url.value]">[localized localization]</a></li>
-              [elseif (count = 4 || count = 6)]
-                [def totCount totCount + 1]
-                <li><a href="[val url.value]">[localized localization]</a></li>
+              [capture link]<a href="[val url.value]">[localized localization]</a>[endcapture]
+              [if count = 1 || count = 3 || count = 5]
+                [def left left.append(link)]
+              [elseif count = 2 || count = 4 || count = 6]
+                [def right right.append(link)]
               [endif]
             [endif]
-          [endif]
-        [endif]
+          [endif]          
+        [endif]        
       [endlist]
-      [if totCount > 1]</ul>[endif]
-      [if totCount > 0]</div>[endif]
+      
+      [if count > 0]<div id="vrtx-semester-links"> [endif]
+      [if left.length() > 0]
+        <ul class="left">
+          [list left link]<li>[val link # unescaped]</li>[endlist]
+        </ul>
+      [endif]
+      [if right.length() > 0]
+        <ul class="right">
+          [list right link]<li>[val link # unescaped]</li>[endlist]
+        </ul>
+      [endif]
+      [if count > 0]</div> [endif]
       ##
     }
 

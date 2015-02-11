@@ -228,6 +228,7 @@
       <set>
         <ref bean="templateLanguage.toStringFunction" />
         <ref bean="templateLanguage.concatFunction" />
+        <ref bean="templateLanguage.appendFunction" />
         <ref bean="templateLanguage.splitFunction" />
         <ref bean="templateLanguage.trimFunction" />
         <ref bean="templateLanguage.substringFunction" />
