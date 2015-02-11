@@ -35,7 +35,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Resource;
 import vtk.repository.search.Search;
 import vtk.repository.search.query.AndQuery;
@@ -51,14 +50,30 @@ import vtk.web.service.URL;
 
 public class DiagramReport extends AbstractReporter {
 
-    private String name;
-    private String viewName;
-    private int total, totalWebpages, files;
+    /*
+     * Webpage file types listed as separate items.
+     * "Other" webpage types will be added as last item during runtime.
+     */
+    private static final String[] webpageTypes = {"structured-article", "structured-event", "person",
+        "structured-project", "structured-master", "research-group", "organizational-unit", "contact-supervisor",
+        "frontpage", "structured-message", "managed-xml", "html", "php"};
+
+    /*
+     * Webpage file types to be listed together as "other".
+     */
+    private static final String[] otherWebpageTypes = {"apt-resource", "php", "html", "managed-xml", "json-resource"};
+
+    /*
+     * File types listed as separate items.
+     * "Webpage" and "other" file types will be added as first and last item of this list during runtime.
+     */
+    private static final String[] fileTypes = {"image", "audio", "video", "pdf", "doc", "ppt", "xls", "text"};
 
     @Override
     public Map<String, Object> getReportContent(String token, Resource resource, HttpServletRequest request) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         result.put(REPORT_NAME, this.getName());
+        int total, totalWebpages, files;
 
         /* Create base URL. */
         Principal p = SecurityContext.getSecurityContext().getPrincipal();
@@ -87,41 +102,40 @@ public class DiagramReport extends AbstractReporter {
         try {
             total = 0;
 
-            /*
-             * This list can be appended to add file types. Do it after webpage
-             * and before other unless it will be handled uniquely.
-             */
-            String[] types = { "webpage", "image", "audio", "video", "pdf", "doc", "ppt", "xls", "text", "other" };
-            TermOperator[] t = { null, TermOperator.IN, TermOperator.IN, TermOperator.IN, TermOperator.IN,
-                    TermOperator.IN, TermOperator.IN, TermOperator.IN, TermOperator.EQ, null };
-            int typeCount[] = new int[types.length];
-            URL typeURL[] = new URL[types.length];
+            String[] fileTypesAppended = new String[fileTypes.length + 2];
+            fileTypesAppended[0] = "webpage";
+            System.arraycopy(fileTypes, 0, fileTypesAppended, 1, fileTypes.length);
+            fileTypesAppended[fileTypesAppended.length - 1] = "other";
+            TermOperator[] t = {null, TermOperator.IN, TermOperator.IN, TermOperator.IN, TermOperator.IN,
+                TermOperator.IN, TermOperator.IN, TermOperator.IN, TermOperator.EQ, null};
+            int typeCount[] = new int[fileTypesAppended.length];
+            URL typeURL[] = new URL[fileTypesAppended.length];
 
             /*
              * Web pages needs to be handled alone since the search is
              * different.
              */
             typeCount[0] = totalWebpages = webSearch(token, resource);
-            typeURL[0] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM, types[0] + "Reporter");
+            typeURL[0] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM, fileTypesAppended[0] + "Reporter");
             total += typeCount[0];
 
             /*
              * Starting on i = 1 since we have already done webpage and ending
              * on types.length - 1 since we will handle other unique.
              */
-            for (int i = 1; i < types.length - 1; i++) {
-                typeCount[i] = doSearch(types[i], t[i], token, resource);
-                typeURL[i] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM, types[i] + "Reporter");
+            for (int i = 1; i < fileTypesAppended.length - 1; i++) {
+                typeCount[i] = doSearch(fileTypesAppended[i], t[i], token, resource);
+                typeURL[i] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM, fileTypesAppended[i] + "Reporter");
                 total += typeCount[i];
             }
 
             /* Other is handled unique as we do not need to search for it. */
-            typeCount[types.length - 1] = files - total;
-            typeURL[types.length - 1] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM, types[types.length - 1]
-                    + "Reporter");
-            total += typeCount[types.length - 1];
+            typeCount[fileTypesAppended.length - 1] = files - total;
+            typeURL[fileTypesAppended.length - 1] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM,
+                    fileTypesAppended[fileTypesAppended.length - 1] + "Reporter");
+            total += typeCount[fileTypesAppended.length - 1];
 
-            result.put("types", types);
+            result.put("types", fileTypesAppended);
             result.put("typeCount", typeCount);
             result.put("typeURL", typeURL);
 
@@ -137,28 +151,25 @@ public class DiagramReport extends AbstractReporter {
         try {
             total = 0;
 
-            /*
-             * This list can be appended to add file types. Do it before other.
-             */
-            String[] types = { "structured-article", "structured-event", "person", "structured-project",
-                    "structured-master", "research-group", "organizational-unit", "contact-supervisor", "frontpage",
-                    "structured-message", "managed-xml", "html", "php", "webOther" };
-            int typeCount[] = new int[types.length];
-            URL typeURL[] = new URL[types.length];
+            String[] webpageTypesAppended = new String[webpageTypes.length + 1];
+            System.arraycopy(webpageTypes, 0, webpageTypesAppended, 0, webpageTypes.length);
+            webpageTypesAppended[webpageTypesAppended.length - 1] = "webOther";
+            int typeCount[] = new int[webpageTypesAppended.length];
+            URL typeURL[] = new URL[webpageTypesAppended.length];
 
-            for (int i = 0; i < types.length - 1; i++) {
-                typeCount[i] = doSearch(types[i], TermOperator.IN, token, resource);
-                typeURL[i] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM, types[i] + "Reporter");
+            for (int i = 0; i < webpageTypesAppended.length - 1; i++) {
+                typeCount[i] = doSearch(webpageTypesAppended[i], TermOperator.IN, token, resource);
+                typeURL[i] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM, webpageTypesAppended[i] + "Reporter");
                 total += typeCount[i];
             }
 
             /* webOther is handled unique as we do not need to search for it. */
-            typeCount[types.length - 1] = totalWebpages - total;
-            typeURL[types.length - 1] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM, types[types.length - 1]
-                    + "Reporter");
-            total += typeCount[types.length - 1];
+            typeCount[webpageTypesAppended.length - 1] = totalWebpages - total;
+            typeURL[webpageTypesAppended.length - 1] = new URL(baseURL).addParameter(REPORT_TYPE_PARAM,
+                    webpageTypesAppended[webpageTypesAppended.length - 1] + "Reporter");
+            total += typeCount[webpageTypesAppended.length - 1];
 
-            result.put("webTypes", types);
+            result.put("webTypes", webpageTypesAppended);
             result.put("webTypeCount", typeCount);
             result.put("webTypeURL", typeURL);
 
@@ -171,21 +182,24 @@ public class DiagramReport extends AbstractReporter {
 
     private int webSearch(String token, Resource resource) {
         Search search = new Search();
-        AndQuery q = new AndQuery();
-        OrQuery query = new OrQuery();
+        AndQuery mainQuery = new AndQuery();
 
-        query.add(new TypeTermQuery("apt-resource", TermOperator.IN));
-        query.add(new TypeTermQuery("php", TermOperator.IN));
-        query.add(new TypeTermQuery("html", TermOperator.IN));
-        query.add(new TypeTermQuery("managed-xml", TermOperator.IN));
-        query.add(new TypeTermQuery("json-resource", TermOperator.IN));
-        q.add(query);
+        OrQuery orPart = new OrQuery();
+        for (String type : otherWebpageTypes) {
+            orPart.add(new TypeTermQuery(type, TermOperator.IN));
+
+        }
+
+        mainQuery.add(orPart);
 
         /* In current resource but not in /vrtx. */
-        q.add(new UriPrefixQuery(resource.getURI().toString(), false));
-        q.add(new UriPrefixQuery("/vrtx", true));
+        mainQuery.add(new UriPrefixQuery(resource.getURI().toString(), false));
+        mainQuery.add(new UriPrefixQuery("/vrtx", true));
 
-        search.setQuery(q);
+        /* Include unpublished */
+        search.clearAllFilterFlags();
+
+        search.setQuery(mainQuery);
         search.setLimit(1);
 
         return this.searcher.execute(token, search).getTotalHits();
@@ -193,39 +207,23 @@ public class DiagramReport extends AbstractReporter {
 
     private int doSearch(String type, TermOperator t, String token, Resource resource) {
         Search search = new Search();
-        AndQuery query = new AndQuery();
-
-        query.add(new TypeTermQuery(type, t));
+        AndQuery mainQuery = new AndQuery();
 
         /* In current resource but not in /vrtx. */
         UriPrefixQuery upq = new UriPrefixQuery(resource.getURI().toString(), false);
         upq.setIncludeSelf(false);
-        query.add(upq);
-        query.add(new UriPrefixQuery("/vrtx", true));
 
-        search.setQuery(query);
+        mainQuery.add(new TypeTermQuery(type, t));
+        mainQuery.add(upq);
+        mainQuery.add(new UriPrefixQuery("/vrtx", true));
+
+        /* Include unpublished */
+        search.clearAllFilterFlags();
+
+        search.setQuery(mainQuery);
         search.setLimit(1);
 
         return this.searcher.execute(token, search).getTotalHits();
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Required
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getViewName() {
-        return viewName;
-    }
-
-    @Required
-    public void setViewName(String viewName) {
-        this.viewName = viewName;
-    }
 }
