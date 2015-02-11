@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,24 +30,33 @@
  */
 package vtk.repository.resourcetype.property;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.PropertyEvaluator;
+import vtk.repository.resourcetype.Value;
 
-public class ChainedPropertyEvaluator implements PropertyEvaluator {
-    private List<PropertyEvaluator> propertyEvaluators = new ArrayList<PropertyEvaluator>();
+public class TranslatingPropertyEvaluator implements PropertyEvaluator {
+    private PropertyEvaluator evaluator;
+    private Map<Value, Value> mappings = new HashMap<>();;
     
-    public ChainedPropertyEvaluator(List<PropertyEvaluator> chain) {
-        for (PropertyEvaluator ev: chain) propertyEvaluators.add(ev);
+    public TranslatingPropertyEvaluator(PropertyEvaluator evaluator, Map<Value, Value> mappings) {
+        this.evaluator = evaluator;
+        if (mappings != null)
+            for (Map.Entry<Value, Value> entry: mappings.entrySet())
+                this.mappings.put(entry.getKey(), entry.getValue());
     }
-    
-    public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
-        for (PropertyEvaluator evaluator: this.propertyEvaluators) {
-            if (evaluator.evaluate(property, ctx)) return true;
-        }
-        return false;
+
+    @Override
+    public boolean evaluate(Property property, PropertyEvaluationContext ctx)
+            throws PropertyEvaluationException {
+        if (!evaluator.evaluate(property, ctx)) return false;
+        if (property.getDefinition().isMultiple()) return true;
+        if (mappings.containsKey(property.getValue()))
+            property.setValue(mappings.get(property.getValue()));
+        return true;
     }
+
 }
