@@ -218,13 +218,11 @@
     <constructor-arg ref="structuredResources.tlFunctions" />
   </bean>
 
-
-
   <bean id="structuredResources.tlFunctions" class="vtk.context.UnionFactoryBean">
     <property name="elements1" ref="structuredResources.builtinFunctions" />
     <property name="elements2" ref="structuredResources.customFunctions" />
   </bean>
-
+  
   <bean id="structuredResources.builtinFunctions" class="org.springframework.beans.factory.config.SetFactoryBean">
     <property name="sourceSet">
       <set>
@@ -240,6 +238,8 @@
         <ref bean="templateLanguage.ceilFunction" />
         <ref bean="templateLanguage.replaceFunction" />
         <ref bean="decorating.requestContextFunction" />
+        <ref bean="decorating.retrieveFunction" />
+        <ref bean="decorating.serviceURLFunction" />
         <ref bean="decorating.searchFunction" />
         <ref bean="structuredResources.resourceFunction" />
         <ref bean="structuredResources.jsonResourceFunction" />
