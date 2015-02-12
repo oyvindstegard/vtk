@@ -83,6 +83,18 @@ if(typeof viewDropdown === "undefined") { // Avoid duplicate running code
       
       /* Listen for click events */
       doc.on("click keydown", ".vrtx-dropdown-component a.vrtx-dropdown-link, .vrtx-dropdown-component a.vrtx-dropdown-close-link", toggledOpenClosable);
+      
+      var dropdownForm = $(".vrtx-dropdown-form");
+      if(dropdownForm.length) {
+        dropdownForm.addClass("hidden");
+        $(".vrtx-dropdown-form-link").addClass("visible");
+        $(document).off("click", ".vrtx-dropdown-form-link")
+                    .on("click", ".vrtx-dropdown-form-link", function(e) {
+          $(this).prev(".vrtx-dropdown-form").submit();
+          e.stopPropagation();
+          e.preventDefault();
+        });
+      }
     });
   })();
 }
