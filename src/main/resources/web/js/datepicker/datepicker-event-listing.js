@@ -14,7 +14,8 @@ function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notCl
     $.datepicker.setDefaults($.datepicker.regional[language]);
   }
 
-  $("#datepicker").datepicker({
+  var datepick = $("#datepicker");
+  datepick.datepicker({
     dateFormat: 'yy-mm-dd',
     onSelect: function (dateText, inst) {
       window.location.href = window.location.href.split('?')[0] + "?date=" + dateText;
@@ -58,6 +59,11 @@ function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notCl
       var datepickerPrevNext = $(".ui-datepicker-prev, .ui-datepicker-next");
       if(datepickerPrevNext.length) {
         datepickerPrevNext.attr("tabindex", "0");
+        datepick.on("keydown", datepickerPrevNext, function(e) {
+          if((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
+            $(this).click();
+          }
+        });
       }
       clearInterval(checkMonthYearHTMLLoaded);
     }
