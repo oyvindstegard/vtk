@@ -373,6 +373,7 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       selector: "form#" + resourceMenuLeftServices[i] + "-form input[type=submit]",
       errorContainer: "errorContainer",
       errorContainerInsertAfter: "h3",
+      errorUpdateSelectors: (isRename ? ["form#renameService-form #submitButtons", "form#renameService-form .vrtx-textfield"] : null),
       post: isRename,
       ignoreDifferentMode: true,
       funcComplete: (isRename ? function(p) {
@@ -1658,8 +1659,15 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
       animation.bottomUp();
     };
     
-    if (vrtxAdm.hasErrorContainers(_$.parseHTML(results), opts.errorContainer)) {
-      vrtxAdm.displayErrorContainers(_$.parseHTML(results), opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
+    if (opts.errorContainer && vrtxAdm.hasErrorContainers(_$.parseHTML(results), opts.errorContainer)) {
+      var parsedHtml = _$.parseHTML(results);
+      vrtxAdm.displayErrorContainers(parsedHtml, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
+      if(opts.errorUpdateSelectors) {
+        for (var i = opts.errorUpdateSelectors.length; i--;) {
+          var outer = vrtxAdm.outerHTML(parsedHtml, opts.errorUpdateSelectors[i]);
+          vrtxAdm.cachedBody.find(opts.errorUpdateSelectors[i]).replaceWith(outer);
+        }
+      }
     } else {
       if (opts.isReplacing) {
         internalAnimation(opts.form.parent(), function(animation) { 
