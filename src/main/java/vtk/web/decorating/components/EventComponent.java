@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -193,6 +194,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
 
         conf.put("auth", resource != null);
         if (resource == null) {
+            model.put("conf", conf);
             return;
         }
 
@@ -335,9 +337,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
             model.put("groupedByDayEvents", groupedByDayEvents);
             conf.put("type", "groupedByDayEvents");
         }
-
         model.put("conf", conf);
-
     }
 
     boolean parameterHasValue(String param, String includeParamValue, DecoratorRequest request) {
