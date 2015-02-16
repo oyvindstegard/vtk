@@ -485,7 +485,7 @@
     <property name="name" value="events" />
     <property name="viewService" ref="viewService" />
     <property name="view" ref="decorating.eventComponent.view" />
-    <property name="description" value="Inserts a event list component on the page" />
+    <property name="description" value="Inserts an event listing component on the page" />
     <property name="search" ref="eventListing.upcomingEventsSearchComponent" />
     <property name="defaultElementOrder">
       <list>
