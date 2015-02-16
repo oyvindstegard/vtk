@@ -59,7 +59,7 @@ function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notCl
       var datepickerPrevNext = $(".ui-datepicker-prev, .ui-datepicker-next");
       if(datepickerPrevNext.length) {
         datepickerPrevNext.attr("tabindex", "0");
-        datepick.on("keydown", datepickerPrevNext, function(e) {
+        datepick.on("keydown", ".ui-datepicker-prev, .ui-datepicker-next", function(e) {
           if((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
             $(this).click();
           }
