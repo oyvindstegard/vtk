@@ -312,8 +312,8 @@
     padding-bottom: $pB;
     &:hover,
     &:focus {
-      padding-top: calc($pT + 1px);
-      padding-bottom: calc($pB + 1px);
+      padding-top: $pT + 1px;
+      padding-bottom: $pB + 1px;
     }
   }
 }
