@@ -147,7 +147,9 @@ public class SimpleStructuredEditor implements Controller {
             propertyValues.put(propertyName, request.getParameter(propertyName));
         }
         document.put("properties", propertyValues);
-        InputStream is = new ByteArrayInputStream(document.toString().getBytes("UTF-8"));
+        String str = JsonStreamer.toJson(document);
+        InputStream is = new ByteArrayInputStream(str.getBytes("UTF-8"));
+        
         repository.storeContent(token, uri, is);
     }
 
@@ -155,16 +157,16 @@ public class SimpleStructuredEditor implements Controller {
             throws Exception {
         Json.MapContainer document = new Json.MapContainer();
         document.put("resourcetype", resourceType);
+        
         Map<String, String> propertyValues = new HashMap<String, String>();
         for (String propertyName : properties) {
             propertyValues.put(propertyName, request.getParameter(propertyName));
         }
         document.put("properties", propertyValues);
-
         String str = JsonStreamer.toJson(document);
         InputStream is = new ByteArrayInputStream(str.getBytes("utf-8"));
+        
         Path newUri = generateFilename(request, repository, token, uri);
-
         Resource resource = repository.createDocument(token, newUri, is);
         publishResource(resource, token, repository);
         return newUri;
