@@ -55,7 +55,7 @@ public class WebOtherReporter extends DocumentReporter {
     protected Search getSearch(String token, Resource currentResource, HttpServletRequest request) {
         AndQuery q = new AndQuery();
         OrQuery orq = new OrQuery();
-        
+
         orq.add(new TypeTermQuery("json-resource", TermOperator.IN));
         orq.add(new TypeTermQuery("apt-resource", TermOperator.IN));
         q.add(orq);
@@ -82,6 +82,10 @@ public class WebOtherReporter extends DocumentReporter {
         sorting.addSortField(new PropertySortField(this.sortPropDef, this.sortOrder));
         search.setSorting(sorting);
         search.setQuery(q);
+
+        /* Include unpublished */
+        search.clearAllFilterFlags();
+
         return search;
     }
 
