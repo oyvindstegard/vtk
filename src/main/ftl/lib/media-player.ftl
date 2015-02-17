@@ -32,7 +32,7 @@
     </#if>
     <#local alt = vrtx.getMsg("article.media-file") />
   <#else>
-    <#local imgSrc = "audio-icon.png" />
+    <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/audio-icon.png" />
     <#local width = "151" />
     <#local height = "82" />
     <#local alt = vrtx.getMsg("article.audio-file") />
