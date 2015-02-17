@@ -82,6 +82,10 @@ public class OtherReporter extends DocumentReporter {
         sorting.addSortField(new PropertySortField(this.sortPropDef, this.sortOrder));
         search.setSorting(sorting);
         search.setQuery(q);
+
+        /* Include unpublished */
+        search.clearAllFilterFlags();
+
         return search;
     }
 
