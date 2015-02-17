@@ -1237,8 +1237,7 @@
       <map>
         <entry key="cssURLs">
           <list>
-            <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css
-            </value>
+            <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
             <value>${themeBaseURL}/default.css</value>
           </list>
         </entry>

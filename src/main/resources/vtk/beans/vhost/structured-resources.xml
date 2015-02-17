@@ -481,8 +481,7 @@
   <bean id="structuredResources.editCSSURLs" class="java.util.ArrayList">
     <constructor-arg>
       <list>
-        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css
-        </value>
+        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
         <value>${themeBaseURL}/default.css</value>
         <value>${themeBaseURL}/structured-resources/editor.css</value>
       </list>
