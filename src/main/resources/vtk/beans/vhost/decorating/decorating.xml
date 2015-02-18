@@ -54,7 +54,7 @@
       <constructor-arg>
         <list>
           <ref bean="decorating.documentComponentResolver" />
-          <ref bean="decorating.userDefinedComponentResolver" />
+          <!--ref bean="decorating.userDefinedComponentResolver" /-->
         </list>
       </constructor-arg>
       </bean>
@@ -165,7 +165,15 @@
               ref="decorating.defaultBuiltinComponentNamespaces" />
   </bean>
 
+  <bean id="decorating.defaultBuiltinComponentNamespaces" class="java.util.HashSet">
+    <constructor-arg>
+      <bean class="vtk.context.JSONFactoryBean">
+        <constructor-arg value="${decorating.builtinNamespaces}" />
+      </bean>
+    </constructor-arg>
+  </bean>
 
+  <!--
   <bean id="decorating.defaultBuiltinComponentNamespaces"
         class="org.springframework.beans.factory.config.SetFactoryBean">
     <property name="sourceSet">
@@ -180,7 +188,7 @@
       </set>
     </property>
   </bean>
-
+  -->
 
   <bean id="decorating.documentComponentResolver" class="vtk.web.decorating.AggregatedComponentResolver">
     <constructor-arg>
