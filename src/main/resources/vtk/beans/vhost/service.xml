@@ -291,7 +291,21 @@
       </bean>
     </property>
     <property name="excludedServices">
+      <list>
       <ref bean="displayThumbnailNoCacheService" />
+      <ref bean="editor.loadImageService" />
+      </list>
+    </property>
+  </bean>
+
+
+  <bean id="noCacheHandlerInterceptor" class="vtk.web.interceptors.HeaderControlHandlerInterceptor">
+    <property name="staticHeaders">
+      <map>
+        <entry key="Cache-Control" value="no-cache, no-store, must-revalidate, max-age=0" />
+        <entry key="Expires" value="0" />
+        <entry key="Pragma" value="no-cache" />
+      </map>
     </property>
   </bean>
 
