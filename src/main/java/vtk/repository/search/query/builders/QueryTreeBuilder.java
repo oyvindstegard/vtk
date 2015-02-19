@@ -142,7 +142,7 @@ public class QueryTreeBuilder implements QueryBuilder {
             }
         }
         if (uriPrefixTerms != null) {
-            for (String uriPrefix: uriTerms) {
+            for (String uriPrefix: uriPrefixTerms) {
                 terms.add(new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, uriPrefix));
             }
         }
