@@ -140,6 +140,7 @@
       </list>
     </property>
     <property name="handler" ref="editor.loadImageHandler" />
+    <property name="handlerInterceptors" ref="noCacheHandlerInterceptor" />
   </bean>
 
   <bean id="editor.loadImageHandler" class="vtk.web.display.file.DisplayResourceController">
@@ -229,10 +230,12 @@
     </property>
   </bean>
 
+  <!--
   <bean id="editor.getSourceStripHeadersInterceptor" class="vtk.web.interceptors.HeaderControlHandlerInterceptor">
     <property name="includeLastModifiedHeader" value="false" />
     <property name="includeEtagHeader" value="false" />
   </bean>
+  -->
 
   <bean id="editor.browseUriAssertion" class="vtk.web.service.RequestURIRegexpAssertion">
     <property name="pattern" value="${editor.fck.browseURL}" />
