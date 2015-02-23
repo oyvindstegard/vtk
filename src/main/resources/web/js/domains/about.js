@@ -10,7 +10,6 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
   
   switch (vrtxAdm.bodyId) {
     case "vrtx-about":
-      vrtxAdm.zebraTables(".resourceInfo");
 
       if (!vrtxAdmin.isIE7) { // Turn of tmp. in IE7
         var propsAbout = ["contentLocale", "commentsEnabled", "userTitle", "keywords", "description",
@@ -86,19 +85,3 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       break;
   }
 });
-
-/**
- * Generate zebra rows in table (PE)
- *
- * @this {VrtxAdmin}
- * @param {string} selector The table selector
- */
- VrtxAdmin.prototype.zebraTables = function zebraTables(selector) {
-  var _$ = this._$;
-  var table = _$("table" + selector);
-  if (!table.length) return;
-  if (this.isIE8) { // http://www.quirksmode.org/css/contents.html
-    table.find("tbody tr:odd").addClass("even"); // hmm.. somehow even is odd and odd is even
-    table.find("tbody tr:first-child").addClass("first");
-  }
-};
