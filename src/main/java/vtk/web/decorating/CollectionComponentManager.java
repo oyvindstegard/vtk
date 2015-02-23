@@ -113,7 +113,6 @@ public class CollectionComponentManager implements ComponentResolver {
         String namespace = lib.getName();
         for (Resource r: children) {
             if (r.isCollection()) continue;
-            if (!r.getContentType().equals("text/plain")) continue;
             if (components.containsKey(r.getURI())) {
                 CompiledComponent component = components.get(r.getURI());
                 if (component.outdated()) {
