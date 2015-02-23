@@ -421,7 +421,7 @@ resourcetype person {
     picture-alt-found : (en : "Image of", no : "Bilde av", nn : "Bilete av"),
     picture-alt-unknown-person : (en : "person", no : "person", nn : "person"),
     getExternalScientificInformation : (en : "Show publications registered in Cristin", no : "Vis publikasjoner rapportert i Cristin", nn : "Vis publikasjonar rapporterte i Cristin"),
-    numberOfPublications : (en : "Maximum number of publications", no : "Maks antall publikasjoner", nn : "Maks antall publikasjonar"),
+    numberOfPublications : (en : "Maximum number of publications from Cristin", no : "Maks antall publikasjoner fra Cristin", nn : "Maks antall publikasjonar frå Cristin"),
     selectedPublications : (en : "Selected publications", no : "Utvalgte publikasjoner", nn : "Utvalde publikasjonar"),
     tags : (en : "Tags", no : "Emneord", nn : "Emneord"),
     content : (en : "Content", no :"Innhold", nn:"Innhald"),
