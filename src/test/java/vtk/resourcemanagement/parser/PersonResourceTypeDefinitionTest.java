@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+
 import vtk.resourcemanagement.EditRule;
 import vtk.resourcemanagement.ScriptDefinition;
 import vtk.resourcemanagement.StructuredResourceDescription;
@@ -71,8 +72,8 @@ public class PersonResourceTypeDefinitionTest extends StructuredResourceParserTe
                 "position", "phone", "mobile", "fax", "email", "postalAddress", "visitingAddress",
                 "externalUserMetaData", "affiliations", "alternativeVisitingAddress", "alternativeCellPhone", "title",
                 "room", "availableHours", "picture", "pressPhoto", "content", "getExternalScientificInformation",
-                "selectedPublications", "getRelatedProjects", "projects", "getRelatedGroups", "groups", "rssFeeds",
-                "tags", "related-content", "hideStudentAffiliation");
+                "numberOfPublications", "selectedPublications", "getRelatedProjects", "projects", "getRelatedGroups",
+                "groups", "rssFeeds", "tags", "related-content", "hideStudentAffiliation");
 
         for (String expectedProperty : expectedProperties) {
             assertTrue("Expected property " + expectedProperty + " is missing",
@@ -93,6 +94,7 @@ public class PersonResourceTypeDefinitionTest extends StructuredResourceParserTe
 
         expectedScripts = new HashMap<String, ScriptDefinition.ScriptType>();
         expectedScripts.put("getExternalPersonInfo", ScriptDefinition.ScriptType.SHOWHIDE);
+        expectedScripts.put("getExternalScientificInformation", ScriptDefinition.ScriptType.SHOWHIDE);
         for (ScriptDefinition sd : scriptDefinitions) {
             ScriptDefinition.ScriptType expectedScriptType = expectedScripts.get(sd.getName());
             assertNotNull(expectedScriptType);
