@@ -86,14 +86,11 @@
 @mixin gradientTopToBottom($col1, $col2, $col3, $col4, $percent1, $percent2, $percent3, $percent4) {
   background: $col1;
   background: -moz-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop($percent1, $col1),
-                                                              color-stop($percent2, $col2),
-                                                              color-stop($percent3, $col3),
-                                                              color-stop($percent4, $col4));
-  background: -webkit-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-  background: -o-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-  background: -ms-linear-gradient(top, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
-  background: linear-gradient(to bottom, $col1 percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop($percent1, $col1), color-stop($percent2, $col2), color-stop($percent3, $col3), color-stop($percent4, $col4));
+  background: -webkit-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: -o-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: -ms-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: linear-gradient(to bottom, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
 }
 
 @mixin transitions($opts) {
