@@ -146,6 +146,9 @@ public class QueryTreeBuilder implements QueryBuilder {
                 terms.add(new Term(ResourceFields.URI_ANCESTORS_FIELD_NAME, uriPrefix));
             }
         }
+        if (terms.isEmpty()) {
+            return null; // Terms filter does not handle zero terms.
+        }
 
         return new ConstantScoreQuery(new TermsFilter(terms));
     }
