@@ -29,13 +29,13 @@ and add the modifications to the new version after, or it will be out-of-sync.
 Upgrading to a new version:
 
 cd src/main/ext/CKeditor
-wget http://.../CKeditor_<version>.tar.gz
-tar -zxvf CKeditor_<version>.tar.gz
+wget http://.../CKeditor_<version>.zip
+unzip CKeditor_<version>.zip
 mv ckeditor ckeditor-org/ckeditor-<version>
 rsync -r --delete -ptv ckeditor-org/ckeditor-<version>/ ckeditor-build
 rsync -r -ptv ckeditor-modifications/ ckeditor-build
 
-If it don't work (which can mean the language-files have been updated in new version)
+If it doesn't work (which can mean the language-files have been updated in new version)
 you have to copy mediaembed{} from the language-files en.js and no.js: 
 
   o ckeditor-org/<ck-version>/lang/ => ckeditor-modifications/lang/
