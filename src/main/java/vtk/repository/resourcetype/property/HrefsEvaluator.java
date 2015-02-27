@@ -9,7 +9,6 @@ import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.util.text.Json;
-import vtk.util.text.JsonBuilder;
 
 public class HrefsEvaluator implements LatePropertyEvaluator {
     private PropertyTypeDefinition linksPropDef;
@@ -36,18 +35,9 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
                 Json.MapContainer obj = (Json.MapContainer) o;
                 values.add(obj);
             }
-            
             Json.MapContainer propVal = new Json.MapContainer();
             propVal.put("links", values);
-
-            JsonBuilder builder = new JsonBuilder();
-            builder.beginObject();
-            builder.member("links", values);
-            builder.endObject();
-            builder.endJson();
-            
-            byte[] buffer = builder.jsonString().getBytes("utf-8");
-            property.setBinaryValue(buffer, "application/json");
+            property.setJSONValue(propVal);
             return true;
         }
         catch (Exception e) {
