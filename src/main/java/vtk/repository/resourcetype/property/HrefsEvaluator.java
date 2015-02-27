@@ -8,8 +8,8 @@ import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.repository.resourcetype.Value;
 import vtk.util.text.Json;
+import vtk.util.text.JsonBuilder;
 
 public class HrefsEvaluator implements LatePropertyEvaluator {
     private PropertyTypeDefinition linksPropDef;
@@ -28,16 +28,26 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
             InputStream stream = linksProp.getBinaryStream().getStream();
             Json.ListContainer arr = Json.parseToContainer(stream).asArray();
             
-            List<Value> values = new ArrayList<>();
+            List<Object> values = new ArrayList<>();
             for (Object o: arr) {
                 if (! (o instanceof Json.MapContainer)) {
                     continue;
                 }
                 Json.MapContainer obj = (Json.MapContainer) o;
-                values.add(new Value(obj));
+                values.add(obj);
             }
             
-            property.setValues(values.toArray(new Value[values.size()]));
+            Json.MapContainer propVal = new Json.MapContainer();
+            propVal.put("links", values);
+
+            JsonBuilder builder = new JsonBuilder();
+            builder.beginObject();
+            builder.member("links", values);
+            builder.endObject();
+            builder.endJson();
+            
+            byte[] buffer = builder.jsonString().getBytes("utf-8");
+            property.setBinaryValue(buffer, "application/json");
             return true;
         }
         catch (Exception e) {
