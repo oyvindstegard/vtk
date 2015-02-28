@@ -40,7 +40,7 @@ void execute(context, args, out) {
         search.setLimit(limit);
     }
     if (sortArg != null) {
-        sorting = new SortingImpl();
+        sorting = new Sorting();
         direction = null;
         if (sortArg.trim().contains(" ")) {
             dir = sortArg.substring(sortArg.indexOf(" ") + 1);
