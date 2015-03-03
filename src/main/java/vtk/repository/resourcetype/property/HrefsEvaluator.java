@@ -9,12 +9,20 @@ import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.util.text.Json;
+import vtk.web.service.URL;
 
 public class HrefsEvaluator implements LatePropertyEvaluator {
     private PropertyTypeDefinition linksPropDef;
     
     public HrefsEvaluator(PropertyTypeDefinition linksPropDef) {
         this.linksPropDef = linksPropDef;
+    }
+    
+    public static enum RelType {
+        ABSOLUTE,
+        RELATIVE,
+        ROOT_RELATIVE,
+        PROTOCOL_RELATIVE
     }
 
     @Override
@@ -33,16 +41,30 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
                     continue;
                 }
                 Json.MapContainer obj = (Json.MapContainer) o;
+                Object ref = obj.get("url");
+                if (ref != null) {
+                    obj.put("reltype", relType(ref.toString()));
+                }
+                
                 values.add(obj);
             }
             Json.MapContainer propVal = new Json.MapContainer();
             propVal.put("links", values);
+            propVal.put("size", values.size());
             property.setJSONValue(propVal);
             return true;
         }
         catch (Exception e) {
             return false;
         }
+    }
+    
+    private String relType(String ref) {
+        if (ref.startsWith("//")) return RelType.PROTOCOL_RELATIVE.name();
+        if (URL.isRelativeURL(ref)) return RelType.RELATIVE.name();
+        if (ref.startsWith("/") && !ref.contains("../") && !ref.contains("./")) 
+            return RelType.ROOT_RELATIVE.name();
+        return RelType.ABSOLUTE.name();
     }
 
 }
