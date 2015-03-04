@@ -258,6 +258,7 @@
         class="vtk.web.referencedata.provider.RedirectProvider">
     <property name="redirectToService" ref="displayResourceService" />
     <property name="urlAnchor" value="comment-form" />
+    <property name="autoVarianceParam" value="var" />
   </bean>
 
 
