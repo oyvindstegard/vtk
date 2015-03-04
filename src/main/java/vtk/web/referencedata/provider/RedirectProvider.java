@@ -30,6 +30,7 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.util.Date;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -55,6 +56,8 @@ import vtk.web.service.URL;
  *   <li><code>redirectToService</code> - the {@link Service service}
  *   for which to construct the redirect URL
  *   <li><code>urlAnchor</code> - anchor to append to redirect URL (optional)
+ *   <li><code>autoVarianceParam</code> - add parameter with random value
+ *   to make URL unique and non-cacheable (optional)
  * </ul>
  *
  * <p>Model data provided:
@@ -64,9 +67,13 @@ import vtk.web.service.URL;
  */
 public class RedirectProvider implements InitializingBean, ReferenceDataProvider {
 
+    private String autoVarianceParam;
     private Service redirectToService;
     private String urlAnchor;
-    
+
+    public void setAutoVarianceParam(String autoVarianceParam) {
+        this.autoVarianceParam = autoVarianceParam;
+    }
 
     public void setRedirectToService(Service redirectToService) {
         this.redirectToService = redirectToService;
@@ -104,6 +111,9 @@ public class RedirectProvider implements InitializingBean, ReferenceDataProvider
         URL redirectURL = this.redirectToService.constructURL(resource, principal);
         if (this.urlAnchor != null) {
             redirectURL.setRef(this.urlAnchor);
+        }
+        if (this.autoVarianceParam != null) {
+            redirectURL.addParameter(this.autoVarianceParam, "" + new Date().getTime());
         }
         model.put("redirectURL", redirectURL.toString());
     }
