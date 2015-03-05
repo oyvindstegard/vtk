@@ -148,14 +148,18 @@ void printProp(prop, field, out) {
         else {
             value = format(prop, prop.getValue(), field);
         }
-
-        out.println("  " + prop.getDefinition().getName() + ": " + value);
+        if (field != null) {
+            out.println("  " + prop.getDefinition().getName() + "@" + field + ": " + value);
+        }
+        else {
+            out.println("  " + prop.getDefinition().getName() + ": " + value);
+        } 
     }
 }
 
 Object format(prop, value, field) {
     if (field != null && prop.getType() == vtk.repository.resourcetype.PropertyType.Type.JSON) {
-        return value.getJSONValue().get(field);
+        return vtk.util.text.Json.select(value.getJSONValue(), field);
     }
     return value;
 }
