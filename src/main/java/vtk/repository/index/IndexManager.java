@@ -46,9 +46,6 @@ import vtk.util.threads.Mutex;
  *   <li><code>indexPath</code> - absolute path to file system directory where index should be created.
  *   <li>TODO complete me.
  * </ul>
- * 
- * TODO we should support a lazy reader with longer time between refreshes for efficient
- * anonymous queries which do not requre completely up-to-date results.
  */
 public class IndexManager implements InitializingBean, DisposableBean {
     
@@ -291,10 +288,16 @@ public class IndexManager implements InitializingBean, DisposableBean {
             return new RAMDirectory();
         }
     }
+
     
     private IndexWriterConfig newIndexWriterConfig() {
         IndexWriterConfig cfg = new IndexWriterConfig(Version.LATEST, new KeywordAnalyzer());
-        cfg.setMaxThreadStates(1); // We have only at most one writing thread.
+        
+        cfg.setMaxThreadStates(1); // We have at most one writing thread.
+        
+        // Disable stored field compression, because it hurts performance
+        // badly for our usage patterns:
+        cfg.setCodec(new Lucene410CodecWithNoFieldCompression());
         
         // XXX switch to LogByteSizeMergePolicy if problems with (default) TieredMergePolicy arise.
 //        LogByteSizeMergePolicy mp = new LogByteSizeMergePolicy();
