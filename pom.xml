@@ -704,7 +704,7 @@
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjweaver</artifactId>
-      <version>1.6.12</version>
+      <version>1.8.5</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
