@@ -28,10 +28,8 @@ if(typeof viewDropdown === "undefined") { // Avoid duplicate running code
             firstInteractiveElem.focus();
           }
         }
-        wrp.attr({
-          "aria-expanded": isExpanded,
-          "aria-hidden": !isExpanded
-        });
+        wrp.attr("aria-hidden", !isExpanded);
+        link.attr("aria-expanded", isExpanded);
       };
       
       /* Dropdown click events handler */
