@@ -302,7 +302,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
     //  if (opts.isFrontpageBox) {
     //	config.format_tags = 'p;h3;h4;h5;h6;pre;div';
     //  }
-
+    
     config.resize_enabled = opts.resizable;
     config.toolbarCanCollapse = false;
     config.defaultLanguage = 'no';
@@ -317,7 +317,19 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.forcePasteAsPlainText = false;
     config.disableObjectResizing = true;
     config.disableNativeSpellChecker = false;
+    
     config.allowedContent = true;
+    /* Enable ACF - with all elements 
+    config.allowedContent = {
+      $1: {
+        // Use the ability to specify elements as an object.
+        elements: CKEDITOR.dtd,
+        attributes: true,
+        styles: true,
+        classes: true
+      }
+    };
+    */
     
     // Enable ACF
     if (vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
