@@ -31,6 +31,8 @@
 package vtk.web.service.manuallyapprove;
 
 import java.io.PrintWriter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -171,7 +173,11 @@ public class ManuallyApproveResourcesHandler implements Controller {
         if (cachedObj != null) {
             result = (List<ManuallyApproveResource>) cachedObj;
         } else {
-            result = searcher.getManuallyApproveResources(currentCollection, locations, alreadyApproved);
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.MONTH, -12);
+            Date earliestDate = cal.getTime();
+
+            result = searcher.getManuallyApproveResources(currentCollection, locations, alreadyApproved, earliestDate);
             cache.put(new Element(cacheKey, result));
         }
 

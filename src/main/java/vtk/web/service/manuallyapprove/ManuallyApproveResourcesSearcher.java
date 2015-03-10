@@ -30,6 +30,7 @@
  */
 package vtk.web.service.manuallyapprove;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -42,6 +43,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -60,6 +62,7 @@ import vtk.repository.search.SortFieldDirection;
 import vtk.repository.search.Sorting;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
+import vtk.repository.search.query.PropertyTermQuery;
 import vtk.repository.search.query.Query;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.TypeTermQuery;
@@ -89,7 +92,7 @@ public class ManuallyApproveResourcesSearcher {
     private PropertyTypeDefinition creationTimePropDef;
 
     public List<ManuallyApproveResource> getManuallyApproveResources(Resource collection, Set<String> locations,
-            Set<String> alreadyApproved) throws Exception {
+            Set<String> alreadyApproved, Date earliestDate) throws Exception {
 
         // The final product. Will be populated with search results.
         List<ManuallyApproveResource> result = new ArrayList<ManuallyApproveResource>();
@@ -142,8 +145,8 @@ public class ManuallyApproveResourcesSearcher {
             boolean isOtherHostLocation = isOtherHostLocation(location, localHostURL);
             boolean isMultiHostSearch = multiHostSearcher.isMultiHostSearchEnabled()
                     && ((clar != null && clar.includesResourcesFromOtherHosts(localHostURL)) || isOtherHostLocation);
-
-            Query query = generateQuery(locationURL, resourceTypeQuery, clar, localHostURL, isMultiHostSearch);
+            
+            Query query = generateQuery(locationURL, resourceTypeQuery, clar, localHostURL, isMultiHostSearch, earliestDate);
 
             Search search = new Search();
             if (RequestContext.getRequestContext().isPreviewUnpublished()) {
@@ -155,7 +158,6 @@ public class ManuallyApproveResourcesSearcher {
             if (propertySelect != null) {
                 search.setPropertySelect(propertySelect);
             }
-
             ResultSet searchResults = null;
             if (isMultiHostSearch) {
                 searchResults = multiHostSearcher.search(token, search);
@@ -194,9 +196,24 @@ public class ManuallyApproveResourcesSearcher {
 
         // Sort and return
         Collections.sort(result, new ManuallyApproveResourceComparator());
+        
+        result = filterOutdated(result, earliestDate);
+        
         // Handle limit
         if (result.size() > SEARCH_LIMIT) {
             result = result.subList(0, SEARCH_LIMIT);
+        }
+        return result;
+    }
+    
+    private List<ManuallyApproveResource> filterOutdated(List<ManuallyApproveResource> resources, 
+            Date earliestDate) {
+        List<ManuallyApproveResource> result = new ArrayList<>();
+        for (ManuallyApproveResource r: resources) {
+            Date pubDate = r.getPublishDate();
+            if (pubDate != null && pubDate.getTime() > earliestDate.getTime()) {
+                result.add(r);
+            }
         }
         return result;
     }
@@ -216,7 +233,7 @@ public class ManuallyApproveResourcesSearcher {
     }
 
     private Query generateQuery(URL locationURL, Query resourceTypeQuery, CollectionListingAggregatedResources clar,
-            URL localHostBaseURL, boolean isMultiHostSearch) {
+            URL localHostBaseURL, boolean isMultiHostSearch, Date earliestDate) {
 
         AndQuery and = new AndQuery();
         and.add(resourceTypeQuery);
@@ -234,9 +251,11 @@ public class ManuallyApproveResourcesSearcher {
             uriOr.add(uriQuery);
             uriOr.add(aggregationQuery);
             and.add(uriOr);
-
         }
-
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        and.add(new PropertyTermQuery(publishDatePropDef, sdf.format(earliestDate), TermOperator.GT));
+        
         return and;
 
     }
