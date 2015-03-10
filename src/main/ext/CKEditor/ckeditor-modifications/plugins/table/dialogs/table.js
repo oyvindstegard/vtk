@@ -389,6 +389,7 @@
 							  var hasNoBorder = selectedTable.hasClass("no-border") || borderOld == "0";
 							  this.setValue(!hasNoBorder);
 
+                              // If merged old attribute to new class - trigger onChange on load
 							  if(selectedTable.getAttribute("border")) {
 							    var field = this;
 							    setTimeout(function() {
@@ -426,6 +427,7 @@
 							    this.setValue("align-right");
 							  }
 							  
+			                  // If merged old attribute to new class - trigger onChange on load
 							  if(selectedTable.getAttribute("align")) {
 							    var field = this;
 							    setTimeout(function() {
@@ -616,7 +618,7 @@
 				]
 			},
 				dialogadvtab && dialogadvtab.createAdvancedTab( editor, null, 'table' )
-				]
+			]
 		};
 	}
 
