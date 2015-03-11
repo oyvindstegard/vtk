@@ -2377,7 +2377,6 @@ VrtxAdmin.prototype.ariaBusy = function ariaBusy(idOrElm, isBusy) {
  */
 VrtxAdmin.prototype.ariaDropdownState = function ariaDropdownState(idOrElmLink, idOrElmDropdown, isExpanded) {
   this.ariaBool("expanded", idOrElmLink, isExpanded);
-  this.ariaBool("expanded", idOrElmDropdown, isExpanded);
   this.ariaHidden(idOrElmDropdown, !isExpanded);
 };
 

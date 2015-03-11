@@ -6,12 +6,61 @@
 (function() {
 	var defaultToPixel = CKEDITOR.tools.cssLength;
 
-	var commitValue = function( data ) {
-			var id = this.id;
-			if ( !data.info )
-				data.info = {};
-			data.info[ id ] = this.getValue();
-		};
+	var commitValue = function( data, selectedTable ) {
+      if ( selectedTable.getAttribute("cellSpacing") )
+	    selectedTable.removeAttribute("cellSpacing");
+      if ( selectedTable.getAttribute("cellPadding") )
+	    selectedTable.removeAttribute("cellPadding");
+	  if ( selectedTable.getAttribute("align") )
+	    selectedTable.removeAttribute("align");
+	  if ( selectedTable.getAttribute("border") )
+	    selectedTable.removeAttribute("border");
+	    
+	  var id = this.id;
+	  if ( !data.info )
+		data.info = {};
+	  data.info[ id ] = this.getValue();
+	};
+		
+    function addBooleanStyleClass(field, clsField, clsName, clsSetCondition) {
+	  if(clsField) {
+	    var classesVal = clsField.getValue();
+        if(field.getValue() == clsSetCondition && classesVal.indexOf(clsName) === -1) {
+		  if(classesVal != "") {
+		    classesVal = classesVal.replace(/[\s+]$/, "") + " " + clsName;
+		  } else {
+		    classesVal = clsName;
+		  }
+	    } else {
+	      var regex = new RegExp("(\\s+)?" + clsName.replace("-", "\\-"));
+	      classesVal = classesVal.replace(regex, "");
+	    }
+	    clsField.setValue(classesVal.replace(/^[\s+]/, "").replace(/[\s+]$/, ""));
+	  }
+    }
+    
+    function addDropdownStyleClass(field, clsField, clsType) {
+	  if(clsField) {
+	    var classesVal = clsField.getValue();
+	    var clsName = field.getValue();
+	 
+	    var regex = new RegExp("(\\s+)?" + clsType + "\\-\\w+", "gi");
+	    
+        if(clsName != "") {
+          if(classesVal != "") {
+            if(classesVal.indexOf(clsName) === -1) {
+              classesVal = classesVal.replace(regex, "");
+		      classesVal = classesVal.replace(/[\s+]$/, "") + " " + clsName;
+		    }
+		  } else {
+		    classesVal = clsName;
+		  }
+        } else {
+          classesVal = classesVal.replace(regex, "");
+        }
+	    clsField.setValue(classesVal.replace(/^[\s+]/, "").replace(/[\s+]$/, ""));
+	  }
+    }
 
 	function tableColumns( table ) {
 		var cols = 0,
@@ -69,13 +118,11 @@
 						// Synchronize width value.
 						var width = this.getStyle( 'width', '' ),
 							txtWidth = dialog.getContentElement( 'info', 'txtWidth' );
-
 						txtWidth && txtWidth.setValue( width, true );
 
 						// Synchronize height value.
 						var height = this.getStyle( 'height', '' ),
 							txtHeight = dialog.getContentElement( 'info', 'txtHeight' );
-
 						txtHeight && txtHeight.setValue( height, true );
 					});
 				}
@@ -323,45 +370,72 @@
 							commit: commitValue
 						},
 							{
-							type: 'text',
+							type: 'checkbox',
 							id: 'txtBorder',
-							requiredContent: 'table[border]',
 							// Avoid setting border which will then disappear.
-							'default': editor.filter.check( 'table[border]' ) ? 1 : 0,
+							'default': true,
 							label: editor.lang.table.border,
 							controlStyle: 'width:3em',
-							validate: CKEDITOR.dialog.validate[ 'number' ]( editor.lang.table.invalidBorder ),
+							// validate: CKEDITOR.dialog.validate[ 'number' ]( editor.lang.table.invalidBorder ),
+							onChange: function() {
+							  var classes = this.getDialog().getContentElement( 'advanced', 'advCSSClasses' );
+							  addBooleanStyleClass(this, classes, "no-border", false);
+						    },
 							setup: function( selectedTable ) {
-								this.setValue( selectedTable.getAttribute( 'border' ) || '' );
+							  var borderOld = "";
+							  if(selectedTable.getAttribute("border")) {
+							    var borderOld = selectedTable.getAttribute("border");
+							  }
+							  var hasNoBorder = selectedTable.hasClass("no-border") || borderOld == "0";
+							  this.setValue(!hasNoBorder);
+
+                              // If merged old attribute to new class - trigger onChange on load
+							  if(selectedTable.getAttribute("border")) {
+							    var field = this;
+							    setTimeout(function() {
+							      field.onChange();
+							    }, 100);
+							  }
 							},
-							commit: function( data, selectedTable ) {
-								if ( this.getValue() )
-									selectedTable.setAttribute( 'border', this.getValue() );
-								else
-									selectedTable.removeAttribute( 'border' );
-							}
+							commit: commitValue
 						},
 							{
 							id: 'cmbAlign',
 							type: 'select',
-							requiredContent: 'table[align]',
 							'default': '',
 							label: editor.lang.common.align,
 							items: [
 								[ editor.lang.common.notSet, '' ],
-								[ editor.lang.common.alignLeft, 'left' ],
-								[ editor.lang.common.alignCenter, 'center' ],
-								[ editor.lang.common.alignRight, 'right' ]
+								[ editor.lang.common.alignLeft, 'align-left' ],
+								[ editor.lang.common.alignCenter, 'align-center' ],
+								[ editor.lang.common.alignRight, 'align-right' ]
 								],
-							setup: function( selectedTable ) {
-								this.setValue( selectedTable.getAttribute( 'align' ) || '' );
+						    onChange: function() {
+						      var classes = this.getDialog().getContentElement( 'advanced', 'advCSSClasses' );
+							  addDropdownStyleClass(this, classes, "align");
 							},
-							commit: function( data, selectedTable ) {
-								if ( this.getValue() )
-									selectedTable.setAttribute( 'align', this.getValue() );
-								else
-									selectedTable.removeAttribute( 'align' );
-							}
+							setup: function( selectedTable ) {
+							  var alignOld = "";
+							  if(selectedTable.getAttribute("align")) {
+							    var alignOld = selectedTable.getAttribute("align");
+							  }
+							  if(alignOld == "left" || selectedTable.hasClass("align-left")) {
+							    this.setValue("align-left");
+							  } else if(alignOld == "middle" || selectedTable.hasClass("align-middle")) {
+							    this.setValue("align-center");
+							  } else if(alignOld == "right" || selectedTable.hasClass("align-right")) {
+							    this.setValue("align-right");
+							  }
+							  
+			                  // If merged old attribute to new class - trigger onChange on load
+							  if(selectedTable.getAttribute("align")) {
+							    var field = this;
+							    setTimeout(function() {
+							      field.onChange();
+							    }, 150);
+							  }
+							},
+							commit: commitValue
 						}
 						]
 					},
@@ -427,7 +501,7 @@
 							{
 							type: 'html',
 							html: '&nbsp;'
-						},
+						}/*,
 							{
 							type: 'text',
 							id: 'txtCellSpace',
@@ -463,7 +537,7 @@
 								else
 									selectedTable.removeAttribute( 'cellPadding' );
 							}
-						}
+						}*/
 						]
 					}
 					]
@@ -544,7 +618,7 @@
 				]
 			},
 				dialogadvtab && dialogadvtab.createAdvancedTab( editor, null, 'table' )
-				]
+			]
 		};
 	}
 
