@@ -31,29 +31,34 @@ if (typeof toggler !== "function") {
 
     for (var key in self.configs) {
       var config = self.configs[key];
-      var container = null;
+      
       if(config.combinator) {
         var selector = config.combinator + "." + config.name;
       } else {
         var selector = "#vrtx-" + config.name;
       }
-      container = $(selector);
+      var container = $(selector);
       var link = $("#" + key);
+      
       if (container.length && link.length) {
         container.hide();
         link.addClass("togglable");
         link.parent().show();
-        config.container = container;
-        config.link = link;
-        
+
         // ARIA
-        container.attr("aria-hidden", "true");
+        container.attr({
+          "aria-hidden": "true",
+          "aria-labelledby": key
+        });
         if(!config.combinator) {
           link.attr({
             "aria-expanded": "false",
             "aria-controls": selector.substring(1)
           });
         }
+        
+        config.container = container;
+        config.link = link;
       }
     }
 
@@ -79,23 +84,26 @@ if (typeof toggler !== "function") {
   };
 
   Toggler.prototype.toggleLinkText = function (config) {
-    if (config.container.filter(":visible").length) {
+    var link = config.link;
+    var container = config.container;
+  
+    if (container.filter(":visible").length) {
       if(!config.hideLinkText) {
-        config.link.parent().hide();
+        link.parent().hide();
       } else {
-        config.link.text(config.hideLinkText);
+        link.text(config.hideLinkText);
       }
       // ARIA
-      config.container.attr("aria-hidden", "false");
+      container.attr("aria-hidden", "false");
       if(!config.combinator) {
-        config.link.attr("aria-expanded", "true");
+        link.attr("aria-expanded", "true");
       }
     } else {
-      config.link.text(config.showLinkText);
+      link.text(config.showLinkText);
       // ARIA
-      config.container.attr("aria-hidden", "true");
+      container.attr("aria-hidden", "true");
       if(!config.combinator) {
-        config.link.attr("aria-expanded", "false");
+        link.attr("aria-expanded", "false");
       }
     }
   };
