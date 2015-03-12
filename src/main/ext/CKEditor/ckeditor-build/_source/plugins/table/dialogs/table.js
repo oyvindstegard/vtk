@@ -12,6 +12,8 @@
 	    selectedTable.removeAttribute("cellSpacing");
       if ( selectedTable.getAttribute("cellPadding") )
 	    selectedTable.removeAttribute("cellPadding");
+      if ( selectedTable.getAttribute("summary") )
+	    selectedTable.removeAttribute("summary");
 	  if ( selectedTable.getAttribute("align") )
 	    selectedTable.removeAttribute("align");
 	  if ( selectedTable.getAttribute("border") )
@@ -588,7 +590,7 @@
 									captionElement.getItem( i ).remove();
 							}
 						}
-					},
+					}/*,
 						{
 						type: 'text',
 						id: 'txtSummary',
@@ -603,7 +605,7 @@
 							else
 								selectedTable.removeAttribute( 'summary' );
 						}
-					}
+					}*/
 					]
 				}
 				]

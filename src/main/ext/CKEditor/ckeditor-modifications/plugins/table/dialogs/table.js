@@ -7,10 +7,13 @@
 	var defaultToPixel = CKEDITOR.tools.cssLength;
 
 	var commitValue = function( data, selectedTable ) {
+	  // Remove old attributes on commit
       if ( selectedTable.getAttribute("cellSpacing") )
 	    selectedTable.removeAttribute("cellSpacing");
       if ( selectedTable.getAttribute("cellPadding") )
 	    selectedTable.removeAttribute("cellPadding");
+      if ( selectedTable.getAttribute("summary") )
+	    selectedTable.removeAttribute("summary");
 	  if ( selectedTable.getAttribute("align") )
 	    selectedTable.removeAttribute("align");
 	  if ( selectedTable.getAttribute("border") )
@@ -22,44 +25,36 @@
 	  data.info[ id ] = this.getValue();
 	};
 		
-    function addBooleanStyleClass(field, clsField, clsName, clsSetCondition) {
+    function addBooleanStyleClass(field, clsField, clsName, clsSetCondition) { // Used for no-border class
 	  if(clsField) {
-	    var classesVal = clsField.getValue();
-        if(field.getValue() == clsSetCondition && classesVal.indexOf(clsName) === -1) {
-		  if(classesVal != "") {
-		    classesVal = classesVal.replace(/[\s+]$/, "") + " " + clsName;
-		  } else {
-		    classesVal = clsName;
-		  }
-	    } else {
-	      var regex = new RegExp("(\\s+)?" + clsName.replace("-", "\\-"));
-	      classesVal = classesVal.replace(regex, "");
-	    }
-	    clsField.setValue(classesVal.replace(/^[\s+]/, "").replace(/[\s+]$/, ""));
+	    addStyleClass(clsField, clsName, "(\\s+)?" + clsName.replace("-", "\\-"), field.getValue() == clsSetCondition)
 	  }
     }
     
-    function addDropdownStyleClass(field, clsField, clsType) {
+    function addDropdownStyleClass(field, clsField, clsType) { // Used for align-<left|middle|right> classes
 	  if(clsField) {
-	    var classesVal = clsField.getValue();
 	    var clsName = field.getValue();
-	 
-	    var regex = new RegExp("(\\s+)?" + clsType + "\\-\\w+", "gi");
-	    
-        if(clsName != "") {
-          if(classesVal != "") {
-            if(classesVal.indexOf(clsName) === -1) {
-              classesVal = classesVal.replace(regex, "");
-		      classesVal = classesVal.replace(/[\s+]$/, "") + " " + clsName;
-		    }
-		  } else {
-		    classesVal = clsName;
-		  }
-        } else {
-          classesVal = classesVal.replace(regex, "");
-        }
-	    clsField.setValue(classesVal.replace(/^[\s+]/, "").replace(/[\s+]$/, ""));
+	    addStyleClass(clsField, clsName, "(\\s+)?" + clsType + "\\-\\w+", "gi", clsName != "");
 	  }
+    }
+    
+    function addStyleClass(clsField, clsName, regexStr, addCondition) {
+      var classesVal = clsField.getValue();
+      var regex = new RegExp(regexStr);
+      
+      if(addCondition) {
+        if(classesVal != "") {
+          if(classesVal.indexOf(clsName) === -1) {
+            classesVal = classesVal.replace(regex, "");
+		    classesVal = classesVal.replace(/[\s+]$/, "") + " " + clsName;
+		  }
+	    } else {
+		  classesVal = clsName;
+	    }
+      } else {
+        classesVal = classesVal.replace(regex, "");
+      }
+	  clsField.setValue(classesVal.replace(/^[\s+]/, "").replace(/[\s+]$/, ""));
     }
 
 	function tableColumns( table ) {
@@ -389,7 +384,6 @@
 							  var hasNoBorder = selectedTable.hasClass("no-border") || borderOld == "0";
 							  this.setValue(!hasNoBorder);
 
-                              // If merged old attribute to new class - trigger onChange on load
 							  if(selectedTable.getAttribute("border")) {
 							    var field = this;
 							    setTimeout(function() {
@@ -427,7 +421,6 @@
 							    this.setValue("align-right");
 							  }
 							  
-			                  // If merged old attribute to new class - trigger onChange on load
 							  if(selectedTable.getAttribute("align")) {
 							    var field = this;
 							    setTimeout(function() {
@@ -597,7 +590,7 @@
 									captionElement.getItem( i ).remove();
 							}
 						}
-					},
+					}/*,
 						{
 						type: 'text',
 						id: 'txtSummary',
@@ -612,13 +605,13 @@
 							else
 								selectedTable.removeAttribute( 'summary' );
 						}
-					}
+					}*/
 					]
 				}
 				]
 			},
 				dialogadvtab && dialogadvtab.createAdvancedTab( editor, null, 'table' )
-			]
+				]
 		};
 	}
 
