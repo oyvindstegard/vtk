@@ -1,14 +1,11 @@
 /*
  * View Toggle * 
- * - Store cached refs and i18n at init in configs-obj (on toggle link id)
- * 
- * XXX: JSDoc
- * XXX: ARIA/focus
- * XXX: Should possible be combined with view-dropdown and simplified (is just another show/hide thing)
+ *
+ * - Stores cached refs and i18n at init in configs-obj (on toggle link id)
  * 
  */
 
- if (typeof toggler !== "function") {
+if (typeof toggler !== "function") {
   function Toggler() {
     this.configs = {
       /* name 
@@ -19,7 +16,7 @@
        */
     };
   }
-  var toggler = new Toggler(); /* Global accessible object - XXX: proper singleton */
+  var toggler = new Toggler(); /* Global accessible object */
 
   $(document).ready(function () {
     toggler.init();
@@ -36,10 +33,11 @@
       var config = self.configs[key];
       var container = null;
       if(config.combinator) {
-        container = $(config.combinator + "." + config.name);
+        var selector = config.combinator + "." + config.name;
       } else {
-        container = $("#vrtx-" + config.name);
+        var selector = "#vrtx-" + config.name;
       }
+      container = $(selector);
       var link = $("#" + key);
       if (container.length && link.length) {
         container.hide();
@@ -47,6 +45,15 @@
         link.parent().show();
         config.container = container;
         config.link = link;
+        
+        // ARIA
+        container.attr("aria-hidden", "true");
+        if(!config.combinator) {
+          link.attr({
+            "aria-expanded": "false",
+            "aria-controls": selector.substring(1)
+          });
+        }
       }
     }
 
@@ -78,8 +85,18 @@
       } else {
         config.link.text(config.hideLinkText);
       }
+      // ARIA
+      config.container.attr("aria-hidden", "false");
+      if(!config.combinator) {
+        config.link.attr("aria-expanded", "true");
+      }
     } else {
       config.link.text(config.showLinkText);
+      // ARIA
+      config.container.attr("aria-hidden", "true");
+      if(!config.combinator) {
+        config.link.attr("aria-expanded", "false");
+      }
     }
   };
 }
