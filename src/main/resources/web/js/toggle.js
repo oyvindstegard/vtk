@@ -46,10 +46,7 @@ if (typeof toggler !== "function") {
         link.parent().show();
 
         // ARIA
-        container.attr({
-          "aria-hidden": "true",
-          "aria-labelledby": key
-        });
+        container.attr("aria-hidden", "true");
         if(!config.combinator) {
           link.attr({
             "aria-expanded": "false",
