@@ -25,13 +25,13 @@
 	  data.info[ id ] = this.getValue();
 	};
 		
-    function addBooleanStyleClass(field, clsField, clsName, clsSetCondition) { // Used for no-border class
+    function addBooleanStyleClass(field, clsField, clsName, clsSetCondition) { // Used for 'no-border' class
 	  if(clsField) {
 	    addStyleClass(clsField, clsName, "(\\s+)?" + clsName.replace("-", "\\-"), field.getValue() == clsSetCondition)
 	  }
     }
     
-    function addDropdownStyleClass(field, clsField, clsType) { // Used for align-<left|middle|right> classes
+    function addDropdownStyleClass(field, clsField, clsType) { // Used for 'align-<left|middle|right>' classes
 	  if(clsField) {
 	    var clsName = field.getValue();
 	    addStyleClass(clsField, clsName, "(\\s+)?" + clsType + "\\-\\w+", "gi", clsName != "");
