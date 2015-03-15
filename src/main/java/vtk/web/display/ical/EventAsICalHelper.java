@@ -31,6 +31,7 @@
 package vtk.web.display.ical;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -94,9 +95,9 @@ public final class EventAsICalHelper {
     public void printResponse(HttpServletResponse response, String iCal, String iCalfileName) throws IOException {
         response.setContentType("text/calendar;charset=utf-8");
         response.setHeader("Content-Disposition", "filename=" + iCalfileName + ".ics");
-        ServletOutputStream out = response.getOutputStream();
-        out.print(iCal);
-        out.close();
+        PrintWriter responsePrinter = response.getWriter();
+        responsePrinter.print(iCal);
+        responsePrinter.close();
     }
 
     private String createICalEntryFromEvent(PropertySet event, String repositoryId) {
