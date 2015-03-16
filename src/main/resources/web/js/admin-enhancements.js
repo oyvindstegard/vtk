@@ -44,7 +44,8 @@ function VrtxAdmin() {
   this.isIE7 = this.isIE && this.browserVersion <= 7;
   this.isIE6 = this.isIE && this.browserVersion <= 6;
   this.isIETridentInComp = this.isIE7 && /trident/.test(this.ua);
-  /* Mobile - iOS and Android */
+  
+  /* Mobile (iOS and Android) */
   this.isIPhone = /iphone/.test(this.ua);
   this.isIPad = /ipad/.test(this.ua);
   this.isIOS = this.isIPhone || this.isIPad;
@@ -52,6 +53,7 @@ function VrtxAdmin() {
   this.isAndroid = /android/.test(this.ua); // http://www.gtrifonov.com/2011/04/15/google-android-user-agent-strings-2/
   this.isMobileWebkitDevice = (this.isIPhone || this.isIPad || this.isAndroid);
   this.isTouchDevice = window.ontouchstart !== undefined;
+  
   /* Windows */
   this.isWin = ((this.ua.indexOf("win") !== -1) || (this.ua.indexOf("16bit") !== -1));
   
@@ -483,6 +485,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
           height: 395,
           onOpen: function() {
             var dialog = $(".ui-dialog:visible");
+            
             var treeElem = dialog.find(".tree-create");
             var treeTrav = dialog.find("#vrtx-create-tree-folders").hide().text().split(",");
             var treeType = dialog.find("#vrtx-create-tree-type").hide().text();
@@ -597,7 +600,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
     }
   });
   
-  // Validation of dates (private function)
+  // Validation of dates
   var generateDateObjForValidation = function(dialog, idInfix) {
     var date = dialog.find("#" + idInfix + "-date").val();
     if(!date.length) {
@@ -696,6 +699,7 @@ VrtxAdmin.prototype.initDomains = function initDomains() {
   switch (bodyId) {
     case "vrtx-preview":
     case "vrtx-revisions":
+      // Preview of revision in popup window (from preview or revisions tab)
       eventListen(vrtxAdm.cachedAppContent, "click", "a.vrtx-revision-view, a.vrtx-revision-view-changes", function (ref) {
         var openedRevision = openRegular(ref.href, 1020, 800, "DisplayRevision");
       });
@@ -741,6 +745,7 @@ VrtxAdmin.prototype.initDomains = function initDomains() {
       }
       break;
     case "vrtx-report-broken-links":
+      // Broken links switch between alternative views
       eventListen(vrtxAdm.cachedDoc, "click", ".vrtx-report-alternative-view-switch input", function (ref) {
         if(!$(ref).is(":checked")) {
           window.location.href = window.location.href.replace("&" + ref.name, "");
@@ -1134,12 +1139,14 @@ VrtxAdmin.prototype.adjustResourceTitle = function adjustResourceTitle() {
   }
 };
 
+// Map shortcut from a link to a button
 VrtxAdmin.prototype.mapShortcut = function mapShortcut(selectors, reroutedSelector) {
   eventListen(this.cachedAppContent, "click", selectors, function(ref) {
     $(reroutedSelector).click();
   });
 };
 
+// Make logout button into a link
 VrtxAdmin.prototype.logoutButtonAsLink = function logoutButtonAsLink() {
   var btn = $('input#logoutAction');
   if (!btn.length) return;
@@ -1177,6 +1184,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
    * Set caret position
    * 
    * Credits: http://stackoverflow.com/questions/499126/jquery-set-cursor-position-in-text-area (first)
+   *
    * @this {inputSelectionEngine}
    */
   setCaretPos: function(input, pos) {
@@ -1202,6 +1210,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
    * Get caret position
    * 
    * Credits: http://stackoverflow.com/questions/4928586/get-caret-position-in-html-input (fourth)
+   *
    * @this {inputSelectionEngine}
    */
   getCaretPos: function(input) {
@@ -1236,6 +1245,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
    *  
    * Based on: jQuery autoGrowInput plugin by James Padolsey:
    * http://stackoverflow.com/questions/931207/is-there-a-jquery-autogrow-plugin-for-text-fields
+   *
    * @this {inputSelectionEngine}
    */
   grow: function(input, val, comfortZone, minWidth, maxWidth) {
