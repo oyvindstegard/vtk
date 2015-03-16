@@ -1549,7 +1549,7 @@ VrtxAdmin.prototype.addNewMarkup = function addNewMarkup(opts, form, link) {
 /**
  * Complete a form async
  * 
- * TODO: Combine it with completeSimpleFormAsync() making this an expanded version of it for expanded slidable forms  
+ * TODO: Maybe combine this function with completeSimpleFormAsync() (this as an expanded version of it for expanded slidable forms)
  *
  * @this {VrtxAdmin}
  * @param {object} opts Configuration
@@ -1722,7 +1722,7 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
     }
   }
 
-  // Avoid POST if cancel in actions listing
+  // Avoid POST if cancel in actionslisting
   if(opts.isCancelAction && isActionsListing) {
     postIt(null, null, null);
   } else {
