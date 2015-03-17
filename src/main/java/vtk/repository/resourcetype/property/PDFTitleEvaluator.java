@@ -66,7 +66,8 @@ public class PDFTitleEvaluator implements PropertyEvaluator {
             
         } catch (Exception e) {
             logger.warn("Unable to evaluate title of PDF resource '"
-                        + ctx.getNewResource().getURI() + "'", e);
+                        + ctx.getNewResource().getURI() + "': " 
+                    + e.getClass().getName() + ": " + e.getMessage());
             return false;
         } finally {
             if (doc != null) {
