@@ -91,13 +91,13 @@ public final class EventAsICalHelper {
         }
         return name;
     }
-
+    
     public void printResponse(HttpServletResponse response, String iCal, String iCalfileName) throws IOException {
         response.setContentType("text/calendar;charset=utf-8");
         response.setHeader("Content-Disposition", "filename=" + iCalfileName + ".ics");
-        PrintWriter responsePrinter = response.getWriter();
-        responsePrinter.print(iCal);
-        responsePrinter.close();
+        try (PrintWriter responsePrinter = response.getWriter()) {
+            responsePrinter.print(iCal);
+        }
     }
 
     private String createICalEntryFromEvent(PropertySet event, String repositoryId) {
