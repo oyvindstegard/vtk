@@ -371,9 +371,9 @@ function retokenizeFormsOpenSaveDialog(d2, isEditorSave) {
       // Repopulate all tokens
       var current = $("input[name='csrf-prevention-token']");
       var updated = $($.parseHTML(results)).find("input[name='csrf-prevention-token']");
-      current.forEach(function(elm, i) {
-        elm.value = updated[i].value;
-      });
+      for(var i = 0, currentLen = current.length; i < currentLen; i++) {
+        current[i].value = updated[i].value;
+      }
 
       // Stop loading
       d2.close();
