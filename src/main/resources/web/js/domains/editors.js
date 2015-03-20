@@ -361,20 +361,19 @@ function reAuthenticateRetokenizeForms(isEditorSave) {
 }
 
 function retokenizeFormsOpenSaveDialog(d2, isEditorSave) {
-  // Repopulate all tokens
-  var current = $("input[name='csrf-prevention-token']");
-  var currentLen = current.length;
-  
   $.ajax({
     type: "GET",
     url: window.location.href,
     cache: true,
     dataType: "html",
     success: function (results, status, resp) {
+    
+      // Repopulate all tokens
+      var current = $("input[name='csrf-prevention-token']");
       var updated = $($.parseHTML(results)).find("input[name='csrf-prevention-token']");
-      for(var i = 0; i < currentLen; i++) {
-        current[i].value = updated[i].value;
-      }
+      current.forEach(function(elm, i) {
+        elm.value = updated[i].value;
+      });
 
       // Stop loading
       d2.close();
