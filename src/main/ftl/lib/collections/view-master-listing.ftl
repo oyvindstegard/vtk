@@ -80,7 +80,7 @@
   <#local masters = masterListing.entries />
   
   <#if (masters?size > 0)>
-    <div class="vrtx-master-table">
+    <div class="vrtx-master-table<#if viewOngoingMastersLink?exists> vrtx-master-table-ongoing-completed</#if>">
       <table class="sortable" border="1">
         <thead>
           <tr>
