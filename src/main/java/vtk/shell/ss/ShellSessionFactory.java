@@ -1,21 +1,21 @@
-/* Copyright (c) 2004, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -28,65 +28,48 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.shell;
+package vtk.shell.ss;
 
-import com.google.common.base.Charsets;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
-
-
+import java.nio.charset.StandardCharsets;
 
 /**
- * Implementation of the CommandReader interface reading from an input
- * stream. The source may be specified either as an InputStream
- * directly, or as a file name, in which case an InputStream for that
- * file is opened.
  *
- * <p>UTF-8 coding is expected for input.
  */
-public class StreamReader implements CommandReader {
+public interface ShellSessionFactory {
 
-    private final String prompt;
-    private final BufferedReader streamReader;
-
-    public StreamReader(InputStream is) throws IOException {
-        this(is, "$ ");
+    /**
+     * XXX consider optional I/O bindings, since interpreters may only be needed
+     * for expression evaluation and result object.
+     *
+     * XXX consider providing a map of default variable bindings here
+     * 
+     * @param input
+     * @param output
+     * @return
+     * @throws java.lang.Exception
+     */
+    default ShellSession newSession(InputStream input, OutputStream output) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        PrintStream ps = new PrintStream(output, true, "UTF-8");
+        return newSession(br, ps);
     }
 
-    public StreamReader(InputStream is, String prompt) throws IOException {
-        this.streamReader = new BufferedReader(new InputStreamReader(is, Charsets.UTF_8));
-        this.prompt = prompt;
-    }
+    /**
+     * XXX consider optional I/O bindings, since interpreters may only be needed
+     * for expression evaluation and result object.
+     *
+     * XXX consider providing a map of default variable bindings here
+     *
+     * @param input
+     * @param output
+     * @return
+     * @throws java.lang.Exception
+     */
+    ShellSession newSession(BufferedReader input, PrintStream output) throws Exception;
 
-    public String readLine(PrintStream out) throws IOException {
-        out.print(prompt);
-        StringBuilder result = new StringBuilder();
-        while (true) {
-            String line = streamReader.readLine();
-            if (line == null) {
-                if (result.length() == 0) {
-                    return null;
-                }
-
-                break;
-            }
-            if (line.endsWith("\\")) {
-                result.append(line.substring(0, line.length() - 1));
-                out.print("> ");
-            } else {
-                result.append(line);
-                break;
-            }
-        }
-        return result.toString(); 
-    }
-
-    public void close() throws IOException {
-        streamReader.close();
-    }
-    
 }

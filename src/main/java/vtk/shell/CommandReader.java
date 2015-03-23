@@ -47,7 +47,7 @@ public interface CommandReader {
      * Reads a line from an input source.
      *
      * @param out PrintStream to write prompts to.
-     * @return the line read.
+     * @return the line read, or <code>null</code> if nothing more can be read from the command stream.
      * @exception IOException if an error occurs
      */
     public String readLine(PrintStream out) throws IOException;

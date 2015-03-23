@@ -43,6 +43,7 @@ import bsh.Interpreter;
 /**
  * Shell implementation using BeanShell as its interpreter.
  */
+@Deprecated
 public class BeanShellConsole extends AbstractConsole {
 
     private Interpreter interpreter = new Interpreter();

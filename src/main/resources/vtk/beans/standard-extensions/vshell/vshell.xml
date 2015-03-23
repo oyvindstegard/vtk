@@ -4,6 +4,30 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
                            http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.1.xsd">
 
+   <!-- New vshell impl based on ShellSocketConnector.
+        This should replace old one.  -->
+   <bean id="vshell.console" class="vtk.shell.ss.ShellSocketConnector">
+      <description>
+         Management socket with VShell interpreter.
+      </description>
+      <property name="listenAddress" value="${vshell.listenAddress}" />
+      <property name="port" value="${vshell.listenPort}" />
+      <property name="sessionAuthenticator" ref="${vshell.sessionAuthenticator}" />
+      <property name="shellSessionFactory">
+        <bean class="vtk.shell.ss.VShellSessionFactory">
+          <property name="securityContext">
+            <bean class="vtk.security.SecurityContext">
+              <constructor-arg ref="writeAllToken" />
+              <constructor-arg ref="rootPrincipal" />
+            </bean>
+          </property>
+          <property name="initFiles" value="#{'${vshell.initFiles}'.split('\\s*,\\s*')}" />
+        </bean>
+      </property>
+   </bean>
+
+   <!-- Old vshell console impl based on AbstractConsole -->
+   <!--
    <bean id="vshell.console" class="vtk.shell.vshell.VShell">
       <property name="initFilesCSV" value="${vshell.initFiles}" />
       <property name="runEvalLoop" value="${vshell.runEvalLoop}" />
@@ -21,6 +45,7 @@
         </bean>
       </property>
    </bean>
+   -->
 
    <bean id="vshell.nullSessionAuthenticator" class="vtk.shell.NullSessionAuthenticator" />
    
