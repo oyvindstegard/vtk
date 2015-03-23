@@ -143,19 +143,18 @@
 				   <#local surname = vrtx.getMetadata(person, "surname") />
            		   <#local firstName = vrtx.getMetadata(person, "firstName") />
            	       <#local description = vrtx.getMetadata(person "description") />
-           		   <#local name = "" />
+           		   <#local fullName = "" />
 			       <#if surname != "" && firstName != "">
-			         <#local name = firstName + " " + surname />
+			         <#local fullName = firstName + " " + surname />
 			       <#else>
-			         <#local url = "" />
-				     <#local name = description />
+				     <#local fullName = description />
 			       </#if>
-			       <#if name?exists >
+			       <#if fullName != "" >
 				     <li>
-				       <#if url?exists && url != "">
-					     <a href="${url?html}">${name?html}<#t/>
+				       <#if url != "">
+					     <a href="${url?html}">${fullName?html}<#t/>
 					   <#else>
-					     ${name?html}<#t/>
+					     ${fullName?html}<#t/>
 					   </#if>
 					   <#t/><#if (size > 1 && count < size)>,</#if>
 				     </li>
