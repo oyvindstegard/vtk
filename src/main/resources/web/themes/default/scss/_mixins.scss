@@ -123,7 +123,7 @@
     $class: "true";
   } @elseif $type == text {
     $resourceType: "file-txt";
-  } @elseif $type == "video-ref" {
+  } @elseif $type == videoref {
     $resourceType: "file-video";
   }
   &.#{$class} {
@@ -152,7 +152,7 @@
     $class: "true";
   } @elseif $type == text {
     $resourceType: "file-txt";
-  } @elseif $type == "video-ref" {
+  } @elseif $type == videoref {
     $resourceType: "file-video";
   }
   &.#{$class} {
