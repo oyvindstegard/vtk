@@ -11,6 +11,7 @@ resourcetype structured-master {
     tags : string multiple overrides tags,
     supervisorsUsernames : string multiple,
     supervisors : json (supervisorName:string, supervisorUrl:string) multiple,
+    students : json (studentName:string, studentUrl:string) multiple,
     credits : string,
     related-content : html noextract,
     link-other-language: resource_ref
@@ -155,12 +156,39 @@ resourcetype structured-master {
       [endif]
       ##
     }
+    
+    students-list {
+      ##
+      [def document structured-document()]
+      [def students document.properties.students]
+      [def available document.properties.status-available]
+      [if students != null && (available = "false")]
+        <div class="vrtx-master-students-list-participants vrtx-frontpage-box">
+          <h2>[localized "studentsTitle"]</h2>
+          <ul>
+            [list students student]
+              [def studentName student.studentName]
+              [def studentUrl student.studentUrl]
+              <li>
+                [if studentUrl != null && studentUrl != ""]
+                  <a href="[val studentUrl]">[val studentName]</a>
+                [else]
+                  [val studentName]
+                [endif]             
+              </li>
+            [endlist]
+          </ul>
+        </div>
+      [endif]
+      ##
+    }
   }
 
   view {
     ##
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
+    
       <head>
         <title>[call "json:field" {"select":"title"}] [call "comp:completed"]</title>
       </head>
@@ -177,7 +205,8 @@ resourcetype structured-master {
             [call "comp:vrtx-date-info"]
           </div>
           <div id="vrtx-additional-content">
-            [call "resource:master-list"]
+            [call "resource:master-supervisors-list"]
+            [call "comp:students-list"]
             <div id="vrtx-master-credits" class="vrtx-frontpage-box">
               <h2>[localized "credits"]</h2>
               [call "json:field" {"select":"credits"}]
@@ -211,12 +240,22 @@ resourcetype structured-master {
     pictureAlt: (en: "Alternative text", no: "Alternativ tekst", nn : "Alternativ tekst"),
     caption : (en : "Image caption", no : "Bildetekst", nn : "Bilettekst"),
     photo-prefix : (en : "Photo", no : "Foto", nn : "Foto"),
-    related-content : (en : "Related content (right column)", no : "Relatert innhold (vises i høyre kolonne)", nn : "Relatert innhald (visast i høgre kolonne)"),
+    related-content : (en : "Related content (right column)", no : "Relatert innhold (vises i høyre kolonne)",nn : "Relatert innhald (visast i høgre kolonne)"),
+    
     supervisorsHeader : (en : "Supervisors", no : "Veiledere", nn : "Rettleiarar"),
-    supervisorsUsernames : (en : "Supervisors from UiO (enter the supervisor username)",no : "Veiledere fra UiO (fyll inn veilederens brukernavn)", nn :"Rettleiarar fra UiO (fyll inn rettleiarens brukernavn)"),
+    supervisorsUsernames : (en : "Supervisors from UiO (enter the supervisor username)",
+                            no : "Veiledere fra UiO (fyll inn veilederens brukernavn)",
+                            nn :"Rettleiarar fra UiO (fyll inn rettleiarens brukernamn)"),
     supervisors : (en : "Other supervisors", no : "Andre veiledere", nn : "Andre rettleiarar"),
-    supervisorName : (en : "Name",no : "Navn", nn :"Namn"),
-    supervisorUrl : (en : "Webaddress",no : "Webadresse", nn :"Webadresse"),
+    supervisorName : (en : "Name", no : "Navn", nn :"Namn"),
+    supervisorUrl : (en : "Webaddress", no : "Webadresse", nn :"Webadresse"),
+
+    students : (en : "Students", no : "Studenter", nn : "Studentar"),
+    studentsTitle : (en : "Student(s)", no : "Student(er)", nn : "Student(ar)"),
+    studentName : (en : "Name", no : "Navn", nn :"Namn"),
+    studentUrl : (en : "Webaddress", no : "Webadresse", nn :"Webadresse"),
+    
+    
     credits: (en : "Scope (credits)", no: "Omfang (studiepoeng)", nn: "Omfang (studiepoeng)"),
     tags : (en : "Tags", no : "Emneord", nn : "Emneord"),
     content : (en : "Content", no :"Innhold",nn : "Innhold"),
