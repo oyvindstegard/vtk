@@ -221,9 +221,9 @@ resourcetype structured-master {
   
   vocabulary {
     status-available {
-      en : ("true" = "Available", "false" = "Not available"),
-      no : ("true" = "Tilgjengelig", "false" = "Ikke tilgjengelig"),
-      nn : ("true" = "Tilgjengeleg", "false" = "Ikkje tilgjengeleg")
+      en : ("true" = "Available", "false" = "Ongoing / completed"),
+      no : ("true" = "Ledig", "false" = "Pågående / avsluttet"),
+      nn : ("true" = "Ledig", "false" = "Pågåande / avslutta")
     },
     credits {
       en : (range = "60,45,30"),
