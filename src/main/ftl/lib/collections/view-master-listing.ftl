@@ -120,7 +120,7 @@
                      <#if studentObj.studentName??>
 				       <li>
 				       <#if studentObj.studentUrl??>
-					     <a href="${studentObj.studentUrl?html}">${studentObj.studentName?html}<#t/>
+					     <a href="${studentObj.studentUrl?html}">${studentObj.studentName?html}</a><#t/>
 				       <#else>
 					     ${studentObj.studentName?html}<#t/>
 				       </#if>
