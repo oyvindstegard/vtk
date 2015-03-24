@@ -108,6 +108,7 @@
             
             <#if viewOngoingMastersLink?exists>
               <td class="vrtx-table-students">
+                <#-- XXX: JSON, is there another way to do this (never used ?is_hash before) -->
                  <#local students = vrtx.prop(master, 'students') />
                  <#if students?? && students?is_hash>
                    <#local studentsObj = students.getValues() />
