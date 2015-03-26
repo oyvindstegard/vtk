@@ -14,18 +14,18 @@
    <!-- begin feedback js -->
   <script type="text/javascript"><!--
     $(function() {
-      if (typeof urchinTracker !== "undefined") {
+      if (typeof urchinTracker !== "undefined" && typeof uioTrackVirtual === "function") {
         $(".feedback-yes").click(function(e) {
           $(".vrtx-feedback ul").replaceWith('<p class="vrtx-feedback-thanks"><@vrtx.msg code="feedback.thanks" default="Thank you for giving us feedback" /><div class="vrtx-feedback-thanks-slider"></div></p>');
           $(".vrtx-feedback-thanks-slider").animate({ left: 200 },
                                                     { queue: false,
                                                       duration: 200 });
-          urchinTrack("/like");
+          uioTrackVirtual("/like" + document.location.pathname);
           e.stopPropagation();
           e.preventDefault(); 
         });
         $(".feedback-no").click(function() {
-          urchinTrack("/dislike");
+          uioTrackVirtual("/dislike" + document.location.pathname);
         });
       } else {
         var noLink = $(".vrtx-feedback a.feedback-no").parent();
@@ -35,10 +35,6 @@
         $(".vrtx-feedback ul").replaceWith('<p>' + noLink.html() + '</p>');
       }
     });
-    function urchinTrack(action) {
-      _udn="uio.no";
-      urchinTracker(action + document.location.pathname);
-    }
   // -->
   </script>
   <!-- end feedback js -->
