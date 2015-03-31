@@ -77,21 +77,13 @@
     <property name="defaultAutoCommit" value="false" />
   </bean>
 
-  <!-- SqlMap setup for iBATIS Database Layer -->
-  <bean id="repository.sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
-    <property name="useTransactionAwareDataSource" value="true" />
-    <property name="configLocation" value="classpath:/vtk/repository/store/db/ibatis/${sqlDialect}-sql-map-config.xml" />
+  <!-- SqlMap setup for MYBATIS Database Layer -->
+  <bean id="repository.sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
     <property name="dataSource" ref="repository.dataSource" />
-    <property name="lobHandler" ref="repository.lobHandler" />
+    <property name="configLocation" value="classpath:/vtk/repository/store/db/ibatis/${sqlDialect}-sql-map-config.xml" />
   </bean>
 
-  <!-- Use LobHandlerFactoryBean which creates handles based on
-       SQL dialect in use. -->
-  <bean id="repository.lobHandler" class="vtk.repository.store.db.ibatis.LobHandlerFactoryBean">
-    <property name="sqlDialect" value="${sqlDialect}" />
-  </bean>
-
-  <!-- Override iBATIS SQL map statement names in this map (should generally not be necessary): -->
+  <!-- Override MYBATIS SQL map statement names in this map (should generally not be necessary): -->
   <bean id="repository.statementMappings" class="java.util.HashMap">
     <constructor-arg>
       <map>
@@ -100,7 +92,7 @@
   </bean>
 
   <bean id="repository.sqlMapDao" class="vtk.repository.store.db.SqlMapDataAccessor">
-    <property name="sqlMapClient" ref="repository.sqlMapClient" />
+    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="optimizedAclCopySupported" value="${optimizedAclCopySupported}" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
@@ -115,7 +107,8 @@
   </bean>
 
   <bean id="repository.indexDao" class="vtk.repository.store.db.SqlMapIndexDao">
-    <property name="sqlMapClient" ref="repository.sqlMapClient" />
+    <!--property name="sqlMapClient" ref="repository.sqlMapClient" /-->
+    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="sqlMapDataAccessor" ref="repository.sqlMapDao" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
@@ -123,7 +116,7 @@
   </bean>
 
   <bean id="repository.changeLogDAO" class="vtk.repository.store.db.SqlMapChangeLogDAO">
-    <property name="sqlMapClient" ref="repository.sqlMapClient" />
+    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
     <property name="sqlMaps" ref="repository.statementMappings" />
   </bean>
 
@@ -133,7 +126,7 @@
   </bean>
 
   <bean id="repository.defaultRevisionStore" class="vtk.repository.store.DefaultRevisionStore">
-    <property name="sqlMapClient" ref="repository.sqlMapClient" />
+    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="principalFactory" ref="principalFactory" />
     <property name="revisionDirectory" value="${repositoryRevisionDirectory}" />
@@ -141,7 +134,7 @@
   </bean>
 
   <bean id="repository.sqlMapCommentDao" class="vtk.repository.store.db.SqlMapCommentDAO">
-    <property name="sqlMapClient" ref="repository.sqlMapClient" />
+    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="principalFactory" ref="principalFactory" />
   </bean>

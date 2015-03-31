@@ -30,18 +30,15 @@
  */
 package vtk.repository.store.db;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Comment;
-import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.repository.store.CommentDAO;
-import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 
 public class SqlMapCommentDAO extends AbstractSqlMapDataAccessor implements CommentDAO {
@@ -57,7 +54,7 @@ public class SqlMapCommentDAO extends AbstractSqlMapDataAccessor implements Comm
     public int getNumberOfComments(Resource resource) throws RuntimeException {
         String sqlMap = getSqlMap("numberOfCommentsByResource");
 
-        return (Integer) getSqlMapClientTemplate().queryForObject(sqlMap, resource.getURI().toString());
+        return getSqlSession().selectOne(sqlMap, resource.getURI().toString());
     }
     
     @Override
@@ -73,44 +70,28 @@ public class SqlMapCommentDAO extends AbstractSqlMapDataAccessor implements Comm
         parameters.put("uriWildcard", 
                 SqlDaoUtils.getUriSqlWildcard(resource.getURI(), 
                         SQL_ESCAPE_CHAR));
+        List<Comment> comments =
+                getSqlSession().selectList(sqlMap, parameters);
         
-        List<Comment> comments = new ArrayList<Comment>();
-
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> theComments =
-            getSqlMapClientTemplate().queryForList(sqlMap, parameters);
-
-        for (Map<String, Object> commentMap: theComments) {
-            Comment c = new Comment();
-            c.setID(commentMap.get("ID").toString());
-            c.setURI(Path.fromString((String) commentMap.get("URI")));
-            c.setTime((Date) commentMap.get("time"));
-            Principal author = this.principalFactory.getPrincipal((String) commentMap.get("author"), Principal.Type.USER);
-            c.setAuthor(author);
-            c.setContent((String) commentMap.get("content"));
-            // XXX: title, approved
-
-            comments.add(c);
-        }
         return comments;
     }
 
     @Override
     public void deleteComment(Comment comment) {
         String sqlMap = getSqlMap("deleteComment");
-        getSqlMapClientTemplate().delete(sqlMap, Integer.valueOf(comment.getID()));
+        getSqlSession().delete(sqlMap, Integer.valueOf(comment.getID()));
     }
     
     @Override
     public void deleteAllComments(Resource resource) {
         String sqlMap = getSqlMap("deleteAllComments");
-        getSqlMapClientTemplate().delete(sqlMap, resource);
+        getSqlSession().delete(sqlMap, resource);
     }
 
     @Override
     public Comment createComment(Comment comment) {
         String sqlMap = getSqlMap("insertComment");
-        getSqlMapClientTemplate().insert(sqlMap, comment);
+        getSqlSession().insert(sqlMap, comment);
         // XXX: define new semantics for creating a new comment:
         // client should first obtain a new unique ID, then call
         // create(comment).
@@ -120,9 +101,9 @@ public class SqlMapCommentDAO extends AbstractSqlMapDataAccessor implements Comm
     @Override
     public Comment updateComment(Comment comment) {
         String sqlMap = getSqlMap("updateComment");
-        getSqlMapClientTemplate().update(sqlMap, comment);
+        getSqlSession().update(sqlMap, comment);
         sqlMap = getSqlMap("loadCommentById");
-        comment = (Comment) getSqlMapClientTemplate().queryForObject(sqlMap, Integer.valueOf(comment.getID()));
+        comment = getSqlSession().selectOne(sqlMap, Integer.valueOf(comment.getID()));
         return comment;
     }
 

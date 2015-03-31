@@ -53,6 +53,7 @@
 
   <logger name="java.sql"><level value="info" /></logger>
   <logger name="org.apache.commons.dbcp"><level value="info" /></logger>
+  <logger name="vtk.repository.store.db"><level value="warn" /></logger>
   
 <!--  <logger name="vtk.repository.index"><level value="debug" /></logger>
   <logger name="vtk.repository.search"><level value="debug" /></logger>-->

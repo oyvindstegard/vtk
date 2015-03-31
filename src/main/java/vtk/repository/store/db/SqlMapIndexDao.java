@@ -30,35 +30,26 @@
  */
 package vtk.repository.store.db;
 
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.ibatis.SqlMapClientCallback;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+
+import vtk.repository.Acl;
+import vtk.repository.Namespace;
 import vtk.repository.Path;
-import vtk.repository.PropertySet;
-import vtk.repository.PropertySetImpl;
+import vtk.repository.Property;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.store.IndexDao;
 import vtk.repository.store.PropertySetHandler;
-import vtk.security.Principal;
+import vtk.repository.store.db.SqlMapDataAccessor.AclHolder;
 import vtk.security.PrincipalFactory;
-
-import static vtk.repository.store.db.SqlMapDataAccessor.AclHolder;
-
-import com.ibatis.sqlmap.client.SqlMapExecutor;
-import java.util.ArrayList;
-import vtk.repository.Acl;
-import vtk.repository.Namespace;
-import vtk.repository.Property;
 
 /**
  * Index data accessor based on iBatis.
@@ -76,14 +67,15 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
     @Override
     public void orderedPropertySetIteration(PropertySetHandler handler) 
         throws DataAccessException { 
-
-        SqlMapClientTemplate client = getSqlMapClientTemplate();
+        
+        SqlSession client = getSqlSession();
+        
         String statementId = getSqlMap("orderedPropertySetIteration");
 
         PropertySetRowHandler rowHandler = 
             new PropertySetRowHandler(handler, this.resourceTypeTree, this.principalFactory, this);
 
-        client.queryWithRowHandler(statementId, rowHandler);
+        client.select(statementId, rowHandler);
 
         rowHandler.handleLastBufferedRows();
     }
@@ -92,7 +84,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
     public void orderedPropertySetIteration(Path startUri, PropertySetHandler handler) 
         throws DataAccessException {
         
-        SqlMapClientTemplate client = getSqlMapClientTemplate();
+        SqlSession client = getSqlSession();
 
         String statementId = getSqlMap("orderedPropertySetIterationWithStartUri");
 
@@ -105,7 +97,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         parameters.put("uriWildcard", SqlDaoUtils.getUriSqlWildcard(startUri,
                                       AbstractSqlMapDataAccessor.SQL_ESCAPE_CHAR));
 
-        client.queryWithRowHandler(statementId, parameters, rowHandler);
+        client.select(statementId, parameters, rowHandler);
 
         rowHandler.handleLastBufferedRows();
     }
@@ -119,39 +111,30 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
             return;
         }
         
-        SqlMapClientTemplate client = getSqlMapClientTemplate();
+        SqlSession client = getSqlSession();
 
         String getSessionIdStatement = getSqlMap("nextTempTableSessionId");
-
-        final Integer sessionId = (Integer) client
-                .queryForObject(getSessionIdStatement);
+        final Integer sessionID = client.selectOne(getSessionIdStatement);
 
         final String insertUriTempTableStatement = getSqlMap("insertUriIntoTempTable");
+        
+        int rowsUpdated = 0;
+        int statementCount = 0;
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("sessionId", sessionID);
+        
+        for (Path uri : uris) {
+            params.put("uri", uri.toString());
+            client.insert(insertUriTempTableStatement, params);
 
-        Integer batchCount = (Integer) client.execute(new SqlMapClientCallback() {
-            @Override
-            public Object doInSqlMapClient(SqlMapExecutor sqlMapExec)
-                    throws SQLException {
-
-                int rowsUpdated = 0;
-                int statementCount = 0;
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put("sessionId", sessionId);
-                sqlMapExec.startBatch();
-                for (Path uri : uris) {
-                    params.put("uri", uri.toString());
-                    sqlMapExec.insert(insertUriTempTableStatement, params);
-
-                    if (++statementCount % UPDATE_BATCH_SIZE_LIMIT == 0) {
-                        // Reached limit of how many inserts we batch, execute current batch immediately
-                        rowsUpdated += sqlMapExec.executeBatch();
-                        sqlMapExec.startBatch();
-                    }
-                }
-                rowsUpdated += sqlMapExec.executeBatch();
-                return new Integer(rowsUpdated);
+            if (++statementCount % UPDATE_BATCH_SIZE_LIMIT == 0) {
+                // Reached limit of how many inserts we batch, execute current batch immediately
+                rowsUpdated += client.flushStatements().size();
             }
-        });
+        }
+        rowsUpdated += client.flushStatements().size();
+        
+        int batchCount = rowsUpdated;
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Number of inserts batched (uri list): " + batchCount);
@@ -161,15 +144,14 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
 
         PropertySetRowHandler rowHandler = new PropertySetRowHandler(handler,
                 this.resourceTypeTree, this.principalFactory, this);
-
-        client.queryWithRowHandler(statement, sessionId, rowHandler);
-
+        
+        client.select(statement, sessionID, rowHandler);
+        
         rowHandler.handleLastBufferedRows();
 
         // Clean-up temp table
         statement = getSqlMap("deleteFromTempTableBySessionId");
-        client.delete(statement, sessionId);
-
+        client.delete(statement, sessionID);
     }
     
     List<Map<String,Object>> loadInheritablePropertyRows(List<Path> paths) {
@@ -177,7 +159,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         Map<String, Object> parameterMap = new HashMap<String, Object>();
         parameterMap.put("uris", paths);
         
-        return getSqlMapClientTemplate().queryForList(sqlMap, parameterMap);
+        return getSqlSession().selectList(sqlMap, parameterMap);
     }
     
     /**
