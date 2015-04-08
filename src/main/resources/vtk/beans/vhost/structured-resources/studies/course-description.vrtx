@@ -449,13 +449,6 @@ resourcetype course-description {
         <li><a href="#evaluering-av-emnet">[localized 'evaluering-av-emnet-group']</a></li>
         [def count count + 1]
       [endif]
-      [def other-text-field document.properties.other-text-field]
-      [if other-text-field != null && evaluering-av-emnet-text-field != ""]
-        [if count = 3]</ul><ul class="thirds-middle"><li>
-        [elseif count = 6]</ul><ul class="thirds-right"><li>[endif]
-        <li><a href="#other">[localized 'other-text-field']</a></li>
-        [def count count + 1]
-      [endif]
       </ul>
       ##
     }
