@@ -30,6 +30,8 @@
  */
 package vtk.web.report;
 
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -50,26 +52,22 @@ public class WebOtherReporter extends DocumentReporter {
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition sortPropDef;
     private SortFieldDirection sortOrder;
+    private LinkedHashMap<String, TermOperator> baseWebpageTypes;
+    private LinkedHashMap<String, TermOperator> webpageTypes;
 
     @Override
     protected Search getSearch(String token, Resource currentResource, HttpServletRequest request) {
         AndQuery q = new AndQuery();
-        OrQuery orq = new OrQuery();
 
-        orq.add(new TypeTermQuery("json-resource", TermOperator.IN));
-        orq.add(new TypeTermQuery("apt-resource", TermOperator.IN));
+        OrQuery orq = new OrQuery();
+        for (Entry<String, TermOperator> entry : baseWebpageTypes.entrySet()) {
+            orq.add(new TypeTermQuery(entry.getKey(), entry.getValue()));
+        }
         q.add(orq);
 
-        q.add(new TypeTermQuery("structured-article", TermOperator.NI));
-        q.add(new TypeTermQuery("structured-event", TermOperator.NI));
-        q.add(new TypeTermQuery("person", TermOperator.NI));
-        q.add(new TypeTermQuery("structured-project", TermOperator.NI));
-        q.add(new TypeTermQuery("structured-master", TermOperator.NI));
-        q.add(new TypeTermQuery("research-group", TermOperator.NI));
-        q.add(new TypeTermQuery("organizational-unit", TermOperator.NI));
-        q.add(new TypeTermQuery("contact-supervisor", TermOperator.NI));
-        q.add(new TypeTermQuery("frontpage", TermOperator.NI));
-        q.add(new TypeTermQuery("structured-message", TermOperator.NI));
+        for (Entry<String, TermOperator> entry : webpageTypes.entrySet()) {
+            q.add(new TypeTermQuery(entry.getKey(), oppositeTermOperator(entry.getValue())));
+        }
 
         /* In current resource but not in /vrtx. */
         UriPrefixQuery upq = new UriPrefixQuery(currentResource.getURI().toString(), false);
@@ -79,7 +77,7 @@ public class WebOtherReporter extends DocumentReporter {
 
         Search search = new Search();
         Sorting sorting = new Sorting();
-        sorting.addSortField(new PropertySortField(this.sortPropDef, this.sortOrder));
+        sorting.addSortField(new PropertySortField(sortPropDef, sortOrder));
         search.setSorting(sorting);
         search.setQuery(q);
 
@@ -87,6 +85,24 @@ public class WebOtherReporter extends DocumentReporter {
         search.clearAllFilterFlags();
 
         return search;
+    }
+
+    private TermOperator oppositeTermOperator(TermOperator termOperator) {
+        if (termOperator.equals(TermOperator.IN)) {
+            return TermOperator.NI;
+        } else if (termOperator.equals(TermOperator.EQ)) {
+            return TermOperator.NE;
+        } else {
+            return termOperator;
+        }
+    }
+
+    public void setTitlePropDef(PropertyTypeDefinition titlePropDef) {
+        this.titlePropDef = titlePropDef;
+    }
+
+    public PropertyTypeDefinition getTitlePropDef() {
+        return titlePropDef;
     }
 
     @Required
@@ -99,11 +115,14 @@ public class WebOtherReporter extends DocumentReporter {
         this.sortOrder = sortOrder;
     }
 
-    public void setTitlePropDef(PropertyTypeDefinition titlePropDef) {
-        this.titlePropDef = titlePropDef;
+    @Required
+    public void setWebpageTypes(LinkedHashMap<String, TermOperator> webpageTypes) {
+        this.webpageTypes = webpageTypes;
     }
 
-    public PropertyTypeDefinition getTitlePropDef() {
-        return titlePropDef;
+    @Required
+    public void setBaseWebpageTypes(LinkedHashMap<String, TermOperator> baseWebpageTypes) {
+        this.baseWebpageTypes = baseWebpageTypes;
     }
+
 }

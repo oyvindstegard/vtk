@@ -78,15 +78,18 @@
 
 <#macro displayTable masterListing collection>
   <#local masters = masterListing.entries />
+  
   <#if (masters?size > 0)>
-    <div class="vrtx-master-table">
+    <div class="vrtx-master-table<#if viewOngoingMastersLink?exists> vrtx-master-table-ongoing-completed</#if>">
       <table class="sortable" border="1">
         <thead>
           <tr>
             <th scope="col" id="vrtx-table-title" class="sortable-text">${vrtx.getMsg("property.title")}</th>
             <th scope="col" id="vrtx-table-creation-time" class="sortable-sortEnglishLonghandDateFormat">${vrtx.getMsg("publish.permission.published")}</th>
-            <th scope="col" id="vrtx-table-scope" class="sortable-text">${vrtx.getMsg("masterListing.scope")}</th>
-	      	<th scope="col" id="vrtx-table-dimensions-height" class="sortable-text">${vrtx.getMsg("masterListing.persons")}</th>
+            <#if viewOngoingMastersLink?exists>
+              <th scope="col" id="vrtx-table-students" class="sortable-text">${vrtx.getMsg("masterListing.students")}</th>
+            </#if>
+	      	<th scope="col" id="vrtx-table-supervisors" class="sortable-text">${vrtx.getMsg("masterListing.supervisors")}</th>
           </tr>
         </thead>
         <tbody>
@@ -102,42 +105,66 @@
             <td class="vrtx-table-title"><a href="${masterEntry.url}">${title}</a></td>
             <#local publishDate = vrtx.propValue(master, 'publish-date', 'short', '') />
             <td class="vrtx-table-creation-time">${publishDate}</td>
-            <td class="vrtx-table-scope">${vrtx.propValue(master, 'credits')?html}</td>
-            <td class="vrtx-table-persons">
             
-            <#if personsRelatedToMaster?? && personsRelatedToMaster[master]?exists >
-		        <ul>
-		        <#assign count = 1 />
-		        <#assign size = personsRelatedToMaster[master]?size />
-			      <#list personsRelatedToMaster[master] as person>
-				      <#assign url = vrtx.getMetadata(person, "url") />
-				      <#assign surname = vrtx.getMetadata(person, "surname") />
-           		<#assign firstName = vrtx.getMetadata(person, "firstName") />
-           	    <#assign description = vrtx.getMetadata(person "description") />
-           		<#assign name = "" />
-			        <#if surname != "" && firstName != "">
-			          <#assign name = firstName + " " + surname />
-			        <#else>
-			          <#assign url = "" />
-				        <#assign name = description />
-			        </#if>
-					   
-			        <#if name?exists >
-				        <li>
-				          <#if url?exists && url != "">
-					          <a href="${url?html}">${name?html}<#t/>
-					        <#else>
-					          ${name?html}<#t/>
-					        </#if>
-					        <#t/><#if (size > 1 && count < size)>,</#if>
-				        </li>
-				        <#assign count = count + 1 />
-				      </#if>
-				    </#list>
-			      </ul>
-            </#if> 
-                        
-            </td>
+            <#if viewOngoingMastersLink?exists>
+              <td class="vrtx-table-students">
+                <#-- XXX: JSON, is there another way to do this (never used ?is_hash before) -->
+                 <#local students = vrtx.prop(master, 'students') />
+                 <#if students?? && students?is_hash>
+                   <#local studentsObj = students.getValues() />
+		           <#local count = 1 />
+		           <#local size = studentsObj?size />
+		           <ul>
+                   <#list studentsObj as student>
+                     <#local studentObj = student.getJSONValue() />
+                     <#if studentObj.studentName??>
+				       <li>
+				       <#if studentObj.studentUrl??>
+					     <a href="${studentObj.studentUrl?html}">${studentObj.studentName?html}</a><#t/>
+				       <#else>
+					     ${studentObj.studentName?html}<#t/>
+				       </#if>
+				       <#t/><#if (size > 1 && count < size)>,</#if>
+				       </li>
+				       <#local count = count + 1 />
+				     </#if>
+                   </#list>
+                   </ul>
+                 </#if>
+               </td>
+             </#if>
+            
+             <td class="vrtx-table-supervisors">
+               <#if personsRelatedToMaster?? && personsRelatedToMaster[master]?exists >
+		         <ul>
+		         <#local count = 1 />
+		         <#local size = personsRelatedToMaster[master]?size />
+			     <#list personsRelatedToMaster[master] as person>
+				   <#local url = vrtx.getMetadata(person, "url") />
+				   <#local surname = vrtx.getMetadata(person, "surname") />
+           		   <#local firstName = vrtx.getMetadata(person, "firstName") />
+           	       <#local description = vrtx.getMetadata(person "description") />
+           		   <#local fullName = "" />
+			       <#if surname != "" && firstName != "">
+			         <#local fullName = firstName + " " + surname />
+			       <#else>
+				     <#local fullName = description />
+			       </#if>
+			       <#if fullName != "" >
+				     <li>
+				       <#if url != "">
+					     <a href="${url?html}">${fullName?html}<#t/>
+					   <#else>
+					     ${fullName?html}<#t/>
+					   </#if>
+					   <#t/><#if (size > 1 && count < size)>,</#if>
+				     </li>
+				     <#local count = count + 1 />
+				   </#if>
+			     </#list>
+			     </ul>
+               </#if>     
+             </td>
           </tr>
           <#assign masterCount = masterCount + 1 />
         </#list>

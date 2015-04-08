@@ -12,6 +12,8 @@
 	    selectedTable.removeAttribute("cellSpacing");
       if ( selectedTable.getAttribute("cellPadding") )
 	    selectedTable.removeAttribute("cellPadding");
+      if ( selectedTable.getAttribute("summary") )
+	    selectedTable.removeAttribute("summary");
 	  if ( selectedTable.getAttribute("align") )
 	    selectedTable.removeAttribute("align");
 	  if ( selectedTable.getAttribute("border") )
@@ -23,13 +25,13 @@
 	  data.info[ id ] = this.getValue();
 	};
 		
-    function addBooleanStyleClass(field, clsField, clsName, clsSetCondition) { // Used for no-border class
+    function addBooleanStyleClass(field, clsField, clsName, clsSetCondition) { // Used for 'no-border' class
 	  if(clsField) {
 	    addStyleClass(clsField, clsName, "(\\s+)?" + clsName.replace("-", "\\-"), field.getValue() == clsSetCondition)
 	  }
     }
     
-    function addDropdownStyleClass(field, clsField, clsType) { // Used for align-<left|middle|right> classes
+    function addDropdownStyleClass(field, clsField, clsType) { // Used for 'align-<left|middle|right>' classes
 	  if(clsField) {
 	    var clsName = field.getValue();
 	    addStyleClass(clsField, clsName, "(\\s+)?" + clsType + "\\-\\w+", "gi", clsName != "");
@@ -588,7 +590,7 @@
 									captionElement.getItem( i ).remove();
 							}
 						}
-					},
+					}/*,
 						{
 						type: 'text',
 						id: 'txtSummary',
@@ -603,7 +605,7 @@
 							else
 								selectedTable.removeAttribute( 'summary' );
 						}
-					}
+					}*/
 					]
 				}
 				]

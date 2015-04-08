@@ -71,7 +71,7 @@ JavaScript and plain JS plugins
 │   │   └── vrtx-datepicker.js
 │   ├── editor.js
 │   ├── frameworks
-│   │   └── dejavu.js
+│   │   └── es5-shim-dejavu.js
 │   ├── gallery.js
 │   ├── iframe-admin.js
 │   ├── iframe-view.js

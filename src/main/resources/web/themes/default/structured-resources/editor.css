@@ -397,27 +397,19 @@
 
 /* Selects - all is default */
 
-#editor.select-typeToDisplay-so .internasjonale-sokere-admin,
-#editor.select-typeToDisplay-so .nordiske-sokere,
-#editor.select-typeToDisplay-so .generelle-admin,
-#editor.select-typeToDisplay-so .pris,
+#editor.select-typeToDisplay-so .price-admin,
 #editor.select-typeToDisplay-so .regelverk,
 #editor.select-typeToDisplay-so .documentation-admin,
-#editor.select-typeToDisplay-nm .internasjonale-sokere-admin,
-#editor.select-typeToDisplay-nm .nordiske-sokere,
 #editor.select-typeToDisplay-nm .spesielle-admin,
-#editor.select-typeToDisplay-nm .opptakskrav-admin,
 #editor.select-typeToDisplay-nm .forstevitnemal-kvote,
 #editor.select-typeToDisplay-nm .ordinar-kvote-alle-kvalifiserte,
-#editor.select-typeToDisplay-nm .poenggrenser,
+#editor.select-typeToDisplay-nm .credit-limits,
 #editor.select-typeToDisplay-nm .studiekode,
 #editor.select-typeToDisplay-nm .quota,
-#editor.select-typeToDisplay-em .metode-admin,
 #editor.select-typeToDisplay-em .spesielle-admin,
-#editor.select-typeToDisplay-em .opptakskrav-admin,
 #editor.select-typeToDisplay-em .forstevitnemal-kvote,
 #editor.select-typeToDisplay-em .ordinar-kvote-alle-kvalifiserte,
-#editor.select-typeToDisplay-em .poenggrenser,
+#editor.select-typeToDisplay-em .credit-limits,
 #editor.select-typeToDisplay-em .quota,
 #editor.select-typeToDisplay-em .studiekode {
   display: none;

@@ -694,7 +694,8 @@ function courseSchedule() {
       editorSubmitButtons.prepend(newButtonsHtml);
       contents.find("#vrtx-editor-title-submit-buttons").show();
       
-      editorSubmitButtons.on("click", "#vrtx-embedded-cancel-button", function(e) { /* Cancel and unlock to view */
+      /* Cancel and unlock to view */
+      editorSubmitButtons.on("click", "#vrtx-embedded-cancel-button", function(e) {
         var form = $("form[name='unlockForm']");
         var url = form.attr("action");
         var dataString = form.serialize();
@@ -718,6 +719,21 @@ function courseSchedule() {
                  csRef.getActivitiesForTypeHtml("group", false);
       editorProperties.prepend("<div class='vrtx-grouped'>" + html + "</div>"); 
       setupFullEditorAccordions(csRef, editorProperties);
+      
+      /* Cancel and unlock to admin preview - could also just click the button for unlock */
+      $(document).on("click", "#cancelAction", function(e) {
+        var form = $("form[name='unlockForm']");
+        var url = form.attr("action");
+        var dataString = form.serialize();
+        vrtxAdmin.serverFacade.postHtml(url, dataString, {
+          success: function (results, status, resp) {
+            csRef.cancelled = true;
+            window.location.href = window.location.pathname + "?vrtx=admin";
+          }
+        });
+        e.stopPropagation();
+        e.preventDefault();
+      });
     }
     
     JSON_ELEMENTS_INITIALIZED.resolve();

@@ -54,7 +54,7 @@
   </bean>
 
   <bean id="abstractReportHandler" abstract="true"
-    class="vtk.web.report.ReportHandler" parent="repositoryAware">
+        class="vtk.web.report.ReportHandler" parent="repositoryAware">
     <property name="viewName" value="report" />
     <property name="localeResolver" ref="manageLocaleResolver" />
     <property name="documentPrincipalMetadataRetriever" ref="documentPrincipalMetadataRetriever" />
@@ -120,7 +120,7 @@
   </bean>
 
   <bean id="listResourcesReporter" class="vtk.web.report.ListResourcesReporter"
-    parent="reporter">
+        parent="reporter">
     <property name="name" value="list-resources" />
     <property name="viewName" value="listResources" />
   </bean>
@@ -128,10 +128,69 @@
   <bean id="diagramReport" class="vtk.web.report.DiagramReport" parent="reporter">
     <property name="name" ref="diagramReportName" />
     <property name="viewName" value="diagramReport" />
+    <property name="baseWebpageTypes" ref="baseWebpageTypes" />
+    <property name="webpageTypes" ref="webpageTypes" />
+    <property name="fileTypes" ref="fileTypes" />
   </bean>
 
   <bean id="diagramReportName" class="java.lang.String">
     <constructor-arg value="diagram"/>
+  </bean>
+
+  <bean id="baseWebpageTypes" class="org.springframework.beans.factory.config.MapFactoryBean">
+    <property name="targetMapClass">
+      <value>java.util.LinkedHashMap</value>
+    </property>
+    <property name="sourceMap">
+      <map>
+        <entry key="apt-resource" value="IN" />
+        <entry key="php" value="IN" />
+        <entry key="html" value="IN" />
+        <entry key="managed-xml" value="IN" />
+        <entry key="json-resource" value="IN" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="webpageTypes" class="org.springframework.beans.factory.config.MapFactoryBean">
+    <property name="targetMapClass">
+      <value>java.util.LinkedHashMap</value>
+    </property>
+    <property name="sourceMap">
+      <map>
+        <entry key="structured-article" value="IN" />
+        <entry key="structured-event" value="IN" />
+        <entry key="person" value="IN" />
+        <entry key="structured-project" value="IN" />
+        <entry key="structured-master" value="IN" />
+        <entry key="research-group" value="IN" />
+        <entry key="organizational-unit" value="IN" />
+        <entry key="contact-supervisor" value="IN" />
+        <entry key="frontpage" value="IN" />
+        <entry key="structured-message" value="IN" />
+        <entry key="managed-xml" value="IN" />
+        <entry key="html" value="IN" />
+        <entry key="php" value="IN" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="fileTypes" class="org.springframework.beans.factory.config.MapFactoryBean">
+    <property name="targetMapClass">
+      <value>java.util.LinkedHashMap</value>
+    </property>
+    <property name="sourceMap">
+      <map>
+        <entry key="image" value="IN" />
+        <entry key="audio" value="IN" />
+        <entry key="video" value="IN" />
+        <entry key="pdf" value="IN" />
+        <entry key="doc" value="IN" />
+        <entry key="ppt" value="IN" />
+        <entry key="xls" value="IN" />
+        <entry key="text" value="EQ" />
+      </map>
+    </property>
   </bean>
 
   <bean id="brokenLinksReport" class="vtk.web.report.BrokenLinksReport" parent="reporter">
@@ -178,7 +237,7 @@
     <property name="type" value="file" />
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
-  
+
   <bean id="unpublishedReporter" class="vtk.web.report.UnpublishedReporter" parent="documentReporter">
     <property name="name" value="unpublished" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
@@ -194,6 +253,7 @@
     <property name="titlePropDef" ref="titlePropDef" />
     <property name="backReportName" ref="diagramReportName" />
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
+    <property name="baseWebpageTypes" ref="baseWebpageTypes" />
   </bean>
 
   <bean id="otherReporter" class="vtk.web.report.OtherReporter" parent="documentReporter">
@@ -202,6 +262,8 @@
     <property name="titlePropDef" ref="titlePropDef" />
     <property name="backReportName" ref="diagramReportName" />
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
+    <property name="baseWebpageTypes" ref="baseWebpageTypes" />
+    <property name="fileTypes" ref="fileTypes" />
   </bean>
 
   <bean id="webOtherReporter" class="vtk.web.report.WebOtherReporter" parent="documentReporter">
@@ -210,6 +272,8 @@
     <property name="titlePropDef" ref="titlePropDef" />
     <property name="backReportName" ref="diagramReportName" />
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
+    <property name="baseWebpageTypes" ref="baseWebpageTypes" />
+    <property name="webpageTypes" ref="webpageTypes" />
   </bean>
 
   <bean id="imageReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
@@ -281,7 +345,7 @@
     <property name="titlePropDef" ref="titlePropDef" />
     <property name="type" value="text" />
     <property name="backReportName" ref="diagramReportName" />
-    <property name="termIN" value="false" />
+    <property name="termOperator" value="EQ" />
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
@@ -291,7 +355,6 @@
     <property name="titlePropDef" ref="titlePropDef" />
     <property name="type" value="frontpage" />
     <property name="backReportName" ref="diagramReportName" />
-    <property name="termIN" value="false" />
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 

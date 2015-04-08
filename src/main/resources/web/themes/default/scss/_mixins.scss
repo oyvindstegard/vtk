@@ -123,6 +123,8 @@
     $class: "true";
   } @elseif $type == text {
     $resourceType: "file-txt";
+  } @elseif $type == videoref {
+    $resourceType: "file-video";
   }
   &.#{$class} {
     @if $firstIsPng {
@@ -150,6 +152,8 @@
     $class: "true";
   } @elseif $type == text {
     $resourceType: "file-txt";
+  } @elseif $type == videoref {
+    $resourceType: "file-video";
   }
   &.#{$class} {
     @if $hasUnpublished {
