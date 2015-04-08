@@ -32,7 +32,7 @@
     <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
     <#if additionalContent?has_content>
       <div id="vrtx-content">
-        <div id="vrtx-main-content">
+        <div id="vrtx-main-content" class="vrtx-hide-additional-content-true">
     </#if>
   
     <@vrtx.displayLinkOtherLang collection />
