@@ -205,7 +205,8 @@ public class PropertyFields extends Fields {
                     // on token size.
                     if (indexFieldValue instanceof String
                             && indexFieldValue.toString().length() > Property.MAX_STRING_LENGTH) {
-                        logger.warn("Skipped indexing of too large field value in JSON property " + prop);
+                        logger.warn("Skipped indexing of too large field value in JSON property " 
+                                + prop + "(@" + jsonDottedField + ")");
                         continue;
                     }
                     
