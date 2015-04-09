@@ -151,6 +151,12 @@ public class PropertyFields extends Fields {
     /**
      * Adds all fields for a given JSON property to field list, both lowercased
      * and regular variants, and a stored field for the raw JSON string value.
+     * 
+     * <p>
+     * Field values encountered in indexable JSON data that are larger than
+     * {@link Property#MAX_STRING_LENGTH} will not be added. A warning will be
+     * logged in such cases.
+     *
      * @param prop
      * @param fields list of fields to add to
      * @return
@@ -194,6 +200,15 @@ public class PropertyFields extends Fields {
                 String indexFieldName = jsonFieldName(def, jsonDottedField, false);
                 Type dataType = PropertyFields.jsonFieldDataType(def, jsonDottedField);
                 for (Object indexFieldValue : values) {
+                    // Guard against terms that are too large, since we don't really know
+                    // what kind of JSON data we are dealing with. Lucene has limits
+                    // on token size.
+                    if (indexFieldValue instanceof String
+                            && indexFieldValue.toString().length() > Property.MAX_STRING_LENGTH) {
+                        logger.warn("Skipped indexing of too large field value in JSON property " + prop);
+                        continue;
+                    }
+                    
                     // Indexed fields
                     fields.addAll(objectFields(indexFieldName, indexFieldValue, dataType, INDEXED));
 
@@ -205,11 +220,16 @@ public class PropertyFields extends Fields {
                 }
                 // Sort field if single value STRING type
                 if (dataType == Type.STRING && values.size() == 1) {
-                    fields.add(makeSortField(jsonSortFieldName(def, jsonDottedField), values.get(0).toString()));
+                    final String stringValue = values.get(0).toString();
+                    if (stringValue.length() <= Property.MAX_STRING_LENGTH) {
+                        fields.add(makeSortField(jsonSortFieldName(def, jsonDottedField), stringValue));
+                    }
                 }
             }
         } catch (Exception e) {
-            logger.warn("JSON property " + prop + " has a value(s) containing invalid or non-indexable JSON data: " + e.getMessage());
+            logger.warn("JSON property " + prop 
+                    + " has a value(s) containing invalid or non-indexable JSON data: "
+                    + e.getMessage());
         }
 
 // Old code implementing one-level of JSON structure indexing:
