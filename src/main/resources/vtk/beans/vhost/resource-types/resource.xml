@@ -334,6 +334,11 @@
     <property name="metadata">
       <map>
         <entry key="indexableJsonHint" value="true" />
+        <entry key="indexableJsonHint.FieldType.size" value="INT" />
+        <entry key="indexableJsonHint.FieldType.links.url" value="STRING" />
+        <entry key="indexableJsonHint.FieldType.links.type" value="STRING" />
+        <entry key="indexableJsonHint.FieldType.links.source" value="STRING" />
+        <entry key="indexableJsonHint.FieldType.links.reltype" value="STRING" />
       </map>
     </property>
   </bean>
