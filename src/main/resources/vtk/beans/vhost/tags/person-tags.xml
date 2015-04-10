@@ -61,6 +61,18 @@
         </bean>
       </list>
     </property>
+    <property name="searchSorting" ref="tags.personSearchSorting" />
+  </bean>
+
+  <bean id="tags.personSearchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+    <property name="sortOrderPropDefPointers">
+      <list>
+        <value>resource:surname</value>
+        <value>resource:firstName</value>
+      </list>
+    </property>
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
+    <property name="defaultSortOrder" ref="SORT_ORDER.ASC" />
   </bean>
 
 </beans>
