@@ -530,26 +530,7 @@
 
   <bean id="decorating.collectionListingComponent.searchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="decorating.collectionListingComponent.searchComponent" />
-    <property name="searchSorting" ref="decorating.collectionListingComponent.searchSorting" />
-  </bean>
-
-  <bean id="decorating.collectionListingComponent.searchSorting" class="vtk.web.search.SearchSorting"
-    depends-on="resourceTypeTree">
-    <property name="sortPropDef" ref="collection.sortingPropDef" />
-    <property name="sortOrderPropDefPointers">
-      <list>
-        <value>lastModified</value>
-      </list>
-    </property>
-    <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="defaultSortOrder" ref="SORT_ORDER.ASC" />
-    <property name="sortOrderMapping">
-      <map>
-        <entry key="lastModified" value-ref="SORT_ORDER.DESC" />
-        <entry key="title" value-ref="SORT_ORDER.ASC" />
-        <entry key="name" value-ref="SORT_ORDER.ASC" />
-      </map>
-    </property>
+    <property name="searchSorting" ref="collectionListing.searchSorting" />
   </bean>
 
   <bean id="decorating.feedComponent" class="vtk.web.decorating.components.FeedComponent">

@@ -30,13 +30,19 @@
  */
 package vtk.web.decorating.components;
 
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
@@ -72,6 +78,8 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
     private final static String PARAMETER_FOLDER_TITLE_DESCRIPTION = "Set to 'true' to show folder title. Default is false";
     private final static String PARAMETER_COMPACT_VIEW = "compact-view";
     private final static String PARAMETER_COMPACT_VIEW_DESCRIPTION = "Set to 'true' to show compact view. Default is false";
+    private final static String PARAMETER_SORTING = "sorting";
+    private final static String PARAMETER_SORTING_DESCRIPTION = "Sort the listing according to one or more properties, e.g. 'modifiedBy:asc,lastModified:desc'";
 
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
@@ -87,10 +95,17 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
         if (resourcePath == null) {
             throw new DecoratorComponentException("Provided uri is not a valid folder reference: " + uri);
         }
-
+        
         Repository repository = RequestContext.getRequestContext().getRepository();
         String token = SecurityContext.getSecurityContext().getToken();
 
+        HttpServletRequest servletRequest = request.getServletRequest();
+        final String sorting = request.getStringParameter(PARAMETER_SORTING);
+        if (sorting != null) {
+            // Add 'sorting' parameter to request, so that SearchComponent can see it:
+            servletRequest = addSortingParameter(servletRequest, sorting);
+        }
+        
         Resource res;
         try {
             res = repository.retrieve(token, resourcePath, false);
@@ -135,8 +150,8 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
         conf.put("folderTitle", folderTitle);
 
         conf.put("compactView", parameterHasValue(PARAMETER_COMPACT_VIEW, "true", request));
-
-        Listing listing = search.execute(request.getServletRequest(), res, 1, maxItems, 0);
+        
+        Listing listing = search.execute(servletRequest, res, 1, maxItems, 0);
 
         Locale preferredLocale = localeResolver.resolveResourceLocale(res);
         Map<String, Principal> principalDocuments = helper.getPrincipalDocumentLinks(
@@ -170,9 +185,40 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
         map.put(PARAMETER_GO_TO_FOLDER_LINK, PARAMETER_GO_TO_FOLDER_LINK_DESCRIPTION);
         map.put(PARAMETER_FOLDER_TITLE, PARAMETER_FOLDER_TITLE_DESCRIPTION);
         map.put(PARAMETER_COMPACT_VIEW, PARAMETER_COMPACT_VIEW_DESCRIPTION);
+        map.put(PARAMETER_SORTING, PARAMETER_SORTING_DESCRIPTION);
         return map;
     }
 
+    private HttpServletRequest addSortingParameter(HttpServletRequest servletRequest, final String sortInput) {
+        
+        Map<String, String[]> m = new HashMap<>(servletRequest.getParameterMap());
+        m.put(Listing.SORTING_PARAM, sortInput.split(","));
+        
+        final Map<String, String[]> paramsMap = Collections.unmodifiableMap(new HashMap<>(m));
+        
+        return new HttpServletRequestWrapper(servletRequest) {
+            public String getParameter(String name) {
+                String[] vals = paramsMap.get(name);
+                if (vals == null || vals.length == 0) return null;
+                return vals[0];
+            }
+            @Override
+            public Map<?,?> getParameterMap() {
+                return paramsMap;
+            }
+
+            @Override
+            public Enumeration<?> getParameterNames() {
+                return Collections.enumeration(paramsMap.keySet());
+                
+            }
+            @Override
+            public String[] getParameterValues(String name) {
+                return paramsMap.get(name);
+            }
+        };
+    }
+    
     private boolean parameterHasValue(String param, String includeParamValue, DecoratorRequest request) {
         String itemDescriptionString = request.getStringParameter(param);
         if (itemDescriptionString != null && includeParamValue.equalsIgnoreCase(itemDescriptionString)) {
