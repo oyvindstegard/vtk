@@ -197,7 +197,9 @@ public class ManuallyApproveResourcesSearcher {
         // Sort and return
         Collections.sort(result, new ManuallyApproveResourceComparator());
         
-        result = filterOutdated(result, earliestDate);
+        if (earliestDate != null) {
+            result = filterOutdated(result, earliestDate);
+        }
         
         // Handle limit
         if (result.size() > SEARCH_LIMIT) {
@@ -252,10 +254,10 @@ public class ManuallyApproveResourcesSearcher {
             uriOr.add(aggregationQuery);
             and.add(uriOr);
         }
-        
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        and.add(new PropertyTermQuery(publishDatePropDef, sdf.format(earliestDate), TermOperator.GT));
-        
+        if (earliestDate != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            and.add(new PropertyTermQuery(publishDatePropDef, sdf.format(earliestDate), TermOperator.GT));
+        }
         return and;
 
     }
