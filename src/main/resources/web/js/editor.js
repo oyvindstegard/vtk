@@ -289,6 +289,10 @@ VrtxEditor.prototype.richtextEditorFacade = {
         config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax';
         //config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,mathjax';        
       }
+      
+      config.image2_alignClasses = [ 'image-left', 'image-center', 'image-right' ];
+      config.image2_captionedClass = 'image-captioned';
+      
       config.stylesSet = this.divContainerStylesSet;
       if (opts.isSimple) { // XHTML
         config.format_tags = 'p;h1;h2;h3;h4;h5;h6;pre;div';

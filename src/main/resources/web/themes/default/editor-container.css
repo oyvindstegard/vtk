@@ -45,19 +45,19 @@
   float: right;
 }
 
-.cke_widget_wrapper[style*="text-align: center"] figure.image,
-.cke_widget_wrapper p[style*="text-align:center"] {
+.image-center {
+  text-align: center;
   margin: 1em 0;
 }
 
-.cke_widget_wrapper[style*="float: left"] > img,
-.cke_widget_wrapper[style*="float: left"] figure.image {
+.image-left {
   margin: 0 1em 1em 0;
+  float: left;
 }
 
-.cke_widget_wrapper[style*="float: right"] > img,
-.cke_widget_wrapper[style*="float: right"] figure.image {
+.image-right {
   margin: 0 0 1em 1em;
+  float: right;
 }
 
 .vrtx-container img {
