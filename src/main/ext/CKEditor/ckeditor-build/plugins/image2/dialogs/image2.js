@@ -123,7 +123,7 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 
             // USIT Patched (VTK-3873)
             var baseHrefImage2Fixed = ( config.baseHref || '' );
-            if(baseHrefImage2Fixed != "")
+            if(baseHrefImage2Fixed != "") {
                 if(/^\//.test(src)) {
                     baseHrefImage2Fixed = baseHrefImage2Fixed.replace(location.pathname, "");
                 } else if(/^http(s)?:\/\//.test(src)) {
