@@ -287,7 +287,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
 	    // config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,mathjax';	    
       } else {
         config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax';
-        // config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,mathjax';        
+        // config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,mathjax';  
       }
       config.image2_alignClasses = [ 'image-left', 'image-center', 'image-right' ];
       config.image2_captionedClass = 'image-captioned';
