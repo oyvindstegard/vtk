@@ -122,7 +122,8 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			} );
 
 			image.setAttribute( 'src',
-				( config.baseHref || '' ) + src + '?' + Math.random().toString( 16 ).substring( 2 ) );
+				//( config.baseHref || '' ) + src + '?' + Math.random().toString( 16 ).substring( 2 ) );
+				src + '?' + Math.random().toString( 16 ).substring( 2 ) );
 		};
 	}
 
