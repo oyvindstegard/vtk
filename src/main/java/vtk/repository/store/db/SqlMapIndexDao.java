@@ -57,6 +57,11 @@ import vtk.repository.Property;
 
 /**
  * Index data accessor based on iBatis.
+ * 
+ * TODO possible workaround for trouble with binary prop refs going stale
+ * (VTK-3887) is to immediately load all values into memory. But this will cause
+ * higher memory usage for temporarily cached values, and some more thought
+ * needs to be put into the idea.
  */
 public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexDao {
 
