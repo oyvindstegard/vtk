@@ -45,9 +45,17 @@
   float: right;
 }
 
+figure { margin: 0; padding: 0; }
+
 .image-center {
   text-align: center;
   margin: 1em 0;
+}
+.image-center figure {
+  display: inline-block;
+}
+.image-center figcaption {
+  text-align: left;
 }
 
 .image-left {
