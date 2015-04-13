@@ -45,7 +45,7 @@
   float: right;
 }
 
-div.cke_widget_wrapper[style*="text-align: center"],
+div.cke_widget_wrapper[style*="text-align: center"] figure.image,
 div.cke_widget_wrapper p[style*="text-align:center"] {
   margin: 1em 0;
 }
@@ -102,7 +102,8 @@ div.cke_widget_wrapper[style*="float: right"] figure.image {
   border-width: 2px;
 }
 
-.vrtx-facts-container ul,.vrtx-facts-container ol {
+.vrtx-facts-container ul,
+.vrtx-facts-container ol {
   padding-left: 0em;
   margin-left: 2em;
 }
