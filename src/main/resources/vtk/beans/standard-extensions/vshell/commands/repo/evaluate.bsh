@@ -67,7 +67,12 @@ void execute(context, args, out) {
 
                 content = coll ? null : new ContentImpl(propset.getURI(), contentStore, contentRegistry);
 
-                evaluated = helper.contentModification(orig, orig.getOwner(), content);
+                try {
+                    evaluated = helper.contentModification(orig, orig.getOwner(), content);
+                } catch (t) {
+                    out.print("Error: " + t.getMessage());
+                    return true;
+                }
         
                 prop = orig.getProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.LASTMODIFIED_PROP_NAME);
                 if (prop != null) evaluated.addProperty((Property) prop.clone());
