@@ -121,9 +121,18 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 				callback( null );
 			} );
 
+            // USIT Patched (VTK-3873)
+            var baseHrefImage2Fixed = ( config.baseHref || '' );
+            if(baseHrefImage2Fixed != "" && /^\//.test(src)) {
+                baseHrefImage2Fixed = baseHrefImage2Fixed.replace(location.pathname, "");
+            }
 			image.setAttribute( 'src',
-				//( config.baseHref || '' ) + src + '?' + Math.random().toString( 16 ).substring( 2 ) );
-				src + '?' + Math.random().toString( 16 ).substring( 2 ) );
+				baseHrefImage2Fixed + src + '?' + Math.random().toString( 16 ).substring( 2 ) );
+				
+		    /* OLD
+			image.setAttribute( 'src',
+				( config.baseHref || '' ) + src + '?' + Math.random().toString( 16 ).substring( 2 ) );
+		    */
 		};
 	}
 
