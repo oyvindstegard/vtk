@@ -71,6 +71,9 @@ public final class DefaultHtmlTagConfiguration {
         compositeTags.add("dd");
         compositeTags.add("dl");
         
+        compositeTags.add("figure");
+        compositeTags.add("figcaption");
+        
         emptyTags.add("br");
         emptyTags.add("area");
         emptyTags.add("link");
