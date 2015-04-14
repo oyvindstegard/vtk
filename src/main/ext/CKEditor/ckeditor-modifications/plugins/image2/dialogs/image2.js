@@ -426,6 +426,7 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			// Get the natural height of the image.
 			preLoadedHeight = domHeight = natural.height;
 			
+			// USIT Preview (VTK-3873)
 			previewImage( image );
 		},
 		contents: [
