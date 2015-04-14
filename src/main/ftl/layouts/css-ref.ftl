@@ -2,7 +2,7 @@
 <#--
   - File: css-ref.ftl
   - 
-  - Description: inserts a <style rel="stylesheet"> reference to a given URL
+  - Description: inserts a <link rel="stylesheet"> reference to a given URL
   -  
   - Required model data:
   -  url - the CSS URL
