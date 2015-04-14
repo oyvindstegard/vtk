@@ -738,6 +738,19 @@
 			return Math.round( $.clientWidth / natural.width * natural.height ) == $.clientHeight ||
 				Math.round( $.clientHeight / natural.height * natural.width ) == $.clientWidth;
 		},
+		
+		// USIT Preview (VTK-3873)
+		//
+		// Adds a preview image column
+		// @param {CKEDITOR.dom.element} image
+		previewImage: function( image ) {
+		  if(typeof image.$.src !== "string") return;
+		
+		  var previewTag = $(".image2-preview-image");
+		  if(previewTag.length) {
+		    previewTag.attr("src", image.$.src);
+		  }
+		},
 
 		// Returns natural dimensions of the image. For modern browsers
 		// it uses natural(Width|Height) for old ones (IE8), creates

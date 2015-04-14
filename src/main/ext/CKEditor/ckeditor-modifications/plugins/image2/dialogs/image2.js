@@ -48,6 +48,9 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 		// Functions inherited from image2 plugin.
 		checkHasNaturalRatio = helpers.checkHasNaturalRatio,
 		getNatural = helpers.getNatural,
+		
+		// USIT Preview (VTK-3873)
+		previewImage = helpers.previewImage,
 
 		// Global variables referring to the dialog's context.
 		doc, widget, image,
@@ -109,6 +112,9 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			addListener( 'load', function() {
 				// Don't use image.$.(width|height) since it's buggy in IE9-10 (#11159)
 				var dimensions = getNatural( image );
+				
+				// USIT Preview (VTK-3873)
+				previewImage( image );
 
 				callback.call( scope, image, dimensions.width, dimensions.height );
 			} );
@@ -419,6 +425,8 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 
 			// Get the natural height of the image.
 			preLoadedHeight = domHeight = natural.height;
+			
+			previewImage( image );
 		},
 		contents: [
 			{
@@ -435,6 +443,18 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 								children: srcBoxChildren
 							}
 						]
+					},
+					// USIT Preview (VTK-3873)
+					{
+						id: 'preview',
+						type: 'html',
+						onLoad: function() {
+						},
+						setup: function( widget ) {
+						},
+						commit: function( widget ) {
+						},
+						html: "<img class='image2-preview-image' style='max-width: 100%; height: auto; max-height: 150px;' src='' alt='' />"
 					},
 					{
 						id: 'alt',
