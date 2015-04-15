@@ -155,11 +155,11 @@ figcaption {
   float: right;
 }
 .image-left figure,
-.image-left img {
+.image-left > img {
   margin: 0 1em 1em 0;
 }
 .image-right figure,
-.image-right img {
+.image-right > img {
   margin: 0 0 1em 1em;
 }
 p.image-center {
