@@ -151,13 +151,15 @@ figcaption {
 .image-left {
   float: left;
 }
-.image-left figure {
-  margin: 0 1em 1em 0;
-}
 .image-right {
   float: right;
 }
-.image-right figure {
+.image-left figure,
+.image-left img {
+  margin: 0 1em 1em 0;
+}
+.image-right figure,
+.image-right img {
   margin: 0 0 1em 1em;
 }
 p.image-center {
