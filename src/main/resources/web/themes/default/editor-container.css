@@ -149,12 +149,16 @@ figcaption {
 }
 
 .image-left {
-  margin: 0 1em 1em 0;
   float: left;
 }
+.image-left figure {
+  margin: 0 1em 1em 0;
+}
 .image-right {
-  margin: 0 0 1em 1em;
   float: right;
+}
+.image-right figure {
+  margin: 0 0 1em 1em;
 }
 p.image-center {
   text-align: center;
