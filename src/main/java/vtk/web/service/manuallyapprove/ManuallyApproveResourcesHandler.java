@@ -176,9 +176,6 @@ public class ManuallyApproveResourcesHandler implements Controller {
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.MONTH, -12);
             Date earliestDate = cal.getTime();
-            if (alreadyApproved.size() < 100) {
-                earliestDate = null;
-            }
             result = searcher.getManuallyApproveResources(currentCollection, locations, alreadyApproved, earliestDate);
             cache.put(new Element(cacheKey, result));
         }
