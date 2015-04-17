@@ -455,6 +455,7 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 						},
 						commit: function( widget ) {
 						},
+					    // Need to fix: Image moves table out in height
 						html: "<div style='width: 250px; height: 150px; overflow: auto;' >" +
 						        "<img class='image2-preview-image' src='' alt='' />" +
 						      "</div>"

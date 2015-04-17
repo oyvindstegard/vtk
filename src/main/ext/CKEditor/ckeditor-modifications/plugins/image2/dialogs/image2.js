@@ -455,7 +455,10 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 						},
 						commit: function( widget ) {
 						},
-						html: "<img class='image2-preview-image' style='max-width: 100%; height: auto; max-height: 150px;' src='' alt='' />"
+					    // Need to fix: Image moves table out in height
+						html: "<div style='width: 250px; height: 150px; overflow: auto;' >" +
+						        "<img class='image2-preview-image' src='' alt='' />" +
+						      "</div>"
 					},
 					{
 						id: 'alt',
@@ -479,7 +482,11 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 								id: 'width',
 								label: commonLang.width,
 								validate: validateDimension,
-								onKeyUp: onChangeDimension,
+								onKeyUp: function() {
+								  onChangeDimension.apply(this);
+								  // USIT Preview (VTK-3873)
+								  previewImage( image, widthField.getValue(), heightField.getValue() );
+								},
 								onLoad: function() {
 									widthField = this;
 								},
@@ -496,7 +503,11 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 								width: '45px',
 								label: commonLang.height,
 								validate: validateDimension,
-								onKeyUp: onChangeDimension,
+								onKeyUp: function() {
+								  onChangeDimension.apply(this);
+								  // USIT Preview (VTK-3873)
+								  previewImage( image, widthField.getValue(), heightField.getValue() );
+								},
 								onLoad: function() {
 									heightField = this;
 								},
