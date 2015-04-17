@@ -743,12 +743,14 @@
 		//
 		// Adds a preview image column
 		// @param {CKEDITOR.dom.element} image
-		previewImage: function( image ) {
+		previewImage: function( image, w, h ) {
 		  if(typeof image.$.src !== "string") return;
 		
 		  var previewTag = $(".image2-preview-image");
 		  if(previewTag.length) {
 		    previewTag.attr("src", image.$.src);
+		    previewTag.attr("style", "width: " + (typeof w !== "undefined" ? w : image.$.width) + "px !important;" +
+		                             "height: " + (typeof h !== "undefined" ? h : image.$.height) + "px !important;");
 		  }
 		},
 
