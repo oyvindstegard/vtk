@@ -68,7 +68,7 @@
  *
 -->
 <#macro genPlayButtonCSS showPlayButton>
-  <style type="text/css">
+  <style type="text/css" scoped>
     .vrtx-media-player-print { display: none; }
     <#if showPlayButton>
     .vrtx-media-player-no-flash,

@@ -40,7 +40,7 @@
   <!-- end feedback js -->
   
   <!-- start feedback css -->
-  <style type="text/css">
+  <style type="text/css" scoped>
     .vrtx-feedback,
     .vrtx-feedback-thanks {
       position: relative;
