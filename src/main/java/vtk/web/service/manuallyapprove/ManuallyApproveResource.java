@@ -31,8 +31,8 @@
 package vtk.web.service.manuallyapprove;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.apache.commons.lang.time.FastDateFormat;
 
 import vtk.web.service.URL;
 
@@ -40,10 +40,10 @@ public class ManuallyApproveResource implements Serializable {
 
     private static final long serialVersionUID = -8296957318941539258L;
 
-    private String title;
-    private URL url;
-    private String source;
-    private Date publishDate;
+    private final String title;
+    private final URL url;
+    private final String source;
+    private final Date publishDate;
     private boolean approved;
 
     public ManuallyApproveResource(String title, URL url, String source, Date publishDate, boolean approved) {
@@ -71,8 +71,7 @@ public class ManuallyApproveResource implements Serializable {
     }
 
     public String getPublishDateAsString() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return sdf.format(this.publishDate);
+        return FastDateFormat.getInstance("yyyy-MM-dd").format(this.publishDate);
     }
 
     public boolean isApproved() {

@@ -127,8 +127,8 @@ public class CollectionListingAggregationResolver implements AggregationResolver
     }
 
     private void resolveAggregatedResources(Map<URL, Set<Path>> aggregationSet,
-            Map<URL, Set<Path>> manuallyApprovedSet, PropertySet resource, URL currentHostURL, URL startCollectionURL,
-            int depth) {
+                Map<URL, Set<Path>> manuallyApprovedSet, PropertySet resource,
+                URL currentHostURL, URL startCollectionURL, int depth) {
 
         // Include manually approved resources if any
         if (isDisplayManuallyApproved(resource)) {
@@ -314,6 +314,8 @@ public class CollectionListingAggregationResolver implements AggregationResolver
                         search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
                     }
                     search.setQuery(uriSetQuery);
+                    search.setSorting(null);
+                    
                     ResultSet rs = repository.search(token, search);
                     result.addAll(rs.getAllResults());
 

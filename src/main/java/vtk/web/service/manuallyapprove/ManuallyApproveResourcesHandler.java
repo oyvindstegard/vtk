@@ -74,8 +74,6 @@ import vtk.web.service.URL;
  */
 public class ManuallyApproveResourcesHandler implements Controller {
 
-    private ManuallyApproveResourcesSearcher searcher;
-
     private static final String LOCATIONS_PARAM = "locations";
     private static final String AGGREGATE_PARAM = "aggregate";
     private static final String APPROVED_ONLY_PARAM = "approved-only";
@@ -89,6 +87,8 @@ public class ManuallyApproveResourcesHandler implements Controller {
     private PropertyTypeDefinition manuallyApproveFromPropDef;
     private PropertyTypeDefinition manuallyApprovedResourcesPropDef;
     private PropertyTypeDefinition aggregationPropDef;
+    
+    private ManuallyApproveResourcesSearcher searcher;
     private MultiHostSearcher multiHostSearcher;
     private Ehcache cache;
 
@@ -160,7 +160,7 @@ public class ManuallyApproveResourcesHandler implements Controller {
         }
 
         // Nothing to do here...
-        if (locations.size() == 0 && alreadyApproved.size() == 0) {
+        if (locations.isEmpty() && alreadyApproved.isEmpty()) {
             return null;
         }
 
@@ -169,18 +169,15 @@ public class ManuallyApproveResourcesHandler implements Controller {
         Element cached = cache.get(cacheKey);
         Object cachedObj = cached != null ? cached.getObjectValue() : null;
 
-        List<ManuallyApproveResource> result = null;
+        List<ManuallyApproveResource> result;
         if (cachedObj != null) {
             result = (List<ManuallyApproveResource>) cachedObj;
         } else {
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.MONTH, -12);
-            Date earliestDate = cal.getTime();
-            result = searcher.getManuallyApproveResources(currentCollection, locations, alreadyApproved, earliestDate);
+            result = searcher.getManuallyApproveResources(currentCollection, locations, alreadyApproved);
             cache.put(new Element(cacheKey, result));
         }
 
-        if (result == null || result.size() == 0) {
+        if (result == null || result.isEmpty()) {
             return null;
         }
 
