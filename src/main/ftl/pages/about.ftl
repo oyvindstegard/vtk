@@ -299,14 +299,15 @@
       </#assign>
       <@propList.defaultPropertyDisplay propName='duration' name=vrtx.getMsg("proptype.name.duration") value=timeValue />
     </#if>
-    <#if aboutItems['videoStreamablePercentComplete']?? && aboutItems['videoStreamablePercentComplete'].property??>
+    <#if aboutItems['videoStreamablePercentComplete']?? && aboutItems['videoStreamablePercentComplete'].property?? && aboutItems['videoStatus']?? && aboutItems['videoStatus'].property??>
       <#assign videoStreamablePercentComplete = aboutItems['videoStreamablePercentComplete'].property.intValue />
+      <#assign videoStatus = aboutItems['videoStatus'].property.stringValue />
       <tr class="prop-videoStreamablePercentComplete">
         <th scope="row" class="key">
           ${vrtx.getMsg("proptype.name.videoStreamablePercentComplete")}:
         </th>
         <td class="value">
-          <#if videoStreamablePercentComplete = 100>${vrtx.getMsg("yes")}<#else>${vrtx.getMsg("no")} (${videoStreamablePercentComplete}% ${vrtx.getMsg("resource.metadata.about.converted")})</#if>
+          <#if videoStatus = "downloadable_and_streamable">${vrtx.getMsg("yes")}<#else>${vrtx.getMsg("no")} (${videoStreamablePercentComplete}% ${vrtx.getMsg("resource.metadata.about.converted")})</#if>
         </td>
       </tr>
     </#if>
