@@ -126,6 +126,20 @@ ul.cke_panel_list a {
 
 /* New */
 
+body .cke_widget_wrapper.cke_widget_focused>.cke_widget_element,
+body .cke_widget_wrapper .cke_widget_editable.cke_widget_editable_focused {
+  outline: none;  /* ACE */
+  -moz-box-shadow: 0px 0px 0px 2px #ace;
+  -webkit-box-shadow: 0px 0px 0px 2px #ace;
+  box-shadow: 0px 0px 0px 2px #ace;
+}
+body .cke_widget_wrapper:hover>.cke_widget_element,
+body .cke_widget_wrapper:hover .cke_widget_editable {
+  outline: none; /* yellow */
+  -moz-box-shadow: 0px 0px 0px 2px yellow;
+  -webkit-box-shadow: 0px 0px 0px 2px yellow;
+  box-shadow: 0px 0px 0px 2px yellow;
+}
 
 figure,
 figcaption {
@@ -150,17 +164,15 @@ figcaption {
 
 .image-left {
   float: left;
+  margin: 0 1em 1em 0;
 }
 .image-right {
   float: right;
+  margin: 0 0 1em 1em;
 }
 .image-left figure,
-.image-left > img {
-  margin: 0 1em 1em 0;
-}
-.image-right figure,
-.image-right > img {
-  margin: 0 0 1em 1em;
+.image-right figure {
+  margin: 0;
 }
 p.image-center {
   text-align: center;
