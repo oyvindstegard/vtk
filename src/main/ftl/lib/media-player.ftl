@@ -43,8 +43,6 @@
       <video src="${url}" controls<#if autoplay?? && autoplay == "true"> autoplay</#if> width="${width}" height="${height}" poster="${imgSrc?html}"></video>
     </div>
   <#else>
-    <@genPlayButtonCSS showPlayButton />
-
     <div id="mediaspiller-${dateStr}-print" class="vrtx-media-player-print<#if showPlayButton> vrtx-media-player-no-flash</#if>">
       <img src="${imgSrc?html}" width="${width}" height="${height}" alt="${alt}"/>
       <#if showPlayButton><a class="playbutton" href="${url}"></a></#if>
@@ -57,37 +55,6 @@
     </div>
   </#if>
 
-</#macro>
-
-<#--
- * genPlayButtonCSS
- *
- * Generates CSS for play button
- *
- * @param showPlayButton (optional) do we want to show placeholder play button
- *
--->
-<#macro genPlayButtonCSS showPlayButton>
-  <style type="text/css" scoped>
-    .vrtx-media-player-print { display: none; }
-    <#if showPlayButton>
-    .vrtx-media-player-no-flash,
-    .vrtx-media-player-no-flash img { width: 507px; height: 282px; float: left; }
-    .vrtx-media-player-no-flash { background-color: #000000; position: relative; }
-    .vrtx-media-player-no-flash .playbutton { 
-      position: absolute; top: 90px; left: 195px; width: 115px; height: 106px; display: block;
-    }
-    .vrtx-media-player-no-flash .playbutton,
-    .vrtx-media-player-no-flash a.vrtx-media:visited .playbutton,
-    .vrtx-media-player-no-flash a.vrtx-media:active .playbutton,
-    .vrtx-media-player-no-flash .playbutton:visited,
-    .vrtx-media-player-no-flash .playbutton:active {
-      background: url('/vrtx/__vrtx/static-resources/themes/default/icons/video-playbutton.png') no-repeat center center;
-    }
-    .vrtx-media-player-no-flash a.vrtx-media:hover .playbutton,
-    .vrtx-media-player-no-flash .playbutton:hover { background-image: url('/vrtx/__vrtx/static-resources/themes/default/icons/video-playbutton-hover.png'); }
-    </#if>
-  </style>
 </#macro>
 
 <#--
