@@ -228,10 +228,11 @@ vrtxAdmin._$(document).ready(function () {
     if (message.length) {
       message.html(outdatedBrowserText);
     } else {
+      var messageHtml = "<div class='infomessage'>" + outdatedBrowserText + "</div>";
       if(vrtxAdm.bodyId === "vrtx-simple-editor" || isEmbedded) {
-        vrtxAdm.cachedBody.prepend("<div class='infomessage'>" + outdatedBrowserText + "</div>");
+        vrtxAdm.cachedBody.prepend(messageHtml);
       } else {
-        vrtxAdm.cachedAppContent.prepend("<div class='infomessage'>" + outdatedBrowserText + "</div>");
+        vrtxAdm.cachedAppContent.prepend(messageHtml);
       }
     }
   }
