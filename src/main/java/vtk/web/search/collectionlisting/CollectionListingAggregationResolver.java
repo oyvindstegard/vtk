@@ -71,6 +71,17 @@ import vtk.web.service.URL;
  * configured predefined limit for number of resources to aggregate from in each
  * step (20 in production as of June 2013).
  * 
+ * <p>
+ * TODO should put a hard limit on the total size of the aggregation sets, which
+ * will apply to both depth and breadth. If such a limit is hit, the user should
+ * receive a warning in editor, because the result in view will be incomplete.
+ * Also, such a limit may allow for a general increase in limit on depth and
+ * breadth, since it is more flexible. (Either you can have a deep aggregation
+ * structure with few sources on each level, or you may have many sources, but
+ * not much depth. Or something in between.) Similarly, a limit should be put
+ * on the total number of manually approved paths, which gives flexibility to
+ * increase sources if the number of actually approved docs still is low (compared
+ * number of available).
  */
 public class CollectionListingAggregationResolver implements AggregationResolver {
 
