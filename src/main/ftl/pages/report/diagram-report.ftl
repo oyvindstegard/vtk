@@ -40,8 +40,8 @@
         </table>
       </div>
       <div class="vrtx-report-diagram-img">
-        <img id="webtypesimg" width="660" height="220" alt="<@vrtx.msg code="report.${report.reportname}.webpagepiechart" />" 
-             src="https://chart.googleapis.com/chart?chco=ed1c24&amp;chs=660x220&amp;cht=p3&amp;chd=s:Sm&amp;chdl=<#assign first = 0><#list report.webTypes as type><#if (report.webTypeCount[type_index] > 0)><#if (first != 0)>|</#if><@vrtx.msg code="report.webDiagram.+${type}" /><#assign first = 1></#if></#list>&amp;chl=<#assign first = 0><#list report.webTypes as type><#if (report.webTypeCount[type_index] > 0)><#if (first != 0)>|</#if><@vrtx.msg code="report.webDiagram.+${type}" /><#assign first = 1></#if></#list>&amp;chd=t:<#assign first = 0><#list report.webTypes as type><#if (report.webTypeCount[type_index] > 0)><#if (first != 0)>,</#if>${((report.webTypeCount[type_index]/report.thirdtotal)*100)?string("0")}<#assign first = 1></#if></#list>" />
+        <img id="webtypesimg" width="660" height="250" alt="<@vrtx.msg code="report.${report.reportname}.webpagepiechart" />"
+             src="https://chart.googleapis.com/chart?chco=ed1c24&amp;chs=660x250&amp;cht=p3&amp;chd=s:Sm&amp;chdl=<#assign first = 0><#list report.webTypes as type><#if (report.webTypeCount[type_index] > 0)><#if (first != 0)>|</#if><@vrtx.msg code="report.webDiagram.+${type}" /><#assign first = 1></#if></#list>&amp;chl=<#assign first = 0><#list report.webTypes as type><#if (report.webTypeCount[type_index] > 0)><#if (first != 0)>|</#if><@vrtx.msg code="report.webDiagram.+${type}" /><#assign first = 1></#if></#list>&amp;chd=t:<#assign first = 0><#list report.webTypes as type><#if (report.webTypeCount[type_index] > 0)><#if (first != 0)>,</#if>${((report.webTypeCount[type_index]/report.thirdtotal)*100)?string("0")}<#assign first = 1></#if></#list>" />
       </div>
     </div>
   </#if>
