@@ -144,6 +144,11 @@ public class ImageEditController extends ResourceEditController {
     private Map<String, Object> addImageEditorServices(Map<String, Object> model, Resource resource, Principal principal) {
         if (this.loadImageService != null) {
             URL imageSourceURL = this.loadImageService.constructURL(resource, principal);
+            
+            RequestContext requestContext = RequestContext.getRequestContext();
+            if(requestContext.getServletRequest().isSecure() && imageSourceURL.getProtocol().equals("http")) {
+                imageSourceURL.setProtocol("https");
+            }
             model.put("imageURL", imageSourceURL);
         }
         return model;
