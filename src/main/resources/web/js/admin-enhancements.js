@@ -222,8 +222,8 @@ vrtxAdmin._$(document).ready(function () {
   }
   vrtxAdm.embeddedView();
   
-  // Show message in IE6, IE7 and IETrident in compability mode. Should also add message for IE8 soon
-  if ((vrtxAdm.isIE7 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
+  // Show message in IE6=>IE8 and IETrident in compability mode
+  if ((vrtxAdm.isIE8 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
     var message = vrtxAdm.cachedAppContent.find(" > .message");
     if (message.length) {
       message.html(outdatedBrowserText);

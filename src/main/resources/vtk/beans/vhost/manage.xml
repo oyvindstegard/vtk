@@ -912,7 +912,6 @@
         <ref bean="mediaWidthPropDef" />
         <ref bean="mediaDurationPropDef" />
         <ref bean="videoref.streamablePercentCompletePropDef" />
-        <ref bean="videoref.videoStatusPropDef" />
       </list>
     </property>
     <property name="propertyListModelName" value="basicPropList" />
