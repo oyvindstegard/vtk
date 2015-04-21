@@ -706,7 +706,7 @@ resourcetype course-description {
               </div>
             </div>
             [call "comp:semesters"]
-            <div id="vrtx-course-title-toc" class="vrtx-frontpage-box white-box">
+            <div id="vrtx-course-content" class="vrtx-frontpage-box white-box">
               [call "comp:course-content" {"document" : document}]
             </div>
           </div>
