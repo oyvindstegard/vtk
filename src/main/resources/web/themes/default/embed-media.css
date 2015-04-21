@@ -2,6 +2,8 @@
  * Embed media player
  *
  */
+ 
+@import url(view-media-player.css);
 
 html,
 body {
