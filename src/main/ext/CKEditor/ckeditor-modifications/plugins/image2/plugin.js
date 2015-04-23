@@ -746,17 +746,17 @@
 		previewImage: function( image, w, h ) {
 		  var previewWrp = $("#image2-preview");
 		  if(previewWrp.length && typeof image.$.src !== "undefined") {
-		    var ww = (typeof w !== "undefined" ? w : image.$.width);
-		    var hh = (typeof h !== "undefined" ? h : image.$.height);
-		     if(ww > 0 && hh > 0) {
+		    var newWidth = (typeof w !== "undefined" ? w : image.$.width);
+		    var newHeight = (typeof h !== "undefined" ? h : image.$.height);
+		     if(newWidth > 0 && newHeight > 0) {
 		      var previewImage = previewWrp.find("#image2-preview-image");
 		      if(!previewImage.length) {
-		        previewWrp.append("<div style='width: 250px; height: 150px; overflow: auto;' ><img id='image2-preview-image' src='" + image.$.src + "' alt='' style='width: " + ww + "px !important; height: " + hh + "px !important;' /></div>");
+		        previewWrp.append("<div style='width: 250px; height: 150px; overflow: auto;' ><img id='image2-preview-image' src='" + image.$.src + "' alt='' style='width: " + newWidth + "px !important; height: " + newHeight + "px !important;' /></div>");
 		      } else {
 		        if(typeof w === "undefined" && typeof h === "undefined") { // Know it's not dimension change (it changes image$.src to admin otherwise, so dont change src)
 		          previewImage.attr("src", image.$.src);
 		        }
-		        previewImage.attr("style", "width: " + ww + "px !important; height: " + hh + "px !important;");
+		        previewImage.attr("style", "width: " + newWidth + "px !important; height: " + newHeight + "px !important;");
 		      }
 		    }
 		  }
