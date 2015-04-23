@@ -485,7 +485,7 @@
 			downcast: downcastWidgetElement( editor )
 		};
 	}
-
+		
 	CKEDITOR.plugins.image2 = {
 		stateShifter: function( editor ) {
 			// Tag name used for centering non-captioned widgets.
@@ -722,7 +722,7 @@
 				shift.inflate();
 			};
 		},
-
+		
 		// Checks whether current ratio of the image match the natural one.
 		// by comparing dimensions.
 		// @param {CKEDITOR.dom.element} image
@@ -744,13 +744,23 @@
 		// Adds a preview image column
 		// @param {CKEDITOR.dom.element} image
 		previewImage: function( image, w, h ) {
-		  if(typeof image.$.src !== "string") return;
+		  if(typeof image.$.src !== "string" && image.$.src === "") return;
 		
-		  var previewTag = $(".image2-preview-image");
-		  if(previewTag.length) {
-		    previewTag.attr("src", image.$.src);
-		    previewTag.attr("style", "width: " + (typeof w !== "undefined" ? w : image.$.width) + "px !important;" +
-		                             "height: " + (typeof h !== "undefined" ? h : image.$.height) + "px !important;");
+		  var previewWrp = $("#image2-preview");
+		  if(previewWrp.length) {
+		    var ww = (typeof w !== "undefined" ? w : image.$.width);
+		    var hh = (typeof h !== "undefined" ? h : image.$.height);
+		     if(ww > 0 && hh > 0) {
+		      var previewImage = previewWrp.find("#image2-preview-image");
+		      if(!previewImage.length) {
+		        previewWrp.append("<div style='width: 250px; height: 150px; overflow: auto;' ><img id='image2-preview-image' src='" + image.$.src + "' alt='' style='width: " + ww + "px !important; height: " + hh + "px !important;' /></div>");
+		      } else {
+		        if(typeof w === "undefined" && typeof h === "undefined") { // Know it's not dimension change (it changes image$.src to admin otherwise, so dont change src)
+		          previewImage.attr("src", image.$.src);
+		        }
+		        previewImage.attr("style", "width: " + ww + "px !important; height: " + hh + "px !important;");
+		      }
+		    }
 		  }
 		},
 

@@ -297,6 +297,10 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 				if ( srcChanged ) {
 					widthField.setValue( preLoadedWidth );
 					heightField.setValue( preLoadedHeight );
+					
+					// USIT Preview (VTK-3873)
+					//
+					previewImage( image, preLoadedWidth, preLoadedHeight )
 				}
 
 				// If the old image remains, reset button should revert
@@ -304,6 +308,10 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 				else {
 					widthField.setValue( domWidth );
 					heightField.setValue( domHeight );
+					
+					// USIT Preview (VTK-3873)
+					//
+					previewImage( image, domWidth, domHeight )
 				}
 
 				evt.data && evt.data.preventDefault();
@@ -450,15 +458,17 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 						id: 'preview',
 						type: 'html',
 						onLoad: function() {
+						  $("#image2-preview")
+						    .closest("td")
+						    .css({
+						      "verticalAlign": "top"
+						    });
 						},
 						setup: function( widget ) {
 						},
 						commit: function( widget ) {
 						},
-					    // Need to fix: Image moves table out in height
-						html: "<div style='width: 250px; height: 150px; overflow: auto;' >" +
-						        "<img class='image2-preview-image' src='' alt='' />" +
-						      "</div>"
+						html: "<div id='image2-preview'></div>"
 					},
 					{
 						id: 'alt',
