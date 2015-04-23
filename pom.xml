@@ -388,14 +388,6 @@
               <goal>update-stylesheets</goal>
             </goals>
           </execution>
-          <!-- This causes deploy to hang, so disable: -->
-          <!--execution>
-            <id>watch-scss</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>watch</goal>
-            </goals>
-          </execution-->
         </executions>
         <configuration>
           <sassOptions>
