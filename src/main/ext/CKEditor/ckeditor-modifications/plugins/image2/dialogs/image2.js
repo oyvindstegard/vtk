@@ -152,6 +152,13 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 	function onChangeSrc() {
 		var value = this.getValue();
 
+        // USIT Preview (VTK-3873)
+		//
+		// if 'src'-field is empty remove preview
+        if(value == "") {
+          $("#image2-preview").children().remove();
+        }
+
 		toggleDimensions( false );
 
 		// Remember that src is different than default.
@@ -299,7 +306,6 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 					heightField.setValue( preLoadedHeight );
 					
 					// USIT Preview (VTK-3873)
-					//
 					previewImage( image, preLoadedWidth, preLoadedHeight )
 				}
 
@@ -310,7 +316,6 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 					heightField.setValue( domHeight );
 					
 					// USIT Preview (VTK-3873)
-					//
 					previewImage( image, domWidth, domHeight )
 				}
 

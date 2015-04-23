@@ -744,10 +744,8 @@
 		// Adds a preview image column
 		// @param {CKEDITOR.dom.element} image
 		previewImage: function( image, w, h ) {
-		  if(typeof image.$.src !== "string" && image.$.src === "") return;
-		
 		  var previewWrp = $("#image2-preview");
-		  if(previewWrp.length) {
+		  if(previewWrp.length && typeof image.$.src !== "undefined") {
 		    var ww = (typeof w !== "undefined" ? w : image.$.width);
 		    var hh = (typeof h !== "undefined" ? h : image.$.height);
 		     if(ww > 0 && hh > 0) {
