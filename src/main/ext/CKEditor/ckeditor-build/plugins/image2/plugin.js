@@ -1132,7 +1132,6 @@
 		function updateDimensionHelperPos(image, dimensionHelper, w, h) {
 		    var dimensionHelperWidth = dimensionHelper.outerWidth(true);
 			var dimensionHelperHeight = dimensionHelper.outerHeight(true);
-			console.log(dimensionHelperWidth + " " + dimensionHelperHeight);
 			dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
 					               "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
 			if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
