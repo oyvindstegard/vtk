@@ -63,6 +63,18 @@
 			// Expand widget wrapper when linked inline image.
 			'.cke_widget_wrapper>a{' +
 				'display:inline-block' +
+			'}' +
+			// USIT Preview (VTK-3873)
+			'.cke_image_dimension_helper{' +
+			    'display:block;' +
+				'position:absolute;' +
+				'top:0;' +
+				'left:0;' +
+				'color:#fff;' +
+				'font-size:20px;' +
+				'background:rgba(0,0,0,0.6);' +
+				'padding:15px 20px;' +
+				'white-space:nobreak;' +
 			'}' );
 		},
 
@@ -1075,7 +1087,7 @@
 		resizer.addClass( 'cke_image_resizer' );
 		resizer.setAttribute( 'title', editor.lang.image2.resizer );
 		resizer.append( new CKEDITOR.dom.text( '\u200b', doc ) );
-
+		
 		// Inline widgets don't need a resizer wrapper as an image spans the entire widget.
 		if ( !widget.inline ) {
 			var imageOrLink = widget.parts.link || widget.parts.image,
@@ -1093,6 +1105,43 @@
 				oldResizeWrapper.remove();
 		} else
 			widget.wrapper.append( resizer );
+			
+        // USIT Preview (VTK-3873)
+        var isResizing = false;
+        
+        widget.wrapper.on( 'mouseover', function( evt ) {
+            var image = widget.parts.image,
+                startWidth = image.$.clientWidth,
+				startHeight = image.$.clientHeight;
+		    addDimensionHelper(image, startWidth, startHeight);
+        });
+        widget.wrapper.on( 'mouseout', function( evt ) {
+			if(!isResizing) removeDimensionHelper();
+        });
+        function removeDimensionHelper() {
+            $(resizeWrapper.$).find(".cke_image_dimension_helper").remove();
+        }
+        function addDimensionHelper(image, w, h) {
+			var resizeDimensionHelper = $(resizeWrapper.$).find(".cke_image_dimension_helper");
+			if(!resizeDimensionHelper.length) {
+			    $(resizeWrapper.$).append("<span class='cke_image_dimension_helper'>" + w + " x " + h + "</span>");
+			    resizeDimensionHelper = $(resizeWrapper.$).find(".cke_image_dimension_helper"); // Re-query
+			    updateDimensionHelperPos(image, resizeDimensionHelper, w, h);
+			}
+        }
+		function updateDimensionHelperPos(image, dimensionHelper, w, h) {
+		    var dimensionHelperWidth = dimensionHelper.outerWidth(true);
+			var dimensionHelperHeight = dimensionHelper.outerHeight(true);
+			console.log(dimensionHelperWidth + " " + dimensionHelperHeight);
+			dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
+					               "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
+			if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
+			    dimensionHelper.css("color", "red");
+			} else {
+				dimensionHelper.css("color", "#fff");
+			}
+		}
+		// ^ USIT Preview (VTK-3873)
 
 		// Calculate values of size variables and mouse offsets.
 		resizer.on( 'mousedown', function( evt ) {
@@ -1135,6 +1184,10 @@
 
 			// This is to always keep the resizer element visible while resizing.
 			resizer.addClass( 'cke_image_resizing' );
+			
+		    // USIT Preview (VTK-3873)
+		    isResizing = true;
+		    addDimensionHelper(image, startWidth, startHeight);
 
 			// Attaches an event to a global document if inline editor.
 			// Additionally, if classic (`iframe`-based) editor, also attaches the same event to `iframe`'s document.
@@ -1255,6 +1308,12 @@
 				if ( newWidth >= 15 && newHeight >= 15 ) {
 					image.setAttributes( { width: newWidth, height: newHeight } );
 					updateData = true;
+					
+					// USIT Preview (VTK-3873)
+					var resizeDimensionHelper = $(resizeWrapper.$).find(".cke_image_dimension_helper");
+					resizeDimensionHelper.text(newWidth + " x " + newHeight);
+					updateDimensionHelperPos(image, resizeDimensionHelper, newWidth, newHeight);  
+					
 				} else
 					updateData = false;
 			}
@@ -1270,6 +1329,10 @@
 
 				// This is to bring back the regular behaviour of the resizer.
 				resizer.removeClass( 'cke_image_resizing' );
+				
+				// USIT Preview (VTK-3873)
+				removeDimensionHelper();
+				isResizing = false;
 
 				if ( updateData ) {
 					widget.setData( { width: newWidth, height: newHeight } );
