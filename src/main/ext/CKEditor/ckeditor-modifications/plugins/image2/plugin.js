@@ -1110,7 +1110,7 @@
         // USIT Preview (VTK-3873)
         var isResizing = false;
         var isDimensionHelperFocus = false;
-        (!widget.inline ? resizeWrapper : widget.wrapper).on( 'mouseenter', function( evt ) {
+        widget.wrapper.on( 'mouseenter', function( evt ) {
             if(!isDimensionHelperFocus) {
               var image = widget.parts.image,
                   startWidth = image.$.clientWidth,
@@ -1118,7 +1118,7 @@
 		      addDimensionHelper(image, startWidth, startHeight);
 		    }
         });
-        (!widget.inline ? resizeWrapper : widget.wrapper).on( 'mouseleave', function( evt ) {
+        widget.wrapper.on( 'mouseleave', function( evt ) {
 			if(!isResizing && !isDimensionHelperFocus) removeDimensionHelper();
         });
         
