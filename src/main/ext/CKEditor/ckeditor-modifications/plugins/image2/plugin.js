@@ -73,8 +73,9 @@
 				'color:#fff;' +
 				'font-size:20px;' +
 				'background:rgba(0,0,0,0.6);' +
-				'padding:15px 20px;' +
-				'white-space:nobreak;' +
+				'padding:5px 15px;' +
+				'line-height: 1;' +
+				'white-space:nowrap;' +
 			'}' );
 		},
 
@@ -1108,28 +1109,36 @@
 			
         // USIT Preview (VTK-3873)
         var isResizing = false;
+        var isDimensionHelperFocus = false;
+        (!widget.inline ? resizeWrapper : widget.wrapper).on( 'mouseenter', function( evt ) {
+            if(!isDimensionHelperFocus) {
+              var image = widget.parts.image,
+                  startWidth = image.$.clientWidth,
+				  startHeight = image.$.clientHeight;
+		      addDimensionHelper(image, startWidth, startHeight);
+		    }
+        });
+        (!widget.inline ? resizeWrapper : widget.wrapper).on( 'mouseleave', function( evt ) {
+			if(!isResizing && !isDimensionHelperFocus) removeDimensionHelper();
+        });
         
-        widget.wrapper.on( 'mouseover', function( evt ) {
-            var image = widget.parts.image,
-                startWidth = image.$.clientWidth,
-				startHeight = image.$.clientHeight;
-		    addDimensionHelper(image, startWidth, startHeight);
-        });
-        widget.wrapper.on( 'mouseout', function( evt ) {
-			if(!isResizing) removeDimensionHelper();
-        });
         function removeDimensionHelper() {
-            $(resizeWrapper.$).find(".cke_image_dimension_helper").remove();
+            $(widget.wrapper.$).find(".cke_image_dimension_helper").remove();
         }
         function addDimensionHelper(image, w, h) {
-			var resizeDimensionHelper = $(resizeWrapper.$).find(".cke_image_dimension_helper");
+            var widgetWrapper = $(widget.wrapper.$);
+			var resizeDimensionHelper = widgetWrapper.find(".cke_image_dimension_helper");
 			if(!resizeDimensionHelper.length) {
-			    $(resizeWrapper.$).append("<span class='cke_image_dimension_helper'>" + w + " x " + h + "</span>");
-			    resizeDimensionHelper = $(resizeWrapper.$).find(".cke_image_dimension_helper"); // Re-query
+			    var dimHelp = doc.createElement( 'span' );
+			    dimHelp.addClass("cke_image_dimension_helper");
+			    widget.wrapper.append(dimHelp);
+                
+			    resizeDimensionHelper = widgetWrapper.find(".cke_image_dimension_helper"); // Re-query
 			    updateDimensionHelperPos(image, resizeDimensionHelper, w, h);
 			}
         }
 		function updateDimensionHelperPos(image, dimensionHelper, w, h) {
+		    dimensionHelper.text(w + " x " + h);
 		    var dimensionHelperWidth = dimensionHelper.outerWidth(true);
 			var dimensionHelperHeight = dimensionHelper.outerHeight(true);
 			dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
@@ -1309,8 +1318,7 @@
 					updateData = true;
 					
 					// USIT Preview (VTK-3873)
-					var resizeDimensionHelper = $(resizeWrapper.$).find(".cke_image_dimension_helper");
-					resizeDimensionHelper.text(newWidth + " x " + newHeight);
+					var resizeDimensionHelper = $(widget.wrapper.$).find(".cke_image_dimension_helper");
 					updateDimensionHelperPos(image, resizeDimensionHelper, newWidth, newHeight);  
 					
 				} else
