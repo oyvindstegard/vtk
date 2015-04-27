@@ -1115,6 +1115,7 @@
               var image = widget.parts.image,
                   startWidth = image.$.clientWidth,
 				  startHeight = image.$.clientHeight;
+				  
 		      addDimensionHelper(image, startWidth, startHeight);
 		    }
         });
@@ -1141,7 +1142,9 @@
 		    dimensionHelper.text(w + " x " + h);
 		    var dimensionHelperWidth = dimensionHelper.outerWidth(true);
 			var dimensionHelperHeight = dimensionHelper.outerHeight(true);
-			dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
+			var widgetWidth = $(widget.element.$).outerWidth(true);
+			var adjustedWidth = widgetWidth > w ? widgetWidth / 2 : w / 2;
+			dimensionHelper.css({ "left": (adjustedWidth - (dimensionHelperWidth / 2) ) + "px",
 					               "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
 			if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
 			    dimensionHelper.css("color", "red");
