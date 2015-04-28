@@ -79,7 +79,7 @@
 			'}' +
 			'.cke_image_caption_placeholder{' +
 			    'display:block;' +
-			    'color:#aaa;' +
+			    'color:#222;' +
 			    'position: absolute;' +
 			    'bottom: 0.5em;' +
 			    'left: 0.5em;' +
@@ -287,6 +287,9 @@
 			// According to the new state.
 			else
 				setWrapperAlign( this.widget, alignClasses );
+				
+			// USIT Preview (VTK-3873)
+		    alignCaptionPlaceholder( this.widget );
 		}
 
 		return {
@@ -835,8 +838,9 @@
 				// 			<img />
 				// 		</p>
 				// 	</div>
-				if ( hasCaption )
+				if ( hasCaption ) {
 					wrapper.addClass( alignClasses[ 1 ] );
+			    }
 			} else if ( align != 'none' )
 				wrapper.addClass( alignClasses[ alignmentsObj[ align ] ] );
 		} else {
@@ -1416,12 +1420,24 @@
 		        placeholder.removeClass( 'cke_image_caption_placeholder_focused' );
 		    }
 		});
-		placeholder.on( 'click', function( evt ) {
+		placeholder.on( 'mouseup', function( evt ) {
 		    widget.parts.caption.focus();
 		    return false;
 		});
 	}
-
+	
+	function alignCaptionPlaceholder( widget ) {
+	    var widgetWidth = $(widget.element.$).outerWidth(true);
+		var placeholderElm = $(widget.wrapper.$).find(".cke_image_caption_placeholder");
+		if(widget.data.width < widgetWidth) {
+		    if(placeholderElm.length) {
+		        placeholderElm.css("marginLeft", ((widgetWidth - widget.data.width) / 2) + "px");
+		    }
+	    } else {
+		    placeholderElm.css("marginLeft", 0);
+		}
+	}
+	
 	// Integrates widget alignment setting with justify
 	// plugin's commands (execution and refreshment).
 	// @param {CKEDITOR.editor} editor
