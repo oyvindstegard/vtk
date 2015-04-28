@@ -1418,7 +1418,7 @@
 		});
 		placeholder.on( 'click', function( evt ) {
 		    widget.parts.caption.focus();
-		    evt.stopPropagation();
+		    return false;
 		});
 	}
 
