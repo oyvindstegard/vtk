@@ -152,6 +152,7 @@ figure {
   display: table !important;
   width: 1px;
   margin: 1em 0;
+  position: relative;
 }
 figcaption {
   display: table-caption;

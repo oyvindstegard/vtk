@@ -468,12 +468,6 @@
 				this.on( 'dialog', function( evt ) {
 					evt.data.widget = this;
 				}, this );
-				
-				// USIT Preview (VTK-3873)
-				// Align on insertion of new
-				this.on( 'ready', function( evt ) {
-		            alignCaptionPlaceholder( evt.sender ); 
-				});
 			},
 
 			// Overrides default method to handle internal mutability of Image2.
@@ -963,6 +957,13 @@
 
 				if ( resizeWrapper )
 					resizeWrapper.replaceWith( resizeWrapper.getFirst( { img: 1, a: 1 } ) );
+					
+			    // USIT Preview (VTK-3873)
+			    // Remove caption placeholder
+			    var captionPlaceholderElm = el.getFirst( 'span' );
+
+			    if ( captionPlaceholderElm )
+			        captionPlaceholderElm.remove();
 			}
 
 			if ( align && align != 'none' ) {
@@ -1399,58 +1400,45 @@
 		placeholder.append( new CKEDITOR.dom.text( editor.lang.image2.captionPlaceholder, doc ) );
 		
 		if($(widget.parts.caption.$).text() == "") {
-		    widget.wrapper.append( placeholder );
+		    widget.element.append( placeholder );
 		}
 		
 		var checkCaptionTimer = null;
 		var startCheckCaption = function() {
 		    checkCaptionTimer = setInterval(function() {
-		        var placeholderElm = $(widget.wrapper.$).find(".cke_image_caption_placeholder");
-		        if($(widget.parts.caption.$).text() != "") {
+		        var captionElm = $(widget.parts.caption.$);
+		        var placeholderElm = $(widget.element.$).find(".cke_image_caption_placeholder");
+		        if(captionElm.text() != "") {
 		            if(placeholderElm.length) {
 		                placeholderElm.remove();
 		            }
 		        } else if(!placeholderElm.length) {
 		            placeholder.addClass( 'cke_image_caption_placeholder_focused' ); // Implied focus
-		            widget.wrapper.append( placeholder );
-		            alignCaptionPlaceholder( widget );
+		            widget.element.append( placeholder );
 		        }
 		    }, 100);
 		};
 		var stopCheckCaption = function() {
 		    if(checkCaptionTimer != null) {
-		      clearInterval(checkCaptionTimer);
-		      checkCaptionTimer = null;
+		        clearInterval(checkCaptionTimer);
+		        checkCaptionTimer = null;
 		    }
 		};
 		widget.parts.caption.on( 'focus', function( evt ) {
-		    if($(widget.wrapper.$).find(".cke_image_caption_placeholder").length) {
+		    if($(widget.element.$).find(".cke_image_caption_placeholder").length) {
 		        placeholder.addClass( 'cke_image_caption_placeholder_focused' );
 		    }
 		    startCheckCaption();
 		});
 		widget.parts.caption.on( 'blur', function( evt ) {
-		    if($(widget.wrapper.$).find(".cke_image_caption_placeholder_focused").length) {
+		    if($(widget.element.$).find(".cke_image_caption_placeholder_focused").length) {
 		        placeholder.removeClass( 'cke_image_caption_placeholder_focused' );
 		    }
 		    stopCheckCaption();
 		});
-		placeholder.on( 'mouseup', function( evt ) {
-		    widget.parts.caption.focus();
-		    return false;
+		placeholder.on( 'click', function( evt ) {
+	        widget.parts.caption.focus();
 		});
-	}
-	
-	function alignCaptionPlaceholder( widget ) {
-	    var widgetWidth = $(widget.element.$).outerWidth(true);
-		var placeholderElm = $(widget.wrapper.$).find(".cke_image_caption_placeholder");
-		if(widget.data.width < widgetWidth) {
-		    if(placeholderElm.length) {
-		        placeholderElm.css("marginLeft", ((widgetWidth - widget.data.width) / 2) + "px");
-		    }
-	    } else {
-		    placeholderElm.css("marginLeft", 0);
-		}
 	}
 	
 	// Integrates widget alignment setting with justify
