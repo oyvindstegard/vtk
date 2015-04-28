@@ -1381,7 +1381,7 @@
 	//
 	// @param {CKEDITOR.plugins.widget} widget
 	function setupCaptionPlaceholder( widget ) {
-	    if(!widget.data.hasCaption || $(widget.parts.caption.$).text() != "") return;
+	    if(!widget.data.hasCaption) return;
 	
 	    var editor = widget.editor,
 		    editable = editor.editable(),
@@ -1391,12 +1391,17 @@
 		placeholder.addClass( 'cke_image_caption_placeholder' );
 		placeholder.append( new CKEDITOR.dom.text( editor.lang.image2.captionPlaceholder, doc ) );
 		
-		widget.wrapper.append( placeholder );
+		if($(widget.parts.caption.$).text() == "") {
+		    widget.wrapper.append( placeholder );
+		}
 		
 		widget.parts.caption.on( 'keyup', function( evt ) {
+		    var placeholderElm = $(widget.wrapper.$).find(".cke_image_caption_placeholder");
 		    if($(this.$).text() != "") {
-		        placeholder.remove();
-		    } else if(!$(widget.wrapper.$).find(".cke_image_caption_placeholder").length) {
+		        if(placeholderElm.length) {
+		            placeholderElm.remove();
+		        }
+		    } else if(!placeholderElm.length) {
 		        widget.wrapper.append( placeholder );
 		    }
 		});
@@ -1412,6 +1417,7 @@
 		});
 		placeholder.on( 'click', function( evt ) {
 		    widget.parts.caption.focus();
+		    evt.stopPropagation();
 		});
 	}
 
