@@ -6,7 +6,7 @@ CKEDITOR.plugins.setLang( 'image2', 'en', {
 	alt: 'Alternative Text',
 	btnUpload: 'Send it to the Server',
 	captioned: 'Captioned image',
-	captionPlaceholder: 'Caption',
+	captionPlaceholder: 'Write caption here...',
 	infoTab: 'Image Info',
 	lockRatio: 'Lock Ratio',
 	menu: 'Image Properties',

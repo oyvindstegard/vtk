@@ -375,9 +375,14 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 		heightField[ method ]();
 	}
 
+    // USIT Preview (VTK-3873)
+	// Moved URL-field and Browse-button below eachother
+
 	var hasFileBrowser = !!( config.filebrowserImageBrowseUrl || config.filebrowserBrowseUrl ),
-		srcBoxChildren = [
-			{
+		srcBoxChildren = [{
+		    type: 'hbox',
+			widths: [ '100%' ],
+			children: [{
 				id: 'src',
 				type: 'text',
 				label: commonLang.url,
@@ -390,23 +395,27 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 					widget.setData( 'src', this.getValue() );
 				},
 				validate: CKEDITOR.dialog.validate.notEmpty( lang.urlMissing )
-			}
-		];
+			}]
+		}];
 
 	// Render the "Browse" button on demand to avoid an "empty" (hidden child)
 	// space in dialog layout that distorts the UI.
 	if ( hasFileBrowser ) {
-		srcBoxChildren.push( {
-			type: 'button',
-			id: 'browse',
-			// v-align with the 'txtUrl' field.
-			// TODO: We need something better than a fixed size here.
-			style: 'display:inline-block;margin-top:14px;',
-			align: 'center',
-			label: editor.lang.common.browseServer,
-			hidden: true,
-			filebrowser: 'info:src'
-		} );
+		srcBoxChildren.push({
+		    type: 'hbox',
+			widths: [ '100%' ],
+			children: [{
+			  type: 'button',
+			  id: 'browse',
+			  // v-align with the 'txtUrl' field.
+			  // TODO: We need something better than a fixed size here.
+			  style: 'display:inline-block;margin-top:14px; float: right;',
+			  align: 'center',
+			  label: editor.lang.common.browseServer,
+			  hidden: true,
+			  filebrowser: 'info:src'
+		    }]
+		});
 	}
 
 	return {
@@ -446,19 +455,15 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			{
 				id: 'info',
 				label: lang.infoTab,
+				
+				// USIT Preview (VTK-3873)
+				// Also moved URL-field and Browse-button below eachother
 				elements: [
 					{
 						type: 'vbox',
 						padding: 0,
-						children: [
-							{
-								type: 'hbox',
-								widths: [ '100%' ],
-								children: srcBoxChildren
-							}
-						]
+						children: srcBoxChildren
 					},
-					// USIT Preview (VTK-3873)
 					{
 						id: 'preview',
 						type: 'html',

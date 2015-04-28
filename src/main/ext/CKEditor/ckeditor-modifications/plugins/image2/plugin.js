@@ -11,7 +11,7 @@
 		templateBlock = new CKEDITOR.template(
 			'<figure class="{captionedClass}">' +
 				template +
-				'<figcaption>{captionPlaceholder}</figcaption>' +
+				'<figcaption></figcaption>' +
 			'</figure>' ),
 		alignmentsArr = [ 'left', 'center', 'right' ],
 		alignmentsObj = { left: 0, center: 1, right: 2 },
@@ -76,6 +76,16 @@
 				'padding:5px 15px;' +
 				'line-height: 1;' +
 				'white-space:nowrap;' +
+			'}' +
+			'.cke_image_caption_placeholder{' +
+			    'display:block;' +
+			    'color:#aaa;' +
+			    'position: absolute;' +
+			    'bottom: 0.5em;' +
+			    'left: 0.5em;' +
+			'}' +
+			'.cke_image_caption_placeholder.cke_image_caption_placeholder_focused{' +
+			    'color:#ccc;' +
 			'}' );
 		},
 
@@ -437,6 +447,9 @@
 				// Don't initialize resizer when dimensions are disallowed (#11004).
 				if ( editor.filter.checkFeature( this.features.dimension ) )
 					setupResizer( this );
+					
+				// USIT Preview (VTK-3873)
+				setupCaptionPlaceholder( this );
 
 				this.shiftState = helpers.stateShifter( this.editor );
 
@@ -568,8 +581,9 @@
 					if ( newValue ) {
 						// Create new <figure> from widget template.
 						var figure = CKEDITOR.dom.element.createFromHtml( templateBlock.output( {
-							captionedClass: captionedClass,
-							captionPlaceholder: editor.lang.image2.captionPlaceholder
+							captionedClass: captionedClass // ,
+							// USIT Preview (VTK-3873) - placeholder as an own span instead
+							// captionPlaceholder: editor.lang.image2.captionPlaceholder
 						} ), doc );
 
 						// Replace element with <figure>.
@@ -1360,6 +1374,45 @@
 		widget.on( 'data', function() {
 			resizer[ widget.data.align == 'right' ? 'addClass' : 'removeClass' ]( 'cke_image_resizer_left' );
 		} );
+	}
+	
+	// USIT Preview (VTK-3873)
+	// Defines all features related to caption as a placeholder
+	//
+	// @param {CKEDITOR.plugins.widget} widget
+	function setupCaptionPlaceholder( widget ) {
+	    if(!widget.data.hasCaption || $(widget.parts.caption.$).text() != "") return;
+	
+	    var editor = widget.editor,
+		    editable = editor.editable(),
+		    doc = editor.document,
+			placeholder = widget.placeholder = doc.createElement( 'span' );
+
+		placeholder.addClass( 'cke_image_caption_placeholder' );
+		placeholder.append( new CKEDITOR.dom.text( editor.lang.image2.captionPlaceholder, doc ) );
+		
+		widget.wrapper.append( placeholder );
+		
+		widget.parts.caption.on( 'keyup', function( evt ) {
+		    if($(this.$).text() != "") {
+		        placeholder.remove();
+		    } else if(!$(widget.wrapper.$).find(".cke_image_caption_placeholder").length) {
+		        widget.wrapper.append( placeholder );
+		    }
+		});
+		widget.parts.caption.on( 'focus', function( evt ) {
+		    if($(widget.wrapper.$).find(".cke_image_caption_placeholder").length) {
+		        placeholder.addClass( 'cke_image_caption_placeholder_focused' );
+		    }
+		});
+		widget.parts.caption.on( 'blur', function( evt ) {
+		    if($(widget.wrapper.$).find(".cke_image_caption_placeholder_focused").length) {
+		        placeholder.removeClass( 'cke_image_caption_placeholder_focused' );
+		    }
+		});
+		placeholder.on( 'click', function( evt ) {
+		    widget.parts.caption.focus();
+		});
 	}
 
 	// Integrates widget alignment setting with justify
