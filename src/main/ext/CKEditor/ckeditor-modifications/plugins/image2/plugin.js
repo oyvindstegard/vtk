@@ -1402,6 +1402,7 @@
 		            placeholderElm.remove();
 		        }
 		    } else if(!placeholderElm.length) {
+		        placeholder.addClass( 'cke_image_caption_placeholder_focused' ); // Implied focus
 		        widget.wrapper.append( placeholder );
 		    }
 		});
