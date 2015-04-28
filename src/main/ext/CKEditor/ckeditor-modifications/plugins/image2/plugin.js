@@ -287,9 +287,6 @@
 			// According to the new state.
 			else
 				setWrapperAlign( this.widget, alignClasses );
-				
-			// USIT Preview (VTK-3873)
-		    alignCaptionPlaceholder( this.widget );
 		}
 
 		return {
@@ -471,6 +468,12 @@
 				this.on( 'dialog', function( evt ) {
 					evt.data.widget = this;
 				}, this );
+				
+				// USIT Preview (VTK-3873)
+				// Align on insertion of new
+				this.on( 'ready', function( evt ) {
+		            alignCaptionPlaceholder( evt.sender ); 
+				});
 			},
 
 			// Overrides default method to handle internal mutability of Image2.
@@ -1399,26 +1402,38 @@
 		    widget.wrapper.append( placeholder );
 		}
 		
-		widget.parts.caption.on( 'keyup', function( evt ) {
-		    var placeholderElm = $(widget.wrapper.$).find(".cke_image_caption_placeholder");
-		    if($(this.$).text() != "") {
-		        if(placeholderElm.length) {
-		            placeholderElm.remove();
+		var checkCaptionTimer = null;
+		var startCheckCaption = function() {
+		    checkCaptionTimer = setInterval(function() {
+		        var placeholderElm = $(widget.wrapper.$).find(".cke_image_caption_placeholder");
+		        if($(widget.parts.caption.$).text() != "") {
+		            if(placeholderElm.length) {
+		                placeholderElm.remove();
+		            }
+		        } else if(!placeholderElm.length) {
+		            placeholder.addClass( 'cke_image_caption_placeholder_focused' ); // Implied focus
+		            widget.wrapper.append( placeholder );
+		            alignCaptionPlaceholder( widget );
 		        }
-		    } else if(!placeholderElm.length) {
-		        placeholder.addClass( 'cke_image_caption_placeholder_focused' ); // Implied focus
-		        widget.wrapper.append( placeholder );
+		    }, 100);
+		};
+		var stopCheckCaption = function() {
+		    if(checkCaptionTimer != null) {
+		      clearInterval(checkCaptionTimer);
+		      checkCaptionTimer = null;
 		    }
-		});
+		};
 		widget.parts.caption.on( 'focus', function( evt ) {
 		    if($(widget.wrapper.$).find(".cke_image_caption_placeholder").length) {
 		        placeholder.addClass( 'cke_image_caption_placeholder_focused' );
 		    }
+		    startCheckCaption();
 		});
 		widget.parts.caption.on( 'blur', function( evt ) {
 		    if($(widget.wrapper.$).find(".cke_image_caption_placeholder_focused").length) {
 		        placeholder.removeClass( 'cke_image_caption_placeholder_focused' );
 		    }
+		    stopCheckCaption();
 		});
 		placeholder.on( 'mouseup', function( evt ) {
 		    widget.parts.caption.focus();
