@@ -1445,7 +1445,7 @@
 		placeholder.on( 'click', function( evt ) {
 		    // IE-fix (force focus when clicking on placeholder). TODO: which IE need this?
 		    if(/.*(msie|trident).*/.test(window.navigator.userAgent.toLowerCase())) {
-	            setTimeout(function() { widget.parts.caption.focus(); }, 50);
+	            setTimeout(function() { widget.parts.caption.focus(); }, 5);
 	        } else {
 	            widget.parts.caption.focus();
 	        }
