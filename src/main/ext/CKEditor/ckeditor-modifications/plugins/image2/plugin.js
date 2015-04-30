@@ -84,6 +84,9 @@
 			    'bottom: 0.5em;' +
 			    'left: 0.5em;' +
 			'}' +
+			'.cke_image_caption_placeholder:hover{' +
+			    'cursor:text;' +
+			'}' +
 			'.cke_image_caption_placeholder.cke_image_caption_placeholder_focused{' +
 			    'color:#ccc;' +
 			'}' );
