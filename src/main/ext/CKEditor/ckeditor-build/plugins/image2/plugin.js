@@ -960,10 +960,11 @@
 					
 			    // USIT Preview (VTK-3873)
 			    // Remove caption placeholder
-			    var captionPlaceholderElm = el.getFirst( 'span' );
-
-			    if ( captionPlaceholderElm )
-			        captionPlaceholderElm.remove();
+			    if(el.children.length === 3) {
+			        var captionPlaceholderElm = el.children[2];
+			        if ( captionPlaceholderElm )
+			           captionPlaceholderElm.remove();
+			    }
 			}
 
 			if ( align && align != 'none' ) {
@@ -1134,11 +1135,11 @@
         var isDimensionHelperFocus = false;
         widget.wrapper.on( 'mouseenter', function( evt ) {
             if(!isDimensionHelperFocus) {
-              var image = widget.parts.image,
-                  startWidth = image.$.clientWidth,
-				  startHeight = image.$.clientHeight;
+                var image = widget.parts.image,
+                    startWidth = image.$.clientWidth,
+				    startHeight = image.$.clientHeight;
 				  
-		      addDimensionHelper(image, startWidth, startHeight);
+		        addDimensionHelper(image, startWidth, startHeight);
 		    }
         });
         widget.wrapper.on( 'mouseleave', function( evt ) {
@@ -1154,7 +1155,7 @@
 			if(!resizeDimensionHelper.length) {
 			    var dimHelp = doc.createElement( 'span' );
 			    dimHelp.addClass("cke_image_dimension_helper");
-			    widget.wrapper.append(dimHelp);
+			    resizeWrapper.append(dimHelp);
                 
 			    resizeDimensionHelper = widgetWrapper.find(".cke_image_dimension_helper"); // Re-query
 			    updateDimensionHelperPos(image, resizeDimensionHelper, w, h);
@@ -1164,9 +1165,7 @@
 		    dimensionHelper.text(w + " x " + h);
 		    var dimensionHelperWidth = dimensionHelper.outerWidth(true);
 			var dimensionHelperHeight = dimensionHelper.outerHeight(true);
-			var widgetWidth = $(widget.element.$).outerWidth(true);
-			var adjustedWidth = widgetWidth > w ? widgetWidth / 2 : w / 2;
-			dimensionHelper.css({ "left": (adjustedWidth - (dimensionHelperWidth / 2) ) + "px",
+			dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
 					               "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
 			if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
 			    dimensionHelper.css("color", "red");
@@ -1436,6 +1435,7 @@
 		    }
 		    stopCheckCaption();
 		});
+		// IE-bug
 		placeholder.on( 'click', function( evt ) {
 	        widget.parts.caption.focus();
 		});
