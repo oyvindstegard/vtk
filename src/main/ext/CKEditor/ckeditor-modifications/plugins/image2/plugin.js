@@ -1155,7 +1155,11 @@
 			if(!resizeDimensionHelper.length) {
 			    var dimHelp = doc.createElement( 'span' );
 			    dimHelp.addClass("cke_image_dimension_helper");
-			    resizeWrapper.append(dimHelp);
+			    if ( !widget.inline ) { 
+			        resizeWrapper.append(dimHelp);
+			    } else {
+			        widget.wrapper.append(dimHelp);
+			    }
                 
 			    resizeDimensionHelper = widgetWrapper.find(".cke_image_dimension_helper"); // Re-query
 			    updateDimensionHelperPos(image, resizeDimensionHelper, w, h);
