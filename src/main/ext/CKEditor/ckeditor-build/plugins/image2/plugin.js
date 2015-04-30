@@ -83,6 +83,10 @@
 			    'position: absolute;' +
 			    'bottom: 0.5em;' +
 			    'left: 0.5em;' +
+			    'max-width: 90%;' +
+                'white-space: nowrap;' +
+                'text-overflow: ellipsis;' +
+                'overflow: hidden;' +
 			'}' +
 			'.cke_image_caption_placeholder:hover{' +
 			    'cursor:text;' +
@@ -956,18 +960,18 @@
 			// De-wrap the image from resize handle wrapper.
 			// Only block widgets have one.
 			if ( !this.inline ) {
-				var resizeWrapper = el.getFirst( 'span' );
-
-				if ( resizeWrapper )
-					resizeWrapper.replaceWith( resizeWrapper.getFirst( { img: 1, a: 1 } ) );
-					
+			
 			    // USIT Preview (VTK-3873)
-			    // Remove caption placeholder
-			    if(el.children.length === 3) {
-			        var captionPlaceholderElm = el.children[2];
-			        if ( captionPlaceholderElm )
-			           captionPlaceholderElm.remove();
-			    }
+			    // Remove caption placeholder (a little unoptimized solution)
+			    
+				var resizeWrapper = el.getFirst( 'span' );
+				if ( resizeWrapper && resizeWrapper.children.length > 1 )
+					resizeWrapper.replaceWith( resizeWrapper.getFirst( { img: 1, a: 1 } ) );
+			    else
+			        resizeWrapper.remove()
+			    resizeWrapper = el.getFirst( 'span' );
+				if ( resizeWrapper && resizeWrapper.children.length > 1 )
+					resizeWrapper.replaceWith( resizeWrapper.getFirst( { img: 1, a: 1 } ) );
 			}
 
 			if ( align && align != 'none' ) {
@@ -1406,7 +1410,7 @@
 		placeholder.append( new CKEDITOR.dom.text( editor.lang.image2.captionPlaceholder, doc ) );
 		
 		if($(widget.parts.caption.$).text() == "") {
-		    widget.element.append( placeholder );
+		    widget.element.append( placeholder, true );
 		}
 		
 		var checkCaptionTimer = null;
@@ -1420,7 +1424,7 @@
 		            }
 		        } else if(!placeholderElm.length) {
 		            placeholder.addClass( 'cke_image_caption_placeholder_focused' ); // Implied focus
-		            widget.element.append( placeholder );
+		            widget.element.append( placeholder, true );
 		        }
 		    }, 100);
 		};
