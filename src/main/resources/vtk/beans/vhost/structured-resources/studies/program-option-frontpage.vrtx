@@ -53,19 +53,36 @@ resourcetype program-option-frontpage : program-document {
         <div class="vrtx-frontpage-box vrtx-distach-bottom">
           [call "comp:contact-box"]
         </div>
+        
         [def thispath resource-prop("./", "uri")]
-        [if locale = 'en']
-          [def thispath thispath + '/messages']
+        
+        [def studystart-path ""]
+        [if locale != 'en']
+          [def studystart-path thispath + '/studiestart']
         [else]
-          [def thispath thispath + '/beskjeder']
+          [def studystart-path thispath + '/start-of-studies']
         [endif]
-        [def message-folder resource(thispath)]
+        [def studiestart-folder resource(studystart-path)]
+        [if studiestart-folder]
+          <div class="vrtx-frontpage-box">
+            [call "include:events"  {"uri":studystart-path, "all-events-link":true, "feed-title":true, "max-events":2, "events-title": true, "include-if-empty":false}]
+          </div>
+        [endif]
+        
+        [def messages-path ""]
+        [if locale = 'en']
+          [def messages-path thispath + '/messages']
+        [else]
+          [def messages-path thispath + '/beskjeder']
+        [endif]
+        [def message-folder resource(messages-path)]
         [if message-folder]
-          [def thisfeed thispath + '/?vrtx=feed']
+          [def thisfeed messages-path + '/?vrtx=feed']
           <div class="vrtx-frontpage-box">
             [call "include:feed" {"url":thisfeed, "feed-title":true, "max-messages":3, "include-if-empty":false}]
           </div>
         [endif]
+        
         [call "comp:additional-content" {"document":document, "main-content": "false"}]
       </div>
       ##
