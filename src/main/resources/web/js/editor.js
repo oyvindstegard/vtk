@@ -524,7 +524,7 @@ vrtxEditor.richtextEditorFacade.toolbars.commentsToolbar = [
 
 vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
   ['PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'], ['Replace'], ['Link', 'Unlink', 'Anchor'],
-  ['Image', 'CreateDiv', 'MediaEmbed', 'Table', 'HorizontalRule', 'Mathjax', 'SpecialChar'],
+  ['Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'Mathjax', 'SpecialChar'],
   ['Maximize'], ['Source'], '/', ['Format'], 
   ['Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'TextColor', '-', 'RemoveFormat'],
   ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote']
@@ -533,14 +533,14 @@ vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
 vrtxEditor.richtextEditorFacade.toolbars.studyToolbar = [
   ['Source', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
    'RemoveFormat', '-', 'Link', 'Unlink', 'Studyreferencecomponent', 'Anchor',
-   'Image', 'CreateDiv', 'MediaEmbed', 'Table', 'Studytable', 'HorizontalRule', 'SpecialChar'],
+   'Image', 'MediaEmbed', 'CreateDiv', 'Table', 'Studytable', 'HorizontalRule', 'SpecialChar'],
   ['Format', 'Bold', 'Italic', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Maximize']
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.studyRefToolbar = [
   ['Source', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
    'RemoveFormat', '-', 'Link', 'Unlink', 'Studyreferencecomponent', 'Anchor',
-   'Image', 'CreateDiv', 'MediaEmbed', 'Table', 'HorizontalRule', 'SpecialChar'],
+   'Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'SpecialChar'],
   ['Format', 'Bold', 'Italic', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Maximize']
 ];
 
@@ -558,7 +558,7 @@ vrtxEditor.richtextEditorFacade.toolbars.resourcesTextToolbar = [
 
 vrtxEditor.richtextEditorFacade.divContainerStylesSet = [
   { name: 'Facts left',                 element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-left'  } },
-  { name: 'Facts right',                element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-right' } },
+  { name: 'Facts right',                element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-right' } }/*,
   { name: 'Image left',                 element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-left'    } },
   { name: 'Image center',               element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-middle vrtx-img-container-middle-ie' } },
   { name: 'Image right',                element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-right' } },
@@ -581,7 +581,7 @@ vrtxEditor.richtextEditorFacade.divContainerStylesSet = [
   { name: 'Img & capt right (500px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-right' } },
   { name: 'Img & capt right (400px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-right' } },
   { name: 'Img & capt right (300px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xs vrtx-container-right' } },
-  { name: 'Img & capt right (200px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxs vrtx-container-right' } }
+  { name: 'Img & capt right (200px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxs vrtx-container-right' } } */
 ];
 
 /* Functions for generating editor config based on classification
