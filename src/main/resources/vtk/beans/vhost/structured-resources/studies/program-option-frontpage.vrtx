@@ -64,9 +64,7 @@ resourcetype program-option-frontpage : program-document {
         [endif]
         [def studiestart-folder resource(studystart-path)]
         [if studiestart-folder]
-          <div class="vrtx-frontpage-box">
-            [call "include:events"  {"uri":studystart-path, "all-events-link":true, "feed-title":true, "max-events":2, "events-title": true, "include-if-empty":false}]
-          </div>
+          [call "include:events"  {"uri":studystart-path, "all-events-link":true, "feed-title":true, "max-events":2, "events-title": true, "include-if-empty":false}]
         [endif]
         
         [def messages-path ""]
