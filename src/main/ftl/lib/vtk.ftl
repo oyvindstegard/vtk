@@ -483,9 +483,12 @@
   <#if !resource.getProperty(def)?exists>
     <#local formatter = def.getValueFormatter() />
     <#attempt>
-    <#if formatter?exists && !def.mandatory>
-      <#return formatter.valueToString(nullArg, format, locale) />
-    </#if>
+      <#-- XXX Passing 'null' to propdef formatter if property does not exists ? 
+           This only works OK with MessageSourceValueFormatter, and none of the others.
+           Causes an internal NPE which is usually hidden by Freemarker log level FATAL. -->
+      <#if formatter?exists && !def.mandatory>
+        <#return formatter.valueToString(nullArg, format, locale) />
+      </#if>
     <#recover></#recover>
     <#return '' />
   </#if>
