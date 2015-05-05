@@ -29,8 +29,6 @@ public class StringArrayTokenStreamTest {
         BytesRef indexTerm = ttb.getBytesRef();
         ttb.fillBytesRef();
         
-        System.out.println(indexTerm);
-        
         CollationKey key = collator.getCollationKey(value);
         BytesRef keyBytes = new BytesRef(key.toByteArray());
         assertTrue("Unexpected collation key bytes", keyBytes.bytesEquals(indexTerm));
