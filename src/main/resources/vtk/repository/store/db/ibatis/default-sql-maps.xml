@@ -499,16 +499,16 @@
   <insert id="insertPropertyEntry" parameterClass="java.util.Map">
     insert into extra_prop_entry
       (extra_prop_entry_id, resource_id, name_space, name, value
-        <isNotEmpty property="binaryContent">
+        <isNotNull property="binaryContent">
           , binary_content, binary_mimetype
-        </isNotEmpty>
+        </isNotNull>
         , is_inheritable)
     values (<include refid="nextExtraPropEntryId" />, #resourceId#, 
       #namespaceUri#, #name#, #value#
-        <isNotEmpty property="binaryContent">
+        <isNotNull property="binaryContent">
           , #binaryContent,handler=org.springframework.orm.ibatis.support.BlobByteArrayTypeHandler#,
           #binaryMimeType#
-        </isNotEmpty>
+        </isNotNull>
         , #inheritable,handler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback#)
   </insert>
   
