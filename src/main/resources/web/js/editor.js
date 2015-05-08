@@ -44,7 +44,8 @@ function VrtxEditor() {
     "teachingsemester":  ["particular-semester", "every-other"],
     "examsemester":      ["particular-semester", "every-other"],
     "typeToDisplay":     ["so", "nm", "em"],
-    "type-of-agreement": ["other"]
+    "type-of-agreement": ["other"],
+    "program-type":      ["phd"]
   };
 
   /** Initial state for the need to confirm navigation away from editor */

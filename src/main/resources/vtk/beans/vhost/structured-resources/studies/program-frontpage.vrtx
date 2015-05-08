@@ -27,7 +27,7 @@ resourcetype program-frontpage : program-document {
     duration (size[2]),
     study-points (size[4]),
     group samlet (name-no, name-nn, name-en) (after name) horizontal,
-    group facts (program-type, theme, duration, study-points, full-time, faculty, keywords, picture) (after samlet),
+    group facts (program-type, phd-web-address, theme, duration, study-points, full-time, faculty, keywords, picture) (after samlet),
     group interview-box (interviewTitle, interviewContent, interviewLinkText, interviewUrl) (before additional-content),
     resource-links tooltip (en : "Tooltip for links", no : "Tips for lenker", nn : "Tips for lenkjer"),
     keywords tooltip (en : "Comma separated list", no : "Kommaseparert liste", nn : "Kommaseparert liste"),
@@ -268,6 +268,7 @@ resourcetype program-frontpage : program-document {
     nedlagt : (en : "Closed", no : "Nedlagt", nn : "Nedlagt"),
     
     program-type : (en : "Programme type", no : "Programtype", nn : "Programtype"),
+    phd-web-address : (en : "Ph.d. webaddress", no : "Ph.d. webadresse", nn : "Ph.d. webadresse"),
     
     faculty : (en : "Responsible faculty", no : "Ansvarlig fakultet", nn : "Ansvarlig fakultet"),
     hf : (en : "Faculty of Humanities", no : "Det humanistiske fakultet", nn : "Det humanistiske fakultet"),
