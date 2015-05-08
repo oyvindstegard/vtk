@@ -387,9 +387,9 @@ resourcetype hvordan-soke {
 
     opptakskrav-view : (en : "Admission requirements", no : "Opptakskrav", nn : "Opptakskrav"),
 
-    generelle-admin : (en : "Admission requirements (All)", no : "Opptakskrav (Alle)", nn : "Opptakskrav(Alle)"),
-    generelle-fri : (en : "General admission requirements optional text", no : "Generelle opptakskrav valgfri tekst", nn : "Generelle opptakskrav valfri tekst"),
-    opptakskrav-generelle-master : (en : "General admission requirements shared text", no : "Generelle opptakskrav fellestekst", nn : "Generelle opptakskrav fellestekst"),
+    generelle-admin : (en : "Admission requirements (All)", no : "Opptakskrav (Alle)", nn : "Opptakskrav (Alle)"),
+    generelle-fri : (en : "Required specialization optional text", no : "Spesielle opptakskrav valgfri tekst", nn : "Spesielle opptakskrav valfri tekst"),
+    opptakskrav-generelle-master : (en : "Admission requirements shared text", no : "Opptakskrav fellestekst", nn : "Opptakskrav fellestekst"),
 
     politiattest-view : (en : "Certificate of good conduct", no : "Politiattest", nn : "Politiattest"),
     politiattest-fri : (en : "Certificate of good conduct optional text", no : "Politiattest valgfri tekst", nn : "Politiattest valfri tekst"),
