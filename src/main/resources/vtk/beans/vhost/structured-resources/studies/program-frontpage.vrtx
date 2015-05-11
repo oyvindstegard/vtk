@@ -4,7 +4,7 @@ resourcetype program-frontpage : program-document {
     ctx-patch : string,
   
     program-type : string,
-    phd-web-address : resource_ref noextract,
+    phd-web-address : resource_ref,
     theme : string multiple,
     duration : string trim,
     study-points : string,
