@@ -132,7 +132,7 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
             if(baseHrefImage2Fixed != "") {
                 if(/^\//.test(src)) {
                     baseHrefImage2Fixed = baseHrefImage2Fixed.replace(location.pathname, "");
-                } else if(/^http(s)?:\/\//.test(src)) {
+                } else {
                     baseHrefImage2Fixed = "";
                 }
             }

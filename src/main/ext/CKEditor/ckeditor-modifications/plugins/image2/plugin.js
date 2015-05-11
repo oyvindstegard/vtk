@@ -1203,7 +1203,13 @@
 				// The initial dimensions and aspect ratio of the image.
 				startWidth = image.$.clientWidth,
 				startHeight = image.$.clientHeight,
-				ratio = startWidth / startHeight,
+				
+				// USIT Preview (VTK-3873)
+				// Use natural width/height when lock is enabled, to avoid increasing error
+				// when using the scaled image ratios (e.g. from 2.975=>2.967)
+				helpers = CKEDITOR.plugins.image2,
+				natural = helpers.getNatural( image ),
+				ratio = !widget.data.lock ? (startWidth / startHeight) : (natural.width / natural.height),
 
 				listeners = [],
 

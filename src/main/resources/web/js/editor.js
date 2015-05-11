@@ -357,6 +357,68 @@ VrtxEditor.prototype.richtextEditorFacade = {
       instanceReady: function (ev) {
         rteFacade.setupTagsFormatting(this, ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'], false);
         rteFacade.setupTagsFormatting(this, ['ol', 'ul', 'li'], true);
+        
+        /* 
+         * VTK-3873
+         * 
+         * Migrate old div-containers (image or image+caption) to new image plugin
+         *
+         */
+        var data = $($.parseHTML("<div>" + rteFacade.getValue(this) + "</div>"));
+        var containers = data.find(".vrtx-container, .vrtx-img-container");
+        for(var i = 0, len = containers.length; i < len; i++) {
+          var container = $(containers[i]);
+          var containerChildren = container.children();
+          if(containerChildren.length == 1 || containerChildren.length == 2) {
+            var img = container.find("img").clone();
+            if(img.length) {
+              var out = "";
+              
+              // Widht/height conversion
+              var width = img.css("width");
+              var height = img.css("height");
+              img.attr({ "width": parseInt(img.css("width"), 10),
+                         "height": parseInt(img.css("height"), 10) });
+              img.removeAttr("style");
+              
+              // Alignment
+              var align = container.hasClass("vrtx-container-left") ? "image-left" : "";
+                  align += container.hasClass("vrtx-container-right") ? "image-right" : "";
+                  align += container.hasClass("vrtx-container-middle") ? "image-center" : "";
+              
+              // Has caption?
+              var caption = container.find("p");
+              if($.trim(caption.text()) !== "") {
+                caption.find("img").remove();
+                if(align !== "") {
+                  out = "<figure class='image-captioned " + align + "'>";
+                } else {
+                  out = "<figure class='image-captioned'>";
+                }
+                out += img[0].outerHTML +
+                    "<figcaption>" +
+                      caption.html() +
+                    "</figcaption>" +
+                    "</figure>";
+                    
+              // Only image
+              } else {
+                if(align !== "") {
+                  img.addClass(align);
+                }
+                out += img[0].outerHTML;
+              }
+       
+              if(out !== "") {
+                container.replaceWith(out);
+              }
+            }
+          }
+        }
+        if(len) {
+          rteFacade.setValue(this, data.html());
+        }
+        
       }
     };
   
@@ -448,6 +510,9 @@ VrtxEditor.prototype.richtextEditorFacade = {
     var inst = this.getInstance(name);
     return inst !== null ? inst.getData() : null;
   },
+  updateInstanceByInstance: function(instance) {
+    instance.updateElement();
+  },
   updateInstance: function(name) {
     var inst = this.getInstance(name);
     if(inst !== null) {
@@ -461,6 +526,9 @@ VrtxEditor.prototype.richtextEditorFacade = {
   },
   getValue: function(instance) {
     return instance.getData();
+  },
+  setValue: function(instance, data) {
+    instance.setData(data);
   },
   setInstanceValue: function(name, data) {
     var inst = this.getInstance(name);
