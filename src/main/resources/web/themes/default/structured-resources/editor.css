@@ -444,6 +444,14 @@
   display: block;
 }
 
+#editor .phd-web-address {
+  display: none;
+}
+
+#editor.select-program-type-phd .phd-web-address {
+  display: block;
+}
+
 /* Radios */
 
 #vrtx-resource\.courseContext\.course-continued-as.hidden {

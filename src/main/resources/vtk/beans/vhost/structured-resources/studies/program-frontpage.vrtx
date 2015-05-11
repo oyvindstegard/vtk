@@ -4,6 +4,7 @@ resourcetype program-frontpage : program-document {
     ctx-patch : string,
   
     program-type : string,
+    phd-web-address : resource_ref,
     theme : string multiple,
     duration : string trim,
     study-points : string,
@@ -26,7 +27,7 @@ resourcetype program-frontpage : program-document {
     duration (size[2]),
     study-points (size[4]),
     group samlet (name-no, name-nn, name-en) (after name) horizontal,
-    group facts (program-type, theme, duration, study-points, full-time, faculty, keywords, picture) (after samlet),
+    group facts (program-type, phd-web-address, theme, duration, study-points, full-time, faculty, keywords, picture) (after samlet),
     group interview-box (interviewTitle, interviewContent, interviewLinkText, interviewUrl) (before additional-content),
     resource-links tooltip (en : "Tooltip for links", no : "Tips for lenker", nn : "Tips for lenkjer"),
     keywords tooltip (en : "Comma separated list", no : "Kommaseparert liste", nn : "Kommaseparert liste"),
@@ -168,8 +169,26 @@ resourcetype program-frontpage : program-document {
 
   view {
     ##
+    [def document structured-document()]
+    [def program-type document.properties.program-type]
+    [def phd-web-address document.properties.phd-web-address]
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
+    [if program-type != null && program-type != "" && phd-web-address != null && phd-web-address != ""]
+      <head>
+        <title>[call "comp:title"]</title>
+        <meta http-equiv="refresh" content="0; url=[val phd-web-address]">
+      </head>
+      <body id="vrtx-program-frontpage">
+        <div id="vrtx-content">
+          <div id="vrtx-main-content">
+            <div id="vrtx-program-frontpage-main" class="vrtx-frontpage-box white-box">
+              <a href="[val phd-web-address]">[localized "phd-web-address"]</a>
+            </div>
+         </div>
+        </div>
+      </body>
+    [else]
       <head>
         [call "resource:comments-feed-link"]
         <title>[call "comp:title"]</title>
@@ -198,6 +217,7 @@ resourcetype program-frontpage : program-document {
           [call "comp:right-column"]
         </div>
       </body>
+    [endif]
     </html>
     ##
   }
@@ -217,9 +237,9 @@ resourcetype program-frontpage : program-document {
     },
 
     program-type {
-      en : ("halvtaar" = "1/2-year", "aarsenhet" = "1-year unit", "bachelor" = "bachelor's", "ettoghalvt-aarig-master" = "master's - 1 1/2-years", "to-aarig-master" = "master's - 2 years", "fem-aarig-master" = "master's - 5 years", "erfaringsbasert-master" = "master's - experience based", "profesjon" = "programme of professional study"),
-      no : ("halvtaar" = "1/2 år", "aarsenhet" = "årsenhet", "bachelor" = "bachelor", "ettoghalvt-aarig-master" = "master - halvannet år", "to-aarig-master" = "master - to år", "fem-aarig-master" = "master - 5 år", "erfaringsbasert-master" = "master - erfaringsbasert", "profesjon" = "profesjonsstudium"),
-      nn : ("halvtaar" = "1/2 år", "aarsenhet" = "årseining", "bachelor" = "bachelor", "ettoghalvt-aarig-master" = "master - halvanna år", "to-aarig-master" = "master - to år", "fem-aarig-master" = "master - 5 år", "erfaringsbasert-master" = "master - erfaringsbasert", "profesjon" = "profesjonsstudium")
+      en : ("halvtaar" = "1/2-year", "aarsenhet" = "1-year unit", "bachelor" = "bachelor's", "ettoghalvt-aarig-master" = "master's - 1 1/2-years", "to-aarig-master" = "master's - 2 years", "fem-aarig-master" = "master's - 5 years", "erfaringsbasert-master" = "master's - experience based", "profesjon" = "programme of professional study", "phd" = "Doctoral degree - Ph.d."),
+      no : ("halvtaar" = "1/2 år", "aarsenhet" = "årsenhet", "bachelor" = "bachelor", "ettoghalvt-aarig-master" = "master - halvannet år", "to-aarig-master" = "master - to år", "fem-aarig-master" = "master - 5 år", "erfaringsbasert-master" = "master - erfaringsbasert", "profesjon" = "profesjonsstudium", "phd" = "Doktorgrad - Ph.d."),
+      nn : ("halvtaar" = "1/2 år", "aarsenhet" = "årseining", "bachelor" = "bachelor", "ettoghalvt-aarig-master" = "master - halvanna år", "to-aarig-master" = "master - to år", "fem-aarig-master" = "master - 5 år", "erfaringsbasert-master" = "master - erfaringsbasert", "profesjon" = "profesjonsstudium", "phd" = "Doktorgrad - Ph.d.")
     },
 
     full-time {
@@ -267,6 +287,7 @@ resourcetype program-frontpage : program-document {
     nedlagt : (en : "Closed", no : "Nedlagt", nn : "Nedlagt"),
     
     program-type : (en : "Programme type", no : "Programtype", nn : "Programtype"),
+    phd-web-address : (en : "Ph.d. web address", no : "Ph.d. webadresse", nn : "Ph.d. webadresse"),
     
     faculty : (en : "Responsible faculty", no : "Ansvarlig fakultet", nn : "Ansvarlig fakultet"),
     hf : (en : "Faculty of Humanities", no : "Det humanistiske fakultet", nn : "Det humanistiske fakultet"),
