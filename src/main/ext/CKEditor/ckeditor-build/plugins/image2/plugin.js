@@ -1173,15 +1173,22 @@
 			}
         }
 		function updateDimensionHelperPos(image, dimensionHelper, w, h) {
-		    dimensionHelper.text(w + " x " + h);
-		    var dimensionHelperWidth = dimensionHelper.outerWidth(true);
-			var dimensionHelperHeight = dimensionHelper.outerHeight(true);
-			dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
-					               "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
-			if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
-			    dimensionHelper.css("color", "red");
-			} else {
-				dimensionHelper.css("color", "#fff");
+		    if(w < 40 || h < 40) {
+		        dimensionHelper.hide();
+		    } else {
+		        if(dimensionHelper[0].style.display === "none") {
+		            dimensionHelper.show();
+		        }
+		        dimensionHelper.text(w + " x " + h);
+		        var dimensionHelperWidth = dimensionHelper.outerWidth(true);
+			    var dimensionHelperHeight = dimensionHelper.outerHeight(true);
+			    dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
+					                   "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
+			    if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
+			        dimensionHelper.css("color", "red");
+			    } else {
+				    dimensionHelper.css("color", "#fff");
+		    	}
 			}
 		}
 		// ^ USIT Preview (VTK-3873)
