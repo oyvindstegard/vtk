@@ -131,8 +131,8 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
             var baseHrefImage2Fixed = ( config.baseHref || '' );
             if(baseHrefImage2Fixed != "") {
                 if(/^\//.test(src)) {
-                    baseHrefImage2Fixed = baseHrefImage2Fixed.replace(location.pathname, "");
-                } else {
+                    baseHrefImage2Fixed = baseHrefImage2Fixed.replace(location.pathname.replace(/[^\/]+$/, ""), "");
+                } else if(/^http(s)?:\/\//.test(src)) {
                     baseHrefImage2Fixed = "";
                 }
             }
