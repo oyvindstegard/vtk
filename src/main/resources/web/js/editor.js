@@ -356,70 +356,12 @@ VrtxEditor.prototype.richtextEditorFacade = {
     var rteFacade = this;
     config.on = {
       instanceReady: function (ev) {
+        var instanceReadyFn = arguments.callee;
+      
         rteFacade.setupTagsFormatting(this, ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'], false);
         rteFacade.setupTagsFormatting(this, ['ol', 'ul', 'li'], true);
         
-        /* 
-         * VTK-3873
-         * 
-         * Migrate old div-containers (image or image+caption) to new image plugin
-         *
-         */
-        var data = $($.parseHTML("<div>" + rteFacade.getValue(this) + "</div>"));
-        var containers = data.find(".vrtx-container, .vrtx-img-container");
-        for(var i = 0, len = containers.length; i < len; i++) {
-          var container = $(containers[i]);
-          var containerChildren = container.children();
-          if(containerChildren.length == 1 || containerChildren.length == 2) {
-            var img = container.find("img").clone();
-            if(img.length) {
-              var out = "";
-              
-              // Widht/height conversion
-              var width = img.css("width");
-              var height = img.css("height");
-              img.attr({ "width": parseInt(img.css("width"), 10),
-                         "height": parseInt(img.css("height"), 10) });
-              img.removeAttr("style");
-              
-              // Alignment
-              var align = container.hasClass("vrtx-container-left") ? "image-left" : "";
-                  align += container.hasClass("vrtx-container-right") ? "image-right" : "";
-                  align += container.hasClass("vrtx-container-middle") ? "image-center" : "";
-              
-              // Has caption?
-              var caption = container.find("p");
-              if($.trim(caption.text()) !== "") {
-                caption.find("img").remove();
-                if(align !== "") {
-                  out = "<figure class='image-captioned " + align + "'>";
-                } else {
-                  out = "<figure class='image-captioned'>";
-                }
-                out += img[0].outerHTML +
-                    "<figcaption>" +
-                      caption.html() +
-                    "</figcaption>" +
-                    "</figure>";
-                    
-              // Only image
-              } else {
-                if(align !== "") {
-                  img.addClass(align);
-                }
-                out += img[0].outerHTML;
-              }
-       
-              if(out !== "") {
-                container.replaceWith(out);
-              }
-            }
-          }
-        }
-        if(len) {
-          rteFacade.setValue(this, data.html());
-        }
-        
+        migrateOldDivContainers(rteFacade, this, instanceReadyFn);
       }
     };
   
@@ -576,6 +518,187 @@ VrtxEditor.prototype.richtextEditorFacade = {
     }, 10);
   }
 };
+       
+/* 
+ * VTK-3873
+ * 
+ * Migrate old image div-containers to new image plugin on interaction
+ *
+ */
+ 
+function migrateOldDivContainers(rteFacade, instance, instanceReadyFn) {
+  if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { 
+    if(true) { // Optimally only fullsize editors
+      if(!instance.hasOldDivContainersNotConvertableOrUserDecidedNotToConvert) {
+         var showMigrateDialog = function(e) {
+           var d = new VrtxConfirmDialog({
+             title: "Advarsel",
+             msg: "Vi har oppdaget gamle bilde div-containere. Vil du konvertere til ny struktur tilpasset bildeplugin for alle bildene i dette editor-feltet?",
+             btnTextOk: "Ja",
+             btnTextCancel: "Nei",
+             onOk: function () {
+               migrateOldDivContainersToNewImagePlugin(rteFacade, instance, instanceReadyFn);
+             },
+             onCancel: function() {
+               _$("#" + instance.id + "_contents iframe").contents().find(".vrtx-container, .vrtx-img-container").off("keydown mousedown", showMigrateDialog);
+               instance.hasOldDivContainersNotConvertableOrUserDecidedNotToConvert = true;
+             }
+           });
+           d.open();
+         };
+         _$("#" + instance.id + "_contents iframe").contents().find(".vrtx-container, .vrtx-img-container").on("keydown mousedown", showMigrateDialog);
+       }
+    }
+  }
+}
+         
+function migrateOldDivContainersCheck(data) {
+  return /<div[^>]+class=(\'|\")([^\']*[^\"]* |)vrtx-(img-|)container( |(\'|\"))/i.test(data);
+}
+         
+function migrateOldDivContainersToNewImagePlugin(rteFacade, instance, instanceReadyFn) {
+  var data = $($.parseHTML("<div>" + rteFacade.getValue(instance) + "</div>"));
+  var containers = data.find(".vrtx-container, .vrtx-img-container");
+  for(var i = 0, len = containers.length; i < len; i++) {
+    var container = $(containers[i]);
+    var containerChildren = container.children();
+    if(containerChildren.length == 1 || containerChildren.length == 2) {
+      var img = container.find("img").clone();
+      if(img.length) {
+        var out = "";
+        
+        // Limit to this width (can maybe be optimized a little)
+        var overrideWidth = 999999;
+        if(container.hasClass("vrtx-container-size-xxl")) {
+          overrideWidth = 800;
+        } else if(container.hasClass("vrtx-container-size-xl")) {
+          overrideWidth = 700;
+        } else if(container.hasClass("vrtx-container-size-l")) {
+          overrideWidth = 600;
+        } else if(container.hasClass("vrtx-container-size-m")) {
+          overrideWidth = 500;
+        } else if(container.hasClass("vrtx-container-size-s")) {
+          overrideWidth = 400;
+        } else if(container.hasClass("vrtx-container-size-xs")) {
+          overrideWidth = 300;
+        } else if(container.hasClass("vrtx-container-size-xxs")) {
+          overrideWidth = 200;
+        }
+        
+        // Width/height conversion
+        var style = img.attr("style");
+        var hasStyle = typeof style !== "undefined" && style != "";
+        var hasStyleWidth = hasStyle && style.indexOf("width:") !== -1;
+        var hasStyleHeight = hasStyle && style.indexOf("height:") !== -1;
+        var width = 0;
+        var height = 0;
+        if(hasStyleWidth || hasStyleHeight) {
+          if(hasStyleWidth) {
+            var widthRegex = /(.*)(width\:[\s]*[\d]+px[;]*)(.*)/i;
+            var matches = style.match(widthRegex);
+            if(matches.length > 2) {
+              width = matches[2].replace(/[^0-9.]/g, "");
+            }
+            style = style.replace(widthRegex, "$1$3", "");
+          }
+          if(hasStyleHeight) {
+            var heightRegex = /(.*)(height\:[\s]*[\d]+px[;]*)(.*)/i;
+            var matches = style.match(heightRegex);
+            if(matches.length > 2) {
+              height = matches[2].replace(/[^0-9.]/g, "");
+            }
+            style = style.replace(heightRegex, "$1$3", "");
+          }
+          
+          img.attr("style", style);
+          
+          if(width > overrideWidth) {
+            img.attr("width", overrideWidth);
+            img.removeAttr("height");
+          } else {
+            if(width > 0) {
+              img.attr("width", width);
+            } else {
+              img.removeAttr("width");
+            }
+            if(height > 0) {
+              img.attr("height", height);
+            } else {
+              img.removeAttr("height");
+            }
+          }
+        } else {
+          var widthAttr = img.attr("width");
+          if(typeof widthAttr !== "undefined" && widthAttr != "") {
+            width = parseInt(widthAttr, 10);
+          }
+          if(width > overrideWidth) {
+            img.attr("width", overrideWidth);
+            img.removeAttr("height");
+          }
+        }
+              
+        // Alignment
+        var align = container.hasClass("vrtx-container-left") ? "image-left" : "";
+            align += container.hasClass("vrtx-container-right") ? "image-right" : "";
+            align += container.hasClass("vrtx-container-middle") ? "image-center" : "";
+              
+        // Has caption?
+        var caption = container.find("p");
+        if($.trim(caption.text()) !== "") {
+           caption.find("img").remove();
+           if(align !== "") {
+             out = "<figure class='image-captioned " + align + "'>";
+           } else {
+             out = "<figure class='image-captioned'>";
+           }
+           out += img[0].outerHTML +
+                  "<figcaption>" +
+                    caption.html() +
+                  "</figcaption>" +
+                  "</figure>";
+                    
+         // Only image
+         } else {
+           if(align !== "") {
+             img.addClass(align);
+           }
+           out += img[0].outerHTML;
+         }
+       
+         if(out !== "") {
+           container.replaceWith(out);
+         }
+       }
+     }
+   }
+   if(len) {
+     rteFacade.setValue(instance, data.html());
+     rteFacade.updateInstance();
+     if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { // Any unconvertable?
+       instance.hasOldDivContainersNotConvertableOrUserDecidedNotToConvert = true;
+       var d = new VrtxHtmlDialog({
+         title: "Advarsel",
+         html: "<p>Ikke alle bilde div-containere lot seg konvertere.</p><p>Hvis du ønsker å endre på disse bildene bør du slette dem og sette inn på nytt evt. gå i kilden.</p>",
+         btnTextOk: "Ok",
+         onOk: function() {
+           migrateOldDivContainersAfterUpdate(instance, instanceReadyFn);
+         }
+       });
+       d.open();
+     } else {
+       migrateOldDivContainersAfterUpdate(instance, instanceReadyFn);
+     }
+   }  
+}
+
+function migrateOldDivContainersAfterUpdate(instance, instanceReadyFn) {
+  instanceReadyFn.apply(instance, null);
+  _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
+    ctrlSEventHandler(_$, e);
+  }));
+}
+
 
 /* Toolbars */
 

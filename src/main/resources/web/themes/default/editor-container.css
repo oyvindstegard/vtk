@@ -9,11 +9,15 @@
 .vrtx-container-size-xxs { width: 200px; }
 
 .vrtx-container {
-  border-color: #aaa;
-  border-style: solid;
-  border-width: 2px;
   overflow: hidden;
   padding: 1em;
+}
+
+.vrtx-container,
+.vrtx-img-container {
+  border-color: red;
+  border-style: solid;
+  border-width: 2px;
 }
 
 .vrtx-container-middle img {
@@ -91,12 +95,6 @@
 .vrtx-facts-container ol {
   padding-left: 0em;
   margin-left: 2em;
-}
-
-.vrtx-img-container {
-  border-color: #aaa;
-  border-style: solid;
-  border-width: 2px;
 }
 
 .vrtx-img-container p {
