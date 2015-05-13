@@ -719,6 +719,7 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
          btnTextOk: "Ok",
          onOk: function() {
            migrateOldDivContainersAfterUpdate(instance);
+           migrateOldDivContainers(rteFacade, instance);
          }
        });
        d.open();
