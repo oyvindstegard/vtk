@@ -526,46 +526,80 @@ VrtxEditor.prototype.richtextEditorFacade = {
  *
  */
  
-function migrateOldDivContainers(rteFacade, instance, instanceReadyFn) {
+function migrateOldDivContainers(rteFacade, instance) {
   if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { 
     if(true) { // Optimally only fullsize editors
-      if(!instance.hasOldDivContainersNotConvertableOrUserDecidedNotToConvert) {
-         var showMigrateDialog = function(e) {
-           var d = new VrtxConfirmDialog({
-             title: "Advarsel",
-             msg: "Vi har oppdaget gamle bilde div-containere. Vil du konvertere til ny struktur tilpasset bildeplugin for alle bildene i dette editor-feltet?",
-             btnTextOk: "Ja",
-             btnTextCancel: "Nei",
-             onOk: function () {
-               migrateOldDivContainersToNewImagePlugin(rteFacade, instance, instanceReadyFn);
-             },
-             onCancel: function() {
-               _$("#" + instance.id + "_contents iframe").contents().find(".vrtx-container, .vrtx-img-container").off("keydown mousedown", showMigrateDialog);
-               instance.hasOldDivContainersNotConvertableOrUserDecidedNotToConvert = true;
-             }
-           });
-           d.open();
-         };
-         _$("#" + instance.id + "_contents iframe").contents().find(".vrtx-container, .vrtx-img-container").on("keydown mousedown", showMigrateDialog);
-       }
+      var instanceIframe = _$("#" + instance.id + "_contents iframe").contents();
+      var instanceIframeImageContainers = instanceIframe.find(".vrtx-container, .vrtx-img-container");
+      var instanceIframeImageContainersImg = instanceIframeImageContainers.find("img");
+      var instanceToolbarImageButton = _$("#" + instance.id + "_top .cke_toolgroup a.cke_button__image");
+
+      instanceIframeImageContainers.on("mousedown dblclick", function(e) {
+        showMigrateDialog(e, instance);
+      });
+      instanceIframeImageContainersImg.on("mousedown dblclick", function(e) {
+        showMigrateDialog(e, instance);
+      });
     }
   }
+}
+
+function showMigrateDialog(e, instance) {
+  if(e && e.type === "mousedown" && e.which === 1) return; // Allow click
+  
+  if(!instance.preventNotConvertedOrUserOptedOutContainers) {
+    var d = new VrtxConfirmDialog({
+      title: "Advarsel",
+      msg: "Vi har oppdaget gamle bilde div-containere. Vil du konvertere til ny struktur tilpasset bildeplugin for alle bildene i dette editor-feltet?",
+      btnTextOk: "Ja",
+      btnTextCancel: "Nei",
+      onOk: function () {
+        migrateOldDivContainersToNewImagePlugin(instance);
+      },
+      onCancel: function() {
+        instance.preventNotConvertedOrUserOptedOutContainers = true;
+      }
+    });
+    d.open();
+  }
+  
+  // Wait for context to show (or stop timer after 100ms) and hide it
+  if(e.type === "mousedown" && (e.which === 2 || e.which === 3)) {
+    var startWaitForShow = +new Date();
+    var waitForShow = setInterval(function() {
+      var panel = $(".cke_menu_panel." + instance.id);
+      if(panel.length && panel[0].style && panel[0].style.display !== "none") {
+        panel.hide();
+        clearInterval(waitForShow);
+      } else if(((+new Date()) - startWaitForShow) >= 100) {
+        clearInterval(waitForShow);
+      }
+    }, 20);
+  }
+         
+  e.stopPropagation();
+  e.preventDefault();
 }
          
 function migrateOldDivContainersCheck(data) {
   return /<div[^>]+class=(\'|\")([^\']*[^\"]* |)vrtx-(img-|)container( |(\'|\"))/i.test(data);
 }
          
-function migrateOldDivContainersToNewImagePlugin(rteFacade, instance, instanceReadyFn) {
+function migrateOldDivContainersToNewImagePlugin(instance) {
+  var rteFacade = vrtxEditor.richtextEditorFacade;
   var data = $($.parseHTML("<div>" + rteFacade.getValue(instance) + "</div>"));
   var containers = data.find(".vrtx-container, .vrtx-img-container");
+  
   for(var i = 0, len = containers.length; i < len; i++) {
     var container = $(containers[i]);
     var containerChildren = container.children();
-    if(containerChildren.length == 1 || containerChildren.length == 2) {
-      var img = container.find("img").clone();
-      if(img.length) {
+    var childrenLen = containerChildren.length;
+    if((childrenLen == 1 || childrenLen == 2) && container.find("> img, > p").length == childrenLen) {
+      var images = container.find("img");
+      if(images.length == 1) {
         var out = "";
+        
+        var img = images.clone();
         
         // Limit to this width (can maybe be optimized a little)
         var overrideWidth = 999999;
@@ -635,6 +669,8 @@ function migrateOldDivContainersToNewImagePlugin(rteFacade, instance, instanceRe
           if(width > overrideWidth) {
             img.attr("width", overrideWidth);
             img.removeAttr("height");
+          } else if(overrideWidth != 999999) {
+            img.attr("width", overrideWidth);
           }
         }
               
@@ -675,26 +711,25 @@ function migrateOldDivContainersToNewImagePlugin(rteFacade, instance, instanceRe
    if(len) {
      rteFacade.setValue(instance, data.html());
      rteFacade.updateInstance();
-     if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { // Any unconvertable?
-       instance.hasOldDivContainersNotConvertableOrUserDecidedNotToConvert = true;
+     if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { // Any that not could be converted?
+       instance.preventNotConvertedOrUserOptedOutContainers = true;
        var d = new VrtxHtmlDialog({
          title: "Advarsel",
          html: "<p>Ikke alle bilde div-containere lot seg konvertere.</p><p>Hvis du ønsker å endre på disse bildene bør du slette dem og sette inn på nytt evt. gå i kilden.</p>",
          btnTextOk: "Ok",
          onOk: function() {
-           migrateOldDivContainersAfterUpdate(instance, instanceReadyFn);
+           migrateOldDivContainersAfterUpdate(instance);
          }
        });
        d.open();
      } else {
-       migrateOldDivContainersAfterUpdate(instance, instanceReadyFn);
+       migrateOldDivContainersAfterUpdate(instance);
      }
    }  
 }
 
-function migrateOldDivContainersAfterUpdate(instance, instanceReadyFn) {
-  instanceReadyFn.apply(instance, null);
-  _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
+function migrateOldDivContainersAfterUpdate(instance) {
+  _$("#" + instance.id + "_contents iframe").contents().find("body").bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
     ctrlSEventHandler(_$, e);
   }));
 }

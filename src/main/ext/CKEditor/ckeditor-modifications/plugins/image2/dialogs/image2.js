@@ -128,15 +128,13 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			} );
 
             // USIT Patched (VTK-3873)
-            var baseHrefImage2Fixed = ( config.baseHref.replace(/[^\/]+$/, "") || '' ); // Remove document filename
+            var baseHrefImage2Fixed = ( config.baseHref.replace(/[^\/]*$/, "") || '' );
             if( baseHrefImage2Fixed != "" ) {
-                if( /^\//.test(src) ) { // Root-relative
-                    var pathWithoutFilename = location.pathname.replace(/[^\/]+$/, "");
-                    baseHrefImage2Fixed = baseHrefImage2Fixed.replace(pathWithoutFilename, ""); // Remove document path
-                } else if( /^http(s)?:\/\//.test(src) ) { // Http(s) any domain
+                if( /^\//.test(src) ) {
+                    baseHrefImage2Fixed = location.protocol + "//" + location.host.replace("-adm", "");
+                } else if( /^http(s)?:\/\//.test(src) ) {
                     baseHrefImage2Fixed = "";
                 }
-                // Otherwise folder-relative ./, ../ and <filename> (should be resolved by browser)
             }
 			image.setAttribute( 'src',
 				baseHrefImage2Fixed + src + '?' + Math.random().toString( 16 ).substring( 2 ) );
