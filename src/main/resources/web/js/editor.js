@@ -356,12 +356,8 @@ VrtxEditor.prototype.richtextEditorFacade = {
     var rteFacade = this;
     config.on = {
       instanceReady: function (ev) {
-        var instanceReadyFn = arguments.callee;
-      
         rteFacade.setupTagsFormatting(this, ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'], false);
         rteFacade.setupTagsFormatting(this, ['ol', 'ul', 'li'], true);
-        
-        migrateOldDivContainers(rteFacade, this, instanceReadyFn);
       }
     };
   
@@ -525,64 +521,22 @@ VrtxEditor.prototype.richtextEditorFacade = {
  * Migrate old image div-containers to new image plugin on interaction
  *
  */
- 
-function migrateOldDivContainers(rteFacade, instance) {
-  if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { 
-    if(true) { // Optimally only fullsize editors
-      var instanceIframe = _$("#" + instance.id + "_contents iframe").contents();
-      var instanceIframeImageContainers = instanceIframe.find(".vrtx-container, .vrtx-img-container");
-      var instanceIframeImageContainersImg = instanceIframeImageContainers.find("img");
-      var instanceToolbarImageButton = _$("#" + instance.id + "_top .cke_toolgroup a.cke_button__image");
-
-      instanceIframeImageContainers.on("mousedown dblclick", function(e) {
-        showMigrateDialog(e, instance);
-      });
-      instanceIframeImageContainersImg.on("mousedown dblclick", function(e) {
-        showMigrateDialog(e, instance);
-      });
-    }
-  }
-}
-
-function showMigrateDialog(e, instance) {
-  if(e && e.type === "mousedown" && e.which === 1) return; // Allow click
-  
-  if(!instance.preventNotConvertedOrUserOptedOutContainers) {
-    var d = new VrtxConfirmDialog({
-      title: "Advarsel",
-      msg: "Vi har oppdaget gamle bilde div-containere. Vil du konvertere til ny struktur tilpasset bildeplugin for alle bildene i dette editor-feltet?",
-      btnTextOk: "Ja",
-      btnTextCancel: "Nei",
-      onOk: function () {
-        migrateOldDivContainersToNewImagePlugin(instance);
-      },
-      onCancel: function() {
-        instance.preventNotConvertedOrUserOptedOutContainers = true;
-      }
-    });
-    d.open();
-  }
-  
-  // Wait for context to show (or stop timer after 100ms) and hide it
-  if(e.type === "mousedown" && (e.which === 2 || e.which === 3)) {
-    var startWaitForShow = +new Date();
-    var waitForShow = setInterval(function() {
-      var panel = $(".cke_menu_panel." + instance.id);
-      if(panel.length && panel[0].style && panel[0].style.display !== "none") {
-        panel.hide();
-        clearInterval(waitForShow);
-      } else if(((+new Date()) - startWaitForShow) >= 100) {
-        clearInterval(waitForShow);
-      }
-    }, 20);
-  }
-         
-  e.stopPropagation();
-  e.preventDefault();
-}
          
 function migrateOldDivContainersCheck(data) {
   return /<div[^>]+class=(\'|\")([^\']*[^\"]* |)vrtx-(img-|)container( |(\'|\"))/i.test(data);
+}
+
+function showMigrateDialog(instance) {
+  var d = new VrtxConfirmDialog({
+    title: "Advarsel",
+    msg: "Vi har oppdaget gamle bilde div-containere. Vil du konvertere til ny struktur tilpasset bildeplugin for alle bildene i dette editor-feltet?",
+    btnTextOk: "Ja",
+    btnTextCancel: "Nei",
+    onOk: function () {
+      migrateOldDivContainersToNewImagePlugin(instance);
+    }
+  });
+  d.open();
 }
          
 function migrateOldDivContainersToNewImagePlugin(instance) {
@@ -666,11 +620,9 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
           if(typeof widthAttr !== "undefined" && widthAttr != "") {
             width = parseInt(widthAttr, 10);
           }
-          if(width > overrideWidth) {
+          if(width > overrideWidth || (width == 0 && overrideWidth != 999999)) {
             img.attr("width", overrideWidth);
             img.removeAttr("height");
-          } else if(overrideWidth != 999999) {
-            img.attr("width", overrideWidth);
           }
         }
               
@@ -691,8 +643,7 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
            out += img[0].outerHTML +
                   "<figcaption>" +
                     caption.html() +
-                  "</figcaption>" +
-                  "</figure>";
+                  "</figcaption></figure>";
                     
          // Only image
          } else {
@@ -712,20 +663,14 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
      rteFacade.setValue(instance, data.html());
      rteFacade.updateInstance();
      if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { // Any that not could be converted?
-       instance.preventNotConvertedOrUserOptedOutContainers = true;
        var d = new VrtxHtmlDialog({
          title: "Advarsel",
          html: "<p>Ikke alle bilde div-containere lot seg konvertere.</p><p>Hvis du ønsker å endre på disse bildene bør du slette dem og sette inn på nytt evt. gå i kilden.</p>",
-         btnTextOk: "Ok",
-         onOk: function() {
-           migrateOldDivContainersAfterUpdate(instance);
-           migrateOldDivContainers(rteFacade, instance);
-         }
+         btnTextOk: "Ok"
        });
        d.open();
-     } else {
-       migrateOldDivContainersAfterUpdate(instance);
      }
+     migrateOldDivContainersAfterUpdate(instance);
    }  
 }
 

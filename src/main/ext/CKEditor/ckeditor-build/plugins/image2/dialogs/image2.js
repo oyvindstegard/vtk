@@ -430,6 +430,14 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			preLoader = createPreLoader();
 		},
 		onShow: function() {
+		
+		    // VTK-3873 - Is't in old div container, then show dialog for converting..
+		    var imageElement = $(this.widget.element.$);
+		    if(imageElement.closest(".vrtx-img-container, .vrtx-container").length > 0 && typeof showMigrateDialog === "function") {
+		      this.hide();
+		      showMigrateDialog(this._.editor);
+		    }
+		
 			// Create a "global" reference to edited widget.
 			widget = this.widget;
 
