@@ -528,10 +528,10 @@ function migrateOldDivContainersCheck(data) {
 
 function showMigrateDialog(instance) {
   var d = new VrtxConfirmDialog({
-    title: "Advarsel",
-    msg: "Vi har oppdaget gamle bilde div-containere. Vil du konvertere til ny struktur tilpasset bildeplugin for alle bildene i dette editor-feltet?",
-    btnTextOk: "Ja",
-    btnTextCancel: "Nei",
+    title: vrtxAdmin.oldImageContainers.convert.title,
+    msg: vrtxAdmin.oldImageContainers.convert.msg,
+    btnTextOk: vrtxAdmin.oldImageContainers.convert.yes,
+    btnTextCancel: vrtxAdmin.oldImageContainers.convert.no,
     onOk: function () {
       migrateOldDivContainersToNewImagePlugin(instance);
     }
@@ -664,8 +664,8 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
      rteFacade.updateInstance();
      if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { // Any that not could be converted?
        var d = new VrtxHtmlDialog({
-         title: "Advarsel",
-         html: "<p>Ikke alle bilde div-containere lot seg konvertere.</p><p>Hvis du ønsker å endre på disse bildene bør du slette dem og sette inn på nytt evt. gå i kilden.</p>",
+         title: vrtxAdmin.oldImageContainers.notAllConverted.title,
+         html: "<p>" + vrtxAdmin.oldImageContainers.notAllConverted.msg + "</p>",
          btnTextOk: "Ok"
        });
        d.open();
