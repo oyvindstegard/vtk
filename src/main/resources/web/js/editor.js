@@ -528,10 +528,10 @@ function migrateOldDivContainersCheck(data) {
 
 function showMigrateDialog(instance) {
   var d = new VrtxConfirmDialog({
-    title: vrtxAdmin.oldImageContainers.convert.title,
-    msg: vrtxAdmin.oldImageContainers.convert.msg,
-    btnTextOk: vrtxAdmin.oldImageContainers.convert.yes,
-    btnTextCancel: vrtxAdmin.oldImageContainers.convert.no,
+    title: vrtxAdmin.messages.oldImageContainers.convert.title,
+    msg: vrtxAdmin.messages.oldImageContainers.convert.msg,
+    btnTextOk: vrtxAdmin.messages.oldImageContainers.convert.yes,
+    btnTextCancel: vrtxAdmin.messages.oldImageContainers.convert.no,
     onOk: function () {
       migrateOldDivContainersToNewImagePlugin(instance);
     }
@@ -664,8 +664,8 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
      rteFacade.updateInstance();
      if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { // Any that not could be converted?
        var d = new VrtxHtmlDialog({
-         title: vrtxAdmin.oldImageContainers.notAllConverted.title,
-         html: "<p>" + vrtxAdmin.oldImageContainers.notAllConverted.msg + "</p>",
+         title: vrtxAdmin.messages.oldImageContainers.notAllConverted.title,
+         html: "<p>" + vrtxAdmin.messages.oldImageContainers.notAllConverted.msg + "</p>",
          btnTextOk: "Ok"
        });
        d.open();
