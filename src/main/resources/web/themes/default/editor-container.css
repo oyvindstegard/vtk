@@ -122,8 +122,12 @@ ul.cke_panel_list a {
   color: #000 !important;
 }
 
-/* New */
+/* New image2 plugin */
 
+.vrtx-container .cke_image_resizer,
+.vrtx-img-container .cke_image_resizer {
+  display: none !important;
+}
 
 /* Fix for Firefox: use box-shadow instead of outline */
 body .cke_widget_wrapper.cke_widget_focused>.cke_widget_element,
