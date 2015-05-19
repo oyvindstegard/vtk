@@ -39,8 +39,8 @@ rsync -r -ptv ckeditor-modifications/ ckeditor-build
 Obs: New image2-plugin requires that this is exact code is inserted into ckeditor.js in ckeditor-build/
 CKEDITOR.plugins.div.getSurroundDiv(a).$.className.indexOf("vrtx-img-container ")!==-1||CKEDITOR.plugins.div.getSurroundDiv(a).$.className.indexOf("vrtx-container ")!==-1?{removediv:CKEDITOR.TRISTATE_OFF}:
 
-Directly after this code:
-b.isReadOnly()?null:CKEDITOR.plugins.div.getSurroundDiv(a)
+Directly after this code-snippet (copy/paste the line above directly after "?"):
+b.isReadOnly()?null:CKEDITOR.plugins.div.getSurroundDiv(a)?
 
 (otherwise need to build plugins/div/plugin.js into ckeditor.js)
 
