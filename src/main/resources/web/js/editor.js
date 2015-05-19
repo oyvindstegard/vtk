@@ -636,7 +636,11 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
         if($.trim(caption.text()) !== "") {
            caption.find("img").remove();
            if(align !== "") {
-             out = "<figure class='image-captioned " + align + "'>";
+             if(align === "image-center") {
+               out = "<div class='" + align + "'><figure class='image-captioned'>";
+             } else {
+               out = "<figure class='image-captioned " + align + "'>";
+             }
            } else {
              out = "<figure class='image-captioned'>";
            }
@@ -644,13 +648,20 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
                   "<figcaption>" +
                     caption.html() +
                   "</figcaption></figure>";
+           if(align === "image-center") {
+             out += "</div>";
+           }
                     
          // Only image
          } else {
-           if(align !== "") {
+           if(align !== "" && align !== "image-center") {
              img.addClass(align);
            }
-           out += img[0].outerHTML;
+           if(align === "image-center") {
+             out += "<p class='image-center'>" + img[0].outerHTML + "</p>";
+           } else {
+             out += img[0].outerHTML;
+           }
          }
        
          if(out !== "") {
