@@ -431,7 +431,7 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 		},
 		onShow: function() {
 		
-		    // VTK-3873 - Is't in old div container, then show dialog for converting..
+		    // USIT Preview (VTK-3873) - Is't in old div container, then show dialog for converting..
 		    var imageElement = $(this.widget.element.$);
 		    if(imageElement.closest(".vrtx-img-container, .vrtx-container").length > 0 && typeof showMigrateDialog === "function") {
 		      this.hide();
