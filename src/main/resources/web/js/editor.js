@@ -385,7 +385,8 @@ VrtxEditor.prototype.richtextEditorFacade = {
     }
   },
   setupCTRLS: function() {
-    CKEDITOR.on('instanceReady', function (event) {
+    var rteFacade = this;
+    var setupCTRLSPrivate = function(event) {
       _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
         ctrlSEventHandler(_$, e);
       }));
@@ -403,6 +404,14 @@ VrtxEditor.prototype.richtextEditorFacade = {
           }
         });
       }
+    };
+    
+    CKEDITOR.on('instanceReady', function (event) {
+      setupCTRLSPrivate(event);
+      
+      // Re-run code when source-button is toggled (VTK-4023)
+      var instance = rteFacade.getInstance(event.editor.name);
+      instance.on('contentDom', setupCTRLSPrivate);
     });
   },
   setupMaximizeMinimize: function() {
@@ -681,14 +690,7 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
        });
        d.open();
      }
-     migrateOldDivContainersAfterUpdate(instance);
    }  
-}
-
-function migrateOldDivContainersAfterUpdate(instance) {
-  _$("#" + instance.id + "_contents iframe").contents().find("body").bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
-    ctrlSEventHandler(_$, e);
-  }));
 }
 
 
