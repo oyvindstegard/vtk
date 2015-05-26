@@ -323,16 +323,21 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.disableNativeSpellChecker = false;
     
     config.allowedContent = true;
-    /* Enable ACF - with all elements 
+  
+    /* Enable ACF - with all elements
+     *
+     * Use the ability to specify elements as an object.
+     *
+     
     config.allowedContent = {
       $1: {
-        // Use the ability to specify elements as an object.
         elements: CKEDITOR.dtd,
         attributes: true,
         styles: true,
         classes: true
       }
     };
+    
     */
     
     // Enable ACF
@@ -384,6 +389,8 @@ VrtxEditor.prototype.richtextEditorFacade = {
       });
     }
   },
+  
+  /* Save with CTRL-S */
   setupCTRLS: function() {
     var rteFacade = this;
     var setupCTRLSPrivate = function(event) {
@@ -414,6 +421,8 @@ VrtxEditor.prototype.richtextEditorFacade = {
       instance.on('contentDom', setupCTRLSPrivate);
     });
   },
+  
+  /* Minimize/maximize */
   setupMaximizeMinimize: function() {
     vrtxAdmin.cachedAppContent.on("click", ".cke_button__maximize.cke_button_on", this.maximize);
     vrtxAdmin.cachedAppContent.on("click", ".cke_button__maximize.cke_button_off", this.minimize);
@@ -437,7 +446,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
       var helpMenu = "<div id='editor-help-menu' class='js-on'>" + shortcuts.find("#editor-help-menu").html() + "</div>";
       ckInject.append("<div class='ck-injected-save-help'>" + save + helpMenu + "</div>");
 
-      // Fix markup
+      // Fix markup - add class for button
       var saveInjected = ckInject.find(".ck-injected-save-help > a");
       if (!saveInjected.hasClass("vrtx-button")) {
         saveInjected.addClass("vrtx-button");
@@ -454,6 +463,8 @@ VrtxEditor.prototype.richtextEditorFacade = {
     stickyBar.show();
     var ckInject = _$(this).closest(".cke_reset").find(".ck-injected-save-help").hide();
   },
+  
+  /* Get/Set/Update instance or data */
   getInstanceValue: function(name) {
     var inst = this.getInstance(name);
     return inst !== null ? inst.getData() : null;
