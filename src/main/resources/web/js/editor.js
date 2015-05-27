@@ -44,7 +44,8 @@ function VrtxEditor() {
     "teachingsemester":  ["particular-semester", "every-other"],
     "examsemester":      ["particular-semester", "every-other"],
     "typeToDisplay":     ["so", "nm", "em"],
-    "type-of-agreement": ["other"]
+    "type-of-agreement": ["other"],
+    "program-type":      ["phd"]
   };
 
   /** Initial state for the need to confirm navigation away from editor */
@@ -322,16 +323,21 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.disableNativeSpellChecker = false;
     
     config.allowedContent = true;
-    /* Enable ACF - with all elements 
+  
+    /* Enable ACF - with all elements
+     *
+     * Use the ability to specify elements as an object.
+     *
+     
     config.allowedContent = {
       $1: {
-        // Use the ability to specify elements as an object.
         elements: CKEDITOR.dtd,
         attributes: true,
         styles: true,
         classes: true
       }
     };
+    
     */
     
     // Enable ACF
@@ -383,8 +389,11 @@ VrtxEditor.prototype.richtextEditorFacade = {
       });
     }
   },
+  
+  /* Save with CTRL-S */
   setupCTRLS: function() {
-    CKEDITOR.on('instanceReady', function (event) {
+    var rteFacade = this;
+    var setupCTRLSPrivate = function(event) {
       _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
         ctrlSEventHandler(_$, e);
       }));
@@ -402,8 +411,18 @@ VrtxEditor.prototype.richtextEditorFacade = {
           }
         });
       }
+    };
+    
+    CKEDITOR.on('instanceReady', function (event) {
+      setupCTRLSPrivate(event);
+      
+      // Re-run code when source-button is toggled (VTK-4023)
+      var instance = rteFacade.getInstance(event.editor.name);
+      instance.on('contentDom', setupCTRLSPrivate);
     });
   },
+  
+  /* Minimize/maximize */
   setupMaximizeMinimize: function() {
     vrtxAdmin.cachedAppContent.on("click", ".cke_button__maximize.cke_button_on", this.maximize);
     vrtxAdmin.cachedAppContent.on("click", ".cke_button__maximize.cke_button_off", this.minimize);
@@ -427,7 +446,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
       var helpMenu = "<div id='editor-help-menu' class='js-on'>" + shortcuts.find("#editor-help-menu").html() + "</div>";
       ckInject.append("<div class='ck-injected-save-help'>" + save + helpMenu + "</div>");
 
-      // Fix markup
+      // Fix markup - add class for button
       var saveInjected = ckInject.find(".ck-injected-save-help > a");
       if (!saveInjected.hasClass("vrtx-button")) {
         saveInjected.addClass("vrtx-button");
@@ -444,9 +463,14 @@ VrtxEditor.prototype.richtextEditorFacade = {
     stickyBar.show();
     var ckInject = _$(this).closest(".cke_reset").find(".ck-injected-save-help").hide();
   },
+  
+  /* Get/Set/Update instance or data */
   getInstanceValue: function(name) {
     var inst = this.getInstance(name);
     return inst !== null ? inst.getData() : null;
+  },
+  updateInstanceByInstance: function(instance) {
+    instance.updateElement();
   },
   updateInstance: function(name) {
     var inst = this.getInstance(name);
@@ -461,6 +485,9 @@ VrtxEditor.prototype.richtextEditorFacade = {
   },
   getValue: function(instance) {
     return instance.getData();
+  },
+  setValue: function(instance, data) {
+    instance.setData(data);
   },
   setInstanceValue: function(name, data) {
     var inst = this.getInstance(name);
@@ -507,6 +534,176 @@ VrtxEditor.prototype.richtextEditorFacade = {
     }, 10);
   }
 };
+       
+/* 
+ * VTK-3873
+ * 
+ * Migrate old image div-containers to new image plugin on interaction
+ *
+ */
+         
+function migrateOldDivContainersCheck(data) {
+  return /<div[^>]+class=(\'|\")([^\']*[^\"]* |)vrtx-(img-|)container( |(\'|\"))/i.test(data);
+}
+
+function showMigrateDialog(instance) {
+  var d = new VrtxConfirmDialog({
+    title: vrtxAdmin.messages.oldImageContainers.convert.title,
+    msg: vrtxAdmin.messages.oldImageContainers.convert.msg,
+    btnTextOk: vrtxAdmin.messages.oldImageContainers.convert.yes,
+    btnTextCancel: vrtxAdmin.messages.oldImageContainers.convert.no,
+    onOk: function () {
+      migrateOldDivContainersToNewImagePlugin(instance);
+    }
+  });
+  d.open();
+}
+         
+function migrateOldDivContainersToNewImagePlugin(instance) {
+  var rteFacade = vrtxEditor.richtextEditorFacade;
+  var data = $($.parseHTML("<div>" + rteFacade.getValue(instance) + "</div>"));
+  var containers = data.find(".vrtx-container, .vrtx-img-container");
+  
+  for(var i = 0, len = containers.length; i < len; i++) {
+    var container = $(containers[i]);
+    var containerChildren = container.children();
+    var childrenLen = containerChildren.length;
+    if((childrenLen == 1 || childrenLen == 2) && container.find("> img, > p").length == childrenLen) {
+      var images = container.find("img");
+      if(images.length == 1) {
+        var out = "";
+        
+        var img = images.clone();
+        
+        // Limit to this width (can maybe be optimized a little)
+        var overrideWidth = 999999;
+        if(container.hasClass("vrtx-container-size-xxl")) {
+          overrideWidth = 800;
+        } else if(container.hasClass("vrtx-container-size-xl")) {
+          overrideWidth = 700;
+        } else if(container.hasClass("vrtx-container-size-l")) {
+          overrideWidth = 600;
+        } else if(container.hasClass("vrtx-container-size-m")) {
+          overrideWidth = 500;
+        } else if(container.hasClass("vrtx-container-size-s")) {
+          overrideWidth = 400;
+        } else if(container.hasClass("vrtx-container-size-xs")) {
+          overrideWidth = 300;
+        } else if(container.hasClass("vrtx-container-size-xxs")) {
+          overrideWidth = 200;
+        }
+        
+        // Width/height conversion
+        var style = img.attr("style");
+        var hasStyle = typeof style !== "undefined" && style != "";
+        var hasStyleWidth = hasStyle && style.indexOf("width:") !== -1;
+        var hasStyleHeight = hasStyle && style.indexOf("height:") !== -1;
+        var width = 0;
+        var height = 0;
+        if(hasStyleWidth || hasStyleHeight) {
+          if(hasStyleWidth) {
+            var widthRegex = /(.*)(width\:[\s]*[\d]+px[;]*)(.*)/i;
+            var matches = style.match(widthRegex);
+            if(matches.length > 2) {
+              width = matches[2].replace(/[^0-9.]/g, "");
+            }
+            style = style.replace(widthRegex, "$1$3", "");
+          }
+          if(hasStyleHeight) {
+            var heightRegex = /(.*)(height\:[\s]*[\d]+px[;]*)(.*)/i;
+            var matches = style.match(heightRegex);
+            if(matches.length > 2) {
+              height = matches[2].replace(/[^0-9.]/g, "");
+            }
+            style = style.replace(heightRegex, "$1$3", "");
+          }
+          
+          img.attr("style", style);
+          
+          if(width > overrideWidth) {
+            img.attr("width", overrideWidth);
+            img.removeAttr("height");
+          } else {
+            if(width > 0) {
+              img.attr("width", width);
+            } else {
+              img.removeAttr("width");
+            }
+            if(height > 0) {
+              img.attr("height", height);
+            } else {
+              img.removeAttr("height");
+            }
+          }
+        } else {
+          var widthAttr = img.attr("width");
+          if(typeof widthAttr !== "undefined" && widthAttr != "") {
+            width = parseInt(widthAttr, 10);
+          }
+          if(width > overrideWidth || (width == 0 && overrideWidth != 999999)) {
+            img.attr("width", overrideWidth);
+            img.removeAttr("height");
+          }
+        }
+              
+        // Alignment
+        var align = container.hasClass("vrtx-container-left") ? "image-left" : "";
+            align += container.hasClass("vrtx-container-right") ? "image-right" : "";
+            align += container.hasClass("vrtx-container-middle") ? "image-center" : "";
+              
+        // Has caption?
+        var caption = container.find("p");
+        if($.trim(caption.text()) !== "") {
+           caption.find("img").remove();
+           if(align !== "") {
+             if(align === "image-center") {
+               out = "<div class='" + align + "'><figure class='image-captioned'>";
+             } else {
+               out = "<figure class='image-captioned " + align + "'>";
+             }
+           } else {
+             out = "<figure class='image-captioned'>";
+           }
+           out += img[0].outerHTML +
+                  "<figcaption>" +
+                    caption.html() +
+                  "</figcaption></figure>";
+           if(align === "image-center") {
+             out += "</div>";
+           }
+                    
+         // Only image
+         } else {
+           if(align !== "" && align !== "image-center") {
+             img.addClass(align);
+           }
+           if(align === "image-center") {
+             out += "<p class='image-center'>" + img[0].outerHTML + "</p>";
+           } else {
+             out += img[0].outerHTML;
+           }
+         }
+       
+         if(out !== "") {
+           container.replaceWith(out);
+         }
+       }
+     }
+   }
+   if(len) {
+     rteFacade.setValue(instance, data.html());
+     rteFacade.updateInstance();
+     if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { // Any that not could be converted?
+       var d = new VrtxHtmlDialog({
+         title: vrtxAdmin.messages.oldImageContainers.notAllConverted.title,
+         html: "<p>" + vrtxAdmin.messages.oldImageContainers.notAllConverted.msg + "</p>",
+         btnTextOk: "Ok"
+       });
+       d.open();
+     }
+   }  
+}
+
 
 /* Toolbars */
 
@@ -558,30 +755,7 @@ vrtxEditor.richtextEditorFacade.toolbars.resourcesTextToolbar = [
 
 vrtxEditor.richtextEditorFacade.divContainerStylesSet = [
   { name: 'Facts left',                 element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-left'  } },
-  { name: 'Facts right',                element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-right' } }/*,
-  { name: 'Image left',                 element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-left'    } },
-  { name: 'Image center',               element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-middle vrtx-img-container-middle-ie' } },
-  { name: 'Image right',                element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-right' } },
-  { name: 'Img & capt left (800px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxl vrtx-container-left' } },
-  { name: 'Img & capt left (700px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xl vrtx-container-left' } },
-  { name: 'Img & capt left (600px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-l vrtx-container-left' } },
-  { name: 'Img & capt left (500px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-left' } },
-  { name: 'Img & capt left (400px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-left' } },
-  { name: 'Img & capt left (300px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xs vrtx-container-left' } },
-  { name: 'Img & capt left (200px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxs vrtx-container-left' } },
-  { name: 'Img & capt center (full)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-full vrtx-container-middle' } },
-  { name: 'Img & capt center (800px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxl vrtx-container-middle' } },
-  { name: 'Img & capt center (700px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xl vrtx-container-middle' } },
-  { name: 'Img & capt center (600px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-l vrtx-container-middle' } },
-  { name: 'Img & capt center (500px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-middle' } },
-  { name: 'Img & capt center (400px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-middle' } },
-  { name: 'Img & capt right (800px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxl vrtx-container-right' } },
-  { name: 'Img & capt right (700px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xl vrtx-container-right' } },
-  { name: 'Img & capt right (600px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-l vrtx-container-right' } },
-  { name: 'Img & capt right (500px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-right' } },
-  { name: 'Img & capt right (400px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-right' } },
-  { name: 'Img & capt right (300px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xs vrtx-container-right' } },
-  { name: 'Img & capt right (200px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxs vrtx-container-right' } } */
+  { name: 'Facts right',                element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-right' } }
 ];
 
 /* Functions for generating editor config based on classification

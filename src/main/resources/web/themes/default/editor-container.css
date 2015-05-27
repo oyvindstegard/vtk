@@ -9,11 +9,15 @@
 .vrtx-container-size-xxs { width: 200px; }
 
 .vrtx-container {
-  border-color: #aaa;
-  border-style: solid;
-  border-width: 2px;
   overflow: hidden;
   padding: 1em;
+}
+
+.vrtx-container,
+.vrtx-img-container {
+  border-color: red;
+  border-style: solid;
+  border-width: 2px;
 }
 
 .vrtx-container-middle img {
@@ -93,12 +97,6 @@
   margin-left: 2em;
 }
 
-.vrtx-img-container {
-  border-color: #aaa;
-  border-style: solid;
-  border-width: 2px;
-}
-
 .vrtx-img-container p {
   margin: 0;
   padding: 0;
@@ -124,8 +122,12 @@ ul.cke_panel_list a {
   color: #000 !important;
 }
 
-/* New */
+/* New image2 plugin */
 
+.vrtx-container .cke_image_resizer,
+.vrtx-img-container .cke_image_resizer {
+  display: none !important;
+}
 
 /* Fix for Firefox: use box-shadow instead of outline */
 body .cke_widget_wrapper.cke_widget_focused>.cke_widget_element,

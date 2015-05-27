@@ -1173,15 +1173,22 @@
 			}
         }
 		function updateDimensionHelperPos(image, dimensionHelper, w, h) {
-		    dimensionHelper.text(w + " x " + h);
-		    var dimensionHelperWidth = dimensionHelper.outerWidth(true);
-			var dimensionHelperHeight = dimensionHelper.outerHeight(true);
-			dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
-					               "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
-			if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
-			    dimensionHelper.css("color", "red");
-			} else {
-				dimensionHelper.css("color", "#fff");
+		    if(w < 40 || h < 40) {
+		        dimensionHelper.hide();
+		    } else {
+		        if(dimensionHelper[0].style.display === "none") {
+		            dimensionHelper.show();
+		        }
+		        dimensionHelper.text(w + " x " + h);
+		        var dimensionHelperWidth = dimensionHelper.outerWidth(true);
+			    var dimensionHelperHeight = dimensionHelper.outerHeight(true);
+			    dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
+					                   "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
+			    if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
+			        dimensionHelper.css("color", "red");
+			    } else {
+				    dimensionHelper.css("color", "#fff");
+		    	}
 			}
 		}
 		// ^ USIT Preview (VTK-3873)
@@ -1203,7 +1210,13 @@
 				// The initial dimensions and aspect ratio of the image.
 				startWidth = image.$.clientWidth,
 				startHeight = image.$.clientHeight,
-				ratio = startWidth / startHeight,
+				
+				// USIT Preview (VTK-3873)
+				// Use natural width/height when lock is enabled, to avoid increasing error
+				// when using the scaled image ratios (e.g. from 2.975=>2.967)
+				helpers = CKEDITOR.plugins.image2,
+				natural = helpers.getNatural( image ),
+				ratio = !widget.data.lock ? (startWidth / startHeight) : (natural.width / natural.height),
 
 				listeners = [],
 

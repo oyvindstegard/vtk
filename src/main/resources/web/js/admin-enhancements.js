@@ -2259,7 +2259,7 @@ function browseServer(obj, editorBase, baseFolder, editorBrowseUrl, type) {
 
   // Use 70% of screen dimension
   var serverBrowserWindow = openServerBrowser(editorBase + '/plugins/filemanager/browser/default/browser.html?BaseFolder=' + baseFolder + '&Type=' + type + '&Connector=' + editorBrowseUrl,
-  screen.width * 0.7, screen.height * 0.7);
+                                              screen.width * 0.7, screen.height * 0.7);
 
   serverBrowserWindow.focus();
   /* TODO: Refocus when user closes window with [x] and tries to open it again via browse..
@@ -2280,16 +2280,17 @@ function openRegular(url, width, height, winTitle) {
 }
 
 function openPopupScrollable(url, width, height, winTitle) {
-  var sOptions = "toolbar=no,status=no,resizable=yes,scrollbars=yes"; // http://www.quirksmode.org/js/popup.html
-  return openGeneral(url, width, height, winTitle, sOptions); // title must be without spaces in IE
+  var sOptions = "toolbar=no,status=no,resizable=yes,scrollbars=yes";
+  return openGeneral(url, width, height, winTitle, sOptions);
 }
 
 function openPopup(url, width, height, winTitle) {
-  var sOptions = "toolbar=no,status=no,resizable=yes"; // http://www.quirksmode.org/js/popup.html
-  return openGeneral(url, width, height, winTitle, sOptions); // title must be without spaces in IE
+  var sOptions = "toolbar=no,status=no,resizable=yes";
+  return openGeneral(url, width, height, winTitle, sOptions);
 }
 
-function openGeneral(url, width, height, winTitle, sOptions) {
+// sOptions: http://www.quirksmode.org/js/popup.html
+function openGeneral(url, width, height, winTitle, sOptions) { // title must be without spaces in IE
   var iLeft = (screen.width - width) / 2;
   var iTop = (screen.height - height) / 2;
   sOptions += ",width=" + width;
