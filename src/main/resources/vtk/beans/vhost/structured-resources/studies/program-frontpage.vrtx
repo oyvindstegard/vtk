@@ -287,7 +287,8 @@ resourcetype program-frontpage : program-document {
     nedlagt : (en : "Closed", no : "Nedlagt", nn : "Nedlagt"),
     
     program-type : (en : "Programme type", no : "Programtype", nn : "Programtype"),
-    phd-web-address : (en : "Ph.d. web address", no : "Ph.d. webadresse", nn : "Ph.d. webadresse"),
+    phd-web-address : (en : "PhD web address", no : "Ph.d. webadresse", nn : "Ph.d. webadresse"),
+    phd : (en : "PhD", no : "ph.d.", nn : "ph.d."),
     
     faculty : (en : "Responsible faculty", no : "Ansvarlig fakultet", nn : "Ansvarlig fakultet"),
     hf : (en : "Faculty of Humanities", no : "Det humanistiske fakultet", nn : "Det humanistiske fakultet"),
