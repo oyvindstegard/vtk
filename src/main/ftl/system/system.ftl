@@ -67,6 +67,12 @@
         title: '${vrtx.getMsg("editor.old-image-containers.not-all-converted.title")}',
         msg: '${vrtx.getMsg("editor.old-image-containers.not-all-converted.msg")}'
       }
+    },
+    system: {
+      goingDown: {
+        title: '${vrtx.getMsg("system.going-down.title")}',
+        msg: '${vrtx.getMsg("system.going-down.msg")}'
+      }
     }
   }
   

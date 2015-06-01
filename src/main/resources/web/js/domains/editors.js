@@ -10,6 +10,8 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
     case "vrtx-edit-plaintext":
     case "vrtx-visual-profile":
       if (_$("form#editor").length) {
+      
+        displaySystemGoingDownMessage();
         
         // Dropdowns
         if(!isEmbedded) {
@@ -61,6 +63,30 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       break;
   }
 });
+
+function displaySystemGoingDownMessage() {
+  var systemGoingDownSelector = "#system-going-down";
+
+  var systemGoingDownWait = 5000;
+  var systemGoingDownRepeatWait = 60000;
+  
+  if($(systemGoingDownSelector).length) {
+    var waitForSystemGoingDownDialog = setTimeout(function() {
+      var systemGoingDownDialog = new VrtxMsgDialog({
+        title: vrtxAdmin.messages.system.goingDown.title,
+        msg: vrtxAdmin.messages.system.goingDown.msg,
+        width: 390
+      });
+      systemGoingDownDialog.open();
+      var retriggerSystemGoingDownDialog = setTimeout(function() {
+        if($(systemGoingDownSelector).length) {
+          systemGoingDownDialog.open();
+          setTimeout(retriggerSystemGoingDownDialog, systemGoingDownRepeatWait);
+        }
+      }, systemGoingDownRepeatWait);
+    }, systemGoingDownWait);
+  }
+}
 
 function handleAjaxSaveErrors(xhr, textStatus) {
   var vrtxAdm = vrtxAdmin,
