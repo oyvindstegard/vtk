@@ -88,9 +88,9 @@ function displaySystemGoingDownMessage() {
       var hasCheckedServerNow = hasSystemGoingDownStart ? getTagAsyncDeferred(serverNowTime, serverNowSelector) : $.Deferred().resolve();
       $.when(hasCheckedServerNow).done(function() {
         var serverNow = 0;
-        if(hasSystemGoingDownStart) {
+        if(hasSystemGoingDownStart && serverNowTime.elm && serverNowTime.elm.length) {
           vrtxAdmin.serverNowTime = serverNowTime.elm.text().split(",");
-          var serverNow = serverTimeFormatToClientTimeFormat(vrtxAdmin.serverNowTime);
+          serverNow = serverTimeFormatToClientTimeFormat(vrtxAdmin.serverNowTime);
         }
         if(!hasSystemGoingDownStart || serverNow >= systemGoingDownDialogStart) {
           var waitForSystemGoingDownDialog = setTimeout(function() {
@@ -105,7 +105,7 @@ function displaySystemGoingDownMessage() {
               var systemGoingDown = {};
               var hasSystemGoingDown = getTagAsyncDeferred(systemGoingDown, systemGoingDownSelector);
               $.when(hasSystemGoingDown).done(function() {
-                if(systemGoingDown.elm.length) {
+                if(systemGoingDown.elm && systemGoingDown.elm.length) {
                   systemGoingDownDialog.open();
                   setTimeout(retriggerSystemGoingDownDialog, systemGoingDownRepeatWait);
                 }
