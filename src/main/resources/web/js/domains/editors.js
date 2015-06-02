@@ -64,6 +64,12 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
   }
 });
 
+/* 
+ * Display system going down message when #server-going-down exists in admin-message (after 5s every 60s)
+ *
+ * Opt-in possible to set when it should start showing (comparison with server time each 60s)
+ *
+ */
 function displaySystemGoingDownMessage() {
   var systemGoingDownSelector = "#server-going-down";
   var serverNowSelector = "#server-now-time";
@@ -116,6 +122,10 @@ function displaySystemGoingDownMessage() {
   }
 }
 
+/* 
+ * Retrieve element by reference (object) and return future
+ *
+ */
 function getTagAsyncDeferred(obj, selector) {
   return vrtxAdmin._$.ajax({
     type: "GET",
