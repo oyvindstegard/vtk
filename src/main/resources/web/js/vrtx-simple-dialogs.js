@@ -153,7 +153,7 @@ var VrtxLoadingDialog = dejavu.Class.declare({
       title: opts.title,
       hasHtml: true,
       unclosable: true,
-      width: 208,
+      width: opts.width || 208,
       onOpen: function() {
         $("body").attr("aria-busy", "true");
       },
