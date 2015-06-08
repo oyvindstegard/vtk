@@ -39,6 +39,7 @@ public class PropertiesModifiedByEvaluator implements PropertyEvaluator {
     public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
         PropertyEvaluationContext.Type type = ctx.getEvaluationType();
         if (type == PropertyEvaluationContext.Type.PropertiesChange
+                || type == PropertyEvaluationContext.Type.InheritablePropertiesChange
                 || type == PropertyEvaluationContext.Type.Create) {
             property.setPrincipalValue(ctx.getPrincipal());
         }
