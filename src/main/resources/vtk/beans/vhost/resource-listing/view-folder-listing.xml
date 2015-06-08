@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="folderListing.viewService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="collectionListing.viewService" />
+    <property name="order" value="0" />
+    <property name="assertions">
+      <list>
+        <ref bean="resourceIsFolderListing" />
+      </list>
+    </property>
+    <property name="handler" ref="folderListing.handler" />
+    <property name="serviceNameProvider" ref="collectionListing.viewService.serviceNameProvider" />
+  </bean>
+
+  <bean id="folderListing.handler" class="vtk.web.display.collection.FolderListingController">
+    <property name="viewName" value="folderListing.view" />
+    <property name="subFolderMenuProvider" ref="subFolderMenuProvider" />
+    <property name="pageLimitPropDef" ref="pageLimitPropDef" />
+    <property name="resourceManager" ref="resourceManager" />
+  </bean>
+
+  <bean id="folderListing.viewResolver" parent="decoratorViewResolver">
+    <property name="views">
+      <map>
+        <entry key="folderListing.view" value-ref="folderListing.view" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="folderListing.view" parent="freemarkerView">
+    <property name="url" value="pages/view-folder-listing.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+    <property name="attributesMap">
+      <map>
+        <entry key="cssURLs">
+          <list>
+            <value>${themeBaseURL}/view-folder-listing.css</value>
+          </list>
+        </entry>
+      </map>
+    </property>
+  </bean>
+</beans>
