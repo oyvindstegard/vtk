@@ -11,7 +11,7 @@
 		templateBlock = new CKEDITOR.template(
 			'<figure class="{captionedClass}">' +
 				template +
-				'<figcaption>{captionPlaceholder}</figcaption>' +
+				'<figcaption></figcaption>' +
 			'</figure>' ),
 		alignmentsArr = [ 'left', 'center', 'right' ],
 		alignmentsObj = { left: 0, center: 1, right: 2 },
@@ -76,6 +76,23 @@
 				'padding:5px 15px;' +
 				'line-height: 1;' +
 				'white-space:nowrap;' +
+			'}' +
+			'.cke_image_caption_placeholder{' +
+			    'display:block;' +
+			    'color:#222;' +
+			    'position: absolute;' +
+			    'bottom: 0.5em;' +
+			    'left: 0.5em;' +
+			    'max-width: 90%;' +
+                'white-space: nowrap;' +
+                'text-overflow: ellipsis;' +
+                'overflow: hidden;' +
+			'}' +
+			'.cke_image_caption_placeholder:hover{' +
+			    'cursor:text;' +
+			'}' +
+			'.cke_image_caption_placeholder.cke_image_caption_placeholder_focused{' +
+			    'color:#ccc;' +
 			'}' );
 		},
 
@@ -437,6 +454,9 @@
 				// Don't initialize resizer when dimensions are disallowed (#11004).
 				if ( editor.filter.checkFeature( this.features.dimension ) )
 					setupResizer( this );
+					
+				// USIT Preview (VTK-3873)
+				setupCaptionPlaceholder( this );
 
 				this.shiftState = helpers.stateShifter( this.editor );
 
@@ -568,8 +588,9 @@
 					if ( newValue ) {
 						// Create new <figure> from widget template.
 						var figure = CKEDITOR.dom.element.createFromHtml( templateBlock.output( {
-							captionedClass: captionedClass,
-							captionPlaceholder: editor.lang.image2.captionPlaceholder
+							captionedClass: captionedClass // ,
+							// USIT Preview (VTK-3873) - placeholder as an own span instead
+							// captionPlaceholder: editor.lang.image2.captionPlaceholder
 						} ), doc );
 
 						// Replace element with <figure>.
@@ -821,8 +842,9 @@
 				// 			<img />
 				// 		</p>
 				// 	</div>
-				if ( hasCaption )
+				if ( hasCaption ) {
 					wrapper.addClass( alignClasses[ 1 ] );
+			    }
 			} else if ( align != 'none' )
 				wrapper.addClass( alignClasses[ alignmentsObj[ align ] ] );
 		} else {
@@ -938,9 +960,17 @@
 			// De-wrap the image from resize handle wrapper.
 			// Only block widgets have one.
 			if ( !this.inline ) {
+			
+			    // USIT Preview (VTK-3873)
+			    // Remove caption placeholder (a little unoptimized solution)
+			    
 				var resizeWrapper = el.getFirst( 'span' );
-
-				if ( resizeWrapper )
+				if ( resizeWrapper && resizeWrapper.children.length > 1 )
+					resizeWrapper.replaceWith( resizeWrapper.getFirst( { img: 1, a: 1 } ) );
+			    else
+			        resizeWrapper.remove()
+			    resizeWrapper = el.getFirst( 'span' );
+				if ( resizeWrapper && resizeWrapper.children.length > 1 )
 					resizeWrapper.replaceWith( resizeWrapper.getFirst( { img: 1, a: 1 } ) );
 			}
 
@@ -1112,11 +1142,11 @@
         var isDimensionHelperFocus = false;
         widget.wrapper.on( 'mouseenter', function( evt ) {
             if(!isDimensionHelperFocus) {
-              var image = widget.parts.image,
-                  startWidth = image.$.clientWidth,
-				  startHeight = image.$.clientHeight;
+                var image = widget.parts.image,
+                    startWidth = image.$.clientWidth,
+				    startHeight = image.$.clientHeight;
 				  
-		      addDimensionHelper(image, startWidth, startHeight);
+		        addDimensionHelper(image, startWidth, startHeight);
 		    }
         });
         widget.wrapper.on( 'mouseleave', function( evt ) {
@@ -1132,24 +1162,33 @@
 			if(!resizeDimensionHelper.length) {
 			    var dimHelp = doc.createElement( 'span' );
 			    dimHelp.addClass("cke_image_dimension_helper");
-			    widget.wrapper.append(dimHelp);
+			    if ( !widget.inline ) { 
+			        resizeWrapper.append(dimHelp);
+			    } else {
+			        widget.wrapper.append(dimHelp);
+			    }
                 
 			    resizeDimensionHelper = widgetWrapper.find(".cke_image_dimension_helper"); // Re-query
 			    updateDimensionHelperPos(image, resizeDimensionHelper, w, h);
 			}
         }
 		function updateDimensionHelperPos(image, dimensionHelper, w, h) {
-		    dimensionHelper.text(w + " x " + h);
-		    var dimensionHelperWidth = dimensionHelper.outerWidth(true);
-			var dimensionHelperHeight = dimensionHelper.outerHeight(true);
-			var widgetWidth = $(widget.element.$).outerWidth(true);
-			var adjustedWidth = widgetWidth > w ? widgetWidth / 2 : w / 2;
-			dimensionHelper.css({ "left": (adjustedWidth - (dimensionHelperWidth / 2) ) + "px",
-					               "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
-			if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
-			    dimensionHelper.css("color", "red");
-			} else {
-				dimensionHelper.css("color", "#fff");
+		    if(w < 40 || h < 40) {
+		        dimensionHelper.hide();
+		    } else {
+		        if(dimensionHelper[0].style.display === "none") {
+		            dimensionHelper.show();
+		        }
+		        dimensionHelper.text(w + " x " + h);
+		        var dimensionHelperWidth = dimensionHelper.outerWidth(true);
+			    var dimensionHelperHeight = dimensionHelper.outerHeight(true);
+			    dimensionHelper.css({ "left": ((w / 2) - (dimensionHelperWidth / 2) ) + "px",
+					                   "top": ((h / 2) - (dimensionHelperHeight / 2)) + "px" });
+			    if(w > image.$.naturalWidth || h > image.$.naturalHeight) {
+			        dimensionHelper.css("color", "red");
+			    } else {
+				    dimensionHelper.css("color", "#fff");
+		    	}
 			}
 		}
 		// ^ USIT Preview (VTK-3873)
@@ -1171,7 +1210,13 @@
 				// The initial dimensions and aspect ratio of the image.
 				startWidth = image.$.clientWidth,
 				startHeight = image.$.clientHeight,
-				ratio = startWidth / startHeight,
+				
+				// USIT Preview (VTK-3873)
+				// Use natural width/height when lock is enabled, to avoid increasing error
+				// when using the scaled image ratios (e.g. from 2.975=>2.967)
+				helpers = CKEDITOR.plugins.image2,
+				natural = helpers.getNatural( image ),
+				ratio = !widget.data.lock ? (startWidth / startHeight) : (natural.width / natural.height),
 
 				listeners = [],
 
@@ -1361,7 +1406,69 @@
 			resizer[ widget.data.align == 'right' ? 'addClass' : 'removeClass' ]( 'cke_image_resizer_left' );
 		} );
 	}
+	
+	// USIT Preview (VTK-3873)
+	// Defines all features related to caption as a placeholder
+	//
+	// @param {CKEDITOR.plugins.widget} widget
+	function setupCaptionPlaceholder( widget ) {
+	    if(!widget.data.hasCaption) return;
+	
+	    var editor = widget.editor,
+		    editable = editor.editable(),
+		    doc = editor.document,
+			placeholder = widget.placeholder = doc.createElement( 'span' );
 
+		placeholder.addClass( 'cke_image_caption_placeholder' );
+		placeholder.append( new CKEDITOR.dom.text( editor.lang.image2.captionPlaceholder, doc ) );
+		
+		if($(widget.parts.caption.$).text() == "") {
+		    widget.element.append( placeholder, true );
+		}
+		
+		var checkCaptionTimer = null;
+		var startCheckCaption = function() {
+		    checkCaptionTimer = setInterval(function() {
+		        var captionElm = $(widget.parts.caption.$);
+		        var placeholderElm = $(widget.element.$).find(".cke_image_caption_placeholder");
+		        if(captionElm.text() != "") {
+		            if(placeholderElm.length) {
+		                placeholderElm.remove();
+		            }
+		        } else if(!placeholderElm.length) {
+		            placeholder.addClass( 'cke_image_caption_placeholder_focused' ); // Implied focus
+		            widget.element.append( placeholder, true );
+		        }
+		    }, 100);
+		};
+		var stopCheckCaption = function() {
+		    if(checkCaptionTimer != null) {
+		        clearInterval(checkCaptionTimer);
+		        checkCaptionTimer = null;
+		    }
+		};
+		widget.parts.caption.on( 'focus', function( evt ) {
+		    if($(widget.element.$).find(".cke_image_caption_placeholder").length) {
+		        placeholder.addClass( 'cke_image_caption_placeholder_focused' );
+		    }
+		    startCheckCaption();
+		});
+		widget.parts.caption.on( 'blur', function( evt ) {
+		    if($(widget.element.$).find(".cke_image_caption_placeholder_focused").length) {
+		        placeholder.removeClass( 'cke_image_caption_placeholder_focused' );
+		    }
+		    stopCheckCaption();
+		});
+		placeholder.on( 'click', function( evt ) {
+		    // IE-fix (force focus when clicking on placeholder). TODO: which IE need this?
+		    if(/.*(msie|trident).*/.test(window.navigator.userAgent.toLowerCase())) {
+	            setTimeout(function() { widget.parts.caption.focus(); }, 5);
+	        } else {
+	            widget.parts.caption.focus();
+	        }
+	    });
+	}
+	
 	// Integrates widget alignment setting with justify
 	// plugin's commands (execution and refreshment).
 	// @param {CKEDITOR.editor} editor

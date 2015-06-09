@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <groupId>vtk</groupId>
   <artifactId>vtk</artifactId>
-  <version>62-SNAPSHOT</version>
+  <version>63-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>The VTK Web Framework</name>
   <url>http://www.uio.no/tjenester/it/web/vortex/</url>
@@ -183,7 +183,7 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.2.7.v20150116</version>
+        <version>9.2.10.v20150310</version>
         <configuration>
           <!-- Configures Jetty Server: -->
           <jettyXml>src/conf/jetty/jetty.xml</jettyXml>
@@ -625,6 +625,11 @@
       <groupId>com.googlecode.htmlcompressor</groupId>
       <artifactId>htmlcompressor</artifactId>
       <version>1.5.2</version>
+    </dependency>
+    <dependency>
+	  <groupId>commons-io</groupId>
+	  <artifactId>commons-io</artifactId>
+	  <version>2.1</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>

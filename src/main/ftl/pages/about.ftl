@@ -196,8 +196,15 @@
       </#if>
   </table>
 
-  <#if urchinStats?exists>
+  <#if urchinStats?exists || urchinStatsRestricted?exists>
     <h3 id="resourceVisitHeader"><@vrtx.msg code="resource.metadata.about.visit" default="Visit count"/></h3>
+  </#if>
+  
+  <#if urchinStatsRestricted?exists>
+    <p><@vrtx.msg code="resource.metadata.about.visit.nostats.restricted" /></p>
+  </#if>
+    
+  <#if urchinStats?exists>  
     <!--[if lt IE 9]>
       <style type="text/css">
         .vrtx-resource-visit-stat {

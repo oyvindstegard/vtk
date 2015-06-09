@@ -128,11 +128,11 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			} );
 
             // USIT Patched (VTK-3873)
-            var baseHrefImage2Fixed = ( config.baseHref || '' );
-            if(baseHrefImage2Fixed != "") {
-                if(/^\//.test(src)) {
-                    baseHrefImage2Fixed = baseHrefImage2Fixed.replace(location.pathname, "");
-                } else if(/^http(s)?:\/\//.test(src)) {
+            var baseHrefImage2Fixed = ( config.baseHref.replace(/[^\/]*$/, "") || '' );
+            if( baseHrefImage2Fixed != "" ) {
+                if( /^\//.test(src) ) {
+                    baseHrefImage2Fixed = location.protocol + "//" + location.host.replace("-adm", "");
+                } else if( /^http(s)?:\/\//.test(src) ) {
                     baseHrefImage2Fixed = "";
                 }
             }
@@ -375,9 +375,14 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 		heightField[ method ]();
 	}
 
+    // USIT Preview (VTK-3873)
+	// Moved URL-field and Browse-button below eachother
+
 	var hasFileBrowser = !!( config.filebrowserImageBrowseUrl || config.filebrowserBrowseUrl ),
-		srcBoxChildren = [
-			{
+		srcBoxChildren = [{
+		    type: 'hbox',
+			widths: [ '100%' ],
+			children: [{
 				id: 'src',
 				type: 'text',
 				label: commonLang.url,
@@ -390,23 +395,27 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 					widget.setData( 'src', this.getValue() );
 				},
 				validate: CKEDITOR.dialog.validate.notEmpty( lang.urlMissing )
-			}
-		];
+			}]
+		}];
 
 	// Render the "Browse" button on demand to avoid an "empty" (hidden child)
 	// space in dialog layout that distorts the UI.
 	if ( hasFileBrowser ) {
-		srcBoxChildren.push( {
-			type: 'button',
-			id: 'browse',
-			// v-align with the 'txtUrl' field.
-			// TODO: We need something better than a fixed size here.
-			style: 'display:inline-block;margin-top:14px;',
-			align: 'center',
-			label: editor.lang.common.browseServer,
-			hidden: true,
-			filebrowser: 'info:src'
-		} );
+		srcBoxChildren.push({
+		    type: 'hbox',
+			widths: [ '100%' ],
+			children: [{
+			  type: 'button',
+			  id: 'browse',
+			  // v-align with the 'txtUrl' field.
+			  // TODO: We need something better than a fixed size here.
+			  style: 'display:inline-block;margin-top:14px;',
+			  align: 'center',
+			  label: editor.lang.common.browseServer,
+			  hidden: true,
+			  filebrowser: 'info:src'
+		    }]
+		});
 	}
 
 	return {
@@ -421,6 +430,14 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			preLoader = createPreLoader();
 		},
 		onShow: function() {
+		
+		    // USIT Preview (VTK-3873) - Is't in old div container, then show dialog for converting..
+		    var imageElement = $(this.widget.element.$);
+		    if(imageElement.closest(".vrtx-img-container, .vrtx-container").length > 0 && typeof showMigrateDialog === "function") {
+		      this.hide();
+		      showMigrateDialog(this._.editor);
+		    }
+		
 			// Create a "global" reference to edited widget.
 			widget = this.widget;
 
@@ -446,19 +463,15 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			{
 				id: 'info',
 				label: lang.infoTab,
+				
+				// USIT Preview (VTK-3873)
+				// Also moved URL-field and Browse-button below eachother
 				elements: [
 					{
 						type: 'vbox',
 						padding: 0,
-						children: [
-							{
-								type: 'hbox',
-								widths: [ '100%' ],
-								children: srcBoxChildren
-							}
-						]
+						children: srcBoxChildren
 					},
-					// USIT Preview (VTK-3873)
 					{
 						id: 'preview',
 						type: 'html',

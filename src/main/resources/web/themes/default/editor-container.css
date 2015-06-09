@@ -9,11 +9,15 @@
 .vrtx-container-size-xxs { width: 200px; }
 
 .vrtx-container {
-  border-color: #aaa;
-  border-style: solid;
-  border-width: 2px;
   overflow: hidden;
   padding: 1em;
+}
+
+.vrtx-container,
+.vrtx-img-container {
+  border-color: red;
+  border-style: solid;
+  border-width: 2px;
 }
 
 .vrtx-container-middle img {
@@ -93,12 +97,6 @@
   margin-left: 2em;
 }
 
-.vrtx-img-container {
-  border-color: #aaa;
-  border-style: solid;
-  border-width: 2px;
-}
-
 .vrtx-img-container p {
   margin: 0;
   padding: 0;
@@ -124,8 +122,12 @@ ul.cke_panel_list a {
   color: #000 !important;
 }
 
-/* New */
+/* New image2 plugin */
 
+.vrtx-container .cke_image_resizer,
+.vrtx-img-container .cke_image_resizer {
+  display: none !important;
+}
 
 /* Fix for Firefox: use box-shadow instead of outline */
 body .cke_widget_wrapper.cke_widget_focused>.cke_widget_element,
@@ -135,12 +137,17 @@ body .cke_widget_wrapper .cke_widget_editable.cke_widget_editable_focused {
   -webkit-box-shadow: 0px 0px 0px 2px #ace;
   box-shadow: 0px 0px 0px 2px #ace;
 }
-body .cke_widget_wrapper:hover>.cke_widget_element,
+body .cke_widget_wrapper:hover>.cke_widget_element {
+  outline: none;
+  -moz-box-shadow: 0px 0 0px 2px yellow;
+  -webkit-box-shadow: 0 0px 0px 2px yellow;
+  box-shadow: 0px 0 0px 2px yellow;
+}
 body .cke_widget_wrapper:hover .cke_widget_editable {
   outline: none;
-  -moz-box-shadow: 0px 0px 0px 2px yellow;
-  -webkit-box-shadow: 0px 0px 0px 2px yellow;
-  box-shadow: 0px 0px 0px 2px yellow;
+  -moz-box-shadow: 0px 0 0px 2px yellow;
+  -webkit-box-shadow: 0 0px 0px 2px yellow;
+  box-shadow: 0px 0 0px 2px yellow;
 }
 
 figure,
@@ -150,18 +157,24 @@ figcaption {
 }
 figure {
   display: table !important;
+  border-spacing: 0 0;
+  border-collapse: collapse;
   width: 1px;
   margin: 1em 0;
+  position: relative;
+}
+figure > * {
+  vertical-align: bottom;
 }
 figcaption {
   display: table-caption;
   caption-side: bottom;
   padding: 0.5em;
   background: #eee;
-  margin-top: -3px;
   font-size: 0.92em;
   border: 1px solid #ccc;
   border-width: 0 1px 1px 1px;
+  min-height: 1em;
 }
 
 .image-left {
