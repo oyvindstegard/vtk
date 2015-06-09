@@ -7,6 +7,7 @@
   <import resource="file.xml" />
   <import resource="collection.xml" />
   <import resource="article-listing.xml" />
+  <import resource="folder-listing.xml" />
   <import resource="blog-listing.xml" />
   <import resource="event-listing.xml" />
   <import resource="project-listing.xml" />

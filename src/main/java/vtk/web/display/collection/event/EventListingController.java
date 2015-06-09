@@ -44,7 +44,7 @@ import vtk.repository.Resource;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
-import vtk.web.display.collection.AbstractCollectionListingController;
+import vtk.web.display.collection.BaseCollectionListingController;
 import vtk.web.display.listing.ListingPager;
 import vtk.web.display.listing.ListingPagingLink;
 import vtk.web.search.Listing;
@@ -59,7 +59,7 @@ import vtk.web.service.URL;
  * upcoming and previous events, and a separate paging mode for each category.
  * The way it is done now (a single paging mode) is just painful.
  */
-public class EventListingController extends AbstractCollectionListingController {
+public class EventListingController extends BaseCollectionListingController {
 
     protected EventListingSearcher searcher;
     private ResourceTypeTree resourceTypeTree;
