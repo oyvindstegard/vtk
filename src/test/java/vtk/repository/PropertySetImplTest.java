@@ -63,7 +63,7 @@ public class PropertySetImplTest {
     @Before
     public void setup() {
         ps = new PropertySetImpl();
-        ps.setUri(Path.fromString("/"));
+        ps.setUri(Path.ROOT);
         ps.setResourceType("collection");
         
         collector = new HashSet<Property>();
