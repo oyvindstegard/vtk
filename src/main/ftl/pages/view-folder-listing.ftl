@@ -24,34 +24,37 @@
   </#if>
 </head>
 <body id="vrtx-folder-listing">
-  <h1>${title?html}</h1>
+  <div id="vrtx-content">
+    <div id="vrtx-main-content">
+      <h1>${title?html}</h1>
 
-  <#if subFolderMenu?exists && subFolderMenu.size &gt; 0>
-    <#assign "counter" = 0>
-    <#assign "counter2" = 0>
-    <#assign "c" = 0>
+      <#if subFolderMenu?exists && subFolderMenu.size &gt; 0>
+        <#assign "counter2" = 0>
+        <#assign "counter" = 0>
+        <#assign "c" = 0>
 
-    <#if subFolderMenu.resultSets?exists>
-        <div id="vrtx-folder-menu" class="vrtx-collections">
-        <#list subFolderMenu.resultSets as resultSet>
-          <#assign counter = counter+1>
-          <#assign counter2 = counter2+1>
-          <#if subFolderMenu.groupResultSetsBy?exists && (subFolderMenu.groupResultSetsBy?number = counter2 || counter = 1)>
-             <#assign "counter2" = 0>
-             <#assign c = c+1>
-             <@subfolder.displayParentMenu menu=resultSet currentCount=counter groupCount=c newDiv=true subFolderMenu=subFolderMenu />
-          <#else>
-             <@subfolder.displayParentMenu menu=resultSet currentCount=counter groupCount=c newDiv=false subFolderMenu=subFolderMenu />
-          </#if>
-        </#list>
+        <#if subFolderMenu.resultSets?exists>
+            <div id="vrtx-folder-menu" class="vrtx-collections">
+            <#list subFolderMenu.resultSets as resultSet>
+              <#assign counter = counter+1>
+              <#assign counter2 = counter2+1>
+              <#if subFolderMenu.groupResultSetsBy?exists && (subFolderMenu.groupResultSetsBy?number = counter2 || counter = 1)>
+                 <#assign "counter2" = 0>
+                 <#assign c = c+1>
+                 <@subfolder.displayParentMenu menu=resultSet currentCount=counter groupCount=c newDiv=true subFolderMenu=subFolderMenu />
+              <#else>
+                 <@subfolder.displayParentMenu menu=resultSet currentCount=counter groupCount=c newDiv=false subFolderMenu=subFolderMenu />
+              </#if>
+            </#list>
+          </div>
+        </#if>
+      </#if>
+
+      <div class="vrtx-introduction">
+        ${vrtx.propValue(resource, "introduction")}
       </div>
-    </#if>
-  </#if>
-
-  <hr/>
-  <section>
-    ${vrtx.propValue(resource, "introduction")}
-  </section>
+    </div>
+  </div>
   <#if jsURLs?exists>
     <#list jsURLs as jsURL>
       <script type="text/javascript" src="${jsURL}"></script>

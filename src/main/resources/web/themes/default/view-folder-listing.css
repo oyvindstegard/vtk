@@ -3,36 +3,5 @@
 }
 
 #vrtx-folder-menu > ul {
-    list-style: none;
-    margin: 10px;
-    padding: 0;
-    text-decoration: none;
     float: left;
-}
-
-#vrtx-folder-menu > ul > li {
-    position: relative;
-    margin: 20px;
-}
-
-#vrtx-folder-menu > ul > li > a {
-    text-decoration: none;
-    display: block;
-    color: #307ea6;
-    background: #f2f2f2;
-    padding: 20px 30px 20px 20px;
-    width: 20em;
-}
-
-#vrtx-folder-menu > ul > li > a:hover {
-    color: #f2f2f2;
-    background: #307ea6;
-}
-
-#vrtx-folder-menu > ul > li > a:after {
-    content: "\203A";
-    font-size: 1.5em;
-    position: absolute;
-    top : 15px;
-    right: 15px;
 }
