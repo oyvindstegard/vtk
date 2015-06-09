@@ -14,7 +14,7 @@
     <property name="serviceNameProvider" ref="collectionListing.viewService.serviceNameProvider" />
   </bean>
 
-  <bean id="folderListing.handler" class="vtk.web.display.collection.FolderListingController">
+  <bean id="folderListing.handler" class="vtk.web.display.collection.BaseCollectionListingController">
     <property name="viewName" value="folderListing.view" />
     <property name="subFolderMenuProvider" ref="subFolderMenuProvider" />
     <property name="pageLimitPropDef" ref="pageLimitPropDef" />
