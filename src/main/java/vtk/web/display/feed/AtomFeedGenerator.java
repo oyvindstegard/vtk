@@ -95,7 +95,8 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     protected PropertyTypeDefinition titlePropDef;
     protected PropertyTypeDefinition lastModifiedPropDef;
     protected PropertyTypeDefinition creationTimePropDef;
-
+    protected PropertyTypeDefinition numberOfCommentsPropDef;
+    
     private String authorPropDefPointer;
     private String introductionPropDefPointer;
     private String picturePropDefPointer;
@@ -162,7 +163,7 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
 
     protected void addPropertySetAsFeedEntry(Feed feed, PropertySet result) {
         try {
-
+	        	
             Entry entry = Abdera.getInstance().newEntry();
 
             Property publishedDateProp = getPublishDate(result);
@@ -175,6 +176,12 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
             if (title != null) {
                 entry.setTitle(title.getFormattedValue());
             }
+
+			Property numberOfComments = result.getProperty(numberOfCommentsPropDef);
+			if (numberOfComments != null) {
+				Integer noc = result.getProperty(numberOfCommentsPropDef).getIntValue();
+				entry.addCategory("number-of-comments:" + noc.toString());
+			}
 
             // Set the summary
             setFeedEntrySummary(entry, result);
@@ -481,8 +488,13 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     public void setPublishDatePropDef(PropertyTypeDefinition publishDatePropDef) {
         this.publishDatePropDef = publishDatePropDef;
     }
-
+    
     @Required
+    public void setNumberOfCommentsPropDef(PropertyTypeDefinition numberOfCommentsPropDef) {
+		this.numberOfCommentsPropDef = numberOfCommentsPropDef;
+	}
+
+	@Required
     public void setIntroductionAsXHTMLSummaryResourceTypes(List<String> introductionAsXHTMLSummaryResourceTypes) {
         this.introductionAsXHTMLSummaryResourceTypes = introductionAsXHTMLSummaryResourceTypes;
     }
