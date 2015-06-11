@@ -179,8 +179,7 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
 
 			Property numberOfComments = result.getProperty(numberOfCommentsPropDef);
 			if (numberOfComments != null) {
-				Integer noc = result.getProperty(numberOfCommentsPropDef).getIntValue();
-				entry.addCategory("number-of-comments:" + noc.toString());
+				entry.addCategory("number-of-comments:" + numberOfComments.getFormattedValue());
 			}
 
             // Set the summary
