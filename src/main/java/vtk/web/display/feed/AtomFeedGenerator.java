@@ -179,7 +179,7 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
 
 			Property numberOfComments = result.getProperty(numberOfCommentsPropDef);
 			if (numberOfComments != null) {
-				entry.addCategory("number-of-comments:" + numberOfComments.getFormattedValue());
+				entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
 			}
 
             // Set the summary
