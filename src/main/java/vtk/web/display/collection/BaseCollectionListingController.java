@@ -56,7 +56,7 @@ import vtk.web.view.freemarker.MessageLocalizer;
 
 import freemarker.template.TemplateModelException;
 
-public abstract class AbstractCollectionListingController implements ListingController {
+public class BaseCollectionListingController implements ListingController {
 
     protected final static String MODEL_KEY_SEARCH_COMPONENTS = "searchComponents";
     protected final static String MODEL_KEY_PAGE = "page";
@@ -74,6 +74,14 @@ public abstract class AbstractCollectionListingController implements ListingCont
     protected Map<String, Service> alternativeRepresentations;
     private boolean includeRequestParametersInAlternativeRepresentation;
     private SubFolderMenuProvider subFolderMenuProvider;
+
+    @Override
+    public void runSearch(
+            HttpServletRequest request,
+            Resource collection,
+            Map<String, Object> model,
+            int pageLimit
+    ) throws Exception {}
 
     @Override
     @SuppressWarnings("unchecked")
