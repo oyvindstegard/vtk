@@ -195,30 +195,34 @@ class LuceneResultCache {
         private final Filter f;
         private final Sort s;
         private final int limit;
+        private final int hashCode;
 
         SearchCacheKey(Query q, Filter f, Sort s, int limit) {
             this.q = q;
             this.f  = f;
             this.s = s;
             this.limit = limit;
+
+            // Pre-compute, since hashCode/equals is basically the only reason
+            // for this class' existence. Doing it here avoids hash code computation
+            // inside synchronized map get/put operations, which improves concurrency.
+            this.hashCode = precomputeHashCode();
         }
 
-        private int hashCode;
-        @Override
-        public int hashCode() {
-            int hash = this.hashCode;
-            if (hash == 0) {
-                hash = 5;
-                hash = 97 * hash + Objects.hashCode(this.q);
-                hash = 97 * hash + Objects.hashCode(this.f);
-                hash = 97 * hash + Objects.hashCode(this.s);
-                hash = 97 * hash + this.limit;
-                this.hashCode = hash;
-            }
-
+        private int precomputeHashCode() {
+            int hash = 5;
+            hash = 97 * hash + Objects.hashCode(this.q);
+            hash = 97 * hash + Objects.hashCode(this.f);
+            hash = 97 * hash + Objects.hashCode(this.s);
+            hash = 97 * hash + this.limit;
             return hash;
         }
 
+        @Override
+        public int hashCode() {
+            return this.hashCode;
+        }
+        
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
