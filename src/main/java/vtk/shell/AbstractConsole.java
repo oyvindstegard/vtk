@@ -168,6 +168,7 @@ public abstract class AbstractConsole
     }
     
 
+    @Override
     public final void afterPropertiesSet() {
 
         this.init();
