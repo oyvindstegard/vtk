@@ -80,6 +80,7 @@
     <description> This bean initializes the security context for each request.
       The security context contains the authenticated principal and the
       repository token. </description>
+    <property name="authenticationHandlers" value="#{{${authenticationHandlers}}}" />
     <property name="tokenManager" ref="tokenManager" />
     <property name="principalManager" ref="principalManager" />
     <property name="principalFactory" ref="principalFactory" />
