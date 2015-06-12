@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,37 +28,60 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package vtk.util.web;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import vtk.util.codec.Base64;
+import java.net.URI;
+
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.protocol.HttpContext;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 /**
- * Extends {@link SimpleClientHttpRequestFactory} and provides preemptive
+ * Extends {@link HttpComponentsClientHttpRequestFactory} and provides
  * basic authentication for created HTTP requests.
  */
-public class BasicAuthHttpRequestFactory extends SimpleClientHttpRequestFactory {
+public class BasicAuthHttpRequestFactory extends HttpComponentsClientHttpRequestFactory {
+    private String username = null;
+    private String password = null;
 
-    private String username;
-    private String password;
+    public void setUserName(String username) {
+        if (username != null && !username.trim().equals(""))
+            this.username = username;
+    }
+
+    public void setPassword(String password) {
+        if (password != null && !password.trim().equals(""))
+            this.password = password;
+    }
 
     @Override
-    protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
-        super.prepareConnection(connection, httpMethod);
-        String u = this.username != null ? this.username : "";
-        String p = this.password != null ? this.password : "";
-        String encoded = Base64.encode(u + ":" + p);
-        connection.addRequestProperty("Authorization", "Basic " + encoded);
-    }
-    
-    public void setUsername(String username) {
-        this.username = username;
-    }
-    
-    public void setPassword(String password) {
-        this.password = password;
+    protected HttpContext createHttpContext(HttpMethod httpMethod, URI uri) {
+        if (username == null || password == null) {
+            return null;
+        }
+        HttpHost host = new HttpHost(uri.getHost(), uri.getPort(), uri.getScheme());
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        AuthScope scope = new AuthScope(host);
+        credsProvider.setCredentials(
+                scope,
+                new UsernamePasswordCredentials(username, password)
+        );
+        AuthCache authCache = new BasicAuthCache();
+        BasicScheme basicAuth = new BasicScheme();
+        authCache.put(host, basicAuth);
+        HttpClientContext localContext = HttpClientContext.create();
+        localContext.setAuthCache(authCache);
+        localContext.setCredentialsProvider(credsProvider);
+
+        return localContext;
     }
 }
