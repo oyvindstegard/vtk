@@ -38,12 +38,16 @@ import javax.servlet.http.HttpServletRequest;
 
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
+import vtk.security.Principal;
+import vtk.security.PrincipalImpl;
+import vtk.security.PrincipalStore;
 import vtk.web.service.Assertion;
 
 public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
     
     private Pattern proxyUserExpression = null;
     private Pattern targetUserExpression = null;
+    private PrincipalStore targetPrincipalStore = null;
     private String requestParam = null;
     
     private List<Assertion> assertions = null;
@@ -62,9 +66,7 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
         if (!super.isRecognizedAuthenticationRequest(req)) return false;
         String sysuser = getUserName(req);
         if (!proxyUserExpression.matcher(sysuser).matches()) return false;
-        String targetUser = req.getParameter(requestParam);
-        if (targetUser == null) return false;
-        if (!targetUserExpression.matcher(targetUser).matches()) return false;
+        if (req.getParameter(requestParam) == null) return false;
         if (assertions != null) {
             for (Assertion a: assertions)
                 if (!a.matches(req, null, null)) return false;
@@ -77,6 +79,14 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
             throws AuthenticationProcessingException, AuthenticationException {
         super.authenticate(request);
         String targetUid = request.getParameter(requestParam);
+        if (!targetUserExpression.matcher(targetUid).matches()) 
+            throw new AuthenticationException("Unknown principal: " + targetUid);
+        
+        if (targetPrincipalStore != null) {
+            Principal p = new PrincipalImpl(targetUid, Principal.Type.USER);
+            if (!targetPrincipalStore.validatePrincipal(p)) 
+                throw new AuthenticationException("Unknown principal: " + targetUid);
+        }
         return new AuthResult(targetUid);
     }
 
@@ -84,6 +94,10 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
         if (assertions == null || assertions.isEmpty()) return;
         this.assertions = new ArrayList<>();
         for (Assertion a: assertions) this.assertions.add(a);
+    }
+    
+    public void setTargetPrincipalStore(PrincipalStore targetPrincipalStore) {
+        this.targetPrincipalStore = targetPrincipalStore;
     }
     
 }
