@@ -92,8 +92,7 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
 
     public void setAssertions(List<Assertion> assertions) {
         if (assertions == null || assertions.isEmpty()) return;
-        this.assertions = new ArrayList<>();
-        for (Assertion a: assertions) this.assertions.add(a);
+        this.assertions = new ArrayList<>(assertions);
     }
     
     public void setTargetPrincipalStore(PrincipalStore targetPrincipalStore) {
