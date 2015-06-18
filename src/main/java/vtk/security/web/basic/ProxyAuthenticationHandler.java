@@ -43,6 +43,25 @@ import vtk.security.PrincipalImpl;
 import vtk.security.PrincipalStore;
 import vtk.web.service.Assertion;
 
+/**
+ * Proxy authentication handler. 
+ *
+ * <p>Authenticates the request first using regular HTTP/Basic
+ * authentication (as the <em>proxy user</em>), and then performs a second
+ * authentication based on a request parameter containing the <em>target
+ * user</em></p>
+ * 
+ * <p>Typical usage is to configure a (trusted) proxy user that allows
+ * another system to authenticate as target users on its behalf.</p>
+ * 
+ * <p>The set of valid proxy users and target users is limited using
+ * regular expressions, and an optional {@link PrincipalStore} can be
+ * used to validate (otherwise syntactically correct) target users.</p>
+ * 
+ * <p>A set of {@link Assertion assertions} can also be configured to limit 
+ * the scope in which this authentication handler attempts to perform 
+ * authentication.</p>
+ */
 public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
     
     private Pattern proxyUserExpression = null;
@@ -51,7 +70,13 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
     private String requestParam = null;
     
     private List<Assertion> assertions = null;
-    
+
+    /**
+     * Constructs a new proxy authentication handler.
+     * @param proxyUserExpression expression to limit the set of valid proxy users
+     * @param targetUserExpression expression to limit the set of valid target users
+     * @param requestParam the name of the request parameter containing the target user id
+     */
     public ProxyAuthenticationHandler(String proxyUserExpression, String targetUserExpression, String requestParam) {
         super();
         this.proxyUserExpression = Pattern.compile(proxyUserExpression);
