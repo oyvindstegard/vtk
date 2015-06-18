@@ -161,6 +161,16 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
         feed.addLink(requestContext.getRequestURL().toString(), "self");
     }
 
+	/**
+	 * Add the appropriate resource properties to the Entry
+	 * 
+	 * The numberofcomments element is only added if the resource in question
+	 * has comments attached to it.
+	 * 
+	 * @param feed
+	 * @param result
+	 */
+
     protected void addPropertySetAsFeedEntry(Feed feed, PropertySet result) {
         try {
 	        	
