@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,57 +31,97 @@
 
 package vtk.util.cache;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+
 import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.constructs.blocking.SelfPopulatingCache;
+import net.sf.ehcache.util.TimeUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Required;
 
 /**
  * Thin {@link ContentCache} layer above a self-populating ("pull-through") Ehcache
  * instance. All aspects of the cache behavior and item loading are controlled
  * by configuration of the injected cache instance underlying this {@link ContentCache}.
  * 
- * TODO async refresh is currently not done. However, at most one thread will
- * load a given key at any time, other threads requesting the same key will block until
- * the first thread has finished loading. This is good, but might not be as hiccup-free as
- * we want. Ehcache also allows to set a blocking timeout, which we can consider
+ * At most one thread will load a given key at any time,
+ * other threads requesting the same key will block until the first thread has finished loading.
+ *
+ * TODO Ehcache also allows to set a blocking timeout, which we can consider
  * using to prevent thread pileups due to slow loading.
  * 
  * @param <K> key type for the cache
  * @param <V> value type for the cache
- * 
- * TODO Add test case for this impl.
  */
-public class EhContentCache<K, V>  implements ContentCache<K, V>, InitializingBean, DisposableBean {
-    
-    private SelfPopulatingCache cache;
-    private boolean requireSerializable = true;
-    private int refreshIntervalSeconds = -1;
-    private ScheduledExecutorService refreshExecutor;
-    
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        // TODO one refresh thread for each vhost with shared Ehcache is unnecessary, but harmless.
+public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean {
+    private final static Log logger = LogFactory.getLog(EhContentCache.class);
+    private final SelfPopulatingCache cache;
+
+    private final boolean requireSerializable;
+    private final int timeToIdleSeconds;
+    private final int timeToLiveSeconds;
+    private final boolean asynchronousRefresh;
+    protected final ScheduledExecutorService refreshAllExecutor;
+    protected final ExecutorService asyncRefreshExecutor;
+
+    public EhContentCache(SelfPopulatingCache cache) {
+        this(cache, true, -1, false);
+    }
+
+    /**
+     * @param requireSerializable Whether to use Ehcache API which requires keys and values to be
+     * serializable or not.
+     */
+    public EhContentCache(
+            SelfPopulatingCache cache,
+            boolean requireSerializable,
+            int refreshIntervalSeconds,
+            boolean asynchronousRefresh
+    ) {
+        CacheConfiguration config = cache.getCacheConfiguration();
+        this.cache = cache;
+        this.requireSerializable = requireSerializable;
+        this.asynchronousRefresh = asynchronousRefresh;
+
+        // Do our own cache expiration to enable us to return stale objects if we receive an error
+        // from upstream.
+        this.timeToIdleSeconds = TimeUtil.convertTimeToInt(config.getTimeToIdleSeconds());;
+        this.timeToLiveSeconds = TimeUtil.convertTimeToInt(config.getTimeToLiveSeconds());;
+        config.setTimeToIdleSeconds(0);
+        config.setTimeToLiveSeconds(0);
+        config.setEternal(true);
+
+        if (asynchronousRefresh) {
+            asyncRefreshExecutor = Executors.newFixedThreadPool(16, new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, EhContentCache.this.cache.getName() + ".async-refresh");
+                }
+            });
+        } else {
+            asyncRefreshExecutor = null;
+        }
+
+        // One refresh thread for each vhost with shared Ehcache is unnecessary, but harmless.
         // A fix might be to expose refresh as a ContentCache API call, and have an external
         // static singleton common to all vhosts in JVM, which does refresh on shared Ehcache instances.
         if (refreshIntervalSeconds > 0) {
-            refreshExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory(){
+            refreshAllExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory(){
                 @Override
                 public Thread newThread(Runnable r) {
-                    return new Thread(r, cache.getName() + ".refresh");
+                    return new Thread(r, EhContentCache.this.cache.getName() + ".refresh");
                 }
             });
-            refreshExecutor.scheduleWithFixedDelay(new Runnable() {
+            refreshAllExecutor.scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
-                    cache.refresh();
+                    EhContentCache.this.cache.refresh(false);
                 }
             }, refreshIntervalSeconds, refreshIntervalSeconds, TimeUnit.SECONDS);
+        } else {
+            refreshAllExecutor = null;
         }
     }
     
@@ -93,17 +133,28 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, InitializingBe
         
         // TODO cache exceptions for a short time (grace time) before letting loaders retry.
         // This may prove useful when loaders are slow and eventually fail (timeout on web resources for instance).
-        Element e = cache.get(identifier);
-        if (e != null) {
-            if (requireSerializable) {
-                return (V) e.getValue();
-            } else {
-                return (V) e.getObjectValue();
+
+        Element element = cache.getQuiet(identifier);
+        if (element != null) {
+            if (isExpired(element)) {
+                // This will not stop multiple thread trying to refresh the cache entry at the same time,
+                // so it can cause unnecessary work to be done.
+                if (asynchronousRefresh) {
+                    triggerAsynchronousRefresh(identifier);
+                } else {
+                    refresh(identifier);
+                }
             }
         }
-        return null; // consider throwing exception here instead. (null Element is impossible with SelfPopulatingCache.)
+        element = cache.get(identifier);
+
+        if (requireSerializable) {
+            return (V) element.getValue();
+        } else {
+            return (V) element.getObjectValue();
+        }
     }
-    
+
     @Override
     public int getSize() {
         return cache.getSize();
@@ -113,37 +164,56 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, InitializingBe
     public void clear() {
         cache.removeAll();
     }
-    
-    /**
-     * Set the self-populating Ehcache instance used to back this content cache.
-     * @param cache 
-     */
-    @Required
-    public void setCache(SelfPopulatingCache cache) {
-        this.cache = cache;
-    }
 
     @Override
     public void destroy() throws Exception {
-        if (refreshExecutor != null) {
-            refreshExecutor.shutdown();
+        if (refreshAllExecutor != null) {
+            refreshAllExecutor.shutdown();
+        }
+        if (asyncRefreshExecutor != null) {
+            asyncRefreshExecutor.shutdown();
         }
     }
 
-    /**
-     * @param refreshIntervalSeconds the refreshIntervalSeconds to set
-     */
-    public void setRefreshIntervalSeconds(int refreshIntervalSeconds) {
-        this.refreshIntervalSeconds = refreshIntervalSeconds;
+
+    private boolean isExpired(Element element){
+        long now = System.currentTimeMillis();
+        long expirationTime = getExpirationTime(element);
+        return now > expirationTime;
     }
 
-    /**
-     * Whether to use Ehcache API which requires keys and values to be
-     * serializable or not.
-     * @param requireSerializable 
-     */
-    public void setRequireSerializable(boolean requireSerializable) {
-        this.requireSerializable = requireSerializable;
+    private long getExpirationTime(Element element) {
+        long expirationTime = 0;
+        long ttlExpiry = element.getCreationTime() + TimeUtil.toMillis(timeToLiveSeconds);
+
+        long mostRecentTime = Math.max(element.getCreationTime(), element.getLastAccessTime());
+        long ttiExpiry = mostRecentTime + TimeUtil.toMillis(timeToIdleSeconds);
+
+        if (timeToLiveSeconds != 0 && (timeToIdleSeconds == 0 || element.getLastAccessTime() == 0)) {
+            expirationTime = ttlExpiry;
+        } else if (timeToLiveSeconds == 0) {
+            expirationTime = ttiExpiry;
+        } else {
+            expirationTime = Math.min(ttlExpiry, ttiExpiry);
+        }
+        return expirationTime;
     }
-    
+
+    private void triggerAsynchronousRefresh(final K identifier) {
+        Runnable fetcher = new Runnable() {
+            @Override
+            public void run() {
+                refresh(identifier);
+            }
+        };
+        asyncRefreshExecutor.execute(fetcher);
+    }
+
+    private void refresh(final K identifier) {
+        try {
+            cache.refresh(identifier, false);
+        } catch (Exception e) {
+            logger.info("Error refreshing object '" + identifier + "'", e);
+        }
+    }
 }
