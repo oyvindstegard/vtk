@@ -30,22 +30,22 @@
  */
 package vtk.web.service;
 
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
 import vtk.security.Principal;
-import vtk.util.net.IPv4Matcher;
 
 /**
- * Assertion that matches on the client IP (v4) address.
- *
+ * Assertion that performs regexp matching on the client IP address.
  */
 public class ClientIPAssertion implements Assertion {
     
-    private IPv4Matcher matcher;
+    private Pattern pattern;
     
-    public ClientIPAssertion(IPv4Matcher matcher) {
-        this.matcher = matcher;
+    public ClientIPAssertion(String expression) {
+        this.pattern = Pattern.compile(expression);
     }
 
     @Override
@@ -61,13 +61,7 @@ public class ClientIPAssertion implements Assertion {
     @Override
     public boolean matches(HttpServletRequest request, Resource resource,
             Principal principal) {
-        try {
-            return matcher.matches(request.getRemoteAddr());
-        } 
-        catch (IllegalArgumentException e) {
-            // IPv4Matcher fails on IPv6 addresses, return false
-            return false;
-        }
+        return pattern.matcher(request.getRemoteAddr()).matches();
     }
 
     @Override
