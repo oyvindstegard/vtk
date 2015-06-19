@@ -6,34 +6,26 @@
      <property name="schemaCache" ref="xmlSchemaRegistry.cache" />
    </bean>
 
-   <bean id="xmlSchemaRegistry.cache" class="vtk.util.cache.ContentCacheImpl">
-     <property name="name" value="${repositoryID}.xmlSchemaCache" />
-     <property name="cacheLoader" ref="xmlSchemaRegistry.cache.loader" />
-     <property name="cacheSeconds" value="${xmlSchemaRegistry.cacheSeconds}" />
-     <property name="refreshInterval" value="${xmlSchemaRegistry.cacheRefreshInterval}" />
-   </bean>
-   
-   <!-- Config for new Ehcache based content-cache for xml schemas (as a replacement for the above). -->  
-   <!--
    <bean id="xmlSchemaRegistry.cache" class="vtk.util.cache.EhContentCache">
-     <property name="cache">
+     <constructor-arg name="cache">
        <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
          <property name="cacheManager" ref="ehCacheManager" />
-         <property name="cacheName" value="vtk.XML_SCHEMA_REGISTRY_CACHE"/>
-         <property name="maxElementsInMemory" value="100" />
+         <property name="cacheName" value="${repositoryID}.xmlSchemaCache"/>
+         <property name="maxElementsInMemory" value="1000" />
+         <property name="maxElementsOnDisk" value="0" />
          <property name="timeToIdle" value="0" />
          <property name="timeToLive" value="${xmlSchemaRegistry.cacheSeconds}" />
          <property name="cacheEntryFactory">
            <bean class="vtk.util.cache.ContentCacheLoaderEhcacheAdapter">
-             <constructor-arg>
-               <ref bean="xmlSchemaRegistry.cache.loader" />
-             </constructor-arg>
+             <constructor-arg ref="xmlSchemaRegistry.cache.loader" />
            </bean>
          </property>
        </bean>
-     </property>
+     </constructor-arg>
+     <constructor-arg name="requireSerializable" value="false"/>
+     <constructor-arg name="refreshIntervalSeconds" value="${xmlSchemaRegistry.cacheRefreshInterval}" />
+     <constructor-arg name="asynchronousRefresh" value="false" />
    </bean>
-   -->
 
    <bean id="xmlSchemaRegistry.cache.loader" class="vtk.util.cache.loaders.JDOMCacheLoader">
      <property name="connectTimeoutSeconds" value="5" />

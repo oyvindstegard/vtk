@@ -283,13 +283,25 @@
     </constructor-arg>
   </bean>
 
-  <bean id="structuredResources.jsonURLCache" class="vtk.util.cache.ContentCacheImpl">
-    <property name="name" value="${repositoryID}.jsonURLCache" />
-    <property name="cacheLoader" ref="structuredResources.jsonURLCacheLoader" />
-    <property name="cacheSeconds" value="600" />
-    <property name="asynchronousRefresh" value="true" />
-    <property name="refreshInterval" value="30" />
-    <property name="maxItems" value="1000" />
+  <bean id="structuredResources.jsonURLCache" class="vtk.util.cache.EhContentCache">
+    <constructor-arg name="cache">
+      <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="ehCacheManager" />
+        <property name="cacheName" value="${repositoryID}.jsonURLCache"/>
+        <property name="maxElementsInMemory" value="1000" />
+        <property name="maxElementsOnDisk" value="0" />
+        <property name="timeToIdle" value="0" />
+        <property name="timeToLive" value="600" />
+        <property name="cacheEntryFactory">
+          <bean class="vtk.util.cache.ContentCacheLoaderEhcacheAdapter">
+            <constructor-arg ref="structuredResources.jsonURLCacheLoader" />
+          </bean>
+        </property>
+      </bean>
+    </constructor-arg>
+    <constructor-arg name="requireSerializable" value="false"/>
+    <constructor-arg name="refreshIntervalSeconds" value="30" />
+    <constructor-arg name="asynchronousRefresh" value="true" />
   </bean>
 
   <bean id="structuredResources.jsonURLCacheLoader" class="vtk.util.cache.loaders.JSONCacheLoader">
