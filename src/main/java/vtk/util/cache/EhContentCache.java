@@ -117,14 +117,14 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
             refreshAllExecutor.scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
-                    EhContentCache.this.cache.refresh(false);
+                    refreshAllExpired();
                 }
             }, refreshIntervalSeconds, refreshIntervalSeconds, TimeUnit.SECONDS);
         } else {
             refreshAllExecutor = null;
         }
     }
-    
+
     @Override
     public V get(K identifier) throws Exception {
         if (identifier == null) {
@@ -209,11 +209,26 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         asyncRefreshExecutor.execute(fetcher);
     }
 
-    private void refresh(final K identifier) {
+    private void refresh(final Object identifier) {
         try {
             cache.refresh(identifier, false);
         } catch (Exception e) {
             logger.info("Error refreshing object '" + identifier + "'", e);
+        }
+    }
+
+    private void refreshAllExpired() {
+        for (Object identifier : cache.getKeys()) {
+            Element element = cache.getQuiet(identifier);
+            if (element == null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(cache.getName() + ": entry with key " + identifier + " has been removed - skipping it");
+                }
+                continue;
+            }
+            if (isExpired(element)) {
+                refresh(identifier);
+            }
         }
     }
 }

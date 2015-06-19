@@ -380,7 +380,7 @@ public class EhContentCacheTest {
     @Test
     public void cache_is_refreshed_when_refresh_interval_seconds_is_set() throws Exception {
         CacheConfiguration cc = new CacheConfiguration("vtk.contentExipry", DEFAULT_CACHE_LIMIT);
-        cc.setTimeToLiveSeconds(1);
+        cc.setTimeToLiveSeconds(2);
         Mockery threadSafeMockery = new Mockery();
         threadSafeMockery.setThreadingPolicy(new Synchroniser());
         final ContentCacheLoader<String,String> threadSafeMockedLoader = threadSafeMockery.mock(
@@ -400,6 +400,8 @@ public class EhContentCacheTest {
                 ));
             }
         });
+        assertEquals("b", cache.get("a"));
+        sleep(1500);
         assertEquals("b", cache.get("a"));
         sleep(1500);
         cache.refreshAllExecutor.shutdown();
