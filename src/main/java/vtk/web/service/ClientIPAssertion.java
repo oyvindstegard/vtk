@@ -69,4 +69,8 @@ public class ClientIPAssertion implements Assertion {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "client.ip ~ " + pattern.toString();
+    }
 }
