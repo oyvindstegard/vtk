@@ -95,7 +95,8 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     protected PropertyTypeDefinition titlePropDef;
     protected PropertyTypeDefinition lastModifiedPropDef;
     protected PropertyTypeDefinition creationTimePropDef;
-
+    protected PropertyTypeDefinition numberOfCommentsPropDef;
+    
     private String authorPropDefPointer;
     private String introductionPropDefPointer;
     private String picturePropDefPointer;
@@ -160,9 +161,19 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
         feed.addLink(requestContext.getRequestURL().toString(), "self");
     }
 
+	/**
+	 * Add the appropriate resource properties to the Entry
+	 * 
+	 * The numberofcomments element is only added if the resource in question
+	 * has comments attached to it.
+	 * 
+	 * @param feed
+	 * @param result
+	 */
+
     protected void addPropertySetAsFeedEntry(Feed feed, PropertySet result) {
         try {
-
+	        	
             Entry entry = Abdera.getInstance().newEntry();
 
             Property publishedDateProp = getPublishDate(result);
@@ -175,6 +186,11 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
             if (title != null) {
                 entry.setTitle(title.getFormattedValue());
             }
+
+			Property numberOfComments = result.getProperty(numberOfCommentsPropDef);
+			if (numberOfComments != null) {
+				entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
+			}
 
             // Set the summary
             setFeedEntrySummary(entry, result);
@@ -481,8 +497,13 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     public void setPublishDatePropDef(PropertyTypeDefinition publishDatePropDef) {
         this.publishDatePropDef = publishDatePropDef;
     }
-
+    
     @Required
+    public void setNumberOfCommentsPropDef(PropertyTypeDefinition numberOfCommentsPropDef) {
+		this.numberOfCommentsPropDef = numberOfCommentsPropDef;
+	}
+
+	@Required
     public void setIntroductionAsXHTMLSummaryResourceTypes(List<String> introductionAsXHTMLSummaryResourceTypes) {
         this.introductionAsXHTMLSummaryResourceTypes = introductionAsXHTMLSummaryResourceTypes;
     }
