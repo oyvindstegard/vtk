@@ -217,7 +217,7 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         }
     }
 
-    private void refreshAllExpired() {
+    private synchronized void refreshAllExpired() {
         for (Object identifier : cache.getKeys()) {
             Element element = cache.getQuiet(identifier);
             if (element == null) {
