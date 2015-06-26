@@ -94,6 +94,15 @@
   </bean>
 
 
+  <bean id="request.isGetOrHead" class="vtk.web.service.RequestMethodAssertion">
+    <property name="methods">
+      <set>
+        <value>GET</value>
+        <value>HEAD</value>
+      </set>
+    </property>
+  </bean>
+
   <!-- Collection redirect service -->
 
   <bean id="collectionRedirectService" class="vtk.web.service.ServiceImpl">
