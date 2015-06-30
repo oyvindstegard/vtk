@@ -73,7 +73,7 @@
           <input type="hidden" name="contacturl" value="${contacturl?html}" />
         </#if>
         
-        <p><@vrtx.msg code="feedback.cant-respond" default="Thank you for your help. We can unfortunately not respond on your request." /></p>
+        <p><@vrtx.msg code="feedback.cant-respond" default="Questions?" /></p>
         <p>
         <#if contacturl?has_content>
           <a id="vrtx-feedback-contact" target="_top" href='${contacturl?html}'>
