@@ -80,7 +80,7 @@
         <#else>
           <a id="vrtx-feedback-contact" target="_top" href='<@vrtx.msg code="feedback.contact-link" default="http://www.uio.no/english/about/contact/" />'>
         </#if>
-          <@vrtx.msg code="feedback.contact" default="Contact us if you have questions you wish to be answered" />
+          <@vrtx.msg code="feedback.contact" default="Contact our official contact points." />
         </a>
         </p>
            
