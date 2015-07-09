@@ -499,16 +499,16 @@
   <insert id="insertPropertyEntry" parameterClass="java.util.Map">
     insert into extra_prop_entry
       (extra_prop_entry_id, resource_id, name_space, name, value
-        <isNotEmpty property="binaryContent">
+        <isNotNull property="binaryContent">
           , binary_content, binary_mimetype
-        </isNotEmpty>
+        </isNotNull>
         , is_inheritable)
     values (<include refid="nextExtraPropEntryId" />, #resourceId#, 
       #namespaceUri#, #name#, #value#
-        <isNotEmpty property="binaryContent">
+        <isNotNull property="binaryContent">
           , #binaryContent,handler=org.springframework.orm.ibatis.support.BlobByteArrayTypeHandler#,
           #binaryMimeType#
-        </isNotEmpty>
+        </isNotNull>
         , #inheritable,handler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback#)
   </insert>
   
@@ -537,14 +537,12 @@
              on r.prev_resource_id = p.resource_id
         where (r.uri = #destUri# or r.uri like #destUriWildcard# escape '@')
           and r.prev_resource_id is not null
+          and not (p.name in <iterate prepend="" property="uncopyableProperties" open="(" close=")" conjunction=","> 
+                                    #uncopyableProperties[]#
+                             </iterate> 
+                             and p.name_space is null)
           order by p.extra_prop_entry_id) t
   </insert>
-  
-  <delete id="deleteUncopyableProperties" parameterClass="java.util.HashMap">
-    delete from extra_prop_entry
-      where name = #name# and name_space is null and resource_id in
-        (select resource_id from vortex_resource where uri = #destUri# or uri like #uriWildcard#)
-  </delete>
   
   <delete id="deletePropertiesByResourceId" parameterClass="int">
     delete from extra_prop_entry where resource_id = #resourceId#

@@ -30,6 +30,8 @@
  */
 package vtk.web.report;
 
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -49,6 +51,8 @@ public class OtherReporter extends DocumentReporter {
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition sortPropDef;
     private SortFieldDirection sortOrder;
+    private LinkedHashMap<String, TermOperator> baseWebpageTypes;
+    private LinkedHashMap<String, TermOperator> fileTypes;
 
     @Override
     protected Search getSearch(String token, Resource currentResource, HttpServletRequest request) {
@@ -56,20 +60,12 @@ public class OtherReporter extends DocumentReporter {
 
         q.add(new TypeTermQuery("file", TermOperator.IN));
 
-        q.add(new TypeTermQuery("image", TermOperator.NI));
-        q.add(new TypeTermQuery("audio", TermOperator.NI));
-        q.add(new TypeTermQuery("video", TermOperator.NI));
-        q.add(new TypeTermQuery("pdf", TermOperator.NI));
-        q.add(new TypeTermQuery("doc", TermOperator.NI));
-        q.add(new TypeTermQuery("ppt", TermOperator.NI));
-        q.add(new TypeTermQuery("xls", TermOperator.NI));
-        q.add(new TypeTermQuery("text", TermOperator.NE));
-
-        q.add(new TypeTermQuery("apt-resource", TermOperator.NI));
-        q.add(new TypeTermQuery("php", TermOperator.NI));
-        q.add(new TypeTermQuery("html", TermOperator.NI));
-        q.add(new TypeTermQuery("managed-xml", TermOperator.NI));
-        q.add(new TypeTermQuery("json-resource", TermOperator.NI));
+        for (Entry<String, TermOperator> entry : fileTypes.entrySet()) {
+            q.add(new TypeTermQuery(entry.getKey(), oppositeTermOperator(entry.getValue())));
+        }
+        for (Entry<String, TermOperator> entry : baseWebpageTypes.entrySet()) {
+            q.add(new TypeTermQuery(entry.getKey(), oppositeTermOperator(entry.getValue())));
+        }
 
         /* In current resource but not in /vrtx. */
         UriPrefixQuery upq = new UriPrefixQuery(currentResource.getURI().toString(), false);
@@ -79,10 +75,32 @@ public class OtherReporter extends DocumentReporter {
 
         Search search = new Search();
         Sorting sorting = new Sorting();
-        sorting.addSortField(new PropertySortField(this.sortPropDef, this.sortOrder));
+        sorting.addSortField(new PropertySortField(sortPropDef, sortOrder));
         search.setSorting(sorting);
         search.setQuery(q);
+
+        /* Include unpublished */
+        search.clearAllFilterFlags();
+
         return search;
+    }
+
+    private TermOperator oppositeTermOperator(TermOperator termOperator) {
+        if (termOperator.equals(TermOperator.IN)) {
+            return TermOperator.NI;
+        } else if (termOperator.equals(TermOperator.EQ)) {
+            return TermOperator.NE;
+        } else {
+            return termOperator;
+        }
+    }
+
+    public void setTitlePropDef(PropertyTypeDefinition titlePropDef) {
+        this.titlePropDef = titlePropDef;
+    }
+
+    public PropertyTypeDefinition getTitlePropDef() {
+        return titlePropDef;
     }
 
     @Required
@@ -95,11 +113,14 @@ public class OtherReporter extends DocumentReporter {
         this.sortOrder = sortOrder;
     }
 
-    public void setTitlePropDef(PropertyTypeDefinition titlePropDef) {
-        this.titlePropDef = titlePropDef;
+    @Required
+    public void setFileTypes(LinkedHashMap<String, TermOperator> fileTypes) {
+        this.fileTypes = fileTypes;
     }
 
-    public PropertyTypeDefinition getTitlePropDef() {
-        return titlePropDef;
+    @Required
+    public void setBaseWebpageTypes(LinkedHashMap<String, TermOperator> baseWebpageTypes) {
+        this.baseWebpageTypes = baseWebpageTypes;
     }
+
 }

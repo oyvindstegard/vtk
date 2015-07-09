@@ -8,9 +8,9 @@ resourcetype semester-page {
     fronter : boolean defaultvalue("false"),
     messages-placement : string defaultvalue("auto"),
     max-number-of-messages : string defaultvalue("3"),
-    schedule : resource_ref,
-    exam : resource_ref,
-    syllabus : resource_ref,
+    schedule : resource_ref noextract,
+    exam : resource_ref noextract,
+    syllabus : resource_ref noextract,
     link-box-one-title : string,
     link-box-one-links : json (linktitle : string, link : resource_ref) multiple,
     link-box-two-title : string,
@@ -85,65 +85,46 @@ resourcetype semester-page {
 
     show-static-links-if-published {
       ##
-      [def props #({"prop": "schedule"}, {"prop" : "exam"}, {"prop" : "syllabus"})]
-      [def count 0]
-      [def totCount 0]
-      [list props link]
-        [def thelink link.prop]
-        [def uri resource-prop(".", thelink)]
-        [if uri != null && uri != ""]
-          [def resource resource(uri)]
-          [if resource != null]
-            [def published resource-prop-obj-val(resource, "published")]
-            [if published]
-              [def count count + 1]
-              [if count = 1]
-                [def totCount totCount + 1]
-                <div id="vrtx-semester-links">
-                  <ul class="left">
-                    [def localization thelink]
-                    [def url view-url(resource)]
-                    <li><a href="[val url]">[localized localization]</a></li>
-              [elseif (count = 3 || count = 5)]
-                [def totCount totCount + 1]
-                [def localization thelink]
-                [def url view-url(resource)]
-                <li><a href="[val url]">[localized localization]</a></li>
-              [endif]
-            [endif]
-          [endif]
-        [endif]
-      [endlist]
-      [if totCount > 0]</ul>[endif]
+      [def requestContext request-context()]
+      [def properties json-resource(resource-prop(".", "uri")).properties]
+      [def fields #("schedule", "exam", "syllabus")]
 
+      [def left #()] [def right #()]
       [def count 0]
-      [list props link]
-        [def thelink link.prop]
-        [def uri resource-prop(".", thelink)]
-        [if uri != null && uri != ""]
-          [def resource resource(uri)]
-          [if resource != null]
-            [def published resource-prop-obj-val(resource, "published") ]
-            [if published]
+
+      [list fields prop]
+        [def localization prop]
+        [def uri properties.get(prop)]
+        [if uri]
+          [def result retrieve(uri)]
+          [if result.success]
+            [def resource result.value]
+            [def url requestContext.url(resource.uri, "viewService")]
+            [if resource.properties.published && url.success]
               [def count count + 1]
-              [if count = 2]
-                [def totCount totCount + 1]
-                <ul class="right">
-                  [def localization thelink]
-                  [def url view-url(resource)]
-                  <li><a href="[val url]">[localized localization]</a></li>
-              [elseif (count = 4 || count = 6)]
-                [def totCount totCount + 1]
-                [def localization thelink]
-                [def url view-url(resource)]
-                <li><a href="[val url]">[localized localization]</a></li>
+              [capture link]<a href="[val url.value]">[localized localization]</a>[endcapture]
+              [if count = 1 || count = 3 || count = 5]
+                [def left left.append(link)]
+              [elseif count = 2 || count = 4 || count = 6]
+                [def right right.append(link)]
               [endif]
             [endif]
-          [endif]
-        [endif]
+          [endif]          
+        [endif]        
       [endlist]
-      [if totCount > 1]</ul>[endif]
-      [if totCount > 0]</div>[endif]
+      
+      [if count > 0]<div id="vrtx-semester-links"> [endif]
+      [if left.length() > 0]
+        <ul class="left">
+          [list left link]<li>[val link # unescaped]</li>[endlist]
+        </ul>
+      [endif]
+      [if right.length() > 0]
+        <ul class="right">
+          [list right link]<li>[val link # unescaped]</li>[endlist]
+        </ul>
+      [endif]
+      [if count > 0]</div> [endif]
       ##
     }
 

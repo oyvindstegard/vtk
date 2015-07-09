@@ -79,11 +79,10 @@
       {{ browseButtonText }}
     </button>
   </div>
-  <div id="{{ inputFieldName }}.preview" class="vrtx-image-ref-preview no-preview" style="display: none">
+  <div id="{{ inputFieldName }}.preview" class="vrtx-image-ref-preview" style="display: none">
     <label for="{{ inputFieldName }}.preview">{{ previewTitle }}</label>
-	<span>{{ previewNoImageText }}</span>
     <div id="{{ inputFieldName }}.preview-inner" class="vrtx-image-ref-preview-inner">
-      <img src="/vrtx/__vrtx/static-resources/themes/default/images/no-preview-image.png" alt="{{ previewNoImageText }}" />
+      <img src="" alt="preview" />
     </div>
   </div>
 </div>
@@ -135,10 +134,23 @@
   {{^isDropdown}}
     {{#json}}
       {{./}}
-        <div class="vrtx-multipleinputfield-json-wrapper">
-          {{#title}}<label for="{{ idstr }}{{name}}-{{ i }}">{{ title }}</label>{{/title}}
-          <input class="vrtx-textfield vrtx-multipleinputfield-field {{ type }}" value="{{ val }}" type="text" size="{{ size }}" id="{{ idstr }}{{name}}-{{ i }}"{{#isReadOnly}} readonly="readonly"{{/isReadOnly}} />
-        </div>
+        {{#hasEnrichedUrl}}
+          {{#enrichedUrlVal}}<a target="_blank" class="vrtx-multiple-inputfield-enrichment" href="{{ enrichedUrlVal }}">{{/enrichedUrlVal}}
+          {{#enrichedTextVal}}{{ enrichedTextVal }}</a>{{/enrichedTextVal}}
+        {{/hasEnrichedUrl}}
+        {{^hasEnrichedUrl}}
+        {{#hasEnrichedText}}
+          {{#enrichedTextVal}}<span class="vrtx-multiple-inputfield-enrichment">{{ enrichedTextVal }}</span>{{/enrichedTextVal}}
+        {{/hasEnrichedText}}
+        {{/hasEnrichedUrl}}
+        
+        {{^enrichedText}}
+        {{^enrichedUrl}}
+          <div class="vrtx-multipleinputfield-json-wrapper">
+            <input class="vrtx-textfield vrtx-multipleinputfield-field {{#hasEnrichedText}}vrtx-multipleinputfield-field-enriched{{/hasEnrichedText}} {{ type }}" value="{{ val }}" {{#title}}placeholder="{{ title }}"{{/title}} type="text" size="{{ size }}" id="{{ idstr }}{{name}}-{{ i }}"{{#isReadOnly}} readonly="readonly"{{/isReadOnly}} />
+          </div>
+        {{/enrichedUrl}}
+        {{/enrichedText}}
       {{./}}
     {{/json}}
     {{^json}}
@@ -156,6 +168,7 @@
 </div>
 
 ### {{! ACCORDION }}
+
 <div class="accordion-wrapper {{clazz}}">
   <h{{level}} class="header" id="{{id}}">{{{title}}}</h{{level}}>
   <div class="accordion-content">{{{content}}}</div>

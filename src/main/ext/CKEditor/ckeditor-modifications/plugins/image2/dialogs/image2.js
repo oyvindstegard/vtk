@@ -48,6 +48,9 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 		// Functions inherited from image2 plugin.
 		checkHasNaturalRatio = helpers.checkHasNaturalRatio,
 		getNatural = helpers.getNatural,
+		
+		// USIT Preview (VTK-3873)
+		previewImage = helpers.previewImage,
 
 		// Global variables referring to the dialog's context.
 		doc, widget, image,
@@ -109,6 +112,9 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			addListener( 'load', function() {
 				// Don't use image.$.(width|height) since it's buggy in IE9-10 (#11159)
 				var dimensions = getNatural( image );
+				
+				// USIT Preview (VTK-3873)
+				previewImage( image );
 
 				callback.call( scope, image, dimensions.width, dimensions.height );
 			} );
@@ -121,8 +127,22 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 				callback( null );
 			} );
 
+            // USIT Patched (VTK-3873)
+            var baseHrefImage2Fixed = ( config.baseHref.replace(/[^\/]*$/, "") || '' );
+            if( baseHrefImage2Fixed != "" ) {
+                if( /^\//.test(src) ) {
+                    baseHrefImage2Fixed = location.protocol + "//" + location.host.replace("-adm", "");
+                } else if( /^http(s)?:\/\//.test(src) ) {
+                    baseHrefImage2Fixed = "";
+                }
+            }
+			image.setAttribute( 'src',
+				baseHrefImage2Fixed + src + '?' + Math.random().toString( 16 ).substring( 2 ) );
+				
+		    /* OLD
 			image.setAttribute( 'src',
 				( config.baseHref || '' ) + src + '?' + Math.random().toString( 16 ).substring( 2 ) );
+		    */
 		};
 	}
 
@@ -131,6 +151,13 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 	// dimensions lock is adjusted.
 	function onChangeSrc() {
 		var value = this.getValue();
+
+        // USIT Preview (VTK-3873)
+		//
+		// if 'src'-field is empty remove preview
+        if(value == "") {
+          $("#image2-preview").children().remove();
+        }
 
 		toggleDimensions( false );
 
@@ -277,6 +304,9 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 				if ( srcChanged ) {
 					widthField.setValue( preLoadedWidth );
 					heightField.setValue( preLoadedHeight );
+					
+					// USIT Preview (VTK-3873)
+					previewImage( image, preLoadedWidth, preLoadedHeight )
 				}
 
 				// If the old image remains, reset button should revert
@@ -284,6 +314,9 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 				else {
 					widthField.setValue( domWidth );
 					heightField.setValue( domHeight );
+					
+					// USIT Preview (VTK-3873)
+					previewImage( image, domWidth, domHeight )
 				}
 
 				evt.data && evt.data.preventDefault();
@@ -342,9 +375,14 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 		heightField[ method ]();
 	}
 
+    // USIT Preview (VTK-3873)
+	// Moved URL-field and Browse-button below eachother
+
 	var hasFileBrowser = !!( config.filebrowserImageBrowseUrl || config.filebrowserBrowseUrl ),
-		srcBoxChildren = [
-			{
+		srcBoxChildren = [{
+		    type: 'hbox',
+			widths: [ '100%' ],
+			children: [{
 				id: 'src',
 				type: 'text',
 				label: commonLang.url,
@@ -357,23 +395,27 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 					widget.setData( 'src', this.getValue() );
 				},
 				validate: CKEDITOR.dialog.validate.notEmpty( lang.urlMissing )
-			}
-		];
+			}]
+		}];
 
 	// Render the "Browse" button on demand to avoid an "empty" (hidden child)
 	// space in dialog layout that distorts the UI.
 	if ( hasFileBrowser ) {
-		srcBoxChildren.push( {
-			type: 'button',
-			id: 'browse',
-			// v-align with the 'txtUrl' field.
-			// TODO: We need something better than a fixed size here.
-			style: 'display:inline-block;margin-top:14px;',
-			align: 'center',
-			label: editor.lang.common.browseServer,
-			hidden: true,
-			filebrowser: 'info:src'
-		} );
+		srcBoxChildren.push({
+		    type: 'hbox',
+			widths: [ '100%' ],
+			children: [{
+			  type: 'button',
+			  id: 'browse',
+			  // v-align with the 'txtUrl' field.
+			  // TODO: We need something better than a fixed size here.
+			  style: 'display:inline-block;margin-top:14px;',
+			  align: 'center',
+			  label: editor.lang.common.browseServer,
+			  hidden: true,
+			  filebrowser: 'info:src'
+		    }]
+		});
 	}
 
 	return {
@@ -388,6 +430,14 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 			preLoader = createPreLoader();
 		},
 		onShow: function() {
+		
+		    // USIT Preview (VTK-3873) - Is't in old div container, then show dialog for converting..
+		    var imageElement = $(this.widget.element.$);
+		    if(imageElement.closest(".vrtx-img-container, .vrtx-container").length > 0 && typeof showMigrateDialog === "function") {
+		      this.hide();
+		      showMigrateDialog(this._.editor);
+		    }
+		
 			// Create a "global" reference to edited widget.
 			widget = this.widget;
 
@@ -405,22 +455,38 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 
 			// Get the natural height of the image.
 			preLoadedHeight = domHeight = natural.height;
+			
+			// USIT Preview (VTK-3873)
+			previewImage( image );
 		},
 		contents: [
 			{
 				id: 'info',
 				label: lang.infoTab,
+				
+				// USIT Preview (VTK-3873)
+				// Also moved URL-field and Browse-button below eachother
 				elements: [
 					{
 						type: 'vbox',
 						padding: 0,
-						children: [
-							{
-								type: 'hbox',
-								widths: [ '100%' ],
-								children: srcBoxChildren
-							}
-						]
+						children: srcBoxChildren
+					},
+					{
+						id: 'preview',
+						type: 'html',
+						onLoad: function() {
+						  $("#image2-preview")
+						    .closest("td")
+						    .css({
+						      "verticalAlign": "top"
+						    });
+						},
+						setup: function( widget ) {
+						},
+						commit: function( widget ) {
+						},
+						html: "<div id='image2-preview'></div>"
 					},
 					{
 						id: 'alt',
@@ -444,7 +510,11 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 								id: 'width',
 								label: commonLang.width,
 								validate: validateDimension,
-								onKeyUp: onChangeDimension,
+								onKeyUp: function() {
+								  onChangeDimension.apply(this);
+								  // USIT Preview (VTK-3873)
+								  previewImage( image, widthField.getValue(), heightField.getValue() );
+								},
 								onLoad: function() {
 									widthField = this;
 								},
@@ -461,7 +531,11 @@ CKEDITOR.dialog.add( 'image2', function( editor ) {
 								width: '45px',
 								label: commonLang.height,
 								validate: validateDimension,
-								onKeyUp: onChangeDimension,
+								onKeyUp: function() {
+								  onChangeDimension.apply(this);
+								  // USIT Preview (VTK-3873)
+								  previewImage( image, widthField.getValue(), heightField.getValue() );
+								},
 								onLoad: function() {
 									heightField = this;
 								},

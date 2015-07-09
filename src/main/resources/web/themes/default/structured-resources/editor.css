@@ -190,7 +190,6 @@
   padding-top: 0;
 }
 
-.ui-accordion label.ui-accordion-header,
 .ui-accordion > div > .header.ui-accordion-header,
 .ui-accordion > div .ui-accordion > div .ui-accordion-header {
   padding: 15px 15px 14px 40px;
@@ -204,7 +203,6 @@
   border-color: #d9d9d9;
 }
 
-.ui-accordion label.ui-accordion-header,
 .ui-accordion > div .ui-accordion > div .ui-accordion-header {
   background: url(../images/line-dotted.gif) repeat-x top left;
   padding-left: 30px;
@@ -218,38 +216,17 @@
   background: url(../images/line-dotted.gif) repeat-x bottom left;
 }
 
-.session .ui-accordion,
-.session label.ui-accordion-header,
-.embedded .ui-accordion,
-.embedded label.ui-accordion-header {
-  background: transparent !important;
-}
-
 .embedded .ui-accordion,
 .session .ui-accordion {
   margin-top: 5px;
   margin-bottom: 0px;
-}
-
-.embedded .ui-accordion.ui-widget label.ui-accordion-header,
-.session .ui-accordion.ui-widget label.ui-accordion-header {
-  margin-left: 0;
-}
-
-.embedded .vrtx-multipleinputfield.vrtx-multipleinputfield-json-has-title.first button,
-.session .vrtx-multipleinputfield.vrtx-multipleinputfield-json-has-title.first button {
-  margin-top: 25px;
-}
-
-.ui-accordion .vrtx-multipleinputfield label {
-  font-size: 0.92em;
+  background: transparent !important;
 }
 
 .ui-accordion > div > .header.ui-accordion-header.ui-corner-top {
   border-bottom: none;
 }
 
-.ui-accordion label.ui-accordion-header .ui-icon,
 .ui-accordion > div > .header.ui-accordion-header .ui-icon {
   top: 25px;
   left: 11px;
@@ -257,7 +234,6 @@
   width: 16px;
 }
 
-.ui-accordion label.ui-accordion-header .ui-icon.ui-icon-triangle-1-s,
 .ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
   background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
 
@@ -277,45 +253,14 @@
   left: 13px;
 }
 
-.ui-accordion.ui-widget label.ui-accordion-header .ui-icon,
 .ui-accordion > div .ui-accordion > div .header.ui-accordion-header .ui-icon {
   left: -3px;
 }
 
-/* Fix when deleted */
-.ui-accordion.vrtxStaffExternal {
-  clear: left;
-}
-
-/* Fix when tooltip */
-.session .vrtx-fixed-resources-semester.ui-accordion label.ui-accordion-header,
-.embedded .vrtx-fixed-resources-semester.ui-accordion label.ui-accordion-header {
-  position: static;
-}
-
-.session .vrtx-fixed-resources-semester.ui-accordion label.ui-accordion-header .ui-icon,
-.embedded .vrtx-fixed-resources-semester.ui-accordion label.ui-accordion-header .ui-icon {
-  position: relative;
-  top: 18px;
-  left: -33px;
-}
-
-.session .vrtx-fixed-resources-semester.ui-accordion label.ui-accordion-header .ui-icon.ui-icon-triangle-1-s,
-.embedded .vrtx-fixed-resources-semester.ui-accordion label.ui-accordion-header .ui-icon.ui-icon-triangle-1-s {
-  top: 14px;
-}
-
-#main #contents .tip.vrtx-fixed-resources-semester {
-  background: #fff !important;
-}
-/* ^ Fix when tooltip */
-
-.ie8 .ui-accordion label.ui-accordion-header .ui-icon.ui-icon-triangle-1-s,
 .ie8 .ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
   background: url(../images/arrow-expanded-big.gif) no-repeat center left;
 }
 
-.ui-accordion.fast label.ui-accordion-header .ui-icon.ui-icon-triangle-1-s,
 .ui-accordion.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s {
   transition: all 200ms ease-in-out;
   -webkit-transition: all 200ms ease-in-out;
@@ -324,7 +269,6 @@
   -ms-transition: all 200ms ease-in-out;
 }
 
-.ui-accordion label.ui-accordion-header .ui-icon.ui-icon-triangle-1-e,
 .ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-e { /* Collapsed */
   background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
   transition: all 600ms ease-in-out;
@@ -334,7 +278,6 @@
   -ms-transition: all 600ms ease-in-out;
 }
 
-.ui-accordion.fast label.ui-accordion-header .ui-icon.ui-icon-triangle-1-e,
 .ui-accordion.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-e {
   transition: all 200ms ease-in-out;
   -webkit-transition: all 200ms ease-in-out;
@@ -347,8 +290,9 @@
   cursor: pointer;
 }
 
-.ui-accordion .header.ui-accordion-header.ui-state-hover {
-  background: #ecf3f9;
+.ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .header.ui-accordion-header.ui-state-focus {
+  background-color: #ecf3f9;
 }
 
 .ui-accordion > div > .header.ui-accordion-header.ui-corner-top,
@@ -356,8 +300,20 @@
   background: none;
 }
 
-.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover {
+/* Ensure dotted background on inner accordions */
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-corner-top,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover.ui-corner-top,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus.ui-corner-top {
   background: url(../images/line-dotted.gif) repeat-x top left !important;
+}
+
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover .session-date,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus .session-date {
+  text-decoration: underline !important;
 }
 
 .ui-accordion > div > .ui-accordion-content { 
@@ -441,27 +397,19 @@
 
 /* Selects - all is default */
 
-#editor.select-typeToDisplay-so .internasjonale-sokere-admin,
-#editor.select-typeToDisplay-so .nordiske-sokere,
-#editor.select-typeToDisplay-so .generelle-admin,
-#editor.select-typeToDisplay-so .pris,
+#editor.select-typeToDisplay-so .price-admin,
 #editor.select-typeToDisplay-so .regelverk,
 #editor.select-typeToDisplay-so .documentation-admin,
-#editor.select-typeToDisplay-nm .internasjonale-sokere-admin,
-#editor.select-typeToDisplay-nm .nordiske-sokere,
 #editor.select-typeToDisplay-nm .spesielle-admin,
-#editor.select-typeToDisplay-nm .opptakskrav-admin,
 #editor.select-typeToDisplay-nm .forstevitnemal-kvote,
 #editor.select-typeToDisplay-nm .ordinar-kvote-alle-kvalifiserte,
-#editor.select-typeToDisplay-nm .poenggrenser,
+#editor.select-typeToDisplay-nm .credit-limits,
 #editor.select-typeToDisplay-nm .studiekode,
 #editor.select-typeToDisplay-nm .quota,
-#editor.select-typeToDisplay-em .metode-admin,
 #editor.select-typeToDisplay-em .spesielle-admin,
-#editor.select-typeToDisplay-em .opptakskrav-admin,
 #editor.select-typeToDisplay-em .forstevitnemal-kvote,
 #editor.select-typeToDisplay-em .ordinar-kvote-alle-kvalifiserte,
-#editor.select-typeToDisplay-em .poenggrenser,
+#editor.select-typeToDisplay-em .credit-limits,
 #editor.select-typeToDisplay-em .quota,
 #editor.select-typeToDisplay-em .studiekode {
   display: none;
@@ -493,6 +441,14 @@
 #editor.select-teachingsemester-other .teachingsemester-other,
 #editor.select-examsemester-particular-semester .if-examsemester-particular,
 #editor.select-examsemester-every-other .examsemester-every-other-semester {
+  display: block;
+}
+
+#editor .phd-web-address {
+  display: none;
+}
+
+#editor.select-program-type-phd .phd-web-address {
   display: block;
 }
 

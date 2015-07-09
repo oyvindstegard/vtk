@@ -26,10 +26,12 @@ void execute(context, args, out) {
     parser = queryParserFactory.getParser();
     try {
         query = parser.parse(queryExp);
-    } catch (t) {
+    } 
+    catch (t) {
         out.println(t.getMessage());
         return;
     }
+
     search = new vtk.repository.search.Search();
     search.clearAllFilterFlags();
     search.setPropertySelect(vtk.repository.search.PropertySelect.ALL);
@@ -38,7 +40,7 @@ void execute(context, args, out) {
         search.setLimit(limit);
     }
     if (sortArg != null) {
-        sorting = new SortingImpl();
+        sorting = new Sorting();
         direction = null;
         if (sortArg.trim().contains(" ")) {
             dir = sortArg.substring(sortArg.indexOf(" ") + 1);
@@ -53,7 +55,8 @@ void execute(context, args, out) {
             } else {
                 sf = new TypedSortField(sortArg);
             }
-        } else {
+        } 
+        else {
             prefix = null;
             name = null;
             if (sortArg.contains(":")) {
@@ -90,20 +93,27 @@ void execute(context, args, out) {
         if (propList != null) {
             if (wildcard) {
                 for (prop: r.getProperties()) {
-                    printProp(prop, out);
+                    printProp(prop, null, out);
                 }
                 acl = rs.getAcl(i);
                 if (acl != null) {
                     printAcl(acl, rs.isInheritedAcl(i), out);
                 }
-            } else {
+            } 
+            else {
                 for (propName: propList) {
                     if ("acl".equals(propName)) {
                         acl = rs.getAcl(i);
                         if (acl != null) {
                             printAcl(acl, rs.isInheritedAcl(i), out);
                         }
-                    } else {
+                    } 
+                    else {
+                        field = null;
+                        if (propName.contains("@")) {
+                            field = propName.substring(propName.indexOf("@") + 1);
+                            propName = propName.substring(0, propName.indexOf("@"));
+                        }
                         p = propName;
                         prefix = null;
 
@@ -113,7 +123,7 @@ void execute(context, args, out) {
                         }
                         prop = r.getPropertyByPrefix(prefix, p);
                         if (prop == null) continue;
-                        printProp(prop, out);
+                        printProp(prop, field, out);
                     }
                 }
             }
@@ -123,16 +133,35 @@ void execute(context, args, out) {
     out.println("[Total results fetched: " + rs.getSize() + ", total hits: " + rs.getTotalHits() + "]");
 }
 
-void printProp(prop, out) {
+void printProp(prop, field, out) {
     if (prop.getType() == vtk.repository.resourcetype.PropertyType.Type.BINARY) {
         out.println("  " + prop.getDefinition().getName() + ": [binary]");
-    } else {
-        if (prop.getDefinition().isMultiple()) {
-            out.println("  " + prop.getDefinition().getName() + ": " + java.util.Arrays.asList(prop.getValues()));
-        } else {
-            out.println("  " + prop.getDefinition().getName() + ": " + prop.getValue());
-        }
     }
+    else {
+        Object value;
+        if (prop.getDefinition().isMultiple()) {
+            value = new ArrayList();
+            for (v: prop.getValues()) {
+                value.add(format(prop, v, field));
+            }
+        }
+        else {
+            value = format(prop, prop.getValue(), field);
+        }
+        if (field != null) {
+            out.println("  " + prop.getDefinition().getName() + "@" + field + ": " + value);
+        }
+        else {
+            out.println("  " + prop.getDefinition().getName() + ": " + value);
+        } 
+    }
+}
+
+Object format(prop, value, field) {
+    if (field != null && prop.getType() == vtk.repository.resourcetype.PropertyType.Type.JSON) {
+        return vtk.util.text.Json.select(value.getJSONValue(), field);
+    }
+    return value;
 }
 
 void printAcl(acl, inherited, out) {

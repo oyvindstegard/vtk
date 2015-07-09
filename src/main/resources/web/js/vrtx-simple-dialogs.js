@@ -128,8 +128,10 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
     }
     $.when(futureUi).done(function() {
       dialog.__opts.elm = $(dialog.__opts.selector);
-      dialog.__opts.elm.dialog(dialog.__dialogOpts);
-      dialog.__opts.elm.dialog("open");
+      if(!dialog.__opts.elm.filter(":visible").length) {
+        dialog.__opts.elm.dialog(dialog.__dialogOpts);
+        dialog.__opts.elm.dialog("open");
+      }
     });
   },
   close: function () {
@@ -151,7 +153,7 @@ var VrtxLoadingDialog = dejavu.Class.declare({
       title: opts.title,
       hasHtml: true,
       unclosable: true,
-      width: 208,
+      width: opts.width || 208,
       onOpen: function() {
         $("body").attr("aria-busy", "true");
       },

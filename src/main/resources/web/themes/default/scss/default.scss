@@ -1,62 +1,51 @@
 /*
- *
- *  UiO design - Vortex
- *
+ * Vortex
+ * 
  * ToC:
  *
- * 1. General
- * 2. Head and footer
- *   2.1 Head and footer grid
- *   2.2 Top (UiO-logo) and bottom line (breadcrumb)
- *   2.3 Head menu
- *   2.4 App name
- *   2.5 Footer
- * 3. App content
- *   3.1 App content grid
- *   3.2 Resource title
- *   3.3 Tabs
- *   3.4 Tab Menus
- *   3.5 Directorylisting
- *   3.6 Other content
- *   3.7 Messages
- * 4. Embedding
- * 5. Fluid design
- * 6. Clearing
- * 7. Forms
+ * 1. Tags / typography
+ * 2. Resource bar
+ * 3. Tab bar
+ * 4. Content
  *
  */
 
 @import "base";
 @import "forms";
+@import "grid";
+@import "breadcrumbs";
+@import "tabs";
+@import "embedded";
+@import "tooltip";
+@import "dropdowns";
+@import "messages";
+@import "directorylisting";
+@import "upload";
 
 /*-----------------------------------------*\
-	1. General
+	1. Tags / typography
 \*-----------------------------------------*/
 
-html {
-  background-color: $bodyBackgroundColor;
-}
-
 body {
-  background-color: $bodyBackgroundColor;
   color: $textColor;
   font: normal 81.25%/1.3 $baseFont;
-  @include noMargPadd;
-  text-align: center;
-  min-width: 1014px;
 }
  
 h1 {
   font-size: 1.84em;
+  font-weight: bold;
   line-height: 1.2em;
   margin: 0 0 15px 0;
-  font-weight: bold;
 }
 
 h2 {
   font-size: 1.76em;
   font-weight: normal;
   margin: 15px 0 8px 0;
+}
+
+#app-content h2:first-child {
+  margin-top: 0;
 }
 
 h3,
@@ -116,503 +105,19 @@ table {
 }
 
 a {
-  color: $linkColor; /* color: #0b5a9d; */
+  color: $linkColor;
   text-decoration: none;
-}
 
-a:focus,
-a:hover {
-  text-decoration: underline;
+  &:focus,
+  &:hover {
+    text-decoration: underline;
+  }
 }
-
 
 
 /*-----------------------------------------*\
-	2. Head and footer
+	2. Resource bar
 \*-----------------------------------------*/
-
-/* 2.1 Head and footer grid */
-
-#app-head,
-#app-footer {
-  background-color: $headFooterBackgroundColor;
-  clear: both;
-  position: relative;
-}
-
-#app-head-wrapper {
-  background: $headFooterBackgroundColor;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #dad9d9;
-}
-
-#app-head {
-  margin: 0 auto;
-  height: 128px;
-  background-color: transparent;
-  width: 970px;
-  text-align: left;
-}
-
-#app-footer-wrapper {
-  text-align: center;
-  padding: 0;
-  position: relative;
-  background-color: transparent;
-}
-
-#app-footer {
-  margin-bottom: 0;
-  width: 940px;
-  margin: 0 auto;
-  text-align: left;
-  border: none;
-  font: normal 0.85em/1.25em Verdana, sans-serif;
-  padding: 0 15px 44px 15px;
-  background-color: transparent;
-}
-
-/* ^ 2.1 Head and footer grid */
-
-/* 2.2 Top (UiO-logo) and bottom line (breadcrumb) */
-
-#app-head-wrapper #line-top.not-upscoped-host {
-  height: 7px;
-}
-
-#app-head-wrapper #line-top {
-  background-color: $lineTopBackgroundColor;
-  height: 34px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper {
-  background: url(images/app-head-breadcrumb-bg.png) repeat-x left top;
-  overflow: hidden;
-  position: relative;
-  bottom: -1px;
-  margin-top: -1px;
-}
-
-#app-head-wrapper #line-top #uiologo,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb,
-#app-head-wrapper #system-message-wrapper .system-message {
-  width: 970px;
-  margin: 0 auto;
-  position: relative;
-  height: 34px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb {
-  text-align: left; 
-  height: auto;
-}
-
-/* Scrollable */
-
-.js #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb-outer,
-.js #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb-inner {
-  height: 32px;
-  position: relative;
-}
-
-.js #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb-outer {
-  overflow: hidden;
-  padding-left: 11px;
-  margin-left: -11px;
-}
-
-.js #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb-inner {
-  overflow: visible;
-  left: 0px;
-  top: 0px;
-  float: left;
-}
-
-.js #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb-inner.animate {
-  @include transitions(left 300ms ease);
-}
-
-.js .navigate-crumbs {
-  position: absolute;
-  top: 0px;
-  display: block;
-  height: 33px;
-  width: 40px;
-  background: url(images/app-head-breadcrumb-bg.png) repeat-x left top;
-}
-
-.js .navigate-crumbs:focus,
-.js .navigate-crumbs:hover {
-  cursor: pointer;
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/app-head-breadcrumb-delimiter-rollover-left.png) no-repeat -10px bottom;
-  top: -1px;
-  height: 34px;
-}
-
-.js #navigate-crumbs-left-coverup {
-  position: absolute;
-  top: 0px;
-  left: 39px;
-  height: 34px;
-  width: 11px;
-  display: block;
-  background: url(images/app-head-breadcrumb-bg.png) repeat-x left top;
-}
-
-.js .navigate-crumbs span.navigate-crumbs-icon {
-  display: block;
-  width: 10px;
-  height: 14px;
-  position: absolute;
-  top: 10px;
-  left: 15px;
-}
-
-.js .navigate-crumbs span.navigate-crumbs-dividor {
-  display: block;
-  width: 30px;
-  height: 30px;
-  position: absolute;
-  top: 1px;
-}
-
-.js #navigate-crumbs-left {
-  left: 35px;
-}
-
-.js #navigate-crumbs-right {
-  right: 35px;
-}
-
-.js #navigate-crumbs-left {
-  border-right: 1px solid #DAD9D9;
-}
-
-.js #navigate-crumbs-left span.navigate-crumbs-dividor {
-  background: url(images/breadcrumbs-left-dividor.png) no-repeat center center;
-  right: -31px;
-}
-
-.js #navigate-crumbs-right {
-  border-left: 1px solid #DAD9D9;
-}
-
-.js #navigate-crumbs-right span.navigate-crumbs-dividor {
-  background: url(images/breadcrumbs-right-dividor.png) no-repeat center center;
-  left: -31px;
-}
-
-.js #navigate-crumbs-left span.navigate-crumbs-icon {
-  background: url(images/breadcrumbs-left-nav.png) no-repeat center center;
-}
-
-.js #navigate-crumbs-right span.navigate-crumbs-icon {
-  background: url(images/breadcrumbs-right-nav.png) no-repeat center center;
-}
-
-.js #navigate-crumbs-left:focus span.navigate-crumbs-icon,
-.js #navigate-crumbs-left:hover span.navigate-crumbs-icon {
-  top: 11px;
-  background-image: url(images/breadcrumbs-left-nav-rollover.png);
-}
-
-.js #navigate-crumbs-right:focus span.navigate-crumbs-icon,
-.js #navigate-crumbs-right:hover span.navigate-crumbs-icon {
-  top: 11px;
-  background-image: url(images/breadcrumbs-right-nav-rollover.png);
-}
-
-/* ^ Scrollable */
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level-no-url {
-  font-size: 1.15em;
-  margin: 0 0 0 0; 
-  float: left;
-  display: block;
-  height: 32px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level a,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level-no-url span.vrtx-no-url,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-delimiter {
-  display: block;
-  float: left;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level a,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level-no-url span.vrtx-no-url {
-  color: #363534;
-  text-decoration: none;
-  padding: 6px 11px 0 11px;
-  height: 26px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level-no-url span.vrtx-no-url {
-  color: #777;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-delimiter {
-  background: url(images/app-head-breadcrumb-delimiter.png) no-repeat right bottom;
-  height: 30px;
-  width: 10px;
-  margin: 1px 0 0 0;
-  text-indent: -9999px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level-1,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-left {
-  margin-left: -11px;
-}
-
-/* Active */
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-active {
-  padding: 5px 21px 0 11px;
-  height: 25px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-before-active span.vrtx-breadcrumb-delimiter {
-  background-image: url(images/app-head-breadcrumb-delimiter-active.png);
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-active  {
-  background: #d9d9d9 url(images/app-head-breadcrumb-active-bg.png) no-repeat right bottom;
-  margin: 1px 0 0 0;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-active.vrtx-breadcrumb-left {
-  margin-left: -11px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb .breadcrumb-prefix {
-  display: none;
-}
-
-/* Hover */
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level:focus,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level:hover {
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/app-head-breadcrumb-delimiter-rollover-left.png) no-repeat left bottom;
-  margin-left: -10px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level:focus a,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level:hover a {
-  color: #fff;
-  padding-left: 21px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level:focus span.vrtx-breadcrumb-delimiter,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level:hover span.vrtx-breadcrumb-delimiter {
-  background: url(images/app-head-breadcrumb-delimiter-rollover-right.png) no-repeat right bottom;
-  height: 33px;
-  margin-top: -1px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-level-1:focus,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-left:focus,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-level-1:hover,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-left:hover {
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
-  margin-left: -11px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-level-1:focus a,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-left:focus a,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-level-1:hover a,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-left:hover a {
-  padding-left: 11px;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-before-active:focus span.vrtx-breadcrumb-delimiter,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-before-active:hover span.vrtx-breadcrumb-delimiter {
-  background-image: url(images/app-head-breadcrumb-delimiter-rollover-right-active.png);
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-active:focus,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-active:hover {
-  background: #d9d9d9 url(images/app-head-breadcrumb-active-bg.png) no-repeat right bottom;
-  margin: 1px 0 0 0;
-}
-
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-active.vrtx-breadcrumb-left:focus,
-#app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb span.vrtx-breadcrumb-level.vrtx-breadcrumb-active.vrtx-breadcrumb-left:hover {
-  margin-left: -11px;
-}
-
-/* ^ Hover */
-
-/* "The Phark Method" - image replacement
- * Don't want that extra empty span from Levin Alexander method
- * (although it is used elsewhere in Ny UiO design and have an extra advantage).
- */
-
-#app-head-wrapper #line-top #uiologo a {
-  background: url(images/uio-app-uio-small-black.png) no-repeat 0 0;
-  display: block;
-  overflow: hidden;
-  position: absolute;
-  top: 10px;
-  left: 15px;
-  height: 15px;
-  width: 195px;
-  text-indent: -9999px;
-}
-
-#app-head-wrapper #line-top #uiologo.english-uiologo a {
-  background-image: url(images/uio-app-uio-small-black-eng.png);
-  height: 18px;
-}
-
-#app-head-wrapper #line-top #uiologo a:focus,
-#app-head-wrapper #line-top #uiologo a:hover {
-  background: url(images/uio-app-uio-small-black.png) no-repeat 0 -17px;
-}
-
-#app-head-wrapper #line-top #uiologo.english-uiologo a:focus,
-#app-head-wrapper #line-top #uiologo.english-uiologo a:hover {
-  background-image: url(images/uio-app-uio-small-black-eng.png);
-}
-
-/* ^ 2.2 Top (UiO-logo) and bottom line (breadcrumb) */
-
-/* 2.3 Head menu */
-
-#app-head #global-menu-top,
-#app-head #global-menu-bottom {
-  top: 16px;
-  right: 15px;
-  position: absolute;
-}
-
-#app-head #global-menu-bottom {
-  top: 64px;
-}
-
-#app-head .global-menu {
-  background: url(images/seperator-grey-gradient.png) no-repeat top right;
-  padding: 13px 18px 0 0;
-  margin: 0 18px 0 0;
-  height: 30px;
-  float: left;
-  position: relative;
-}
-
-#app-head .global-menu-small {
-  background: url(images/seperator-grey-gradient-small.png) no-repeat top right;
-  padding: 4px 18px 0 0;
-  margin: 0 18px 0 0;
-  height: 21px;
-  float: left;
-}
-
-#app-head .global-menu.last,
-#app-head .global-menu-small.last {
-  background: none;
-  padding-right: 0;
-  margin-right: 0;
-}
-
-#app-head .global-menu#global-menu-create {
-  padding-top: 9px;
-}
-
-#global-menu-create {
-  z-index: 99;
-}
-
-#app-head .principal #logoutForm {
-  display: inline;
-}
-
-#app-head .principal {
-  background: url(images/person.png) no-repeat 0 0;
-  padding-left: 28px; 
-  display: inline-block;
-}
-
-
-/* ^ 2.3 Head menu */
-
-/* 2.4 App name */
-
-#app-head #app-name {
-  position: absolute;
-  top: 38px;
-  left: 15px;
-  font-size: 2.77em;
-  font-weight: bold;
-  color: #96948e;
-  line-height: 1.05em;
-  white-space: nowrap;
-}
-
-#app-head #app-name a {
-  color: #96948e;
-}
-
-#app-head #app-name span#tagline {
-  color: #363534;
-  font-size: 0.47em;
-  margin-top: 10px;
-  line-height: 1em;
-  display: block;
-  font-weight: normal;
-}
-
-#app-head #app-name a:focus,
-#app-head #app-name a:hover {
-  text-decoration: none;
-  color: #0b5a9d;
-}
-
-/* ^ 2.4 App name */
-
-/* 2.5 Footer */
-
-#app-footer {
-  color: #5e5e5e;
-  text-align: right;
-}
-
-/* ^ 2.5 Footer */
-
-
-
-/*-----------------------------------------*\
-	3. App content
-\*-----------------------------------------*/
-
-/* 3.1 App content grid */
-
-#app-content {
-  width: 940px;
-  margin: 0 auto;
-  text-align: left;
-  padding: 10px 0 0 0;
-  margin-bottom: 12px;
-  position: relative;
-  clear: left;
-}
-
-#app-content h2:first-child {
-  margin-top: 0;
-}
-
-#app-content #main,
-#app-content #contents {
-  background-color: $contentBackgroundColor;
-}
-
-#app-content #main {
-  padding: 19px;
-  border: 1px solid #d9d9d9;
-}
-
-/* ^ 3.1 App content grid */
-
-/* 3.2 Resource title */
 
 .hidden-server-info {
   display: none;
@@ -623,249 +128,49 @@ a:hover {
   color: $titleContainerTextColor;
 }
 
-/* Icons 
- * TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later)
-*/
+/* Icons - TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later) */
 
 #resource-title {
   background: transparent url(images/file.gif) no-repeat 0px 3px;
   padding-top: 8px;
   position: relative;
-}
-#resource-title.unpublished {
-  background: transparent url(images/file-unpublished.png) no-repeat 0px 3px;
+
+  &.unpublished {
+    background: transparent url(images/file-unpublished.png) no-repeat 0px 3px;
+  }
+  h1 {
+    margin: 0 0 15px 32px;
+    float: left;
+    min-width: 85px; /* at least as wide as 'Endre navn' in dropdown + 15px */
+
+    .title-split {
+      display: block;
+    }
+  }
+
+  @include resourceTitleIcon(folder,   0px 5px,  42px);
+  @include resourceTitleIcon(text,     0px 2px);
+  @include resourceTitleIcon(pdf,      0px 2px);
+  @include resourceTitleIcon(doc,      0px 2px);
+  @include resourceTitleIcon(xls,      0px 2px);
+  @include resourceTitleIcon(ppt,      0px 2px);
+  @include resourceTitleIcon(image,    0px 10px, 39px);
+  @include resourceTitleIcon(audio,    0px 12px, 26px, $firstIsPng: true);
+  @include resourceTitleIcon(video,    0px 5px,  40px);
+  @include resourceTitleIcon(videoref, 0px 5px,  40px);
+  @include resourceTitleIcon(binary,   0px 3px);
+  @include resourceTitleIcon(dmg,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(zip,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(jar,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
 }
 
 .ie8 #resource-title {
   display: inline-block;
 }
 
-#resource-title h1 {
-  margin: 0 0 15px 36px;
-  float: left;
-  min-width: 85px; /* at least as wide as 'Endre navn' in dropdown + 15px */
-}
-#resource-title h1 .title-split {
-  display: block;
-}
-#resource-title.true h1 {
-  margin-left: 42px;
-}
-
-#resource-title.true {
-  background: transparent url(images/folder.gif) no-repeat 0px 5px;
-}
-
-#resource-title.true.unpublished {
-  background: transparent url(images/folder-unpublished.png) no-repeat 0px 5px;
-}
-
-#resource-title.binary {
-  background: transparent url(images/file-binary.gif) no-repeat 0px 3px;
-}
-#resource-title.binary.unpublished { 
-  background: transparent url(images/file-binary-unpublished.png) no-repeat 0px 3px;
-}
-
-#resource-title.dmg {
-  background: transparent url(images/file-dmg.png) no-repeat 0px 3px;
-}
-#resource-title.zip {
-  background: transparent url(images/file-zip.png) no-repeat 0px 3px;
-}
-#resource-title.jar {
-  background: transparent url(images/file-jar.png) no-repeat 0px 3px;
-}
-
-#resource-title.doc {
-  background: transparent url(images/file-doc.gif) no-repeat 0px 2px;
-}
-#resource-title.doc.unpublished {
-  background: transparent url(images/file-doc-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.pdf {
-  background: transparent url(images/file-pdf.gif) no-repeat 0px 2px;
-}
-#resource-title.pdf.unpublished {
-  background: transparent url(images/file-pdf-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.xls {
-  background: transparent url(images/file-xls.gif) no-repeat 0px 2px;
-}
-#resource-title.xls.unpublished {
-  background: transparent url(images/file-xls-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.text {
-  background: transparent url(images/file-txt.gif) no-repeat 0px 2px;
-}
-#resource-title.text.unpublished { 
-  background: transparent url(images/file-txt-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.ppt {
-  background: transparent url(images/file-ppt.gif) no-repeat 0px 2px;
-}
-#resource-title.ppt.unpublished {
-  background: transparent url(images/file-ppt-unpublished.png) no-repeat 0px 2px;
-}
-
-#resource-title.image {
-  background: transparent url(images/file-image.gif) no-repeat 0px 10px;
-}
-#resource-title.image.unpublished {
-  background: transparent url(images/file-image-unpublished.png) no-repeat 0px 10px;
-}
-#resource-title.image h1 {
-  margin-left: 39px;
-}
-
-#resource-title.audio {
-  background: transparent url(images/file-audio.png) no-repeat 0px 12px;
-}
-#resource-title.audio.unpublished {
-  background: transparent url(images/file-audio-unpublished.png) no-repeat 0px 12px;
-}
-#resource-title.audio h1 {
-  margin-left: 26px;
-}
-
-#resource-title.video,
-#resource-title.videoref {
-  background: transparent url(images/file-video.gif) no-repeat 0px 5px;
-}
-#resource-title.video.unpublished,
-#resource-title.videoref.unpublished {
-  background: transparent url(images/file-video-unpublished.png) no-repeat 0px 5px;
-}
-#resource-title.video h1,
-#resource-title.videoref h1 {
-  margin-left: 40px;
-}
-
-/* ^ Icons */
-
-ul.list-menu,
-ul.list-menu li,
-.global-menu ul,
-.global-menu ul li,
-#editor-menu,
-#editor-menu li,
-td.vrtx-report-broken-links ul,
-td.vrtx-report-broken-links ul li,
-#editor-button-row,
-#editor-button-row li,
-ul.manage-create,
-ul.manage-create li,
-ul.publishing-document,
-ul.publishing-document li,
-#locale-selection ul,
-#locale-selection ul li,
-#collection-more-menu ul,
-#collection-more-menu ul li,
-#editor-help-menu ul,
-#editor-help-menu ul li {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-#editor-help-menu,
-#collection-more-menu,
-#editor-menu-wrapper,
-#editor-button-row,
-ul.publishing-document {
-  display: inline-block;
-}
-
-#editor-button-row {
-  margin-right: 10px;
-}
-
-/* Language menu / editor help menu */
-
-#locale-selection {
-  background: url(images/globe.png) no-repeat 0px 1px;
-  padding: 0 0 1px 23px;
-  z-index: 100;
-}
-
-#locale-selection ul,
-#locale-selection ul li,
-#collection-more-menu ul,
-#collection-more-menu ul li,
-#editor-help-menu ul,
-#editor-help-menu ul li {
-  display: inline;
-}
-
-#collection-more-menu ul {
-  overflow: hidden;
-}
-
-/* Dropdown */
-
-#tabMenuRight li.more-menu {
-  background: url("images/seperator-grey-gradient.png") no-repeat scroll left top transparent;
-  padding-left: 15px;
-}
-
-#editor-help-menu {
-  margin-left: 5px;
-}
-
-.js #editor-help-menu,
-.js #collection-more-menu,
-.js #locale-selection {
-  position: relative;
-}
-
-.js #tabMenuRight #collection-more-menu li {
-  float: none;
-}
-
-.js #tabMenuRight #collection-more-menu > a,
-.js #tabMenuRight #collection-more-menu li a {
-  margin: 0;
-}
-
-.js #editor-help-menu ul.dropdown-shortcut-menu-container,
-.js #collection-more-menu ul.dropdown-shortcut-menu-container,
-.js #locale-selection ul.dropdown-shortcut-menu-container {
+#system-going-down {
   display: none;
-  top: 24px;
-  left: auto;
-  right: 0;
-  /* right: -72px; */
 }
-
-.js #locale-selection ul.dropdown-shortcut-menu-container li a,
-.js #locale-selection ul.dropdown-shortcut-menu-container li span {
-  padding-left: 28px !important;
-}
-
-.js #locale-selection ul.dropdown-shortcut-menu-container li.active span {
-  background: url(images/list-active.gif) no-repeat 10px 10px;
-}
-
-.js #locale-selection #locale-selection-header,
-.js #collection-more-menu #collection-more-menu-header,
-.js #editor-help-menu #editor-help-menu-header {
-  background: url(images/arrow-down.png) no-repeat 100% 8px;
-  padding-right: 12px;
-  display: inline-block;
-}
-
-.js #collection-more-menu #collection-more-menu-header {
-  background-position: 100% 13px;
-  padding-left: 0px;
-}
-
-/* ^ Dropdown */
-
-/* ^ Language menu */
 
 /* Resource menus */
 
@@ -875,236 +180,12 @@ ul.publishing-document {
   float: left;
 }
 
-.dropdown-shortcut-menu-container form input[type=submit] {
-  color: $linkColor;
-}
-
-/* Button-row / Dropdown */
-
-.forms-new ul.button-row li,
-.forms-new ul.button-row-small li {
-  float: left;
-}
-
-.forms-new ul.button-row li.dropdown-init,
-.forms-new ul.button-row-small li.dropdown-init {
-  float: none;
-}
-
-.forms-new ul.button-row li a,
-.forms-new ul.button-row li input[type='submit'],
-.forms-new ul.button-row-small li a,
-.forms-new ul.button-row-small li input[type='submit'] {
-  @include borderRadius(0px);
-}
-
-ul.button-row li.first a,
-ul.button-row li.first input[type='submit'],
-ul.button-row-small li.first a,
-ul.button-row-small li.first input[type='submit'] {
-  -webkit-border-top-left-radius: 5px;
-  -webkit-border-bottom-left-radius: 5px;
-  -moz-border-radius-topleft: 5px;
-  -moz-border-radius-bottomleft: 5px;
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
-}
-
-ul.button-row li.last a,
-ul.button-row li.last input[type='submit'],
-ul.button-row-small li.last a,
-ul.button-row-small li.last input[type='submit'] {
-  -webkit-border-top-right-radius: 5px;
-  -webkit-border-bottom-right-radius: 5px;
-  -moz-border-radius-topright: 5px;
-  -moz-border-radius-bottomright: 5px;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
-}
-
-div.dropdown-shortcut-menu-container,
-ul.dropdown-shortcut-menu-container {
-  display: none;
-  border: 1px solid $buttonBorderColor;
-  border-bottom: none;
-  position: absolute;
-  top: 80px;
-  left: 0;
-  z-index: 99;
-  background-color: #fff;
-}
-
-#resource-title div.dropdown-shortcut-menu-container {
-  top: auto;
-}
-
-.global-menu div.dropdown-shortcut-menu-container,
-#editor-menu-wrapper div.dropdown-shortcut-menu-container {
-  left: auto !important;
-}
-
-.global-menu div.dropdown-shortcut-menu-container {
-  right: 0px;
-  top: 41px;
-}
-
-#editor-menu-wrapper {
-  position: relative;
-}
-
-#editor-menu-wrapper div.dropdown-shortcut-menu-container {
-  right: 7px;
-  top: 32px;
-}
-
-ul.dropdown-shortcut-menu li.dropdown-init {
-  position: relative;
-  padding-right: 26px !important;
-  line-height: 17px;
-}
-
-#editor-menu-wrapper #editor-menu {
-  padding: 0 7px 0 0;
-}
-
-ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area {
-  border: 1px solid $buttonBorderColor;
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  height: 28px;
-  width: 25px;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  -webkit-border-top-right-radius: 5px;
-  -webkit-border-bottom-right-radius: 5px;
-  -moz-border-radius-topright: 5px;
-  -moz-border-radius-bottomright: 5px;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
-  background: $buttonBackgroundColor url("images/dropdown-arrow.png") no-repeat 8px 12px;
-}
-
-ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area {
-  background-image: url("images/dropdown-arrow-small.png");
-  background-position: 8px 11px;
-  height: 24px;
-  width: 25px;
-}
-
-ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area:focus,
-ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area:hover {
-  background-color: $buttonHoverBackgroundColor;
-  border-color: $buttonHoverBackgroundColor;
-  border-width: 0 0 0 1px;
-  height: 30px;
-  top: 0;
-  right: 0;
-  background-image: url("images/dropdown-arrow-hover.png");
-  background-position: 7px 13px;
-  outline: none;
-  cursor: pointer;
-}
-
-ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area:focus,
-ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area:hover {
-  height: 26px;
-  background-image: url("images/dropdown-arrow-small-hover.png");
-  background-position: 7px 12px;
-}
-
-div.dropdown-shortcut-menu-container ul,
-div.dropdown-shortcut-menu-container ul li,
-ul.dropdown-shortcut-menu-container,
-ul.dropdown-shortcut-menu-container li {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-div.dropdown-shortcut-menu-container ul li a,
-ul.dropdown-shortcut-menu-container li a,
-div.dropdown-shortcut-menu-container ul li span,
-ul.dropdown-shortcut-menu-container li span,
-div.dropdown-shortcut-menu-container ul li form input[type='submit'],
-ul.dropdown-shortcut-menu-container li form input[type='submit'] {
-  border: none;
-  border-bottom: 1px solid $buttonBorderColor; 
-  padding: 8px 14px 7px 14px !important;
-  background-color: #fff;
-  display: block;
-  white-space: nowrap;
-}
-
-div.dropdown-shortcut-menu-container ul li form,
-ul.dropdown-shortcut-menu-container li form {
-  display: block;
-}
-
-div.dropdown-shortcut-menu-container ul li a:hover,
-ul.dropdown-shortcut-menu-container li a:hover,
-div.dropdown-shortcut-menu-container ul li form input[type='submit']:hover,
-ul.dropdown-shortcut-menu-container li form input[type='submit']:hover,
-div.dropdown-shortcut-menu-container ul li a:focus,
-ul.dropdown-shortcut-menu-container li a:focus,
-div.dropdown-shortcut-menu-container ul li form input[type='submit']:focus,
-ul.dropdown-shortcut-menu-container li form input[type='submit']:focus {
-  background-color: $listingDropdownTipFocusBackgroundColor;
-  cursor: pointer;
-}
-
-div.dropdown-shortcut-menu-container ul li form input[type='submit'],
-ul.dropdown-shortcut-menu-container li form input[type='submit'] {
-  float: left;
-  text-align: left;
-  width: 100%;
-}
-
-div.dropdown-shortcut-menu-container ul li a:hover,
-ul.dropdown-shortcut-menu-container li a:hover,
-div.dropdown-shortcut-menu-container ul li a:focus,
-ul.dropdown-shortcut-menu-container li a:focus {
-  text-decoration: none;
-}
-
-/* Button in dropdown menu  */
-
-div.dropdown-shortcut-menu-container form .vrtx-button {
-  height: auto;
-  background: none;
-}
-
-div.dropdown-shortcut-menu-container form .vrtx-button button {
-  color: $linkColor;
-}
-
-div.dropdown-shortcut-menu-container form .vrtx-button:hover,
-div.dropdown-shortcut-menu-container form .vrtx-button:focus {
-  background: none;
-}
-
-div.dropdown-shortcut-menu-container form .vrtx-button button:hover,
-div.dropdown-shortcut-menu-container form .vrtx-button button:focus {
-  background: none;
-  color: $linkColor;
-}
-
-div.dropdown-shortcut-menu-container form .vrtx-button button {
-  background: none;
-  height: auto;
-  padding: 0;
-  margin: 0;
-}
-
-/* ^ Dropdown */
-
 #resourceMenuRight {
   float: left;
   min-height: 86px;
   margin: -12px 0 20px 25px;
   padding: 0 0 0 25px;
-  background: url(images/seperator-grey-gradient-big.png) no-repeat top left;
+  @include bg("images/seperator-grey-gradient-big.png");
 }
 
 #resourceMenuRight.overflow-hidden {
@@ -1121,8 +202,7 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
 
 #resourceMenuRight > li.last {
   background: none;
-  margin: 0;
-  padding: 0;
+  @include noMargPadd;
 }
 
 #resourceMenuRight > li h3 {
@@ -1180,297 +260,18 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
   color: #888;
 }
 
-/* ^ Resource menus */
 
-/* Tooltip */
-
-.tip {
-  @include boxShadow(0px 0px 0px 6px rgba(160,160,160,0.5));
-  @include borderRadius(0px !important);
-  border: none !important;
-  padding: 14px;
-  background-color: #fff;
-  display: none;
-  
-  &.property-label {
-    font-size: 1em;
-  }
-  &.file,
-  &.folder {
-    background-repeat: no-repeat;
-    background-position: 15px 16px;
-  }
-  &.file #title {
-    padding-left: 26px;
-  }
-  &.folder #title {
-    padding-left: 30px;
-  }
-  &.allowed-for-all {
-    &.folder               { background-image: url(images/folder-small.gif);                            }
-    &.not-inherited.folder { background-image: url(images/folder-small-own-permissions.gif);            }
-    &.file                 { background-image: url(images/file-small.gif);                              }
-    &.not-inherited.file   { background-image: url(images/file-small-own-permissions.gif);              }
-  }
-  &.restricted {
-    &.folder                    { background-image: url(images/folder-small-restricted.gif);                 }
-    &.not-inherited.folder      { background-image: url(images/folder-small-restricted-own-permissions.gif); }
-    &.file                      { background-image: url(images/file-small-restricted.gif);                   }
-    &.not-inherited.file        { background-image: url(images/file-small-restricted-own-permissions.gif);   }
-  }
-  #title-wrapper {
-    font-size: 1.154em;
-    line-height: 2;
-    display: block;
-    padding-bottom: 11px;
-    margin-bottom: 10px;
-    background: url(images/line-dotted.gif) repeat-x bottom left;
-    
-    .vrtx-button-small {
-      font-size: 0.867em;
-      line-height: 1.3;
-    }
-  }
-  h4 {
-    margin-top: 0px;
-    font-weight: normal;
-  }
-  table {
-    td,
-    th {
-      vertical-align: top;
-    }
-    td {
-      padding: 2px 6px 3px 0;
-    }
-    th {
-      padding-bottom: 3px;
-      padding-right: 10px;
-      font-weight: normal;
-      white-space: nowrap;
-      text-align: left;
-    }
-  }
-  .inherited-permissions {
-    table {
-      th,
-      td {
-        color: #999;
-      }
-    }
-  }
-}
-
-#title-container abbr {
-  color: #797979;
-  cursor: pointer;
-  border-bottom: 1px dotted #a9a9a9;
-}
-
-#vrtx-editor .tip.property-item ul,
-#title-container .tip ul {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  padding-left: 10px;
-}
-
-#vrtx-editor .tip.property-item ul a,
-#vrtx-report-urchin .tip a {
-  color: $publishedAllowedTextColor;
-}
-
-/* Create dialog */
-
-.vrtx-create-tree .vrtx-button-small {
-  margin-top: -2px;
-  margin-bottom: -2px;
-}
-
-.vrtx-create-tree .tree-create {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  padding: 0 15px !important;
-}
-
-.vrtx-create-tree a.tree-link {
-  color: #2b2b2b !important;
-  font-size: 1.077em;
-}
-
-.loading-tree-node {
-  background: transparent url(images/spinner.gif) no-repeat center left;
-  padding-left: 26px;
-}
-
-.tip.vrtx-create-tree {
-  padding: 0 !important;
-  margin: 6px 0 0;
-  @include boxShadow(none !important);
-  border: none;
-  background-color: $listingDropdownTipFocusBackgroundColor;
-}
-
-.tip.vrtx-create-tree .no-create-permission {
-  display: inline-block;
-  white-space: nowrap;
-  margin: 2px 0 0 10px;
-  padding: 0;
-}
-
-.tipextra {
-  background-color: $listingDropdownTipFocusBackgroundColor;
-  border: 1px solid #c7dadf;
-  height: 30px;
-}
-
-#TB_window {
-  @include borderRadius(7px);
-}
-
-#TB_closeAjaxWindow {
-  display: none;
-}
-
-#TB_title {
-  padding-right: 0px !important;
-  margin: 30px 30px 0 30px !important;
-}
-
-#TB_title.show-close-window {
-  padding-right: 70px !important;
-}
-
-#TB_title.show-close-window #TB_closeAjaxWindow {
-  display: block;
-}
-
-#TB_ajaxContent {
-  padding: 2px 0 30px 30px !important;
-}
-
-/* ^ Create dialog */
-
-.tooltips {
-  background: url(images/info-icon.png) no-repeat 0 0;
-  width: 15px;
-  height: 15px;
-  display: block;
-  display: inline-block;
-  margin: 0 0 0 3px;
-  cursor: pointer;
-  border: none;
-}
-
-.tooltips.label-tooltips {
-  margin: 0 0 -3px 5px;
-}
-
-#permissions-inheritance .tooltips,
-#title-container .tooltips {
-  border-bottom: none;
-  margin-bottom: -3px;
-}
-
-.fixed-resources-permissions-info {
-  display: inline-block;
-  padding-left: 19px;
-  color: #666;
-}
-
-/* ^ Tooltip */
-
-/* ^ 3.2 Resource title */
-
-/* 3.3 Tabs */
-
-#app-tabs {
-  margin: 1px 0 0 0;
-  padding: 0;
-  position: relative;
-  top: 1px;
-  left: 0px;
-  height: 34px;
-}
-
-#app-tabs ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  border-left: 1px solid #d8d8d8;
-}
-
-#app-tabs ul li {
-  margin: 0;
-  padding: 0;
-  display: block;
-  list-style: none;
-  float: left;
-}
-
-#app-tabs ul li a,
-#app-tabs ul li.current a {
-  line-height: 1.25em;
-  display: block;
-  float: left;
-  padding: 6px 22px 5px 19px; 
-  margin: 0;
-  background: url(images/app-content-tabs-bg.png) repeat-x bottom left;
-  text-align: center;
-  font-size: 1.15em;
-  text-decoration: none;
-  color: #363534;    
-}
-
-#app-tabs ul li a {
-  border: 1px solid #d8d8d8;
-  border-left: none;
-}
-
-/* Override this class to get different colors and size on a specific tab */
-
-#app-tabs ul li a:hover,
-#app-tabs ul li a:focus {
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
-  color: #fff;
-  border-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor; 
-  border-bottom: 1px solid $breadcrumbTabHoverSystemTabMessageBackgroundColor;
-  margin-left: -1px;
-  padding-left: 20px;
-}
-
-#app-tabs ul li.activeTab a:hover,
-#app-tabs ul li.activeTab a:focus {
-  border-color: #d8d8d8;
-  margin-left: 0px;
-  padding-left: 19px;
-}
-
-#app-tabs ul li.activeTab a,
-#app-tabs ul li.activeTab a:hover,
-#app-tabs ul li.activeTab a:focus {
-  background: #fff;
-  color: #363534;
-  border-bottom: 1px solid #fff;
-}
-
-/* ^ 3.3 Tabs */
-
-
-/* 3.4 Tab Menus */
+/*-----------------------------------------*\
+  3. Tab bar
+\*-----------------------------------------*/
 
 #active-tab {
   margin: 0 0 5px 0;
-}
 
-#active-tab  ul.list-menu a {
-  font-weight: bold;
+  ul.list-menu a {
+    font-weight: bold;
+  }
 }
-
-/* Tab Menu 1 (left) */
 
 #tabMenuLeft,
 #tabMenuLeft li {
@@ -1483,71 +284,52 @@ div.dropdown-shortcut-menu-container form .vrtx-button button {
   padding: 5px 0 5px 28px;
 }
 
-/* Tab Menu 2 (right) */
-
 #tabMenuRight {
   float: right;
+
+  li {
+    float: left;
+    margin: -10px 0 0 30px;
+    padding: 10px 0 10px;
+
+    a {
+      display: block;
+      padding: 5px 0 6px 30px;
+    }
+    &.deleteResourcesService a {
+      background: url(images/tab-menu-delete.png) no-repeat center left;
+      padding-left: 25px;
+    }
+    &.moveResourcesService a {
+      background: url(images/tab-menu-move.png) no-repeat center left;
+      padding-left: 41px;
+    }
+    &.copyResourcesService a {
+      background: url(images/tab-menu-copy.png) no-repeat center left;
+      padding-left: 38px;
+    }
+    &.fileUploadService a {
+      background: url(images/tab-menu-upload.png) no-repeat center left;
+    }
+    &.createDocumentService a {
+      background: url(images/tab-menu-new-file.png) no-repeat center left;
+    }
+    &.createCollectionService a {
+      background: url(images/tab-menu-new-folder.png) no-repeat center left;
+    }
+    &.recoverResourceService a,
+    &.deleteResourcePermanentService a {
+      padding-left: 0;
+    }
+  }
 }
 
-#tabMenuRight li {
-  float: left;
-  margin: -10px 0 0 30px;
-  padding: 10px 0 10px;
-}
 
-#tabMenuRight li a {
-  display: block;
-  padding: 5px 0 6px 30px;
-}
-
-#tabMenuRight li.deleteResourcesService a {
-  background: url(images/tab-menu-delete.png) no-repeat center left;
-  padding-left: 25px;
-}
-
-#tabMenuRight li.moveResourcesService a {
-  background: url(images/tab-menu-move.png) no-repeat center left;
-  padding-left: 41px;
-}
-
-#tabMenuRight li.copyResourcesService a {
-  background: url(images/tab-menu-copy.png) no-repeat center left;
-  padding-left: 38px;
-}
-
-#tabMenuRight li.fileUploadService a {
-  background: url(images/tab-menu-upload.png) no-repeat center left; 
-}
-
-#tabMenuRight li.createDocumentService a {
-  background: url(images/tab-menu-new-file.png) no-repeat center left; 
-}
-
-#tabMenuRight li.createCollectionService a {
-  background: url(images/tab-menu-new-folder.png) no-repeat center left;
-}
+/*-----------------------------------------*\
+  3. Content
+\*-----------------------------------------*/
 
 /* Tab forms */
-
-ol.vrtx-help-step-by-step,
-ul.radio-buttons label {
- font-size: 1.154em;
-}
-
-ol.vrtx-help-step-by-step {
-  margin-left: 0;
-  padding-left: 22px;
-}
-
-ol.vrtx-help-step-by-step li {
-  margin-bottom: 15px;
-}
-
-span.vrtx-help-step-by-step-url,
-span.vrtx-help-step-by-step-cmd {
-  color: #777;
-  font-weight: bold;
-}
 
 .vrtx-admin-form p#vrtx-file-upload-info-text {
   margin: 10px 0 0;
@@ -1641,465 +423,6 @@ span.vrtx-help-step-by-step-cmd {
   vertical-align: top;
 }
 
-/* ^ Tab forms */
-
-/* Trash can */
-
-#tabMenuRight li.recoverResourceService a,
-#tabMenuRight li.deleteResourcePermanentService a {
-  background: none; /* TODO: need to design icon */
-  padding-left: 0;
-}
-
-/* ^ Trash can */
-
-/* ^ 3.4 Tab Menus */
-
-/* 3.5 Directorylisting */
-
-#vrtx-manage-collectionlisting #contents,
-#vrtx-trash-can #contents,
-#vrtx-report-documents #contents .vrtx-report,
-#vrtx-report-broken-links #contents .vrtx-report {
-  padding: 5px 0 0 0;
-  border: 1px solid #d9d9d9;
-  clear: left;
-}
-
-#vrtx-report-documents #contents .vrtx-report {
-  margin-top: 15px;
-}
-
-#directory-listing {
-  width: 100%;
-  table-layout: fixed;
-}
-
-#directory-listing td {
-  word-wrap: break-word;
-}
-
-#directory-listing tr td {
-  font-size: 1.15em;
-  border-top: 1px solid #f0f0f0;
-  padding: 5px 0 4px 15px;
-  overflow: hidden;
-}
-
-#directory-listing tr.first td {
-  border-top: none;
-  padding-top: 8px;
-}
-
-#directory-listing tr th {
-  background: url(images/line-dotted.gif) repeat-x bottom left;
-  padding: 0 0 8px 15px;
-  text-align: left;
-  white-space: nowrap;  
-}
-
-#directory-listing th.checkbox {
-  width: 4%;
-}
-
-#directory-listing th.permissions {
-  width: 15%;
-}
-
-#directory-listing th#vrtx-trash-can\.deletedBy {
-  width: 19%;
-}
-
-#directory-listing th#vrtx-report-permissions {
-  width: 15%;
-}
-
-#directory-listing th.resource-type {
-  width: 15%;
-}
-
-#directory-listing th.last-modified {
-  width: 13%;
-}
-
-#directory-listing th#vrtx-report-last-checked,
-#directory-listing th#vrtx-report-last-modified {
-  width: 19%;
-}
-
-#directory-listing th#vrtx-report-modified-by {
-  width: 22%;
-}
-
-#directory-listing th.published,
-#directory-listing th#vrtx-report-published {
-  width: 9%;
-}
-
-#directory-listing th#vrtx-report-broken-links-document-count,
-#directory-listing th#vrtx-report-broken-links-count {
-  width: 6%;
-}
-
-#directory-listing th#vrtx-report-broken-links-collection-document-count,
-#directory-listing th#vrtx-report-broken-links-collection-count {
-  width: 11%;
-}
-
-#directory-listing th#vrtx-report-broken-links {
-  width: 35%;
-}
-
-#directory-listing td.permissions,
-#directory-listing td.published,
-#directory-listing td.resource-type,
-#directory-listing td.last-modified,
-#directory-listing td.vrtx-trash-can-deleted-by,
-#directory-listing td.vrtx-trash-can-deleted-time,
-#directory-listing td.vrtx-report-last-modified,
-#directory-listing td.vrtx-report-last-modified-by,
-#directory-listing td.vrtx-report-permission-set,
-#directory-listing td.vrtx-report-permissions,
-#directory-listing td.vrtx-report-published {
-  white-space: nowrap;
-}
-
-#directory-listing th.name,
-#directory-listing td.name,
-#directory-listing th.action,
-#directory-listing td.action,
-#directory-listing th#vrtx-trash-can\.name,
-#directory-listing td.vrtx-trash-can-name,
-body#vrtx-report-documents #directory-listing th#vrtx-report-name,
-body#vrtx-report-documents #directory-listing td.vrtx-report-name,
-body#vrtx-report-broken-links #directory-listing th#vrtx-report-broken-links-web-page,
-body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links-web-page,
-body#vrtx-report-broken-links #directory-listing th#vrtx-report-broken-links-collection,
-body#vrtx-report-broken-links #directory-listing th.vrtx-report-broken-links-collection {
-  padding-left: 15px;
-  width: 30%;
-}
-
-#directory-listing td.vrtx-report-broken-links-web-page span,
-#directory-listing td.vrtx-report-broken-links-collection span {
-  display: block;
-  clear: left;
-  font-size: 0.867em;
-  color: #5e5e5e;
-}
-
-#directory-listing td.name span.name-split,
-#directory-listing td.vrtx-trash-can-name span.name-split,
-body#vrtx-report-documents #directory-listing td.vrtx-report-name span.name-split {
-  display: block;
-}
-
-#directory-listing th.last-modified,
-#directory-listing td.last-modified,
-#directory-listing th#vrtx-trash-can\.deletedTime,
-#directory-listing td.vrtx-trash-can\.deletedTime,
-#directory-listing th#vrtx-report-published,
-#directory-listing td.vrtx-report-published,
-body#vrtx-report-broken-links #directory-listing th#vrtx-report-broken-links,
-body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
-  padding-right: 15px;
-}
-
-#directory-listing tr.even td {
-  background-color: $contentTablesEvenBackgroundColor;
-}
-
-#directory-listing tr.focus td,
-#directory-listing tr:hover td {
-  background-color: $listingDropdownTipFocusBackgroundColor;
-  border-top: 1px solid #c7dadf;
-  border-bottom: 1px solid #c7dadf;
-}
-
-#directory-listing tr.focus td.permissions a,
-#directory-listing tr:hover td.permissions a {
-  border-bottom: 1px dotted #888;
-}
-
-#directory-listing #trash-can-empty,
-#directory-listing #collectionlisting-empty {
-  text-align: center;
-}
-
-#directory-listing #trash-can-empty td,
-#directory-listing #collectionlisting-empty td {
-  padding: 25px 0 30px 0;
-}
-
-#directory-listing tr.first.focus td,
-#directory-listing tr.first:hover td {
-  border-top: none;
-}
-
-#directory-listing tr.last.focus td,
-#directory-listing tr.last:hover td {
-  border-bottom: none;
-}
-
-#directory-listing tr.checked {
-  background-color: #eaeaea;
-}
-
-#directory-listing tr.checked td {
-  background-color: #eaeaea;
-  border-top: 1px solid #d9d9d9;
-  border-bottom: 1px solid #d9d9d9;
-}
-
-#directory-listing tr.checked.first td {
-  border-top: none;
-}
-
-#directory-listing tr.checked.last td {
-  border-bottom: none;
-}
-
-#directory-listing td span.allowed-for-all,
-#directory-listing td span.allowed-for-all a,
-#resourceMenuRight span.allowed-for-all,
-#resourceMenuRight span.published,
-#publishing-status span.published {
-  color: $publishedAllowedTextColor;
-}
-
-#directory-listing td span.own-permission {
-  color: #999999;
-  display: inline-block;
-  font-size: 1.5em;
-  left: 0;
-  line-height: 1;
-  margin: -5px 0;
-  position: relative;
-  top: 2px;
-}
-
-#directory-listing td span.restricted,
-#directory-listing td span.restricted a,
-#resourceMenuRight span.restricted {
-  color: $errorRestrictedTextColor;
-}
-
-#directory-listing td.permissions span a:hover {
-  text-decoration: none;
-}
-
-#resourceMenuRight span.unpublished,
-#publishing-status span.unpublished {
-  color: #888;
-}
-
-#collectionListing\.checkUncheckAll {
-  padding-top: 11px;
-  margin-bottom: -27px;
-  font-weight: bold;
-}
-
-.unpublished .published span,
-.unpublished .permissions span,
-.unpublished .permissions span a,
-.unpublished td.resource-type,
-.unpublished td.last-modified {
-  color: #9a9996 !important;
-  font-style: italic !important;
-}
-
-/* Icons */
-
-#directory-listing tr td.name a,
-#directory-listing tr td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr td.name span.vrtx-trash-can-name-text,
-#directory-listing tr td.vrtx-report-name a {
-  padding: 2px 0 2px 31px;
-  display: block;
-  background: url(images/file-small.gif) no-repeat center left;
-  overflow: hidden;
-}
-
-#directory-listing tr.unpublished td.name a,
-#directory-listing tr.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.unpublished td.vrtx-report-name a {
-  background: url(images/file-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.true td.name a,
-#directory-listing tr.true td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.true td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.true td.vrtx-report-name a {
-  background: url(images/folder-small.gif) no-repeat center left;
-}
-
-#directory-listing tr.true.unpublished td.name a,
-#directory-listing tr.true.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.true.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.true.unpublished td.vrtx-report-name a {
-  background: transparent url(images/folder-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.binary td.name a,
-#directory-listing tr.binary td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.binary td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.binary td.vrtx-report-name a {
-  background: url(images/file-binary-small.gif) no-repeat center left;
-}
-
-#directory-listing tr.binary.unpublished td.name a,
-#directory-listing tr.binary.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.binary.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.binary.unpublished td.vrtx-report-name a {
-  background: url(images/file-binary-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.dmg td.name a,
-#directory-listing tr.dmg td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.dmg td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.dmg td.vrtx-report-name a {
-  background: url(images/file-dmg-small.png) no-repeat center left;
-}
-#directory-listing tr.zip td.name a,
-#directory-listing tr.zip td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.zip td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.zip td.vrtx-report-name a {
-  background: url(images/file-zip-small.png) no-repeat center left;
-}
-#directory-listing tr.jar td.name a,
-#directory-listing tr.jar td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.jar td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.jar td.vrtx-report-name a {
-  background: url(images/file-jar-small.png) no-repeat center left;
-}
-
-#directory-listing tr.doc td.name a,
-#directory-listing tr.doc td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.doc td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.doc td.vrtx-report-name a {
-  background: url(images/file-doc-small.gif) no-repeat center left;
-}
-
-#directory-listing tr.doc.unpublished td.name a,
-#directory-listing tr.doc.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.doc.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.doc.unpublished td.vrtx-report-name a {
-  background: url(images/file-doc-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.pdf td.name a,
-#directory-listing tr.pdf td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.pdf td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.pdf td.vrtx-report-name a {
-  background: url(images/file-pdf-small.gif) no-repeat center left;
-}
-
-#directory-listing tr.pdf.unpublished td.name a,
-#directory-listing tr.pdf.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.pdf.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.pdf.unpublished td.vrtx-report-name a {
-  background: url(images/file-pdf-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.xls td.name a,
-#directory-listing tr.xls td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.xls td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.xls td.vrtx-report-name a {
-  background: url(images/file-xls-small.gif) no-repeat center left;
-}
-
-#directory-listing tr.xls.unpublished td.name a,
-#directory-listing tr.xls.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.xls.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.xls.unpublished td.vrtx-report-name a {
-  background: url(images/file-xls-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.text td.name a,
-#directory-listing tr.text td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.text td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.text td.vrtx-report-name a {
-  background: url(images/file-txt-small.gif) no-repeat center left;
-}
-
-#directory-listing tr.text.unpublished td.name a,
-#directory-listing tr.text.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.text.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.text.unpublished td.vrtx-report-name a {
-  background: url(images/file-txt-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.ppt td.name a,
-#directory-listing tr.ppt td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.ppt td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.ppt td.vrtx-report-name a {
-  background: url(images/file-ppt-small.gif) no-repeat center left;
-}
-
-#directory-listing tr.ppt.unpublished td.name a,
-#directory-listing tr.ppt.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.ppt.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.ppt.unpublished td.vrtx-report-name a {
-  background: url(images/file-ppt-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.image td.name a,
-#directory-listing tr.image td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.image td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.image td.vrtx-report-name a {
-  background: url(images/file-image-small.gif) no-repeat center left;
-}
-
-#directory-listing tr.image.unpublished td.name a,
-#directory-listing tr.image.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.image.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.image.unpublished td.vrtx-report-name a {
-  background: url(images/file-image-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.audio td.name a,
-#directory-listing tr.audio td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.audio td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.audio td.vrtx-report-name a {
-  background: url(images/file-audio-small.png) no-repeat center left;
-}
-
-#directory-listing tr.audio.unpublished td.name a,
-#directory-listing tr.audio.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.audio.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.audio.unpublished td.vrtx-report-name a {
-  background: url(images/file-audio-small-unpublished.png) no-repeat center left;
-}
-
-#directory-listing tr.video td.name a,
-#directory-listing tr.video td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.video td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.video td.vrtx-report-name a,
-#directory-listing tr.videoref td.name a,
-#directory-listing tr.videoref td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.videoref td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.videoref td.vrtx-report-name a {
-  background: url(images/file-video-small.gif) no-repeat center left;
-}
-
-#directory-listing tr.video.unpublished td.name a,
-#directory-listing tr.video.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.video.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.video.unpublished td.vrtx-report-name a,
-#directory-listing tr.videoref.unpublished td.name a,
-#directory-listing tr.videoref.unpublished td.name .unauthorizedListedResource-wrapper,
-#directory-listing tr.videoref.unpublished td.name span.vrtx-trash-can-name-text,
-#directory-listing tr.videoref.unpublished td.vrtx-report-name a {
-  background: url(images/file-video-small-unpublished.png) no-repeat center left;
-}
-
-/* ^ Icons */
-
-/* ^ 3.5 Directorylisting */
-
-/* 3.6 Other content */
-
 .vrtx-radio-button > *  {
   margin: 0;
 }
@@ -2108,6 +431,9 @@ body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
 }
 .vrtx-radio-button:last-child {
   margin-bottom: 0px;
+}
+ul.radio-buttons label {
+ font-size: 1.154em;
 }
 ul.radio-buttons li {
   margin-bottom: 5px;
@@ -2142,6 +468,21 @@ ul.radio-buttons li > * {
   line-height: 1;
 }
 
+ol.vrtx-help-step-by-step {
+  font-size: 1.154em;
+  margin-left: 0;
+  padding-left: 22px;
+
+  li {
+    margin-bottom: 15px;
+  }
+  span.vrtx-help-step-by-step-url,
+  span.vrtx-help-step-by-step-cmd {
+    color: #777;
+    font-weight: bold;
+  }
+}
+
 #vrtx-report-filters ul.vrtx-report-filter-last {
   margin-right: 0;
 }
@@ -2169,7 +510,7 @@ ul.radio-buttons li > * {
 #vrtx-report-filters ul li.active-filter:hover,
 #preview-mode li.active-mode,
 #preview-mode li.active-mode:hover {
-  background: url(images/report-filter-hover-left.png) no-repeat 0 0;
+  @include bg("images/report-filter-hover-left.png");
 }
 
 #vrtx-report-filters ul li.active-filter span,
@@ -2179,6 +520,8 @@ ul.radio-buttons li > * {
   background: url(images/report-filter-hover-right.png) no-repeat top right;
   display: inline-block;
 }
+
+/* Preview */
 
 body#vrtx-preview {
   overflow-y: scroll;
@@ -2199,9 +542,7 @@ p.previewUnavailableReasons {
 }
 
 #preview-loading {
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  @include posAbs;
   background: $contentBackgroundColor;
   display: block;
   width: 100%;
@@ -2209,9 +550,7 @@ p.previewUnavailableReasons {
 }
 
 #preview-loading-inner {
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  @include posAbs;
   width: 100%;
   display: block;
   background: transparent;
@@ -2222,11 +561,9 @@ p.previewUnavailableReasons {
   display: block;
   padding: 10px 5px 10px 42px;
   font-size: 1.308em;
-  position: relative;
-  position: absolute;
-  top: 45%;
-  left: 41%;
   color: #5e5e5e;
+  position: relative;
+  @include posAbs(45%, 41%);
 }
 
 /* Preview mode and actions */
@@ -2268,9 +605,8 @@ ul#preview-mode {
 }
 
 .mobile #previewIframeWrapper #previewIframeMobileBg {
-  background: transparent url(images/preview-mobile-bg.png) no-repeat 0 0;
-  height: 745px;
-  width: 400px;
+  @include bg("images/preview-mobile-bg.png");
+  @include wh(400px, 745px);
   margin: -135px auto 0;
   display: block;
   position: relative;
@@ -2299,8 +635,7 @@ ul#preview-mode {
 }
 
 .mobile body#vrtx-preview #app-content #contents #previewIframeWrapper #previewIframeInnerWrapper {
-  width: 327px !important;
-  height: 493px !important;
+  @include wh(327px !important, 493px !important);
   overflow: scroll;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -2321,8 +656,7 @@ ul#preview-mode {
 }
 
 .mobile.horizontal body#vrtx-preview #app-content #contents #previewIframeWrapper #previewIframeInnerWrapper {
-  width: 494px !important;
-  height: 327px !important;
+  @include wh(494px !important, 327px !important);
   top: -86px;
   left: -4px;
 }
@@ -2403,8 +737,7 @@ ul#preview-actions #preview-actions-fullscreen-toggle {
 }
 
 .fullscreen-toggle-open .app-fluid #app-content {
-  padding: 0px;
-  margin: 0px;
+  @include noMargPadd;
   min-width: 0;
   max-width: none;
 }
@@ -2439,11 +772,8 @@ ul#preview-actions #preview-actions-fullscreen-toggle {
 }
 
 .fullscreen-toggle-open #app-content .vrtx-sticky-preview-mode-actions .sticky-bg-ie8-below {
-  height: 13px;
-  position: absolute;
-  bottom: -13px;
-  left: 0px;
-  width: 100%;
+  @include posAbsBottom(-13px, 0);
+  @include wh(100%, 13px);
   background: transparent url(images/sticky-bar-fade-to-grey-ie8-bg.png) repeat-x bottom left;
   display: block;
 }
@@ -2473,12 +803,9 @@ html#vrtx-preview-popup h1 {
 
 html#vrtx-preview-popup h1 span#vrtx-preview-popup-close {
   background: url(images/thickbox-close.png) no-repeat top right;
-  width: 18px;
-  height: 18px;
   display: block;
-  position: absolute;
-  bottom: 14px;
-  right: 5px;
+  @include wh(18px, 18px);
+  @include posAbsBottomRight(14px, 5px);
 }
 
 html#vrtx-preview-popup h1 span#vrtx-preview-popup-close:hover {
@@ -2607,8 +934,7 @@ body#vrtx-preview-ssl-mixed-mode #contents ul li {
 body#vrtx-permissions li.groups div.errorContainer ul li,
 body#vrtx-permissions li.users div.errorContainer ul li {
   background: none;
-  margin: 0;
-  padding: 0;
+  @include noMargPadd;
 }
 
 body#vrtx-permissions .removePermission {
@@ -2768,9 +1094,7 @@ body#vrtx-edit-plaintext .contextual-help {
 /* Urchin reports */
 
 #vrtx-resource-visit {
-  clear: left;
-  float: left;
-  width: 100%;
+  @include floatClearFix;
   position: relative;
 }
 
@@ -2784,8 +1108,7 @@ h3.resourceInfoHeader {
 
 #urchin-loading {
   display: block;
-  width: 100%;
-  height: 200px;
+  @include wh(100%, 200px);
   background: url(images/loadingAnimation.gif) no-repeat center center;
 }
 
@@ -2825,7 +1148,7 @@ h3.resourceInfoHeader {
 
 #vrtx-resource-visit-tab-menu li.active,
 #vrtx-manually-approve-tab-menu li.active {
-  background: url(images/report-tab-active-left.png) no-repeat top left !important;
+  @include bg("images/report-tab-active-left.png", true);
 }
 
 #vrtx-resource-visit-tab-menu li.active a,
@@ -2835,7 +1158,7 @@ h3.resourceInfoHeader {
 
 #vrtx-resource-visit-tab-menu li.active.active-first,
 #vrtx-manually-approve-tab-menu li.active.active-first {
-  background: url(images/report-tab-active-left-first.png) no-repeat top left !important;
+  @include bg("images/report-tab-active-left-first.png", true);
 }
 
 #vrtx-resource-visit-tab-menu li.active.active-first a,
@@ -2851,9 +1174,7 @@ h3.resourceInfoHeader {
 }
 
 #vrtx-resource-visit-info {
-  position: absolute;
-  bottom: 22px;
-  left: 650px;
+  @include posAbsBottom(22px, 650px);
   background: #f9f9f9 url(images/info-icon-grey-grey-bg.png) no-repeat 8px 7px;
   border: 1px solid #d9d9d9;
   padding: 8px 13px 8px 30px;
@@ -2984,8 +1305,7 @@ table.resourceInfo.revisions tr:nth-child(even) td {
 .vrtx-revision-amount,
 .vrtx-revision-amount-rest {
   display: block;
-  width: 3px;
-  height: 10px;
+  @include wh(3px, 10px);
   float: left;
   margin: 0 4px 0 0;
 }
@@ -3038,336 +1358,6 @@ table.resourceInfo.revisions tr:nth-child(even) td {
   margin-right: 20px !important;
 }
 
-/* ^ 3.6 Other content */
-
-/* 3.7 Messages */
-
-/* Resource bar messages */
-
-#app-content > div.message,
-body > div.infomessage,
-#app-content > div.infomessage,
-#app-content > noscript > div.infomessage {
-  background-color: $contentBackgroundColor;
-  border: 1px solid #d9d9d9;
-  padding: 12px 14px 11px 14px;
-  margin: 0 0 25px 0;
-}
-
-#app-content > div.infomessage,
-body > div.infomessage,
-#app-content > noscript > div.infomessage,
-#app-content > div.errormessage {
-  padding-left: 46px;
-}
-
-#app-content > div.infomessage,
-body > div.infomessage,
-#app-content > noscript > div.infomessage {
-  background: $contentBackgroundColor url(images/info.png) no-repeat 14px 8px;
-}
-
-#app-content > div.errormessage {
-  background: $contentBackgroundColor url(images/error.gif) no-repeat 14px 8px;
-}
-
-#vrtx-compat-icon {
-  background: url(images/compat-icon.png) no-repeat 0 0;
-  display: inline-block;
-  width: 27px;
-  height: 22px;
-  margin: -10px 0 0 0;
-}
-
-/* ^ Resource bar messages */
-
-/* System message */
-
-#system-message-wrapper {
-  background-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
-}
-
-#system-message-wrapper .system-message {
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-very-big.png) no-repeat 50px center;
-  padding-top: 16px;
-  padding-bottom: 16px;
-  height: auto !important;
-}
-
-#system-message-wrapper .system-message-text {
-  font-size: 1.231em;
-  color: #fff;
-  text-align: left;
-  margin: 0 0 0 45px;
-}
-
-#system-message-wrapper .system-message-text a {
-  color: $systemMessageLinkColor;
-  text-decoration:underline;
-}
-
-.offscreen {
-  position: absolute;
-  left: -10000px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
-/* ^ System message */
-
-/* Tab message */
-
-div.tabMessage {
-  background: url(images/info-small.gif) no-repeat 0 0;
-  padding: 0 0 10px 25px;
-}
-
-body#vrtx-preview div.tabMessage {
-  margin: 0 0 -2px 0;
-  padding: 15px 0 2px 25px;
-  background-position: 0 14px;
-}
-
-/* Big */
-
-.tabMessage-big {
-  background: $breadcrumbTabHoverSystemTabMessageBackgroundColor url(images/info-white-blue-bg.png) no-repeat 19px center;
-  padding: 12px 0 12px 58px;
-  color: #fff;
-  margin: 6px -19px 2px;
-  font-size: 1.231em;
-}
-
-.tabMessage-big a {
-  color: $systemMessageLinkColor;
-  text-decoration:underline;
-}
-
-body#vrtx-preview .tabMessage-big {
-  margin: 11px -20px 0;
-}
-
-/* ^ Tab message */
-
-/* ^ 3.7 Messages */
-
-
-
-/* 4. Embedding */
-
-html.embedded2,
-body.embedded2 {
-  background-color: #fff;
-  text-align: left;
-}
-
-body.embedded2 {
-  min-width: 0;
-  float: left;
-  width: 100%;
-}
-
-body.embedded2.forms-new .ui-widget-overlay {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-}
-
-body.embedded2 #directory-listing.collection-listing {
-  border-collapse: separate;
-  margin-bottom: 15px;
-}
-
-body.embedded2 #directory-listing.collection-listing tr td {
-  border: 1px solid #f0f0f0;
-}
-
-body.embedded2 #directory-listing.collection-listing tr.expandedForm td {
-  padding-top: 10px;
-  padding-bottom: 15px;
-}
-
-body.embedded2 #directory-listing.collection-listing tr.expandedForm h3 {
-  font-size: 1.35em;
-}
-
-body.embedded2 #directory-listing tr.even td {
-  background-color: $contentBackgroundColor;
-  border-top: 1px solid transparent;
-  border-bottom: 1px solid transparent;
-}
-
-body.embedded2 #directory-listing tr.even:last-child td {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-body.embedded2 #directory-listing tr.odd td {
-  background-color: $contentTablesEvenBackgroundColor;
-}
-
-body.embedded2.forms-new #directory-listing tr.focus td,
-body.embedded2.forms-new #directory-listing tr:focus td,
-body.embedded2.forms-new #directory-listing tr:hover td {
-  border: 1px solid #c7dadf;
-  background-color: $listingDropdownTipFocusBackgroundColor;
-}
-
-body.embedded2 #directory-listing.collection-listing tr td:first-child {
-  border-right: none;
-}
-
-body.embedded2 #directory-listing.collection-listing tr td:last-child {
-  border-left: none;
-}
-
-body.embedded2 .expandedForm {
-  margin: 10px 0 0 0;
-  @include borderBox;
-}
-
-#vrtx-editor-title-submit-buttons h2 {
-  margin: 0;
-  background: none;
-}
-
-.vrtx-close-dialog-editor {
-  background: url("/vrtx/__vrtx/static-resources/themes/default/images/thickbox-close.png") no-repeat scroll center center transparent;
-  display: block;
-  width: 20px;
-  height: 20px;
-  float: right;
-  margin-top: 2px;
-}
-
-html.embedded #vrtx-editor-title-submit-buttons h2 {
-  padding-bottom: 5px;
-}
-
-html.embedded .vrtx-close-dialog-editor {
-  margin-top: 5px;
-}
-
-html.embedded .embedded-editor-fail #contents {
-  height: auto !important;
-}
-
-html.embedded .embedded-editor-fail #app-content {
-  width: 450px;
-}
-
-#editor-fail {
-  background: transparent url("images/line-dotted.gif") repeat-x left top;
-  padding-top: 15px;
-  margin-top: 0;
-  display: block;
-}
-
-html.embedded {
-  overflow-y: scroll;
-}
-
-html.embedded,
-html.embedded body {
-  background: #999999;
-}
-
-html.embedded body {
-  min-width: 0;
-  padding: 20px;
-}
-
-html.embedded #app-content,
-html.embedded #app-content #main {
-  width: auto;
-  min-width: 0;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-}
-
-html.embedded #app-content #main {
-  padding-top: 0 !important;
-}
-
-html.embedded #app-content {
-  width: 780px;
-  margin: 0 auto;
-  padding: 20px;
-  position: relative;
-  background: $contentBackgroundColor;
-  border: 2px solid #848484;
-  @include boxShadow(1px 1px 5px 2px #848484);
-}
-
-html.embedded #app-head-wrapper,
-html.embedded #app-footer-wrapper,
-html.embedded #title-container,
-html.embedded #app-tabs,
-html.embedded #active-tab {
-  display: none;
-}
-
-
-
-/*-----------------------------------------*\
-	5. Fluid design
-\*-----------------------------------------*/
-
-.app-fluid {
-  min-width: 1014px;
-}
-
-.app-fluid #app-head-wrapper,
-.app-fluid #app-footer-wrapper {
-  min-width: 1014px;
-  width: 100%;
-}
-
-.app-fluid #app-head,
-.app-fluid #app-head-wrapper #line-top #uiologo,
-.app-fluid #app-head-wrapper #vrtx-breadcrumb-wrapper #vrtx-breadcrumb,
-.app-fluid #app-head-wrapper #system-message-wrapper .system-message,
-.app-fluid #app-footer {
-  width: auto;
-  max-width: 1200px;
-  padding-left: 50px;
-  padding-right: 50px;
-}
-
-.app-fluid #app-content {
-  width: auto;
-  min-width: 914px;
-  max-width: 1200px;
-  padding-left: 50px;
-  padding-right: 50px;
-}
-
-.app-fluid #app-footer {
-  background-position: 50px 24px;
-}
-
-.app-fluid #app-head-wrapper #line-top #uiologo a,
-.app-fluid #app-head #app-name {
-  left: 50px;
-}
-
-.app-fluid #app-head #global-menu-top,
-.app-fluid #app-head #global-menu-bottom {
-  right: 55px;
-}
-
-
-
-/*-----------------------------------------*\
-	6. Clearing
-\*-----------------------------------------*/
-
 #app-head:after,
 #app-footer:after,
 #app-content:after,
@@ -3387,12 +1377,6 @@ div.globalmenu:after,
   height: 0;
   visibility: hidden;
 }
-
-
-
-/*-----------------------------------------*\
-	7. Forms
-\*-----------------------------------------*/
 
 ul.radio-buttons,
 ul.radio-buttons li,
@@ -3440,9 +1424,7 @@ div.globalmenu {
 }
 
 div.vrtx-admin-form {
-  clear: left;
-  float: left;
-  width: 100%;
+  @include floatClearFix;
 }
 
 div.globalmenu .vrtx-button,
@@ -3470,162 +1452,85 @@ tr.expandedForm td .vrtx-button-small {
   padding: 3px 14px;
 }
 
-/* Date */
+/* Create dialog */
 
-.forms-new .vrtx-date {
-  margin-right: 20px;
+.vrtx-create-tree .vrtx-button-small {
+  margin-top: -2px;
+  margin-bottom: -2px;
 }
 
-.forms-new .vrtx-hours {
-  margin-right: 10px;
+.vrtx-create-tree .tree-create {
+  @include posAbs;
+  padding: 0 15px !important;
 }
 
-.forms-new .vrtx-minutes {
-  margin-left: 7px;
+.vrtx-create-tree a.tree-link {
+  color: #2b2b2b !important;
+  font-size: 1.077em;
 }
 
-/* Cancel link */
+.loading-tree-node {
+  background: transparent url(images/spinner.gif) no-repeat center left;
+  padding-left: 26px;
+}
+
+#TB_window {
+  @include borderRadius(7px);
+}
+
+#TB_closeAjaxWindow {
+  display: none;
+}
+
+#TB_title {
+  padding-right: 0px !important;
+  margin: 30px 30px 0 30px !important;
+}
+
+#TB_title.show-close-window {
+  padding-right: 70px !important;
+}
+
+#TB_title.show-close-window #TB_closeAjaxWindow {
+  display: block;
+}
+
+#TB_ajaxContent {
+  padding: 2px 0 30px 30px !important;
+}
+
+/* Copy and move */
 
 #app-content .vrtx-cancel-link {
   display: inline-block;
   font-size: 1px;
-  height: 12px;
-  width: 12px;
+  @include wh(12px, 12px);
   margin-left: 7px;
   position: relative;
   top: -3.8em;
   color: #F8F8F8;
   background: url(images/resource-menu-dialog-close.png) no-repeat center center;
   border: none;
-}
-
-#app-content .vrtx-cancel-link:hover {
-  cursor: pointer;
-}
-
-#app-content .vrtx-cancel-link:focus {
-  outline: 1px solid #aaa;
+ 
+  &:hover {
+    cursor: pointer;
+  }
+  &:focus {
+    outline: 1px solid #aaa;
+  }
 }
 
 #app-content .vrtx-show-processing {
   background: url(images/spinner.gif) no-repeat center left;
   display: block;
-  width: 16px;
-  height: 16px;
+  @include wh(16px, 16px);
 }
 
-/* File upload (JS progressive enhancement)
- *
- * Credits technique: http://www.quirksmode.org/dom/inputfile.html
- */
-
-#file-upload-container {
-  position: relative;
-  z-index: 999;
-}
-
-#file-upload-container .vrtx-textfield {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 300px;
-  z-index: 1;
-}
-
-#file-upload-container input#fake-file {
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  width: 295px;
-  z-index: 1;
-}
-
-.js #file-upload-container input#file {
-  z-index: 999;
-  position: relative;
-  left: 328px;
-  background: none;
-  width: 87px;
-  height: 27px;
-  cursor: pointer !important;
-
-  /* Transparent */
-  opacity: 0;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)" !important;
-}
-
-#file-upload-container a.vrtx-file-upload {
-  position: absolute;
-  top: 0px;
-  left: 330px;
-  z-index: 1;
-}
+/* Loading dialog */
 
 #dialog-loading-content img {
   opacity: 0.7;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)" !important;
-}
-
-#dialog-uploading-percent {
-  margin-top: 10px;
-  margin-bottom: -15px;
-  color: #2b2b2b;
-  text-align: center;
-  font-size: 1.231em;
-  position: relative;
-}
-
-#dialog-uploading-bytes {
-  margin-top: 15px;
-  margin-bottom: 0px;
-  color: #777;
-  text-align: center;
-  font-size: 0.8em;
-  position: relative;
-}
-
-#dialog-uploading-bar {
-  background-color: #459CE5;
-  height: 13px;
-  margin-top: -13px;
-  position: relative;
-  width: 0;
-  z-index: 1;
-  @include borderRadius(2px);
-}
-
-#dialog-uploading-abort {
-  position: absolute;
-  bottom: 0px;
-  right: 0px;
-  color: $linkColor;
-  font-weight: bold;
-  font-size: 0.813em;
-  display: none;
-}
-
-.ui-dialog:hover #dialog-uploading-abort,
-.ui-dialog #dialog-uploading-abort.tab-visible {
-  display: inline;
-}
-
-/* Tooltips */
-
-.tooltip,
-.input-description {
-  display: inline;
-  padding-left: 8px;
-}
-
-/* ^ Tooltips */
-
-/* The only way (it seems) to set cursor:pointer for file upload button in Webkit
- * http://chipsandtv.com/articles/styling-upload-elements
- * http://stackoverflow.com/questions/7554845/the-cursorpointer-property-doesnt-apply-to-file-upload-buttons-in-webkit-browse
- */
-    
-::-webkit-file-upload-button {
-  cursor: pointer;
 }
 
 /* Fix rendering bug in Firefox for hover in table (VTK-2562)
@@ -3649,4 +1554,4 @@ tr.expandedForm td .vrtx-button-small {
   padding-right: 11px !important;
 }
 
-/* ^ UiO design - Vortex */
+/* ^ Vortex */

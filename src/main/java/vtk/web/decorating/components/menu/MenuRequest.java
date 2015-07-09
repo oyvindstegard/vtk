@@ -245,9 +245,8 @@ public class MenuRequest {
         Search search = getSearchForCollectionChildren(requestContext, currentCollectionUri, searchLimit);
         Repository repository = requestContext.getRepository();
         ResultSet rs = repository.search(token, search);
-        for (Iterator<PropertySet> child = rs.iterator(); child.hasNext();) {
-            PropertySet p = child.next();
-            children.add(p.getURI());
+        for (PropertySet child: rs) {
+            children.add(child.getURI());
         }
         this.includeURIs = children;
 
@@ -404,7 +403,7 @@ public class MenuRequest {
         }
         search.setQuery(mainQuery);
         search.setLimit(searchLimit);
-        search.setPropertySelect(PropertySelect.ALL_PROPERTIES);
+        search.setPropertySelect(PropertySelect.NONE); // Only URI is used from search results
         return search;
     }
 

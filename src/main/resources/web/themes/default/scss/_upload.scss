@@ -1,0 +1,95 @@
+/* 
+ * File upload (JS progressive enhancement)
+ *
+ * Credits technique: http://www.quirksmode.org/dom/inputfile.html
+ *
+ */
+
+@import "base";
+
+/* Upload form */
+
+#file-upload-container {
+  position: relative;
+  z-index: 999;
+
+  .vrtx-textfield {
+    @include posAbs;
+    width: 300px;
+    z-index: 1;
+  }
+  input#fake-file {
+    @include posAbsRight;
+    width: 295px;
+    z-index: 1;
+  }
+  a.vrtx-file-upload {
+    @include posAbs(0, 330px);
+    z-index: 1;
+  }
+}
+
+.js #file-upload-container input#file {
+  z-index: 999;
+  position: relative;
+  left: 328px;
+  background: none;
+  @include wh(87px, 27px);
+  cursor: pointer !important;
+
+  /* Transparent */
+  opacity: 0;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)" !important;
+}
+
+/* Upload dialog */
+
+#dialog-uploading-bar {
+  background-color: #459CE5;
+  margin-top: -13px;
+  position: relative;
+  z-index: 1;
+  @include wh(0, 13px);
+  @include borderRadius(2px);
+}
+
+#dialog-uploading-percent {
+  margin-top: 10px;
+  margin-bottom: -15px;
+  color: #2b2b2b;
+  text-align: center;
+  font-size: 1.231em;
+  position: relative;
+}
+
+#dialog-uploading-bytes {
+  margin-top: 15px;
+  margin-bottom: 0px;
+  color: #777;
+  text-align: center;
+  font-size: 0.8em;
+  position: relative;
+}
+
+#dialog-uploading-abort {
+  @include posAbsBottomRight;
+  color: $linkColor;
+  font-weight: bold;
+  font-size: 0.813em;
+  display: none;
+}
+
+.ui-dialog:hover #dialog-uploading-abort,
+.ui-dialog #dialog-uploading-abort.tab-visible {
+  display: inline;
+}
+
+/* The only way (it seems) to set cursor:pointer for file upload button in Webkit
+ * http://chipsandtv.com/articles/styling-upload-elements
+ * http://stackoverflow.com/questions/7554845/the-cursorpointer-property-doesnt-apply-to-file-upload-buttons-in-webkit-browse
+ */
+::-webkit-file-upload-button {
+  cursor: pointer;
+}
+
+/* ^ Vortex - File upload */

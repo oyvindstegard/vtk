@@ -14,18 +14,18 @@
    <!-- begin feedback js -->
   <script type="text/javascript"><!--
     $(function() {
-      if (typeof urchinTracker !== "undefined") {
+      if (typeof urchinTracker !== "undefined" && typeof uioTrackVirtual === "function") {
         $(".feedback-yes").click(function(e) {
           $(".vrtx-feedback ul").replaceWith('<p class="vrtx-feedback-thanks"><@vrtx.msg code="feedback.thanks" default="Thank you for giving us feedback" /><div class="vrtx-feedback-thanks-slider"></div></p>');
           $(".vrtx-feedback-thanks-slider").animate({ left: 200 },
                                                     { queue: false,
                                                       duration: 200 });
-          urchinTrack("/like");
+          uioTrackVirtual("/like" + document.location.pathname);
           e.stopPropagation();
           e.preventDefault(); 
         });
         $(".feedback-no").click(function() {
-          urchinTrack("/dislike");
+          uioTrackVirtual("/dislike" + document.location.pathname);
         });
       } else {
         var noLink = $(".vrtx-feedback a.feedback-no").parent();
@@ -35,30 +35,9 @@
         $(".vrtx-feedback ul").replaceWith('<p>' + noLink.html() + '</p>');
       }
     });
-    function urchinTrack(action) {
-      _udn="uio.no";
-      urchinTracker(action + document.location.pathname);
-    }
   // -->
   </script>
   <!-- end feedback js -->
-  
-  <!-- start feedback css -->
-  <style type="text/css">
-    .vrtx-feedback,
-    .vrtx-feedback-thanks {
-      position: relative;
-    }
-    .vrtx-feedback-thanks-slider {
-      background: #fff;
-      width: 200px;
-      position: absolute;
-      left: 0px;
-      top: 0px;
-      height: 18px;
-    }
-  </style>
-  <!-- end feedback css -->
 
   <div class="vrtx-feedback">
     <span class="vrtx-feedback-title"><@vrtx.msg code="feedback.title" default="Did you find what you were looking for?" /></span>

@@ -41,7 +41,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * Simple timer/trigger utility bean for invoking a method on another object at a 
@@ -98,7 +101,7 @@ import org.springframework.beans.factory.InitializingBean;
  *
  */
 public class SimpleMethodInvokingTriggerBean implements BeanNameAware,
-        InitializingBean {
+        ApplicationListener<ContextRefreshedEvent>, InitializingBean, DisposableBean {
 
     public static final int REPEAT_INDEFINITELY = -1;
     
@@ -129,6 +132,11 @@ public class SimpleMethodInvokingTriggerBean implements BeanNameAware,
      * If set and valid according to FIXED_DELAY_PATTERN, overrides startDelay.
      */
     private String fixedDelay;    
+    
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        if (this.startTriggerAfterInitialization) start(); // Start up after context has been fully initialized
+    }
     
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -189,7 +197,6 @@ public class SimpleMethodInvokingTriggerBean implements BeanNameAware,
             logger.info("Scheduling " + this.triggerThreadName + " to start at " + cal.getTime());
         }
         
-        if (this.startTriggerAfterInitialization) start(); // Start up after init
     }
     
     private long getFixedDelayInMillis(int daysToWait) {
@@ -310,7 +317,12 @@ public class SimpleMethodInvokingTriggerBean implements BeanNameAware,
     public synchronized boolean isEnabled() {
         return this.triggerThread != null && this.triggerThread.isAlive();
     }
-    
+
+    @Override
+    public void destroy() throws Exception {
+        stop(true);
+    }
+
     /**
      * <code>Runnable</code> trigger class
      */

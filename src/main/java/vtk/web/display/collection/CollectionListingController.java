@@ -57,7 +57,7 @@ import vtk.web.service.Service;
 import vtk.web.service.URL;
 import vtk.web.servlet.ResourceAwareLocaleResolver;
 
-public class CollectionListingController extends AbstractCollectionListingController {
+public class CollectionListingController extends BaseCollectionListingController {
 
     protected List<SearchComponent> searchComponents;
     protected PropertyTypeDefinition hideIcon;

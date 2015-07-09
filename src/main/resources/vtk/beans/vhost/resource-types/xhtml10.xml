@@ -69,15 +69,20 @@
 
 
   <bean id="xhtml10TransGuessedCharacterEncodingEvaluator" 
-        class="vtk.repository.resourcetype.property.ChainedPropertyEvaluator">
-    <property name="propertyEvaluators">
-      <list>
-        <bean class="vtk.repository.resourcetype.property.HtmlPropertyEvaluator">
-          <property name="field" value="encoding" />
-        </bean>
-        <bean class="vtk.repository.resourcetype.property.XMLCharacterEncodingEvaluator" />
-      </list>
-    </property>
+        class="vtk.repository.resourcetype.property.TranslatingPropertyEvaluator">
+    <constructor-arg>
+      <bean class="vtk.repository.resourcetype.property.ChainedPropertyEvaluator">
+        <constructor-arg>
+          <list>
+            <bean class="vtk.repository.resourcetype.property.HtmlPropertyEvaluator">
+              <property name="field" value="encoding" />
+            </bean>
+            <bean class="vtk.repository.resourcetype.property.XMLCharacterEncodingEvaluator" />
+          </list>
+        </constructor-arg>
+      </bean>
+    </constructor-arg>
+    <constructor-arg ref="html.charsetEvaluatorMap" />
   </bean>
 
   <bean id="xhtml10OverriddenCharacterEncodingPropDef"

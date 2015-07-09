@@ -94,6 +94,15 @@
   </bean>
 
 
+  <bean id="request.isGetOrHead" class="vtk.web.service.RequestMethodAssertion">
+    <property name="methods">
+      <set>
+        <value>GET</value>
+        <value>HEAD</value>
+      </set>
+    </property>
+  </bean>
+
   <!-- Collection redirect service -->
 
   <bean id="collectionRedirectService" class="vtk.web.service.ServiceImpl">
@@ -291,7 +300,21 @@
       </bean>
     </property>
     <property name="excludedServices">
+      <list>
       <ref bean="displayThumbnailNoCacheService" />
+      <ref bean="editor.loadImageService" />
+      </list>
+    </property>
+  </bean>
+
+
+  <bean id="noCacheHandlerInterceptor" class="vtk.web.interceptors.HeaderControlHandlerInterceptor">
+    <property name="staticHeaders">
+      <map>
+        <entry key="Cache-Control" value="no-cache, no-store, must-revalidate, max-age=0" />
+        <entry key="Expires" value="0" />
+        <entry key="Pragma" value="no-cache" />
+      </map>
     </property>
   </bean>
 

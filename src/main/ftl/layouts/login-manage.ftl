@@ -23,19 +23,6 @@
     <!-- begin view dropdown js -->
     <script type="text/javascript" src="${jsUrl?html}"></script>
     <!-- end view dropdown js -->
-    <script type="text/javascript"><!--
-      $(function() {
-        $(".vrtx-dropdown-form").addClass("hidden");
-        $(".vrtx-dropdown-form-link").addClass("visible");
-        $(document).off("click", ".vrtx-dropdown-form-link")
-                    .on("click", ".vrtx-dropdown-form-link", function(e) {
-          $(this).prev(".vrtx-dropdown-form").submit();
-          e.stopPropagation();
-          e.preventDefault();
-        });
-      });
-    // -->
-    </script>
   
     <@viewutils.displayDropdown type title titleLink false titleLinkTip>
       <ul>

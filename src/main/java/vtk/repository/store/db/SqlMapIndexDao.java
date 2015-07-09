@@ -32,10 +32,8 @@ package vtk.repository.store.db;
 
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,12 +42,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 import vtk.repository.Path;
-import vtk.repository.PropertySet;
-import vtk.repository.PropertySetImpl;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.store.IndexDao;
 import vtk.repository.store.PropertySetHandler;
-import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 
 import static vtk.repository.store.db.SqlMapDataAccessor.AclHolder;
@@ -62,6 +57,11 @@ import vtk.repository.Property;
 
 /**
  * Index data accessor based on iBatis.
+ * 
+ * TODO possible workaround for trouble with binary prop refs going stale
+ * (VTK-3887) is to immediately load all values into memory. But this will cause
+ * higher memory usage for temporarily cached values, and some more thought
+ * needs to be put into the idea.
  */
 public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexDao {
 

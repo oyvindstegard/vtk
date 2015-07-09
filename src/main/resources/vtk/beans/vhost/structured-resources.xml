@@ -218,18 +218,17 @@
     <constructor-arg ref="structuredResources.tlFunctions" />
   </bean>
 
-
-
   <bean id="structuredResources.tlFunctions" class="vtk.context.UnionFactoryBean">
     <property name="elements1" ref="structuredResources.builtinFunctions" />
     <property name="elements2" ref="structuredResources.customFunctions" />
   </bean>
-
+  
   <bean id="structuredResources.builtinFunctions" class="org.springframework.beans.factory.config.SetFactoryBean">
     <property name="sourceSet">
       <set>
         <ref bean="templateLanguage.toStringFunction" />
         <ref bean="templateLanguage.concatFunction" />
+        <ref bean="templateLanguage.appendFunction" />
         <ref bean="templateLanguage.splitFunction" />
         <ref bean="templateLanguage.trimFunction" />
         <ref bean="templateLanguage.substringFunction" />
@@ -240,6 +239,8 @@
         <ref bean="templateLanguage.ceilFunction" />
         <ref bean="templateLanguage.replaceFunction" />
         <ref bean="decorating.requestContextFunction" />
+        <ref bean="decorating.retrieveFunction" />
+        <ref bean="decorating.serviceURLFunction" />
         <ref bean="decorating.searchFunction" />
         <ref bean="structuredResources.resourceFunction" />
         <ref bean="structuredResources.jsonResourceFunction" />
@@ -282,13 +283,25 @@
     </constructor-arg>
   </bean>
 
-  <bean id="structuredResources.jsonURLCache" class="vtk.util.cache.ContentCacheImpl">
-    <property name="name" value="${repositoryID}.jsonURLCache" />
-    <property name="cacheLoader" ref="structuredResources.jsonURLCacheLoader" />
-    <property name="cacheSeconds" value="600" />
-    <property name="asynchronousRefresh" value="true" />
-    <property name="refreshInterval" value="30" />
-    <property name="maxItems" value="1000" />
+  <bean id="structuredResources.jsonURLCache" class="vtk.util.cache.EhContentCache">
+    <constructor-arg name="cache">
+      <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="ehCacheManager" />
+        <property name="cacheName" value="${repositoryID}.jsonURLCache"/>
+        <property name="maxElementsInMemory" value="1000" />
+        <property name="maxElementsOnDisk" value="0" />
+        <property name="timeToIdle" value="0" />
+        <property name="timeToLive" value="600" />
+        <property name="cacheEntryFactory">
+          <bean class="vtk.util.cache.ContentCacheLoaderEhcacheAdapter">
+            <constructor-arg ref="structuredResources.jsonURLCacheLoader" />
+          </bean>
+        </property>
+      </bean>
+    </constructor-arg>
+    <constructor-arg name="requireSerializable" value="false"/>
+    <constructor-arg name="refreshIntervalSeconds" value="30" />
+    <constructor-arg name="asynchronousRefresh" value="true" />
   </bean>
 
   <bean id="structuredResources.jsonURLCacheLoader" class="vtk.util.cache.loaders.JSONCacheLoader">
@@ -480,8 +493,7 @@
   <bean id="structuredResources.editCSSURLs" class="java.util.ArrayList">
     <constructor-arg>
       <list>
-        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css
-        </value>
+        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
         <value>${themeBaseURL}/default.css</value>
         <value>${themeBaseURL}/structured-resources/editor.css</value>
       </list>

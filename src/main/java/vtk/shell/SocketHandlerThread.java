@@ -69,8 +69,9 @@ public class SocketHandlerThread extends ShellHandlerThread {
     private boolean alive = true;
     private int port = 9999;
     private String listenAddress = "localhost";
-    private Set<ConnectionHandlerThread> connections = new HashSet<ConnectionHandlerThread>();
+    private final Set<ConnectionHandlerThread> connections = new HashSet<>();
     private SessionAuthenticator authenticator;
+    private ServerSocket serverSocket = null; // Initialized in run()
     
     public void setPort(int port) {
         if (port <= 0) {
@@ -87,9 +88,11 @@ public class SocketHandlerThread extends ShellHandlerThread {
         this.authenticator = sessionAuthenticator;
     }
     
+    // XXX not sure overriding Thread#interrupt is the best way to signal shutdown..
+    @Override
     public void interrupt() {
-        logger.info("Exiting");
         this.alive = false;
+        // Clean up any client connections before closing server socket
         for (ConnectionHandlerThread thread : this.connections) {
             try {
                 thread.interrupt();
@@ -97,7 +100,15 @@ public class SocketHandlerThread extends ShellHandlerThread {
                 logger.warn("Error interrupting connection handler " + thread);
             }
         }
-        super.interrupt();
+        logger.info("Closing server socket: " + this.serverSocket);
+        try {
+            // Causes thread blocked in serverSocket.accept() to throw SocketException
+            // in run() main loop.
+            this.serverSocket.close(); 
+        } catch (IOException io) {
+            logger.warn("IOException closing server socket: " + io.getMessage());
+        }
+        super.interrupt(); // Has no real effect here other than setting interrupt flag ?
     }
 
     void removeThread(ConnectionHandlerThread thread) {
@@ -108,7 +119,6 @@ public class SocketHandlerThread extends ShellHandlerThread {
     
     public void run() {
 
-        ServerSocket serverSocket = null;
         long count = 0;
 
         try {
@@ -139,28 +149,24 @@ public class SocketHandlerThread extends ShellHandlerThread {
                     clientSocket.close();
                 }
             } catch (Throwable t) {
-                logger.warn("Error creating connection handler", t);
+                // Ignore SocketException due to regular server socket close
+                // by checking alive status.
+                if (this.alive) {
+                    logger.warn("Error while waiting for connections", t);
+                }
             }
         }
-
-        try {
-            logger.info("Closing socket " + serverSocket);
-            serverSocket.close();
-        } catch (IOException e) {
-            logger.warn("Unable to close socket " + serverSocket, e);
-        }
-
     }
 
 
     private class ConnectionHandlerThread extends Thread {
         private boolean alive = true;
-        private Socket clientSocket;
-        private InputStream inStream;
-        private OutputStream outStream;
-        private BufferedReader reader;
-        private PrintStream outputter;
-        private InetAddress peer;
+        private final Socket clientSocket;
+        private final InputStream inStream;
+        private final OutputStream outStream;
+        private final BufferedReader reader;
+        private final PrintStream outputter;
+        private final InetAddress peer;
 
         public ConnectionHandlerThread(String name, Socket clientSocket, SessionAuthenticator auth) throws Exception {
             super(name);
@@ -181,9 +187,10 @@ public class SocketHandlerThread extends ShellHandlerThread {
             logger.info("Connection established with: " + this.peer);
         }
         
+        @Override
         public void interrupt() {
-            logger.info("Closing connection with " + this.peer);
             this.alive = false;
+            logger.info("Closing connection with " + this.peer);
             try {
                 this.clientSocket.close();
             } catch (IOException e) {
@@ -192,6 +199,7 @@ public class SocketHandlerThread extends ShellHandlerThread {
             super.interrupt();
         }
 
+        @Override
         public void run() {
             try {
                 handleConversation();

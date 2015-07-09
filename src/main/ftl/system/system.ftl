@@ -10,7 +10,9 @@
 <script type="text/javascript"><!--
   if(vrtxAdmin.isIE7 || vrtxAdmin.isIETridentInComp) {
     if(vrtxAdmin.isIETridentInComp) {
-      var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.comp")}';   
+      var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.comp")}';
+    } else if(vrtxAdmin.isIE8) {   
+      var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie8")}';      
     } else if(vrtxAdmin.isIE7) {   
       var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie7")}';    
     } else if(vrtxAdmin.isIE6) {
@@ -53,6 +55,24 @@
       resourceTitle: '${vrtx.getMsg("dropdowns.resource.title")}',
       editorTitle: '${vrtx.getMsg("dropdowns.editor.title")}',
       publishingTitle: '${vrtx.getMsg("dropdowns.publishing.title")}'
+    },
+    oldImageContainers: {
+      convert: {
+        title: '${vrtx.getMsg("editor.old-image-containers.convert.title")}',
+        msg: '${vrtx.getMsg("editor.old-image-containers.convert.msg")}',
+        ok: '${vrtx.getMsg("editor.old-image-containers.convert.ok")}',
+        cancel: '${vrtx.getMsg("editor.old-image-containers.convert.cancel")}'
+      },
+      notAllConverted: {
+        title: '${vrtx.getMsg("editor.old-image-containers.not-all-converted.title")}',
+        msg: '${vrtx.getMsg("editor.old-image-containers.not-all-converted.msg")}'
+      }
+    },
+    system: {
+      goingDown: {
+        title: '${vrtx.getMsg("system.going-down.title")}',
+        msg: '${vrtx.getMsg("system.going-down.msg")}'
+      }
     }
   }
   

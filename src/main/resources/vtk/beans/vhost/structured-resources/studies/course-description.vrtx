@@ -449,13 +449,6 @@ resourcetype course-description {
         <li><a href="#evaluering-av-emnet">[localized 'evaluering-av-emnet-group']</a></li>
         [def count count + 1]
       [endif]
-      [def other-text-field document.properties.other-text-field]
-      [if other-text-field != null && evaluering-av-emnet-text-field != ""]
-        [if count = 3]</ul><ul class="thirds-middle"><li>
-        [elseif count = 6]</ul><ul class="thirds-right"><li>[endif]
-        <li><a href="#other">[localized 'other-text-field']</a></li>
-        [def count count + 1]
-      [endif]
       </ul>
       ##
     }
@@ -713,7 +706,7 @@ resourcetype course-description {
               </div>
             </div>
             [call "comp:semesters"]
-            <div id="vrtx-course-title-toc" class="vrtx-frontpage-box white-box">
+            <div id="vrtx-course-content" class="vrtx-frontpage-box white-box">
               [call "comp:course-content" {"document" : document}]
             </div>
           </div>
@@ -780,7 +773,7 @@ resourcetype course-description {
        nn : ("2003" = "2003", "2004" = "2004", "2005" = "2005", "2006" = "2006", "2007" = "2007", "2008" = "2008", "2009" = "2009", "2010" = "2010", "2011" = "2011", "2012" = "2012", "2013" = "2013", "2014" = "2014", "2015" = "2015", "2016" = "2016", "2017" = "2017", "2018" = "2018", "2019" = "2019", "2020" = "2020")
      },
      teaching-language {
-       en : ("norwegian" = "Norwegian", "english" = "English", "english-by-need" = "Norwegian (English on demand)", "other" = "Other"),
+       en : ("norwegian" = "Norwegian", "english" = "English", "english-by-need" = "Norwegian (English on request)", "other" = "Other"),
        no : ("norwegian" = "Norsk", "english" = "Engelsk", "english-by-need" = "Norsk (engelsk på forespørsel)", "other" = "Annet"),
        nn : ("norwegian" = "Norsk", "english" = "Engelsk", "english-by-need" = "Norsk (engelsk på førespurnad)", "other" = "Anna")
      },
@@ -853,7 +846,7 @@ resourcetype course-description {
     teaching-language-text-field : (en : "Other", no : "Annet", nn : "Anna"),
     norwegian : (en : "Norwegian", no : "Norsk", nn : "Norsk"),
     english : (en : "English", no : "Engelsk", nn : "Engelsk"),
-    english-by-need : (en : "Norwegian (English on demand)", no : "Norsk (engelsk på forespørsel)", nn : "Norsk (engelsk på førespurnad)"),
+    english-by-need : (en : "Norwegian (English on request)", no : "Norsk (engelsk på forespørsel)", nn : "Norsk (engelsk på førespurnad)"),
 
     course-fee : (en : "Course fee", no : "Kursavgift", nn : "Kursavgift"),
     course-fee-amount : (en : "Fill in amount", no : "Skriv inn beløp", nn : "Skriv inn beløp"),

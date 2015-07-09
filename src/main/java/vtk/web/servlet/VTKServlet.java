@@ -388,7 +388,7 @@ public class VTKServlet extends DispatcherServlet {
                 this.repositoryContextInitializer.createContext(request);
             }
             
-            if (!this.securityInitializer.createContext(request, servletResponse)) {
+            if (!this.securityInitializer.createContext(request, responseWrapper)) {
                 if (this.logger.isDebugEnabled()) {
                     this.logger.debug("Request " + request + " handled by " + 
                             "security initializer (authentication challenge)");

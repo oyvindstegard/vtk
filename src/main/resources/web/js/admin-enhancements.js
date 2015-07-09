@@ -44,7 +44,8 @@ function VrtxAdmin() {
   this.isIE7 = this.isIE && this.browserVersion <= 7;
   this.isIE6 = this.isIE && this.browserVersion <= 6;
   this.isIETridentInComp = this.isIE7 && /trident/.test(this.ua);
-  /* Mobile - iOS and Android */
+  
+  /* Mobile (iOS and Android) */
   this.isIPhone = /iphone/.test(this.ua);
   this.isIPad = /ipad/.test(this.ua);
   this.isIOS = this.isIPhone || this.isIPad;
@@ -52,6 +53,7 @@ function VrtxAdmin() {
   this.isAndroid = /android/.test(this.ua); // http://www.gtrifonov.com/2011/04/15/google-android-user-agent-strings-2/
   this.isMobileWebkitDevice = (this.isIPhone || this.isIPad || this.isAndroid);
   this.isTouchDevice = window.ontouchstart !== undefined;
+  
   /* Windows */
   this.isWin = ((this.ua.indexOf("win") !== -1) || (this.ua.indexOf("16bit") !== -1));
   
@@ -185,10 +187,10 @@ var VrtxAnimation = function(opts) {
    */
   obj.update = function update(opts)         { futureAppliedFn(arguments.callee.toString(), opts); };
   obj.updateElem = function updateElem(elem) { futureAppliedFn(arguments.callee.toString(), elem); };
-  obj.rightIn = function rightIn()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.leftOut = function leftOut()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.topDown = function topDown()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.bottomUp = function bottomUp()         { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.rightIn = function rightIn()           { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.leftOut = function leftOut()           { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.topDown = function topDown()           { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.bottomUp = function bottomUp()         { futureAppliedFn(arguments.callee.toString(), null); };
 };
 
 
@@ -220,16 +222,17 @@ vrtxAdmin._$(document).ready(function () {
   }
   vrtxAdm.embeddedView();
   
-  // Show message in IE6, IE7 and IETrident in compability mode
-  if ((vrtxAdm.isIE7 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
+  // Show message in IE6=>IE8 and IETrident in compability mode
+  if ((vrtxAdm.isIE8 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
     var message = vrtxAdm.cachedAppContent.find(" > .message");
     if (message.length) {
       message.html(outdatedBrowserText);
     } else {
+      var messageHtml = "<div class='infomessage'>" + outdatedBrowserText + "</div>";
       if(vrtxAdm.bodyId === "vrtx-simple-editor" || isEmbedded) {
-        vrtxAdm.cachedBody.prepend("<div class='infomessage'>" + outdatedBrowserText + "</div>");
+        vrtxAdm.cachedBody.prepend(messageHtml);
       } else {
-        vrtxAdm.cachedAppContent.prepend("<div class='infomessage'>" + outdatedBrowserText + "</div>");
+        vrtxAdm.cachedAppContent.prepend(messageHtml);
       }
     }
   }
@@ -373,6 +376,7 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       selector: "form#" + resourceMenuLeftServices[i] + "-form input[type=submit]",
       errorContainer: "errorContainer",
       errorContainerInsertAfter: "h3",
+      errorUpdateSelectors: (isRename ? ["form#renameService-form #submitButtons", "form#renameService-form .vrtx-textfield"] : null),
       post: isRename,
       ignoreDifferentMode: true,
       funcComplete: (isRename ? function(p) {
@@ -482,6 +486,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
           height: 395,
           onOpen: function() {
             var dialog = $(".ui-dialog:visible");
+            
             var treeElem = dialog.find(".tree-create");
             var treeTrav = dialog.find("#vrtx-create-tree-folders").hide().text().split(",");
             var treeType = dialog.find("#vrtx-create-tree-type").hide().text();
@@ -596,7 +601,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
     }
   });
   
-  // Validation of dates (private function)
+  // Validation of dates
   var generateDateObjForValidation = function(dialog, idInfix) {
     var date = dialog.find("#" + idInfix + "-date").val();
     if(!date.length) {
@@ -695,6 +700,7 @@ VrtxAdmin.prototype.initDomains = function initDomains() {
   switch (bodyId) {
     case "vrtx-preview":
     case "vrtx-revisions":
+      // Preview of revision in popup window (from preview or revisions tab)
       eventListen(vrtxAdm.cachedAppContent, "click", "a.vrtx-revision-view, a.vrtx-revision-view-changes", function (ref) {
         var openedRevision = openRegular(ref.href, 1020, 800, "DisplayRevision");
       });
@@ -740,6 +746,7 @@ VrtxAdmin.prototype.initDomains = function initDomains() {
       }
       break;
     case "vrtx-report-broken-links":
+      // Broken links switch between alternative views
       eventListen(vrtxAdm.cachedDoc, "click", ".vrtx-report-alternative-view-switch input", function (ref) {
         if(!$(ref).is(":checked")) {
           window.location.href = window.location.href.replace("&" + ref.name, "");
@@ -1000,7 +1007,7 @@ VrtxAdmin.prototype.initScrollBreadcrumbs = function initScrollBreadcrumbs() {
     vrtxAdm.crumbsInner.addClass("animate");
   }, 120);
 
-  eventListen(vrtxAdm.cachedDoc, "keydown", ".vrtx-breadcrumb-level", function (ref) {
+  eventListen(vrtxAdm.cachedDoc, "keypress", ".vrtx-breadcrumb-level", function (ref) {
     window.location.href = $(ref).find("a").attr("href");
   }, "clickOrEnter", 10);
   
@@ -1133,12 +1140,14 @@ VrtxAdmin.prototype.adjustResourceTitle = function adjustResourceTitle() {
   }
 };
 
+// Map shortcut from a link to a button
 VrtxAdmin.prototype.mapShortcut = function mapShortcut(selectors, reroutedSelector) {
   eventListen(this.cachedAppContent, "click", selectors, function(ref) {
     $(reroutedSelector).click();
   });
 };
 
+// Make logout button into a link
 VrtxAdmin.prototype.logoutButtonAsLink = function logoutButtonAsLink() {
   var btn = $('input#logoutAction');
   if (!btn.length) return;
@@ -1176,6 +1185,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
    * Set caret position
    * 
    * Credits: http://stackoverflow.com/questions/499126/jquery-set-cursor-position-in-text-area (first)
+   *
    * @this {inputSelectionEngine}
    */
   setCaretPos: function(input, pos) {
@@ -1201,6 +1211,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
    * Get caret position
    * 
    * Credits: http://stackoverflow.com/questions/4928586/get-caret-position-in-html-input (fourth)
+   *
    * @this {inputSelectionEngine}
    */
   getCaretPos: function(input) {
@@ -1235,6 +1246,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
    *  
    * Based on: jQuery autoGrowInput plugin by James Padolsey:
    * http://stackoverflow.com/questions/931207/is-there-a-jquery-autogrow-plugin-for-text-fields
+   *
    * @this {inputSelectionEngine}
    */
   grow: function(input, val, comfortZone, minWidth, maxWidth) {
@@ -1252,7 +1264,6 @@ VrtxAdmin.prototype.inputUpdateEngine = {
     input.parent().find("tester").remove(); // Remove test-subjects
     testSubject.insertAfter(input);
     testSubject.html(val);
-
     var newWidth = Math.min(Math.max(testSubject.width() + comfortZone, minWidth), maxWidth);
     var currentWidth = input.width();
     if (newWidth !== currentWidth) {
@@ -1539,7 +1550,7 @@ VrtxAdmin.prototype.addNewMarkup = function addNewMarkup(opts, form, link) {
 /**
  * Complete a form async
  * 
- * TODO: Combine it with completeSimpleFormAsync() making this an expanded version of it for expanded slidable forms  
+ * TODO: Maybe combine this function with completeSimpleFormAsync() (this as an expanded version of it for expanded slidable forms)
  *
  * @this {VrtxAdmin}
  * @param {object} opts Configuration
@@ -1659,8 +1670,15 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
       animation.bottomUp();
     };
     
-    if (vrtxAdm.hasErrorContainers(_$.parseHTML(results), opts.errorContainer)) {
-      vrtxAdm.displayErrorContainers(_$.parseHTML(results), opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
+    if (opts.errorContainer && vrtxAdm.hasErrorContainers(_$.parseHTML(results), opts.errorContainer)) {
+      var parsedHtml = _$.parseHTML(results);
+      vrtxAdm.displayErrorContainers(parsedHtml, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
+      if(opts.errorUpdateSelectors) {
+        for (var i = opts.errorUpdateSelectors.length; i--;) {
+          var outer = vrtxAdm.outerHTML(parsedHtml, opts.errorUpdateSelectors[i]);
+          vrtxAdm.cachedBody.find(opts.errorUpdateSelectors[i]).replaceWith(outer);
+        }
+      }
     } else {
       if (opts.isReplacing) {
         internalAnimation(opts.form.parent(), function(animation) { 
@@ -1705,7 +1723,7 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
     }
   }
 
-  // Avoid POST if cancel in actions listing
+  // Avoid POST if cancel in actionslisting
   if(opts.isCancelAction && isActionsListing) {
     postIt(null, null, null);
   } else {
@@ -1773,7 +1791,7 @@ VrtxAdmin.prototype.completeSimpleFormAsync = function completeSimpleFormAsync(o
             if(vrtxAdm.animateTableRows && (opts.rowFromFormAnimateOut || opts.rowCheckedAnimateOut)) {
               var trs = opts.rowFromFormAnimateOut ? [form.closest("tr")] : form.find("tr")
                                                                                 .filter(function(i) { 
-                                                                                  return $(this).find("td.checkbox input:checked").length; }
+                                                                                  return $(this).find("td.checkbox input:checked").length; }
                                                                                 );
               var futureAnims = [];
               for(var i = 0, len = trs.length; i < len; i++) {
@@ -2241,7 +2259,7 @@ function browseServer(obj, editorBase, baseFolder, editorBrowseUrl, type) {
 
   // Use 70% of screen dimension
   var serverBrowserWindow = openServerBrowser(editorBase + '/plugins/filemanager/browser/default/browser.html?BaseFolder=' + baseFolder + '&Type=' + type + '&Connector=' + editorBrowseUrl,
-  screen.width * 0.7, screen.height * 0.7);
+                                              screen.width * 0.7, screen.height * 0.7);
 
   serverBrowserWindow.focus();
   /* TODO: Refocus when user closes window with [x] and tries to open it again via browse..
@@ -2262,16 +2280,17 @@ function openRegular(url, width, height, winTitle) {
 }
 
 function openPopupScrollable(url, width, height, winTitle) {
-  var sOptions = "toolbar=no,status=no,resizable=yes,scrollbars=yes"; // http://www.quirksmode.org/js/popup.html
-  return openGeneral(url, width, height, winTitle, sOptions); // title must be without spaces in IE
+  var sOptions = "toolbar=no,status=no,resizable=yes,scrollbars=yes";
+  return openGeneral(url, width, height, winTitle, sOptions);
 }
 
 function openPopup(url, width, height, winTitle) {
-  var sOptions = "toolbar=no,status=no,resizable=yes"; // http://www.quirksmode.org/js/popup.html
-  return openGeneral(url, width, height, winTitle, sOptions); // title must be without spaces in IE
+  var sOptions = "toolbar=no,status=no,resizable=yes";
+  return openGeneral(url, width, height, winTitle, sOptions);
 }
 
-function openGeneral(url, width, height, winTitle, sOptions) {
+// sOptions: http://www.quirksmode.org/js/popup.html
+function openGeneral(url, width, height, winTitle, sOptions) { // title must be without spaces in IE
   var iLeft = (screen.width - width) / 2;
   var iTop = (screen.height - height) / 2;
   sOptions += ",width=" + width;
@@ -2370,7 +2389,6 @@ VrtxAdmin.prototype.ariaBusy = function ariaBusy(idOrElm, isBusy) {
  */
 VrtxAdmin.prototype.ariaDropdownState = function ariaDropdownState(idOrElmLink, idOrElmDropdown, isExpanded) {
   this.ariaBool("expanded", idOrElmLink, isExpanded);
-  this.ariaBool("expanded", idOrElmDropdown, isExpanded);
   this.ariaHidden(idOrElmDropdown, !isExpanded);
 };
 
@@ -2547,14 +2565,15 @@ function isKey(e, keyCodes) {
 /**
  * Setup listener for events with handler a function (duplicate outer handler function for perf.)
  *
- * @param {object} listenBase Base element the events bubbles up to (jQElement)
- * @param {string} eventType Type of events
- * @param {object} listenOn Elements should listen on (jQElement's)
- * @param {object} handlerFn Handler function
- * @param {string} handlerFnCheck If should proceed with handler function (event conditions)
- * @param {number} debounceInterval Debounce the events by some milliseconds
+ * @param {object}  listenBase Base element the events bubbles up to (jQElement)
+ * @param {string}  eventType Type of events
+ * @param {object}  listenOn Elements should listen on (jQElement's)
+ * @param {object}  handlerFn Handler function
+ * @param {string}  handlerFnCheck If should proceed with handler function (event conditions)
+ * @param {number}  debounceInterval Debounce the events by some milliseconds
+ * @param {boolean} dontPreventDefault Don't prevent default event action
  */
-function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck, debounceInterval) {
+function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck, debounceInterval, dontPreventDefault) {
   // DEBUG: vrtxAdmin.log({ msg: "Listen for events of type " + eventType.toUpperCase() + " on " + listenOn });
   if(typeof debounceInterval === "number") {
     listenBase.on(eventType, listenOn, $.debounce(debounceInterval, true, function (e) {
@@ -2562,7 +2581,9 @@ function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck,
             || (handlerFnCheck === "clickOrEnter" && (e.type === "click" || isKey(e, [vrtxAdmin.keys.ENTER])))) {
         handlerFn(this);
         // DEBUG: vrtxAdmin.log({ msg: (e.type.toUpperCase() + " for " + (this.id || this.className || this.nodeType)) })
-        e.preventDefault();
+        if(typeof dontPreventDefault !== "boolean" || !dontPreventDefault) {
+          e.preventDefault();
+        }
       }
     }));
   } else {
@@ -2572,7 +2593,9 @@ function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck,
         handlerFn(this);
         // DEBUG: vrtxAdmin.log({ msg: (e.type.toUpperCase() + " for " + (this.id || this.className || this.nodeType)) })
         e.stopPropagation();
-        e.preventDefault();
+        if(typeof dontPreventDefault !== "boolean" || !dontPreventDefault) {
+          e.preventDefault();
+        }
       }
     });
   }

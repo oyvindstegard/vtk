@@ -196,8 +196,15 @@
       </#if>
   </table>
 
-  <#if urchinStats?exists>
+  <#if urchinStats?exists || urchinStatsRestricted?exists>
     <h3 id="resourceVisitHeader"><@vrtx.msg code="resource.metadata.about.visit" default="Visit count"/></h3>
+  </#if>
+  
+  <#if urchinStatsRestricted?exists>
+    <p><@vrtx.msg code="resource.metadata.about.visit.nostats.restricted" /></p>
+  </#if>
+    
+  <#if urchinStats?exists>  
     <!--[if lt IE 9]>
       <style type="text/css">
         .vrtx-resource-visit-stat {
@@ -299,14 +306,15 @@
       </#assign>
       <@propList.defaultPropertyDisplay propName='duration' name=vrtx.getMsg("proptype.name.duration") value=timeValue />
     </#if>
-    <#if aboutItems['videoStreamablePercentComplete']?? && aboutItems['videoStreamablePercentComplete'].property??>
+    <#if aboutItems['videoStreamablePercentComplete']?? && aboutItems['videoStreamablePercentComplete'].property?? && aboutItems['videoStatus']?? && aboutItems['videoStatus'].property??>
       <#assign videoStreamablePercentComplete = aboutItems['videoStreamablePercentComplete'].property.intValue />
+      <#assign videoStatus = aboutItems['videoStatus'].property.stringValue />
       <tr class="prop-videoStreamablePercentComplete">
         <th scope="row" class="key">
           ${vrtx.getMsg("proptype.name.videoStreamablePercentComplete")}:
         </th>
         <td class="value">
-          <#if videoStreamablePercentComplete = 100>${vrtx.getMsg("yes")}<#else>${vrtx.getMsg("no")} (${videoStreamablePercentComplete}% ${vrtx.getMsg("resource.metadata.about.converted")})</#if>
+          <#if videoStatus = "downloadable_and_streamable">${vrtx.getMsg("yes")}<#else>${vrtx.getMsg("no")} (${videoStreamablePercentComplete}% ${vrtx.getMsg("resource.metadata.about.converted")})</#if>
         </td>
       </tr>
     </#if>

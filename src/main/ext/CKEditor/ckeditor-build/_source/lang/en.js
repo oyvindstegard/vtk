@@ -252,7 +252,7 @@ CKEDITOR.lang['en'] =
 		deleteTable	: 'Delete Table',
 		rows		: 'Rows',
 		columns		: 'Columns',
-		border		: 'Border size',
+		border		: 'Border',
 		widthPx		: 'pixels',
 		widthPc		: 'percent',
 		widthUnit	: 'width unit',

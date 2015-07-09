@@ -24,6 +24,7 @@ resourcetype person {
     pressPhoto : image_ref,
     content : html noextract,
     getExternalScientificInformation : boolean,
+    numberOfPublications: string,
     selectedPublications : html noextract,
     getRelatedProjects : boolean,
     projects : json (projectName:string, projectUrl:string) multiple,
@@ -39,7 +40,7 @@ resourcetype person {
     group contactInformation (getExternalPersonInfo, hideStudentAffiliation, firstName, surname, position, phone, mobile, fax, email, postalAddress, visitingAddress) (after username),
     group additionalContactInformation (alternativeVisitingAddress, building, room, availableHours, alternativeCellPhone) (after contactInformation),
     group images (picture, pressPhoto) (after additionalContactInformation) horizontal,
-    group combinedPublications (getExternalScientificInformation, selectedPublications) (after tags),
+    group combinedPublications (getExternalScientificInformation, numberOfPublications, selectedPublications) (after tags),
     projects (class[vrtx-multiple-immovable]),
     groups (class[vrtx-multiple-immovable]),
     group combinedProjects (getRelatedProjects, projects) (after combinedPublications),
@@ -48,12 +49,13 @@ resourcetype person {
     content (after images),
     tags tooltip (en : "(Tag1, Tag2, ...)", no : "(Emneord1, Emneord2, ...)", nn : "(Emneord1, Emneord2, ...)"),
     tags (class[vrtx-autocomplete-tag]),
-    postalAddress tooltip (en : "(postbox / streetaddress, postnumber place)", no : "(postboks / gateadresse, postnummer sted)", nn : "(postboks / gateadresse, postnummer sted)"),
-    alternativeVisitingAddress tooltip (en : "(streetaddress, building, postnumber place)", no : "(gateadresse, bygning, postnummer sted)", nn : "(gateadresse, bygning, postnummer sted)"),
+    postalAddress tooltip (en : "(postbox / street address, post number place)", no : "(postboks / gateadresse, postnummer sted)", nn : "(postboks / gateadresse, postnummer sted)"),
+    alternativeVisitingAddress tooltip (en : "(street address, building, post number place)", no : "(gateadresse, bygning, postnummer sted)", nn : "(gateadresse, bygning, postnummer sted)"),
     rssFeeds (after combinedGroups),
     getExternalPersonInfo tooltip (en : "(report <a class='contact-info' href='http://www.uio.no/english/about/contact/change-personal-information.html'>changes in information</a>.)",
                                    no : "(meld fra om <a class='contact-info' href='http://www.uio.no/om/kontaktinformasjon/endre-personppl.html'>feil eller mangler i opplysningene</a>.)",
-                                   nn : "(meld frå om <a class='contact-info' href='http://www.uio.no/om/kontaktinformasjon/endre-personppl.html'>feil eller manglar i opplysningane</a>.)")
+                                   nn : "(meld frå om <a class='contact-info' href='http://www.uio.no/om/kontaktinformasjon/endre-personppl.html'>feil eller manglar i opplysningane</a>.)"),
+    numberOfPublications (dropdown)
   }
 
   scripts {
@@ -373,6 +375,11 @@ resourcetype person {
        no : ("true" = "Ja", "false" = "Nei"),
        nn : ("true" = "Ja", "false" = "Nei")
      },
+     numberOfPublications {
+      en : (range = "100,150,200,300,350,400,450,500"),
+      no : (range = "100,150,200,300,350,400,450,500"),
+      nn : (range = "100,150,200,300,350,400,450,500")
+     },
      getRelatedProjects {
        en : ("true" = "Yes", "false" = "No"),
        no : ("true" = "Ja", "false" = "Nei"),
@@ -392,13 +399,13 @@ resourcetype person {
 
   localization {
     username : (en : "Username", no : "Brukernavn", nn : "Brukarnamn"),
-    getExternalPersonInfo : (en : "Use person information registrated in UiO's payroll- and personal system", no : "Bruk personopplysninger registrert i UiOs lønns- og personalsystem", nn : "Bruk personopplysingar registrerte i lønns- og personalsystemet til UiO"),
+    getExternalPersonInfo : (en : "Use person information registered in UiO's payroll- and personal system", no : "Bruk personopplysninger registrert i UiOs lønns- og personalsystem", nn : "Bruk personopplysingar registrerte i lønns- og personalsystemet til UiO"),
     firstName : (en : "First name", no : "Fornavn", nn : "Fornamn"),
     surname : (en : "Surname", no : "Etternavn", nn : "Etternamn"),
     postalAddress : (en : "Postal address", no : "Postadresse", nn : "Postadresse"),
     visitingAddress : (en : "Unit visiting address", no : "Enhetens besøksadresse", nn : "Besøksadressa til eininga"),
     alternativeVisitingAddress: (
-       en : "Visiting address (is displayed in place of visiting address registrated in UiO's saluary- and personalsystem)", 
+       en : "Visiting address (is displayed in place of visiting address registered in UiO's saluary- and personalsystem)", 
        no : "Besøksadresse (vises istedenfor besøksadresse registert i UiOs lønns- og personalsystem)", 
        nn : "Besøksadresse (vert vist i staden for besøksadressa registrert i lønns- og personalsystemet til UiO)"),
     alternativeCellPhone : (en : "Cell phone (personal)", no : "Mobiltelefon (privat)", nn : "Mobiltelefon (privat)"),
@@ -413,7 +420,8 @@ resourcetype person {
     picture-alt : (en : "Image", no : "Bilde", nn : "Bilete"),
     picture-alt-found : (en : "Image of", no : "Bilde av", nn : "Bilete av"),
     picture-alt-unknown-person : (en : "person", no : "person", nn : "person"),
-    getExternalScientificInformation : (en : "Show publications rapported in Cristin", no : "Vis publikasjoner rapportert i Cristin", nn : "Vis publikasjonar rapporterte i Cristin"),
+    getExternalScientificInformation : (en : "Show publications registered in Cristin", no : "Vis publikasjoner rapportert i Cristin", nn : "Vis publikasjonar rapporterte i Cristin"),
+    numberOfPublications : (en : "Maximum number of publications from Cristin", no : "Maks antall publikasjoner fra Cristin", nn : "Maks antall publikasjonar frå Cristin"),
     selectedPublications : (en : "Selected publications", no : "Utvalgte publikasjoner", nn : "Utvalde publikasjonar"),
     tags : (en : "Tags", no : "Emneord", nn : "Emneord"),
     content : (en : "Content", no :"Innhold", nn:"Innhald"),

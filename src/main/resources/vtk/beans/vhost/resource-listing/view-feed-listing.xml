@@ -35,6 +35,7 @@
     <property name="titlePropDef" ref="titlePropDef" />
     <property name="lastModifiedPropDef" ref="lastModifiedPropDef" />
     <property name="creationTimePropDef" ref="creationTimePropDef" />
+    <property name="numberOfCommentsPropDef" ref="numberOfCommentsPropDef" />
 
     <property name="authorPropDefPointer" value="resource:author" />
     <property name="introductionPropDefPointer" value="resource:introduction" />

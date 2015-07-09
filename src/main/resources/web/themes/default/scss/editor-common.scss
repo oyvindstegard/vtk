@@ -1,5 +1,4 @@
 /*
- *
  *  Vortex - Editor - Common
  *
  *  ToC:
@@ -50,7 +49,7 @@ h2 {
 .properties .vrtx-simple-html.divide-top,
 .properties .vrtx-checkbox.divide-top {
   background: url(images/line-dotted.gif) repeat-x top left !important;
-  margin-top: 15px !important;
+  margin-top: 30px !important;
   padding-top: 15px !important;
 }
 
@@ -103,9 +102,7 @@ h2 {
 }
 
 .vrtx-multipleinputfield {
-  clear: both;
-  float: left;
-  width: 100%;
+  @include floatClearFix;
 }
 
 .vrtx-multipleinputfield-json-wrapper,
@@ -129,16 +126,29 @@ h2 {
   margin-left: 0px;
 }
 
-.vrtx-multipleinputfield label {
+/* Hide multiple inputfield if has enrichment */
+.vrtx-multipleinputfield-field.vrtx-multipleinputfield-field-enriched {
   display: none;
 }
 
-.vrtx-multipleinputfield.first label {
-  display: block;
+/* Enrichment user text or link */
+.vrtx-multipleinputfield .vrtx-multiple-inputfield-enrichment {
+  padding: 6px 0 0 0;
+  width: 140px;
+  margin-right: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.vrtx-multipleinputfield.vrtx-multipleinputfield-json-has-title.first  button {
-  margin-top: 30px;
+.vrtx-multipleinputfield a.vrtx-multiple-inputfield-enrichment {
+  color: #005aab;
+}
+
+/* Setup user enrichment */
+.vrtxStaff .vrtx-multipleinputfield-field {
+  width: 122px;
+  margin-right: 20px;
 }
 
 .vrtx-multipleinputfield > * {
@@ -154,9 +164,6 @@ h2 {
 .vrtx-multipleinputfield .vrtx-button.movedown {
   padding-left: 9px;
   padding-right: 9px;
-  /* Inline block version
-  position: relative;
-  bottom: -3px; */
 }
 
 .vrtx-multipleinputfield .vrtx-button.moveup:hover,
@@ -172,8 +179,7 @@ h2 {
 .vrtx-json .vrtx-json-element .vrtx-move-up-button span,
 .vrtx-json .vrtx-json-element .vrtx-move-down-button span {
   display: block;
-  height: 16px;
-  width: 11px;
+  @include wh(11px, 16px);
 }
 
 .vrtx-multipleinputfield .vrtx-button.moveup span,
@@ -249,11 +255,8 @@ h2 {
 }
 
 #app-content .vrtx-sticky-editor-title-submit-buttons .sticky-bg-ie8-below {
-  height: 13px;
-  position: absolute;
-  bottom: -13px;
-  left: 0px;
-  width: 100%;
+  @include posAbsBottom(-13px, 0);
+  @include wh(100%, 13px);
   background: transparent url(images/sticky-bar-fade-to-grey-ie8-bg.png) repeat-x bottom left;
   display: block;
 }
@@ -273,8 +276,7 @@ h2 {
   position: relative;
   top: 0px;
   left: 0px;
-  height: 100px;
-  width: 100%;
+  @include wh(100%, 100px);
   display: block;
   background: transparent;
 }
@@ -288,11 +290,9 @@ html.embedded #editor-loading {
   display: block;
   padding: 10px 5px 10px 42px;
   font-size: 1.308em;
-  position: relative;
-  position: absolute;
-  top: 38%;
-  left: 38%;
   color: #5e5e5e;
+  position: relative;
+  @include posAbs(38%, 38%);
 }
 
 html.embedded #vrtx-editor #app-content #editor {
@@ -422,24 +422,10 @@ div.description textarea {
   width: 543px !important;
 }
 
-/* Event */
-
-.vrtx-textfield.vrtx-date {
-  width: 67px;
-}
-
-.vrtx-textfield.vrtx-hours,
-.vrtx-textfield.vrtx-minutes {
-  width: 17px;
-}
-
-/* ^ Event */
-
 /* Image and caption */
 
 div.caption textarea {
-  height: 107px;
-  width: 352px !important;
+  @include wh(352px !important, 107px);
 }
 
 .introImageAndCaption .header,
@@ -457,6 +443,10 @@ form.vrtx-program-option-frontpage #additional-content .header {
   font-size: 1.15em !important;
   margin-bottom: 10px !important;
   display: block !important;
+}
+
+.introImageAndCaption .vrtx-radio-buttons .vrtx-radio-buttons-false {
+  margin-left: 0;
 }
 
 div.introImageAndCaption,
@@ -570,13 +560,6 @@ div#resource\.picture\.preview span {
   display: none;
 }
 
-.vrtx-image-ref-preview.no-preview span,
-div#resource\.picture\.preview.no-preview span,
-div#resource\.poster-image\.preview.no-preview span,
-div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-preview span {
-  display: block;
-}
-
 /* Image scaling */
 
 .vrtx-image-ref-preview-inner,
@@ -597,15 +580,6 @@ div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
   max-height: 115px;
   margin-top: 0px;
   overflow: hidden;
-}
-
-.vrtx-image-ref-preview.no-preview img,
-div#resource\.picture\.preview.no-preview img,
-div#resource\.poster-image\.preview.no-preview img,
-div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-preview img {
-  width: 168px;
-  height: 113px;
-  border: 1px solid #D3D3D3;
 }
 
 /* ^ Image scaling */
@@ -653,8 +627,7 @@ div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-pre
     border: none !important;
     box-shadow: none !important;
     display: inline-block !important;
-    width: 10px !important;
-    height: 9px !important;
+    @include wh(10px !important, 9px !important);
     margin: 0 2px 0 0 !important;
   }
   .cke_contents {
@@ -708,11 +681,11 @@ div#resource\.studentExchangeUniversityAgreementListing\.picture\.preview.no-pre
 .cke_dialog {
   a.cke_dialog_ui_button_ok {
     @include ckDialogButtonStyle;
-    @include linearGradientBackgroundColors(#71b2e9, #66ace7, #499ce2, #3d95e0, 0%, 26%, 74%, 100%);
+    @include gradientTopToBottom(#71b2e9, #66ace7, #499ce2, #3d95e0, 0%, 26%, 74%, 100%);
     &:focus,
     &:hover {
       @include ckDialogButtonStyle;
-      @include linearGradientBackgroundColors(#8ec6ef, #83c2ed, #56b4ea, #4db0e8, 0%, 22%, 83%, 100%);
+      @include gradientTopToBottom(#8ec6ef, #83c2ed, #56b4ea, #4db0e8, 0%, 22%, 83%, 100%);
     }
     span {
       text-shadow: none;

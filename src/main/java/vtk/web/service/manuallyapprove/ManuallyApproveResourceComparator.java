@@ -33,6 +33,9 @@ package vtk.web.service.manuallyapprove;
 import java.util.Comparator;
 import java.util.Date;
 
+/**
+ * Comparator used for sorting manually approve docs by "publish-date DESC, title ASC"
+ */
 public class ManuallyApproveResourceComparator implements Comparator<ManuallyApproveResource> {
 
     @Override

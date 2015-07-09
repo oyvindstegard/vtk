@@ -154,17 +154,17 @@ final class DomainTypes {
         }
         if (ref instanceof URLType) {
             return new Success<>(((URLType) ref).path());
-        } 
+        }
         String s = ref.toString();
-        if (!s.startsWith("/")) {
+        if (s.startsWith("/")) {
             try {
-                Path uri = requestContext.getResourceURI().getParent().expand(s);
-                return new Success<>(uri);
-            } catch (Throwable t) { return new Failure<>(t); } 
+                return new Success<>(Path.fromString(s));
+            } catch (Throwable t) { return new Failure<>(t); }
         }
         try {
-            return new Success<>(Path.fromString(s));
-        } catch (Throwable t) { return new Failure<>(t); }
+            Path uri = requestContext.getCurrentCollection().expand(s);
+            return new Success<>(uri);
+        } catch (Throwable t) { return new Failure<>(t); } 
     }
     
     

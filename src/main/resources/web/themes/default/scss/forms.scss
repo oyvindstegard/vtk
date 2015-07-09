@@ -97,10 +97,25 @@
     display: inline-block;
     display: block;
     display: inline-block;
-    
+
     &[disabled],
     &[readonly] {
       @include disabled;
+    }
+
+    &.vrtx-date {
+      width: 67px;
+      margin-right: 15px;
+    }
+    &.vrtx-hours,
+    &.vrtx-minutes {
+      width: 17px;
+    }
+    &.vrtx-hours {
+      margin-right: 7px;
+    }
+    &.vrtx-minutes {
+      margin-left: 7px;
     }
   }
   .vrtx-textfield-big {
@@ -207,8 +222,7 @@
     }
     .ui-dialog-titlebar-close,
     .ui-dialog-titlebar-close .ui-icon {
-      width: 20px;
-      height: 18px;
+      @include wh(20px, 18px);
       @include noMargPadd;
     }
     .vrtx-close-dialog {
@@ -247,6 +261,11 @@
         }
         &:first-child {
           @include buttonFocus;
+
+          &:hover,
+          &:focus {
+            background: $buttonHoverBackgroundColor;
+          }
         }
         span {
           padding: 0;
@@ -263,7 +282,7 @@
     }
   }
   .ui-widget {
-    @include baseFontImp;
+    font-family: $baseFont !important;
     font-size: 1em !important;
     text-align: left;
     
@@ -274,7 +293,7 @@
     select,
     textarea,
     button {
-      @include baseFontImp;
+      font-family: $baseFont !important;
     }
   }
   .ui-widget-overlay {
@@ -293,8 +312,8 @@
     padding-bottom: $pB;
     &:hover,
     &:focus {
-      padding-top: calc($pT + 1px);
-      padding-bottom: calc($pB + 1px);
+      padding-top: $pT + 1px;
+      padding-bottom: $pB + 1px;
     }
   }
 }
@@ -356,8 +375,7 @@
 .vrtx-multipleinputfields .vrtx-button.add span,
 .vrtx-add-button span {
   display: block;
-  height: 13px;
-  width: 13px;
+  @include wh(13px, 13px);
   background: url("images/multiple-add.png") no-repeat center center;
 }
 
@@ -397,8 +415,7 @@
 }
 
 .forms-new #email-approval-form textarea {
-  width: 380px;
-  height: 90px;
+  @include wh(380px, 90px);
 }
 
 .forms-new #email-approval-form .email-help {

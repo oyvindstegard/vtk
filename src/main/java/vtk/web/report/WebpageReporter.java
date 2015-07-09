@@ -30,6 +30,8 @@
  */
 package vtk.web.report;
 
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -50,31 +52,42 @@ public class WebpageReporter extends DocumentReporter {
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition sortPropDef;
     private SortFieldDirection sortOrder;
+    private LinkedHashMap<String, TermOperator> baseWebpageTypes;
 
     @Override
     protected Search getSearch(String token, Resource currentResource, HttpServletRequest request) {
-        AndQuery q = new AndQuery();
+        AndQuery mainQuery = new AndQuery();
 
-        OrQuery query = new OrQuery();
-        query.add(new TypeTermQuery("apt-resource", TermOperator.IN));
-        query.add(new TypeTermQuery("php", TermOperator.IN));
-        query.add(new TypeTermQuery("html", TermOperator.IN));
-        query.add(new TypeTermQuery("managed-xml", TermOperator.IN));
-        query.add(new TypeTermQuery("json-resource", TermOperator.IN));
-        q.add(query);
+        OrQuery orPart = new OrQuery();
+        for (Entry<String, TermOperator> entry : baseWebpageTypes.entrySet()) {
+            orPart.add(new TypeTermQuery(entry.getKey(), entry.getValue()));
+        }
+        mainQuery.add(orPart);
 
         /* In current resource but not in /vrtx. */
         UriPrefixQuery upq = new UriPrefixQuery(currentResource.getURI().toString(), false);
         upq.setIncludeSelf(false);
-        q.add(upq);
-        q.add(new UriPrefixQuery("/vrtx", true));
+        mainQuery.add(upq);
+        mainQuery.add(new UriPrefixQuery("/vrtx", true));
 
         Search search = new Search();
         Sorting sorting = new Sorting();
-        sorting.addSortField(new PropertySortField(this.sortPropDef, this.sortOrder));
+        sorting.addSortField(new PropertySortField(sortPropDef, sortOrder));
         search.setSorting(sorting);
-        search.setQuery(q);
+        search.setQuery(mainQuery);
+
+        /* Include unpublished */
+        search.clearAllFilterFlags();
+
         return search;
+    }
+
+    public void setTitlePropDef(PropertyTypeDefinition titlePropDef) {
+        this.titlePropDef = titlePropDef;
+    }
+
+    public PropertyTypeDefinition getTitlePropDef() {
+        return titlePropDef;
     }
 
     @Required
@@ -87,11 +100,9 @@ public class WebpageReporter extends DocumentReporter {
         this.sortOrder = sortOrder;
     }
 
-    public void setTitlePropDef(PropertyTypeDefinition titlePropDef) {
-        this.titlePropDef = titlePropDef;
+    @Required
+    public void setBaseWebpageTypes(LinkedHashMap<String, TermOperator> baseWebpageTypes) {
+        this.baseWebpageTypes = baseWebpageTypes;
     }
 
-    public PropertyTypeDefinition getTitlePropDef() {
-        return titlePropDef;
-    }
 }

@@ -40,6 +40,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.RepositoryAction;
 import vtk.repository.ResourceTypeTree;
@@ -273,7 +274,8 @@ public class StructuredResourceManager {
             def.setType(Type.STRING);
         } else if (propertyDescription instanceof JSONPropertyDescription) {
             def.setType(Type.JSON);
-            def.addMetadata(PropertyTypeDefinition.METADATA_INDEXABLE_JSON, true);
+            // No need to blindly index all JSON fields:
+            //def.addMetadata(PropertyTypeDefinition.METADATA_INDEXABLE_JSON, true);
         } else {
             def.setType(mapType(propertyDescription));
         }

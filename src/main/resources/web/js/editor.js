@@ -44,7 +44,8 @@ function VrtxEditor() {
     "teachingsemester":  ["particular-semester", "every-other"],
     "examsemester":      ["particular-semester", "every-other"],
     "typeToDisplay":     ["so", "nm", "em"],
-    "type-of-agreement": ["other"]
+    "type-of-agreement": ["other"],
+    "program-type":      ["phd"]
   };
 
   /** Initial state for the need to confirm navigation away from editor */
@@ -101,7 +102,7 @@ $(document).ready(function () {
   vrtxEdit.initPreviewImage();
   
   var waitALittle = setTimeout(function() {
-    autocompleteUsernames(".vrtx-autocomplete-username");
+    autocompleteUsernames($(".vrtx-autocomplete-username"));
     autocompleteTags(".vrtx-autocomplete-tag");
     vrtxEdit.initSendToApproval();
     
@@ -283,12 +284,15 @@ VrtxEditor.prototype.richtextEditorFacade = {
       config.filebrowserFlashBrowseUrl = opts.flashBrowseUrl;
       if(opts.requiresStudyRefPlugin) {
     	// Temporarily remove before new plugins are tested
-    	// config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax';
-	    config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,mathjax';	    
+        config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax';
+	    // config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,mathjax';	    
       } else {
-        // config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax';
-        config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,mathjax';        
+        config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax';
+        // config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,mathjax';  
       }
+      config.image2_alignClasses = [ 'image-left', 'image-center', 'image-right' ];
+      config.image2_captionedClass = 'image-captioned';
+      
       config.stylesSet = this.divContainerStylesSet;
       if (opts.isSimple) { // XHTML
         config.format_tags = 'p;h1;h2;h3;h4;h5;h6;pre;div';
@@ -302,7 +306,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
     //  if (opts.isFrontpageBox) {
     //	config.format_tags = 'p;h3;h4;h5;h6;pre;div';
     //  }
-
+    
     config.resize_enabled = opts.resizable;
     config.toolbarCanCollapse = false;
     config.defaultLanguage = 'no';
@@ -317,7 +321,24 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.forcePasteAsPlainText = false;
     config.disableObjectResizing = true;
     config.disableNativeSpellChecker = false;
+    
     config.allowedContent = true;
+  
+    /* Enable ACF - with all elements
+     *
+     * Use the ability to specify elements as an object.
+     *
+     
+    config.allowedContent = {
+      $1: {
+        elements: CKEDITOR.dtd,
+        attributes: true,
+        styles: true,
+        classes: true
+      }
+    };
+    
+    */
     
     // Enable ACF
     if (vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
@@ -368,8 +389,11 @@ VrtxEditor.prototype.richtextEditorFacade = {
       });
     }
   },
+  
+  /* Save with CTRL-S */
   setupCTRLS: function() {
-    CKEDITOR.on('instanceReady', function (event) {
+    var rteFacade = this;
+    var setupCTRLSPrivate = function(event) {
       _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
         ctrlSEventHandler(_$, e);
       }));
@@ -379,8 +403,26 @@ VrtxEditor.prototype.richtextEditorFacade = {
           $(dialogShowEvent.data._.element.$).find('a[href*="void(0)"]').removeAttr('href');
         }
       });
+      if(event.editor.name == "caption" || event.editor.name == "resource.caption") {
+        event.editor.on('change', function() {
+          var ref = $("input.preview-image-inputfield");
+          if(ref.length) {
+            previewImage(ref[0].id, false);
+          }
+        });
+      }
+    };
+    
+    CKEDITOR.on('instanceReady', function (event) {
+      setupCTRLSPrivate(event);
+      
+      // Re-run code when source-button is toggled (VTK-4023)
+      var instance = rteFacade.getInstance(event.editor.name);
+      instance.on('contentDom', setupCTRLSPrivate);
     });
   },
+  
+  /* Minimize/maximize */
   setupMaximizeMinimize: function() {
     vrtxAdmin.cachedAppContent.on("click", ".cke_button__maximize.cke_button_on", this.maximize);
     vrtxAdmin.cachedAppContent.on("click", ".cke_button__maximize.cke_button_off", this.minimize);
@@ -404,7 +446,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
       var helpMenu = "<div id='editor-help-menu' class='js-on'>" + shortcuts.find("#editor-help-menu").html() + "</div>";
       ckInject.append("<div class='ck-injected-save-help'>" + save + helpMenu + "</div>");
 
-      // Fix markup
+      // Fix markup - add class for button
       var saveInjected = ckInject.find(".ck-injected-save-help > a");
       if (!saveInjected.hasClass("vrtx-button")) {
         saveInjected.addClass("vrtx-button");
@@ -421,9 +463,20 @@ VrtxEditor.prototype.richtextEditorFacade = {
     stickyBar.show();
     var ckInject = _$(this).closest(".cke_reset").find(".ck-injected-save-help").hide();
   },
+  
+  /* Get/Set/Update instance or data */
   getInstanceValue: function(name) {
     var inst = this.getInstance(name);
     return inst !== null ? inst.getData() : null;
+  },
+  updateInstanceByInstance: function(instance) {
+    instance.updateElement();
+  },
+  updateInstance: function(name) {
+    var inst = this.getInstance(name);
+    if(inst !== null) {
+      inst.updateElement();
+    }
   },
   updateInstances: function() {
     for (var instance in CKEDITOR.instances) {
@@ -432,6 +485,9 @@ VrtxEditor.prototype.richtextEditorFacade = {
   },
   getValue: function(instance) {
     return instance.getData();
+  },
+  setValue: function(instance, data) {
+    instance.setData(data);
   },
   setInstanceValue: function(name, data) {
     var inst = this.getInstance(name);
@@ -478,6 +534,176 @@ VrtxEditor.prototype.richtextEditorFacade = {
     }, 10);
   }
 };
+       
+/* 
+ * VTK-3873
+ * 
+ * Migrate old image div-containers to new image plugin on interaction
+ *
+ */
+         
+function migrateOldDivContainersCheck(data) {
+  return /<div[^>]+class=(\'|\")([^\']*[^\"]* |)vrtx-(img-|)container( |(\'|\"))/i.test(data);
+}
+
+function showMigrateDialog(instance) {
+  var d = new VrtxConfirmDialog({
+    title: vrtxAdmin.messages.oldImageContainers.convert.title,
+    msg: vrtxAdmin.messages.oldImageContainers.convert.msg,
+    btnTextOk: vrtxAdmin.messages.oldImageContainers.convert.yes,
+    btnTextCancel: vrtxAdmin.messages.oldImageContainers.convert.no,
+    onOk: function () {
+      migrateOldDivContainersToNewImagePlugin(instance);
+    }
+  });
+  d.open();
+}
+         
+function migrateOldDivContainersToNewImagePlugin(instance) {
+  var rteFacade = vrtxEditor.richtextEditorFacade;
+  var data = $($.parseHTML("<div>" + rteFacade.getValue(instance) + "</div>"));
+  var containers = data.find(".vrtx-container, .vrtx-img-container");
+  
+  for(var i = 0, len = containers.length; i < len; i++) {
+    var container = $(containers[i]);
+    var containerChildren = container.children();
+    var childrenLen = containerChildren.length;
+    if((childrenLen == 1 || childrenLen == 2) && container.find("> img, > p").length == childrenLen) {
+      var images = container.find("img");
+      if(images.length == 1) {
+        var out = "";
+        
+        var img = images.clone();
+        
+        // Limit to this width (can maybe be optimized a little)
+        var overrideWidth = 999999;
+        if(container.hasClass("vrtx-container-size-xxl")) {
+          overrideWidth = 800;
+        } else if(container.hasClass("vrtx-container-size-xl")) {
+          overrideWidth = 700;
+        } else if(container.hasClass("vrtx-container-size-l")) {
+          overrideWidth = 600;
+        } else if(container.hasClass("vrtx-container-size-m")) {
+          overrideWidth = 500;
+        } else if(container.hasClass("vrtx-container-size-s")) {
+          overrideWidth = 400;
+        } else if(container.hasClass("vrtx-container-size-xs")) {
+          overrideWidth = 300;
+        } else if(container.hasClass("vrtx-container-size-xxs")) {
+          overrideWidth = 200;
+        }
+        
+        // Width/height conversion
+        var style = img.attr("style");
+        var hasStyle = typeof style !== "undefined" && style != "";
+        var hasStyleWidth = hasStyle && style.indexOf("width:") !== -1;
+        var hasStyleHeight = hasStyle && style.indexOf("height:") !== -1;
+        var width = 0;
+        var height = 0;
+        if(hasStyleWidth || hasStyleHeight) {
+          if(hasStyleWidth) {
+            var widthRegex = /(.*)(width\:[\s]*[\d]+px[;]*)(.*)/i;
+            var matches = style.match(widthRegex);
+            if(matches.length > 2) {
+              width = matches[2].replace(/[^0-9.]/g, "");
+            }
+            style = style.replace(widthRegex, "$1$3", "");
+          }
+          if(hasStyleHeight) {
+            var heightRegex = /(.*)(height\:[\s]*[\d]+px[;]*)(.*)/i;
+            var matches = style.match(heightRegex);
+            if(matches.length > 2) {
+              height = matches[2].replace(/[^0-9.]/g, "");
+            }
+            style = style.replace(heightRegex, "$1$3", "");
+          }
+          
+          img.attr("style", style);
+          
+          if(width > overrideWidth) {
+            img.attr("width", overrideWidth);
+            img.removeAttr("height");
+          } else {
+            if(width > 0) {
+              img.attr("width", width);
+            } else {
+              img.removeAttr("width");
+            }
+            if(height > 0) {
+              img.attr("height", height);
+            } else {
+              img.removeAttr("height");
+            }
+          }
+        } else {
+          var widthAttr = img.attr("width");
+          if(typeof widthAttr !== "undefined" && widthAttr != "") {
+            width = parseInt(widthAttr, 10);
+          }
+          if(width > overrideWidth || (width == 0 && overrideWidth != 999999)) {
+            img.attr("width", overrideWidth);
+            img.removeAttr("height");
+          }
+        }
+              
+        // Alignment
+        var align = container.hasClass("vrtx-container-left") ? "image-left" : "";
+            align += container.hasClass("vrtx-container-right") ? "image-right" : "";
+            align += container.hasClass("vrtx-container-middle") ? "image-center" : "";
+              
+        // Has caption?
+        var caption = container.find("p");
+        if($.trim(caption.text()) !== "") {
+           caption.find("img").remove();
+           if(align !== "") {
+             if(align === "image-center") {
+               out = "<div class='" + align + "'><figure class='image-captioned'>";
+             } else {
+               out = "<figure class='image-captioned " + align + "'>";
+             }
+           } else {
+             out = "<figure class='image-captioned'>";
+           }
+           out += img[0].outerHTML +
+                  "<figcaption>" +
+                    caption.html() +
+                  "</figcaption></figure>";
+           if(align === "image-center") {
+             out += "</div>";
+           }
+                    
+         // Only image
+         } else {
+           if(align !== "" && align !== "image-center") {
+             img.addClass(align);
+           }
+           if(align === "image-center") {
+             out += "<p class='image-center'>" + img[0].outerHTML + "</p>";
+           } else {
+             out += img[0].outerHTML;
+           }
+         }
+       
+         if(out !== "") {
+           container.replaceWith(out);
+         }
+       }
+     }
+   }
+   if(len) {
+     rteFacade.setValue(instance, data.html());
+     rteFacade.updateInstance();
+     if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { // Any that not could be converted?
+       var d = new VrtxHtmlDialog({
+         title: vrtxAdmin.messages.oldImageContainers.notAllConverted.title,
+         html: "<p>" + vrtxAdmin.messages.oldImageContainers.notAllConverted.msg + "</p>",
+         btnTextOk: "Ok"
+       });
+       d.open();
+     }
+   }  
+}
+
 
 /* Toolbars */
 
@@ -495,7 +721,7 @@ vrtxEditor.richtextEditorFacade.toolbars.commentsToolbar = [
 
 vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
   ['PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'], ['Replace'], ['Link', 'Unlink', 'Anchor'],
-  ['Image', 'CreateDiv', 'MediaEmbed', 'Table', 'HorizontalRule', 'Mathjax', 'SpecialChar'],
+  ['Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'Mathjax', 'SpecialChar'],
   ['Maximize'], ['Source'], '/', ['Format'], 
   ['Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'TextColor', '-', 'RemoveFormat'],
   ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote']
@@ -504,14 +730,14 @@ vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
 vrtxEditor.richtextEditorFacade.toolbars.studyToolbar = [
   ['Source', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
    'RemoveFormat', '-', 'Link', 'Unlink', 'Studyreferencecomponent', 'Anchor',
-   'Image', 'CreateDiv', 'MediaEmbed', 'Table', 'Studytable', 'HorizontalRule', 'SpecialChar'],
+   'Image', 'MediaEmbed', 'CreateDiv', 'Table', 'Studytable', 'HorizontalRule', 'SpecialChar'],
   ['Format', 'Bold', 'Italic', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Maximize']
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.studyRefToolbar = [
   ['Source', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
    'RemoveFormat', '-', 'Link', 'Unlink', 'Studyreferencecomponent', 'Anchor',
-   'Image', 'CreateDiv', 'MediaEmbed', 'Table', 'HorizontalRule', 'SpecialChar'],
+   'Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'SpecialChar'],
   ['Format', 'Bold', 'Italic', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Maximize']
 ];
 
@@ -529,30 +755,7 @@ vrtxEditor.richtextEditorFacade.toolbars.resourcesTextToolbar = [
 
 vrtxEditor.richtextEditorFacade.divContainerStylesSet = [
   { name: 'Facts left',                 element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-left'  } },
-  { name: 'Facts right',                element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-right' } },
-  { name: 'Image left',                 element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-left'    } },
-  { name: 'Image center',               element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-middle vrtx-img-container-middle-ie' } },
-  { name: 'Image right',                element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-right' } },
-  { name: 'Img & capt left (800px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxl vrtx-container-left' } },
-  { name: 'Img & capt left (700px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xl vrtx-container-left' } },
-  { name: 'Img & capt left (600px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-l vrtx-container-left' } },
-  { name: 'Img & capt left (500px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-left' } },
-  { name: 'Img & capt left (400px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-left' } },
-  { name: 'Img & capt left (300px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xs vrtx-container-left' } },
-  { name: 'Img & capt left (200px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxs vrtx-container-left' } },
-  { name: 'Img & capt center (full)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-full vrtx-container-middle' } },
-  { name: 'Img & capt center (800px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxl vrtx-container-middle' } },
-  { name: 'Img & capt center (700px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xl vrtx-container-middle' } },
-  { name: 'Img & capt center (600px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-l vrtx-container-middle' } },
-  { name: 'Img & capt center (500px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-middle' } },
-  { name: 'Img & capt center (400px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-middle' } },
-  { name: 'Img & capt right (800px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxl vrtx-container-right' } },
-  { name: 'Img & capt right (700px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xl vrtx-container-right' } },
-  { name: 'Img & capt right (600px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-l vrtx-container-right' } },
-  { name: 'Img & capt right (500px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-right' } },
-  { name: 'Img & capt right (400px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-right' } },
-  { name: 'Img & capt right (300px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xs vrtx-container-right' } },
-  { name: 'Img & capt right (200px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxs vrtx-container-right' } }
+  { name: 'Facts right',                element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-right' } }
 ];
 
 /* Functions for generating editor config based on classification
@@ -902,8 +1105,9 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
   var previewInputFields = _$("input.preview-image-inputfield"),
       hideImagePreviewCaptionFunc = hideImagePreviewCaption;
   for (i = previewInputFields.length; i--;) {
-    if (previewInputFields[i].value === "") {
-      hideImagePreviewCaptionFunc($(previewInputFields[i]), true);
+    var elm = $(previewInputFields[i]);
+    if (previewInputFields[i].value === "" && !hasImageCaption(elm, true)) {
+      hideImagePreviewCaptionFunc(elm, true);
     }
   }
   
@@ -911,9 +1115,9 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
   eventListen(vrtxAdmin.cachedDoc, "blur", "input.preview-image-inputfield", function (ref) {
     previewImage(ref.id, true);
   });
-  eventListen(vrtxAdmin.cachedDoc, "keydown", "input.preview-image-inputfield", function (ref) {
+  eventListen(vrtxAdmin.cachedDoc, "keyup", "input.preview-image-inputfield", function (ref) {
     previewImage(ref.id);
-  }, "clickOrEnter", 50);
+  }, null, 50, true);
 };
 
 function initPictureAddJsonField(elm) {
@@ -976,13 +1180,10 @@ function previewImage(urlobj, isBlurEvent) {
     var elm = $("#" + urlobj);
     if (elm.length) {
       var url = elm.val();
-      if (url !== "") {
+      if (url !== "" || hasImageCaption(elm, false)) {
         var parentPreviewNode = previewNode.parent();
         previewNode.find("img").attr("src", url + "?vrtx=thumbnail");
-        if (parentPreviewNode.hasClass("no-preview")) {
-          parentPreviewNode.removeClass("no-preview");
-          previewNode.find("img").attr("alt", "thumbnail");
-        }
+        previewNode.find("img").attr("alt", "thumbnail");
         showImagePreviewCaption(elm);
         if(typeof isBlurEvent === "undefined") elm.focus();
       } else {
@@ -990,6 +1191,22 @@ function previewImage(urlobj, isBlurEvent) {
       } 
     }
   }
+}
+
+function hasImageCaption(input, init) {
+  var captionWrp = input.closest(".introImageAndCaption, #vrtx-resource\\.picture");
+  if(captionWrp.length) {
+    if(init) {
+      var captionTextAreaValue = captionWrp.find(".caption textarea").val();
+      return captionTextAreaValue != "";
+    } else {
+      var captionId = captionWrp.find(".caption textarea")[0].id;
+      vrtxEditor.richtextEditorFacade.updateInstance(captionId)
+      var captionCkValue = vrtxEditor.richtextEditorFacade.getInstanceValue(captionId);
+      return captionCkValue != null && captionCkValue != "";
+    }
+  }
+  return false;
 }
 
 
@@ -1218,6 +1435,11 @@ VrtxEditor.prototype.showHideSelect = function showHideSelect(select, init) {
  *
  */
 
+var userEnrichmentSeperators = {
+  url: "%%URL%%",
+  text: "%%TEXT%%"
+};
+
 function getMultipleFieldsBoxesTemplates() {
   if (!vrtxEditor.multipleFieldsBoxesDeferred) {
     vrtxEditor.multipleFieldsBoxesDeferred = $.Deferred();
@@ -1257,7 +1479,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
 
   // Config
   var size = inputField.attr("size");
-  
+    
   var isDropdown = inputField.hasClass("vrtx-multiple-dropdown");
   isMovable = !isDropdown && isMovable;
 
@@ -1276,9 +1498,11 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
 
   vrtxEditor.multipleFieldsBoxes[name] = { counter: 1, limit: limit };
 
-  var addFormFieldFunc = addFormField, html = "";
+  var addFormFieldFunc = addFormField, html = "", isEnriched = false;
   for (var i = 0, len = formFields.length; i < len; i++) {
-    html += addFormFieldFunc(name, len, $.trim(formFields[i]), size, isBrowsable, isMovable, isDropdown, true, json, isReadOnly);
+    var htmlEnriched = addFormFieldFunc(name, len, $.trim(formFields[i]), size, isBrowsable, isMovable, isDropdown, true, json, isReadOnly);
+    html += htmlEnriched.html;
+    isEnriched = htmlEnriched.isEnriched;
   }
   html = $.parseHTML(html, document, true);
   $(html).insertBefore("#vrtx-" + name + "-add");
@@ -1293,8 +1517,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
 	}
     moreBtn.hide();
   }
-
-  autocompleteUsernames(".vrtx-autocomplete-username");
+  autocompleteUsernames(inputFieldParent.filter(".vrtx-autocomplete-username"), isEnriched);
 }
 
 function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown, init, json, isReadOnly) {
@@ -1321,19 +1544,23 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
     browseButton = vrtxEditor.htmlFacade.getMultipleInputfieldsInteractionsButton("browse", "-resource-ref", idstr, "", vrtxAdmin.multipleFormGroupingMessages.browse);
   }
   
-  if(json && value && value.indexOf("###") !== -1) {
-    value = value.split("###");
-    var j = 0;
-    for(var prop in json) {
-      json[prop].val = value[j];
-      j++;
+  // Add form field with possible JSON multiple and user enrichments
+  var isEnriched = false;
+  var hasEnrichedText = false;
+  var hasEnrichedUrl = false;
+  var jsonProcessed = null;
+  if(json) {
+    if(value && value.indexOf("###") !== -1) {
+      value = value.split("###");
     }
-  } else if(json) {
-    for(var prop in json) {
-      json[prop].val = "";
-    }
+    jsonProcessed = jQuery.extend(true, [], json);
+    var enriched = addFormFieldUserEnrichment(value, jsonProcessed, isEnriched, hasEnrichedText, hasEnrichedUrl);
+    isEnriched = enriched.isEnriched;
+    hasEnrichedText = enriched.hasEnrichedText;
+    hasEnrichedUrl = enriched.hasEnrichedUrl;
   }
-  var html = vrtxEditor.htmlFacade.getMultipleInputfield(name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json, isReadOnly);
+  
+  var html = vrtxEditor.htmlFacade.getMultipleInputfield(name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, jsonProcessed, isReadOnly, hasEnrichedText, hasEnrichedUrl);
 
   vrtxEditor.multipleFieldsBoxes[name].counter++;
 
@@ -1357,7 +1584,7 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
     
     // Setup autocomplete on username fields
     autocompleteUsername(".vrtx-autocomplete-username", idstr + i);
-    autocompleteUsername(".vrtx-autocomplete-username", idstr + "id-" + i); // JSON name='id' fix
+    autocompleteUsername(".vrtx-autocomplete-username", idstr + "id-" + i, isEnriched); // JSON name='id' fix
     
     var focusable = moreBtn.prev().find("input[type='text'], select");
     if(focusable.length) {
@@ -1373,7 +1600,7 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
 	  moreBtn.hide();
     }
   } else {
-    return html;
+    return { "html": html, "isEnriched": isEnriched };
   }
 }
 
@@ -1417,8 +1644,105 @@ function swapContentTmp(moveBtn, move) {
     curElmInputs[i].value = movedElmInputs[i].value;
     movedElmInputs[i].value = tmp;
   }
+  swapUserEnrichment(curElm, movedElm, curElmInputs, movedElmInputs);
+  
   movedElmInputs.filter(":first")[0].focus();
 }
+
+function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, hasEnrichedUrl) {
+  var enrichedUrl = "";
+  var enrichedText = "";
+  var sep = userEnrichmentSeperators;
+  
+  // Extract user enrichments if exists
+  if(value && value.length) {
+    var valueIsMultiple = typeof value === "object";
+    var lastVal = valueIsMultiple ? value[value.length - 1] : value;
+    if(lastVal.indexOf(sep.url) !== -1) {
+      var enrichedUrl = lastVal.split(sep.url);
+      if(enrichedUrl[1].indexOf(sep.text) !== -1) {
+        enrichedText = enrichedUrl[1].split(sep.text)[0];
+        enrichedUrl = enrichedUrl[0];
+      } else {
+        enrichedText = "";
+      }
+      value = [ value[0] ];
+    } else if(lastVal.indexOf(sep.text) !== -1) {
+      var enrichedText = lastVal.split(sep.text)[0];
+      value = [ value[0] ];
+    } else {
+      if(!valueIsMultiple) {
+        value = [ value ];
+      }
+    }
+  } else {
+    value = [ "" ];
+  }
+  
+  // Prepare JSON multiple and user enrichments for template
+  var i = 0;
+  var enrichedTextProp = null;
+  var val = "";
+  for(var prop in json) {
+    switch(json[prop].type) {
+      case "enrichedText":
+        isEnriched = true;
+        json[prop].enrichedText = true; // Access for template
+        enrichedTextProp = prop;
+        if(enrichedText.length) {
+          json[prop].enrichedTextVal = enrichedText;
+          hasEnrichedText = true;
+        }
+        break;
+      case "enrichedUrl":
+        isEnriched = true;
+        json[prop].enrichedUrl = true; // Access for template
+        if(enrichedUrl.length) {
+          json[prop].enrichedUrlVal = enrichedUrl;
+          hasEnrichedUrl = true;
+        }
+        break;
+      default:
+        json[prop].val = value[i];
+        if(json[prop].val != "") {
+          val = json[prop].val;
+        }
+        break;
+    }
+    i++;
+  }
+  if(!hasEnrichedText && !hasEnrichedUrl && enrichedTextProp != null && val != "") {
+    json[enrichedTextProp].enrichedTextVal = val;
+    hasEnrichedText = true;
+  }
+  return { "isEnriched": isEnriched,
+           "hasEnrichedText": hasEnrichedText,
+           "hasEnrichedUrl": hasEnrichedUrl };
+}
+
+function swapUserEnrichment(curElm, movedElm, curElmInputs, movedElmInputs) {
+  var curElmEnrichment = curElm.find(".vrtx-multiple-inputfield-enrichment");
+  var movedElmEnrichment = movedElm.find(".vrtx-multiple-inputfield-enrichment");
+  if(curElmEnrichment.length) {
+    if(movedElmEnrichment.length) {
+      var tmp = curElmEnrichment[0].outerHTML;
+      curElmEnrichment.replaceWith(movedElmEnrichment[0].outerHTML);
+      movedElmEnrichment.replaceWith(tmp);
+    } else {
+      $(curElmInputs[0]).removeClass("vrtx-multipleinputfield-field-enriched");
+      $(movedElmInputs[0]).addClass("vrtx-multipleinputfield-field-enriched");
+      $(curElmEnrichment.remove())
+        .insertAfter(movedElm.find(".vrtx-multipleinputfield-json-wrapper").filter(":last"));
+    }
+  } else if(movedElmEnrichment.length) {
+    $(movedElmInputs[0]).removeClass("vrtx-multipleinputfield-field-enriched");
+    $(curElmInputs[0]).addClass("vrtx-multipleinputfield-field-enriched");
+    $(movedElmEnrichment.remove())
+      .insertAfter(curElm.find(".vrtx-multipleinputfield-json-wrapper").filter(":last"));
+  }
+}
+
+/* ^ User Enrichments */
 
 /* DEHANCE PART */
 function saveMultipleInputFields(content, arrSeperator) {
@@ -1704,16 +2028,14 @@ function scrollToElm(movedElm) {
  */
 VrtxEditor.prototype.htmlFacade = {
   /* 
-   * Turn a block of JSON into HTML (Only working for Schedule per. 14.08.2014)
-   * 
-   * TODO: undefined checks should probably be with typeof against the string
-   * 
+   * Turn a block of JSON into HTML (only working for Schedule)
    */
   jsonToHtml: function(isMedisin, id, sessionId, idForLookup, session, fixedResourcesUrl, fixedResources, descs, i18n, embeddedAdminService) {
     var html = "";
     var multiples = [];
     var rtEditors = [];
     var vrtxEdit = vrtxEditor;
+    var sep = userEnrichmentSeperators;
     
     for(var name in descs) {
       var desc = descs[name];
@@ -1741,7 +2063,7 @@ VrtxEditor.prototype.htmlFacade = {
       switch(desc.type) {
         case "json":
           for(var i = 0, descPropsLen = descProps.length; i < descPropsLen; i++) {
-            descProps[i].title = i18n[name + "-" + descProps[i].name];
+            descProps[i].title = i18n[name + "-" + descProps[i].name]; // Placeholder
             if(desc.multiple && desc.props[i].type === "resource_ref" && !isMedisin) {
               browsable = true;
             }
@@ -1749,7 +2071,13 @@ VrtxEditor.prototype.htmlFacade = {
           if(val && val.length) {
             for(var j = 0, propsLen = val.length; j < propsLen; j++) {
               for(i = 0; i < descPropsLen; i++) {
-                propsVal += (val[j][descProps[i].name] || "") + "###";
+                if(desc.props[i].type === "enrichedUrl") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.url;
+                } else if(desc.props[i].type === "enrichedText") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.text;
+                } else {
+                  propsVal += (val[j][descProps[i].name] || "") + "###";
+                }
               }
               if(j < (propsLen - 1)) propsVal += "$$$";
             }
@@ -1766,7 +2094,8 @@ VrtxEditor.prototype.htmlFacade = {
               readOnly: readOnly
             });
           }
-          html += vrtxEdit.htmlFacade.getStringField({ title: i18n[name],
+          var nameI18n = isMedisin && name === "vrtxResources" ? name + "NotFixed" : name;
+          html += vrtxEdit.htmlFacade.getStringField({ title: i18n[nameI18n],
                                                        name: (desc.autocomplete ? "vrtx-autocomplete-" + desc.autocomplete + " " : "") + name + " " + name + "-" + sessionId,
                                                        id: name + "-" + sessionId,
                                                        val: val,
@@ -1783,7 +2112,10 @@ VrtxEditor.prototype.htmlFacade = {
               var folderType = fr.folderType;
               var folderName = fr.folderName;
               var folderRoot = fr.folderRoot;
-              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'><label>" + i18n[name + "-" + folderType] + "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n[name + "-" + folderType + "-info"] + "'></abbr></label>";
+              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'>" + 
+                      "<label>" + i18n[name + "-" + folderType] +
+                        (i18n[name + "-" + folderType + "-info"] ? "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n[name + "-" + folderType + "-info"] + "'></abbr>" : "") +
+                      "</label>";
               if(folderUrl && folderUrl.length) {
                 /* Iframe placeholder */
                 html += "<div class='admin-fixed-resources-iframe' data-src='" + folderUrl + embeddedAdminService + "'></div>";
@@ -1796,21 +2128,6 @@ VrtxEditor.prototype.htmlFacade = {
               }
               html += "</div>";
             }
-            /* Old
-            html += "<div class='vrtx-simple-html'><label>" + i18n[name] + "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n.vrtxResourcesFixedInfo + "'></abbr></label>";
-            if(!val) { // Create fixed resources folder
-              html += "<a class='vrtx-button create-fixed-resources-folder' id='create-fixed-resources-folder-" + idForLookup + "SID" + sessionId + "' href='javascript:void(0);'>" + i18n[name + "CreateFolder"] + "</a>";
-            } else { // Admin fixed resources folder
-              if(val.length == undefined) { // Object
-                html += "<iframe class='admin-fixed-resources-iframe' src='" + val.folderUrl + embeddedAdminService + "'></iframe>";
-              } else { // Array
-                for(i = 0, len = val.length; i < len; i++) {
-                  html += "<iframe class='admin-fixed-resources-iframe' src='" + val[i].folderUrl + embeddedAdminService + "'></iframe>";
-                }
-              }
-            }
-            html += "</div>";
-            */
           }
           break;
         case "html":
@@ -1844,7 +2161,7 @@ VrtxEditor.prototype.htmlFacade = {
     return { html: html, multiples: multiples, rtEditors: rtEditors };
   },
  /* 
-  * Turn a block of HTML/DOM into JSON (Only working for Schedule per. 14.08.2014)
+  * Turn a block of HTML/DOM into JSON (only working for Schedule)
   */
   htmlToJson: function (isMedisin, sessionElms, sessionId, descs, rawOrig, rawOrigTP, rawPtr) {
     var vrtxEdit = vrtxEditor;
@@ -1854,7 +2171,9 @@ VrtxEditor.prototype.htmlFacade = {
     for(var name in descs) {
       var desc = descs[name],
           val = "";
-      if(desc.type === "json-fixed" || (desc.notMedisin && isMedisin) || (desc.onlyMedisin && !isMedisin)) {
+      // Skip fixed resources and branch: Medisin | Not Medisin
+      if(desc.type === "json-fixed" || (desc.notMedisin && isMedisin) 
+                                    || (desc.onlyMedisin && !isMedisin)) {
         continue;
       } else if(desc.type === "html") {
         // XXX: support multiple CK-fields starting with same name
@@ -1871,6 +2190,7 @@ VrtxEditor.prototype.htmlFacade = {
       } else if(desc.type === "html") {
         val = vrtxEdit.richtextEditorFacade.getInstanceValue(elm.attr("name"));
       } else {
+        // Reconstruct data from flattened string to objects
         val = elm.val(); // To string (string)
         if(desc.multiple && val.length) { // To array (multiple)
           val = val.split("$$$");
@@ -1881,6 +2201,9 @@ VrtxEditor.prototype.htmlFacade = {
             var newProp = null;
             var prop = val[i].split("###");
             for(var j = 0, descPropsLen = desc.props.length; j < descPropsLen; j++) { // Definition
+              if(desc.props[j].type == "enrichedUrl"
+              || desc.props[j].type == "enrichedText") continue;
+              
               if(prop[j] !== "") {
                 if(!newProp) {
                   newProp = {};
@@ -1896,24 +2219,33 @@ VrtxEditor.prototype.htmlFacade = {
         }
       }
 
-      // Changes in Vortex properties
-      if(val && val.length) { // If changes in Vortex properties and differs from TP/UIOWS-data
-        if(editorDetectChangeFunc(sessionId, val, rawOrig[name], name === "vrtxResourcesText") &&
-           editorDetectChangeFunc(sessionId, val, rawOrigTP[name.split("vrtx")[1].toLowerCase()], name === "vrtxResourcesText")) {
-          vrtxAdmin.log({msg: "ADD / CHANGE " + name + (typeof val === "string" ? " " + val : "")});
-          rawPtr[name] = val;
-          hasChanges = true;
+      // Has content
+      if(val && val.length) {
+        if(editorDetectChangeFunc(sessionId, val, rawOrig[name], name === "vrtxResourcesText")) { // Has changed
+          var isChangedFromTP = editorDetectChangeFunc(sessionId, val, rawOrigTP[name.split("vrtx")[1].toLowerCase()], name === "vrtxResourcesText");
+          if(isChangedFromTP) { // Differs from TP
+            vrtxAdmin.log({msg: "ADD / CHANGE " + name + (typeof val === "string" ? " " + val : "")});
+            rawPtr[name] = val;
+            hasChanges = true;
+          } else { // Otherwise Delete
+            if(rawOrig[name] != undefined) { // If exists
+              vrtxAdmin.log({msg: "DEL " + name + (typeof val === "string" ? " " + val : "")});
+              delete rawPtr[name];
+              hasChanges = true;
+            }
+          }
         }
-      } else { // If removed in Vortex properties
-        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) { // If is "vrtxStaff" and has "staff" set to []
+      } else { // Empty
+        // Is "vrtxStaff" and has "staff" set to []
+        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) {
 	      if(rawPtr[name] == undefined || rawPtr[name].length > 0) {
-            vrtxAdmin.log({msg: "DEL EMPTY " + name + (typeof val === "string" ? " " + val : "")});
+            vrtxAdmin.log({msg: "DEL EMPTY " + name});
             rawPtr[name] = [];
             hasChanges = true;
 	      }
-        } else {
-	      if(rawOrig[name] != undefined) {
-            vrtxAdmin.log({msg: "DEL " + name + (typeof val === "string" ? " " + val : "")});
+        } else { // Otherwise Delete
+	      if(rawOrig[name] != undefined) { // If exists
+            vrtxAdmin.log({msg: "DEL " + name});
             delete rawPtr[name];
             hasChanges = true;
 	      }
@@ -1965,7 +2297,7 @@ VrtxEditor.prototype.htmlFacade = {
   /* 
    * Type / fields 
    */
-  getMultipleInputfield: function (name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json, isReadOnly) {
+  getMultipleInputfield: function (name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json, isReadOnly, hasEnrichedText, hasEnrichedUrl) {
     return vrtxAdmin.templateEngineFacade.render(vrtxEditor.multipleFieldsBoxesTemplates["multiple-inputfield"], {
       idstr: idstr,
       i: i,
@@ -1978,7 +2310,9 @@ VrtxEditor.prototype.htmlFacade = {
       isDropdown: isDropdown,
       dropdownArray: "dropdown" + name,
       json: json,
-      isReadOnly: isReadOnly
+      isReadOnly: isReadOnly,
+      hasEnrichedText: hasEnrichedText,
+      hasEnrichedUrl: hasEnrichedUrl
     });
   },
   getTypeHtml: function (elem, inputFieldName) {
@@ -2065,8 +2399,7 @@ VrtxEditor.prototype.htmlFacade = {
   },
   getImageRefField: function (elem, inputFieldName) {
     return this.getBrowseField(elem, inputFieldName, "browse-images", "vrtx-image-ref", "", 30, {
-      previewTitle: browseImagesPreview,
-      previewNoImageText: browseImagesNoPreview
+      previewTitle: browseImagesPreview
     });
   },
   getResourceRefField: function (elem, inputFieldName) {
@@ -2359,28 +2692,33 @@ VrtxEditor.prototype.initEventHandler = function initEventHandler(selector, opts
   });
 };
 
-function autocompleteUsernames(selector) {
+function autocompleteUsernames(elms, useEnrichment) {
   var _$ = vrtxAdmin._$;
-  var autocompleteTextfields = _$(selector).find('.vrtx-textfield');
-  var i = autocompleteTextfields.length;
-  while (i--) {
-    permissionsAutocomplete(_$(autocompleteTextfields[i]).attr("id"), 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+  var autocompleteTextfields = elms.find('.vrtx-textfield');
+  for (var i = autocompleteTextfields.length; i--;) {
+    var id = autocompleteTextfields[i].id;
+    permissionsAutocomplete(id, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+    if(typeof useEnrichment === "boolean" && useEnrichment) {
+      enrichedUsersAutocomplete(id, ".vrtx-button.add");
+    }
   }
 }
 
-function autocompleteUsername(selector, subselector) {
+function autocompleteUsername(selector, subselector, useEnrichment) {
   var autocompleteTextfield = vrtxAdmin._$(selector).find('input#' + subselector);
   if (autocompleteTextfield.length) {
     permissionsAutocomplete(subselector, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+    if(typeof useEnrichment === "boolean" && useEnrichment) {
+      enrichedUsersAutocomplete(subselector, ".vrtx-button.add");
+    }
   }
 }
 
 function autocompleteTags(selector) {
   var _$ = vrtxAdmin._$;
   var autocompleteTextfields = _$(selector).find('.vrtx-textfield');
-  var i = autocompleteTextfields.length;
-  while (i--) {
-    setAutoComplete(_$(autocompleteTextfields[i]).attr("id"), 'tags', vrtxAdmin.tagAutocompleteParams);
+  for (var i = autocompleteTextfields.length; i--;) {
+    setAutoComplete(autocompleteTextfields[i].id, 'tags', vrtxAdmin.tagAutocompleteParams);
   }
 }
 

@@ -64,14 +64,14 @@ public class RenameCommandValidator implements Validator {
         String name = renameCommand.getName();
 
         if (StringUtils.isBlank(name)) {
-            errors.rejectValue("name", "manage.create.document.missing.name",
-                    "A name must be provided for the document");
+            errors.rejectValue("name", "manage.rename.resource.missing.name",
+                    "The resource needs a name");
             return;
 
         }
         name = name.trim();
         if (this.isInvalid(name)) {
-            errors.rejectValue("name", "manage.create.document.invalid.name", "This is an invalid name");
+            errors.rejectValue("name", "manage.create.document.invalid.name", "This is an illegal name");
             return;
         }
 
@@ -87,7 +87,8 @@ public class RenameCommandValidator implements Validator {
                 Resource existing = repository.retrieve(token, newUri, false);
                 if (renameCommand.getOverwrite() == null) {
                     if (resource.isCollection() || existing.isCollection()) {
-                        errors.rejectValue("name", "manage.rename.resource.exists");
+                        errors.rejectValue("name", "manage.rename.resource.exists",
+                                "A resource of this name already exists");
                     } else {
                         errors.rejectValue("name", "manage.rename.resource.overwrite",
                                 "A resource of this name already exists, do you want to overwrite it?");

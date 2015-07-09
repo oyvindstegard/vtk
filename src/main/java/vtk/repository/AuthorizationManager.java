@@ -658,7 +658,7 @@ public final class AuthorizationManager {
 
         boolean srcHasACLs = (this.dao.discoverACLs(srcUri).length > 0);
         if (srcHasACLs) {
-            /* src has ACLs and move will therefore impact ACLs of sutbree rooted 
+            /* src has ACLs and move will therefore impact ACLs of subtree rooted 
              * at destination.
              * Therefore require all privilege at destination (which would be required to 
              * create similar subtree at destination using other operations).

@@ -28,6 +28,13 @@
     </#if>
   </head>
   <body id="vrtx-${collection.resourceType}">
+  
+    <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
+    <#if additionalContent?has_content>
+      <div id="vrtx-content">
+        <div id="vrtx-main-content">
+    </#if>
+  
     <@vrtx.displayLinkOtherLang collection />
     <h1>${collection.title?html}<#if collectionSpecificValues?exists && collectionSpecificValues.currentUrl?exists> (${vrtx.getMsg("listing-filters.title.discontinued")})</#if></h1>
     <#if showSubfolderMenu?exists>
@@ -133,5 +140,16 @@
         </#if>
       </div>
     </#if>
+    
+    <#if additionalContent?has_content>
+        </div><#-- end vrtx-main-content -->
+        <div id="vrtx-additional-content">
+          <div id="vrtx-related-content"> 
+            <@vrtx.invokeComponentRefs additionalContent />
+          </div>
+        </div>
+      </div><#-- end vrtx-content -->
+    </#if>
+    
   </body>
 </html>

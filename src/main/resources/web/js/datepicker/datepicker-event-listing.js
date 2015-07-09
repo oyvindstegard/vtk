@@ -14,7 +14,8 @@ function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notCl
     $.datepicker.setDefaults($.datepicker.regional[language]);
   }
 
-  $("#datepicker").datepicker({
+  var datepick = $("#datepicker");
+  datepick.datepicker({
     dateFormat: 'yy-mm-dd',
     onSelect: function (dateText, inst) {
       window.location.href = window.location.href.split('?')[0] + "?date=" + dateText;
@@ -48,13 +49,22 @@ function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notCl
     }
   });
 
-  var interval = 25;
+  var interval = 15;
   var checkMonthYearHTMLLoaded = setInterval(function () {
-    if ($(".ui-datepicker-month").length && $(".ui-datepicker-year").length) {
+    var datepickerMonth = $(".ui-datepicker-month");
+    var datepickerYear = $(".ui-datepicker-year");
+    if (datepickerMonth.length && datepickerYear.length) {
       var date = $.datepicker.formatDate("yy-mm", activeDateForInit[0]).toString();
-
-      $(".ui-datepicker-month").html("<a href='./?date=" + date + "'>" + $(".ui-datepicker-month").text() + ' ' + $(".ui-datepicker-year").remove().text() + "</a>");
-
+      datepickerMonth.html("<a tabindex='0' href='./?date=" + date + "'>" + datepickerMonth.text() + ' ' + datepickerYear.remove().text() + "</a>");
+      var datepickerPrevNext = $(".ui-datepicker-prev, .ui-datepicker-next");
+      if(datepickerPrevNext.length) {
+        datepickerPrevNext.attr("tabindex", "0");
+        datepick.on("keydown", ".ui-datepicker-prev, .ui-datepicker-next", function(e) {
+          if((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
+            $(this).click();
+          }
+        });
+      }
       clearInterval(checkMonthYearHTMLLoaded);
     }
   }, interval);

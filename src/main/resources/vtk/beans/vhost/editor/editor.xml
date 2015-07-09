@@ -140,6 +140,7 @@
       </list>
     </property>
     <property name="handler" ref="editor.loadImageHandler" />
+    <property name="handlerInterceptors" ref="noCacheHandlerInterceptor" />
   </bean>
 
   <bean id="editor.loadImageHandler" class="vtk.web.display.file.DisplayResourceController">
@@ -172,6 +173,15 @@
       </list>
     </property>
     <property name="handler" ref="editor.articleListingEditHandler" />
+  </bean>
+
+  <bean id="editor.folderListingEditService" parent="editor.abstractEditService">
+    <property name="assertions">
+      <list>
+        <ref bean="resourceIsFolderListing" />
+      </list>
+    </property>
+    <property name="handler" ref="editor.folderListingEditHandler" />
   </bean>
 
   <bean id="editor.blogListingEditService" parent="editor.abstractEditService">
@@ -229,10 +239,12 @@
     </property>
   </bean>
 
+  <!--
   <bean id="editor.getSourceStripHeadersInterceptor" class="vtk.web.interceptors.HeaderControlHandlerInterceptor">
     <property name="includeLastModifiedHeader" value="false" />
     <property name="includeEtagHeader" value="false" />
   </bean>
+  -->
 
   <bean id="editor.browseUriAssertion" class="vtk.web.service.RequestURIRegexpAssertion">
     <property name="pattern" value="${editor.fck.browseURL}" />
@@ -475,6 +487,11 @@
 
   <bean id="editor.articleListingEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.articleListingResourceManager" />
+    <property name="successView" value="redirectToPreviewCollection" />
+  </bean>
+
+  <bean id="editor.folderListingEditHandler" parent="editor.editCollectionHandler">
+    <property name="resourceManager" ref="editor.folderListingResourceManager" />
     <property name="successView" value="redirectToPreviewCollection" />
   </bean>
 
@@ -770,6 +787,31 @@
             <ref bean="articleListing.hideIntroductionImagePropDef" />
             <ref bean="hideNumberOfCommentsPropDef" />
             <ref bean="additionalContentPropDef" />
+            <ref bean="linkOtherLanguagePropDef" />
+          </list>
+        </property>
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="editor.folderListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
+    <property name="htmlParser" ref="decorating.htmlParser" />
+    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
+    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="editPropertyProvider">
+      <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
+        <property name="preContentProperties">
+          <list>
+            <ref bean="userTitlePropDef" />
+            <ref bean="navigationTitlePropDef" />
+            <ref bean="introductionPropDef" />
+            <ref bean="introductionImagePropDef" />
+            <ref bean="introductionImageAltPropDef" />
+            <ref bean="introductionImageCaptionPropDef" />
+            <ref bean="importancePropDef" />
+            <ref bean="hiddenPropDef" />
+            <ref bean="pageLimitPropDef" />
+            <ref bean="collection.sortingPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
         </property>

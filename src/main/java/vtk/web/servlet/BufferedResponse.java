@@ -73,7 +73,7 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
     private List<Cookie> cookies = new ArrayList<Cookie>();
     private int bufferSize = 1000;
     private String contentType = null;
-    private int contentLength = -1;
+    private long contentLength = -1L;
     private Locale locale = Locale.getDefault();
     private String characterEncoding = null;
     private boolean committed = false;
@@ -122,7 +122,7 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
     
     public int getContentLength() {
         if (this.contentLength >= 0) {
-            return this.contentLength;
+            return (int) this.contentLength;
         }
         return this.bufferStream.size();
     }
@@ -164,7 +164,7 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
         }
 
         this.characterEncoding = null;
-        this.contentLength = -1;
+        this.contentLength = -1L;
         this.bufferStream.reset();
     }
 
@@ -398,7 +398,7 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
     public void writeTo(HttpServletResponse response, boolean closeOutputStream) 
         throws IOException {
         // Write/copy metadata
-        response.setContentLength(getContentLength());
+        response.setContentLengthLong(getContentLength());
         String contentType = getContentType();
         if (contentType != null) {
             response.setContentType(contentType);
@@ -458,14 +458,14 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
     private void addHeaderInternal(String header, Object value) {
         List<Object> list = this.headers.get(header);
         if (list == null) {
-            list = new ArrayList<Object>();
+            list = new ArrayList<>();
             this.headers.put(header, list);
         }
         list.add(value);
     }
 
     private void setHeaderInternal(String header, Object value) {
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         list.add(value);
         this.headers.put(header, list);
         
@@ -477,8 +477,8 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
             processContentTypeHeader(value);
         } else if (CONTENT_LENGTH.equalsIgnoreCase(header)) {
             try {
-                int intValue = Integer.parseInt(value);
-                this.contentLength = intValue;
+                long longValue = Long.parseLong(value);
+                this.contentLength = longValue;
             } catch (Exception e) {
                 
             }
@@ -506,5 +506,37 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
             this.contentType = value;
             setHeaderInternal(CONTENT_TYPE, value);
         }
+    }
+
+    @Override
+    public String getHeader(String name) {
+        List<Object> values = headers.get(name);
+        if (values != null && !values.isEmpty()) {
+            return formatHeader(values.get(0));
+        }
+        return null;
+    }
+
+    @Override
+    public Collection<String> getHeaders(String name) {
+        List<String> result = new ArrayList<>();
+        List<Object> values = headers.get(name);
+        if (values != null && !values.isEmpty()) {
+            for (Object val: values)
+                result.add(formatHeader(val));
+        }
+        return result;
+    }
+
+    @Override
+    public void setContentLengthLong(long len) {
+        this.contentLength = len;
+    }
+    
+    private String formatHeader(Object value) {
+        if (value instanceof Date) {
+            return HttpUtil.getHttpDateString((Date) value);
+        }
+        return value.toString();
     }
 }

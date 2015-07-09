@@ -10,6 +10,8 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
     case "vrtx-edit-plaintext":
     case "vrtx-visual-profile":
       if (_$("form#editor").length) {
+      
+        displaySystemGoingDownMessage();
         
         // Dropdowns
         if(!isEmbedded) {
@@ -61,6 +63,80 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       break;
   }
 });
+
+/* 
+ * Display system going down message when #server-going-down exists in admin-message (after 5s every 60s)
+ *
+ * Opt-in possible to set when it should start showing (comparison with server time each 60s)
+ *
+ */
+function displaySystemGoingDownMessage() {
+  var systemGoingDownSelector = "#server-going-down";
+  var serverNowSelector = "#server-now-time";
+  
+  var systemGoingDownElm = $(systemGoingDownSelector);
+  if(systemGoingDownElm.length) {
+    var systemGoingDownWait = 5000;
+    var systemGoingDownRepeatWait = 60000;
+    
+    var systemGoingDownStartText = systemGoingDownElm.text();
+    var hasSystemGoingDownStart = systemGoingDownStartText.length === 19;
+    var systemGoingDownDialogStart = hasSystemGoingDownStart ? serverTimeFormatToClientTimeFormat(systemGoingDownStartText.split(",")) : null;
+    
+    var displaySystemGoingDownMessage = function() {
+      var serverNowTime = {};
+      var hasCheckedServerNow = hasSystemGoingDownStart ? getTagAsyncDeferred(serverNowTime, serverNowSelector) : $.Deferred().resolve();
+      $.when(hasCheckedServerNow).done(function() {
+        var serverNow = 0;
+        if(hasSystemGoingDownStart && serverNowTime.elm && serverNowTime.elm.length) {
+          vrtxAdmin.serverNowTime = serverNowTime.elm.text().split(",");
+          serverNow = serverTimeFormatToClientTimeFormat(vrtxAdmin.serverNowTime);
+        }
+        if(!hasSystemGoingDownStart || serverNow >= systemGoingDownDialogStart) {
+          var waitForSystemGoingDownDialog = setTimeout(function() {
+            var systemGoingDownDialog = new VrtxMsgDialog({
+              title: vrtxAdmin.messages.system.goingDown.title,
+              msg: vrtxAdmin.messages.system.goingDown.msg,
+              width: 420
+            });
+            systemGoingDownDialog.open();
+            
+            var retriggerSystemGoingDownDialog = setTimeout(function() {
+              var systemGoingDown = {};
+              var hasSystemGoingDown = getTagAsyncDeferred(systemGoingDown, systemGoingDownSelector);
+              $.when(hasSystemGoingDown).done(function() {
+                if(systemGoingDown.elm && systemGoingDown.elm.length) {
+                  systemGoingDownDialog.open();
+                  setTimeout(retriggerSystemGoingDownDialog, systemGoingDownRepeatWait);
+                }
+              });
+            }, systemGoingDownRepeatWait);
+          }, systemGoingDownWait);
+        } else {
+          setTimeout(displaySystemGoingDownMessage, systemGoingDownRepeatWait);
+        }
+      });
+    };
+    
+    displaySystemGoingDownMessage();
+  }
+}
+
+/* 
+ * Retrieve element by reference (object) and return future
+ *
+ */
+function getTagAsyncDeferred(obj, selector) {
+  return vrtxAdmin._$.ajax({
+    type: "GET",
+    url: window.location.pathname + "?vrtx=admin&mode=about" + (gup("service", window.location.search) === "view" ? "&service=view" : ""),
+    async: false,
+    cache: false,
+    success: function (results, status, resp) {
+      obj.elm = $($.parseHTML(results)).find(selector);
+    }
+  });
+}
 
 function handleAjaxSaveErrors(xhr, textStatus) {
   var vrtxAdm = vrtxAdmin,
@@ -361,18 +437,17 @@ function reAuthenticateRetokenizeForms(isEditorSave) {
 }
 
 function retokenizeFormsOpenSaveDialog(d2, isEditorSave) {
-  // Repopulate all tokens
-  var current = $("input[name='csrf-prevention-token']");
-  var currentLen = current.length;
-  
   $.ajax({
     type: "GET",
     url: window.location.href,
     cache: true,
     dataType: "html",
     success: function (results, status, resp) {
+    
+      // Repopulate all tokens
+      var current = $("input[name='csrf-prevention-token']");
       var updated = $($.parseHTML(results)).find("input[name='csrf-prevention-token']");
-      for(var i = 0; i < currentLen; i++) {
+      for(var i = 0, currentLen = current.length; i < currentLen; i++) {
         current[i].value = updated[i].value;
       }
 
