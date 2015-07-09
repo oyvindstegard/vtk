@@ -90,6 +90,7 @@ public final class ResourceTypeMapper {
         "/collection/blog-listing",
         "/collection/employee-listing",
         "/collection/event-listing",
+        "/collection/folder-listing",
         "/collection/image-listing",
         "/collection/master-listing",
         "/collection/message-listing",
