@@ -305,7 +305,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     
 
     @Override
-    public Enumeration<?> getHeaders(String name) {
+    public Enumeration<String> getHeaders(String name) {
         Set<String> values = this.headers.get(name);
         if (values == null) {
             return null;
@@ -314,7 +314,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     }
     
     @Override
-    public Enumeration<?> getHeaderNames() {
+    public Enumeration<String> getHeaderNames() {
         Set<String> values = this.headers.keySet();
         return Collections.enumeration(values);
     }
@@ -429,11 +429,11 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @Override
-    public Enumeration<?> getAttributeNames() {
+    public Enumeration<String> getAttributeNames() {
         Set<String> names = new HashSet<String>();
-        Enumeration<?> e = super.getAttributeNames();
+        Enumeration<String> e = super.getAttributeNames();
         while (e.hasMoreElements()) {
-            names.add((String) e.nextElement());
+            names.add(e.nextElement());
         }
         names.addAll(this.attributes.keySet());
         return Collections.enumeration(names);

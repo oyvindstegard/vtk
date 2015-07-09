@@ -32,16 +32,13 @@ package vtk.web.filter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -50,6 +47,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
+
 import vtk.context.BaseContext;
 import vtk.web.RequestContext;
 import vtk.web.filter.CaptureInputRequestFilter.CaptureInputRequestWrapper;
@@ -176,9 +174,8 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
     }
 
     private void addHeadersForLogging(CaptureOutputResponseWrapper responseWrapper, StringBuilder logBuffer) {
-        for (Iterator<String> it = responseWrapper.getHeaderNames(); it.hasNext();) {
-            String header = it.next();
-            List<?> values = responseWrapper.getHeaderValues(header);
+        for (String header: responseWrapper.getHeaderNames()) {
+            List<Object> values = responseWrapper.getHeaderValues(header);
             for (Object value : values) {
                 logBuffer.append(header).append(": ").append(value).append('\n');
             }
@@ -273,10 +270,10 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
     private class OutputStreamCopyWrapper extends ServletOutputStream {
 
         private ByteArrayOutputStream streamCopyBuffer;
-        private OutputStream wrappedStream;
+        private ServletOutputStream wrappedStream;
         private int streamBytesWritten=0;
 
-        OutputStreamCopyWrapper(OutputStream wrappedStream) {
+        OutputStreamCopyWrapper(ServletOutputStream wrappedStream) {
             this.wrappedStream = wrappedStream;
             this.streamCopyBuffer = new ByteArrayOutputStream();
         }
@@ -286,20 +283,30 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
             if (b > -1 && (streamBytesWritten++ < maxLogBytesBody)) {
                 streamCopyBuffer.write(b);
             }
-            this.wrappedStream.write(b);
+            wrappedStream.write(b);
         }
 
         @Override
         public void close() throws IOException {
-            this.wrappedStream.close();
+            wrappedStream.close();
         }
 
         byte[] getCopiedBytes() {
-            return this.streamCopyBuffer.toByteArray();
+            return streamCopyBuffer.toByteArray();
         }
         
         int getStreamBytesWritten() {
-            return this.streamBytesWritten;
+            return streamBytesWritten;
+        }
+
+        @Override
+        public boolean isReady() {
+            return wrappedStream.isReady();
+        }
+
+        @Override
+        public void setWriteListener(WriteListener writeListener) {
+            wrappedStream.setWriteListener(writeListener);
         }
     }
 

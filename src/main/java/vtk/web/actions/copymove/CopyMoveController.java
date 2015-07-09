@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.web.Message;
 import vtk.web.RequestContext;
@@ -95,7 +96,7 @@ public class CopyMoveController implements Controller {
              * selected for copy/move and store them in session
              */
 
-            Enumeration<Object> e = request.getParameterNames();
+            Enumeration<String> e = request.getParameterNames();
 
             while (e.hasMoreElements()) {
                 String name = (String) e.nextElement();
