@@ -32,6 +32,7 @@ package vtk.web.actions.copymove;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -119,7 +120,7 @@ public class CopyMoveController implements Controller {
         String msgCode = "copyMove." + sessionBean.getAction() + ".info";
         requestContext.addInfoMessage(new Message(msgCode));
         
-        return new ModelAndView(this.viewName);
+        return new ModelAndView(this.viewName, new HashMap<>());
     }
 
     @Required
