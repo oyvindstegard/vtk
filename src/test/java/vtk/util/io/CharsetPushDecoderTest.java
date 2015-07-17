@@ -163,7 +163,7 @@ public class CharsetPushDecoderTest {
        fileChannel.read(byteBuffer, 0, byteBuffer, handler);
        try {
            String content = future.get();
-           String original = StreamUtil.streamToString(new FileInputStream(UTF8_DEMO));
+           String original = StreamUtil.streamToString(new FileInputStream(UTF8_DEMO), "utf-8");
            assertEquals(original, content);
        } 
        catch (Exception e) {
