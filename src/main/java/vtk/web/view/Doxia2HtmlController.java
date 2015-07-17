@@ -30,13 +30,11 @@
  */
 package vtk.web.view;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -47,66 +45,44 @@ import org.apache.maven.doxia.module.xhtml.XhtmlSink;
 import org.apache.maven.doxia.parser.AbstractParser;
 import org.apache.maven.doxia.sink.Sink;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Resource;
+import vtk.web.RequestContext;
 
-public class DoxiaHtmlView implements View {
+public class Doxia2HtmlController implements Controller {
 
-    private String streamKey;
-    private String resourceKey;
     private Class<AbstractParser> parserClass;
     private String contentType = "text/html";
     private String characterEncoding = "utf-8";
     
-    @Override
-    public String getContentType() {
-        return this.contentType + ";charset=" + this.characterEncoding;
-    }
 
     @Override
-    public void render(Map<String, ?> model, HttpServletRequest request,
+    public ModelAndView handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
-    	String title = null;
-        if (this.resourceKey != null) {
-            Resource resource = (Resource) model.get(this.resourceKey);
-            if (resource != null) {
-            	title = resource.getTitle();
-            }
-        }
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Resource resource = requestContext.getRepository().retrieve(
+                requestContext.getSecurityToken(), requestContext.getResourceURI(), true);
 
-    	InputStream in = (InputStream) model.get(this.streamKey);
-        if (in == null) {
-            throw new IllegalStateException("No input stream in model with key '" 
-                                            + this.streamKey + "'");
-        }
+        InputStream in = requestContext.getRepository().getInputStream(
+                requestContext.getSecurityToken(), requestContext.getResourceURI(), true);
         
         Reader source = new InputStreamReader(in, this.characterEncoding);
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
-        Sink htmlSink = new InsertHeaderSink(new OutputStreamWriter(result, this.characterEncoding), title);
+        response.setContentType(this.contentType + ";charset=" + this.characterEncoding);
+        ServletOutputStream out = response.getOutputStream();
+        Sink htmlSink = new InsertHeaderSink(
+                new OutputStreamWriter(out, this.characterEncoding), resource.getTitle());
 
         AbstractParser parser = this.parserClass.newInstance();
         parser.parse(source, htmlSink);
         
         htmlSink.flush();
         htmlSink.close();
-        
-        response.setContentType(this.contentType + ";charset=" + this.characterEncoding);
-        ServletOutputStream out = response.getOutputStream();
-        out.write(result.toByteArray());
-        out.flush();
-        out.close();
+        return null;
     }
 
-    @Required
-    public void setStreamKey(String streamKey) {
-        this.streamKey = streamKey;
-    }
-
-    public void setResourceKey(String resourceKey) {
-    	this.resourceKey = resourceKey;
-    }
-    
     @Required
     public void setParserClass(Class<AbstractParser> parserClass) {
         this.parserClass = parserClass;

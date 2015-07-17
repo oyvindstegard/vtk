@@ -52,11 +52,11 @@ import org.jdom.transform.JDOMSource;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.view.AbstractView;
+
 import vtk.repository.Resource;
 import vtk.util.repository.LocaleHelper;
 import vtk.web.InvalidModelException;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 import vtk.xml.AbstractPathBasedURIResolver;
 import vtk.xml.TransformerManager;
 
@@ -104,7 +104,7 @@ import vtk.xml.TransformerManager;
  * 
  */
 public class ResourceXsltView extends AbstractView
-  implements ReferenceDataProviding, InitializingBean {
+  implements InitializingBean {
 
     private static Log logger = LogFactory.getLog(ResourceXsltView.class);
 
@@ -118,10 +118,6 @@ public class ResourceXsltView extends AbstractView
     
     private boolean includeContentLanguageHeader = false;
     
-
-    public ReferenceDataProvider[] getReferenceDataProviders() {
-        return this.referenceDataProviders;
-    }
 
     public void setReferenceDataProviders(
         ReferenceDataProvider[] referenceDataProviders) {
@@ -150,11 +146,13 @@ public class ResourceXsltView extends AbstractView
     }
 
 
-    @SuppressWarnings("rawtypes")
-    protected void renderMergedOutputModel(Map model, HttpServletRequest request,
+    protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request,
                                            HttpServletResponse response)
         throws Exception {
 
+        for (ReferenceDataProvider p: referenceDataProviders) {
+            p.referenceData(model, request);
+        }
         Resource resource = (Resource) model.get("resource");
         if (resource == null) {
             throw new InvalidModelException(

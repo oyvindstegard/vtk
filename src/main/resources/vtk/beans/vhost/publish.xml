@@ -115,7 +115,7 @@
     <property name="publishService" ref="publish.unpublishResourceConfirmedService" />
   </bean>
 
-  <bean id="publish.viewResolver" parent="system.decoratingViewResolver">
+  <bean id="publish.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="publish.confirm" value-ref="publish.confirmView" />
@@ -318,11 +318,12 @@
   </bean>
 
 
-  <bean id="displayUnpublishedPageHandler" class="vtk.web.display.file.DisplayResourceController">
-    <property name="viewName" value="displayUnpublishedMessage.view" />
+  <bean id="displayUnpublishedPageHandler" 
+        class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="displayUnpublishedMessage.view" />
   </bean>
 
-  <bean id="displayUnpublishedMessage.viewResolver" parent="decoratorViewResolver">
+  <bean id="displayUnpublishedMessage.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="displayUnpublishedMessage.view" value-ref="displayUnpublishedMessage.view" />

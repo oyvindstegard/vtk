@@ -42,13 +42,14 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.web.servlet.HandlerInterceptor;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.web.AuthenticationChallenge;
 import vtk.util.net.NetUtils;
 import vtk.web.RequestContext;
-import vtk.web.filter.HandlerFilter;
+import vtk.web.filter.ServiceFilter;
 import vtk.web.service.provider.ServiceNameProvider;
 
 
@@ -87,7 +88,7 @@ public class ServiceImpl implements Service, BeanNameAware {
     private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private List<HandlerInterceptor> handlerInterceptors;
-    private List<HandlerFilter> handlerFilters;
+    private List<ServiceFilter> serviceFilters;
     private int order = 0;
     private Set<String> categories = null;
     private List<URLPostProcessor> urlPostProcessors = new ArrayList<URLPostProcessor>();
@@ -356,18 +357,15 @@ public class ServiceImpl implements Service, BeanNameAware {
         return Collections.unmodifiableList(this.handlerInterceptors);
     }
 
-    public void setHandlerFilters(List<HandlerFilter> handlerFilters) {
-        this.handlerFilters = handlerFilters;
+    public void setServiceFilters(List<ServiceFilter> serviceFilters) {
+        this.serviceFilters = serviceFilters;
     }
-    
+
     @Override
-    public List<HandlerFilter> getHandlerFilters() {
-        if (this.handlerFilters == null) {
-            return null;
-        }
-        return Collections.unmodifiableList(this.handlerFilters);
+    public List<ServiceFilter> getServiceFilters() {
+        if (this.serviceFilters == null) return null;
+        return Collections.unmodifiableList(serviceFilters);
     }
-    
 
     @Override
     public String toString() {

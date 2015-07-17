@@ -30,20 +30,55 @@
  */
 package vtk.web.decorating;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-public class StaticTextFragment implements ComponentInvocation {
+public final class StaticTextFragment implements ComponentInvocation {
+    private byte[] buffer;
 
-    public StringBuilder buffer = new StringBuilder();
+    public StaticTextFragment(String s) {
+        try {
+            this.buffer = s.getBytes("utf-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
+    }
     
+    public StaticTextFragment append(String s) {
+        try {
+            String ss = new String(buffer, "utf-8");
+            return new StaticTextFragment(ss + s);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+    
+    public void write(OutputStream out) throws IOException {
+        out.write(buffer);
+        //out.flush();
+    }
+    
+    public void write(StringBuilder sb) {
+        try {
+            sb.append(new String(buffer, "utf-8"));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
     public String getNamespace() {
         throw new IllegalStateException("Static text fragment");
     }
 
+    @Override
     public String getName() {
         throw new IllegalStateException("Static text fragment");
     }
 
+    @Override
     public Map<String, Object> getParameters() {
         throw new IllegalStateException("Static text fragment");
     }

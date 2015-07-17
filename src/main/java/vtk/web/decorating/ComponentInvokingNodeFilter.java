@@ -30,6 +30,7 @@
  */
 package vtk.web.decorating;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -251,16 +252,18 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
         StringBuilder sb = new StringBuilder();
 
         for (ComponentInvocation invocation: componentInvocations) {
+            
             if (invocation instanceof StaticTextFragment) {
-                sb.append(((StaticTextFragment) invocation).buffer);
+                ((StaticTextFragment) invocation).write(sb);
                 continue;
             }
             Map<String, Object> parameters = invocation.getParameters();
             DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
-                    null, servletRequest, new HashMap<String, Object>(), 
+                    null, servletRequest, //new HashMap<String, Object>(), 
                     parameters, doctype, locale);
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
             DecoratorResponseImpl response = new DecoratorResponseImpl(
-                    doctype, locale, "utf-8");
+                    doctype, locale, "utf-8", bout);
             String result = null;
             try {
                 DecoratorComponent component = this.componentResolver.resolveComponent(
@@ -271,7 +274,7 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
                     continue;
                 }
                 component.render(decoratorRequest, response);
-                result = response.getContentAsString();
+                result = new String(bout.toByteArray(), "utf-8");
 
             } catch (Throwable t) {
                 if (logger.isDebugEnabled()) {

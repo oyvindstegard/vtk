@@ -18,11 +18,11 @@
     Handler does nothing here, resource depends on dedicated functionality found in parent project (Vortex).
     Bean is overridden with necessary configuration there. Jesus...
   ## -->
-  <bean id="employeeListing.handler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="employeeListing.view" />
+  <bean id="employeeListing.handler" class="vtk.web.display.ParameterizableViewController">
+    <constructor-arg value="employeeListing.view" />
   </bean>
 
-  <bean id="employeeListing.viewResolver" parent="decoratorViewResolver">
+  <bean id="employeeListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="employeeListing.view" value-ref="employeeListing.view" />

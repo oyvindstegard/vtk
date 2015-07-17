@@ -12,7 +12,7 @@
         <ref bean="commenting.commentsEnabled" />
       </list>
     </property>
-    <property name="handlerFilters">
+    <property name="serviceFilters">
       <list>
         <ref bean="system.csrfPreventionHandler" />
       </list>
@@ -29,7 +29,7 @@
         <ref bean="commenting.hasDeletePermission" />
       </list>
     </property>
-    <property name="handlerFilters">
+    <property name="serviceFilters">
       <list>
         <ref bean="system.csrfPreventionHandler" />
       </list>
@@ -46,7 +46,7 @@
         <ref bean="commenting.hasDeletePermission" />
       </list>
     </property>
-    <property name="handlerFilters">
+    <property name="serviceFilters">
       <list>
         <ref bean="system.csrfPreventionHandler" />
       </list>
@@ -161,8 +161,8 @@
   </bean>
 
   <bean name="commenting.resourceCommentsController"
-        class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="commenting.resourceCommentsView" />
+        class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="commenting.resourceCommentsView" />
   </bean>
 
   <bean name="commenting.displayFeedController"
@@ -237,7 +237,8 @@
     </property>
   </bean>
   
-  <bean id="commenting.decoratingViewResolver" parent="decoratorViewResolver">
+  <!--bean id="commenting.decoratingViewResolver" parent="decoratorViewResolver"-->
+  <bean id="commenting.decoratingViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="commenting.resourceCommentsView" value-ref="commenting.resourceCommentsView" />

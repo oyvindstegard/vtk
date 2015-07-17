@@ -54,8 +54,8 @@
   </bean>
 
   <bean id="webdav.davMountHandler" 
-    class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="webdav.davMount" />
+    class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="webdav.davMount" />
   </bean>
 
   <bean id="webdavServiceUrlPostProcessors" class="org.springframework.beans.factory.config.ListFactoryBean">
@@ -394,18 +394,16 @@
         class="vtk.web.http.HttpMethodNotImplementedHandler"/>
 
   <bean id="webdavCollectionListingHandler"
-        class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="webdavCollectionListingView" />
+        class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="webdavCollectionListingView" />
   </bean>
 
   <bean id="webdavOptionsHandler" class="vtk.webdav.OptionsController" />
 
   <bean id="webdavGetHandler" class="vtk.web.display.file.DisplayResourceController">
-    <property name="viewName" value="webdavDisplayResource" />
-    <property name="ignoreLastModified" value="true" />
   </bean>
 
-  <bean id="webdavHeadHandler" class="vtk.webdav.HeadController" />
+  <bean id="webdavHeadHandler" class="vtk.web.display.file.DisplayResourceController" />
 
   <bean id="webdavPropfindHandler" class="vtk.webdav.PropfindController" >
     <property name="childAuthorizeWhitelistProperties" ref="webdav.childAuthorizeWhitelistProperties" />
@@ -466,10 +464,8 @@
     <property name="views">
       <map>
         <entry key="webdav.davMount" value-ref="webdav.davMountView" />
-        <entry key="webdavDisplayResource" value-ref="webdavDisplayResourceView" />
         <entry key="OPTIONS" value-ref="OPTIONS" />
         <entry key="PROPFIND" value-ref="PROPFIND" />
-        <entry key="HEAD" value-ref="HEAD" />
         <entry key="LOCK" value-ref="LOCK" />
         <entry key="PROPPATCH" value-ref="HTTP_STATUS_VIEW" />
         <entry key="MKCOL" value-ref="HTTP_MKCOL_STATUS_VIEW" />
@@ -485,17 +481,12 @@
     </property>
   </bean>
 
-  <bean id="webdavCollectionListingViewResolver" parent="system.decoratingViewResolver">
+  <bean id="webdavCollectionListingViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="webdavCollectionListingHeadView" value-ref="webdavCollectionListingHeadView" />
         <entry key="webdavCollectionListingView" value-ref="webdavCollectionListingView" />
       </map>
-    </property>
-    <property name="referenceDataProviders">
-      <list>
-        <ref bean="manageLinkProvider" />
-      </list>
     </property>
   </bean>
 
@@ -509,7 +500,7 @@
     <property name="name" value="css" />
     <property name="description" value="Inserts the default WebDAV collection listing CSS stylesheets" />
     <property name="view" ref="webdav.cssView" />
-    <property name="exposeMvcModel" value="true" />
+    <!--property name="exposeMvcModel" value="true" /-->
   </bean>
 
   <bean id="webdav.cssView" parent="freemarkerView">
@@ -573,6 +564,7 @@
         <ref bean="resourceContextProvider" />
         <ref bean="webdavBreadCrumbProvider" />
         <ref bean="webdavCollectionListingProvider" />
+        <ref bean="manageLinkProvider" />
       </list>
     </property>
   </bean>
@@ -609,8 +601,6 @@
     </property>
   </bean>
 
-  <bean id="webdavDisplayResourceView" class="vtk.web.view.DisplayResourceView" />
-
   <bean id="HTTP_STATUS_VIEW" class="vtk.web.view.SimpleHttpStatusView"/>
 
   <bean id="HTTP_MKCOL_STATUS_VIEW" class="vtk.web.view.SimpleHttpStatusView">
@@ -646,8 +636,6 @@
     <property name="webdavService" ref="webdavService"/>
     <property name="collectionContentType" value="${webdav.collectionContentType}" />
   </bean>
-
-  <bean id="HEAD" class="vtk.web.view.DisplayResourceView" />
 
   <bean id="LOCK" class="vtk.webdav.LockView"/>
 

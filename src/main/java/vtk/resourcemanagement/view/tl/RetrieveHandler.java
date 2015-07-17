@@ -37,10 +37,10 @@ import javax.servlet.http.HttpServletRequest;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.resourcemanagement.view.StructuredResourceDisplayController;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
+import vtk.web.ModelProvider;
 import vtk.web.RequestContext;
 import vtk.web.decorating.DynamicDecoratorTemplate;
 
@@ -62,25 +62,25 @@ public class RetrieveHandler extends Function {
         if (ref.equals(".")) {
 //            HttpServletRequest request = requestContext.getServletRequest();
             HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
-
-            Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
-            if (o == null) {
+            Map<String, Object> model = ModelProvider.getModel(request);
+            if (model == null) {
                 return null;
             }
-            @SuppressWarnings("unchecked")
-            Map<String, Object> model = (Map<String, Object>) o;
             resource = (Resource) model.get("resource");
-        } else {
+        }
+        else {
             try {
                 Path uri;
                 if (!ref.startsWith("/")) {
                     uri = requestContext.getResourceURI().getParent().expand(ref);
-                } else {
+                }
+                else {
                     uri = Path.fromString(ref);
                 }
                 String token = requestContext.getSecurityToken();
                 resource = repository.retrieve(token, uri, true);
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 return null;
             }
         }

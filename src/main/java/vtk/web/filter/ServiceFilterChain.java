@@ -1,4 +1,4 @@
-/* Copyright (c) 2010, University of Oslo, Norway
+/* Copyright (c) 2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,16 +30,41 @@
  */
 package vtk.web.filter;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-/**
- * A handler filter interface. The concept of handler filters is similar to the 
- * {@link org.springframework.web.servlet.HandlerInterceptor} concept in Spring, 
- * but is allows manipulation of the servlet request and response objects (unlike 
- * handler interceptors).
- */
-public interface HandlerFilter {
+public final class ServiceFilterChain {
+    private HttpServletRequest request;
+    private HttpServletResponse response;
 
-    public void filter(HttpServletRequest request, HandlerFilterChain chain) throws Exception;
-
+    public ServiceFilterChain(HttpServletRequest request, HttpServletResponse response, 
+                              List<ServiceFilter> filters) throws Exception {
+        this.request = request;
+        this.response = response;
+        for (ServiceFilter filter: filters) {
+            filter.filter(request, response, this);
+        }
+    }
+    
+    public ServiceFilterChain filter(RequestFilter filter) {
+        request = filter.filterRequest(request);
+        return this;
+    }
+    
+    public ServiceFilterChain filter(ResponseFilter filter) {
+        response = filter.filter(request, response);
+        return this;
+    }
+    
+    public HttpServletRequest request() { return request; }
+    
+    public HttpServletResponse response() { return response; }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + 
+                "(" + request + ", " + response + ")";
+    }
 }

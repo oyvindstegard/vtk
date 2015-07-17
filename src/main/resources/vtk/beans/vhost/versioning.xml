@@ -35,7 +35,7 @@
     <property name="viewService" ref="decorating.viewUnpublishedService" />
   </bean>
 
-  <bean id="versioning.displayDiffViewResolver" parent="decoratorViewResolver">
+  <bean id="versioning.displayDiffViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="versioning.displayDiff" value-ref="versioning.displayDiffView" />

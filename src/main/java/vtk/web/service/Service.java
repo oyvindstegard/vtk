@@ -37,12 +37,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.HandlerInterceptor;
+
 import vtk.context.Categorizable;
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.web.AuthenticationChallenge;
-import vtk.web.filter.HandlerFilter;
+import vtk.web.filter.ServiceFilter;
 
 /**
  * A service is an abstraction added to the thin web layer in web
@@ -236,13 +237,13 @@ public interface Service extends Ordered, Categorizable {
     
 
     /**
-     * Gets the list of handler filters for this service, if any.
+     * Gets the list of service filters for this service, if any.
      *
-     * @return a <code>List</code> of {@link HandlerFilter} objects, 
+     * @return a <code>List</code> of {@link ServiceFilter} objects, 
      * or <code>null</code> if none configured.
      */
-    public List<HandlerFilter> getHandlerFilters();
-
+    public List<ServiceFilter> getServiceFilters();
+    
     /**
      * Gets this service's authentication challenge. 
      *

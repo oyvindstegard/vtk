@@ -30,27 +30,28 @@
  */
 package vtk.web.decorating;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Locale;
 
+import vtk.util.io.NonClosingOutputStream;
+
 
 public class DecoratorResponseImpl implements DecoratorResponse {
-
-    private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    private OutputStream out;
 
     private String doctype;
     private Locale locale;
     private String characterEncoding;
     
 
-    public DecoratorResponseImpl(String doctype, Locale locale, String characterEncoding) {
+    public DecoratorResponseImpl(String doctype, Locale locale, String characterEncoding, OutputStream out) {
         this.doctype = doctype;
         this.locale = locale;
         this.characterEncoding = characterEncoding;
+        this.out = out;
     }
     
 
@@ -84,19 +85,16 @@ public class DecoratorResponseImpl implements DecoratorResponse {
 
 
     public OutputStream getOutputStream() {
-        return this.outputStream;
+        return new NonClosingOutputStream(out);
     }
     
     public Writer getWriter() throws IOException {
-        return new OutputStreamWriter(this.outputStream, this.characterEncoding);
+        return new OutputStreamWriter(getOutputStream(), characterEncoding);
     }
     
-    public String getContentAsString() throws Exception {
-        return this.outputStream.toString(this.characterEncoding);
-    }
-    
-    public byte[] getContent() throws Exception {
-        return this.outputStream.toByteArray();
+    @Override
+    public void flush() throws IOException {
+        out.flush();
     }
     
 }

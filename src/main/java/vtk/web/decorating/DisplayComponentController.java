@@ -85,10 +85,9 @@ public class DisplayComponentController implements Controller {
     private ComponentInvocation getComponentInvocation(DecoratorComponent component, 
             HttpServletRequest request) {
         Map<String, Object> actualParameters = new HashMap<String, Object>();
-        @SuppressWarnings("rawtypes")
-        Enumeration e = request.getParameterNames();
+        Enumeration<String> e = request.getParameterNames();
         while (e.hasMoreElements()) {
-            String name = (String) e.nextElement();
+            String name = e.nextElement();
             if (name.startsWith("p:")) {
                 String value = request.getParameter(name);
                 name = name.substring(2);
@@ -103,17 +102,13 @@ public class DisplayComponentController implements Controller {
             HttpServletRequest request, HttpServletResponse response) throws Exception {
         Locale locale = new RequestContext(request).getLocale();
         DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
-                null, request, new HashMap<String, Object>(), 
-                inv.getParameters(), DOCTYPE, locale);
-        DecoratorResponseImpl decoratorResponse = new DecoratorResponseImpl(
-                DOCTYPE, locale, "utf-8");
-        component.render(decoratorRequest, decoratorResponse);
-        byte[] buffer = decoratorResponse.getContent();
+                null, request, inv.getParameters(), DOCTYPE, locale);
         response.setHeader("Content-Type", "text/html;charset=utf-8");
-        response.setHeader("Content-Length", String.valueOf(buffer.length));
         ServletOutputStream out = response.getOutputStream();
         try {
-            out.write(buffer);
+            DecoratorResponseImpl decoratorResponse = new DecoratorResponseImpl(
+                    DOCTYPE, locale, "utf-8", out);
+            component.render(decoratorRequest, decoratorResponse);
         } finally {
             if (out != null) {
                 out.flush();

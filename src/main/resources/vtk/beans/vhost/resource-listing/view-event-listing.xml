@@ -184,7 +184,7 @@
     </constructor-arg>
   </bean>
 
-  <bean id="eventListing.viewResolver" parent="decoratorViewResolver">
+  <bean id="eventListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="eventListing.view" value-ref="eventListing.view" />

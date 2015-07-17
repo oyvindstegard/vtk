@@ -42,19 +42,16 @@ import org.springframework.web.servlet.ViewResolver;
  * 
  * FIXME: remove this
  */
-public class MappingViewResolver extends AbstractWrappingViewResolver
-  implements ViewResolver {
-
-    private Map<String, View> views = new HashMap<String, View>();
+public class MappingViewResolver implements ViewResolver {
+    private Map<String, View> views = new HashMap<>();
     
     @Override
-    protected View resolveViewNameInternal(String viewName, Locale locale) {
-
-        return this.views.get(viewName);
+    public View resolveViewName(String viewName, Locale locale)
+            throws Exception {
+      return views.get(viewName);
     }
     
     public void setViews(Map<String, View> views) {
         this.views = views;
     }
-
 }

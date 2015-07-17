@@ -145,6 +145,8 @@ implements ServletContextAware {
     
     
     private static Log logger = LogFactory.getLog(IncludeComponent.class);
+    
+    @Override
     public void render(DecoratorRequest request, DecoratorResponse response)
     throws Exception {
 
@@ -347,13 +349,12 @@ implements ServletContextAware {
             String servletName = (String) servletRequest
             .getAttribute(VTKServlet.SERVLET_NAME_REQUEST_ATTRIBUTE);
 
-            RequestDispatcher rd = servletContext
-            .getNamedDispatcher(servletName);
+            RequestDispatcher rd = servletContext.getNamedDispatcher(servletName);
             if (rd == null) {
                 throw new RuntimeException("No request dispatcher for name '"
                         + servletName + "' available");
             }
-
+            System.out.println(Thread.currentThread().getName() + "__DISPATCH: " + requestWrapper.getRequestURI());
             rd.forward(requestWrapper, servletResponse);
 
             if (servletResponse.getStatus() != HttpServletResponse.SC_OK) {

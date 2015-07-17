@@ -37,9 +37,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.resourcemanagement.StructuredResource;
 import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlText;
+import vtk.web.ModelProvider;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
 import vtk.web.decorating.HtmlDecoratorComponent;
@@ -78,7 +80,9 @@ public class StructuredResourceFieldComponent extends
                     + PARAMETER_SELECT + "' not specified");
         }
         
-        Map<String, Object> mvcModel = request.getMvcModel();
+        Map<String, Object> mvcModel = ModelProvider.getModel(request.getServletRequest());
+        
+        if (mvcModel == null) return null;
         Object o = mvcModel.get(this.resourceModelKey);
         if (o == null) {
             return null;

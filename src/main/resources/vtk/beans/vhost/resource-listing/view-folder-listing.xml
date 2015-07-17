@@ -21,7 +21,7 @@
     <property name="resourceManager" ref="resourceManager" />
   </bean>
 
-  <bean id="folderListing.viewResolver" parent="decoratorViewResolver">
+  <bean id="folderListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="folderListing.view" value-ref="folderListing.view" />

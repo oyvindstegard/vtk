@@ -215,9 +215,8 @@
     <property name="viewName" value="manageCollectionListing" />
   </bean>
 
-  <bean id="copyMove.warningHandler" 
-    class="vtk.web.display.file.DisplayResourceController">
-    <property name="viewName" value="copyMove.warningView" />
+  <bean id="copyMove.warningHandler" class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="copyMove.warningView" />
   </bean>
 
   <bean id="copyHandler" 
@@ -264,7 +263,7 @@
     <property name="viewName" value="manageCollectionListing" />
   </bean>
 
-  <bean id="copyMove.viewResolver" parent="system.decoratingViewResolver">
+  <bean id="copyMove.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="copyMove.warningView" value-ref="copyMove.warningView" />

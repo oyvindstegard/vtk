@@ -208,8 +208,8 @@
     </property>
   </bean>
 
-  <bean id="createDropDownHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="createDropDown.view" />
+  <bean id="createDropDownHandler" class="vtk.web.display.ParameterizableViewController">
+    <constructor-arg value="createDropDown.view" />
   </bean>
 
  <bean id="createDropDown.viewResolver" class="vtk.web.decorating.MappingViewResolver">

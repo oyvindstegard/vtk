@@ -31,6 +31,7 @@
 package vtk.web.decorating.components;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -86,5 +87,9 @@ public class MockDecoratorResponse implements DecoratorResponse {
                                          result.getBytes("utf-8")), "utf-8");
         HtmlElement dummy = page.getRootElement();
         return dummy.getChildElements();
+    }
+    
+    public void flush() throws IOException {
+        outputStream.flush();
     }
 }

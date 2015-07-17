@@ -1,4 +1,4 @@
-/* Copyright (c) 2008, University of Oslo, Norway
+/* Copyright (c) 2004, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,9 +28,38 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.decorating;
+package vtk.web.display;
 
-public interface TemplateResult {
-    
-    public String toString();
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.servlet.ModelAndView;
+
+import vtk.repository.Path;
+import vtk.repository.Repository;
+import vtk.web.RequestContext;
+
+
+/**
+ * Controller that retrieves the requested resource from the
+ * repository (in order to cause exceptions) before returning the
+ * configured view.
+ */
+public class ResourceAwareParameterizableViewController
+  extends ParameterizableViewController {
+
+    public ResourceAwareParameterizableViewController(String viewName) {
+        super(viewName);
+    }
+
+    public ModelAndView handleRequest(HttpServletRequest request,
+                                                 HttpServletResponse response) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Path uri = requestContext.getResourceURI();
+        String token = requestContext.getSecurityToken();
+        Repository repository = requestContext.getRepository();
+        repository.retrieve(token, uri, true);
+        return super.handleRequest(request, response);
+    }
 }
+

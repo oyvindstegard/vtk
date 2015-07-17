@@ -43,13 +43,13 @@ import vtk.repository.Resource;
 import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.resourcemanagement.view.StructuredResourceDisplayController;
 import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.Node;
 import vtk.text.tl.Parser.Directive;
 import vtk.text.tl.TemplateContext;
 import vtk.text.tl.Token;
+import vtk.web.ModelProvider;
 import vtk.web.RequestContext;
 import vtk.web.decorating.DynamicDecoratorTemplate;
 
@@ -85,15 +85,13 @@ public class ResourcePropsNodeFactory implements DirectiveHandler {
                 if (ref.equals(".")) {
                     HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
 //                    HttpServletRequest request = requestContext.getServletRequest();
-                    Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
-                    if (o == null) {
-                        throw new Exception("Unable to locate resource: no model: " 
-                                + StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
+                    Map<String, Object> model = ModelProvider.getModel(request);
+                    if (model == null) {
+                        throw new Exception("Unable to locate resource: no MVC model available");
                     }
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> model = (Map<String, Object>) o;
                     resource = (Resource) model.get("resource");
-                } else {
+                }
+                else {
                     Path uri = Path.fromString(ref);
                     resource = repository.retrieve(token, uri, true);
                 }
@@ -108,10 +106,12 @@ public class ResourcePropsNodeFactory implements DirectiveHandler {
                         Property prop = resource.getProperty(propDef);
                         if (prop == null) {
                             ctx.define(propDef.getName(), null, false);
-                        } else {
+                        }
+                        else {
                             if (propDef.isMultiple()) {
                                 ctx.define(propDef.getName(), prop.getValues(), false);
-                            } else {
+                            }
+                            else {
                                 ctx.define(propDef.getName(), prop.getValue(), false);
                             }
                         }

@@ -58,8 +58,8 @@
   </bean>
 
   <bean id="root1Handler"
-        class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="rootView" />
+        class="vtk.web.display.ParameterizableViewController">
+    <constructor-arg value="rootView" />
   </bean>
 
   <bean id="rootView" parent="freemarkerView">
@@ -209,7 +209,7 @@
     <property name="wrapOutputInBrackets" value="false" />
   </bean>
 
-  <bean id="rootViewResolver" parent="system.decoratingViewResolver">
+  <bean id="rootViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="rootView" value-ref="rootView" />
@@ -250,8 +250,8 @@
   </bean>
   
   <bean id="root2Handler"
-    class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="serviceTree" />
+    class="vtk.web.display.ParameterizableViewController">
+    <constructor-arg value="serviceTree" />
   </bean>
   
   <bean id="serviceTreeView" parent="freemarkerView">
@@ -320,8 +320,8 @@
   </bean>
 
   <bean id="repositoryReadOnlyHandler"
-        class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="repositoryReadOnly" />
+        class="vtk.web.display.ParameterizableViewController">
+    <constructor-arg value="repositoryReadOnly" />
   </bean>
 
   <bean id="repositoryReadOnlyView" parent="freemarkerView">

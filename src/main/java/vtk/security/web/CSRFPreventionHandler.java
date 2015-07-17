@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009, 2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,49 +31,45 @@
 package vtk.security.web;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.security.AuthenticationException;
-import vtk.text.html.AbstractHtmlPageFilter;
-import vtk.text.html.HtmlAttribute;
-import vtk.text.html.HtmlContent;
-import vtk.text.html.HtmlElement;
-import vtk.text.html.HtmlPage;
-import vtk.text.html.HtmlText;
+import vtk.text.html.HtmlPushParser;
+import vtk.text.html.HtmlPushParser.Attribute;
+import vtk.text.html.HtmlPushParser.ElementNode;
 import vtk.text.html.HtmlUtil;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.CharsetPushDecoder;
 import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
-import vtk.web.filter.HandlerFilter;
-import vtk.web.filter.HandlerFilterChain;
+import vtk.web.filter.AbstractRequestFilter;
+import vtk.web.filter.AbstractResponseFilter;
+import vtk.web.filter.ServiceFilter;
+import vtk.web.filter.ServiceFilterChain;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -81,21 +77,16 @@ import vtk.web.service.URL;
  * Cross Site Request Forgery (CSRF) prevention handler. This class performs two
  * tasks:
  * <ol>
- * <li>{@link #filter(HtmlContent) Generates tokens} in HTML forms on the page
- * being served</li>
- * <li>{@link #filter(HttpServletRequest, HandlerFilterChain) Verifies} that
- * valid tokens are present in POST requests</li>
+ * <li>Generates tokens in HTML forms on the page being served</li>
+ * <li>Verifies that valid tokens are present in POST requests</li>
  * </ol>
  */
-public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements HandlerFilter {
-
-    private File tempDir = new File(System.getProperty("java.io.tmpdir"));
-    private long maxUploadSize = 2*1024*1024*1024; // 2G max by default
+public class CSRFPreventionHandler implements ServiceFilter {
 
     public static final String TOKEN_REQUEST_PARAMETER = "csrf-prevention-token";
     private static final String SECRET_SESSION_ATTRIBUTE = "csrf-prevention-secret";
     private static Log logger = LogFactory.getLog(CSRFPreventionHandler.class);
-    private String ALGORITHM = "HmacSHA1";
+    private static String ALGORITHM = "HmacSHA1";
 
     /**
      * Utility method that can be called, e.g. from views
@@ -115,100 +106,32 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
     }
 
     @Override
-    public boolean match(HtmlPage page) {
-        return true;
-    }
-
-    @Override
-    public void filter(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
-        if (!"POST".equals(request.getMethod())) {
-            chain.filter(request);
-            return;
-        }
-        String contentType = request.getContentType();
-        if (contentType != null && contentType.startsWith("multipart/form-data")) {
-            MultipartWrapper multipartRequest = new MultipartWrapper(request, this.tempDir, this.maxUploadSize);
-            try {
-                multipartRequest.writeTempFile();
-                multipartRequest.parseRequest();
-                verifyToken(multipartRequest);
-                chain.filter(multipartRequest);
-            } finally {
-                multipartRequest.cleanup();
-            }
-        } else {
-            verifyToken(request);
-            chain.filter(request);
-        }
-    }
-
-    @Override
-    public NodeResult filter(HtmlContent node) {
-        if (!(node instanceof HtmlElement)) {
-            return NodeResult.keep;
-        }
-        HtmlElement element = ((HtmlElement) node);
-        if (!"form".equals(element.getName().toLowerCase())) {
-            return NodeResult.keep;
-        }
-        HtmlAttribute method = element.getAttribute("method");
-        if (method == null || "".equals(method.getValue().trim()) || "get".equals(method.getValue().toLowerCase())) {
-            return NodeResult.keep;
-        }
-
-        HtmlElement[] inputs = element.getChildElements("input");
-        for (HtmlElement input : inputs) {
-            HtmlAttribute name = input.getAttribute("name");
-            if (name != null && TOKEN_REQUEST_PARAMETER.equals(name.getValue())) {
-                return NodeResult.keep;
-            }
-        }
-
-        URL url;
-        HtmlAttribute actionAttr = element.getAttribute("action");
-        if (actionAttr == null || actionAttr.getValue() == null || "".equals(actionAttr.getValue().trim())) {
-            HttpServletRequest request = RequestContext.getRequestContext().getServletRequest();
-            url = URL.create(request);
-        } else {
-            try {
-                url = parseActionURL(actionAttr.getValue());
-            } catch (Throwable t) {
-                logger.warn("Unable to find URL in action attribute: " + actionAttr.getValue(), t);
-                return NodeResult.keep;
-            }
-        }
-        url.setRef(null);
-
-        RequestContext requestContext = RequestContext.getRequestContext();
-        HttpSession session = requestContext.getServletRequest().getSession(false);
-
-        if (session != null) {
-
-            String csrfPreventionToken = generateToken(url, session);
-            HtmlElement input = createElement("input", true, true);
-            List<HtmlAttribute> attrs = new ArrayList<HtmlAttribute>();
-            attrs.add(createAttribute("name", TOKEN_REQUEST_PARAMETER));
-            attrs.add(createAttribute("type", "hidden"));
-            attrs.add(createAttribute("value", csrfPreventionToken));
-            input.setAttributes(attrs.toArray(new HtmlAttribute[attrs.size()]));
-            element.addContent(0, input);
-            element.addContent(0, new HtmlText() {
+    public void filter(HttpServletRequest request,
+            HttpServletResponse response, ServiceFilterChain chain)
+            throws Exception {
+        
+        HttpSession session = request.getSession(false);
+        if (session == null) return;
+        
+        if ("POST".equals(request.getMethod())) {
+            chain.filter(new AbstractRequestFilter() {
                 @Override
-                public String getContent() {
-                    return "\r\n";
-                }
-            });
-            element.addContent(new HtmlText() {
-                @Override
-                public String getContent() {
-                    return "\r\n";
+                public HttpServletRequest filterRequest(HttpServletRequest request) {
+                    return new TokenVerifyingRequest(request);
                 }
             });
         }
-        return NodeResult.keep;
+        
+        chain.filter(new AbstractResponseFilter() {
+            @Override
+            public HttpServletResponse filter(HttpServletRequest request,
+                    HttpServletResponse response) {
+                return new TokenGeneratingFilter(response, session);
+            }
+        });
     }
 
-    private String generateToken(URL url, HttpSession session) {
+    private static String generateToken(URL url, HttpSession session) {
         SecretKey secret = (SecretKey) session.getAttribute(SECRET_SESSION_ATTRIBUTE);
         if (secret == null) {
             secret = generateSecret();
@@ -229,7 +152,7 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
         }
     }
 
-    private SecretKey generateSecret() {
+    private static SecretKey generateSecret() {
         try {
             KeyGenerator kg = KeyGenerator.getInstance(ALGORITHM);
             return kg.generateKey();
@@ -253,7 +176,8 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
         if (action.startsWith("/")) {
             path = Path.ROOT;
             startIdx = 1;
-        } else {
+        }
+        else {
             path = RequestContext.getRequestContext().getCurrentCollection();
         }
 
@@ -279,213 +203,293 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
         return url;
     }
 
-    private void verifyToken(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        if (requestContext.getPrincipal() == null) {
-            throw new AuthenticationException("Illegal anonymous action");
-        }
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            throw new IllegalStateException("A session must be present");
-        }
-        Service service = requestContext.getService();
-        if (Boolean.TRUE.equals(service.getAttribute("disable-csrf-checking"))) {
-            return;
-        }
-        SecretKey secret = (SecretKey) session.getAttribute(SECRET_SESSION_ATTRIBUTE);
-        if (secret == null) {
-            throw new AuthorizationException("Missing CSRF prevention secret in session");
-        }
-
-        String suppliedToken = request.getParameter(TOKEN_REQUEST_PARAMETER);
-
-        if (suppliedToken == null) {
-            throw new AuthorizationException("Missing CSRF prevention token in request");
-        }
-
-        URL requestURL = URL.create(request);
-        String computed = generateToken(requestURL, session);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Check token: url: " + requestURL + ", supplied token: " + suppliedToken
-                    + ", computed token: " + computed + ", secret: " + secret);
-        }
-        if (!computed.equals(suppliedToken)) {
-            throw new AuthorizationException("CSRF prevention token mismatch");
-        }
-    }
-
-    private static class MultipartWrapper extends HttpServletRequestWrapper {
-        private HttpServletRequest request;
-        private StreamUtil.TempFile tempFile;
-        private long maxMultipartSize;
-        private File tempDir;
-        private Map<String, List<String>> params = new HashMap<String, List<String>>();
-
-        public MultipartWrapper(HttpServletRequest request, File tempDir, long maxMultipartSize) {
+    private class TokenVerifyingRequest extends HttpServletRequestWrapper {
+        private HttpServletRequest req;
+        private boolean verified = false;
+        
+        public TokenVerifyingRequest(HttpServletRequest request) {
             super(request);
-            this.request = request;
-            this.maxMultipartSize = maxMultipartSize;
-            this.tempDir = tempDir;
+            this.req = request;
         }
-
-        public void cleanup() {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Cleanup temp file: " + this.tempFile + ", exists: " + this.tempFile.getFile().exists());
-            }
-            if (this.tempFile != null) {
-                this.tempFile.delete();
-            }
-        }
-
+        
         @Override
         public ServletInputStream getInputStream() throws IOException {
-            FileInputStream fileStream = this.tempFile.getFileInputStream();
-            return new vtk.util.io.ServletInputStream(fileStream);
+            verifyToken(req);
+            return super.getInputStream();
         }
 
         @Override
         public String getParameter(String name) {
-            if (this.params.containsKey(name)) {
-                List<String> values = this.params.get(name);
-                return values.get(0);
-            }
+            verifyToken(req);
             return super.getParameter(name);
         }
 
         @Override
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        public Map getParameterMap() {
-            Map<String, List<String>> combined = new HashMap<String, List<String>>();
-            Map<String, String[]> m = super.getParameterMap();
-            for (String s : m.keySet()) {
-                String[] values = m.get(s);
-                List<String> l = new ArrayList<String>();
-                for (String v : values) {
-                    l.add(v);
-                }
-                combined.put(s, l);
-            }
-
-            for (String s : this.params.keySet()) {
-                List<String> l = combined.get(s);
-                if (l == null) {
-                    l = new ArrayList<String>();
-                }
-                for (String v : this.params.get(s)) {
-                    l.add(v);
-                }
-                combined.put(s, l);
-            }
-            Map<String, String[]> result = new HashMap<String, String[]>();
-            for (String name : combined.keySet()) {
-                List<String> values = combined.get(name);
-                result.put(name, values.toArray(new String[values.size()]));
-            }
-            return result;
+        public Map<String, String[]> getParameterMap() {
+            verifyToken(req);
+            return super.getParameterMap();
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public Enumeration<String> getParameterNames() {
-            Set<String> result = new HashSet<String>();
-            Enumeration<String> names = super.getParameterNames();
-            while (names.hasMoreElements()) {
-                result.add(names.nextElement());
-            }
-            result.addAll(this.params.keySet());
-            return Collections.enumeration(result);
+            verifyToken(req);
+            return super.getParameterNames();
         }
 
         @Override
         public String[] getParameterValues(String name) {
-            List<String> result = new ArrayList<String>();
-            String[] names = super.getParameterValues(name);
-            if (names != null) {
-                for (String s : names) {
-                    result.add(s);
-                }
-            }
-            List<String> thisParams = this.params.get(name);
-            if (thisParams != null) {
-                result.addAll(thisParams);
-            }
-            return result.toArray(new String[result.size()]);
+            verifyToken(req);
+            return super.getParameterValues(name);
         }
 
         @Override
         public BufferedReader getReader() throws IOException {
-            return new BufferedReader(new InputStreamReader(getInputStream()));
+            verifyToken(req);
+            return super.getReader();
         }
-
-        private void addParameter(String name, String value) {
-            List<String> values = this.params.get(name);
-            if (values == null) {
-                values = new ArrayList<String>();
-                this.params.put(name, values);
+        
+        protected void verifyToken(HttpServletRequest request) {
+            if (verified) return;
+            RequestContext requestContext = RequestContext.getRequestContext();
+            if (requestContext.getPrincipal() == null) {
+                throw new AuthenticationException("Illegal anonymous action");
             }
-            values.add(value);
-        }
-
-        private void writeTempFile() throws IOException, FileUploadException {
-            this.tempFile = StreamUtil.streamToTempFile(
-                    request.getInputStream(), this.maxMultipartSize, this.tempDir);
-            if (this.tempFile.isTruncatedToSizeLimit()) {
-                throw new FileUploadException("Upload limit exceeded");
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                throw new IllegalStateException("A session must be present");
             }
+            Service service = requestContext.getService();
+            if (Boolean.TRUE.equals(service.getAttribute("disable-csrf-checking"))) {
+                return;
+            }
+            SecretKey secret = (SecretKey) session.getAttribute(SECRET_SESSION_ATTRIBUTE);
+            if (secret == null) {
+                throw new AuthorizationException("Missing CSRF prevention secret in session");
+            }
+
+            String suppliedToken = request.getParameter(TOKEN_REQUEST_PARAMETER);
+            if (suppliedToken == null) {
+                throw new AuthorizationException("Missing CSRF prevention token in request");
+            }
+
+            URL requestURL = URL.create(request);
+            String computed = generateToken(
+                    requestURL.removeParameter(TOKEN_REQUEST_PARAMETER), session);
+
+            logger.warn("Check token: url: " + requestURL + ", supplied token: " + suppliedToken
+                    + ", computed token: " + computed + ", secret: " + secret);
             if (logger.isDebugEnabled()) {
-                logger.debug("Create temp file: " + this.tempFile);
+                logger.debug("Check token: url: " + requestURL + ", supplied token: " + suppliedToken
+                        + ", computed token: " + computed + ", secret: " + secret);
             }
+            if (!computed.equals(suppliedToken)) {
+                throw new AuthorizationException("CSRF prevention token mismatch");
+            }
+            verified = true;
         }
-
-        private void parseRequest() throws FileUploadException, IOException {
-            ServletFileUpload upload = new ServletFileUpload();
-            FileItemIterator iter = upload.getItemIterator(this);
-            List<String> multipartUploadFileItemNames = new ArrayList<String>();
-            while (iter.hasNext()) {
-                FileItemStream item = iter.next();
-                if (item.isFormField()) {
-                    String name = item.getFieldName();
-                    InputStream stream = item.openStream();
-                    byte[] buf = StreamUtil.readInputStream(stream, 2000);
-                    // XXX:
-                    String encoding = this.request.getCharacterEncoding();
-                    if (encoding == null) {
-                        encoding = "utf-8";
-                    }
-                    String value = new String(buf, encoding);
-                    addParameter(name, value);
-                } else {
-                    multipartUploadFileItemNames.add(item.getName());
+    }
+    
+    
+    private class Form {
+        private HtmlPushParser.ElementNode orig;
+        private String method = null;
+        private URL action = null;
+        private String enctype = null;
+        private List<Attribute> attributes;
+        private String csrfPreventionToken = null;
+        
+        public Form(HtmlPushParser.ElementNode orig, HttpSession session) {
+            this.orig = orig;
+            attributes = new ArrayList<>();
+            for (Attribute attr: orig.attributes()) {
+                if ("method".equalsIgnoreCase(attr.name())) {
+                    method = attr.value();
                 }
+                else if ("action".equalsIgnoreCase(attr.name())) {
+                    String action = attr.value();
+                    if (action != null) {
+                        try {
+                            this.action = parseActionURL(action);
+                        } catch (Exception e) {}
+                    }
+                }
+                else if ("enctype".equalsIgnoreCase(attr.name()))
+                    enctype = attr.value();
+                else attributes.add(attr);
             }
+            if (action != null) {
+                csrfPreventionToken = generateToken(action, session);
+                if (enctype != null && "multipart/form-data".equalsIgnoreCase(enctype.trim()))
+                    action = action.addParameter(TOKEN_REQUEST_PARAMETER, csrfPreventionToken);
+            }
+        }
+        
+        public String toHtml() {
+            if (action == null || method == null) {
+                StringBuilder result = new StringBuilder();
+                result.append(orig.toHtml());
+                return result.toString();
+            }
+
+            StringBuilder result = new StringBuilder();
+            result.append("<form action=\"" ).append(action.toString()).append("\" ");
+            result.append("method=\"").append(method).append("\" ");
+            if (enctype != null) {
+                result.append("enctype=\"").append(enctype).append("\" ");
+            }
+            for (Attribute attr: attributes) {
+                result.append(attr.name());
+                if (attr.value() != null)
+                    result.append("=").append(attr.value());
+                result.append(" ");
+            }
+            result.append(">");
+            result.append("\n<input type=\"hidden\" name=\"").append(TOKEN_REQUEST_PARAMETER);
+            result.append("\" value=\"").append(csrfPreventionToken).append("\"/>\n");
+            return result.toString();
+        }
+    }
+
+
+    private class TokenGeneratingFilter extends HttpServletResponseWrapper {
+        private ServletOutputStream out = null;
+        private HttpSession session;
+        
+        public TokenGeneratingFilter(HttpServletResponse response, HttpSession session) {
+            super(response);
+            this.session = session;
+        }
+
+        @Override
+        public void setHeader(String name, String value) {
+            if ("Content-Length".equals(name.toLowerCase()))
+                return;
+            super.setHeader(name, value);
+        }
+        
+        @Override
+        public void flushBuffer() throws IOException {
+            super.flushBuffer();
+        }
+        
+        @Override
+        public ServletOutputStream getOutputStream() throws IOException {
+            if (!getContentType().toLowerCase().startsWith("text/html"))
+                return super.getOutputStream();
             
-            // Provide cached info about file item names in upload
-            if (!multipartUploadFileItemNames.isEmpty()) {
-                setAttribute("vtk.MultipartUploadWrapper.FileItemNames", multipartUploadFileItemNames);
-            }
+            final String characterEncoding = getCharacterEncoding();
+            final ServletOutputStream dest = super.getOutputStream();
+            final HtmlPushParser parser = new HtmlPushParser(new HtmlPushParser.NodeHandler() {
+                private Form form = null;
+                
+                @Override
+                public boolean node(HtmlPushParser.Node node) {
+                    if (node instanceof ElementNode) {
+                        ElementNode elem = (ElementNode) node;
+                        if ("form".equals(elem.name())) {
+                            form = new Form(elem, session);
+                            try { 
+                                dest.write(form.toHtml().getBytes(characterEncoding)); 
+                                return true;
+                            }
+                            catch (IOException e) { 
+                                throw new RuntimeException(e); 
+                            }
+                        }
+                    }
+                    try {
+                        dest.write(node.toHtml().getBytes(characterEncoding));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return true;
+                }
+                
+                @Override
+                public void end() {
+                    try { dest.flush(); dest.close(); }
+                    catch (IOException e) { throw new RuntimeException(e); }
+                }
+
+                @Override
+                public void error(String msg) {
+                    try { dest.flush(); dest.close(); }
+                    catch (IOException e) { throw new RuntimeException(e); }
+                }
+            });
+            
+            final CharsetPushDecoder decoder = new CharsetPushDecoder(
+                Charset.forName(getCharacterEncoding()), 2048, new CharsetPushDecoder.Handler() {
+                    @Override
+                    public void chars(CharBuffer buffer) {
+                        parser.push(buffer.toString());
+                    }
+                    @Override
+                    public void done() {
+                        parser.eof();
+                    }
+                    @Override
+                    public void error(Throwable err) {
+                        throw new RuntimeException(err);
+                    }
+                });
+    
+            
+            out = new ServletOutputStream() {
+                private ByteBuffer input = ByteBuffer.allocate(2048);
+                
+                @Override
+                public boolean isReady() {
+                    return true;
+                }
+                
+                @Override
+                public void setWriteListener(WriteListener writeListener) {
+                }
+
+                @Override
+                public void write(int b) throws IOException {
+                    if (!input.hasRemaining()) {
+                        input.flip();
+                        decoder.push(input, false);
+                    }
+                    input.put((byte) b);
+                }
+
+                @Override
+                public void flush() throws IOException {
+                    if (input.position() > 0) {
+                        input.flip();
+                        decoder.push(input, false);
+                    }
+                }
+
+                @Override
+                public void close() throws IOException {
+                    input.flip();
+                    decoder.push(input, true);
+                }
+            };
+            return out;
+        }
+        
+        @Override
+        public PrintWriter getWriter() throws IOException {
+            out = getOutputStream();
+            return new PrintWriter(out);
+        }
+
+        @Override
+        public void setContentLength(int len) {
+        }
+
+        @Override
+        public void setContentLengthLong(long len) {
+        }
+
+        @Override
+        public void setContentType(String type) {
+            super.setContentType(type);
         }
     }
-
-    /**
-     * Maximum size in bytes of POST multipart requests to process.
-     * -1 means no limit.
-     * 
-     * @param maxUploadSize 
-     */
-    public void setMaxUploadSize(long maxUploadSize) {
-        this.maxUploadSize = maxUploadSize;
-    }
-
-    public void setTempDir(String tempDirPath) {
-        File tmp = new File(tempDirPath);
-        if (!tmp.exists()) {
-            throw new IllegalArgumentException("Unable to set tempDir: file " + tmp + " does not exist");
-        }
-        if (!tmp.isDirectory()) {
-            throw new IllegalArgumentException("Unable to set tempDir: file " + tmp + " is not a directory");
-        }
-        this.tempDir = tmp;
-    }
-
 }

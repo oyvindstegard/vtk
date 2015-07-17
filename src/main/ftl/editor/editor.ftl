@@ -18,6 +18,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Editor</title>
+    <#if cssURLs?exists>
+      <#list cssURLs as cssURL>
+        <link rel="stylesheet" href="${cssURL}" type="text/css" />
+      </#list>
+    </#if>
     <@editor.addCkScripts />
 
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.hotkeys.js"></script>

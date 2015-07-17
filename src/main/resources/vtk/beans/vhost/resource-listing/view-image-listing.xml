@@ -54,7 +54,7 @@
     </property>
   </bean>
 
-  <bean id="imageListing.viewResolver" parent="decoratorViewResolver">
+  <bean id="imageListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="imageListing.view" value-ref="imageListing.view" />

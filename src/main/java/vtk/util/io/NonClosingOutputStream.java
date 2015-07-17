@@ -1,4 +1,4 @@
-/* Copyright (c) 2008, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,23 +28,18 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.decorating;
+package vtk.util.io;
 
-import vtk.text.html.HtmlPage;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
-public class HtmlTemplateResultImpl implements HtmlTemplateResult {
-    
-    private HtmlPage page;
+public class NonClosingOutputStream extends FilterOutputStream {
 
-    public HtmlTemplateResultImpl(HtmlPage page) {
-        this.page = page;
+    public NonClosingOutputStream(OutputStream out) {
+        super(out);
     }
 
-    public HtmlPage getHtmlResult() {
-        return this.page;
-    }
-    
-    public String toString() {
-        return this.page.getStringRepresentation();
-    }    
+    @Override
+    public void close() throws IOException { }
 }

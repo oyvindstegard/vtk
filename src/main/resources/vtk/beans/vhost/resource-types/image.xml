@@ -72,7 +72,7 @@
     </property>
   </bean>
 
-  <bean id="imageWithInfoViewResolver" parent="decoratorViewResolver">
+  <bean id="imageWithInfoViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="imageWithInfoView" value-ref="imageWithInfoView" />

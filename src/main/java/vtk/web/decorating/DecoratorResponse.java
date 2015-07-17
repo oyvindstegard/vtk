@@ -47,4 +47,6 @@ public interface DecoratorResponse {
     public OutputStream getOutputStream() throws IOException;
 
     public Writer getWriter() throws IOException;
+    
+    public void flush() throws IOException;
 }

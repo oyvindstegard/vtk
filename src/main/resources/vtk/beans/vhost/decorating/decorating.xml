@@ -2,46 +2,23 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <bean id="decoratingViewWrapper"
-        class="vtk.web.decorating.DecoratingViewWrapper">
-    <property name="decorators">
-      <list>
-        <ref bean="decorating.templateDecorator" />
-      </list>
-    </property>
-    <property name="maxDocumentSize" value="${decorating.maxDocumentSize}" />
+  <bean id="decorating.serviceFilter" class="vtk.web.decorating.DecoratingServiceFilter">
+    <constructor-arg name="htmlParser" ref="decorating.htmlParser" />
+    <constructor-arg name="filters" ref="decorating.htmlParseFilters" />
+    <constructor-arg name="resolver" ref="decorating.decorationResolver" />
+    <constructor-arg name="componentResolver" ref="decorating.defaultComponentResolver" />
+    <constructor-arg name="preventDecoratingParameter" value="x-prevent-decorating" />
+    <constructor-arg name="staticHeaders">
+      <map>
+      </map>
+    </constructor-arg>
   </bean>
 
-  <bean id="decorating.templateDecorator"
-        class="vtk.web.decorating.TemplateDecorator">
-    <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="decorationResolver" ref="decorating.decorationResolver" />
-    <property name="initialFilters" ref="decorating.initialFilters" />
-    <property name="userFilters" ref="decorating.userFilters" />
-    <property name="tidyXhtml" value="${decorating.tidyXhtml}" />
-    <property name="preventDecoratingParameter" value="x-prevent-decorating" />
-    <!--
-    <property name="postFilters">
-      <list>
-        <ref bean="system.csrfPreventionHandler" />
-      </list>
-    </property>
-    -->
-  </bean>
-
-  <bean id="decorating.initialFilters"
+  <bean id="decorating.htmlParseFilters"
         class="org.springframework.beans.factory.config.ListFactoryBean">
     <property name="sourceList">
       <list>
         <ref bean="linkCheck.htmlFilter" />
-      </list>
-    </property>
-  </bean>
-
-  <bean id="decorating.userFilters"
-        class="org.springframework.beans.factory.config.ListFactoryBean">
-    <property name="sourceList">
-      <list>
         <!--ref bean="decorating.nodeLabelFilter" /-->
         <ref bean="decorating.ssiNodeFilter" />
       </list>
@@ -123,7 +100,7 @@
             class="vtk.web.decorating.DelegatingTemplateFactory">
     <property name="templateFactoryMap">
       <map>
-	<entry key="\.template$" value-ref="decorating.htmlParserTemplateFactory" />
+	<!--entry key="\.template$" value-ref="decorating.htmlParserTemplateFactory" /-->
 	<entry key="\.html$" value-ref="decorating.dollarSyntaxTemplateFactory" />
 	<entry key="\.tmp$" value-ref="decorating.dynamicTemplateFactory" />
 	<entry key="\.tpl$" value-ref="decorating.dynamicTemplateFactory" />
@@ -131,13 +108,6 @@
     </property>
   </bean>
 
-  <bean id="decorating.htmlParserTemplateFactory"
-            class="vtk.web.decorating.ParsedHtmlDecoratorTemplateFactory">
-    <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
-    <property name="componentParser" ref="decorating.dollarSyntaxTemplateParser" />
-  </bean>
-  
   <bean id="decorating.dollarSyntaxTemplateFactory"
             class="vtk.web.decorating.TextualDecoratorTemplateFactory">
     <property name="parser" ref="decorating.dollarSyntaxTemplateParser" />
@@ -172,23 +142,6 @@
       </bean>
     </constructor-arg>
   </bean>
-
-  <!--
-  <bean id="decorating.defaultBuiltinComponentNamespaces"
-        class="org.springframework.beans.factory.config.SetFactoryBean">
-    <property name="sourceSet">
-      <set>
-        <ref bean="decorating.documentNamespace" />
-        <ref bean="decorating.resourceNamespace" />
-        <ref bean="decorating.includeNamespace" />
-        <ref bean="decorating.cssNamespace" />
-        <ref bean="article.componentNamespace" />
-        <ref bean="event.componentNamespace" />
-        <ref bean="structuredResources.componentNamespace" />
-      </set>
-    </property>
-  </bean>
-  -->
 
   <bean id="decorating.documentComponentResolver" class="vtk.web.decorating.AggregatedComponentResolver">
     <constructor-arg>

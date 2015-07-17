@@ -18,9 +18,8 @@
   </bean>
 
   <bean id="httpOptionsHandler"
-        class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="supportedMethods" value="OPTIONS" />
-    <property name="viewName" value="httpOptions" />
+        class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="httpOptions" />
   </bean>
   
   <bean id="displayIndexFileHandler" class="vtk.web.display.index.IndexFileController" />
@@ -30,15 +29,11 @@
   <bean id="displayResourceHandler" 
     class="vtk.web.display.file.DisplayResourceController">
     <property name="displayProcessed" value="true" />
-    <property name="ignoreLastModified" value="true" />
   </bean>
 
   <bean id="displayHTMLResourceHandler" 
     class="vtk.web.display.file.DisplayResourceController">
     <property name="displayProcessed" value="true" />
-    <property name="viewName" value="displayHTMLResource" />
-    <property name="ignoreLastModified" value="true" />
-    <property name="ignoreLastModifiedOnCollections" value="true" />
   </bean>
 
   

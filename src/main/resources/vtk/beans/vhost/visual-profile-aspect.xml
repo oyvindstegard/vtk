@@ -110,7 +110,7 @@
 
 
 
-  <bean id="visualProfileAspect.viewResolver" parent="system.decoratingViewResolver">
+  <bean id="visualProfileAspect.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="visualProfileAspect.form" value-ref="visualProfileAspect.formView" />

@@ -56,7 +56,7 @@ import vtk.util.web.HttpUtil;
  * A HttpServletResponse implementation that buffers the content and
  * headers. An optional limit can be set on the buffer size.
  */
-public class BufferedResponse implements StatusAwareHttpServletResponse {
+public class BufferedResponse implements HttpServletResponse {
 
     private static final String DEFAULT_CHAR_ENCODING = "utf-8";
     private static final String CONTENT_LENGTH = "Content-Length";
@@ -120,7 +120,7 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
         return this.status;
     }
     
-    public int getContentLength() {
+    public long getContentLength() {
         if (this.contentLength >= 0) {
             return (int) this.contentLength;
         }

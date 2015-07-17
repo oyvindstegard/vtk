@@ -44,11 +44,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.servlet.View;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 import vtk.web.service.Service;
 
 import com.sun.syndication.feed.synd.SyndEntry;
@@ -102,7 +102,7 @@ import com.sun.syndication.io.SyndFeedOutput;
  * </ul>
  * 
  */
-public class RomeFeedView implements View, ReferenceDataProviding {
+public class RomeFeedView implements View {
 
     private static final int RSS_ENTRY_TITLE_MAX_LENGTH = 99;
     
@@ -127,6 +127,11 @@ public class RomeFeedView implements View, ReferenceDataProviding {
     @SuppressWarnings("rawtypes")
     public void render(Map model, HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        
+        for (ReferenceDataProvider p: referenceDataProviders) {
+            p.referenceData(model, request);
+        }
+        
 
         Map feedModel = (Map) model.get("feedModel");
         
@@ -277,10 +282,6 @@ public class RomeFeedView implements View, ReferenceDataProviding {
         this.useTimestampInIdentifier = useTimestampInIdentifier;
     }
     
-    public ReferenceDataProvider[] getReferenceDataProviders() {
-        return this.referenceDataProviders;
-    }
-
     public void setReferenceDataProviders(ReferenceDataProvider[] referenceDataProviders) {
         this.referenceDataProviders = referenceDataProviders;
     }

@@ -43,8 +43,8 @@
     <property name="handler" ref="plaintextEdit.documentTooLargeHandler" />
   </bean>
 
-  <bean id="plaintextEdit.documentTooLargeHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="plaintextEdit.documentTooLarge" />
+  <bean id="plaintextEdit.documentTooLargeHandler" class="vtk.web.display.ParameterizableViewController">
+    <constructor-arg value="plaintextEdit.documentTooLarge" />
   </bean>
 
   <bean id="plaintextXMLEditService" parent="plaintextEditService">

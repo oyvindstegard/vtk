@@ -30,14 +30,14 @@
  */
 package vtk.web.decorating;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
-
-import static org.junit.Assert.*;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -138,7 +138,9 @@ public class DefaultTemplateParserTest {
         final Writer writer = new StringWriter();
         context.checking(new Expectations() {{ oneOf(mockResponse).getWriter(); will(returnValue(writer)); }});
         if (inv instanceof StaticTextFragment) {
-            return ((StaticTextFragment) inv).buffer.toString();
+            StringBuilder sb = new StringBuilder();
+            ((StaticTextFragment) inv).write(sb);
+            return sb.toString();
         }
         DecoratorComponent c = new DummyComponent(inv.getNamespace(), inv.getName());
         c.render(mockRequest, mockResponse);

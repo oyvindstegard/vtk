@@ -38,13 +38,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.resourcemanagement.StructuredResource;
-import vtk.resourcemanagement.view.StructuredResourceDisplayController;
 import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.Node;
 import vtk.text.tl.Parser.Directive;
 import vtk.text.tl.TemplateContext;
 import vtk.text.tl.Token;
+import vtk.web.ModelProvider;
 import vtk.web.decorating.DynamicDecoratorTemplate;
 
 public class LocalizationNodeFactory implements DirectiveHandler {
@@ -76,19 +76,13 @@ public class LocalizationNodeFactory implements DirectiveHandler {
                 //RequestContext requestContext = RequestContext.getRequestContext();
                 //HttpServletRequest request = requestContext.getServletRequest();
                 HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
-                Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
-                if (o == null) {
-                    throw new RuntimeException("Unable to locate resource: no model: " 
-                            + StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
-                }
+                Map<String, Object> model = ModelProvider.getModel(request);
                 Object[] localizationArgs = new Object[rest.size()];
                 for (int i = 0; i < rest.size(); i++) {
                     Token a = rest.get(i);
                     localizationArgs[i] = a.getValue(ctx);
                 }
 
-                @SuppressWarnings("unchecked")
-                Map<String, Object> model = (Map<String, Object>) o;
                 StructuredResource resource = (StructuredResource) model.get(resourceModelKey);
                 if (resource == null) {
                     throw new RuntimeException("Unable to localize string: " + key + ": no resource found in model");

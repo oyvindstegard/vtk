@@ -99,7 +99,7 @@ public class CopyMoveController implements Controller {
             Enumeration<String> e = request.getParameterNames();
 
             while (e.hasMoreElements()) {
-                String name = (String) e.nextElement();
+                String name = e.nextElement();
 
                 try {
                     Path.fromString(name);

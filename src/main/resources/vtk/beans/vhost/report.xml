@@ -490,7 +490,7 @@
   </bean>
 
 
-  <bean id="report.viewResolver" parent="system.decoratingViewResolver">
+  <bean id="report.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="report" value-ref="reportView" />
@@ -500,11 +500,6 @@
         <entry key="brokenLinksReport" value-ref="brokenLinksReportView" />
         <entry key="brokenLinksCollectionReport" value-ref="brokenLinksCollectionReportView" />
       </map>
-    </property>
-    <property name="referenceDataProviders">
-      <list>
-        <ref bean="resourceContextProvider" />
-      </list>
     </property>
   </bean>
 
@@ -518,6 +513,11 @@
           </list>
         </entry>
       </map>
+    </property>
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
     </property>
   </bean>
 
@@ -539,6 +539,11 @@
         </entry>
       </map>
     </property>
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
   </bean>
 
   <bean id="documentReportView" parent="freemarkerView">
@@ -552,6 +557,11 @@
         </entry>
       </map>
     </property>
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
   </bean>
 
   <bean id="diagramReportView" parent="freemarkerView">
@@ -564,6 +574,11 @@
           </list>
         </entry>
       </map>
+    </property>
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
     </property>
   </bean>
 
@@ -590,6 +605,7 @@
           <property name="path" value="${editor.fck.browseURL}" />
           <property name="modelName" value="fckBrowse" />
         </bean>
+        <ref bean="resourceContextProvider" />
       </list>
     </property>
   </bean>
@@ -617,6 +633,7 @@
           <property name="path" value="${editor.fck.browseURL}" />
           <property name="modelName" value="fckBrowse" />
         </bean>
+        <ref bean="resourceContextProvider" />
       </list>
     </property>
   </bean>

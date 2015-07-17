@@ -1,4 +1,4 @@
-/* Copyright (c) 2008, University of Oslo, Norway
+/* Copyright (c) 2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,12 +28,14 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.decorating;
+package vtk.web.filter;
 
-import vtk.text.html.HtmlPage;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-public interface HtmlTemplateResult extends TemplateResult {
+public interface ServiceFilter {
 
-    public HtmlPage getHtmlResult();
+    public void filter(HttpServletRequest request, 
+            HttpServletResponse response, ServiceFilterChain chain) throws Exception;
 
 }

@@ -32,148 +32,66 @@ package vtk.web.display.file;
 
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.Controller;
-import org.springframework.web.servlet.mvc.LastModified;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
-import vtk.repository.RepositoryException;
 import vtk.repository.Resource;
-import vtk.security.AuthenticationException;
 import vtk.util.io.StreamUtil;
 import vtk.web.RequestContext;
 
 
 /**
- * Controller that provides the requested resource and its input
- * stream in the model.
- *
- * <p>Configurable JavaBean properties:
+ * Writes the contents of a resource to the client.
+ * 
+ * <p><a name="config">Configurable properties</a>
  * <ul>
- *   <li><code>childName</code> - if childName is set and the current
- *       resource is a collection, the child resource of that name is
- *       retrieved instead of the requested resource
- *   <li><code>streamToString</code> - set this to true if you
- *       want to provide the resource as resourceString model data
- *       instead of resourceStream if the content type is text based 
- *   <li><code>viewName</code> - name of the returned view. The
- *       default value is <code>displayResource</code>
- *   <li><code>view</code> - the actual {@link View} object (overrides
- *   <code>viewName</code>.
- *   <li><code>unsupportedResourceView</code> - name of returned view
- *       if the resource type is unsupported. Default value is
- *       <code>HTTP_STATUS_NOT_FOUND</code>
- *   <li><code>unsupportedResourceTypes</code> - list of content types
- *       that should return <code>unsupportedResourceView</code>.
- *   <li><code>displayProcessed</code> - wether the resource should be
- *       retrieved for processing (uio:readProcessed) or for raw
- *       access (dav:read). Defaults to false.
- *   <li><code>ignoreLastModified</code> - wether or not to ignore the
- *       resource's <code>lastModified</code> value. Setting this
- *       property to <code>true</code> means that the resource content
- *       cannot be cached by the client. Default is
- *       <code>true</code>.
- *   <li><code>ignoreLastModifiedOnCollections</code> - wether or not to ignore the
- *       resource's <code>lastModified</code> value when the resource is a collection.
- *       Default is <code>true</code>.
+ *   <li><code>streamBufferSize</code> - (int) the size of the buffer
+ *   used when executing the (read from resource, write to response)
+ *   loop. The default value is <code>5000</code>.
  * </ul>
- * </p>
  *
- * <p>Model data provided:
+ * <p>Requires the following data to be present in the model:
  * <ul>
- *   <li><code>resource</code> - the {@link Resource} object</li>
- *   <li><code>resourceStream</code> - the {@link InputStream} of the
- *       resource. (Note: be sure to couple this controller with a
- *       view that closes this stream)</li>
- *   <li><code>resourceString</code> - a {@link String} representation
- *       of the resource if <code>streamToString</code> is set and
- *       it's a text resource.
+ *   <li><code>resource</code> - the {@link Resource} object requested
+ *   <li><code>resourceStream</code> - the content {@link InputStream} to write to the
+ *   client 
+ * </ul>
+ * 
+ * <p>Sets the following HTTP headers, based on metadata in the
+ * resource and request headers:
+ * <ul>
+ *   <li><code>Content-Type</code>
+ *   <li><code>Content-Length</code>
+ *   <li><code>Accept-Ranges</code>
+ *   <li><code>Content-Range</code>
  * </ul>
  */
-public class DisplayResourceController 
-    implements Controller, LastModified, InitializingBean {
+public class DisplayResourceController implements Controller {
 
-    public static final String DEFAULT_VIEW_NAME = "displayResource";
     private static final String defaultCharacterEncoding = "utf-8";
 
     private boolean displayProcessed = false;
+    private boolean supportRangeRequests = false;
+    private int streamBufferSize = 5000;
+    
 
     private static Log logger = LogFactory.getLog(DisplayResourceController.class);
-
-    private String childName;
-    private String viewName = DEFAULT_VIEW_NAME;
-    private View view = null;
-    private String unsupportedResourceView = "HTTP_STATUS_NOT_FOUND";
-    private Set<String> unsupportedResourceTypes = null;
-    private boolean streamToString = false;
-    private boolean ignoreLastModified = true;
-    private boolean ignoreLastModifiedOnCollections = true;
-    
-    public void setChildName(String childName) {
-        this.childName = childName;
-    }
-
-
-    public void setViewName(String viewName) {
-        this.viewName = viewName;
-    }
-    
-
-    public void setView(View view) {
-        this.view = view;
-    }
-    
-    public void setIgnoreLastModified(boolean ignoreLastModified) {
-        this.ignoreLastModified = ignoreLastModified;
-    }
-    
-
-    public void setIgnoreLastModifiedOnCollections(boolean ignoreLastModifiedOnCollections) {
-        this.ignoreLastModifiedOnCollections = ignoreLastModifiedOnCollections;
-    }
-    
-
-    public void setUnsupportedResourceTypes(Set<String> unsupportedResourceTypes) {
-        this.unsupportedResourceTypes = unsupportedResourceTypes;
-    }
-    
-
-    public void setStreamToString(boolean streamToString) {
-        this.streamToString = streamToString;
-    }
-
 
     public void setDisplayProcessed(boolean displayProcessed) {
         this.displayProcessed = displayProcessed;
     }
 
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        if (this.unsupportedResourceTypes == null) {
-            this.unsupportedResourceTypes = new HashSet<String>();
-        }
-        if (this.viewName == null && this.view == null) {
-            throw new BeanInitializationException(
-                "At least one of JavaBean properties 'viewName' or 'view' must "
-                + "be specified");
-        }
-    }
-
-
-    @Override
+     @Override
     public ModelAndView handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
@@ -182,108 +100,155 @@ public class DisplayResourceController
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
 
-        if (this.childName != null) {
-            uri = uri.extend(this.childName);
-        }
-
         Map<String, Object> model = new HashMap<String, Object>();
         Resource resource = repository.retrieve(token, uri, this.displayProcessed);
-        if (this.unsupportedResourceTypes.contains(resource.getContentType())) {
-            return new ModelAndView(this.unsupportedResourceView);
-        }
 
         model.put("resource", resource);
 
-        if (!resource.isCollection()) {
+        InputStream stream = repository.getInputStream(token, uri, true);
 
-            InputStream stream = repository.getInputStream(token, uri, true);
-
-            if (!this.streamToString || !resource.getContentType().startsWith("text/")) {
-                model.put("resourceStream", stream);
-                if (this.view != null) {
-                    return new ModelAndView(this.view, model);
-                }
-                return new ModelAndView(this.viewName, model);
-            }
-
-            
-            // Provide as string instead of stream
-            String characterEncoding = resource.getCharacterEncoding();
-            if (characterEncoding == null) {
-                characterEncoding = defaultCharacterEncoding;
-            }
-
-            String content = StreamUtil.streamToString(stream, characterEncoding);
-            model.put("resourceString", content);
-        
+        // Provide as string instead of stream
+        String characterEncoding = resource.getCharacterEncoding();
+        if (characterEncoding == null) {
+            characterEncoding = defaultCharacterEncoding;
         }
-        if (this.view != null) {
-            return new ModelAndView(this.view, model);
+
+         Range range = this.supportRangeRequests ? 
+                 getRangeHeader(request, resource) : null;
+         request.setAttribute(Range.class.getName(), range);
+         setHeaders(resource, request, response);
+
+         if ("HEAD".equals(request.getMethod())) {
+             if (logger.isDebugEnabled()) {
+                 logger.debug("Request is HEAD, not writing content");
+             }
+             response.flushBuffer();
+             return null;
+         }
+         writeResponse(stream, request, response);
+         return null;
+     }
+
+
+    protected void setHeaders(Resource resource, HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+        if (this.supportRangeRequests) {
+            setHeader(response, "Accept-Ranges", "0-" + (resource.getContentLength() - 1));
         }
-        return new ModelAndView(this.viewName, model);
+
+        Range range = (Range) request.getAttribute(Range.class.getName());
+        setContentTypeHeader(resource, response);
+        if (range != null) {
+            setStatus(response, HttpServletResponse.SC_PARTIAL_CONTENT);
+            setHeader(response, "Content-Range", "bytes " + range.from + "-" 
+                    + range.to + "/" + resource.getContentLength());
+            setHeader(response, "Content-Length", String.valueOf(range.to - range.from + 1));
+        }
+        else {
+            setStatus(response, HttpServletResponse.SC_OK);
+            setContentLengthHeader(resource, response);
+        }
     }
-
-
-    @Override
-    public long getLastModified(HttpServletRequest request) {
-
-        if (this.ignoreLastModified) {
+    
+    protected void writeResponse(InputStream resourceStream,
+            HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Range range = (Range) request.getAttribute(Range.class.getName());
+        long bytesWritten = 0L;
+        if (range != null) {
+            long nbytes = range.to - range.from + 1;
             if (logger.isDebugEnabled()) {
-                logger.debug("Ignoring last-modified value for request "
-                             + request.getRequestURI());
+                logger.debug("Writing range: " + range.from + "-" + range.to);
             }
-            return -1;
+            bytesWritten = StreamUtil.pipe(
+                    resourceStream, response.getOutputStream(), 
+                    range.from, nbytes,
+                    this.streamBufferSize, true);
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Repository repository = requestContext.getRepository();
-        String token = requestContext.getSecurityToken();
-        Resource resource = null;
-        
-        Path uri = requestContext.getResourceURI();
-        
-        if (this.childName != null) {
-            uri = uri.extend(this.childName);
+        else {
+            bytesWritten = StreamUtil.pipe(
+                    resourceStream, response.getOutputStream(), 
+                    this.streamBufferSize, false);
         }
+        
+        response.flushBuffer();
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Getting last-modified value for resource "
-                         + uri);
+            logger.debug("Wrote a total of " + bytesWritten + " bytes to response");
         }
-
-        try {
-            resource = repository.retrieve(token, uri, true);
-        } catch (RepositoryException e) {
-            // These exceptions are expected
-            if (logger.isDebugEnabled()) {
-                logger.debug("Unable to get last-modified value for resource "
-                             + uri, e);
-            }
-            return -1;
-        } catch (AuthenticationException e) {
-            // These exceptions are expected
-            if (logger.isDebugEnabled()) {
-                logger.debug("Unable to get last-modified value for resource "
-                             + uri, e);
-            }
-            return -1;
-        } catch (Throwable t) {
-            if (logger.isInfoEnabled()) {
-                logger.info(
-                    "Unable to get the last-modified value for resource "
-                    + uri, t);
-            }
-            return -1;
-        }
-        if (resource.isCollection() && this.ignoreLastModifiedOnCollections) {
-            logger.debug("Ignorig last-modified value for resource "
-                         + uri + ": resource is collection");
-            return -1;
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Returning last-modified value for resource "
-                         + uri + ": " + resource.getLastModified());
-        }
-        return resource.getLastModified().getTime();
     }
 
+    protected void setStatus(HttpServletResponse response, int status) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Setting status: " + status);
+        }
+        response.setStatus(status);
+    }
+
+    protected void setHeader(HttpServletResponse response, String name, Object value) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Setting header " + name + ": " + value);
+        }
+        response.setHeader(name, value.toString());
+    }
+    
+    protected void setContentTypeHeader(Resource resource, HttpServletResponse response) {
+        response.setContentType(resource.getContentType());
+        if (resource.getCharacterEncoding() != null)
+            response.setCharacterEncoding(resource.getCharacterEncoding());
+    }
+    
+    protected void setContentLengthHeader(Resource resource, HttpServletResponse response) 
+            throws Exception {
+        setHeader(response, "Content-Length", String.valueOf(resource.getContentLength()));
+    }
+
+    private static class Range {
+        long from; long to;
+        public Range(long from, long to) {
+            this.from = from; this.to = to;
+        }
+        public String toString() {
+            return "Range: " + from + ":" + to;
+        }
+    }
+
+    private Range getRangeHeader(HttpServletRequest request, Resource resource) {
+        String hdr = request.getHeader("Range");
+        if (hdr == null) {
+            return null;
+        }
+        if (!hdr.startsWith("bytes=")) {
+            return null;
+        }
+        StringBuilder fromStr = new StringBuilder();
+        StringBuilder toStr = new StringBuilder();
+        StringBuilder cur = fromStr;
+        for (int i = "bytes=".length(); i < hdr.length(); i++) {
+            char c = hdr.charAt(i);
+            if (c == '-') {
+                cur = toStr;
+            }
+            else if (c < '0' || c > '9') {
+                return null;
+            }
+            else {
+                cur.append(c);
+            }
+        }
+        long from = 0;
+        if (fromStr.length() > 0) {
+            from = Long.parseLong(fromStr.toString());
+        }
+        long to = resource.getContentLength() - 1;
+        if (toStr.length() > 0) {
+            to = Long.parseLong(toStr.toString());
+        }
+        if (to <= from) {
+            return null;
+        }
+        if (to > resource.getContentLength() - 1) {
+            return null;
+        }
+        return new Range(from, to);
+    }
 }

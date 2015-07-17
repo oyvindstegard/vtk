@@ -31,8 +31,6 @@
 package vtk.web.view.freemarker;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,9 +38,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerView;
-import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 
+import vtk.web.referencedata.ReferenceDataProvider;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.SimpleHash;
 import freemarker.template.Template;
@@ -60,7 +57,7 @@ import freemarker.template.TemplateException;
  * <code>dumpedModel</code>, containing a string dump of the original model.
  * </ul>
  */
-public class FreeMarkerViewRenderer extends FreeMarkerView implements ReferenceDataProviding {
+public class FreeMarkerViewRenderer extends FreeMarkerView {
 
     private boolean debug = false;
     private ReferenceDataProvider[] referenceDataProviders;
@@ -80,7 +77,19 @@ public class FreeMarkerViewRenderer extends FreeMarkerView implements ReferenceD
     public void setStatus(int status) {
         this.status = status;
     }
+    
+    @Override
+    public void render(Map<String, ?> model, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Map<String, Object> m = (Map<String, Object>) model;
+        if (referenceDataProviders != null) {
+            for (ReferenceDataProvider p: referenceDataProviders) {
+                p.referenceData(m, request);
+            }
+        }
+        super.render(model, request, response);
+    }
 
+    
     @Override
     protected void processTemplate(Template template, SimpleHash model, HttpServletResponse response)
             throws IOException, TemplateException {
@@ -91,60 +100,31 @@ public class FreeMarkerViewRenderer extends FreeMarkerView implements ReferenceD
             model.put("dumpedModel", debugModel);
         }
         model.put("debug", Boolean.valueOf(this.debug));
-
         if (this.resourceLocaleResolver != null) {
             model.put("resourceLocaleResolver", this.resourceLocaleResolver);
         }
 
         model.put("repositoryID", this.repositoryID);
         model.put("statics", BeansWrapper.getDefaultInstance().getStaticModels());
-
         super.processTemplate(template, model, response);
     }
     
     @Override
     protected void exposeModelAsRequestAttributes(Map<String, Object> model,
             HttpServletRequest request) throws Exception {
+        
         // Prevent entire model from being exposed as request attributes. 
         // This causes leaking of state between view invocations.
     }
 
-    @Override
-    public ReferenceDataProvider[] getReferenceDataProviders() {
-        return this.referenceDataProviders;
-    }
 
     public void setReferenceDataProviders(ReferenceDataProvider[] referenceDataProviders) {
         this.referenceDataProviders = referenceDataProviders;
     }
 
-    /**
-     * Allows to set a list whose elements are either reference data providers
-     * or nested lists of reference data providers.
-     */
-    public void setReferenceDataProviderList(List<?> l) {
-        List<ReferenceDataProvider> result = new ArrayList<ReferenceDataProvider>();
-        addReferenceDataProviders(l, result);
-        if (result.size() > 0) {
-            this.referenceDataProviders = result.toArray(new ReferenceDataProvider[result.size()]);
-        }
-    }
-
-    private void addReferenceDataProviders(List<?> source, List<ReferenceDataProvider> result) {
-
-        for (Object object : source) {
-            if (object instanceof ReferenceDataProvider) {
-                ReferenceDataProvider r = (ReferenceDataProvider) object;
-                result.add(r);
-            } else if (object instanceof List<?>) {
-                addReferenceDataProviders((List<?>) object, result);
-            }
-        }
-    }
-
     @Override
     public String toString() {
-        return this.getClass().getName() + ":" + this.getUrl();
+        return this.getClass().getSimpleName() + "(" + this.getUrl() + ")";
     }
 
     public void setRepositoryID(String repositoryID) {

@@ -60,7 +60,7 @@
     </property>
   </bean>
 
-  <bean id="actionsListing.viewResolver" parent="manage.plainViewResolver">
+  <bean id="actionsListing.viewResolver" parent="adminViewResolver">
     <property name="views">
       <map>
         <entry key="actionsListing.listingView" value-ref="actionsListing.listingView" />

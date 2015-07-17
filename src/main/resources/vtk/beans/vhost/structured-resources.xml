@@ -125,8 +125,8 @@
 
   <bean id="structuredResources.displayHandler" class="vtk.resourcemanagement.view.StructuredResourceDisplayController"
     depends-on="structuredResource.parser">
-    <property name="viewName" value="structuredResources.displayView" />
     <property name="resourceManager" ref="structuredResources.resourceManager" />
+    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
     <property name="htmlParser" ref="decorating.htmlParser" />
     <property name="templateManager" ref="structuredResources.templateManager" />
     <property name="resourceModelKey" value="structured-resource" />
@@ -165,7 +165,6 @@
   <bean id="structuredResources.decoratorTemplateFactory" class="vtk.web.decorating.SimpleDynamicDecoratorTemplateFactory">
     <property name="directiveHandlers" ref="structuredResources.directives" />
     <property name="componentResolver" ref="decorating.defaultComponentResolver" />
-    <property name="htmlParser" ref="decorating.htmlParser" />
   </bean>
 
   <bean id="structuredResources.directives" class="org.springframework.beans.factory.config.ListFactoryBean">
@@ -411,14 +410,6 @@
     <property name="defaultLocale" value="${view.defaultLocale}" />
   </bean>
 
-  <bean id="structuredResources.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="structuredResources.displayView" value-ref="structuredResources.displayView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="structuredResources.wrappingViewResolver" parent="adminViewResolver">
     <property name="views">
       <map>
@@ -427,9 +418,19 @@
     </property>
   </bean>
 
-  <bean id="structuredResources.displayView" class="vtk.web.decorating.TemplateView">
-    <property name="templateRef" value="structured-resources.template" />
-    <property name="templateManager" ref="article.templateManager" />
+
+  <bean id="structuredResources.initialView.templateFactory"
+        class="vtk.web.decorating.TextualDecoratorTemplateFactory">
+    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
+    <property name="parser" ref="decorating.dollarSyntaxTemplateParser" />
+  </bean>
+
+
+  <bean id="structuredResources.initialView.templateManager"
+        class="vtk.web.decorating.StaticTemplateManager">
+    <property name="templateFactory" ref="structuredResources.initialView.templateFactory" />
+    <property name="uriPrefix" value="${article.decoratorTemplatesLocation}" />
+    <property name="characterEncoding" value="utf-8" />
   </bean>
 
   <bean id="structuredResources.editView" parent="freemarkerView">

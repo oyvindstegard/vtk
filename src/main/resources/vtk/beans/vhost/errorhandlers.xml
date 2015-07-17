@@ -124,8 +124,8 @@
   <!-- Error views-->
 
 
-  <bean id="errorViewResolver" parent="decoratorViewResolver">
-    <property name="order" value="0" />
+  <!--bean id="errorViewResolver" parent="decoratorViewResolver"-->
+  <bean id="errorViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="badRequestError" value-ref="badRequestErrorView" />

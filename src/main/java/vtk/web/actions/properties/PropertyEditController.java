@@ -51,6 +51,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.IllegalOperationException;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.Namespace;
@@ -73,7 +74,6 @@ import vtk.security.PrincipalManager;
 import vtk.util.repository.DocumentPrincipalMetadataRetriever;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
 
@@ -114,8 +114,7 @@ import vtk.web.service.ServiceUnlinkableException;
  * 
  */
 @SuppressWarnings("deprecation")
-public class PropertyEditController extends SimpleFormController implements ReferenceDataProvider,
-        ReferenceDataProviding {
+public class PropertyEditController extends SimpleFormController implements ReferenceDataProvider {
 
     private Log logger = LogFactory.getLog(this.getClass());
 
@@ -633,7 +632,4 @@ public class PropertyEditController extends SimpleFormController implements Refe
         this.documentPrincipalMetadataRetriever = documentPrincipalMetadataRetriever;
     }
 
-    public ReferenceDataProvider[] getReferenceDataProviders() {
-        return new ReferenceDataProvider[] { this };
-    }
 }

@@ -40,6 +40,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import vtk.resourcemanagement.ComponentDefinition;
 import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlFragment;
@@ -50,6 +51,7 @@ import vtk.text.tl.Node;
 import vtk.text.tl.NodeList;
 import vtk.text.tl.TemplateHandler;
 import vtk.text.tl.TemplateParser;
+import vtk.web.ModelProvider;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
 import vtk.web.decorating.DynamicDecoratorTemplate;
@@ -147,8 +149,10 @@ implements HtmlDecoratorComponent {
     
     private Context createContext(DecoratorRequest request) {
         Context ctx = new Context(request.getLocale());
+        Map<String, Object> mvcModel = ModelProvider.getModel(request.getServletRequest());
+        
         if (this.modelKey != null) { 
-            ctx.define(this.modelKey, request.getMvcModel(), true);
+            ctx.define(this.modelKey, mvcModel, true);
         }
         for (String param : this.definition.getParameters()) {
             Object value = request.getRawParameter(param);

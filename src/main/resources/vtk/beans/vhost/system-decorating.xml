@@ -4,49 +4,23 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
 
-  <bean id="system.decoratingViewResolver" 
-        class="vtk.web.decorating.MappingViewResolver"
-        abstract="true">
-    <property name="viewWrapper" ref="system.viewWrapper" />
-  </bean>
 
-  <bean id="system.viewWrapper" 
-        class="vtk.web.decorating.DecoratingViewWrapper">
-    <property name="staticHeaders">
+  <bean id="system.csrfPreventionHandler"
+        class="vtk.security.web.CSRFPreventionHandler" />
+
+  <bean id="system.decoratingFilter" class="vtk.web.decorating.DecoratingServiceFilter">
+    <constructor-arg name="htmlParser" ref="decorating.htmlParser" />
+    <constructor-arg name="filters" ><list></list></constructor-arg>
+    <!--constructor-arg ref="decorating.userFilters" /-->
+    <constructor-arg name="resolver" ref="system.decorationResolver" />
+    <constructor-arg name="componentResolver" ref="system.decoratorComponentResolver" />
+    <constructor-arg name="preventDecoratingParameter" value="x-prevent-decorating" />
+    <constructor-arg name="staticHeaders">
       <map>
         <entry key="Cache-Control" value="no-cache, must-revalidate" />
         <entry key="Expires" value="0" />
       </map>
-    </property>
-    <property name="preventDecoratingParameter" value="x-prevent-decorating" />
-    <property name="decorators">
-      <list>
-        <ref bean="system.templateDecorator" />
-        <!--
-            <ref bean="system.formTokenDecorator" />
-        -->
-      </list>
-    </property>
-  </bean>
-
-  <bean id="system.csrfPreventionHandler"
-        class="vtk.security.web.CSRFPreventionHandler">
-    <property name="tempDir" value="${repository.tempDir}" />
-    <property name="maxUploadSize" value="${upload.maxFileSize}" />
-  </bean>
-
-
-  <bean id="system.templateDecorator"
-        class="vtk.web.decorating.TemplateDecorator">
-    <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="decorationResolver" ref="system.decorationResolver" />
-    <!--property name="parseFilters" ref="decorating.userFilters" /-->
-    <property name="postFilters">
-      <list>
-        <ref bean="system.csrfPreventionHandler" />
-      </list>
-    </property>
-    <property name="tidyXhtml" value="false" />
+    </constructor-arg>
   </bean>
 
   <bean id="system.decorationResolver"
@@ -70,17 +44,18 @@
   <bean id="system.decoratorTemplateFactory"
         class="vtk.web.decorating.TextualDecoratorTemplateFactory">
     <property name="parser" ref="system.decoratorTemplateParser" />
-    <property name="componentResolver">
-      <bean name="system.decoratorComponentResolver"
-            class="vtk.web.decorating.BeanContextComponentResolver">
-        <property name="availableComponentNamespaces">
-          <set>
-            <value>*</value>
-          </set>
-        </property>
-      </bean>
+    <property name="componentResolver" ref="system.decoratorComponentResolver" />
+  </bean>
+
+  <bean id="system.decoratorComponentResolver"
+        class="vtk.web.decorating.BeanContextComponentResolver">
+    <property name="availableComponentNamespaces">
+      <set>
+        <value>*</value>
+      </set>
     </property>
   </bean>
+
 
   <bean id="system.decoratorTemplateParser"
         class="vtk.web.decorating.DollarSyntaxComponentParser">

@@ -160,7 +160,7 @@
     </property>
   </bean>
 
-  <bean id="tags.viewResolver" parent="decoratorViewResolver">
+  <bean id="tags.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="tags.tags" value-ref="tags.tagsView" />

@@ -11,30 +11,13 @@
         <entry key="redirectToManage" value-ref="redirectToManageView" />
         <entry key="redirectToPermissions" value-ref="redirectToPermissionView" />
         <entry key="redirectToPreviewCollection" value-ref="redirectToPreviewCollectionView" />
-        <entry key="displayResource" value-ref="displayResourceView" />
         <entry key="previewViewIframe" value-ref="previewViewIframeView" />
         <entry key="previewPopup" value-ref="previewPopupView" />
       </map>
     </property>
   </bean>
 
-  <bean id="decoratorViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="displayHTMLResource"  value-ref="displayResourceView" />
-      </map>
-    </property>
-    <property name="viewWrapper" ref="decoratingViewWrapper" />
-  </bean>
-
-
-
   <!-- View definitions -->
-
-  <bean id="displayResourceView"
-        class="vtk.web.view.DisplayResourceView">
-    <property name="supportRangeRequests" value="${displayResource.supportRangeRequests}" />
-  </bean> 
 
   <bean id="httpOptionsView"
         class="vtk.web.view.StandardHttpView">

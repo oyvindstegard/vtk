@@ -35,10 +35,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.resourcemanagement.StructuredResource;
-import vtk.resourcemanagement.view.StructuredResourceDisplayController;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
+import vtk.web.ModelProvider;
 import vtk.web.decorating.DynamicDecoratorTemplate;
 
 public class JSONDocumentProvider extends Function {
@@ -52,13 +52,8 @@ public class JSONDocumentProvider extends Function {
         //RequestContext requestContext = RequestContext.getRequestContext();        
         //HttpServletRequest request = requestContext.getServletRequest();
         HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
-
-        Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
-        if (o == null) {
-            throw new RuntimeException("Unable to access MVC model");
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> model = (Map<String, Object>) o;
+        
+        Map<String, Object> model = ModelProvider.getModel(request);
         StructuredResource res = (StructuredResource) model.get("structured-resource");
         if (res == null) {
             throw new RuntimeException("No structured resource found in MVC model");

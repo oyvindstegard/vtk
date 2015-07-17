@@ -49,7 +49,7 @@
     </property>
   </bean>
 
-  <bean id="filteredListing.viewResolver" parent="decoratorViewResolver">
+  <bean id="filteredListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="filteredListing.view" value-ref="filteredListing.view" />

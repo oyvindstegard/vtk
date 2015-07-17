@@ -56,35 +56,35 @@ public class WrappedServletOutputStream extends ServletOutputStream {
     }
 
     public void print(boolean b) throws IOException {
-        this.out.write(String.valueOf(b).getBytes(this.characterEncoding));
+        out.write(String.valueOf(b).getBytes(characterEncoding));
     }
         
     public void print(char c) throws IOException {
-        this.out.write(String.valueOf(c).getBytes(this.characterEncoding));
+        out.write(String.valueOf(c).getBytes(characterEncoding));
     }
         
     public void print(int n) throws IOException {
-        this.out.write(String.valueOf(n).getBytes(this.characterEncoding));
+        out.write(String.valueOf(n).getBytes(characterEncoding));
     }
 
     public void print(long l) throws IOException {
-        this.out.write(String.valueOf(l).getBytes(this.characterEncoding));
+        out.write(String.valueOf(l).getBytes(characterEncoding));
     }
 
     public void print(String s) throws IOException {
-        this.out.write(s.getBytes(this.characterEncoding));
+        out.write(s.getBytes(characterEncoding));
     }
 
     public void print(float f) throws IOException {
-        this.out.write(String.valueOf(f).getBytes(this.characterEncoding));
+        out.write(String.valueOf(f).getBytes(characterEncoding));
     }
 
     public void print(double d) throws IOException {
-        this.out.write(String.valueOf(d).getBytes(this.characterEncoding));
+        out.write(String.valueOf(d).getBytes(characterEncoding));
     }
 
     public void println() throws IOException {
-        this.out.write("\r\n".getBytes(this.characterEncoding));
+        out.write("\r\n".getBytes(characterEncoding));
     }
 
     public void println(String s) throws IOException {
@@ -123,21 +123,23 @@ public class WrappedServletOutputStream extends ServletOutputStream {
     }
 
     public void write(int n) throws IOException {
-        this.out.write(n);
+        out.write(n);
     }
 
     public void write(byte[] b) throws IOException {
-        this.out.write(b);
+        out.write(b);
     }
 
     public void write(byte[] b, int off, int len) throws IOException {
-        this.out.write(b, off, len);
+        out.write(b, off, len);
     }
 
     public void close() throws IOException {
+        out.close();
     }
 
     public void flush() throws IOException {
+        out.flush();
     }
 
     @Override

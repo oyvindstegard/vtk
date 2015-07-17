@@ -54,7 +54,7 @@
     </property>
   </bean>
 
-  <bean id="blogListing.viewResolver" parent="decoratorViewResolver">
+  <bean id="blogListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="blogListing.view" value-ref="${override.listing.prefix}blogListing.view" />

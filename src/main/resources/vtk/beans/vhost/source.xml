@@ -34,18 +34,6 @@
   </bean>
 
   <bean id="getSourceHandler" class="vtk.web.display.file.DisplayResourceController">
-    <property name="viewName" value="getSourceDisplayResource" />
-    <property name="ignoreLastModified" value="true" />
   </bean>
-
-  <bean id="getSourceViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="getSourceDisplayResource" value-ref="getSourceDisplayResourceView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="getSourceDisplayResourceView" class="vtk.web.view.DisplayResourceView" />
 
 </beans>

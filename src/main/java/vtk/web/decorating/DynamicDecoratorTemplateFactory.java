@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.support.RequestContextUtils;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -78,14 +79,16 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
     private ComponentResolver componentResolver;
 
     public Template newTemplate(InputSource templateSource) throws InvalidTemplateException {
-        return new DynamicDecoratorTemplate(templateSource, this.componentResolver, this.directiveHandlers, null);
+        return new DynamicDecoratorTemplate(templateSource, this.componentResolver, this.directiveHandlers);
     }
 
-    @Required public void setRepository(Repository repository) {
+    @Required
+    public void setRepository(Repository repository) {
         this.repository = repository;
     }
 
-    @Required public void setAspectsPropdef(PropertyTypeDefinition aspectsPropdef) {
+    @Required
+    public void setAspectsPropdef(PropertyTypeDefinition aspectsPropdef) {
         this.aspectsPropdef = aspectsPropdef;
     }
     

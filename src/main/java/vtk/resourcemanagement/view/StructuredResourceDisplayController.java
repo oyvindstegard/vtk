@@ -31,7 +31,9 @@
 package vtk.resourcemanagement.view;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +46,9 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -61,21 +65,18 @@ import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
 import vtk.web.RequestContext;
 import vtk.web.decorating.ComponentResolver;
-import vtk.web.decorating.HtmlPageContent;
-import vtk.web.decorating.PageContent;
 import vtk.web.decorating.Template;
-import vtk.web.decorating.TemplateExecution;
+import vtk.web.decorating.TemplateEnvironment;
 import vtk.web.decorating.TemplateManager;
 import vtk.web.referencedata.ReferenceDataProvider;
 
 public class StructuredResourceDisplayController implements Controller, InitializingBean {
 
-    public static final String MVC_MODEL_REQ_ATTR = "__mvc_model__";
+    public static final String MVC_MODEL_CTX_ATTR = "__mvc_model__";
     public static final String COMPONENT_RESOLVER = "__component_resolver__";
 
     private static final String COMPONENT_NS = "comp";
 
-    private String viewName;
     private StructuredResourceManager resourceManager;
     private TemplateManager templateManager;
     private HtmlPageParser htmlParser;
@@ -85,6 +86,8 @@ public class StructuredResourceDisplayController implements Controller, Initiali
     private List<DirectiveHandler> directiveHandlers;
 
     private List<HtmlPageFilter> postFilters;
+    
+    private ComponentResolver componentResolver;
 
     // XXX: clean up this mess:
     private Map<StructuredResourceDescription,
@@ -143,57 +146,45 @@ public class StructuredResourceDisplayController implements Controller, Initiali
             }
             model.put("config", config);
         }
-        request.setAttribute(MVC_MODEL_REQ_ATTR, model);
+        return new ModelAndView(new StructuredResourceView(res), model);
+    }
+    
+    private class StructuredResourceView implements View {
+        private StructuredResource res;
         
-        PageContent content = renderInitialPage(res, model, request);
+        public StructuredResourceView(StructuredResource res) {
+            this.res = res;
+        }
 
-        if (content instanceof HtmlPageContent) {
-            HtmlPage page = ((HtmlPageContent) content).getHtmlContent();
-            if (this.postFilters != null) {
-                for (HtmlPageFilter filter: this.postFilters)
-                page.filter(filter);
-            }
-            model.put("page", ((HtmlPageContent) content).getHtmlContent());
-            return new ModelAndView(this.viewName, model);
+        @Override
+        public String getContentType() {
+            return "text/html;charset=utf-8";
+        }
+
+        @Override
+        public void render(Map<String, ?> model, HttpServletRequest request,
+                HttpServletResponse response) throws Exception {
+            final HtmlPage initialPage = htmlParser.createEmptyPage("initial-page");
+            String templateRef = res.getType().getName();
+            Template t = templateManager.getTemplate(templateRef);
+            
+            Map<String, TemplateLanguageDecoratorComponent> componentMap = components.get(res.getType());
+            final ComponentResolver resolver = new DynamicComponentResolver(COMPONENT_NS, componentResolver, componentMap);
+            request.setAttribute(COMPONENT_RESOLVER, resolver);
+            
+            TemplateEnvironment execution = TemplateEnvironment.create(
+                    resolver, initialPage, request, 
+                    //model, 
+                    Collections.emptyMap());
+
+            response.setContentType("text/html;charset=utf-8");
+            OutputStream out = response.getOutputStream();
+            System.out.println(Thread.currentThread().getName() + "__render_to: " + out);
+            t.render(execution, out);
+            response.flushBuffer();
         }
         
-        response.setContentType("text/html");
-        response.setCharacterEncoding(content.getOriginalCharacterEncoding());
-        response.setContentLength(content.getContent().length());
-        response.getWriter().write(content.getContent());
-        return null;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public PageContent renderInitialPage(StructuredResource res, Map model, HttpServletRequest request)
-    throws Exception {
-        final HtmlPage initialPage = this.htmlParser.createEmptyPage("initial-page");
-        HtmlPageContent content = new HtmlPageContent() {
-            public HtmlPage getHtmlContent() {
-                return initialPage;
-            }
-
-            public String getContent() {
-                return initialPage.getStringRepresentation();
-            }
-
-            public String getOriginalCharacterEncoding() {
-                return initialPage.getCharacterEncoding();
-            }
-        };
-
-        String templateRef = res.getType().getName();
-        Template t = this.templateManager.getTemplate(templateRef);
-        TemplateExecution execution = t.newTemplateExecution(content, request, model, new HashMap<String, Object>());
-
-        ComponentResolver resolver = execution.getComponentResolver();
-        Map<String, TemplateLanguageDecoratorComponent> components = this.components.get(res.getType());
-        resolver = new DynamicComponentResolver(COMPONENT_NS, resolver, components);
-        execution.setComponentResolver(resolver);
-        request.setAttribute(COMPONENT_RESOLVER, resolver);
-        
-        return execution.render();
-    }
+    } 
 
     private void initComponentDefs(StructuredResourceDescription desc) throws Exception {
         // XXX: "concurrent initialization":
@@ -204,7 +195,7 @@ public class StructuredResourceDisplayController implements Controller, Initiali
         for (ComponentDefinition def : defs) {
             String name = def.getName();
             TemplateLanguageDecoratorComponent comp = 
-                new TemplateLanguageDecoratorComponent(COMPONENT_NS, def, MVC_MODEL_REQ_ATTR,
+                new TemplateLanguageDecoratorComponent(COMPONENT_NS, def, MVC_MODEL_CTX_ATTR,
                         this.directiveHandlers, this.htmlParser);
             comps.put(name, comp);
         }
@@ -240,10 +231,6 @@ public class StructuredResourceDisplayController implements Controller, Initiali
         }
     }
 
-    public void setViewName(String viewName) {
-        this.viewName = viewName;
-    }
-
     public void setResourceManager(StructuredResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
@@ -276,4 +263,8 @@ public class StructuredResourceDisplayController implements Controller, Initiali
         this.directiveHandlers = directiveHandlers;
     }
     
+    @Required
+    public void setComponentResolver(ComponentResolver resolver) {
+        this.componentResolver = resolver;
+    }
 }

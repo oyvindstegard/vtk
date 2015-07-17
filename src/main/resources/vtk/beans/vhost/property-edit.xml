@@ -24,7 +24,7 @@
   </bean>
 
 
-  <bean id="manage.propertyEdit.viewResolver" parent="system.decoratingViewResolver">
+  <bean id="manage.propertyEdit.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="manage.propertyEditView" value-ref="manage.propertyEditView" />

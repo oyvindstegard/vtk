@@ -35,12 +35,12 @@
 
 
   <bean id="defaultBrowseHandler" 
-    class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="browse" />
+    class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="browse" />
   </bean>
 
 
-  <bean id="browseViewResolver" parent="system.decoratingViewResolver">
+  <bean id="browseViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="browse" value-ref="browseView" />
@@ -116,7 +116,7 @@
     <property name="name" value="resource-bar" />
     <property name="description" value="Displays browse resource bar" />
     <property name="view" ref="browse.resourceBarView" />
-    <property name="exposeMvcModel" value="true" />
+    <!--property name="exposeMvcModel" value="true" /-->
   </bean>
   
   <bean id="browse.resourceBarView" parent="freemarkerView">
@@ -159,7 +159,7 @@
     <property name="name" value="css" />
     <property name="description" value="Inserts the default browse CSS stylesheets" />
     <property name="view" ref="browse.cssView" />
-    <property name="exposeMvcModel" value="true" />
+    <!--property name="exposeMvcModel" value="true" /-->
   </bean>
 
   <bean id="browse.cssView" parent="freemarkerView">
@@ -182,7 +182,7 @@
     <property name="name" value="javascript" />
     <property name="description" value="Inserts the default browse javascript references" />
     <property name="view" ref="browse.javascriptView" />
-    <property name="exposeMvcModel" value="true" />
+    <!--property name="exposeMvcModel" value="true" /-->
   </bean>
 
   <bean id="browse.javascriptView" parent="freemarkerView">

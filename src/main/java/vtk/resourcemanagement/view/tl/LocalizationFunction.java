@@ -35,10 +35,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.resourcemanagement.StructuredResource;
-import vtk.resourcemanagement.view.StructuredResourceDisplayController;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
+import vtk.web.ModelProvider;
 import vtk.web.decorating.DynamicDecoratorTemplate;
 
 public class LocalizationFunction extends Function {
@@ -57,11 +57,7 @@ public class LocalizationFunction extends Function {
         //HttpServletRequest request = requestContext.getServletRequest();
         HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
 
-        Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
-        if (o == null) {
-            throw new RuntimeException("Unable to locate resource: no model: " 
-                    + StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
-        }
+        Map<String, Object> model = ModelProvider.getModel(request);
         Object[] localizationArgs = new Object[0];
         if (args.length > 1) {
             localizationArgs = new Object[args.length - 1];
@@ -69,8 +65,6 @@ public class LocalizationFunction extends Function {
                 localizationArgs[i - 1] = args[i];
             }
         }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> model = (Map<String, Object>) o;
         StructuredResource resource = (StructuredResource) model.get(this.resourceModelKey);
         if (resource == null) {
             throw new RuntimeException("Unable to localize string: " + key + ": no resource found in model");

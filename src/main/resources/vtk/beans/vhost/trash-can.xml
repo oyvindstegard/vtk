@@ -42,7 +42,7 @@
     <property name="commandName" value="trashcan" />
   </bean>
 
-  <bean id="trashCan.viewResolver" parent="system.decoratingViewResolver">
+  <bean id="trashCan.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="trashCan" value-ref="trashCanView" />

@@ -310,7 +310,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
         if (values == null) {
             return null;
         }
-        return Collections.<String>enumeration(values);
+        return Collections.enumeration(values);
     }
     
     @Override
@@ -416,7 +416,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     
     @Override
     public String toString() {
-        return this.getClass().getName() + "[" + super.toString() + "]";
+        return getClass().getSimpleName() + "(" + wrappedURL + ", " + super.toString() + ")";
     }
     
 

@@ -125,7 +125,7 @@
     <property name="documentPrincipalMetadataRetriever" ref="documentPrincipalMetadataRetriever" />
   </bean>
 
-  <bean id="collectionListing.viewResolver" parent="decoratorViewResolver">
+  <bean id="collectionListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="collectionListing.view" value-ref="collectionListing.view" />

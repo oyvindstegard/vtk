@@ -32,7 +32,6 @@ package vtk.web.decorating;
 
 import java.util.List;
 
-import vtk.text.html.HtmlPageParser;
 import vtk.text.tl.DirectiveHandler;
 import vtk.util.io.InputSource;
 
@@ -40,14 +39,13 @@ public class SimpleDynamicDecoratorTemplateFactory implements TemplateFactory {
 
     private ComponentResolver componentResolver;
     private List<DirectiveHandler> directiveHandlers;
-    private HtmlPageParser htmlParser = null;
 
     
     @Override
     public Template newTemplate(InputSource templateSource)
             throws InvalidTemplateException {
         return new DynamicDecoratorTemplate(templateSource, this.componentResolver, 
-                this.directiveHandlers, this.htmlParser);
+                this.directiveHandlers);
     }
 
     public void setComponentResolver(ComponentResolver componentResolver) {
@@ -57,9 +55,4 @@ public class SimpleDynamicDecoratorTemplateFactory implements TemplateFactory {
     public void setDirectiveHandlers(List<DirectiveHandler> directiveHandlers) {
         this.directiveHandlers = directiveHandlers;
     }
-    
-    public void setHtmlParser(HtmlPageParser htmlParser) {
-        this.htmlParser = htmlParser;
-    }
-
 }

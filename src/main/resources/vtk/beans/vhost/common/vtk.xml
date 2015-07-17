@@ -171,8 +171,8 @@
 
        Source: org/springframework/web/servlet/DispatcherServlet.properties -->
 
-  <!-- Custom handlerAdapter for all Controller instances: -->
-  <bean class="vtk.web.filter.ServiceHandlerFilterAdapter" />
+  <!-- Default HandlerAdapter for Spring MVC: -->
+  <bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter" />
 
   <!-- Spring HandlerAdapter for all HttpRequestHandler instances: -->
   <bean class="org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter" />

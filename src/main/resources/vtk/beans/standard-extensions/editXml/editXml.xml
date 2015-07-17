@@ -81,13 +81,12 @@
   </bean>
 
 
-  <bean id="xmledit.ViewResolver" parent="system.decoratingViewResolver">
+  <bean id="xmledit.ViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="edit" value-ref="editView" />
       </map>
     </property>
-    <!--property name="viewWrapper" ref="editViewWrapper" /-->
   </bean>
 
   <!-- Add the raw query URL provider to the reference data providers

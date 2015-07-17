@@ -31,9 +31,9 @@
 
 
   <bean id="displayAudioResourceHandler"
-        class="vtk.web.display.file.ResourceAwareParameterizableViewController">
+        class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="displayAudioResource" />
     <description>This is used as parent for all similar handlers</description>
-    <property name="viewName" value="displayAudioResource"/>
   </bean> 
 
   <bean id="audioViewResolver" class="vtk.web.decorating.MappingViewResolver">
@@ -42,7 +42,6 @@
         <entry key="displayAudioResource" value-ref="displayAudioResourceView" />
       </map>
     </property>
-    <property name="viewWrapper" ref="decoratingViewWrapper" />
   </bean>
 
   <bean id="displayAudioResourceView" parent="freemarkerView">

@@ -30,22 +30,23 @@
  */
 package vtk.web.decorating;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import vtk.resourcemanagement.view.tl.ComponentInvokerNodeFactory;
 import vtk.text.html.HtmlPage;
-import vtk.text.html.HtmlPageParser;
 import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.Node;
@@ -65,7 +66,6 @@ public class DynamicDecoratorTemplate implements Template {
     private InputSource templateSource;
     private long lastModified = -1;
     private List<DirectiveHandler> directiveHandlers;
-    private HtmlPageParser htmlParser;
     
     private static final String CR_REQ_ATTR = "__component_resolver__";
     private static final String HTML_REQ_ATTR = "__html_page__";
@@ -86,9 +86,8 @@ public class DynamicDecoratorTemplate implements Template {
     }
     
     public DynamicDecoratorTemplate(InputSource templateSource,
-                                     ComponentResolver componentResolver,
-                                     List<DirectiveHandler> directiveHandlers, 
-                                     HtmlPageParser htmlParser) throws InvalidTemplateException {
+            ComponentResolver componentResolver, List<DirectiveHandler> directiveHandlers) 
+                    throws InvalidTemplateException {
         if (templateSource == null) {
             throw new IllegalArgumentException("Argument 'templateSource' is NULL");
         }
@@ -101,7 +100,6 @@ public class DynamicDecoratorTemplate implements Template {
         this.templateSource = templateSource;
         this.componentResolver = componentResolver;
         this.directiveHandlers = directiveHandlers;
-        this.htmlParser = htmlParser;
         try {
             compile();
         } catch (Exception e) {
@@ -120,72 +118,6 @@ public class DynamicDecoratorTemplate implements Template {
 
         return parameters.get(name);
     }
-    
-    public class Execution implements TemplateExecution {
-        private HtmlPageContent content;
-        private NodeList compiledTemplate;
-        private ComponentResolver componentResolver;
-        private HttpServletRequest request;
-        private Map<String, Object> templateParameters;
-
-        public Execution(HtmlPageContent content, NodeList compiledTemplate, 
-                ComponentResolver componentResolver, HttpServletRequest request,
-                Map<String, Object> templateParameters) {
-            this.content = content;
-            this.componentResolver = componentResolver;
-            this.compiledTemplate = compiledTemplate;
-            this.request = request;
-            this.templateParameters = templateParameters;
-        }
-        
-        public void setComponentResolver(ComponentResolver componentResolver) {
-            this.componentResolver = componentResolver;
-        }
-        
-        @Override
-        public ComponentResolver getComponentResolver() {
-            return this.componentResolver;
-        }
-
-        @Override
-        public PageContent render() throws Exception {
-            HtmlPage html = this.content.getHtmlContent();
-
-            Locale locale = 
-                new org.springframework.web.servlet.support.RequestContext(this.request).getLocale();
-
-            Context context = new Context(locale);
-            for (String name : this.templateParameters.keySet()) {
-                context.define(name, this.templateParameters.get(name), true);
-            }
-            context.setAttribute(SERVLET_REQUEST_CONTEXT_ATTR, this.request);
-            context.define(CR_REQ_ATTR, this.componentResolver, true);
-            context.define(HTML_REQ_ATTR, html, true);
-            this.request.setAttribute(PARAMS_REQ_ATTR, this.templateParameters);
-            StringWriter writer = new StringWriter();
-
-            this.compiledTemplate.render(context, writer);
-            
-            if (htmlParser == null) {
-                return new ContentImpl(writer.toString(), this.content.getOriginalCharacterEncoding());
-            }
-            HtmlPage page = htmlParser.parse(
-                    new ByteArrayInputStream(writer.toString().getBytes("utf-8")), "utf-8");
-            return new HtmlPageContentImpl(page.getCharacterEncoding(), page);
-        }
-    }
-    
-    @Override
-    public TemplateExecution newTemplateExecution(
-            HtmlPageContent html, HttpServletRequest request,
-            Map<String, Object> model, Map<String, Object> templateParameters) throws Exception {
-
-        if (this.templateSource.getLastModified() > this.lastModified) {
-            compile();
-        }
-        return new Execution(html, this.compiledTemplate, this.componentResolver, request, templateParameters);
-    }
-
     
     private synchronized void compile() throws Exception {
        if (this.compiledTemplate != null 
@@ -251,5 +183,29 @@ public class DynamicDecoratorTemplate implements Template {
             }
         });
         return nodeList;
+    }
+
+    @Override
+    public void render(TemplateEnvironment env, OutputStream out)
+            throws Exception {
+        Optional<HtmlPage> html = env.htmlPage();
+        if (!html.isPresent()) throw new Exception("HTML page is undefined");
+        
+        Locale locale = 
+                new org.springframework.web.servlet.support.RequestContext(env.request()).getLocale();
+
+        Context context = new Context(locale);
+        Map<String, Object> templateParameters = env.templateParameters();
+
+        for (String name : templateParameters.keySet()) {
+            context.define(name, templateParameters.get(name), true);
+        }
+        context.setAttribute(SERVLET_REQUEST_CONTEXT_ATTR, env.request());
+        context.define(CR_REQ_ATTR, env.componentResolver(), true);
+        context.define(HTML_REQ_ATTR, html.get(), true);
+        env.request().setAttribute(PARAMS_REQ_ATTR, env.templateParameters());
+        Writer writer = new OutputStreamWriter(out);
+        compiledTemplate.render(context, writer);
+        writer.flush();
     }
 }

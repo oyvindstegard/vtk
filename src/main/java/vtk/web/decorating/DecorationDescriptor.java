@@ -37,8 +37,6 @@ public interface DecorationDescriptor {
 
     public boolean decorate();
 
-    public boolean tidy();
-
     public boolean parse();
 
     public List<Template> getTemplates();

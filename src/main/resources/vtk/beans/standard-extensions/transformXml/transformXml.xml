@@ -59,7 +59,6 @@
         <entry key="transformXmlResource" value-ref="transformXmlView" />
       </map>
     </property>
-    <property name="viewWrapper" ref="decoratingViewWrapper" />
   </bean>
 
 
@@ -402,14 +401,13 @@
   </bean>
 
 
-  <bean id="transformXmlManageErrorViewResolver" parent="system.decoratingViewResolver">
+  <bean id="transformXmlManageErrorViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="manageXsltError" value-ref="manageXsltErrorView" />
         <entry key="manageXmlBuildError" value-ref="manageXmlBuildErrorView" />
       </map>
     </property>
-    <!--property name="viewWrapper" ref="manageViewWrapper" /-->
   </bean>
   
 

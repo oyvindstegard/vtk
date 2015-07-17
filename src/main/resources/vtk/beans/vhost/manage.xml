@@ -33,8 +33,8 @@
     </property>
     <!-- Dummy handler that is never invoked (the handler interceptor will prevent it): -->
     <property name="handler">
-      <bean class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-        <property name="viewName" value="HTTP_200_OK" />
+      <bean class="vtk.web.display.ParameterizableViewController">
+        <constructor-arg value="HTTP_200_OK" />
       </bean>
     </property>
   </bean>
@@ -74,8 +74,8 @@
     </property>
     <!-- Dummy handler that is never invoked (the handler interceptor will prevent it): -->
     <property name="handler">
-      <bean class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-        <property name="viewName" value="HTTP_200_OK" />
+      <bean class="vtk.web.display.ParameterizableViewController">
+        <constructor-arg value="HTTP_200_OK" />
       </bean>
     </property>
   </bean>
@@ -120,8 +120,8 @@
     </property>
     <!-- Dummy handler that is never invoked (the handler interceptor will prevent it): -->
     <property name="handler">
-      <bean class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-        <property name="viewName" value="HTTP_200_OK" />
+      <bean class="vtk.web.display.ParameterizableViewController">
+        <constructor-arg value="HTTP_200_OK" />
       </bean>
     </property>
   </bean>
@@ -137,8 +137,11 @@
       </list>
     </property>
     <property name="urlPostProcessors" ref="manage.urlPostProcessors" />
-    <property name="handlerFilters">
-      <ref bean="system.csrfPreventionHandler" />
+    <property name="serviceFilters">
+      <list>
+        <ref bean="system.csrfPreventionHandler" />
+        <ref bean="system.decoratingFilter" />
+      </list>
     </property>
     <property name="handlerInterceptors">
       <list>
@@ -808,8 +811,8 @@
     <property name="handler" ref="previewText.documentTooLargeHandler" />
   </bean>
 
-  <bean id="previewText.documentTooLargeHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="previewText.documentTooLarge" />
+  <bean id="previewText.documentTooLargeHandler" class="vtk.web.display.ParameterizableViewController">
+    <constructor-arg value="previewText.documentTooLarge" />
   </bean>
 
   <bean id="previewCollectionListingService" class="vtk.web.service.ServiceImpl">
@@ -1092,12 +1095,12 @@
     <property name="commandName" value="permissionsForm_read-write-unpublished" />
   </bean>
 
-  <bean id="permissionsHandler" class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="permissions" />
+  <bean id="permissionsHandler" class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="permissions" />
   </bean>
 
-  <bean id="manageCollectionListingHandler" class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="manageCollectionListing" />
+  <bean id="manageCollectionListingHandler" class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="manageCollectionListing" />
   </bean>
 
   <bean id="preview.displayPopupURLHandler" class="vtk.web.display.url.ResourceServiceURLController">
@@ -1129,20 +1132,17 @@
     <property name="viewName" value="previewMedia" />
   </bean>
 
-  <bean id="previewTextHandler" class="vtk.web.display.file.DisplayResourceController">
-    <!-- XXX preview size limit.. -->
-    <property name="ignoreLastModified" value="true" />
-    <property name="viewName" value="previewText" />
-    <property name="streamToString" value="true" />
-  </bean>
+  <!--bean id="previewTextHandler" class="vtk.web.display.file.DisplayResourceController">
+  </bean-->
+  <bean id="previewTextHandler" parent="previewAdminIframeHandler" />
 
-  <bean id="previewFallbackHandler" class="vtk.web.display.file.DisplayResourceController">
-    <property name="ignoreLastModified" value="true" />
-    <property name="viewName" value="previewFallback" />
+
+  <bean id="previewFallbackHandler" class="vtk.web.display.ResourceAwareParameterizableViewController">
+    <constructor-arg value="previewFallback" />
   </bean>
 
   <!-- MANAGE views -->
-  <bean id="adminViewResolver" parent="system.decoratingViewResolver">
+  <bean id="adminViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="manageCollectionListing" value-ref="manageCollectionListingView" />
@@ -1155,13 +1155,6 @@
         <entry key="previewText" value-ref="previewTextView" />
         <entry key="previewText.documentTooLarge" value-ref="previewText.documentTooLargeView" />
         <entry key="previewFallback" value-ref="previewFallbackView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="manage.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
         <entry key="manage.refreshLockView" value-ref="manage.refreshLockView" />
         <entry key="redirectToAbout" value-ref="redirectToAboutView" />
       </map>
@@ -1803,7 +1796,6 @@
     <property name="referenceDataProviders">
       <list>
         <ref bean="parentLinkProvider" />
-        <ref bean="collectionMenuProvider" />
         <ref bean="manageCollectionlistingProvider" />
         <ref bean="resourceContextProvider" />
         <ref bean="collectionMenuProvider" />
@@ -2155,7 +2147,6 @@
         <entry key="defaultManageError" value-ref="defaultManageErrorView" />
       </map>
     </property>
-    <property name="viewWrapper" ref="system.viewWrapper" />
   </bean>
 
   <bean id="defaultManageErrorView" parent="freemarkerView">
@@ -2255,7 +2246,7 @@
     <property name="principalFactory" ref="principalFactory" />
   </bean>
 
-  <bean id="emailApproval.viewResolver" parent="system.decoratingViewResolver">
+  <bean id="emailApproval.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="emailApproval.view" value-ref="emailApproval.view" />
@@ -2297,8 +2288,8 @@
     <property name="handler" ref="reauthenticateHandler" />
   </bean>
 
-  <bean id="reauthenticateHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="reauthenticate.view" />
+  <bean id="reauthenticateHandler" class="vtk.web.display.ParameterizableViewController">
+    <constructor-arg value="reauthenticate.view" />
   </bean>
 
   <bean id="reauthenticate.viewResolver" class="vtk.web.decorating.MappingViewResolver">

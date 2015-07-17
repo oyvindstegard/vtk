@@ -38,7 +38,7 @@
     </property>
   </bean>
 
-  <bean id="researchGroupListing.viewResolver" parent="decoratorViewResolver">
+  <bean id="researchGroupListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="researchGroupListing.view" value-ref="researchGroupListing.view" />

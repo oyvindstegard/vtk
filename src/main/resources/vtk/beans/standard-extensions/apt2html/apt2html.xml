@@ -29,23 +29,7 @@
   </bean>
 
   <bean id="apt2html.handler" class="vtk.web.display.file.DisplayResourceController">
-    <property name="viewName" value="apt2html.view" />
     <property name="displayProcessed" value="true" />
   </bean>
-
-  <bean id="apt2html.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="apt2html.view"  value-ref="apt2html.view" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="apt2html.view" class="vtk.web.view.DoxiaHtmlView">
-    <property name="parserClass" value="org.apache.maven.doxia.module.apt.AptParser" />
-    <property name="streamKey" value="resourceStream" />
-    <property name="resourceKey" value="resource" />
-  </bean>
-
 
 </beans>

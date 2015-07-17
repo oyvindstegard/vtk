@@ -145,7 +145,6 @@
 
   <bean id="editor.loadImageHandler" class="vtk.web.display.file.DisplayResourceController">
     <property name="displayProcessed" value="false" />
-    <property name="ignoreLastModified" value="true" />
   </bean>
 
   <bean id="editor.videoEditService" parent="editor.abstractEditService">
@@ -416,8 +415,8 @@
     <property name="defaultLocale" value="${view.defaultLocale}" />
   </bean>
 
-  <bean id="editor.ooXmlEditHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="editor.ooXmlEditView" />
+  <bean id="editor.ooXmlEditHandler" class="vtk.web.display.ParameterizableViewController">
+    <constructor-arg value="editor.ooXmlEditView" />
   </bean>
 
   <bean id="editor.abstractEditHandler" abstract="true" class="vtk.edit.editor.ResourceEditController">
@@ -1191,4 +1190,108 @@
     </property>
   </bean>
 
+
+
+  <bean id="resourceManager"
+        class="vtk.edit.editor.ResourceWrapperManager">
+    <property name="htmlParser" ref="decorating.htmlParser" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
+    <property name="contentResourceType" ref="xhtml10TransResourceTypeDefinition" />
+  </bean>
+  
+
+  <bean id="resourceManager.htmlPropsFilter" class="vtk.text.html.SimpleHtmlPageFilter">
+    <property name="keepComments" value="false" />
+    <property name="illegalElements" ref="resourceManager.htmlPropsFilter.illegalHtmlElementSet" />
+    <property name="validElements" ref="resourceManager.htmlPropsFilter.validHtmlElementSet" />
+  </bean>
+
+  <bean id="resourceManager.htmlPropsFilter.illegalHtmlElementSet"
+        class="org.springframework.beans.factory.config.SetFactoryBean">
+    <property name="sourceSet">
+      <set>
+        <value>script</value>
+        <value>style</value>
+        <value>form</value>
+        <value>input</value>
+        <value>frameset</value>
+        <value>frame</value>
+        <value>iframe</value>
+        <value>object</value>
+        <value>embed</value>
+      </set>
+    </property>
+  </bean>
+
+  <bean id="resourceManager.htmlPropsFilter.validHtmlElementSet"
+        class="org.springframework.beans.factory.config.SetFactoryBean">
+    <property name="sourceSet">
+      <set>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="a" />
+          <property name="attributes">
+            <set>
+              <value>href</value>
+              <value>rel</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="p" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="sub" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="sup" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="em" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="strong" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="cite" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="code" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="strike" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="s" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="u" />
+        </bean>
+        <!--
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="ul" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="li" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="ol" />
+        </bean>
+        -->
+      </set>
+    </property>
+  </bean>
+
+  <bean id="resourceTypeIsDocument" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+    <property name="resourceTypeDefinition" ref="documentResourceTypeDefinition" />
+  </bean>
+
+  <bean id="resourceTypeIsNotDocument" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+    <property name="resourceTypeDefinition" ref="documentResourceTypeDefinition" />
+	<property name="invert" value="true" />
+  </bean>
+
+  <bean id="resourceTypeIsEvent" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+    <property name="resourceTypeDefinition" ref="eventResourceTypeDefinition" />
+  </bean>
+  
 </beans>

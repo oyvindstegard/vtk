@@ -32,7 +32,6 @@
   <import resource="controllers.xml" />
   <import resource="service.xml" />
   <import resource="authentication.xml" />
-  <import resource="article.xml" />
   <import resource="structured-resources-management.xml" />
   <import resource="structured-resources.xml" />
 

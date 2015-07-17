@@ -139,8 +139,8 @@
       </list>
     </property>
     <property name="handler">
-      <bean class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-        <property name="viewName" value="saml.metadata"/>
+      <bean class="vtk.web.display.ParameterizableViewController">
+        <constructor-arg value="saml.metadata" />
       </bean>
     </property>
     <property name="attributes">
@@ -183,13 +183,6 @@
     <property name="views">
       <map>
         <entry key="saml.metadata" value-ref="saml.metadataView"/>
-      </map>
-    </property>
-  </bean>
-
-  <bean id="saml.decoratedViewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
         <entry key="saml.lostPost" value-ref="saml.lostPost.view"/>
       </map>
     </property>

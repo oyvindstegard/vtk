@@ -75,7 +75,7 @@
     <property name="descriptionPropDef" ref="videoHtmlDescriptionPropDef" />
   </bean>
 
-  <bean id="displayMediaResourceViewResolver" parent="decoratorViewResolver">
+  <bean id="displayMediaResourceViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="viewMediaPlayer" value-ref="displayMediaResourceView" />

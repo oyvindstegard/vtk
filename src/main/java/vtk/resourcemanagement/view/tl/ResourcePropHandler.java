@@ -40,10 +40,10 @@ import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.resourcemanagement.view.StructuredResourceDisplayController;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
+import vtk.web.ModelProvider;
 import vtk.web.RequestContext;
 
 public class ResourcePropHandler extends Function {
@@ -61,7 +61,8 @@ public class ResourcePropHandler extends Function {
 
         if (arg1 instanceof PropertySet) {
             resource = (PropertySet) arg1;
-        } else {
+        }
+        else {
             ref = arg1.toString();
         }
 
@@ -69,26 +70,26 @@ public class ResourcePropHandler extends Function {
             RequestContext requestContext = RequestContext.getRequestContext();
             if (ref.equals(".")) {
                 HttpServletRequest request = requestContext.getServletRequest();
-                Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
-                if (o == null) {
-                    throw new RuntimeException("Unable to access MVC model: "
-                            + StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
+                Map<String, Object> model = ModelProvider.getModel(request);
+                if (model == null) {
+                    throw new RuntimeException("Unable to access MVC model");
                 }
-                @SuppressWarnings("unchecked")
-                Map<String, Object> model = (Map<String, Object>) o;
                 resource = (Resource) model.get("resource");
-            } else {
+            }
+            else {
                 Path uri;
                 if (!ref.startsWith("/")) {
                     uri = requestContext.getResourceURI().getParent().expand(ref);
-                } else {
+                }
+                else {
                     uri = Path.fromString(ref);
                 }
                 String token = requestContext.getSecurityToken();
                 Repository repository = requestContext.getRepository();
                 try {
                     resource = repository.retrieve(token, uri, true);
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
                     throw new RuntimeException(t);
                 }
             }
@@ -117,7 +118,8 @@ public class ResourcePropHandler extends Function {
         }
         if (property.getDefinition().isMultiple()) {
             return property.getValues();
-        } else {
+        }
+        else {
             return property.getValue();
         }
     }

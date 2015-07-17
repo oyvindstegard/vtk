@@ -50,6 +50,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.LocaleResolver;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -65,9 +66,6 @@ import vtk.util.text.PathMappingConfig.Qualifier;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
-import vtk.web.servlet.StatusAwareHttpServletResponse;
-
-
 
 public class ConfigurableDecorationResolver implements DecorationResolver, InitializingBean {
 
@@ -190,12 +188,10 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         String paramString = null;
         
         boolean errorPage = false;
-        if (response instanceof StatusAwareHttpServletResponse) {
-            int status = ((StatusAwareHttpServletResponse) response).getStatus();
-            if (status >= 400) {
-                errorPage = true;
-                paramString = checkErrorCodeMatch(status);
-            }
+        int status = response.getStatus();
+        if (status >= 400) {
+            errorPage = true;
+            paramString = checkErrorCodeMatch(status);
         }
 
         if (paramString == null && !errorPage) {
@@ -473,7 +469,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         }
         
         public String toString() {
-            StringBuilder sb = new StringBuilder(this.getClass().getName());
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
             sb.append(" [templates=").append(this.templates.toString());
             sb.append(", parse=").append(this.parse);
             sb.append(", tidy=").append(this.tidy).append("]");

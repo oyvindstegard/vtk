@@ -54,7 +54,6 @@
         <entry key="openid.authenticationForm" value-ref="openid.authenticationFormView" />
       </map>
     </property>
-    <property name="viewWrapper" ref="decoratingViewWrapper" />
   </bean>
 
 

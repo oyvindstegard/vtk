@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, 2008, University of Oslo, Norway
+/* Copyright (c) 2007, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,14 +30,11 @@
  */
 package vtk.web.decorating;
 
-import java.util.Map;
+import java.io.OutputStream;
 
-import javax.servlet.http.HttpServletRequest;
 
 public interface Template {
+    
+    public void render(TemplateEnvironment env, OutputStream out) throws Exception;
 
-    public TemplateExecution newTemplateExecution(
-            HtmlPageContent html, HttpServletRequest request,
-            Map<String, Object> model, 
-            Map<String, Object> templateParameters) throws Exception;
 }

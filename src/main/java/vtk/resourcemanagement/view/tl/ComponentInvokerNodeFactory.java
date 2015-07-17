@@ -30,6 +30,7 @@
  */
 package vtk.resourcemanagement.view.tl;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +41,6 @@ import java.util.Stack;
 
 import javax.servlet.http.HttpServletRequest;
 
-import vtk.resourcemanagement.view.StructuredResourceDisplayController;
 import vtk.text.html.HtmlPage;
 import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
@@ -151,15 +151,14 @@ public class ComponentInvokerNodeFactory implements DirectiveHandler {
                     out.write("Unable to resolve component '" + namespace + ":" + name + "'");
                     return true;
                 }
-                //RequestContext requestContext = RequestContext.getRequestContext();
-                //HttpServletRequest servletRequest = requestContext.getServletRequest();
 
-                HttpServletRequest servletRequest = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+                HttpServletRequest servletRequest = (HttpServletRequest) 
+                        ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
                 
                 Stack<DecoratorComponent> componentStack = 
                     (Stack<DecoratorComponent>) servletRequest.getAttribute(COMPONENT_STACK_REQ_ATTR);
                 if (componentStack == null) {
-                    componentStack = new Stack<DecoratorComponent>();
+                    componentStack = new Stack<>();
                     servletRequest.setAttribute(COMPONENT_STACK_REQ_ATTR, componentStack);
                 }
                 
@@ -174,14 +173,15 @@ public class ComponentInvokerNodeFactory implements DirectiveHandler {
                     Locale locale = ctx.getLocale();
                     final String doctype = "";
                     
-                    Map<String, Object> mvcModel = (Map<String, Object>) servletRequest.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
                     DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
-                            getHtmlPage(ctx), servletRequest, mvcModel, 
+                            getHtmlPage(ctx), servletRequest, 
                             (Map<String, Object>) parameterMap, doctype, locale);
+                    
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     DecoratorResponseImpl decoratorResponse = new DecoratorResponseImpl(
-                            doctype, locale, "utf-8");
+                            doctype, locale, "utf-8", stream);
                     component.render(decoratorRequest, decoratorResponse);
-                    out.write(decoratorResponse.getContentAsString());
+                    out.write(new String(stream.toByteArray(), "utf-8"));
                 } catch (Throwable t) {
                     out.write(component.getNamespace() + ":" + component.getName()+ ": " + t.getMessage());
                     

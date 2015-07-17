@@ -34,13 +34,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Enumeration;
-import java.util.List;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,7 +53,6 @@ import vtk.context.BaseContext;
 import vtk.web.RequestContext;
 import vtk.web.filter.CaptureInputRequestFilter.CaptureInputRequestWrapper;
 import vtk.web.service.Service;
-import vtk.web.servlet.HeaderAwareResponseWrapper;
 
 /**
  * HTTP protocol logger/dumper. Logs headers and body by providing a request and
@@ -139,7 +139,7 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
         logbuf.append('\n');
         body = resWrap.getCapturedBytes();
         addBytesForLogging(body, resWrap.getStreamBytesWritten(),
-                resWrap.getHeaderValue("Content-Type") != null ? resWrap.getHeaderValue("Content-Type").toString()
+                resWrap.getHeader("Content-Type") != null ? resWrap.getHeader("Content-Type").toString()
                         : null, logbuf);
 
         logbuf.append("\n--- END\n");
@@ -175,8 +175,8 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
 
     private void addHeadersForLogging(CaptureOutputResponseWrapper responseWrapper, StringBuilder logBuffer) {
         for (String header: responseWrapper.getHeaderNames()) {
-            List<Object> values = responseWrapper.getHeaderValues(header);
-            for (Object value : values) {
+            Collection<String> values = responseWrapper.getHeaders(header);
+            for (String value : values) {
                 logBuffer.append(header).append(": ").append(value).append('\n');
             }
         }
@@ -213,7 +213,7 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
         return !contentTypeHeaderValue.startsWith("text/");
     }
 
-    private class CaptureOutputResponseWrapper extends HeaderAwareResponseWrapper {
+    private class CaptureOutputResponseWrapper extends HttpServletResponseWrapper {
 
         private OutputStreamCopyWrapper streamWrapper;
         private PrintWriter printWriter;

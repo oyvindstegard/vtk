@@ -36,9 +36,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.view.AbstractView;
+
 import vtk.web.InvalidModelException;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 
 
 /**
@@ -51,15 +51,11 @@ import vtk.web.referencedata.ReferenceDataProviding;
  * 
  * @see vtk.web.referencedata.provider.RedirectProvider
  */
-public class RedirectView extends AbstractView implements ReferenceDataProviding {
+public class RedirectView extends AbstractView {
 
     private boolean http10 = true;
     private ReferenceDataProvider[] referenceDataProviders;
     
-    public ReferenceDataProvider[] getReferenceDataProviders() {
-        return this.referenceDataProviders;
-    }
-
     public void setReferenceDataProviders(ReferenceDataProvider[] referenceDataProviders) {
         this.referenceDataProviders = referenceDataProviders;
     }
@@ -68,11 +64,14 @@ public class RedirectView extends AbstractView implements ReferenceDataProviding
      * @throws InvalidModelException ({@link InvalidModelException})
      * if expected model data 'redirectURL' is missing
      */
-    @SuppressWarnings("rawtypes")
     protected void renderMergedOutputModel(
-        Map model, HttpServletRequest request,
+        Map<String, Object> model, HttpServletRequest request,
         HttpServletResponse response) throws Exception {
-
+        
+        for (ReferenceDataProvider p: referenceDataProviders) {
+            p.referenceData(model, request);
+        }
+        
         String url = (String) model.get(
             "redirectURL");
 

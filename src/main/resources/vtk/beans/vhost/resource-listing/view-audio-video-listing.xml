@@ -74,7 +74,7 @@
     </property>
   </bean>
 
-  <bean id="audioVideoListing.viewResolver" parent="decoratorViewResolver">
+  <bean id="audioVideoListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="audioVideoListing.view" value-ref="audioVideoListing.view" />

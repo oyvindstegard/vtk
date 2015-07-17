@@ -1,4 +1,4 @@
-/* Copyright (c) 2005, University of Oslo, Norway
+/* Copyright (c) 2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,61 +28,38 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.decorating;
+package vtk.web.filter;
 
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.springframework.core.Ordered;
-import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.ViewResolver;
-import vtk.web.referencedata.ReferenceDataProvider;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import vtk.web.service.Service;
 
-public abstract class AbstractWrappingViewResolver implements ViewResolver, Ordered {
+public class ServiceFilterResolver {
 
-    private ViewWrapper viewWrapper;
-    private ReferenceDataProvider[] referenceDataProviders;
-    private int order = Integer.MAX_VALUE;
-
-
-    @Override
-    public View resolveViewName(String viewName, Locale locale) throws Exception {
-        View view = resolveViewNameInternal(viewName, locale);
+    public ServiceFilterChain resolve(Service service, 
+            HttpServletRequest request, HttpServletResponse response) throws Exception {
+        List<ServiceFilter> serviceFilters = getServiceFilters(service);
+        return new ServiceFilterChain(request, response, serviceFilters);
+    }
+    
+    private List<ServiceFilter> getServiceFilters(Service service) {
+        List<ServiceFilter> serviceFilters = new ArrayList<>();
         
-        if (view == null) {
-            return null;
+        if (service.getParent() != null) {
+            List<ServiceFilter> parentFilters = getServiceFilters(service.getParent());
+            if (parentFilters != null) {
+                serviceFilters.addAll(parentFilters);
+            }
         }
-
-        return new WrappingView(view, this.referenceDataProviders, this.viewWrapper);
+        List<ServiceFilter> myServiceFilters = service.getServiceFilters();
+        if (myServiceFilters != null) { 
+            serviceFilters.addAll(myServiceFilters);
+        }
+        return serviceFilters;
     }
 
-    /**
-     * Actually resolves the view. Must be implemented by subclasses.
-     * 
-     * @param viewName the name of the view.
-     * @return the resolved view.
-     */
-    protected abstract View resolveViewNameInternal(String viewName, Locale locale);
-
-    
-    public void setReferenceDataProviders(
-        ReferenceDataProvider[] referenceDataProviders) {
-        this.referenceDataProviders = referenceDataProviders;
-    }
-
-    
-    public void setViewWrapper(ViewWrapper viewWrapper) {
-        this.viewWrapper = viewWrapper;
-    }
-
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-    
-
-    public int getOrder() {
-        return this.order;
-    }
-    
 }

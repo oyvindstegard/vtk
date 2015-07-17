@@ -30,7 +30,6 @@
  */
 package vtk.web.decorating;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
@@ -43,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Path;
 import vtk.text.html.HtmlPage;
+import vtk.web.ModelProvider;
 import vtk.web.RequestContext;
 import vtk.web.decorating.components.DecoratorComponentException;
 
@@ -50,7 +50,6 @@ public class DecoratorRequestImpl implements DecoratorRequest {
 
     private HtmlPage html;
     private HttpServletRequest servletRequest;
-    private Map<String, Object> mvcModel;
     private Map<String, Object> decoratorParameters;
     private String doctype;
     private Locale locale;
@@ -59,12 +58,10 @@ public class DecoratorRequestImpl implements DecoratorRequest {
     
     public DecoratorRequestImpl(HtmlPage html,
                                 HttpServletRequest servletRequest,
-                                Map<String, Object> mvcModel,
                                 Map<String, Object> decoratorParameters,
                                 String doctype, Locale locale) {
         this.html = html;
         this.servletRequest = servletRequest;
-        this.mvcModel = mvcModel;
         this.decoratorParameters = decoratorParameters;
         this.doctype = doctype;
         this.locale = locale;
@@ -82,7 +79,7 @@ public class DecoratorRequestImpl implements DecoratorRequest {
 
     @Override
     public Map<String, Object> getMvcModel() {
-        return Collections.unmodifiableMap(this.mvcModel);
+        return ModelProvider.getModel(getServletRequest());
     }
    
     @Override
@@ -137,7 +134,8 @@ public class DecoratorRequestImpl implements DecoratorRequest {
                     }
                     String replacement = currentURI.getElements().get(level);
                     m.appendReplacement(sb, replacement);
-                } catch (NumberFormatException e) {
+                }
+                catch (NumberFormatException e) {
                     throw new DecoratorComponentException(
                             "Unable to parse integer: " + s);
                 }

@@ -69,8 +69,8 @@
       </list>
     </property>
     <property name="handler">
-      <bean class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-        <property name="viewName" value="HTTP_200_OK" />
+      <bean class="vtk.web.display.ParameterizableViewController">
+        <constructor-arg value="HTTP_200_OK" />
       </bean>
     </property>
   </bean>
@@ -97,7 +97,7 @@
         </bean>
       </list>
     </property>
-    <property name="handlerFilters">
+    <property name="serviceFilters">
       <list>
         <!-- XXX: temporarily disabled: will not work
              when using different session cookie setup to

@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import vtk.text.html.HtmlUtil;
 
 
@@ -304,14 +305,12 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
         if (fragmentList.size() > 0) {
             ComponentInvocation inv = fragmentList.get(fragmentList.size() - 1);
             if (inv instanceof StaticTextFragment) {
-                StaticTextFragment f = (StaticTextFragment) inv;
-                f.buffer.append(s);
+                fragmentList.remove(fragmentList.size() - 1);
+                fragmentList.add(((StaticTextFragment) inv).append(s));
                 return;
             }
         }
-        StaticTextFragment f = new StaticTextFragment();
-        f.buffer.append(s);
-        fragmentList.add(f);
+        fragmentList.add(new StaticTextFragment(s));
     }
 
 
