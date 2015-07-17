@@ -110,9 +110,6 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
                 throw new IOException(e);
             }
         }
-        if (contentLength != -1) {
-            response.setContentLengthLong(contentLength);
-        }
         out = response.getOutputStream();
         return out;
     }
@@ -128,11 +125,6 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
         setHeader("Content-Length", String.valueOf(len));
     }
 
-    @Override
-    public void setContentLengthLong(long len) {
-        setHeader("Content-Length", String.valueOf(len));
-    }
-    
     @Override
     public void setHeader(String name, String value) {
         if ("Content-Length".equalsIgnoreCase(name)) {

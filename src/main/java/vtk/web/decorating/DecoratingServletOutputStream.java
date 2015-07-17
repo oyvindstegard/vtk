@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -86,16 +85,6 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
         }
         out.close();
         committed = true;
-    }
-
-    @Override
-    public boolean isReady() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setWriteListener(WriteListener writeListener) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

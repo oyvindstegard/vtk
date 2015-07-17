@@ -229,11 +229,6 @@ public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent 
         }
 
         @Override
-        public void setContentLengthLong(long len) {
-            setHeader("Content-Length", String.valueOf(contentLength));
-        }
-
-        @Override
         public void setContentType(String type) {
             setHeader("Content-Type", type);
         }

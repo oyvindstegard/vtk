@@ -46,7 +46,6 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -439,15 +438,6 @@ public class CSRFPreventionHandler implements ServiceFilter {
                 private ByteBuffer input = ByteBuffer.allocate(2048);
                 
                 @Override
-                public boolean isReady() {
-                    return true;
-                }
-                
-                @Override
-                public void setWriteListener(WriteListener writeListener) {
-                }
-
-                @Override
                 public void write(int b) throws IOException {
                     if (!input.hasRemaining()) {
                         input.flip();
@@ -481,10 +471,6 @@ public class CSRFPreventionHandler implements ServiceFilter {
 
         @Override
         public void setContentLength(int len) {
-        }
-
-        @Override
-        public void setContentLengthLong(long len) {
         }
 
         @Override

@@ -398,7 +398,6 @@ public class BufferedResponse implements HttpServletResponse {
     public void writeTo(HttpServletResponse response, boolean closeOutputStream) 
         throws IOException {
         // Write/copy metadata
-        response.setContentLengthLong(getContentLength());
         String contentType = getContentType();
         if (contentType != null) {
             response.setContentType(contentType);
@@ -528,11 +527,6 @@ public class BufferedResponse implements HttpServletResponse {
         return result;
     }
 
-    @Override
-    public void setContentLengthLong(long len) {
-        this.contentLength = len;
-    }
-    
     private String formatHeader(Object value) {
         if (value instanceof Date) {
             return HttpUtil.getHttpDateString((Date) value);
