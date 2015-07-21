@@ -180,7 +180,7 @@ public class Value implements Cloneable, Comparable<Value> {
                 if (valueContentType == null
                         || !("application/json".equals(valueContentType) || valueContentType.startsWith("text/"))) {
                     throw new IllegalArgumentException("Content type 'application/json' or 'text/*'"
-                            + " required for creating " + valueType + " value type from binary storage");
+                            + " required for creating " + valueType + " value type from binary storage (got content type '" + valueContentType + "' from bianry value reference)");
                 }
                 // Copy binary data to stringValue field after sanity checking content type
                 try {

@@ -1359,7 +1359,15 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             } else if (objectValue.getClass() == Integer.class) {
                 // Value stored as binary (BLOB reference in property row)
                 BinaryValueReference binVal = new BinaryValueReference(this, (Integer)objectValue);
-                values[i] = this.valueFactory.createValue(binVal, propDef.getType());
+                try {
+                    values[i] = this.valueFactory.createValue(binVal, propDef.getType());
+                } catch (IllegalArgumentException ia) {
+                    logger.warn("Failed to create property value from integer ref = " 
+                            + objectValue + ", resource id = " + holder.resourceId 
+                            + ", prop name = " + holder.name + ", prop name_space = " 
+                            + holder.namespaceUri);
+                    throw ia;
+                }
             } else {
                 throw new DataAccessException("Expected PropHolder value to be either string or integer reference for property " + prop);
             }
