@@ -5,6 +5,7 @@
   <!-- RESOURCE LISTING DEFINITIONS -->
   <import resource="view-collection-listing.xml" />
   <import resource="view-article-listing.xml" />
+  <import resource="view-folder-listing.xml" />
   <import resource="view-event-listing.xml" />
   <import resource="view-event-calendar-listing.xml" />
   <import resource="view-blog-listing.xml" />

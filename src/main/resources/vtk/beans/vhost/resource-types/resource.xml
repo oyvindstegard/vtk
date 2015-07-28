@@ -49,6 +49,7 @@
 
         <ref bean="resourceAspectsPropDef" />
         <ref bean="linksPropDef" />
+        <ref bean="hrefsPropDef" />
         <ref bean="linkCheckPropDef" />
         <ref bean="brokenLinksCountPropDef" />
         <ref bean="linkStatusPropDef" />
@@ -321,6 +322,25 @@
 
   <bean id="resourceLinksEvaluator" class="vtk.repository.resourcetype.property.LinksEvaluator">
     <property name="resourceManager" ref="structuredResources.resourceManager" />
+  </bean>
+
+  <bean id="hrefsPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="hrefs" />
+    <property name="type" value="JSON" />
+    <property name="multiple" value="false" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="false" />
+    <property name="propertyEvaluator" ref="resourceHrefsEvaluator" />
+    <property name="metadata">
+      <map>
+        <entry key="indexableJsonHint" value="true" />
+        <entry key="indexableJsonHint.FieldType.size" value="INT" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="resourceHrefsEvaluator" class="vtk.repository.resourcetype.property.HrefsEvaluator">
+    <constructor-arg ref="linksPropDef" />
   </bean>
 
   <bean id="linkCheckPropDef" class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl"

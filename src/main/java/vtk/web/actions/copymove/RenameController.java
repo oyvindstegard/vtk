@@ -103,7 +103,7 @@ public class RenameController extends SimpleFormController {
             return new ModelAndView(getSuccessView(), model);
         } catch (Exception e) {
             logger.error("An error occured while renaming resource " + uri, e);
-            errors.reject("manage.rename.resource.validation.failed", "Renaming of resource failed");
+            errors.rejectValue("name", "manage.rename.resource.validation.failed", "Renaming of resource failed");
             return new ModelAndView(getFormView(), errors.getModel());
         }
     }

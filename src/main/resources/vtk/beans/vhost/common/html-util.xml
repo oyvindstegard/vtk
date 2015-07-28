@@ -623,6 +623,8 @@
         <value>s</value>
         <value>dd</value>
         <value>dl</value>
+        <value>figure</value>
+        <value>figcaption</value>
         <value>v:component</value>
       </set>
     </property>

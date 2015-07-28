@@ -58,7 +58,6 @@ import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 
 
-
 /**
  *
  */
@@ -74,6 +73,7 @@ class PropertySetRowHandler implements ResultHandler {
     protected List<Map<String, Object>> rowValueBuffer = new ArrayList<Map<String, Object>>();
 
     private final ResourceTypeTree resourceTypeTree;
+    private final ResourceTypeMapper resourceTypeMapper;
     private final SqlMapIndexDao indexDao;
     private final PrincipalFactory principalFactory;
     
@@ -101,6 +101,7 @@ class PropertySetRowHandler implements ResultHandler {
         this.resourceTypeTree = resourceTypeTree;
         this.principalFactory = principalFactory;
         this.indexDao = indexDao;
+        this.resourceTypeMapper = new ResourceTypeMapper(resourceTypeTree);
     }
     
     /**
@@ -314,7 +315,8 @@ class PropertySetRowHandler implements ResultHandler {
             propertySet.addProperty(prop);
         }
         
-        propertySet.setResourceType((String)row.get("resourceType"));
+        String type = (String)row.get("resourceType");
+        propertySet.setResourceType(resourceTypeMapper.resolveResourceType(type));
         
         Integer aclInheritedFrom = (Integer)row.get("aclInheritedFrom");
         if (aclInheritedFrom == null) {

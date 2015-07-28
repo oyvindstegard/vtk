@@ -87,6 +87,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     private ResourceTypeTree resourceTypeTree;
     private PrincipalFactory principalFactory;
     private ValueFactory valueFactory;
+    private ResourceTypeMapper resourceTypeMapper;
 
     private Log logger = LogFactory.getLog(this.getClass());
 
@@ -487,7 +488,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     @Override
     public ResourceImpl copy(ResourceImpl resource, ResourceImpl destParent, PropertySet newResource, boolean copyACLs,
-            PropertySet fixedProperties, Set<String> deleteProperties) {
+            PropertySet fixedProperties, Set<String> uncopyableProperties) {
 
         Path destURI = newResource.getURI();
         int depthDiff = destURI.getDepth() - resource.getURI().getDepth();
@@ -498,6 +499,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("destUri", destURI.toString());
         parameters.put("destUriWildcard", SqlDaoUtils.getUriSqlWildcard(destURI, SQL_ESCAPE_CHAR));
         parameters.put("depthDiff", depthDiff);
+        parameters.put("uncopyableProperties", new ArrayList<>(uncopyableProperties));
 
         if (fixedProperties != null) {
             supplyFixedProperties(parameters, fixedProperties);
@@ -576,35 +578,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         storeProperties(created);
 
-        // Remove uncopyable properties
-        deletePropertiesRecursively(created.getURI(), deleteProperties);
-
         // Re-load and return newly written destination ResourceImpl
         return load(created.getURI());
-    }
-
-    /**
-     * Removes all properties by name, from resource at path (recursively for
-     * all sub-resources as well if resource is collection).Only properties in
-     * DEFAULT (null) namespace are deleted.
-     * 
-     * Alters only database with no other side effects.
-     * 
-     * @param uri The path to the resource.
-     * @see PropertyType#UNCOPYABLE_PROPERTIES
-     */
-    private void deletePropertiesRecursively(Path uri, final Set<String> deleteProperties) {
-        final String destUri = uri.toString();
-        final String uriWildcard = SqlDaoUtils.getUriSqlWildcard(uri, SQL_ESCAPE_CHAR);
-        final String batchSqlMap = getSqlMap("deleteUncopyableProperties");
-        
-        for (String propertyName : deleteProperties) {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("destUri", destUri);
-            params.put("uriWildcard", uriWildcard);
-            params.put("name", propertyName);
-            getSqlSession().delete(batchSqlMap, params);
-        }
     }
 
     @Override
@@ -1265,7 +1240,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                     new Long(contentLength)));
         }
 
-        resourceImpl.setResourceType((String) resourceMap.get("resourceType"));
+        String type = (String) resourceMap.get("resourceType");
+        resourceImpl.setResourceType(resourceTypeMapper.resolveResourceType(type));
 
         Integer aclInheritedFrom = (Integer) resourceMap.get("aclInheritedFrom");
         if (aclInheritedFrom == null) {
@@ -1274,6 +1250,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         resourceImpl.setAclInheritedFrom(aclInheritedFrom.intValue());
     }
+    
 
     /**
      * Create property from namespace, name and value.
@@ -1335,7 +1312,15 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             } else if (objectValue.getClass() == Integer.class) {
                 // Value stored as binary (BLOB reference in property row)
                 BinaryValueReference binVal = new BinaryValueReference(this, (Integer)objectValue);
-                values[i] = this.valueFactory.createValue(binVal, propDef.getType());
+                try {
+                    values[i] = this.valueFactory.createValue(binVal, propDef.getType());
+                } catch (IllegalArgumentException ia) {
+                    logger.warn("Failed to create property value from integer ref = " 
+                            + objectValue + ", resource id = " + holder.resourceId 
+                            + ", prop name = " + holder.name + ", prop name_space = " 
+                            + holder.namespaceUri);
+                    throw ia;
+                }
             } else {
                 throw new DataAccessException("Expected PropHolder value to be either string or integer reference for property " + prop);
             }
@@ -1373,7 +1358,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         resourceMap.put("parent", parentPath != null ? parentPath.toString() : null);
         resourceMap.put("aclInheritedFrom", aclInheritedFrom);
         resourceMap.put("uri", r.getURI().toString());
-        resourceMap.put("resourceType", r.getResourceType());
+        resourceMap.put("resourceType", resourceTypeMapper.generateResourceType(r.getResourceType()));
 
         resourceMap.put(PropertyType.COLLECTION_PROP_NAME, r.isCollection() ? "Y" : "N");
         resourceMap.put(PropertyType.OWNER_PROP_NAME, r.getOwner().getQualifiedName());
@@ -1475,6 +1460,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     @Required
     public void setResourceTypeTree(ResourceTypeTree resourceTypeTree) {
         this.resourceTypeTree = resourceTypeTree;
+        this.resourceTypeMapper = new ResourceTypeMapper(resourceTypeTree);
     }
     
     public void setOptimizedAclCopySupported(boolean optimizedAclCopySupported) {

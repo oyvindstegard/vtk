@@ -222,16 +222,17 @@ vrtxAdmin._$(document).ready(function () {
   }
   vrtxAdm.embeddedView();
   
-  // Show message in IE6, IE7 and IETrident in compability mode
-  if ((vrtxAdm.isIE7 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
+  // Show message in IE6=>IE8 and IETrident in compability mode
+  if ((vrtxAdm.isIE8 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
     var message = vrtxAdm.cachedAppContent.find(" > .message");
     if (message.length) {
       message.html(outdatedBrowserText);
     } else {
+      var messageHtml = "<div class='infomessage'>" + outdatedBrowserText + "</div>";
       if(vrtxAdm.bodyId === "vrtx-simple-editor" || isEmbedded) {
-        vrtxAdm.cachedBody.prepend("<div class='infomessage'>" + outdatedBrowserText + "</div>");
+        vrtxAdm.cachedBody.prepend(messageHtml);
       } else {
-        vrtxAdm.cachedAppContent.prepend("<div class='infomessage'>" + outdatedBrowserText + "</div>");
+        vrtxAdm.cachedAppContent.prepend(messageHtml);
       }
     }
   }
@@ -2258,7 +2259,7 @@ function browseServer(obj, editorBase, baseFolder, editorBrowseUrl, type) {
 
   // Use 70% of screen dimension
   var serverBrowserWindow = openServerBrowser(editorBase + '/plugins/filemanager/browser/default/browser.html?BaseFolder=' + baseFolder + '&Type=' + type + '&Connector=' + editorBrowseUrl,
-  screen.width * 0.7, screen.height * 0.7);
+                                              screen.width * 0.7, screen.height * 0.7);
 
   serverBrowserWindow.focus();
   /* TODO: Refocus when user closes window with [x] and tries to open it again via browse..
@@ -2279,16 +2280,17 @@ function openRegular(url, width, height, winTitle) {
 }
 
 function openPopupScrollable(url, width, height, winTitle) {
-  var sOptions = "toolbar=no,status=no,resizable=yes,scrollbars=yes"; // http://www.quirksmode.org/js/popup.html
-  return openGeneral(url, width, height, winTitle, sOptions); // title must be without spaces in IE
+  var sOptions = "toolbar=no,status=no,resizable=yes,scrollbars=yes";
+  return openGeneral(url, width, height, winTitle, sOptions);
 }
 
 function openPopup(url, width, height, winTitle) {
-  var sOptions = "toolbar=no,status=no,resizable=yes"; // http://www.quirksmode.org/js/popup.html
-  return openGeneral(url, width, height, winTitle, sOptions); // title must be without spaces in IE
+  var sOptions = "toolbar=no,status=no,resizable=yes";
+  return openGeneral(url, width, height, winTitle, sOptions);
 }
 
-function openGeneral(url, width, height, winTitle, sOptions) {
+// sOptions: http://www.quirksmode.org/js/popup.html
+function openGeneral(url, width, height, winTitle, sOptions) { // title must be without spaces in IE
   var iLeft = (screen.width - width) / 2;
   var iTop = (screen.height - height) / 2;
   sOptions += ",width=" + width;

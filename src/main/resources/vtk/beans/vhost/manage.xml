@@ -2,7 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <!-- Temporarily redirect ?vrtx=thumbnail on manage hostname to view hostname until editor is fixed to use thumbnail service 
+  <!-- Temporarily redirect ?vrtx=thumbnail on manage hostname to view hostname until editor is fixed to use thumbnail service
     to generate image URLs -->
   <bean id="manage.redirectThumbnails" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-5" />
@@ -82,7 +82,7 @@
 
 
 
-  <!-- Kicks in when webHostName != manage.hostName and request.hostname = manage.hostname and manage.protocol == https and 
+  <!-- Kicks in when webHostName != manage.hostName and request.hostname = manage.hostname and manage.protocol == https and
     request.protocol == http: -->
   <bean id="manage.redirectToHTTPSService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-100" />
@@ -377,7 +377,7 @@
     </property>
     <property name="assertions">
       <list>
-        <!-- <ref bean="manage.postRequestAssertion" /> <bean class="vtk.web.service.RequestContentTypeRegexpAssertion"> 
+        <!-- <ref bean="manage.postRequestAssertion" /> <bean class="vtk.web.service.RequestContentTypeRegexpAssertion">
           <property name="pattern" value="multipart/form-data" /> </bean> -->
         <bean class="vtk.web.service.RequestParameterAssertion">
           <property name="parameterName" value="action" />
@@ -547,9 +547,9 @@
   </bean>
 
 
-  <!-- <bean id="editBindPermissionsService" class="vtk.web.service.ServiceImpl"> <property name="parent" ref="permissionsService" 
-    /> <property name="assertions"> <list> <ref local="writeACLPermissionAssertion" /> <bean class="vtk.web.service.RequestParameterAssertion"> 
-    <property name="parameterName" value="action" /> <property name="parameterValue" value="edit-bind-permissions" /> </bean> 
+  <!-- <bean id="editBindPermissionsService" class="vtk.web.service.ServiceImpl"> <property name="parent" ref="permissionsService"
+    /> <property name="assertions"> <list> <ref local="writeACLPermissionAssertion" /> <bean class="vtk.web.service.RequestParameterAssertion">
+    <property name="parameterName" value="action" /> <property name="parameterValue" value="edit-bind-permissions" /> </bean>
     </list> </property> <property name="handler" ref="editBindPermissionsHandler" /> </bean> -->
 
   <bean id="editReadProcessedPermissionsService" class="vtk.web.service.ServiceImpl">
@@ -589,7 +589,7 @@
 
 
   <!-- Create collection with properties (mainly used from Ajax): -->
-  
+
   <bean id="manage.createCollectionWithPropertiesService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-9999" />
@@ -602,7 +602,7 @@
       </list>
     </property>
     <property name="handler" ref="manage.createCollectionWithPropertiesHandler" />
-  </bean>  
+  </bean>
 
   <bean id="manage.createCollectionWithPropertiesHandler"
         class="vtk.web.actions.create.CreateCollectionWithProperties">
@@ -703,7 +703,7 @@
     <property name="order" value="-1" />
     <property name="assertions">
       <list>
-        <!-- <bean class="vtk.web.service.RequestProtocolAssertion"> <property name="protocol" value="https" /> 
+        <!-- <bean class="vtk.web.service.RequestProtocolAssertion"> <property name="protocol" value="https" />
           </bean> -->
         <bean class="vtk.web.service.OrAssertion">
           <property name="assertions">
@@ -739,7 +739,7 @@
                 <property name="name" value="sslMixedMode" />
                 <property name="pattern" value="attr:style" />
               </bean>
-              <!-- <bean class="vtk.web.service.ResourcePropertyRegexpAssertion"> <property name="namespace" ref="DEFAULT_NAMESPACE" 
+              <!-- <bean class="vtk.web.service.ResourcePropertyRegexpAssertion"> <property name="namespace" ref="DEFAULT_NAMESPACE"
                 /> <property name="name" value="sslMixedMode" /> <property name="pattern" value="attr:on" /> </bean> -->
             </list>
           </property>
@@ -882,7 +882,7 @@
         <ref bean="contentLengthPropDef" />
         <ref bean="userTitlePropDef" />
         <ref bean="titlePropDef" />
-        <!-- Don't pass in hidden and navigational importance <ref bean="hiddenPropDef" /> <ref bean="importancePropDef" 
+        <!-- Don't pass in hidden and navigational importance <ref bean="hiddenPropDef" /> <ref bean="importancePropDef"
           /> -->
         <ref bean="keywordsPropDef" />
         <ref bean="descriptionPropDef" />
@@ -906,7 +906,7 @@
 
         <!-- Collection type -->
         <ref bean="collection.typePropDef" />
-        
+
         <!-- Media-mxin type -->
         <ref bean="mediaHeightPropDef" />
         <ref bean="mediaWidthPropDef" />
@@ -1017,7 +1017,7 @@
     </property>
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
-    
+
   </bean>
 
   <bean id="renameHandler" class="vtk.web.actions.copymove.RenameController">
@@ -2227,7 +2227,7 @@
     <property name="concurrencyLimit" value="${email.concurrencyLimit}" />
   </bean>
 
-  <!-- <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"> <property name="corePoolSize" 
+  <!-- <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"> <property name="corePoolSize"
     value="10" /> <property name="maxPoolSize" value="25" /> <property name="queueCapacity" value="50" /> </bean> -->
 
   <bean id="emailApprovalService" class="vtk.web.service.ServiceImpl">

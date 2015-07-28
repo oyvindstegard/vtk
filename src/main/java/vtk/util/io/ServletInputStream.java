@@ -33,10 +33,13 @@ package vtk.util.io;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.servlet.ReadListener;
+
 
 public class ServletInputStream extends javax.servlet.ServletInputStream {
 
     private InputStream inputStream;
+    private boolean eof = false;
 
     public ServletInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
@@ -48,47 +51,73 @@ public class ServletInputStream extends javax.servlet.ServletInputStream {
     
     @Override
     public int read() throws IOException {
-        return this.inputStream.read();
+        int n = inputStream.read();
+        eof = n == -1;
+        return n;
     }
 
     @Override
     public int available() throws IOException {
-        return this.inputStream.available();
+        return inputStream.available();
     }
 
     @Override
-    public void close() throws IOException {
-        this.inputStream.close();
+    public void close() throws IOException {        
+        inputStream.close();
     }
 
     @Override
     public void mark(int readlimit) {
-        this.inputStream.mark(readlimit);
+        inputStream.mark(readlimit);
     }
 
     @Override
     public boolean markSupported() {
-        return this.inputStream.markSupported();
+        return inputStream.markSupported();
     }
 
     @Override
     public int read(byte[] b) throws IOException {
-        return this.inputStream.read(b);
+        int n = inputStream.read(b);
+        eof = n == -1;
+        return n;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        return this.inputStream.read(b, off, len);
+        int n = inputStream.read(b, off, len);
+        eof = n == -1;
+        return n;
     }
 
     @Override
     public void reset() throws IOException {
-        this.inputStream.reset();
+        inputStream.reset();
     }
 
     @Override
     public long skip(long n) throws IOException {
-        return this.inputStream.skip(n);
+        return inputStream.skip(n);
+    }
+
+    @Override
+    public boolean isFinished() {
+        return eof;
+    }
+
+    @Override
+    public boolean isReady() {
+        try {
+            return inputStream.available() > 0;
+        }
+        catch(IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void setReadListener(ReadListener readListener) {
+        // Noop
     }
     
 }

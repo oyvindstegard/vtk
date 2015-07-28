@@ -41,14 +41,14 @@ import vtk.repository.Property;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
-import vtk.web.display.collection.AbstractCollectionListingController;
+import vtk.web.display.collection.BaseCollectionListingController;
 import vtk.web.display.listing.ListingPager;
 import vtk.web.display.listing.ListingPagingLink;
 import vtk.web.search.Listing;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
-public class ArticleListingController extends AbstractCollectionListingController {
+public class ArticleListingController extends BaseCollectionListingController {
 
     private ArticleListingSearcher searcher;
     private final String defaultListingView = "regular";

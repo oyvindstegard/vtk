@@ -582,20 +582,20 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
 
             // TODO recursive unpublish in case of only CREATE_UNPUBLISHED permissions at destination.
             // A concept of forced properties must be introduced in DAO.copy(), in addition to
-            // the already existing "deleteProperties" argument. Forced properties must then be applied
+            // the already existing "uncopyableProperties" argument. Forced properties must then be applied
             // recursively by DAO.copy() (published=false), in addition to deletion of publish-date.
             // For now, do a simplified unpublish of non-collection resources:
-            Set<String> deleteProperties = new HashSet<String>(PropertyType.UNCOPYABLE_PROPERTIES);
+            Set<String> uncopyableProperties = new HashSet<>(PropertyType.UNCOPYABLE_PROPERTIES);
             if (!src.isCollection() 
                     && src.hasPublishDate()
                     && !this.authorizationManager.authorize(principal, destParent.getAcl(), Privilege.READ_WRITE)) {
-                deleteProperties.add(PropertyType.PUBLISH_DATE_PROP_NAME);
+                uncopyableProperties.add(PropertyType.PUBLISH_DATE_PROP_NAME);
                 Property publishedProp = (Property) src.getProperty(Namespace.DEFAULT_NAMESPACE,
                                                     PropertyType.PUBLISHED_PROP_NAME).clone();
                 publishedProp.setBooleanValue(false);
                 fixedProps.addProperty(publishedProp);
             }
-            newResource = this.dao.copy(src, destParent, newResource, copyAcl, fixedProps, deleteProperties);
+            newResource = this.dao.copy(src, destParent, newResource, copyAcl, fixedProps, uncopyableProperties);
             this.contentStore.copy(src.getURI(), newResource.getURI());
 
             this.context.publishEvent(new ResourceCreationEvent(this, (Resource) newResource.clone()));

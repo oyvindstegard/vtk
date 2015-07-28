@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, University of Oslo, Norway
+/* Copyright (c) 2012–2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -37,11 +37,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -73,9 +77,34 @@ import vtk.web.search.VHostScopeQueryRestricter;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
+
+/**
+ * TODO searcher makes policy decisions on age and general limits. These should
+ * probably all be parameterizable, either by method or config, and this class
+ * should only be considered a slave DAO.
+ */
 public class ManuallyApproveResourcesSearcher {
 
-    public static final int SEARCH_LIMIT = 1000;
+    /**
+     * Hard limit used for searches executed per manually approved location, which
+     * collects candidate docs for the final aggregated list.
+     */
+    public static final int LOCATION_SEARCH_LIMIT = 1000;
+    
+    /**
+     * The default maximum total number of manually approve resources returned. This
+     * includes both approved and unapproved docs from all sources.
+     */
+    public static final int DEFAULT_MAX_MANUALLY_APPROVE_RESOURCES = 300;
+    
+    /**
+     * Time limit on old unapproved documents in months.
+     * <p>
+     * Unapproved docs older than this limit (on publishing date) may be removed
+     * if the total result is larger than the maximum allowed manually approved
+     * resources.
+     */
+    public static final int UNAPPROVED_TIME_LIMIT_MONTHS = 12;
 
     private Service viewService;
     private AggregationResolver aggregationResolver;
@@ -83,11 +112,22 @@ public class ManuallyApproveResourcesSearcher {
     private Map<String, String> listingResourceTypeMappingPointers;
     private List<String> configurablePropertySelectPointers;
     private ResourceTypeTree resourceTypeTree;
+    private int maxManuallyApproveResources = DEFAULT_MAX_MANUALLY_APPROVE_RESOURCES;
 
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition publishDatePropDef;
     private PropertyTypeDefinition creationTimePropDef;
+    
+    private final Log logger = LogFactory.getLog(ManuallyApproveResourcesSearcher.class.getName());
 
+    /**
+     * <p>
+     * @param collection
+     * @param locations sources of docs for manual approval (URLs)
+     * @param alreadyApproved set of already approved resources
+     * @return
+     * @throws Exception 
+     */
     public List<ManuallyApproveResource> getManuallyApproveResources(Resource collection, Set<String> locations,
             Set<String> alreadyApproved) throws Exception {
 
@@ -142,7 +182,7 @@ public class ManuallyApproveResourcesSearcher {
             boolean isOtherHostLocation = isOtherHostLocation(location, localHostURL);
             boolean isMultiHostSearch = multiHostSearcher.isMultiHostSearchEnabled()
                     && ((clar != null && clar.includesResourcesFromOtherHosts(localHostURL)) || isOtherHostLocation);
-
+            
             Query query = generateQuery(locationURL, resourceTypeQuery, clar, localHostURL, isMultiHostSearch);
 
             Search search = new Search();
@@ -150,12 +190,11 @@ public class ManuallyApproveResourcesSearcher {
                 search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
             }
             search.setQuery(query);
-            search.setLimit(SEARCH_LIMIT);
+            search.setLimit(LOCATION_SEARCH_LIMIT);
             search.setSorting(sorting);
             if (propertySelect != null) {
                 search.setPropertySelect(propertySelect);
             }
-
             ResultSet searchResults = null;
             if (isMultiHostSearch) {
                 searchResults = multiHostSearcher.search(token, search);
@@ -192,13 +231,58 @@ public class ManuallyApproveResourcesSearcher {
             result.add(m);
         }
 
-        // Sort and return
+        // Sort total result by "publish-date DESC, title ASC"
         Collections.sort(result, new ManuallyApproveResourceComparator());
-        // Handle limit
-        if (result.size() > SEARCH_LIMIT) {
-            result = result.subList(0, SEARCH_LIMIT);
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("Result list size before filtering: " + result.size());
+        }
+        // Filter out docs which are not already approved and older than limit, down to max size.
+        filterOldUnapproved(result, this.maxManuallyApproveResources);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Result list size after filtering: " + result.size());
+        }
+
+        // Enforce hard limit lastly
+        if (result.size() > this.maxManuallyApproveResources) {
+            result = result.subList(0, this.maxManuallyApproveResources);
         }
         return result;
+    }
+    
+    /**
+     * Removes old and unapproved items from list, down to a target size.
+     * 
+     * <p>Starts filtering from the back of the list, and list is expected to
+     * be pre-sorted by publish-date in descending order (oldest last).
+     *
+     * <p>
+     * If there are no unapproved items older than
+     * {@link #UNAPPROVED_TIME_LIMIT_MONTHS} in list, then this method will not
+     * removing anything.
+     * <p>
+     * This method will unconditionally stop filtering if list becomes equal to
+     * or smaller than parameter <code>targetSize</code> in size.
+     *
+     * @param resources list of manually approve resources that must be sorted
+     * in descending order by {@link ManuallyApproveResource#getPublishDate() }.
+     * @param targetSize target size of list. Filtering will stop when this target
+     * size is reached, or if size is already equal to or less than target size.
+     */
+    private void filterOldUnapproved(List<ManuallyApproveResource> resources, int targetSize) {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1*UNAPPROVED_TIME_LIMIT_MONTHS);
+        final Date earliestDate = cal.getTime();
+        ListIterator<ManuallyApproveResource> revIt = resources.listIterator(resources.size());
+        while (revIt.hasPrevious() && resources.size() > targetSize) {
+            ManuallyApproveResource m = revIt.previous();
+            if (!m.isApproved()) {
+                Date pubDate = m.getPublishDate();
+                if (pubDate != null && pubDate.before(earliestDate)) {
+                    revIt.remove();
+                }
+            }
+        }
     }
 
     private URL getLocaltionAsURL(String location, URL localHostURL) {
@@ -234,11 +318,8 @@ public class ManuallyApproveResourcesSearcher {
             uriOr.add(uriQuery);
             uriOr.add(aggregationQuery);
             and.add(uriOr);
-
         }
-
         return and;
-
     }
 
     private PropertySet getResource(Repository repository, String token, URL url, URL localHostURL) {
@@ -250,7 +331,7 @@ public class ManuallyApproveResourcesSearcher {
                 path = url.getPath();
             }
             if (path != null) {
-                resource = repository.retrieve(token, path, false);
+                resource = repository.retrieve(token, path, true);
             } else if (this.multiHostSearcher.isMultiHostSearchEnabled()) {
                 resource = multiHostSearcher.retrieve(token, url);
             }
@@ -311,6 +392,7 @@ public class ManuallyApproveResourcesSearcher {
                     search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
                 }
                 search.setQuery(uriSetQuery);
+                search.setSorting(null);
                 ResultSet rs = repository.search(token, search);
                 alreadyApprovedResources.addAll(rs.getAllResults());
             }
@@ -431,6 +513,19 @@ public class ManuallyApproveResourcesSearcher {
 
     public void setResourceTypeTree(ResourceTypeTree resourceTypeTree) {
         this.resourceTypeTree = resourceTypeTree;
+    }
+    
+    /**
+     * Set maximum number of manually approvable resources returned by this DAO.
+     * This includes both already approved and unapproved URLs from all sources combined.
+     * <p>Default value is {@link #DEFAULT_MAX_MANUALLY_APPROVE_RESOURCES}.
+     * @param maxManuallyApproveResources 
+     */
+    public void setMaxManuallyApproveResources(int maxManuallyApproveResources) {
+        if (maxManuallyApproveResources < 1) {
+            throw new IllegalArgumentException("maxManuallyApproveResources must be > 0");
+        }
+        this.maxManuallyApproveResources = maxManuallyApproveResources;
     }
 
 }

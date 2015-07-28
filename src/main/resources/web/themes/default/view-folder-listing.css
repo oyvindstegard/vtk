@@ -1,0 +1,7 @@
+#vrtx-folder-menu {
+    overflow: hidden;
+}
+
+#vrtx-folder-menu > ul {
+    float: left;
+}

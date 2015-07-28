@@ -143,8 +143,8 @@ public final class PropertyType {
     )));
     
     /**
-     * Set of property names (in DEFAULT namespace) which should be removed for
-     * resources that are copied.
+     * Set of property names (in DEFAULT namespace) which should always be
+     * removed for resources that are copied.
      */
     public static final Set<String> UNCOPYABLE_PROPERTIES = 
         Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(

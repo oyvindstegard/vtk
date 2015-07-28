@@ -30,7 +30,9 @@
     if(vrtxAdmin.isIE7 || vrtxAdmin.isIETridentInComp) {
       if(vrtxAdmin.isIETridentInComp) {
         var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.comp")}';   
-      } else if(vrtxAdmin.isIE7) {   
+      } else if(vrtxAdmin.isIE8) {   
+        var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie8")}';    
+      } else if(vrtxAdmin.isIE7) {   
         var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie7")}';    
       } else if(vrtxAdmin.isIE6) {
         var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie6")}';

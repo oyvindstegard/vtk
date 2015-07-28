@@ -121,9 +121,9 @@
   @if $type == folder {
     $resourceType: #{$type};
     $class: "true";
-  } @elseif $type == text {
+  } @else if $type == text {
     $resourceType: "file-txt";
-  } @elseif $type == videoref {
+  } @else if $type == videoref {
     $resourceType: "file-video";
   }
   &.#{$class} {
@@ -150,9 +150,9 @@
   @if $type == folder {
     $resourceType: #{$type};
     $class: "true";
-  } @elseif $type == text {
+  } @else if $type == text {
     $resourceType: "file-txt";
-  } @elseif $type == videoref {
+  } @else if $type == videoref {
     $resourceType: "file-video";
   }
   &.#{$class} {

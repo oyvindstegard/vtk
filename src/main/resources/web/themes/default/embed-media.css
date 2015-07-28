@@ -2,6 +2,8 @@
  * Embed media player
  *
  */
+ 
+@import url(view-media-player.css);
 
 html,
 body {
@@ -10,6 +12,10 @@ body {
   width: 100%;
   margin: 0;
   padding: 0;
+}
+
+a.vrtx-media {
+  margin: 0;
 }
 
 /* Placeholder and play-button when no flash */
