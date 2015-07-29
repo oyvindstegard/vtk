@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-public class HtmlPushParser {
+public class HtmlPushTokenizer {
     
     public abstract static class Node {
         private String text;
@@ -380,7 +380,7 @@ public class HtmlPushParser {
 
     private NodeHandler handler;
     
-    public HtmlPushParser(NodeHandler handler) {
+    public HtmlPushTokenizer(NodeHandler handler) {
         this.handler = handler;
     }
 

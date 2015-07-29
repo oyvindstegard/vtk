@@ -51,16 +51,16 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import vtk.text.html.HtmlPushParser.Attribute;
-import vtk.text.html.HtmlPushParser.CommentNode;
-import vtk.text.html.HtmlPushParser.DoctypeNode;
-import vtk.text.html.HtmlPushParser.ElementNode;
-import vtk.text.html.HtmlPushParser.Node;
-import vtk.text.html.HtmlPushParser.NodeHandler;
-import vtk.text.html.HtmlPushParser.TextNode;
-import vtk.text.html.HtmlPushParser.Undefined;
+import vtk.text.html.HtmlPushTokenizer.Attribute;
+import vtk.text.html.HtmlPushTokenizer.CommentNode;
+import vtk.text.html.HtmlPushTokenizer.DoctypeNode;
+import vtk.text.html.HtmlPushTokenizer.ElementNode;
+import vtk.text.html.HtmlPushTokenizer.Node;
+import vtk.text.html.HtmlPushTokenizer.NodeHandler;
+import vtk.text.html.HtmlPushTokenizer.TextNode;
+import vtk.text.html.HtmlPushTokenizer.Undefined;
 
-public class HtmlPushParserTest {
+public class HtmlPushTokenizerTest {
 
     @Test
     public void doctypes() {
@@ -436,7 +436,7 @@ public class HtmlPushParserTest {
 
     private List<Node> parseToList(List<String> html) {
         final List<Node> result = new ArrayList<>();
-        HtmlPushParser parser = new HtmlPushParser(new NodeHandler() {
+        HtmlPushTokenizer parser = new HtmlPushTokenizer(new NodeHandler() {
             public boolean node(Node node) {
                 result.add(node);
                 return true;
@@ -452,13 +452,13 @@ public class HtmlPushParserTest {
     }
     
     private void parse(String html, NodeHandler handler) {
-        HtmlPushParser parser = new HtmlPushParser(handler);
+        HtmlPushTokenizer parser = new HtmlPushTokenizer(handler);
         parser.push(html);
         parser.eof();
     }
     
     private void parse(List<String> html, NodeHandler handler) {
-        HtmlPushParser parser = new HtmlPushParser(handler);
+        HtmlPushTokenizer parser = new HtmlPushTokenizer(handler);
         for (String s: html) 
             parser.push(s);
         parser.eof();
@@ -480,7 +480,7 @@ public class HtmlPushParserTest {
     
     private List<Node> parseToList(InputStream in, String encoding) {
         final List<Node> result = new ArrayList<>();
-        HtmlPushParser parser = new HtmlPushParser(new NodeHandler() {
+        HtmlPushTokenizer parser = new HtmlPushTokenizer(new NodeHandler() {
             public boolean node(Node node) {
                 result.add(node);
                 return true;

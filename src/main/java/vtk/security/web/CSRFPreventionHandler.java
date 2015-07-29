@@ -58,9 +58,9 @@ import org.apache.commons.logging.LogFactory;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.security.AuthenticationException;
-import vtk.text.html.HtmlPushParser;
-import vtk.text.html.HtmlPushParser.Attribute;
-import vtk.text.html.HtmlPushParser.ElementNode;
+import vtk.text.html.HtmlPushTokenizer;
+import vtk.text.html.HtmlPushTokenizer.Attribute;
+import vtk.text.html.HtmlPushTokenizer.ElementNode;
 import vtk.text.html.HtmlUtil;
 import vtk.util.io.CharsetPushDecoder;
 import vtk.util.text.TextUtils;
@@ -290,14 +290,14 @@ public class CSRFPreventionHandler implements ServiceFilter {
     
     
     private class Form {
-        private HtmlPushParser.ElementNode orig;
+        private HtmlPushTokenizer.ElementNode orig;
         private String method = null;
         private URL action = null;
         private String enctype = null;
         private List<Attribute> attributes;
         private String csrfPreventionToken = null;
         
-        public Form(HtmlPushParser.ElementNode orig, HttpSession session) {
+        public Form(HtmlPushTokenizer.ElementNode orig, HttpSession session) {
             this.orig = orig;
             attributes = new ArrayList<>();
             for (Attribute attr: orig.attributes()) {
@@ -378,11 +378,11 @@ public class CSRFPreventionHandler implements ServiceFilter {
             
             final String characterEncoding = getCharacterEncoding();
             final ServletOutputStream dest = super.getOutputStream();
-            final HtmlPushParser parser = new HtmlPushParser(new HtmlPushParser.NodeHandler() {
+            final HtmlPushTokenizer parser = new HtmlPushTokenizer(new HtmlPushTokenizer.NodeHandler() {
                 private Form form = null;
                 
                 @Override
-                public boolean node(HtmlPushParser.Node node) {
+                public boolean node(HtmlPushTokenizer.Node node) {
                     if (node instanceof ElementNode) {
                         ElementNode elem = (ElementNode) node;
                         if ("form".equals(elem.name())) {
