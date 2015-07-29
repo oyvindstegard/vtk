@@ -35,26 +35,28 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.actions.ActionsHelper;
 import vtk.web.service.Service;
 
-@SuppressWarnings("deprecation")
-public class DeleteResourceController extends SimpleFormController {
+public class DeleteResourceController extends SimpleFormController<DeleteCommand> {
 
     private String cancelView;
     protected Object cmd;
     
     @Override
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    protected DeleteCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
@@ -64,24 +66,23 @@ public class DeleteResourceController extends SimpleFormController {
         String url = service.constructLink(resource, principal);
         String name = resource.getName();
 
-        cmd = new DeleteCommand(name, url);
-        return cmd;
+        return new DeleteCommand(name, url);
     }
     
     @Override
-    protected ModelAndView onSubmit(Object command) throws Exception {
-        Map<String, Object> model = new HashMap<String, Object>();
+    public ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response,
+            DeleteCommand command, BindException errors) throws Exception {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
 
-        DeleteCommand deleteCommand = (DeleteCommand) command;
-
-        if (deleteCommand.getCancelAction() != null) {
-            deleteCommand.setDone(true);
-            return new ModelAndView(cancelView);
+        Map<String, Object> model = new HashMap<>();
+        
+        if (command.getCancelAction() != null) {
+            command.setDone(true);
+            return new ModelAndView(cancelView, model);
         }
 
         Resource resource = repository.retrieve(token, uri.getParent(), false);
@@ -95,14 +96,14 @@ public class DeleteResourceController extends SimpleFormController {
         
         ActionsHelper.addFailureMessages(failures, requestContext);
         if (!failures.isEmpty()) {
-            return new ModelAndView(super.getFormView());
+            return new ModelAndView(getFormView(), model);
         }
 
-        deleteCommand.setDone(true);
+        command.setDone(true);
 
         model.put("resource", resource);
 
-        return new ModelAndView(this.getSuccessView(), model);
+        return new ModelAndView(getSuccessView(), model);
     }
 
     @Required

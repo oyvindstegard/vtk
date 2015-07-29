@@ -36,11 +36,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
 
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.Namespace;
@@ -52,14 +53,15 @@ import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.actions.ActionsHelper;
 import vtk.web.service.Service;
 import vtk.web.templates.ResourceTemplate;
 import vtk.web.templates.ResourceTemplateManager;
 import vtk.web.view.freemarker.MessageLocalizer;
 
-@SuppressWarnings("deprecation")
-public class TemplateBasedCreateCollectionController extends SimpleFormController {
+public class TemplateBasedCreateCollectionController 
+    extends SimpleFormController<CreateCollectionCommand> {
 
     private static final String NORMAL_FOLDER_IDENTIFIER = "NORMAL_FOLDER";
 
@@ -73,7 +75,8 @@ public class TemplateBasedCreateCollectionController extends SimpleFormControlle
     private PropertyTypeDefinition unpublishedCollectionPropDef;
     private Map<PropertyTypeDefinition, Value> normalFolderProperties; 
 
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    @Override
+    protected CreateCollectionCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
@@ -89,7 +92,12 @@ public class TemplateBasedCreateCollectionController extends SimpleFormControlle
         return command;
     }
 
-    protected Map<String, Object> referenceData(HttpServletRequest request) throws Exception {
+    
+    
+    @Override
+    protected Map<String, Object> referenceData(HttpServletRequest request,
+            CreateCollectionCommand command, Errors errors) throws Exception {
+        
         RequestContext requestContext = RequestContext.getRequestContext();
         Map<String, Object> model = new HashMap<String, Object>();
 
@@ -117,12 +125,17 @@ public class TemplateBasedCreateCollectionController extends SimpleFormControlle
         return model;
     }
 
-    protected ModelAndView onSubmit(Object command) throws Exception {
+    
+    
+    @Override
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, CreateCollectionCommand command,
+            BindException errors) throws Exception {
+
         Map<String, Object> model = new HashMap<String, Object>();
 
-        CreateCollectionCommand createFolderCommand = (CreateCollectionCommand) command;
-        if (createFolderCommand.getCancelAction() != null) {
-            createFolderCommand.setDone(true);
+        if (command.getCancelAction() != null) {
+            command.setDone(true);
             return new ModelAndView(cancelView);
         }
         RequestContext requestContext = RequestContext.getRequestContext();
@@ -131,17 +144,17 @@ public class TemplateBasedCreateCollectionController extends SimpleFormControlle
         String token = requestContext.getSecurityToken();
 
         // The location of the folder to copy
-        String source = createFolderCommand.getSourceURI();
+        String source = command.getSourceURI();
         if (source == null || source.equals(NORMAL_FOLDER_IDENTIFIER)) {
             // Just create a new folder if no "folder-template" is selected
             model.put("resource", createNewFolder(command, uri, requestContext));
-            createFolderCommand.setDone(true);
+            command.setDone(true);
             return new ModelAndView(getSuccessView(), model);
         }
         Path sourceURI = Path.fromString(source);
 
-        String title = createFolderCommand.getTitle();
-        String name = fixCollectionName(createFolderCommand.getName());
+        String title = command.getTitle();
+        String name = fixCollectionName(command.getName());
 
         // Setting the destination to the current folder/uri
         Path destinationURI = uri.extend(name);
@@ -185,17 +198,17 @@ public class TemplateBasedCreateCollectionController extends SimpleFormControlle
 
         model.put("resource", repository.store(token, dest, sc));
 
-        if (!createFolderCommand.getPublish()) {
+        if (!command.getPublish()) {
             ActionsHelper.unpublishResource(publishDatePropDef, unpublishedCollectionPropDef, repository, token,
                     destinationURI, null);
         }
 
-        createFolderCommand.setDone(true);
+        command.setDone(true);
 
         return new ModelAndView(getSuccessView(), model);
     }
 
-    private Resource createNewFolder(Object command, Path uri, RequestContext requestContext) throws Exception {
+    private Resource createNewFolder(CreateCollectionCommand command, Path uri, RequestContext requestContext) throws Exception {
         CreateCollectionCommand createCollectionCommand = (CreateCollectionCommand) command;
 
         String title = createCollectionCommand.getTitle();
@@ -222,7 +235,8 @@ public class TemplateBasedCreateCollectionController extends SimpleFormControlle
         Resource r = repository.store(token, collection);
 
         if (!createCollectionCommand.getPublish()) {
-            ActionsHelper.unpublishResource(publishDatePropDef, unpublishedCollectionPropDef, repository, token,
+            ActionsHelper.unpublishResource(publishDatePropDef, 
+                    unpublishedCollectionPropDef, repository, token,
                     newURI, null);
         }
 
@@ -230,20 +244,20 @@ public class TemplateBasedCreateCollectionController extends SimpleFormControlle
     }
 
     @Override
-    protected void onBindAndValidate(HttpServletRequest request, Object command, BindException errors) throws Exception {
+    protected void onBindAndValidate(HttpServletRequest request, 
+            CreateCollectionCommand command, BindException errors) throws Exception {
 
         super.onBindAndValidate(request, command, errors);
         RequestContext requestContext = RequestContext.getRequestContext();
 
-        CreateCollectionCommand createCollectionCommand = (CreateCollectionCommand) command;
-        if (createCollectionCommand.getCancelAction() != null) {
+        if (command.getCancelAction() != null) {
             return;
         }
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
 
-        String name = createCollectionCommand.getName();
+        String name = command.getName();
         if (null == name || "".equals(name.trim())) {
             errors.rejectValue("name", "manage.create.collection.missing.name",
                     "A name must be provided for the collection");
@@ -253,12 +267,14 @@ public class TemplateBasedCreateCollectionController extends SimpleFormControlle
         name = fixCollectionName(name);
 
         if (name.contains("/")) {
-            errors.rejectValue("name", "manage.create.collection.invalid.name", "This is an invalid collection name");
+            errors.rejectValue("name", "manage.create.collection.invalid.name", 
+                    "This is an invalid collection name");
             return;
         }
 
         if (name.isEmpty()) {
-            errors.rejectValue("name", "manage.create.collection.invalid.name", "This is an invalid collection name");
+            errors.rejectValue("name", "manage.create.collection.invalid.name", 
+                    "This is an invalid collection name");
             return;
         }
 
@@ -266,12 +282,14 @@ public class TemplateBasedCreateCollectionController extends SimpleFormControlle
         try {
             newURI = uri.extend(name);
         } catch (Throwable t) {
-            errors.rejectValue("name", "manage.create.collection.invalid.name", "This is an invalid collection name");
+            errors.rejectValue("name", "manage.create.collection.invalid.name", 
+                    "This is an invalid collection name");
             return;
         }
 
         if (repository.exists(token, newURI)) {
-            errors.rejectValue("name", "manage.create.collection.exists", "A collection with this name already exists");
+            errors.rejectValue("name", "manage.create.collection.exists", 
+                    "A collection with this name already exists");
             return;
         }
 

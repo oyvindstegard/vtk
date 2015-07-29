@@ -39,11 +39,13 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -52,12 +54,12 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.text.html.HtmlUtil;
 import vtk.util.io.StreamUtil;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 import vtk.web.templates.ResourceTemplate;
 import vtk.web.templates.ResourceTemplateManager;
 
-@SuppressWarnings("deprecation")
-public class TemplateBasedCreateController extends SimpleFormController {
+public class TemplateBasedCreateController extends SimpleFormController<CreateDocumentCommand> {
 
     private final String titlePlaceholder = "#title#";
 
@@ -68,7 +70,8 @@ public class TemplateBasedCreateController extends SimpleFormController {
     private PropertyTypeDefinition[] removePropList;
     private PropertyTypeDefinition descriptionPropDef;
 
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    @Override
+    protected CreateDocumentCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         Path uri = requestContext.getResourceURI();
@@ -127,11 +130,15 @@ public class TemplateBasedCreateController extends SimpleFormController {
         return command;
     }
 
-    protected Map<String, Object> referenceData(HttpServletRequest request) throws Exception {
+    
+    @Override
+    protected Map<String, Object> referenceData(HttpServletRequest request,
+            CreateDocumentCommand command, Errors errors) throws Exception {
+        
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         Path uri = requestContext.getResourceURI();
         Repository repo = RequestContext.getRequestContext().getRepository();
         Resource collection = repo.retrieve(token, uri, false);
@@ -139,11 +146,11 @@ public class TemplateBasedCreateController extends SimpleFormController {
         
         List<ResourceTemplate> l = templateManager.getDocumentTemplates(token, uri);
 
-        Map<String, List<String>> sortmap = new TreeMap<String, List<String>>(String.CASE_INSENSITIVE_ORDER);
-        Map<String, String> templates = new LinkedHashMap<String, String>();
-        Map<String, String> recommendedTemplates = new LinkedHashMap<String, String>();
-        Map<String, String> descriptions = new HashMap<String, String>();
-        Map<String, Boolean> titles = new HashMap<String, Boolean>();
+        Map<String, List<String>> sortmap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, String> templates = new LinkedHashMap<>();
+        Map<String, String> recommendedTemplates = new LinkedHashMap<>();
+        Map<String, String> descriptions = new HashMap<>();
+        Map<String, Boolean> titles = new HashMap<>();
 
         String name;
         String[] split;
@@ -229,8 +236,12 @@ public class TemplateBasedCreateController extends SimpleFormController {
         return model;
     }
 
+    
+    
     @Override
-    protected void onBindAndValidate(HttpServletRequest request, Object command, BindException errors) throws Exception {
+    protected void onBindAndValidate(HttpServletRequest request,
+            CreateDocumentCommand command, BindException errors)
+            throws Exception {
         super.onBindAndValidate(request, command, errors);
 
         CreateDocumentCommand createDocumentCommand = (CreateDocumentCommand) command;
@@ -238,7 +249,8 @@ public class TemplateBasedCreateController extends SimpleFormController {
         if (createDocumentCommand.getCancelAction() != null)
             return;
 
-        if (createDocumentCommand.getSourceURI() == null || createDocumentCommand.getSourceURI().trim().equals("")) {
+        if (createDocumentCommand.getSourceURI() == null || 
+                createDocumentCommand.getSourceURI().trim().equals("")) {
             errors.rejectValue("sourceURI", "manage.create.document.missing.template",
                     "You must choose a document type");
         }
@@ -264,12 +276,14 @@ public class TemplateBasedCreateController extends SimpleFormController {
         name = fixDocumentName(name);
 
         if (name.indexOf("/") >= 0) {
-            errors.rejectValue("name", "manage.create.document.invalid.name", "This is an invalid document name");
+            errors.rejectValue("name", "manage.create.document.invalid.name", 
+                    "This is an invalid document name");
             return;
         }
 
         if (name.isEmpty()) {
-            errors.rejectValue("name", "manage.create.document.invalid.name", "This is an invalid document name");
+            errors.rejectValue("name", "manage.create.document.invalid.name", 
+                    "This is an invalid document name");
             return;
         }
 
@@ -290,16 +304,19 @@ public class TemplateBasedCreateController extends SimpleFormController {
         Path destinationURI = uri.extend(name);
 
         if (repository.exists(token, destinationURI)) {
-            errors.rejectValue("name", "manage.create.document.exists", "A resource of this name already exists");
+            errors.rejectValue("name", "manage.create.document.exists", 
+                    "A resource of this name already exists");
         }
     }
 
-    protected ModelAndView onSubmit(Object command) throws Exception {
+    @Override
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, CreateDocumentCommand command,
+            BindException errors) throws Exception {
         Map<String, Object> model = new HashMap<String, Object>();
 
-        CreateDocumentCommand createDocumentCommand = (CreateDocumentCommand) command;
-        if (createDocumentCommand.getCancelAction() != null) {
-            createDocumentCommand.setDone(true);
+        if (command.getCancelAction() != null) {
+            command.setDone(true);
             return new ModelAndView(cancelView);
         }
         RequestContext requestContext = RequestContext.getRequestContext();
@@ -308,13 +325,13 @@ public class TemplateBasedCreateController extends SimpleFormController {
         Repository repository = requestContext.getRepository();
 
         // The location of the file that we will be copying
-        Path sourceURI = Path.fromString(createDocumentCommand.getSourceURI());
+        Path sourceURI = Path.fromString(command.getSourceURI());
 
         String name;
-        if (createDocumentCommand.getIsIndex())
+        if (command.getIsIndex())
             name = "index";
         else
-            name = createDocumentCommand.getName();
+            name = command.getName();
 
         name = fixDocumentName(name);
 
@@ -326,9 +343,10 @@ public class TemplateBasedCreateController extends SimpleFormController {
 
         repository.copy(token, sourceURI, destinationURI, false, false);
 
-        String stream = StreamUtil.streamToString(repository.getInputStream(token, destinationURI, false));
+        String stream = StreamUtil.streamToString(repository.getInputStream(
+                token, destinationURI, false));
 
-        String title = createDocumentCommand.getTitle();
+        String title = command.getTitle();
         if (title == null)
             title = "";
 
@@ -352,7 +370,7 @@ public class TemplateBasedCreateController extends SimpleFormController {
 
         model.put("resource", repository.store(token, r));
 
-        createDocumentCommand.setDone(true);
+        command.setDone(true);
 
         return new ModelAndView(getSuccessView(), model);
     }

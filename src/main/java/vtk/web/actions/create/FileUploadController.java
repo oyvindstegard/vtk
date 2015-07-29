@@ -32,6 +32,7 @@ package vtk.web.actions.create;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,12 +47,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.util.io.StreamUtil;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 
 /**
@@ -62,8 +64,7 @@ import vtk.web.service.Service;
  * 
  * 2. Otherwise gives error-message and upload nothing if existing resources
  */
-@SuppressWarnings("deprecation")
-public class FileUploadController extends SimpleFormController {
+public class FileUploadController extends SimpleFormController<FileUploadCommand> {
 
     private static Log logger = LogFactory.getLog(FileUploadController.class);
 
@@ -73,7 +74,7 @@ public class FileUploadController extends SimpleFormController {
     private Map<String, String> replaceNameChars;
 
     @Override
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    protected FileUploadCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
@@ -88,33 +89,33 @@ public class FileUploadController extends SimpleFormController {
     }
 
     @Override
-    protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object command,
-            BindException errors) throws Exception {
+    public ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response,
+            FileUploadCommand command, BindException errors) throws Exception {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
-        
-        FileUploadCommand fileUploadCommand = (FileUploadCommand) command;
+        String filenamesToCheck = request.getParameter("filenamesToBeChecked");
 
-        String filenamesToBeChecked = request.getParameter("filenamesToBeChecked");
-        if(filenamesToBeChecked != null) {
-            String[] filenames = filenamesToBeChecked.split(",");
+        Map<String, Object> model = new HashMap<>();
+        
+        if (filenamesToCheck != null) {
+            String[] filenames = filenamesToCheck.split(",");
 
             ArrayList<String> existingFilenames = new ArrayList<String>();
             ArrayList<String> existingFilenamesFixed = new ArrayList<String>();
             
-            for(String name : filenames) {
+            for (String name : filenames) {
                 name = stripWindowsPath(name);
                 if (name == null || name.trim().equals("")) {
                     errors.rejectValue("file", "manage.upload.resource.name-problem", "A resource has an illegal name");
-                    return showForm(request, response, errors);
+                    return new ModelAndView(getFormView(), model);
                 }
                 String fixedName = fixFileName(name);
                 if (fixedName.equals("")) {
                     errors.rejectValue("file", "manage.upload.resource.name-problem", "A resource has an illegal name");
-                    return showForm(request, response, errors);
+                    return new ModelAndView(getFormView(), model);
                 }
                 Path itemPath = uri.extend(fixedName);
                 if (repository.exists(token, itemPath)) {
@@ -123,19 +124,20 @@ public class FileUploadController extends SimpleFormController {
                 }
             }
             // Return existing paths to let the user process them
-            if(existingFilenames.isEmpty()) {
-                return new ModelAndView(getSuccessView());
+            if (existingFilenames.isEmpty()) {
+                return new ModelAndView(getSuccessView(), model);
             }
             
-            fileUploadCommand.setExistingFilenames(existingFilenames);
-            fileUploadCommand.setExistingFilenamesFixed(existingFilenamesFixed);
+            command.setExistingFilenames(existingFilenames);
+            command.setExistingFilenamesFixed(existingFilenamesFixed);
             errors.rejectValue("file", "manage.upload.resource.exists", "A resource of this name already exists");
-            return processFormSubmission(request, response, fileUploadCommand, errors);
-        } else {
+            return new ModelAndView(getFormView(), model);
+        }
+        else {
 
-            if (fileUploadCommand.getCancelAction() != null) {
-                fileUploadCommand.setDone(true);
-                return new ModelAndView(getSuccessView());
+            if (command.getCancelAction() != null) {
+                command.setDone(true);
+                return new ModelAndView(getSuccessView(), model);
             }
 
             ServletFileUpload upload = new ServletFileUpload();
@@ -151,17 +153,17 @@ public class FileUploadController extends SimpleFormController {
                     name = stripWindowsPath(name);
                     if (name == null || name.trim().equals("")) {
                         errors.rejectValue("file", "manage.upload.resource.name-problem", "A resource has an illegal name");
-                        return showForm(request, response, errors);
+                        return new ModelAndView(getFormView(), model);
                     }
                     String fixedName = fixFileName(name);
                     if (fixedName.equals("")) {
                         errors.rejectValue("file", "manage.upload.resource.name-problem", "A resource has an illegal name");
-                        return showForm(request, response, errors);
+                        return new ModelAndView(getFormView(), model);
                     }
                     Path itemPath = uri.extend(fixedName);
                     if (repository.exists(token, itemPath)) {
                         errors.rejectValue("file", "manage.upload.resource.exists", "A resource of this name already exists");
-                        return showForm(request, response, errors);
+                        return new ModelAndView(getFormView(), model);
                     }
                 }
             }
@@ -181,7 +183,7 @@ public class FileUploadController extends SimpleFormController {
                                 t.delete();
                             }
                             errors.rejectValue("file", "manage.upload.resource.exists", "A resource of this name already exists");
-                            return showForm(request, response, errors);
+                            return new ModelAndView(getFormView(), model);
                         }
                     }
                     StreamUtil.TempFile tmpFile = StreamUtil.streamToTempFile(uploadItem.openStream(), this.tempDir);
@@ -197,12 +199,13 @@ public class FileUploadController extends SimpleFormController {
                     logger.debug("Uploaded resource will be: " + path);
                 }
                 try {
-                    if(repository.exists(token, path)) {
+                    if (repository.exists(token, path)) {
                         repository.delete(token, path, false);
                     }
                     repository.createDocument(token, path, tempFile.getFileInputStream());
                     tempFile.delete();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     logger.warn("Caught exception while performing file upload", e);
 
                     // Clean now to free up temp files faster
@@ -210,13 +213,13 @@ public class FileUploadController extends SimpleFormController {
                         t.delete();
                     }
                     errors.rejectValue("file", "manage.upload.error",
-                    "An unexpected error occurred while processing file upload");
-                    return showForm(request, response, errors);
+                            "An unexpected error occurred while processing file upload");
+                    return new ModelAndView(getFormView(), model);
                 }
             }
-            fileUploadCommand.setDone(true);
+            command.setDone(true);
         }
-        return new ModelAndView(getSuccessView());
+        return new ModelAndView(getSuccessView(), model);
     }
 
     /**
@@ -234,7 +237,8 @@ public class FileUploadController extends SimpleFormController {
 
         if (pos > fileName.length() - 2) {
             return fileName;
-        } else if (pos >= 0) {
+        }
+        else if (pos >= 0) {
             return fileName.substring(pos + 1, fileName.length());
         }
 

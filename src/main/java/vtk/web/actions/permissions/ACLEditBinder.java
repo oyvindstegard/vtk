@@ -43,11 +43,10 @@ public class ACLEditBinder extends ServletRequestDataBinder {
     private static final String REMOVE_GROUP_PREFIX = "removeGroup.";
     private static final String REMOVE_USER_PREFIX = "removeUser.";
 
-    public ACLEditBinder(Object target, String objectName) {
+    public ACLEditBinder(ACLEditCommand target, String objectName) {
         super(target, objectName);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void bind(ServletRequest request) {
         super.bind(request);
@@ -55,16 +54,15 @@ public class ACLEditBinder extends ServletRequestDataBinder {
         
         List<String> removedUsers = new ArrayList<String>();
         List<String> removedGroups = new ArrayList<String>();
+        @SuppressWarnings("unchecked")
         List<String> params = EnumerationUtils.toList(request.getParameterNames());
-        
         extractGroupsAndUsersForRemoval(removedUsers, removedGroups, params);
- 
-        if(!removedGroups.isEmpty()) {
+        if (!removedGroups.isEmpty()) {
             String[] groupList = removedGroups.toArray(new String[]{});
             command.setRemoveGroupAction("removeGroupAction");
             command.setGroupNames(groupList); 
         }
-        if(!removedUsers.isEmpty()) {
+        if (!removedUsers.isEmpty()) {
             String[] userList = removedUsers.toArray(new String[]{});
             command.setRemoveUserAction("removeUserAction");
             command.setUserNames(userList); 
@@ -82,10 +80,11 @@ public class ACLEditBinder extends ServletRequestDataBinder {
      *            request parameters
      */
     protected void extractGroupsAndUsersForRemoval(List<String> removedUsers, List<String> removedGroups, List<String> params) {
-        for(String param : params) {
-            if(param.startsWith(REMOVE_GROUP_PREFIX)) {
+        for (String param : params) {
+            if (param.startsWith(REMOVE_GROUP_PREFIX)) {
                 removedGroups.add(param.substring(REMOVE_GROUP_PREFIX.length()));
-            } else if(param.startsWith(REMOVE_USER_PREFIX)) {
+            } 
+            else if (param.startsWith(REMOVE_USER_PREFIX)) {
                 removedUsers.add(param.substring(REMOVE_USER_PREFIX.length()));
             }
         }

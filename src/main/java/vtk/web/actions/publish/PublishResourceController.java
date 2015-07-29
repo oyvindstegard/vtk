@@ -31,7 +31,6 @@
 package vtk.web.actions.publish;
 
 import java.util.Calendar;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,20 +41,19 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.actions.ActionsHelper;
 import vtk.web.service.Service;
 
-@SuppressWarnings("deprecation")
-public class PublishResourceController extends SimpleFormController {
+public class PublishResourceController extends SimpleFormController<PublishResourceCommand> {
 
-    private String viewName;
     private PropertyTypeDefinition publishDatePropDef;
     private PropertyTypeDefinition unpublishedCollectionPropDef;
     
@@ -66,7 +64,7 @@ public class PublishResourceController extends SimpleFormController {
     private static final String UNPUBLISH_PARAM_GLOBAL = "global-unpublish-confirmed";
 
     @Override
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    protected PublishResourceCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         Service service = requestContext.getService();
@@ -77,20 +75,17 @@ public class PublishResourceController extends SimpleFormController {
 
         Resource resource = repository.retrieve(token, uri, false);
         String url = service.constructLink(resource, principal);
-
         return new PublishResourceCommand(url);
     }
 
     @Override
-    protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object command,
-            BindException errors) throws Exception {
-        Map<String, Object> model = new HashMap<String, Object>();
+    public ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response,
+            PublishResourceCommand publishResourceCommand, BindException errors) throws Exception {
+        
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path resourceURI = RequestContext.getRequestContext().getResourceURI();
-
-        PublishResourceCommand publishResourceCommand = (PublishResourceCommand) command;
 
         String action = request.getParameter(ACTION_PARAM);
         
@@ -101,21 +96,17 @@ public class PublishResourceController extends SimpleFormController {
         
         if (publishResourceCommand.getPublishResourceAction() != null) {
             if (PUBLISH_PARAM.equals(action) || PUBLISH_PARAM_GLOBAL.equals(action)) {
-                ActionsHelper.publishResource(publishDatePropDef,unpublishedCollectionPropDef, Calendar.getInstance().getTime(), repository, token, resourceURI, failures);
+                ActionsHelper.publishResource(publishDatePropDef,unpublishedCollectionPropDef, 
+                        Calendar.getInstance().getTime(), repository, token, resourceURI, failures);
             } else if (UNPUBLISH_PARAM.equals(action) || UNPUBLISH_PARAM_GLOBAL.equals(action)) {
-                ActionsHelper.unpublishResource(publishDatePropDef,unpublishedCollectionPropDef, repository, token, resourceURI, failures);
+                ActionsHelper.unpublishResource(publishDatePropDef,unpublishedCollectionPropDef, 
+                        repository, token, resourceURI, failures);
             }
         }
         ActionsHelper.addFailureMessages(failures, requestContext);
-        
-        return new ModelAndView(this.viewName, model);
+        return new ModelAndView(getSuccessView(), new HashMap<String, Object>());
     }
     
-    @Required
-    public void setViewName(String viewName) {
-        this.viewName = viewName;
-    }
-
     @Required
     public void setPublishDatePropDef(PropertyTypeDefinition publishDatePropDef) {
         this.publishDatePropDef = publishDatePropDef;

@@ -49,7 +49,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -63,10 +63,11 @@ import vtk.security.PrincipalManager;
 import vtk.security.roles.RoleManager;
 import vtk.util.repository.DocumentPrincipalMetadataRetriever;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 
-@SuppressWarnings("deprecation")
-public class ACLEditController extends SimpleFormController implements InitializingBean {
+public class ACLEditController extends SimpleFormController<ACLEditCommand> 
+    implements InitializingBean {
 
     private Privilege privilege;
     private PrincipalManager principalManager;
@@ -79,7 +80,7 @@ public class ACLEditController extends SimpleFormController implements Initializ
     private Map<Privilege, List<String>> permissionShortcuts;
     private List<String> shortcuts = null;
     private Map<String, List<String>> permissionShortcutsConfig;
-
+    
     public ACLEditController() {
         setSessionForm(true);
     }
@@ -99,7 +100,7 @@ public class ACLEditController extends SimpleFormController implements Initializ
     }
 
     @Override
-    protected ServletRequestDataBinder createBinder(HttpServletRequest request, Object command) throws Exception {
+    protected ServletRequestDataBinder createBinder(HttpServletRequest request, ACLEditCommand command) throws Exception {
         ACLEditBinder binder = new ACLEditBinder(command, getCommandName());
         prepareBinder(binder);
         initBinder(request, binder);
@@ -107,7 +108,7 @@ public class ACLEditController extends SimpleFormController implements Initializ
     }
 
     @Override
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    protected ACLEditCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -117,33 +118,13 @@ public class ACLEditController extends SimpleFormController implements Initializ
                 preferredLocale);
     }
 
-    private void validateShortcuts() {
-        for (String shortcut : this.shortcuts) {
-            List<String> values = this.permissionShortcutsConfig.get(shortcut);
-            for (String value : values) {
-                if (value == null || value.trim().equals("")) {
-                    continue;
-                }
-                boolean valid = false;
-                if (value.startsWith("user:pseudo:")) {
-                    this.principalFactory.getPrincipal(value.substring("user:".length()), Type.PSEUDO);
-                    valid = true;
-
-                } else if (value.startsWith("user:")) {
-                    Principal principal = this.principalFactory.getPrincipal(value.substring("user:".length()),
-                            Type.USER);
-                    valid = this.principalManager.validatePrincipal(principal);
-
-                } else if (value.startsWith("group:")) {
-                    Principal group = this.principalFactory
-                            .getPrincipal(value.substring("group:".length()), Type.GROUP);
-                    valid = this.principalManager.validateGroup(group);
-                }
-                if (!valid) {
-                    throw new IllegalStateException("Invalid principal in shortcut: " + value);
-                }
-            }
-        }
+    
+    @Override
+    protected ModelAndView showForm(HttpServletRequest request,
+            BindException errors, String viewName, Map<String, Object> model)
+            throws Exception {
+        request.getSession().setAttribute(getClass().getName() + ".form", errors.getTarget());
+        return super.showForm(request, errors, viewName, model);
     }
 
     private ACLEditCommand getACLEditCommand(Resource resource, Acl acl, Principal principal,
@@ -188,28 +169,24 @@ public class ACLEditController extends SimpleFormController implements Initializ
     }
 
     @Override
-    protected ModelAndView processFormSubmission(HttpServletRequest req, HttpServletResponse resp, Object command,
-            BindException errors) throws Exception {
+    protected ModelAndView processFormSubmission(HttpServletRequest req, HttpServletResponse resp, 
+            ACLEditCommand command, BindException errors) throws Exception {
         if (errors.hasErrors()) {
-            ACLEditCommand editCommand = (ACLEditCommand) command;
-            editCommand.setAddGroupAction(null);
-            editCommand.setAddUserAction(null);
-            editCommand.setRemoveGroupAction(null);
-            editCommand.setRemoveUserAction(null);
-            editCommand.setSaveAction(null);
-            editCommand.getUserNameEntries().removeAll(editCommand.getUserNameEntries());
-            editCommand.setLosingPrivileges(false);
+            command.setAddGroupAction(null);
+            command.setAddUserAction(null);
+            command.setRemoveGroupAction(null);
+            command.setRemoveUserAction(null);
+            command.setSaveAction(null);
+            command.getUserNameEntries().removeAll(command.getUserNameEntries());
+            command.setLosingPrivileges(false);
         }
         return super.processFormSubmission(req, resp, command, errors);
     }
 
     @Override
-    protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object command,
+    protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, ACLEditCommand command,
             BindException errors) throws Exception {
-
-        ACLEditCommand editCommand = (ACLEditCommand) command;
-
-        Acl acl = editCommand.getAcl();
+        Acl acl = command.getAcl();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
@@ -219,7 +196,7 @@ public class ACLEditController extends SimpleFormController implements Initializ
         Resource resource = repository.retrieve(token, uri, false);
 
         // Did the user cancel?
-        if (editCommand.getCancelAction() != null) {
+        if (command.getCancelAction() != null) {
             return new ModelAndView(getSuccessView());
         }
 
@@ -227,64 +204,70 @@ public class ACLEditController extends SimpleFormController implements Initializ
         Locale preferredLocale = this.localeResolver.resolveLocale(request);
 
         // Has the user asked to save?
-        if (editCommand.getSaveAction() != null) {
-            acl = updateAclIfShortcut(acl, editCommand, currentPrincipal, errors);
-            acl = addToAcl(acl, editCommand.getGroupNames(), Type.GROUP);
-            acl = addToAcl(acl, editCommand.getUserNameEntries(), Type.USER, preferredLocale);
+        if (command.getSaveAction() != null) {
+            acl = updateAclIfShortcut(acl, command, currentPrincipal, errors);
+            acl = addToAcl(acl, command.getGroupNames(), Type.GROUP);
+            acl = addToAcl(acl, command.getUserNameEntries(), Type.USER, preferredLocale);
             if (errors.hasErrors()) {
                 BindException bex = new BindException(getACLEditCommand(resource, acl, currentPrincipal, true, false,
                         preferredLocale), this.getCommandName());
                 bex.addAllErrors(errors);
-                return showForm(request, response, errors);
+                return showForm(request, errors, getFormView(), errors.getModel());
             }
             resource = repository.storeACL(token, resource.getURI(), acl);
             return new ModelAndView(getSuccessView());
         }
 
         // Doing remove or add actions
-        if (editCommand.getRemoveGroupAction() != null) {
-            acl = removeFromAcl(acl, editCommand.getGroupNames(), Type.GROUP, currentPrincipal, errors);
+        if (command.getRemoveGroupAction() != null) {
+            acl = removeFromAcl(acl, command.getGroupNames(), Type.GROUP, currentPrincipal, errors);
             boolean losingPrivileges = !this.repository.authorize(currentPrincipal, acl, Privilege.ALL);
 
             BindException bex = new BindException(getACLEditCommand(resource, acl, currentPrincipal, true,
                     losingPrivileges, preferredLocale), this.getCommandName());
             bex.addAllErrors(errors);
-            return showForm(request, response, bex);
-
-        } else if (editCommand.getRemoveUserAction() != null) {
-            acl = removeFromAcl(acl, editCommand.getUserNames(), Type.USER, currentPrincipal, errors);
+            return showForm(request, bex, getFormView(), null);
+        } 
+        else if (command.getRemoveUserAction() != null) {
+            acl = removeFromAcl(acl, command.getUserNames(), Type.USER, currentPrincipal, errors);
             boolean losingPrivileges = !this.repository.authorize(currentPrincipal, acl, Privilege.ALL);
             BindException bex = new BindException(getACLEditCommand(resource, acl, currentPrincipal, true,
                     losingPrivileges, preferredLocale), this.getCommandName());
             bex.addAllErrors(errors);
-            return showForm(request, response, bex);
-
-        } else if (editCommand.getAddGroupAction() != null) {
+            return showForm(request, bex, getFormView(), null);
+        }
+        else if (command.getAddGroupAction() != null) {
             // If not a shortcut and no groups/users in admin, then remove
             // groups/users (typical when coming from a shortcut)
-            if (editCommand.getGroups().size() == 0 && editCommand.getUsers().size() == 0) {
+            if (command.getGroups().size() == 0 && command.getUsers().size() == 0) {
                 acl = acl.clear(this.privilege);
             }
 
-            acl = addToAcl(acl, editCommand.getGroupNames(), Type.GROUP);
-            return showForm(request, response,
-                    new BindException(getACLEditCommand(resource, acl, currentPrincipal, true, false, preferredLocale),
-                            this.getCommandName()));
-
-        } else if (editCommand.getAddUserAction() != null) {
+            acl = addToAcl(acl, command.getGroupNames(), Type.GROUP);
+            BindException bex = new BindException(
+                    getACLEditCommand(resource, acl, currentPrincipal, true, false, preferredLocale),
+                    this.getCommandName());
+            return showForm(request, bex, getFormView(), null);
+        }
+        else if (command.getAddUserAction() != null) {
             // If not a shortcut and no groups/users in admin, then remove
             // groups/users (typical when coming from a shortcut)
-            if (editCommand.getGroups().size() == 0 && editCommand.getUsers().size() == 0) {
+            if (command.getGroups().size() == 0 && command.getUsers().size() == 0) {
                 acl = acl.clear(this.privilege);
             }
-            acl = addToAcl(acl, editCommand.getUserNameEntries(), Type.USER, preferredLocale);
-            return showForm(request, response,
-                    new BindException(getACLEditCommand(resource, acl, currentPrincipal, true, false, preferredLocale),
-                            this.getCommandName()));
+            acl = addToAcl(acl, command.getUserNameEntries(), Type.USER, preferredLocale);
+            
+            BindException bex = new BindException(
+                    getACLEditCommand(resource, acl, currentPrincipal, true, false, preferredLocale),
+                    this.getCommandName());
+            
+            return showForm(request, bex, getFormView(), null);
         }
 
         return new ModelAndView(getSuccessView());
     }
+    
+
 
     /**
      * Extracts shortcuts from authorized users and groupse
@@ -484,6 +467,35 @@ public class ACLEditController extends SimpleFormController implements Initializ
             }
         }
         return null;
+    }
+
+    private void validateShortcuts() {
+        for (String shortcut : this.shortcuts) {
+            List<String> values = this.permissionShortcutsConfig.get(shortcut);
+            for (String value : values) {
+                if (value == null || value.trim().equals("")) {
+                    continue;
+                }
+                boolean valid = false;
+                if (value.startsWith("user:pseudo:")) {
+                    this.principalFactory.getPrincipal(value.substring("user:".length()), Type.PSEUDO);
+                    valid = true;
+
+                } else if (value.startsWith("user:")) {
+                    Principal principal = this.principalFactory.getPrincipal(value.substring("user:".length()),
+                            Type.USER);
+                    valid = this.principalManager.validatePrincipal(principal);
+
+                } else if (value.startsWith("group:")) {
+                    Principal group = this.principalFactory
+                            .getPrincipal(value.substring("group:".length()), Type.GROUP);
+                    valid = this.principalManager.validateGroup(group);
+                }
+                if (!valid) {
+                    throw new IllegalStateException("Invalid principal in shortcut: " + value);
+                }
+            }
+        }
     }
 
     @Required

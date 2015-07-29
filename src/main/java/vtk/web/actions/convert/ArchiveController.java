@@ -37,16 +37,16 @@ import java.util.Map;
 
 import vtk.repository.Path;
 
-public class ArchiveController extends CopyController {
+public class ArchiveController extends CopyController<ArchiveCommand> {
 
     @Override
-    protected Object createCommand(String name, String url) {
+    protected ArchiveCommand createCommand(String name, String url) {
         return new ArchiveCommand(name, url);
     }
 
     @Override
-    protected void processCopyAction(Path originalUri, Path copyUri, CopyCommand copyCommand) throws Exception {
-        ArchiveCommand archiveCommand = (ArchiveCommand) copyCommand;
+    protected void processCopyAction(Path originalUri, Path copyUri, ArchiveCommand archiveCommand) 
+            throws Exception {
         Map<String, Object> properties = null;
         String ignorableResources = archiveCommand.getIgnorableResources();
         if (ignorableResources != null) {

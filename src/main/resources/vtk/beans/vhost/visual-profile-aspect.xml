@@ -100,7 +100,6 @@
     <property name="propertyDefinition" ref="resourceAspectsPropDef" />
     <property name="toplevelField" value="visual-profile" />
     <property name="commandName" value="form" />
-    <property name="commandClass" value="vtk.web.actions.properties.ConfigurableJSONPropertyEditor$Form" />
     <property name="formView" value="visualProfileAspect.form" />
     <property name="successView" value="redirectToManage" />
     <!--property name="configFile" ref="visualProfileAspect.configFile" /-->

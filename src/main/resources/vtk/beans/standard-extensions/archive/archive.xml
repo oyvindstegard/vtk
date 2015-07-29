@@ -41,8 +41,6 @@
     <property name="formView" value="admin" />
     <property name="successView" value="redirectToManage" />
     <property name="cancelView" value="redirectToManage" />
-    <property name="commandClass"
-              value="vtk.web.actions.convert.ArchiveCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.convert.CreateArchiveCommandValidator" />
     </property>
@@ -93,8 +91,6 @@
     <property name="formView" value="admin" />
     <property name="successView" value="redirectToManage" />
     <property name="cancelView" value="redirectToManage" />
-    <property name="commandClass"
-              value="vtk.web.actions.convert.ArchiveCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.convert.ArchiveCommandValidator" />
     </property>
