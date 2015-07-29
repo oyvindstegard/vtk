@@ -30,18 +30,15 @@
  */
 package vtk.repository.store.db;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.orm.ibatis.SqlMapClientCallback;
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
+import org.apache.ibatis.session.SqlSession;
+
 import vtk.repository.ChangeLogEntry;
 import vtk.repository.store.ChangeLogDAO;
 import vtk.repository.store.DataAccessException;
-
-import com.ibatis.sqlmap.client.SqlMapExecutor;
 
 public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor 
     implements ChangeLogDAO {
@@ -51,45 +48,32 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor
     public void removeChangeLogEntries(final List<ChangeLogEntry> entries)
         throws DataAccessException {
     	
-        final SqlMapClientTemplate client = getSqlMapClientTemplate();
+        //final SqlMapClientTemplate client = getSqlMapClientTemplate();
+        final SqlSession client = getSqlSession();
         
         String statement = getSqlMap("nextTempTableSessionId");
         
-        final Integer sessionId = (Integer)client.queryForObject(statement);
+        final Integer sessionId = client.selectOne(statement);
         
-        final SqlMapClientCallback callback = new SqlMapClientCallback() {
-
-            @Override
-            public Object doInSqlMapClient(SqlMapExecutor executor)
-                    throws SQLException {
-
-                Map params = new HashMap();
-                params.put("sessionId", sessionId);
-                String statement = getSqlMap("insertChangelogEntryIdIntoTempTable");
-                
-                // Batch inserts into temporary table and respect UPDATE_BATCH_SIZE_LIMIT
-                int statementCount = 0;
-                int rowsUpdated = 0;
-                executor.startBatch();
-                for (ChangeLogEntry entry: entries) {
-                    params.put("changelogEntryId", entry.getChangeLogEntryId());
-                    executor.insert(statement, params);
-                    
-                    if (++statementCount % UPDATE_BATCH_SIZE_LIMIT == 0) {
-                    	// Reached limit of how many inserts we batch, execute current batch immediately
-                    	rowsUpdated += executor.executeBatch();
-                    	executor.startBatch(); // Start new batch immediately
-                    }
-                }
-                // Execute anything remaining in last batch
-                rowsUpdated += executor.executeBatch();
-                
-                return new Integer(rowsUpdated);
+        Map<String, Object> params = new HashMap<>();
+        params.put("sessionId", sessionId);
+        statement = getSqlMap("insertChangelogEntryIdIntoTempTable");
+        
+        // Batch inserts into temporary table and respect UPDATE_BATCH_SIZE_LIMIT
+        int statementCount = 0;
+        int rowsUpdated = 0;
+        for (ChangeLogEntry entry: entries) {
+            params.put("changelogEntryId", entry.getChangeLogEntryId());
+            // Insert into vortex_tmp:
+            client.insert(statement, params);
+            
+            if (++statementCount % UPDATE_BATCH_SIZE_LIMIT == 0) {
+                // Reached limit of how many inserts we batch, execute current batch immediately
+                rowsUpdated += client.flushStatements().size();
             }
-        };
-        
-        // Insert into vortex_tmp:
-        client.execute(callback);
+        }
+        // Execute anything remaining in last batch
+        rowsUpdated += client.flushStatements().size();
         
         // Delete from changelog_entry:
         statement = getSqlMap("removeChangelogEntriesByTempTable");
@@ -101,37 +85,36 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor
         
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<ChangeLogEntry> getChangeLogEntries(int loggerType, int loggerId) 
         throws DataAccessException {
         
-        SqlMapClientTemplate client = getSqlMapClientTemplate();
+        //SqlMapClientTemplate client = getSqlMapClientTemplate();
+        SqlSession client = getSqlSession();
 
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("loggerType", loggerType);
         params.put("loggerId", loggerId);
         
         String statement = getSqlMap("getChangeLogEntries");
         
-        return client.queryForList(statement, params);
+        return client.selectList(statement, params);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<ChangeLogEntry> getChangeLogEntries(int loggerType, int loggerId, int limit) 
         throws DataAccessException {
         
-        SqlMapClientTemplate client = getSqlMapClientTemplate();
+        SqlSession client = getSqlSession();
 
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("loggerType", loggerType);
         params.put("loggerId", loggerId);
         params.put("limit", limit);
         
         String statement = getSqlMap("getChangeLogEntries");
         
-        List<ChangeLogEntry> retlist = client.queryForList(statement, params);
+        List<ChangeLogEntry> retlist = client.selectList(statement, params);
         
         return retlist;
     }
@@ -147,11 +130,11 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor
             parameters.put("uriWildcard", 
                            SqlDaoUtils.getUriSqlWildcard(entry.getUri(), SQL_ESCAPE_CHAR));
 
-            getSqlMapClientTemplate().insert(sqlMap, parameters);
+            getSqlSession().insert(sqlMap, parameters);
                 
         } else {
             sqlMap = getSqlMap("insertChangeLogEntry");
-            getSqlMapClientTemplate().insert(sqlMap, entry);
+            getSqlSession().insert(sqlMap, entry);
         }
 
     }
@@ -161,7 +144,7 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor
         throws DataAccessException {
         String sqlMap = null;
         sqlMap = getSqlMap("insertChangeLogEntryInherited");
-        getSqlMapClientTemplate().insert(sqlMap, entry);
+        getSqlSession().insert(sqlMap, entry);
     }
 
     @Override
@@ -174,7 +157,7 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor
         parameters.put("entry", entry);
         parameters.put("uriWildcard", 
                        SqlDaoUtils.getUriSqlWildcard(entry.getUri(), SQL_ESCAPE_CHAR));
-        getSqlMapClientTemplate().insert(sqlMap, parameters);
+        getSqlSession().insert(sqlMap, parameters);
     }
 
 }

@@ -1703,7 +1703,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             Comment comment = new Comment();
             comment.setURI(original.getURI());
             comment.setTime(new java.util.Date());
-            comment.setAuthor(principal);
+            comment.setAuthor(principal.getQualifiedName());
             comment.setTitle(title);
             comment.setContent(text);
             comment.setApproved(true);

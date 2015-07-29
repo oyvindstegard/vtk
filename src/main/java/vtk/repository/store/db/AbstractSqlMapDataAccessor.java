@@ -32,14 +32,14 @@ package vtk.repository.store.db;
 
 import java.util.Map;
 
+import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;
 
-public abstract class AbstractSqlMapDataAccessor extends SqlMapClientDaoSupport {
+public abstract class AbstractSqlMapDataAccessor extends SqlSessionDaoSupport {
 
-	/**
-	 * The escape character used in SQL.
-	 */
+    /**
+     * The escape character used in SQL.
+     */
     public static final char SQL_ESCAPE_CHAR = '@';
     
     /**

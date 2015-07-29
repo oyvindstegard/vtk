@@ -1,21 +1,21 @@
-/* Copyright (c) 2007, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -30,43 +30,19 @@
  */
 package vtk.repository.store.db.ibatis;
 
-import java.sql.CallableStatement;
+import java.io.ByteArrayInputStream;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.TypeHandler;
 
+public class BlobTypeHandler extends org.apache.ibatis.type.BlobTypeHandler {
 
-public class BooleanCharTypeHandlerCallback implements TypeHandler<Boolean> {
-
-    private static final String TRUE = "Y"; 
-    private static final String FALSE = "N";
-    
     @Override
-    public void setParameter(PreparedStatement ps, int i, Boolean parameter,
-            JdbcType jdbcType) throws SQLException {
-        ps.setString(i, parameter ? TRUE : FALSE);
-    }
-    
-    @Override
-    public Boolean getResult(ResultSet rs, String columnName)
+    public void setNonNullParameter(PreparedStatement ps, int i, byte[] parameter, JdbcType jdbcType)
             throws SQLException {
-        return TRUE.equals(rs.getString(columnName));
-        
-    }
-    
-    @Override
-    public Boolean getResult(ResultSet rs, int columnIndex) throws SQLException {
-        return TRUE.equals(rs.getString(columnIndex));
-        
-    }
-    
-    @Override
-    public Boolean getResult(CallableStatement cs, int columnIndex)
-            throws SQLException {
-        return TRUE.equals(cs.getString(columnIndex));
+        // Calling ps.setBinaryStream() does not work with PostgreSQL OIDs,  
+        // use setBlob() instead:
+        ps.setBlob(i, new ByteArrayInputStream(parameter), parameter.length);
     }
 }
-    

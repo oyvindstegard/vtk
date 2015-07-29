@@ -41,6 +41,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+
 import vtk.repository.Acl;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -54,14 +57,11 @@ import vtk.repository.store.db.SqlDaoUtils.PropHolder;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 
-import com.ibatis.sqlmap.client.event.RowHandler;
-
-
 
 /**
  *
  */
-class PropertySetRowHandler implements RowHandler {
+class PropertySetRowHandler implements ResultHandler {
 
     // Client callback for handling retrieved property set instances 
     protected PropertySetHandler clientHandler;
@@ -108,10 +108,10 @@ class PropertySetRowHandler implements RowHandler {
      * iBATIS callback
      */
     @Override
-    public void handleRow(Object valueObject) {
+    public void handleResult(ResultContext context) {
         
         @SuppressWarnings("unchecked")
-        Map<String, Object> rowMap = (Map<String, Object>) valueObject;
+        Map<String, Object> rowMap = (Map<String, Object>) context.getResultObject();
         Integer id = (Integer)rowMap.get("id");
         
         if (this.currentId != null && !this.currentId.equals(id)) {
@@ -181,9 +181,11 @@ class PropertySetRowHandler implements RowHandler {
         Map<String, Object> firstRow = rowBuffer.get(0);
         
         PropertySetImpl propertySet = new PropertySetImpl();
-        String uri = (String)firstRow.get("uri");
+        //String uri = (String)firstRow.get("uri");
+        //propertySet.setUri(Path.fromString(uri));
 
-        propertySet.setUri(Path.fromString(uri));
+        Path uri = (Path) firstRow.get("uri");
+        propertySet.setUri(uri);
         
         // Standard props found in vortex_resource table:
         populateStandardProperties(firstRow, propertySet);
@@ -455,7 +457,8 @@ class PropertySetRowHandler implements RowHandler {
                 propValuesMap.put(holder, values);
                 
                 // Link current canonical PropHolder instance to inheritable map
-                Path p = Path.fromString((String) propEntry.get("uri"));
+                Path p = (Path) propEntry.get("uri");
+                //Path p = Path.fromString((String) propEntry.get("uri"));
                 Set<PropHolder> set = inheritableHolderMap.get(p);
                 if (set == null) {
                     set = new HashSet<PropHolder>();
@@ -485,5 +488,5 @@ class PropertySetRowHandler implements RowHandler {
         
         return inheritablePropsMap;
     }
-    
+
 }

@@ -31,7 +31,6 @@
 package vtk.repository.store.db;
 
 import java.io.ByteArrayInputStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -46,7 +45,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import vtk.repository.Acl;
 import vtk.repository.ContentStream;
@@ -75,8 +73,6 @@ import vtk.repository.store.db.SqlDaoUtils.PropHolder;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
-
-import com.ibatis.sqlmap.client.SqlMapExecutor;
 
 /**
  * An iBATIS SQL maps implementation of the DataAccessor interface.
@@ -127,10 +123,9 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
      * @param uri
      * @return 
      */
-    @SuppressWarnings("unchecked")
     private ResourceImpl loadResourceInternal(Path uri) {
         String sqlMap = getSqlMap("loadResourceByUri");
-        Map<String, ?> resourceMap = (Map<String, ?>) getSqlMapClientTemplate().queryForObject(sqlMap, uri.toString());
+        Map<String, ?> resourceMap = getSqlSession().selectOne(sqlMap, uri.toString());
         if (resourceMap == null) {
             return null;
         }
@@ -144,7 +139,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         populateStandardProperties(resource, resourceMap);
         int resourceId = resource.getID();
         sqlMap = getSqlMap("loadPropertiesForResource");
-        List<Map<String, Object>> propertyList = getSqlMapClientTemplate().queryForList(sqlMap, resourceId);
+        List<Map<String, Object>> propertyList = getSqlSession().selectList(sqlMap, resourceId);
         populateCustomProperties(new ResourceImpl[] { resource }, propertyList);
 
         Integer aclInheritedFrom = (Integer) resourceMap.get("aclInheritedFrom");
@@ -157,7 +152,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     @Override
     public void deleteExpiredLocks(Date d) {
         String sqlMap = getSqlMap("deleteExpiredLocks");
-        getSqlMapClientTemplate().update(sqlMap, d);
+        getSqlSession().update(sqlMap, d);
     }
 
     @Override
@@ -168,8 +163,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("timestamp", new Date());
 
         String sqlMap = getSqlMap("discoverLocks");
-        @SuppressWarnings("unchecked")
-        List<String> list = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+        List<String> list = getSqlSession().selectList(sqlMap, parameters);
 
         Path[] locks = new Path[list.size()];
         for (int i = 0; i < list.size(); i++) {
@@ -191,7 +185,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         // Delete any old persistent locks
         String sqlMap = getSqlMap("deleteLockByResourceId");
-        getSqlMapClientTemplate().delete(sqlMap, r.getID());
+        getSqlSession().delete(sqlMap, r.getID());
 
         Lock lock = r.getLock();
 
@@ -206,7 +200,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             parameters.put("resourceId", r.getID());
 
             sqlMap = getSqlMap("insertLock");
-            getSqlMapClientTemplate().update(sqlMap, parameters);
+            getSqlSession().update(sqlMap, parameters);
         }
         return load(r.getURI());
     }
@@ -230,7 +224,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             parameters.put("inheritedFrom", null);
 
             String sqlMap = getSqlMap("updateAclInheritedFromByResourceId");
-            getSqlMapClientTemplate().update(sqlMap, parameters);
+            getSqlSession().update(sqlMap, parameters);
 
             parameters = new HashMap<String, Object>();
             parameters.put("previouslyInheritedFrom", oldInheritedFrom);
@@ -239,14 +233,14 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             parameters.put("uriWildcard", SqlDaoUtils.getUriSqlWildcard(r.getURI(), SQL_ESCAPE_CHAR));
 
             sqlMap = getSqlMap("updateAclInheritedFromByPreviousInheritedFromAndUri");
-            getSqlMapClientTemplate().update(sqlMap, parameters);
+            getSqlSession().update(sqlMap, parameters);
             return;
         }
 
         // ACL was not inherited
         // Delete previous ACL entries for resource:
         String sqlMap = getSqlMap("deleteAclEntriesByResourceId");
-        getSqlMapClientTemplate().delete(sqlMap, r.getID());
+        getSqlSession().delete(sqlMap, r.getID());
 
         if (!r.isInheritedAcl()) {
             insertAcl(r);
@@ -263,14 +257,14 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             parameters.put("previouslyInheritedFrom", r.getID());
 
             sqlMap = getSqlMap("updateAclInheritedFromByResourceIdOrPreviousInheritedFrom");
-            getSqlMapClientTemplate().update(sqlMap, parameters);
+            getSqlSession().update(sqlMap, parameters);
         }
     }
 
     @Override
     public ResourceImpl store(ResourceImpl r) {
         String sqlMap = getSqlMap("loadResourceByUri");
-        boolean existed = getSqlMapClientTemplate().queryForObject(sqlMap, r.getURI().toString()) != null;
+        boolean existed = getSqlSession().selectOne(sqlMap, r.getURI().toString()) != null;
 
         Map<String, Object> parameters = getResourceAsMap(r);
         if (!existed) {
@@ -283,12 +277,11 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             this.logger.debug((existed ? "Updating" : "Storing") + " resource " + r + ", parameter map: " + parameters);
         }
 
-        getSqlMapClientTemplate().update(sqlMap, parameters);
+        getSqlSession().update(sqlMap, parameters);
 
         if (!existed) {
             sqlMap = getSqlMap("loadResourceIdByUri");
-            @SuppressWarnings("unchecked")
-            Map<String, Object> map = (Map<String, Object>) getSqlMapClientTemplate().queryForObject(sqlMap,
+            Map<String, Object> map = getSqlSession().selectOne(sqlMap,
                     r.getURI().toString());
             Integer id = (Integer) map.get("resourceId");
             r.setID(id.intValue());
@@ -307,7 +300,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("uri", resource.getURI().toString());
         parameters.put("uriWildcard", SqlDaoUtils.getUriSqlWildcard(resource.getURI(), SQL_ESCAPE_CHAR));
         String sqlMap = getSqlMap("deleteResourceByUri");
-        getSqlMapClientTemplate().update(sqlMap, parameters);
+        getSqlSession().update(sqlMap, parameters);
     }
 
     @Override
@@ -331,7 +324,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("trashCanID", trashID);
         parameters.put("depthDiff", depthDiff);
         String sqlMap = getSqlMap("markDeleted");
-        this.getSqlMapClientTemplate().update(sqlMap, parameters);
+        this.getSqlSession().update(sqlMap, parameters);
 
         parameters.put("trashCanURI", trashID + "/" + resourceURI.getName());
         parameters.put("parentID", parent.getID());
@@ -339,14 +332,13 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("deletedTime", Calendar.getInstance().getTime());
         parameters.put("wasInheritedAcl", resource.isInheritedAcl() ? "Y" : "N");
         sqlMap = getSqlMap("insertTrashCanEntry");
-        this.getSqlMapClientTemplate().update(sqlMap, parameters);
+        this.getSqlSession().update(sqlMap, parameters);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<RecoverableResource> getRecoverableResources(final int parentResourceId) throws DataAccessException {
         String sqlMap = getSqlMap("getRecoverableResources");
-        List<RecoverableResource> recoverableResources = this.getSqlMapClientTemplate().queryForList(sqlMap,
+        List<RecoverableResource> recoverableResources = this.getSqlSession().selectList(sqlMap,
                 parentResourceId);
         return recoverableResources;
     }
@@ -356,14 +348,14 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         int id = recoverableResource.getId();
         String sqlMap = getSqlMap("getRecoverableResourceById");
-        Object o = getSqlMapClientTemplate().queryForObject(sqlMap, id);
+        Object o = getSqlSession().selectOne(sqlMap, id);
         if (o == null) {
             throw new DataAccessException("Requested deleted object with id " + id + " was not found");
         }
         RecoverableResource deletedResource = (RecoverableResource) o;
 
         sqlMap = getSqlMap("deleteFromTrashCan");
-        this.getSqlMapClientTemplate().delete(sqlMap, deletedResource.getId());
+        this.getSqlSession().delete(sqlMap, deletedResource.getId());
 
         Map<String, Object> parameters = new HashMap<String, Object>();
         String trashID = deletedResource.getTrashID();
@@ -379,7 +371,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("uriTrimLength", uriTrimLength);
 
         sqlMap = getSqlMap("recoverResource");
-        this.getSqlMapClientTemplate().update(sqlMap, parameters);
+        this.getSqlSession().update(sqlMap, parameters);
 
         Path recoverdResourcePath = parent.extend(deletedResource.getName());
         
@@ -395,7 +387,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             }
         }
         
-        // Re-load and return newly written recovered resource
+        // Reload and return newly written recovered resource
         return load(recoverdResourcePath);
     }
 
@@ -407,30 +399,28 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         String trashUri = recoverableResource.getTrashUri();
         parameters.put("trashCanURI", trashUri);
         parameters.put("trashCanURIWildCard", SqlDaoUtils.getStringSqlWildcard(trashUri, SQL_ESCAPE_CHAR));
-        this.getSqlMapClientTemplate().delete(sqlMap, parameters);
+        this.getSqlSession().delete(sqlMap, parameters);
         sqlMap = getSqlMap("deleteFromTrashCan");
-        this.getSqlMapClientTemplate().delete(sqlMap, recoverableResource.getId());
+        this.getSqlSession().delete(sqlMap, recoverableResource.getId());
 
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<RecoverableResource> getTrashCanOverdue(int overDueLimit) throws DataAccessException {
         Calendar cal = Calendar.getInstance();
         // Add negative limit -> substract
         cal.add(Calendar.DATE, -overDueLimit);
         Date overDueDate = cal.getTime();
         String sqlMap = getSqlMap("getOverdue");
-        List<RecoverableResource> recoverableResources = this.getSqlMapClientTemplate().queryForList(sqlMap,
+        List<RecoverableResource> recoverableResources = this.getSqlSession().selectList(sqlMap,
                 overDueDate);
         return recoverableResources;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<RecoverableResource> getTrashCanOrphans() throws DataAccessException {
         String sqlMap = getSqlMap("getOrphans");
-        List<RecoverableResource> recoverableResources = this.getSqlMapClientTemplate().queryForList(sqlMap);
+        List<RecoverableResource> recoverableResources = this.getSqlSession().selectList(sqlMap);
         return recoverableResources;
     }
 
@@ -443,11 +433,10 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         List<ResourceImpl> children = new ArrayList<ResourceImpl>();
         String sqlMap = getSqlMap("loadChildren");
 
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> resources = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+        List<Map<String, Object>> resources = getSqlSession().selectList(sqlMap, parameters);
         Map<Path, Lock> locks = loadLocksForChildren(parent);
         for (Map<String, Object> resourceMap : resources) {
-            Path uri = Path.fromString((String) resourceMap.get("uri"));
+            Path uri = (Path) resourceMap.get("uri");
 
             ResourceImpl resource = new ResourceImpl(uri);
 
@@ -476,8 +465,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("uriWildcard", SqlDaoUtils.getUriSqlWildcard(uri, SQL_ESCAPE_CHAR));
 
         String sqlMap = getSqlMap("discoverAcls");
-        @SuppressWarnings("unchecked")
-        List<Path> uris = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+        List<Path> uris = getSqlSession().selectList(sqlMap, parameters);
 
         return uris.toArray(new Path[uris.size()]);
     }
@@ -518,15 +506,15 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
 
         String sqlMap = getSqlMap("copyResource");
-        getSqlMapClientTemplate().update(sqlMap, parameters);
+        getSqlSession().update(sqlMap, parameters);
 
         sqlMap = getSqlMap("copyProperties");
-        getSqlMapClientTemplate().update(sqlMap, parameters);
+        getSqlSession().update(sqlMap, parameters);
 
         if (copyACLs) {
 
             sqlMap = getSqlMap("copyAclEntries");
-            getSqlMapClientTemplate().update(sqlMap, parameters);
+            getSqlSession().update(sqlMap, parameters);
 
             // Update inheritance to nearest node:
             int srcNearestACL = findNearestACL(resource.getURI());
@@ -539,29 +527,21 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             parameters.put("previouslyInheritedFrom", srcNearestACL);
 
             sqlMap = getSqlMap("updateAclInheritedFromByPreviousInheritedFromAndUri");
-            getSqlMapClientTemplate().update(sqlMap, parameters);
+            getSqlSession().update(sqlMap, parameters);
 
             if (this.optimizedAclCopySupported) {
                 sqlMap = getSqlMap("updateAclInheritedFromByPreviousResourceId");
-                getSqlMapClientTemplate().update(sqlMap, parameters);
+                getSqlSession().update(sqlMap, parameters);
             } else {
                 sqlMap = getSqlMap("loadPreviousInheritedFromMap");
 
-                @SuppressWarnings("unchecked")
-                final List<Map<String, Object>> list = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+                final List<Map<String, Object>> list = getSqlSession().selectList(sqlMap, parameters);
+                
                 final String batchSqlMap = getSqlMap("updateAclInheritedFromByResourceId");
-
-                getSqlMapClientTemplate().execute(new SqlMapClientCallback() {
-                    @Override
-                    public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
-                        executor.startBatch();
-                        for (Map<String, Object> map : list) {
-                            executor.update(batchSqlMap, map);
-                        }
-                        executor.executeBatch();
-                        return null;
-                    }
-                });
+                
+                for (Map<String, Object> map : list) {
+                    getSqlSession().update(batchSqlMap, map);
+                }
             }
 
         } else {
@@ -572,18 +552,18 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             parameters.put("inheritedFrom", nearestAclNode);
 
             sqlMap = getSqlMap("updateAclInheritedFromByUri");
-            getSqlMapClientTemplate().update(sqlMap, parameters);
+            getSqlSession().update(sqlMap, parameters);
         }
 
         parameters = new HashMap<String, Object>();
         parameters.put("uri", destURI.toString());
         parameters.put("uriWildcard", SqlDaoUtils.getUriSqlWildcard(destURI, SQL_ESCAPE_CHAR));
         sqlMap = getSqlMap("clearPrevResourceIdByUri");
-        getSqlMapClientTemplate().update(sqlMap, parameters);
+        getSqlSession().update(sqlMap, parameters);
 
         parameters = getResourceAsMap(destParent);
         sqlMap = getSqlMap("updateResource");
-        getSqlMapClientTemplate().update(sqlMap, parameters);
+        getSqlSession().update(sqlMap, parameters);
         storeProperties(destParent);
 
         ResourceImpl created = loadResourceInternal(newResource.getURI());
@@ -614,10 +594,10 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("depthDiff", depthDiff);
 
         String sqlMap = getSqlMap("moveResource");
-        getSqlMapClientTemplate().update(sqlMap, parameters);
+        getSqlSession().update(sqlMap, parameters);
 
         sqlMap = getSqlMap("moveDescendants");
-        getSqlMapClientTemplate().update(sqlMap, parameters);
+        getSqlSession().update(sqlMap, parameters);
 
         ResourceImpl created = loadResourceInternal(newResource.getURI());
         for (Property prop : newResource) {
@@ -625,7 +605,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
         sqlMap = getSqlMap("updateResource");
         parameters = getResourceAsMap(newResource);
-        getSqlMapClientTemplate().update(sqlMap, parameters);
+        getSqlSession().update(sqlMap, parameters);
 
         storeProperties(created);
 
@@ -639,10 +619,10 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             parameters.put("previouslyInheritedFrom", srcNearestAcl);
 
             sqlMap = getSqlMap("updateAclInheritedFromByPreviousInheritedFromAndUri");
-            getSqlMapClientTemplate().update(sqlMap, parameters);
+            getSqlSession().update(sqlMap, parameters);
         }
 
-        // Re-load and return newly written destination ResourceImpl
+        // Reload and return newly written destination ResourceImpl
         return load(newResource.getURI());
     }
 
@@ -653,9 +633,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         String sqlMap = getSqlMap("loadChildUrisForChildren");
 
-        @SuppressWarnings("unchecked")
-        List<Path> resourceUriList = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
-
+        List<Path> resourceUriList = getSqlSession().selectList(sqlMap, parameters);
+        
         parent.setChildURIs(resourceUriList);
     }
 
@@ -663,7 +642,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         // Initialize a map from child collection URI to the list of
         // grandchildren's URIs:
-        Map<Path, List<Path>> childMap = new HashMap<Path, List<Path>>();
+        Map<Path, List<Path>> childMap = new HashMap<>();
         for (ResourceImpl child : children) {
             if (child.isCollection()) {
                 childMap.put(child.getURI(), new ArrayList<Path>());
@@ -676,8 +655,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         String sqlMap = getSqlMap("loadChildUrisForChildren");
 
-        @SuppressWarnings("unchecked")
-        List<Path> resourceUris = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+        List<Path> resourceUris = getSqlSession().selectList(sqlMap, parameters);
 
         for (Path uri : resourceUris) {
             Path parentUri = uri.getParent();
@@ -712,8 +690,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         String sqlMap = getSqlMap("loadPropertiesForChildren");
 
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> propertyList = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+        List<Map<String, Object>> propertyList = getSqlSession().selectList(sqlMap, parameters);
 
         populateCustomProperties(resources, propertyList);
     }
@@ -729,8 +706,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("timestamp", new Date());
         String sqlMap = getSqlMap("loadLocksByUris");
 
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> locks = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+        List<Map<String, Object>> locks = getSqlSession().selectList(sqlMap, parameters);
 
         Map<Path, Lock> result = new HashMap<Path, Lock>();
 
@@ -753,8 +729,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         String sqlMap = getSqlMap("loadLocksForChildren");
 
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> locks = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+        List<Map<String, Object>> locks = getSqlSession().selectList(sqlMap, parameters);
 
         Map<Path, Lock> result = new HashMap<Path, Lock>();
 
@@ -777,43 +752,34 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
         final Set<Privilege> actions = newAcl.getActions();
         final String sqlMap = getSqlMap("insertAclEntry");
+        
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        for (Privilege action : actions) {
+            String actionName = action.getName();
+            for (Principal p : newAcl.getPrincipalSet(action)) {
 
-        getSqlMapClientTemplate().execute(new SqlMapClientCallback() {
-            @Override
-            public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
-                executor.startBatch();
-                Map<String, Object> parameters = new HashMap<String, Object>();
-                for (Privilege action : actions) {
-                    String actionName = action.getName();
-                    for (Principal p : newAcl.getPrincipalSet(action)) {
-
-                        Integer actionID = actionTypes.get(actionName);
-                        if (actionID == null) {
-                            throw new SQLException("insertAcl(): Unable to " + "find id for action '" + action + "'");
-                        }
-
-                        parameters.put("actionId", actionID);
-                        parameters.put("resourceId", r.getID());
-                        parameters.put("principal", p.getQualifiedName());
-                        parameters.put("isUser", p.getType() == Principal.Type.GROUP ? "N" : "Y");
-                        parameters.put("grantedBy", r.getOwner().getQualifiedName());
-                        parameters.put("grantedDate", new Date());
-
-                        executor.update(sqlMap, parameters);
-                    }
+                Integer actionID = actionTypes.get(actionName);
+                if (actionID == null) {
+                    throw new DataAccessException("insertAcl(): Unable to " + "find id for action '" + action + "'");
                 }
-                executor.executeBatch();
-                return null;
+
+                parameters.put("actionId", actionID);
+                parameters.put("resourceId", r.getID());
+                parameters.put("principal", p.getQualifiedName());
+                parameters.put("isUser", p.getType() == Principal.Type.GROUP ? "N" : "Y");
+                parameters.put("grantedBy", r.getOwner().getQualifiedName());
+                parameters.put("grantedDate", new Date());
+
+                getSqlSession().update(sqlMap, parameters);
             }
-        });
+        }
     }
 
     private Map<String, Integer> loadActionTypes() {
         Map<String, Integer> actionTypes = new HashMap<String, Integer>();
 
         String sqlMap = getSqlMap("loadActionTypes");
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> list = getSqlMapClientTemplate().queryForList(sqlMap, null);
+        List<Map<String, Object>> list = getSqlSession().selectList(sqlMap, null);
         for (Map<String, Object> map : list) {
             actionTypes.put((String) map.get("name"), (Integer) map.get("id"));
         }
@@ -823,8 +789,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     private boolean isInheritedAcl(ResourceImpl r) {
 
         String sqlMap = getSqlMap("isInheritedAcl");
-        @SuppressWarnings("unchecked")
-        Map<String, Integer> map = (Map<String, Integer>) getSqlMapClientTemplate().queryForObject(sqlMap, r.getID());
+        Map<String, Integer> map = getSqlSession().selectOne(sqlMap, r.getID());
 
         Integer inheritedFrom = map.get("inheritedFrom");
         return inheritedFrom != null;
@@ -841,8 +806,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("path", path);
         String sqlMap = getSqlMap("findNearestAclResourceId");
 
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> list = getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+        List<Map<String, Object>> list = getSqlSession().selectList(sqlMap, parameters);
 
         Map<String, Integer> uris = new HashMap<String, Integer>();
         for (Map<String, Object> map : list) {
@@ -896,8 +860,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             }
             if ((i == resources.length - 1 || i % inheritedPropertiesBatch == 0) && !paths.isEmpty()) {
                 parameterMap.put("uris", new ArrayList<Path>(paths));
-                @SuppressWarnings("unchecked")
-                List<Map<String, Object>> rows = getSqlMapClientTemplate().queryForList(sqlMap, parameterMap);
+                List<Map<String, Object>> rows = getSqlSession().selectList(sqlMap, parameterMap);
                 propertyRows.addAll(rows);
                 paths.clear();
             }
@@ -924,7 +887,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                 holderValues.put(propHolder, values);
 
                 // Populate inheritables map with canonical PropHolder instance
-                Path uri = Path.fromString((String) propEntry.get("uri"));
+                Path uri = (Path) propEntry.get("uri");
                 List<PropHolder> holderList = inheritableMap.get(uri);
                 if (holderList == null) {
                     holderList = new ArrayList<PropHolder>();
@@ -1050,8 +1013,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         String sqlMap = getSqlMap("loadAclEntriesByResourceIds");
 
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> aclEntries = getSqlMapClientTemplate().queryForList(sqlMap, parameterMap);
+        List<Map<String, Object>> aclEntries = getSqlSession().selectList(sqlMap, parameterMap);
 
         for (Map<String, Object> map : aclEntries) {
 
@@ -1097,74 +1059,65 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
         
         String sqlMap = getSqlMap("deletePropertiesByResourceId");
-        getSqlMapClientTemplate().update(sqlMap, r.getID());
+        getSqlSession().update(sqlMap, r.getID());
 
         final String batchSqlMap = getSqlMap("insertPropertyEntry");
+        
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        for (Property property : r) {
+            if (!PropertyType.SPECIAL_PROPERTIES_SET.contains(property.getDefinition().getName())) {
+                parameters.put("namespaceUri", property.getDefinition().getNamespace().getUri());
+                parameters.put("name", property.getDefinition().getName());
+                parameters.put("resourceId", r.getID());
+                parameters.put("inheritable", property.getDefinition().isInheritable());
 
-        getSqlMapClientTemplate().execute(new SqlMapClientCallback() {
-
-            @Override
-            public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
-                executor.startBatch();
-                Map<String, Object> parameters = new HashMap<String, Object>();
-                for (Property property : r) {
-                    if (!PropertyType.SPECIAL_PROPERTIES_SET.contains(property.getDefinition().getName())) {
-                        parameters.put("namespaceUri", property.getDefinition().getNamespace().getUri());
-                        parameters.put("name", property.getDefinition().getName());
-                        parameters.put("resourceId", r.getID());
-                        parameters.put("inheritable", property.getDefinition().isInheritable());
-
-                        Value[] values;
-                        if (property.getDefinition() != null && property.getDefinition().isMultiple()) {
-                            values = property.getValues();
-                        } else {
-                            values = new Value[]{property.getValue()};
-                        }
-
-                        for (Value v : values) {
-                            String nativeStringValue = v.getNativeStringRepresentation();
-                            parameters.put("value", nativeStringValue);
-                            
-                            if (property.getType() == PropertyType.Type.BINARY) {
-                                parameters.put("binaryContent", v.getBinaryValue().getBytes());
-                                parameters.put("binaryMimeType", v.getBinaryValue().getContentType());
-                                
-                            } else if (nativeStringValue.length() > 512) {
-                                // Store native string value longer than 512 chars as UTF-8 encoded binary data.
-                                final String valueContentType;
-                                switch (property.getType()) {
-                                    case IMAGE_REF:
-                                    case HTML: 
-                                        valueContentType = "text/html"; break;
-                                    case STRING:
-                                        valueContentType = "text/plain"; break;
-                                    case JSON:
-                                        valueContentType = "application/json"; break;
-                                    default:
-                                        // For now we deny the possiblity of storing any other value types as binary values.
-                                        // This is unlikely to hit.
-                                        throw new DataAccessException("Cannot store value for property " 
-                                                + property + ": native string size limit exceeded and type cannot be stored as binary.");
-                                }
-                                
-                                BinaryValue bval = new BufferedBinaryValue(nativeStringValue, valueContentType);
-                                parameters.put("value", "#binary");
-                                parameters.put("binaryContent", bval.getBytes());
-                                parameters.put("binaryMimeType", bval.getContentType());
-                            } else {
-                                // Value stored in regular "value" column, make sure binary ref columns are null
-                                parameters.remove("binaryContent");
-                                parameters.remove("binaryMimeType");
-                            }
-                            executor.update(batchSqlMap, parameters);
-                        }
-                    }
-                    parameters.clear();
+                Value[] values;
+                if (property.getDefinition() != null && property.getDefinition().isMultiple()) {
+                    values = property.getValues();
+                } else {
+                    values = new Value[]{property.getValue()};
                 }
-                executor.executeBatch();
-                return null;
+
+                for (Value v : values) {
+                    String nativeStringValue = v.getNativeStringRepresentation();
+                    parameters.put("value", nativeStringValue);
+                    
+                    if (property.getType() == PropertyType.Type.BINARY) {
+                        parameters.put("binaryContent", v.getBinaryValue().getBytes());
+                        parameters.put("binaryMimeType", v.getBinaryValue().getContentType());
+                        
+                    } else if (nativeStringValue.length() > 512) {
+                        // Store native string value longer than 512 chars as UTF-8 encoded binary data.
+                        final String valueContentType;
+                        switch (property.getType()) {
+                            case IMAGE_REF:
+                            case HTML: 
+                                valueContentType = "text/html"; break;
+                            case STRING:
+                                valueContentType = "text/plain"; break;
+                            case JSON:
+                                valueContentType = "application/json"; break;
+                            default:
+                                // For now we deny the possiblity of storing any other value types as binary values.
+                                // This is unlikely to hit.
+                                throw new DataAccessException("Cannot store value for property " 
+                                        + property + ": native string size limit exceeded and type cannot be stored as binary.");
+                        }
+                        
+                        BinaryValue bval = new BufferedBinaryValue(nativeStringValue, valueContentType);
+                        parameters.put("value", "#binary");
+                        parameters.put("binaryContent", bval.getBytes());
+                        parameters.put("binaryMimeType", bval.getContentType());
+                    } else {
+                        // Value stored in regular "value" column, make sure binary ref columns are null
+                        parameters.remove("binaryContent");
+                        parameters.remove("binaryMimeType");
+                    }
+                    getSqlSession().update(batchSqlMap, parameters);
+                }
             }
-        });
+            parameters.clear();
+        }
     }
     
     private void populateCustomProperties(ResourceImpl[] resources,
@@ -1430,7 +1383,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     public Set<Principal> discoverGroups() {
         String sqlMap = getSqlMap("discoverGroups");
         @SuppressWarnings("unchecked")
-        List<String> groupNames = getSqlMapClientTemplate().queryForList(sqlMap, null);
+        List<String> groupNames = getSqlSession().selectList(sqlMap, null);
 
         Set<Principal> groups = new HashSet<Principal>();
         for (String groupName : groupNames) {
@@ -1443,14 +1396,13 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     
     byte[] getBinaryPropertyBytes(Integer reference) throws DataAccessException {
         String sqlMap = getSqlMap("selectBinaryPropertyEntry");
-        @SuppressWarnings("unchecked")
-        Map result = (Map) getSqlMapClientTemplate().queryForObject(sqlMap, reference);
-        return (byte[]) result.get("byteArray");
+        byte[] result = getSqlSession().selectOne(sqlMap, reference);
+        return result;
     }
 
     String getBinaryPropertyContentType(Integer reference) throws DataAccessException {
         String sqlMap = getSqlMap("selectBinaryMimeTypeEntry");
-        return (String) getSqlMapClientTemplate().queryForObject(sqlMap, reference);
+        return (String) getSqlSession().selectOne(sqlMap, reference);
     }
 
     /**
