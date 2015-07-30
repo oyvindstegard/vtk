@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Comment;
@@ -101,9 +102,10 @@ public class SqlMapCommentDAO extends AbstractSqlMapDataAccessor implements Comm
     @Override
     public Comment updateComment(Comment comment) {
         String sqlMap = getSqlMap("updateComment");
-        getSqlSession().update(sqlMap, comment);
+        SqlSession sqlSession = getSqlSession();
+        sqlSession.update(sqlMap, comment);
         sqlMap = getSqlMap("loadCommentById");
-        comment = getSqlSession().selectOne(sqlMap, Integer.valueOf(comment.getID()));
+        comment = sqlSession.selectOne(sqlMap, Integer.valueOf(comment.getID()));
         return comment;
     }
 

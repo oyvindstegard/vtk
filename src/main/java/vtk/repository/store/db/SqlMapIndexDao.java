@@ -78,7 +78,8 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         String statementId = getSqlMap("orderedPropertySetIteration");
 
         PropertySetRowHandler rowHandler = 
-            new PropertySetRowHandler(handler, this.resourceTypeTree, this.principalFactory, this);
+            new PropertySetRowHandler(handler, this.resourceTypeTree, 
+                    this.principalFactory, this, client);
 
         client.select(statementId, rowHandler);
 
@@ -94,7 +95,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         String statementId = getSqlMap("orderedPropertySetIterationWithStartUri");
 
         PropertySetRowHandler rowHandler = new PropertySetRowHandler(handler,
-                this.resourceTypeTree, this.principalFactory, this);
+                this.resourceTypeTree, this.principalFactory, this, client);
 
         Map<String, Object> parameters = new HashMap<String, Object>();
 
@@ -148,7 +149,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         String statement = getSqlMap("orderedPropertySetIterationForUris");
 
         PropertySetRowHandler rowHandler = new PropertySetRowHandler(handler,
-                this.resourceTypeTree, this.principalFactory, this);
+                this.resourceTypeTree, this.principalFactory, this, client);
         
         client.select(statement, sessionID, rowHandler);
         
@@ -175,14 +176,14 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
      * @return an <code>Acl</code> instance, possibly {@link Acl#EMPTY_ACL} if the
      * resource did not exist, but never <code>null</code>.
      */
-    Acl loadAcl(Integer resourceId) {
+    Acl loadAcl(Integer resourceId, SqlSession sqlSession) {
         List<Integer> resourceIds = new ArrayList<Integer>(1);
         resourceIds.add(resourceId);
         
         Map<Integer, AclHolder> aclMap = 
                 new HashMap<Integer, AclHolder>(1);
         
-        this.sqlMapDataAccessor.loadAclBatch(resourceIds, aclMap);
+        this.sqlMapDataAccessor.loadAclBatch(resourceIds, aclMap, sqlSession);
         
         AclHolder aclHolder = aclMap.get(resourceId);
         if (aclHolder == null) {

@@ -43,6 +43,7 @@ import java.util.Set;
 
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.SqlSession;
 
 import vtk.repository.Acl;
 import vtk.repository.Namespace;
@@ -75,6 +76,7 @@ class PropertySetRowHandler implements ResultHandler {
     private final ResourceTypeTree resourceTypeTree;
     private final ResourceTypeMapper resourceTypeMapper;
     private final SqlMapIndexDao indexDao;
+    private final SqlSession sqlSession;
     private final PrincipalFactory principalFactory;
     
     private final Map<Integer, Acl> aclCache
@@ -96,12 +98,14 @@ class PropertySetRowHandler implements ResultHandler {
     public PropertySetRowHandler(PropertySetHandler clientHandler,
                                  ResourceTypeTree resourceTypeTree,
                                  PrincipalFactory principalFactory,
-                                 SqlMapIndexDao indexDao) {
+                                 SqlMapIndexDao indexDao,
+                                 SqlSession sqlSession) {
         this.clientHandler = clientHandler;
         this.resourceTypeTree = resourceTypeTree;
         this.principalFactory = principalFactory;
         this.indexDao = indexDao;
         this.resourceTypeMapper = new ResourceTypeMapper(resourceTypeTree);
+        this.sqlSession = sqlSession;
     }
     
     /**
@@ -119,7 +123,7 @@ class PropertySetRowHandler implements ResultHandler {
             PropertySetImpl propertySet = createPropertySet(this.rowValueBuffer);
             
             // Get ACL 
-            Acl acl = getAcl(propertySet);
+            Acl acl = getAcl(propertySet, sqlSession);
             this.clientHandler.handlePropertySet(propertySet, acl);
             
             // Clear current row buffer
@@ -142,7 +146,7 @@ class PropertySetRowHandler implements ResultHandler {
         PropertySetImpl propertySet = createPropertySet(this.rowValueBuffer);
         
         // Get ACL
-        Acl acl = getAcl(propertySet);
+        Acl acl = getAcl(propertySet, sqlSession);
         
         this.clientHandler.handlePropertySet(propertySet, acl);
     }
@@ -156,14 +160,14 @@ class PropertySetRowHandler implements ResultHandler {
      * @param propertySet the property set to get the ACL for (may be an inherited ACL)
      * @return an instance of <code>Acl</code>.
      */
-    private Acl getAcl(PropertySetImpl propertySet) {
+    private Acl getAcl(PropertySetImpl propertySet, SqlSession sqlSession) {
         final Integer aclResourceId = propertySet.isInheritedAcl() ? 
                         propertySet.getAclInheritedFrom() : propertySet.getID();
                         
         // Try cache first:
         Acl acl = this.aclCache.get(aclResourceId);
         if (acl == null) {
-            acl = this.indexDao.loadAcl(aclResourceId);
+            acl = this.indexDao.loadAcl(aclResourceId, sqlSession);
             this.aclCache.put(aclResourceId, acl);
         }
         

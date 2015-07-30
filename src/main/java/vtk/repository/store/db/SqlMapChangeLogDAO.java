@@ -123,6 +123,7 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor
     public void addChangeLogEntry(ChangeLogEntry entry, boolean recurse) 
         throws DataAccessException {
         String sqlMap = null;
+        SqlSession client = getSqlSession();
         if (entry.isCollection() && recurse) {
             sqlMap = getSqlMap("insertChangeLogEntriesRecursively");
             Map<String, Object> parameters = new HashMap<String, Object>();
@@ -130,13 +131,12 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor
             parameters.put("uriWildcard", 
                            SqlDaoUtils.getUriSqlWildcard(entry.getUri(), SQL_ESCAPE_CHAR));
 
-            getSqlSession().insert(sqlMap, parameters);
+            client.insert(sqlMap, parameters);
                 
         } else {
             sqlMap = getSqlMap("insertChangeLogEntry");
-            getSqlSession().insert(sqlMap, entry);
+            client.insert(sqlMap, entry);
         }
-
     }
 
     @Override
