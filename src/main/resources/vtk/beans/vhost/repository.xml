@@ -10,27 +10,7 @@
     <property name="dataSource" ref="repository.dataSource" />
   </bean>
 
-  <!-- AOP transaction advice setup -->
-  <tx:advice id="repository.txAdvice" transaction-manager="repository.transactionManager">
-    <tx:attributes>
-      <!-- Avoid rollback for exceptions which originate purely from business logic, and before any DAO layers have been 
-        touched. Typically this will be validation exceptions, authentication exceptions, etc. This is likely not 100% bulletproof, 
-        though. Consider an exception from property evaluation during a move where some DAO operations already have been performed.. 
-        The database-parts might not be rolled back, yuck.. -->
-      <tx:method name="*"
-        no-rollback-for="vtk.repository.RepositoryException,vtk.security.AuthenticationException" />
-    </tx:attributes>
-  </tx:advice>
-
-  <aop:config>
-    <!-- Pointcut that applies to all methods with @Transactional annotation -->
-    <aop:pointcut id="transactionalAnnotationPointcut"
-                  expression="@annotation(org.springframework.transaction.annotation.Transactional)"/>
-
-    <!-- Apply transactions to all @Transactional methods -->
-    <aop:advisor advice-ref="repository.txAdvice" pointcut-ref="transactionalAnnotationPointcut"
-                 order="1000" />
-  </aop:config>
+  <tx:annotation-driven transaction-manager="repository.transactionManager" />
 
   <!-- Main repository instance. -->
   <bean id="repository.internal" class="vtk.repository.RepositoryImpl"
@@ -83,6 +63,16 @@
     <property name="configLocation" value="classpath:/vtk/repository/store/db/ibatis/${sqlDialect}-sql-map-config.xml" />
   </bean>
 
+  <bean id="repository.sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+    <constructor-arg name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
+  </bean>
+
+  <bean id="repository.batchSqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+    <constructor-arg name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
+    <constructor-arg name="executorType" value="BATCH" />
+  </bean>
+
+
   <!-- Override MYBATIS SQL map statement names in this map (should generally not be necessary): -->
   <bean id="repository.statementMappings" class="java.util.HashMap">
     <constructor-arg>
@@ -91,8 +81,13 @@
     </constructor-arg>
   </bean>
 
-  <bean id="repository.sqlMapDao" class="vtk.repository.store.db.SqlMapDataAccessor">
-    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
+  <bean id="repository.abstractSqlMapDao" abstract="true">
+    <property name="sqlSession" ref="repository.sqlSession" />
+    <property name="batchSqlSession" ref="repository.batchSqlSession" />
+  </bean>
+
+  <bean id="repository.sqlMapDao" class="vtk.repository.store.db.SqlMapDataAccessor"
+        parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="optimizedAclCopySupported" value="${optimizedAclCopySupported}" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
@@ -106,17 +101,16 @@
     <property name="repositoryTrashCanDirectory" value="${repositoryTrashCanDirectory}" />
   </bean>
 
-  <bean id="repository.indexDao" class="vtk.repository.store.db.SqlMapIndexDao">
-    <!--property name="sqlMapClient" ref="repository.sqlMapClient" /-->
-    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
+  <bean id="repository.indexDao" class="vtk.repository.store.db.SqlMapIndexDao" 
+        parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="sqlMapDataAccessor" ref="repository.sqlMapDao" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="principalFactory" ref="principalFactory" />
   </bean>
 
-  <bean id="repository.changeLogDAO" class="vtk.repository.store.db.SqlMapChangeLogDAO">
-    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
+  <bean id="repository.changeLogDAO" class="vtk.repository.store.db.SqlMapChangeLogDAO" 
+        parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
   </bean>
 
@@ -125,16 +119,16 @@
     <property name="wrappedAccessor" ref="${repository.dao}" />
   </bean>
 
-  <bean id="repository.defaultRevisionStore" class="vtk.repository.store.DefaultRevisionStore">
-    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
+  <bean id="repository.defaultRevisionStore" class="vtk.repository.store.DefaultRevisionStore" 
+        parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="principalFactory" ref="principalFactory" />
     <property name="revisionDirectory" value="${repositoryRevisionDirectory}" />
     <property name="tempDir" value="${repository.tempDir}" />
   </bean>
 
-  <bean id="repository.sqlMapCommentDao" class="vtk.repository.store.db.SqlMapCommentDAO">
-    <property name="sqlSessionFactory" ref="repository.sqlSessionFactory" />
+  <bean id="repository.sqlMapCommentDao" class="vtk.repository.store.db.SqlMapCommentDAO" 
+        parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="principalFactory" ref="principalFactory" />
   </bean>

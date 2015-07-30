@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
@@ -134,7 +135,8 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
 
     @Override
     public void create(ResourceImpl resource, Revision revision, InputStream content) {
-        insertRevision(resource, revision);
+        SqlSession sqlSession = getSqlSession();
+        insertRevision(resource, revision, sqlSession);
         File revisionFile = revisionFile(resource, revision, true);
         if (!revisionFile.exists()) {
             throw new DataAccessException("Cannot create revision " + revision.getID() 
@@ -148,7 +150,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         }
     }
     
-    private void insertRevision(ResourceImpl resource, Revision revision) {
+    private void insertRevision(ResourceImpl resource, Revision revision, SqlSession sqlSession) {
         Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("resourceId", resource.getID());
         parameters.put("revisionId", revision.getID());
@@ -158,10 +160,10 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         parameters.put("checksum", revision.getChecksum());
         
         String sqlMap = getSqlMap("insertRevision");
-        getSqlSession().insert(sqlMap, parameters);
+        sqlSession.insert(sqlMap, parameters);
 
         if (revision.getAcl() != null) {
-            insertAcl(resource, revision);
+            insertAcl(resource, revision, sqlSession);
         }
         
         List<Revision> list = list(resource);
@@ -263,7 +265,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
     }
     
     
-    private void insertAcl(final ResourceImpl resource, final Revision revision) {
+    private void insertAcl(final ResourceImpl resource, final Revision revision, SqlSession sqlSession) {
         final Map<String, Integer> actionTypes = loadActionTypes();
         final Acl acl = revision.getAcl();
         if (acl == null) {
@@ -289,7 +291,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
                 parameters.put("isUser", p.getType() == Principal.Type.GROUP ? "N" : "Y");
                 parameters.put("grantedBy", resource.getOwner().getQualifiedName());
                 parameters.put("grantedDate", new Date());
-                getSqlSession().insert(sqlMap, parameters);
+                sqlSession.insert(sqlMap, parameters);
             }
         }
     }

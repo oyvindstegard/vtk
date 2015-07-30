@@ -30,12 +30,20 @@
  */
 package vtk.repository.store.db;
 
+import static org.springframework.util.Assert.notNull;
+
 import java.util.Map;
 
-import org.mybatis.spring.support.SqlSessionDaoSupport;
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.dao.support.DaoSupport;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-public abstract class AbstractSqlMapDataAccessor extends SqlSessionDaoSupport {
+public abstract class AbstractSqlMapDataAccessor extends DaoSupport {
+
+    private Map<String, String> sqlMaps;
+    private SqlSession sqlSession;
+    private SqlSession batchSqlSession;
 
     /**
      * The escape character used in SQL.
@@ -49,10 +57,17 @@ public abstract class AbstractSqlMapDataAccessor extends SqlSessionDaoSupport {
      */
     public static final int UPDATE_BATCH_SIZE_LIMIT = 512;
 
-    private Map<String, String> sqlMaps;
-
-    @Required public void setSqlMaps(Map<String, String> sqlMaps) {
+    @Required
+    public void setSqlMaps(Map<String, String> sqlMaps) {
         this.sqlMaps = sqlMaps;
+    }
+    
+    public void setSqlSession(SqlSession sqlSession) {
+        this.sqlSession = sqlSession;
+    }
+    
+    public void setBatchSqlSession(SqlSession batchSqlSession) {
+        this.batchSqlSession = batchSqlSession;
     }
     
     protected final String getSqlMap(String statementId) {
@@ -61,4 +76,30 @@ public abstract class AbstractSqlMapDataAccessor extends SqlSessionDaoSupport {
         }
         return statementId;
     }
+
+    protected final SqlSession getSqlSession() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            String name = TransactionSynchronizationManager.getCurrentTransactionName();
+            if (TransactionSynchronizationManager.isCurrentTransactionReadOnly()) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Transaction " + name + ": read-only=true");
+                }
+                return sqlSession;
+            }
+            if (logger.isTraceEnabled()) {
+                logger.trace("Transaction " + name + ": read-only=false");
+            }
+            return batchSqlSession;
+        }
+        if (logger.isTraceEnabled()) {
+            logger.trace("Unknown transaction, assume read-only=false");
+        }
+        return batchSqlSession;
+    }
+    
+    protected void checkDaoConfig() {
+        notNull(sqlSession, "Property 'sqlSession' not configured");
+        notNull(batchSqlSession, "Property 'batchSqlSession' not configured");
+    }
+    
 }
