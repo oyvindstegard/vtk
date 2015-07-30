@@ -475,8 +475,13 @@
   </resultMap>
   -->
 
+  <resultMap id="binaryPropertyByteArray" type="java.util.HashMap">
+    <result property="byteArray" column="binary_content"
+            typeHandler="vtk.repository.store.db.ibatis.BlobTypeHandler" />
+  </resultMap>
+
   <select id="selectBinaryPropertyEntry" parameterType="java.lang.Integer"
-                                         resultType="_byte[]">
+                                         resultMap="binaryPropertyByteArray">
     select binary_content from extra_prop_entry where extra_prop_entry_id = #{value}
   </select>
   

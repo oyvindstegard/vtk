@@ -1396,8 +1396,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     
     byte[] getBinaryPropertyBytes(Integer reference) throws DataAccessException {
         String sqlMap = getSqlMap("selectBinaryPropertyEntry");
-        byte[] result = getSqlSession().selectOne(sqlMap, reference);
-        return result;
+        Map<String, Object> map = getSqlSession().selectOne(sqlMap, reference);
+        return (byte[]) map.get("byteArray");
     }
 
     String getBinaryPropertyContentType(Integer reference) throws DataAccessException {
