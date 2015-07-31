@@ -169,7 +169,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         return this.id;
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public boolean exists(String token, Path uri) throws IOException {
 
@@ -177,7 +177,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
 
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public Resource retrieve(String token, Path uri, boolean forProcessing) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
@@ -216,7 +216,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public Resource retrieve(String token, Path uri, boolean forProcessing, Revision revision)
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
@@ -294,7 +294,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         return new TypeInfo(this.resourceTypeTree, name);
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public InputStream getInputStream(String token, Path uri, boolean forProcessing) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, ResourceLockedException, IOException {
@@ -327,7 +327,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
     
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public InputStream getInputStream(String token, Path uri, boolean forProcessing, Revision revision)
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, ResourceLockedException,
@@ -369,7 +369,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         return this.revisionStore.getContent(r, revision);
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public ContentStream getAlternativeContentStream(String token, Path uri, boolean forProcessing, String contentIdentifier) 
             throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
@@ -407,7 +407,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         throw new NoSuchContentException("No content with identifier " + contentIdentifier + " available for resource at " + uri);
     }
     
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public Resource[] listChildren(String token, Path uri, boolean forProcessing) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
@@ -450,7 +450,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         return children;
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource createCollection(String token, Path uri) throws IllegalOperationException, AuthorizationException,
             AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
@@ -512,7 +512,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
 
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public void copy(String token, Path srcUri, Path destUri, boolean overwrite, boolean copyAcl)
             throws IllegalOperationException, AuthorizationException, AuthenticationException,
@@ -606,7 +606,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public void move(String token, Path srcUri, Path destUri, boolean overwrite) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, FailedDependencyException, ResourceOverwriteException,
@@ -706,7 +706,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public void delete(String token, Path uri, boolean restorable) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
@@ -775,7 +775,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         this.context.publishEvent(event);
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public List<RecoverableResource> getRecoverableResources(String token, Path uri) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
@@ -790,7 +790,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         return this.dao.getRecoverableResources(resource.getID());
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public void recover(String token, Path parentUri, RecoverableResource recoverableResource)
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
@@ -823,7 +823,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public void deleteRecoverable(String token, Path parentUri, RecoverableResource recoverableResource)
             throws Exception {
@@ -838,7 +838,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         this.contentStore.deleteRecoverable(recoverableResource);
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource lock(String token, Path uri, String ownerInfo, Repository.Depth depth, int requestedTimeoutSeconds,
             String lockToken) throws ResourceNotFoundException, AuthorizationException, AuthenticationException,
@@ -915,7 +915,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         throw new ResourceLockedException();
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public void unlock(String token, Path uri, String lockToken) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
@@ -933,14 +933,14 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource store(String token, Resource resource) throws ResourceNotFoundException, AuthorizationException,
             ResourceLockedException, AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
         return store(token, resource, null);
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource store(String token, Resource resource, StoreContext storeContext) throws ResourceNotFoundException,
             AuthorizationException, ResourceLockedException, AuthenticationException, IllegalOperationException,
@@ -1105,7 +1105,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource createDocument(String token, Path uri, InputStream inStream) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
@@ -1178,7 +1178,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     /**
      * Requests that an InputStream be written to a resource.
      */
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource storeContent(String token, Path uri, InputStream byteStream) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
@@ -1232,7 +1232,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
      * Requests that an InputStream be written to a resource.
      * Used to update contents of working copy revision.
      */
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource storeContent(String token, Path uri, InputStream stream, Revision revision)
             throws AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
@@ -1324,7 +1324,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         return this.authorizationManager.authorize(principal, acl, privilege);
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public boolean isAuthorized(Resource resource, RepositoryAction action, Principal principal, boolean considerLocks)
             throws Exception {
@@ -1375,14 +1375,14 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource storeACL(String token, Path uri, Acl acl) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
         return this.storeACL(token, uri, acl, true);
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource storeACL(String token, Path uri, Acl acl, boolean validateACL) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
@@ -1433,7 +1433,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Resource deleteACL(String token, Path uri) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException, ReadOnlyException, Exception {
@@ -1489,7 +1489,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         return this.authorizationManager.isBlackListed(principal, privilege);
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public List<Revision> getRevisions(String token, Path uri) throws AuthorizationException,
             ResourceNotFoundException, AuthenticationException, IOException {
@@ -1505,7 +1505,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         return Collections.unmodifiableList(this.revisionStore.list(resource));
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Revision createRevision(String token, Path uri, Revision.Type type) throws ReadOnlyException,
             AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException {
@@ -1594,7 +1594,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public void deleteRevision(String token, Path uri, Revision revision) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, Exception {
@@ -1632,13 +1632,13 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         this.revisionStore.delete(resource, revision);
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public List<Comment> getComments(String token, Resource resource) {
         return getComments(token, resource, false, 500);
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     @Override
     public List<Comment> getComments(String token, Resource resource, boolean deep, int max) {
         Principal principal = this.tokenManager.getPrincipal(token);
@@ -1673,7 +1673,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Comment addComment(String token, Resource resource, String title, String text) {
         Principal principal = this.tokenManager.getPrincipal(token);
@@ -1703,7 +1703,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             Comment comment = new Comment();
             comment.setURI(original.getURI());
             comment.setTime(new java.util.Date());
-            comment.setAuthor(principal);
+            comment.setAuthor(principal.getQualifiedName());
             comment.setTitle(title);
             comment.setContent(text);
             comment.setApproved(true);
@@ -1728,7 +1728,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Comment addComment(String token, Comment comment) {
 
@@ -1740,7 +1740,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         return this.commentDAO.createComment(comment);
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public void deleteComment(String token, Resource resource, Comment comment) {
         Principal principal = this.tokenManager.getPrincipal(token);
@@ -1779,7 +1779,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public void deleteAllComments(String token, Resource resource) {
         Principal principal = this.tokenManager.getPrincipal(token);
@@ -1818,7 +1818,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly=false)
     @Override
     public Comment updateComment(String token, Resource resource, Comment comment) {
         Principal principal = this.tokenManager.getPrincipal(token);

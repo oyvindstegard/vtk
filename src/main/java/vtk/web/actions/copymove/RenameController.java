@@ -34,23 +34,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 
-public class RenameController extends SimpleFormController {
+public class RenameController extends SimpleFormController<RenameCommand> {
 
     private static Log logger = LogFactory.getLog(RenameController.class);
 
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    @Override
+    protected RenameCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
@@ -63,20 +66,22 @@ public class RenameController extends SimpleFormController {
         return command;
     }
 
-    protected ModelAndView onSubmit(Object command, BindException errors) throws Exception {
+    @Override
+    public ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response,
+            RenameCommand command, BindException errors) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
-
+        
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
+        
+        Map<String, Object> model = new HashMap<>();
 
-        RenameCommand renameCommand = (RenameCommand) command;
-
-        if (renameCommand.getCancel() != null) {
-            return new ModelAndView(getSuccessView());
+        if (command.getCancel() != null) {
+            return new ModelAndView(getSuccessView(), model);
         }
 
-        if (renameCommand.isConfirmOverwrite()) {
-            return new ModelAndView(getFormView());
+        if (command.isConfirmOverwrite()) {
+            return new ModelAndView(getFormView(), model);
         }
 
         Repository repository = requestContext.getRepository();
@@ -84,13 +89,13 @@ public class RenameController extends SimpleFormController {
         String name = resource.getName();
 
         boolean overwrite = false;
-        if (renameCommand.getOverwrite() != null) {
+        if (command.getOverwrite() != null) {
             overwrite = true;
         }
 
         try {
-            Path newUri = renameCommand.getRenamePath();
-            if (!name.equals(renameCommand.getName())) {
+            Path newUri = command.getRenamePath();
+            if (!name.equals(command.getName())) {
                 if (overwrite) {
                     repository.delete(token, newUri, true);
                 }
@@ -98,13 +103,13 @@ public class RenameController extends SimpleFormController {
                 repository.move(token, uri, newUri, overwrite);
                 resource = repository.retrieve(token, newUri, false);
             }
-            Map<String, Object> model = new HashMap<String, Object>();
-            model.put("resource", resource);
             return new ModelAndView(getSuccessView(), model);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.error("An error occured while renaming resource " + uri, e);
             errors.rejectValue("name", "manage.rename.resource.validation.failed", "Renaming of resource failed");
             return new ModelAndView(getFormView(), errors.getModel());
         }
     }
+    
 }

@@ -933,7 +933,6 @@
     <property name="formView" value="manageCollectionListing" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="uploadForm" />
-    <property name="commandClass" value="vtk.web.actions.create.FileUploadCommand" />
     <property name="downcaseNames" value="true" />
     <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
     <property name="tempDir" value="${repository.tempDir}" />
@@ -947,7 +946,6 @@
     <property name="formView" value="admin" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="unlockFormCommand" />
-    <property name="commandClass" value="vtk.web.actions.lock.UnlockFormCommand" />
   </bean>
 
   <bean id="createDocumentHandler" class="vtk.web.actions.create.TemplateBasedCreateController">
@@ -955,7 +953,6 @@
     <property name="cancelView" value="redirectToManage" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="createDocumentForm" />
-    <property name="commandClass" value="vtk.web.actions.create.CreateDocumentCommand" />
     <property name="downcaseNames" value="true" />
     <property name="descriptionPropDef" ref="descriptionPropDef" />
     <property name="removePropList">
@@ -1007,7 +1004,6 @@
     <property name="cancelView" value="redirectToManage" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="createCollectionForm" />
-    <property name="commandClass" value="vtk.web.actions.create.CreateCollectionCommand" />
     <property name="userTitlePropDef" ref="userTitlePropDef" />
     <property name="downcaseCollectionNames" value="true" />
     <property name="templateManager" ref="templates.resourceTemplateManager" />
@@ -1020,14 +1016,12 @@
     </property>
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
-
   </bean>
 
   <bean id="renameHandler" class="vtk.web.actions.copymove.RenameController">
     <property name="formView" value="admin" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="renameCommand" />
-    <property name="commandClass" value="vtk.web.actions.copymove.RenameCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.copymove.RenameCommandValidator">
         <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
@@ -1041,7 +1035,6 @@
 
   <bean id="abstractPermissionsHandler" abstract="true" class="vtk.web.actions.permissions.ACLEditController">
     <property name="formView" value="permissions" />
-    <property name="commandClass" value="vtk.web.actions.permissions.ACLEditCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.permissions.ACLEditCommandValidator">
         <property name="principalManager" ref="principalManager" />

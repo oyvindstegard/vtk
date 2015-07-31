@@ -38,7 +38,6 @@
   <bean id="trashCanHandler" class="vtk.web.actions.trashcan.TrashCanController">
     <property name="formView" value="trashCan" />
     <property name="successView" value="redirectToManage" />
-    <property name="commandClass" value="vtk.web.actions.trashcan.TrashCanCommand" />
     <property name="commandName" value="trashcan" />
   </bean>
 

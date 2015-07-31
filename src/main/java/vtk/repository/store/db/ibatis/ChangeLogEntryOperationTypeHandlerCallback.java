@@ -30,50 +30,62 @@
  */
 package vtk.repository.store.db.ibatis;
 
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import vtk.repository.ChangeLogEntry.Operation;
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.TypeHandler;
 
-import com.ibatis.sqlmap.client.extensions.ParameterSetter;
-import com.ibatis.sqlmap.client.extensions.ResultGetter;
-import com.ibatis.sqlmap.client.extensions.TypeHandlerCallback;
+import vtk.repository.ChangeLogEntry.Operation;
 
 /**
  * Handle String<->Operation mapping for iBATIS.
  *
  */
 public class ChangeLogEntryOperationTypeHandlerCallback implements
-        TypeHandlerCallback {
+        TypeHandler<Operation> {
 
-    
     @Override
-    public Object getResult(ResultGetter getter) throws SQLException {
-        String value = getter.getString();
+    public void setParameter(PreparedStatement ps, int i, Operation parameter,
+            JdbcType jdbcType) throws SQLException {
+        ps.setString(i, parameter.getOperationId());
+    }
+
+    @Override
+    public Operation getResult(ResultSet rs, String columnName)
+            throws SQLException {
+      String value = rs.getString(columnName);
+      for (Operation op: Operation.values()) {
+          if (value.equals(op.getOperationId())) {
+              return op;
+          }
+      }
+      throw new SQLException("Unable to map unknown operation id value: " + value);
+    }
+
+    @Override
+    public Operation getResult(ResultSet rs, int columnIndex)
+            throws SQLException {
+        String value = rs.getString(columnIndex);
         for (Operation op: Operation.values()) {
             if (value.equals(op.getOperationId())) {
                 return op;
             }
         }
-        
         throw new SQLException("Unable to map unknown operation id value: " + value);
     }
 
     @Override
-    public void setParameter(ParameterSetter setter, Object parameter)
+    public Operation getResult(CallableStatement cs, int columnIndex)
             throws SQLException {
-        Operation value = (Operation)parameter;
-        setter.setString(value.getOperationId());
-    }
-
-    @Override
-    public Object valueOf(String s) {
-        for(Operation op: Operation.values()) {
-            if (s.equals(op.getOperationId())) {
+        String value = cs.getString(columnIndex);
+        for (Operation op: Operation.values()) {
+            if (value.equals(op.getOperationId())) {
                 return op;
             }
         }
-        
-        return null;
+        throw new SQLException("Unable to map unknown operation id value: " + value);
     }
-
 }

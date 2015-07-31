@@ -34,18 +34,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 
-public abstract class CopyController extends SimpleFormController {
+public abstract class CopyController<T extends CopyCommand> extends SimpleFormController<T> {
 
     private String cancelView;
     private String extension;
@@ -54,11 +57,12 @@ public abstract class CopyController extends SimpleFormController {
 
     protected CopyAction copyAction;
 
-    protected abstract void processCopyAction(Path originalUri, Path copyUri, CopyCommand copyCommand) throws Exception;
+    protected abstract void processCopyAction(Path originalUri, Path copyUri, T copyCommand) throws Exception;
 
-    protected abstract Object createCommand(String name, String url);
+    protected abstract T createCommand(String name, String url);
 
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    @Override
+    protected T formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
@@ -78,10 +82,15 @@ public abstract class CopyController extends SimpleFormController {
         if (this.resourceName != null) {
             name = this.resourceName;
         }
-        return this.createCommand(name, url);
+        return createCommand(name, url);
     }
 
-    protected ModelAndView onSubmit(Object command) throws Exception {
+    
+    
+    @Override
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, T copyCommand, BindException errors)
+            throws Exception {
 
         Map<String, Object> model = new HashMap<String, Object>();
 
@@ -89,8 +98,6 @@ public abstract class CopyController extends SimpleFormController {
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
-
-        CopyCommand copyCommand = (CopyCommand) command;
 
         if (copyCommand.getCancelAction() != null) {
             copyCommand.setDone(true);

@@ -50,7 +50,6 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
 
 import vtk.repository.IllegalOperationException;
 import vtk.repository.InheritablePropertiesStoreContext;
@@ -73,6 +72,7 @@ import vtk.security.Principal;
 import vtk.security.PrincipalManager;
 import vtk.util.repository.DocumentPrincipalMetadataRetriever;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
@@ -113,8 +113,8 @@ import vtk.web.service.ServiceUnlinkableException;
  * </ul>
  * 
  */
-@SuppressWarnings("deprecation")
-public class PropertyEditController extends SimpleFormController implements ReferenceDataProvider {
+public class PropertyEditController extends SimpleFormController<PropertyEditCommand> 
+    implements ReferenceDataProvider, ReferenceDataProviding {
 
     private Log logger = LogFactory.getLog(this.getClass());
 
@@ -133,19 +133,19 @@ public class PropertyEditController extends SimpleFormController implements Refe
     private LocaleResolver localeResolver;
     private DocumentPrincipalMetadataRetriever documentPrincipalMetadataRetriever;
 
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    @Override
+    protected PropertyEditCommand formBackingObject(HttpServletRequest request) throws Exception {
 
         String inputNamespace = request.getParameter("namespace");
         String inputName = request.getParameter("name");
         PropertyTypeDefinition definition = null;
 
-        for (PropertyTypeDefinition propertyTypeDefinition : this.propertyTypeDefinitions) {
-            if (isFocusedProperty(propertyTypeDefinition, inputNamespace, inputName)) {
-                definition = propertyTypeDefinition;
+        for (PropertyTypeDefinition def: propertyTypeDefinitions) {
+            if (isFocusedProperty(def, inputNamespace, inputName)) {
+                definition = def;
                 break;
             }
         }
-
         return buildPropertyEditCommand(definition);
     }
 
@@ -165,12 +165,13 @@ public class PropertyEditController extends SimpleFormController implements Refe
             PropertyType.Type t = property.getDefinition().getType();
             if (t == PropertyType.Type.DATE || t == PropertyType.Type.TIMESTAMP) {
                 value = property.getFormattedValue(this.dateFormat, null);
-            } else {
+            }
+            else {
                 value = property.getFormattedValue(null, null);
             }
         }
 
-        Map<String, String> urlParameters = new HashMap<String, String>();
+        Map<String, String> urlParameters = new HashMap<>();
         String namespaceURI = definition.getNamespace().getUri();
         if (namespaceURI != null)
             urlParameters.put("namespace", namespaceURI);
@@ -182,7 +183,7 @@ public class PropertyEditController extends SimpleFormController implements Refe
         Vocabulary<Value> vocabulary = definition.getVocabulary();
         if (vocabulary != null) {
             Value[] definitionAllowedValues = vocabulary.getAllowedValues();
-            formAllowedValues = new ArrayList<String>();
+            formAllowedValues = new ArrayList<>();
             if (!definition.isMandatory()) {
                 formAllowedValues.add("");
             }
@@ -198,13 +199,14 @@ public class PropertyEditController extends SimpleFormController implements Refe
     }
 
     @Override
-    protected void onBindAndValidate(HttpServletRequest request, Object object, BindException errors) throws Exception {
-        PropertyEditCommand command = (PropertyEditCommand) object;
+    protected void onBindAndValidate(HttpServletRequest request, PropertyEditCommand command, 
+            BindException errors) throws Exception {
         if (command.getCancelAction() != null) {
             return;
         }
 
         PropertyTypeDefinition def = command.getDefinition();
+        System.out.println("__command: " + command + ", " + command.getDefinition());
         // Special handling of 'take ownership' action:
         if (Namespace.DEFAULT_NAMESPACE.equals(def.getNamespace())
                 && PropertyType.OWNER_PROP_NAME.equals(def.getName())
@@ -238,7 +240,8 @@ public class PropertyEditController extends SimpleFormController implements Refe
                     }
                 }
 
-            } else {
+            }
+            else {
 
                 Value value = this.valueFactory.createValue(formValue, command.getDefinition().getType());
                 if (command.getDefinition().getType() == PropertyType.Type.PRINCIPAL) {
@@ -273,26 +276,27 @@ public class PropertyEditController extends SimpleFormController implements Refe
                 errors.rejectValue("value", "Illegal value");
 
             }
-        } catch (ValueFormatException e) {
+        }
+        catch (ValueFormatException e) {
             errors.rejectValue("value", "Illegal value: " + e.getMessage()); // XXX
-        } catch (ConstraintViolationException e) {
+        }
+        catch (ConstraintViolationException e) {
             errors.rejectValue("value", "Illegal value: " + e.getMessage()); // XXX
         }
     }
 
     @Override
-    protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object command,
-            BindException errors) throws Exception {
+    protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, 
+            PropertyEditCommand command, BindException errors) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
 
         String token = requestContext.getSecurityToken();
 
-        PropertyEditCommand propertyCommand = (PropertyEditCommand) command;
 
-        if (propertyCommand.getCancelAction() != null) {
-            propertyCommand.clear();
-            propertyCommand.setDone(true);
+        if (command.getCancelAction() != null) {
+            command.clear();
+            command.setDone(true);
             return new ModelAndView(getSuccessView());
         }
         Path uri = requestContext.getResourceURI();
@@ -300,10 +304,10 @@ public class PropertyEditController extends SimpleFormController implements Refe
         TypeInfo typeInfo = repository.getTypeInfo(resource);
         for (PropertyTypeDefinition def : this.propertyTypeDefinitions) {
 
-            if (isFocusedProperty(def, propertyCommand.getNamespace(), propertyCommand.getName())) {
+            if (isFocusedProperty(def, command.getNamespace(), command.getName())) {
                 Property property = resource.getProperty(def);
 
-                String stringValue = propertyCommand.getValue();
+                String stringValue = command.getValue();
 
                 boolean removed = false, created = false, modified = false;
 
@@ -314,13 +318,14 @@ public class PropertyEditController extends SimpleFormController implements Refe
 
                     // Using toggle submit parameter to take ownership:
                     stringValue = requestContext.getPrincipal().getQualifiedName();
-
-                } else if (isToggleProperty(def) && "true".equals(request.getParameter(this.toggleRequestParameter))) {
+                }
+                else if (isToggleProperty(def) && "true".equals(request.getParameter(this.toggleRequestParameter))) {
 
                     Value toggleValue = getToggleValue(def, property);
                     if (toggleValue == null) {
                         stringValue = "";
-                    } else {
+                    }
+                    else {
                         stringValue = getValueAsString(toggleValue);
                     }
                 }
@@ -328,14 +333,15 @@ public class PropertyEditController extends SimpleFormController implements Refe
                 try {
                     if ("".equals(stringValue)) {
                         if (property == null) {
-                            propertyCommand.setDone(true);
-                            propertyCommand.clear();
+                            command.setDone(true);
+                            command.clear();
                             return new ModelAndView(getSuccessView());
                         }
                         resource.removeProperty(def.getNamespace(), def.getName());
                         removed = true;
 
-                    } else {
+                    }
+                    else {
                         if (property == null) {
                             if (this.logger.isDebugEnabled()) {
                                 this.logger.debug("Property does not exist on resource " + resource
@@ -351,7 +357,8 @@ public class PropertyEditController extends SimpleFormController implements Refe
                             Value[] values = this.valueFactory.createValues(splitValues, def.getType());
                             property.setValues(values);
                             modified = true;
-                        } else {
+                        }
+                        else {
                             Value value = this.valueFactory.createValue(stringValue, def.getType());
                             property.setValue(value);
                             modified = true;
@@ -368,25 +375,26 @@ public class PropertyEditController extends SimpleFormController implements Refe
                         InheritablePropertiesStoreContext sc = new InheritablePropertiesStoreContext();
                         sc.addAffectedProperty(def);
                         repository.store(token, resource, sc);
-                    } else {
+                    }
+                    else {
                         repository.store(token, resource);
                     }
 
-                } catch (ConstraintViolationException e) {
+                }
+                catch (ConstraintViolationException e) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Error storing resource " + resource + ": constraint violation", e);
                     }
                     errors.rejectValue("value", "Illegal value: " + e.getMessage());
-                    return showForm(request, response, errors);
+                    return showForm(request, errors, getFormView(), null);
                 }
                 break;
             }
         }
 
-        propertyCommand.clear();
-        propertyCommand.setDone(true);
+        command.clear();
+        command.setDone(true);
         return new ModelAndView(getSuccessView());
-
     }
 
     @Override
@@ -400,8 +408,8 @@ public class PropertyEditController extends SimpleFormController implements Refe
 
         Resource resource = repository.retrieve(token, uri, false);
         TypeInfo typeInfo = repository.getTypeInfo(resource);
-        List<PropertyItem> propsList = new ArrayList<PropertyItem>();
-        Map<String, PropertyItem> propsMap = new HashMap<String, PropertyItem>();
+        List<PropertyItem> propsList = new ArrayList<>();
+        Map<String, PropertyItem> propsMap = new HashMap<>();
 
         Principal modifiedBy = resource.getModifiedBy();
         Principal createdBy = resource.getCreatedBy();
@@ -415,7 +423,7 @@ public class PropertyEditController extends SimpleFormController implements Refe
                 preferredLocale = this.localeResolver.resolveLocale(request);
             }
 
-            Set<String> uids = new HashSet<String>(Arrays.asList(modifiedBy.getName(), createdBy.getName(),
+            Set<String> uids = new HashSet<>(Arrays.asList(modifiedBy.getName(), createdBy.getName(),
                     owner.getName()));
             Set<Principal> principalDocuments = this.documentPrincipalMetadataRetriever.getPrincipalDocumentsByUid(
                     uids, preferredLocale);
@@ -462,7 +470,7 @@ public class PropertyEditController extends SimpleFormController implements Refe
             }
             if (repository.isAuthorized(resource, protectionLevel, requestContext.getPrincipal(), true)) {
 
-                Map<String, String> urlParameters = new HashMap<String, String>();
+                Map<String, String> urlParameters = new HashMap<>();
                 String namespaceURI = def.getNamespace().getUri();
                 if (namespaceURI != null) {
                     urlParameters.put("namespace", namespaceURI);

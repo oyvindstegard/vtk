@@ -155,7 +155,7 @@
   </bean>
 
   <!-- Method level annotation of controllers (e.g. @RequestMapping(method = RequestMethod.GET)) -->
-  <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>
+  <!--bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/-->
 
   <!-- Type level annotation is not included as we have the ServiceHandlerMapping: -->
   <!--bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/-->

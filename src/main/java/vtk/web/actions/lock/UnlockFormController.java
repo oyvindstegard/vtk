@@ -31,20 +31,22 @@
 package vtk.web.actions.lock;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 
-@SuppressWarnings("deprecation")
-public class UnlockFormController extends SimpleFormController {
+public class UnlockFormController extends SimpleFormController<UnlockFormCommand> {
 
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    @Override
+    protected UnlockFormCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
         Service service = requestContext.getService();
@@ -56,9 +58,12 @@ public class UnlockFormController extends SimpleFormController {
         return command;
     }
 
-    protected ModelAndView onSubmit(Object command, BindException errors) throws Exception {
-        UnlockFormCommand unlockFormCommand = (UnlockFormCommand) command;
-        if (unlockFormCommand.getCancel() != null) {
+    @Override
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, UnlockFormCommand command,
+            BindException errors) throws Exception {
+        
+        if (command.getCancel() != null) {
             return new ModelAndView(getSuccessView());
         }
         RequestContext requestContext = RequestContext.getRequestContext();

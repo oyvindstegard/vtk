@@ -57,6 +57,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Acl;
 import vtk.repository.Comment;
 import vtk.repository.InheritablePropertiesStoreContext;
@@ -279,7 +280,7 @@ public class ResourceArchiver {
 
         Comment comment = new Comment();
         comment.setURI(Path.fromString(getExpandedEntryUri(base, path)));
-        comment.setAuthor(this.principalFactory.getPrincipal(author, Type.USER));
+        comment.setAuthor(this.principalFactory.getPrincipal(author, Type.USER).getQualifiedName());
         comment.setTitle(title);
         comment.setTime(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(time.toString()));
         comment.setContent(content.toString());

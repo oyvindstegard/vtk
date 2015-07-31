@@ -9,7 +9,6 @@
     class="vtk.web.actions.logout.LogoutController">
     <property name="redirectService" ref="viewService" />
     <property name="securityInitializer" ref="securityInitializer" />
-    <property name="commandName" value="form" />
   </bean>
 
   <bean id="redirectHandler" 
