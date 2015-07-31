@@ -36,8 +36,6 @@
     <property name="formView" value="webConsole" />
     <property name="successView" value="webConsole" />
     <property name="commandName" value="commandForm" />
-    <property name="commandClass"
-              value="vtk.web.display.shell.ExecutorCommand" />
     <property name="console" ref="beanShellWebConsole" />
   </bean>
 

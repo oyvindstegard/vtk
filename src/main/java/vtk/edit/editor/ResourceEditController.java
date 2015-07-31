@@ -37,23 +37,25 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Privilege;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.repository.ResourceWrapper;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
 
-public class ResourceEditController extends SimpleFormController {
+public class ResourceEditController extends SimpleFormController<ResourceEditWrapper> {
     protected ResourceWrapperManager resourceManager;
     protected List<Service> tooltipServices;
     protected Map<PropertyTypeDefinition, PropertyEditPreprocessor> propertyEditPreprocessors;
@@ -69,8 +71,16 @@ public class ResourceEditController extends SimpleFormController {
     }
 
     @Override
-    protected ModelAndView onSubmit(Object command) throws Exception {
-        ResourceEditWrapper wrapper = (ResourceEditWrapper) command;
+    protected ResourceEditWrapper formBackingObject(HttpServletRequest request) throws Exception {
+        resourceManager.lock();
+        return resourceManager.createResourceEditWrapper();
+    }
+
+    @Override
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, ResourceEditWrapper wrapper,
+            BindException errors) throws Exception {
+        
         Resource resource = wrapper.getResource();
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
@@ -78,7 +88,7 @@ public class ResourceEditController extends SimpleFormController {
         String token = requestContext.getSecurityToken();
 
         if (wrapper.hasErrors()) {
-            Map<String, Object> model = getModelProperties(command, resource, principal, repository);
+            Map<String, Object> model = getModelProperties(wrapper, resource, principal, repository);
             return new ModelAndView(getFormView(), model);
         }
 
@@ -90,13 +100,13 @@ public class ResourceEditController extends SimpleFormController {
         this.resourceManager.store(wrapper);
 
         if (!wrapper.isView()) {
-            Map<String, Object> model = getModelProperties(command, resource, principal, repository);
+            Map<String, Object> model = getModelProperties(wrapper, resource, principal, repository);
             wrapper.setSave(false);
             return new ModelAndView(getFormView(), model);
         }
 
         this.resourceManager.unlock();
-        return super.onSubmit(command);
+        return super.onSubmit(request, response, wrapper, errors);
     }
 
     protected Map<String, Object> getModelProperties(Object command, Resource resource, Principal principal,
@@ -111,33 +121,25 @@ public class ResourceEditController extends SimpleFormController {
     }
 
     @Override
-    protected ServletRequestDataBinder createBinder(HttpServletRequest request, Object command) throws Exception {
-        ServletRequestDataBinder binder = new ResourceEditDataBinder(command, getCommandName(),
+    protected ServletRequestDataBinder createBinder(HttpServletRequest request, ResourceEditWrapper wrapper) throws Exception {
+        ServletRequestDataBinder binder = new ResourceEditDataBinder(wrapper, getCommandName(),
                 resourceManager.getHtmlParser(), resourceManager.getHtmlPropsFilter(), propertyEditPreprocessors);
-        prepareBinder(binder);
-        initBinder(request, binder);
+        //prepareBinder(binder);
+        //initBinder(request, binder);
         return binder;
     }
 
     @Override
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
-
-        resourceManager.lock();
-        return resourceManager.createResourceEditWrapper();
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    protected Map referenceData(HttpServletRequest request, Object command, Errors errors) throws Exception {
-        Resource resource = ((ResourceWrapper) command).getResource();
+    protected Map<String, Object> referenceData(HttpServletRequest request, ResourceEditWrapper command, Errors errors) throws Exception {
+        Resource resource = command.getResource();
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
 
-        Map model = super.referenceData(request, command, errors);
+        Map<String, Object> model = super.referenceData(request, command, errors);
 
         if (model == null) {
-            model = new HashMap();
+            model = new HashMap<>();
         }
 
         model.put("published", resource.isPublished());

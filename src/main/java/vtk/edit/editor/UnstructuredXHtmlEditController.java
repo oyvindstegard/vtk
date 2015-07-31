@@ -36,14 +36,13 @@ import org.springframework.web.bind.ServletRequestDataBinder;
 
 public class UnstructuredXHtmlEditController extends ResourceEditController {
 
+    @Override
     protected ServletRequestDataBinder createBinder(HttpServletRequest request,
-            Object command) throws Exception {
+            ResourceEditWrapper command) throws Exception {
         ResourceWrapperManager resourceManager = getResourceManager();
         ServletRequestDataBinder binder = new UnstructuredXHtmlEditDataBinder(command, getCommandName(), 
                 resourceManager.getHtmlParser(), resourceManager.getHtmlPropsFilter());
-       prepareBinder(binder);
-       initBinder(request, binder);
-       return binder;
+        return binder;
     }
 
 }

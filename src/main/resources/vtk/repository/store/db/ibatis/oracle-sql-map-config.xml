@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
-    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
-<sqlMapConfig>
-    <!-- Global type handler for Path -->    
-  <typeHandler
-    javaType="vtk.repository.Path"
-    callback="vtk.repository.store.db.ibatis.PathTypeHandlerCallback"/>
+<!DOCTYPE configuration  PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
 
+  <settings>
+    <setting name="logImpl" value="LOG4J"/>
+    <setting name="callSettersOnNulls" value="true"/>
+    <setting name="jdbcTypeForNull" value="NULL" />
+  </settings>
+
+  <!-- Global type handler for Path -->    
+  <typeHandlers>
+    <typeHandler handler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback"/>
+  </typeHandlers>
+  
   <!-- Oracle-specific SQL maps -->
-  <sqlMap resource="vtk/repository/store/db/ibatis/oracle-functions.xml"/>
-  <sqlMap resource="vtk/repository/store/db/ibatis/default-sql-maps.xml"/>
+  <mappers>
+    <mapper resource="vtk/repository/store/db/ibatis/oracle-functions.xml"/>
+    <mapper resource="vtk/repository/store/db/ibatis/default-sql-maps.xml"/>
+  </mappers>
 
-</sqlMapConfig>
+</configuration>

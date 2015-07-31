@@ -35,13 +35,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -50,139 +53,161 @@ import vtk.repository.Resource;
 import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
+import vtk.web.actions.create.CreateCollectionWithProperties.CreateOperation;
 import vtk.web.service.URL;
 
-@Controller
-public class CreateCollectionWithProperties {
 
-    private String formView, successView;
+public class CreateCollectionWithProperties extends SimpleFormController<CreateOperation> {
+    
+    @Override
+    protected CreateOperation formBackingObject(HttpServletRequest request)
+            throws Exception {
+        return new CreateOperation();
+    }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ModelAndView get() {
+    @Override
+    protected Map<String, Object> referenceData(HttpServletRequest request,
+            CreateOperation command, Errors errors) throws Exception {
         Map<String, Object> model = new HashMap<String, Object>();
         URL submitURL = RequestContext.getRequestContext().getRequestURL();
         model.put("submitURL", submitURL);
-        return new ModelAndView(getFormView(), model);
+        return model;
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ModelAndView post(HttpServletRequest request) throws Exception {
+    @Override
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, CreateOperation operation,
+            BindException errors) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
-        CreateOperation operation = bind(request);
-        operation.apply(requestContext.getRepository(), requestContext.getSecurityToken());
-        Map<String, Object> model = new HashMap<String, Object>();
-        return new ModelAndView(getSuccessView(), model);
-    }
-
-    public String getFormView() {
-        return formView;
-    }
-
-    public void setFormView(String formView) {
-        this.formView = formView;
-    }
-
-    public String getSuccessView() {
-        return successView;
-    }
-
-    public void setSuccessView(String successView) {
-        this.successView = successView;
-    }
-
-    private CreateOperation bind(HttpServletRequest request) throws Exception {
-        String uri = request.getParameter("uri");
-        String type = request.getParameter("type");
+        Repository repository = requestContext.getRepository();
+        String token = requestContext.getSecurityToken();
         
-        String[] namespaces = request.getParameterValues("propertyNamespace[]");
-        String[] propNames = request.getParameterValues("propertyName[]");
-        String[] propValues = request.getParameterValues("propertyValue[]");
-        Assert.hasText(uri, "Input 'uri' must be defined");
+        Resource collection = repository.createCollection(token, operation.getUri());
+        if (operation.getTypeProperty() != null) {
+            TypeInfo typeInfo = repository.getTypeInfo(collection);
+            Namespace ns = Namespace.DEFAULT_NAMESPACE;
+            Property property = typeInfo.createProperty(ns, "collection-type", operation.getTypeProperty());
+            collection.addProperty(property);
+            collection = repository.store(token, collection);
+        }
 
-        List<PropertyOperation> propertyOps = new ArrayList<PropertyOperation>();
-        
-        if (namespaces != null && propNames != null && propValues != null) {
-            if (namespaces.length != propNames.length || namespaces.length != propValues.length) {
-                throw new IllegalArgumentException("Inputs 'propertyNamespaces', 'propertyNames' and 'propertyValues' "
-                        + "must be of the same length");
-            }
-            for (int i = 0; i < namespaces.length; i++) {
-                if (!"".equals(propNames[i].trim()) && !"".equals(propValues[i].trim())) {
+        TypeInfo typeInfo = repository.getTypeInfo(collection);
 
-                    PropertyOperation existing = null;
-                    for (PropertyOperation op : propertyOps) {
-                        if (op.namespace.equals(namespaces[i]) && op.name.equals(propNames[i])) {
-                            existing = op;
-                            break;
-                        }
-                    }
-                    if (existing != null) {
-                        existing.addValue(propValues[i]);
-                    } else
-                        propertyOps.add(new PropertyOperation(namespaces[i], propNames[i], propValues[i]));
+        if (operation.getPropertyOps() != null) {
+            for (PropertyOperation op : operation.getPropertyOps()) {
+                Namespace ns = null;
 
+                if (op.namespace == null || op.namespace.trim().equals(""))
+                    ns = Namespace.DEFAULT_NAMESPACE;
+                else if (op.namespace.startsWith("http://"))
+                    ns = Namespace.getNamespace(op.namespace);
+                else
+                    ns = Namespace.getNamespaceFromPrefix(op.namespace);
+                
+                PropertyTypeDefinition propDef = typeInfo.getPropertyTypeDefinition(ns, op.name);
+                if (propDef.isMultiple()) {
+                    String[] values = op.values.toArray(new String[op.values.size()]);
+                    Property property = typeInfo.createProperty(ns, op.name, values);
+                    collection.addProperty(property);
+                } else {
+                    Property property = typeInfo.createProperty(ns, op.name, op.values.get(0));
+                    collection.addProperty(property);
                 }
             }
+            repository.store(token, collection);
         }
-        return new CreateOperation(Path.fromString(uri), type, propertyOps);
+        return new ModelAndView(getSuccessView(), new HashMap<String, Object>());
     }
 
-    private class CreateOperation {
+    @Override
+    protected ServletRequestDataBinder createBinder(HttpServletRequest request,
+            final CreateOperation command) throws Exception {
+        return new ServletRequestDataBinder(command) {
+            @Override
+            public void bind(ServletRequest request) {
+                String uri = request.getParameter("uri");
+                String type = request.getParameter("type");
+                
+                String[] namespaces = request.getParameterValues("propertyNamespace");
+                String[] propNames = request.getParameterValues("propertyName");
+                String[] propValues = request.getParameterValues("propertyValue");
+                Assert.hasText(uri, "Input 'uri' must be defined");
+
+                List<PropertyOperation> propertyOps = new ArrayList<PropertyOperation>();
+                
+                if (namespaces != null && propNames != null && propValues != null) {
+                    if (namespaces.length != propNames.length || 
+                            namespaces.length != propValues.length) {
+                        throw new IllegalArgumentException(
+                                "Inputs 'propertyNamespaces', 'propertyNames' and 'propertyValues' "
+                                + "must be of the same length");
+                    }
+                    for (int i = 0; i < namespaces.length; i++) {
+                        if (!"".equals(propNames[i].trim()) && !"".equals(propValues[i].trim())) {
+
+                            PropertyOperation existing = null;
+                            for (PropertyOperation op : propertyOps) {
+                                if (op.namespace.equals(namespaces[i]) && 
+                                        op.name.equals(propNames[i])) {
+                                    existing = op;
+                                    break;
+                                }
+                            }
+                            if (existing != null) {
+                                existing.addValue(propValues[i]);
+                            } 
+                            else propertyOps.add(new PropertyOperation(namespaces[i], 
+                                    propNames[i], propValues[i]));
+                        }
+                    }
+                }
+                command.setUri(Path.fromString(uri));
+                command.setTypeProperty(type);
+                command.setPropertyOps(propertyOps);
+            }
+        };
+    }
+
+
+    public static class CreateOperation {
         Path uri;
         String typeProperty = null;
         List<PropertyOperation> propertyOps;
-
-        @Override
-        public String toString() {
-            return "CreateOperation(uri=" + uri + ", typeProperty=" + typeProperty + ", propertyOps=" + propertyOps
-                    + ")";
+        
+        public Path getUri() {
+            return uri;
         }
 
-        CreateOperation(Path uri, String typeProperty, List<PropertyOperation> propertyOps) {
+        public void setUri(Path uri) {
             this.uri = uri;
+        }
+
+        public String getTypeProperty() {
+            return typeProperty;
+        }
+
+        public void setTypeProperty(String typeProperty) {
             this.typeProperty = typeProperty;
+        }
+
+        public List<PropertyOperation> getPropertyOps() {
+            return propertyOps;
+        }
+
+        public void setPropertyOps(List<PropertyOperation> propertyOps) {
             this.propertyOps = propertyOps;
         }
 
-        public void apply(Repository repository, String token) throws Exception {
-            Resource collection = repository.createCollection(token, uri);
-            if (this.typeProperty != null) {
-                TypeInfo typeInfo = repository.getTypeInfo(collection);
-                Namespace ns = Namespace.DEFAULT_NAMESPACE;
-                Property property = typeInfo.createProperty(ns, "collection-type", this.typeProperty);
-                collection.addProperty(property);
-                collection = repository.store(token, collection);
-            }
-
-            TypeInfo typeInfo = repository.getTypeInfo(collection);
-
-            if (propertyOps != null) {
-                for (PropertyOperation op : propertyOps) {
-                    Namespace ns = null;
-
-                    if (op.namespace == null || op.namespace.trim().equals(""))
-                        ns = Namespace.DEFAULT_NAMESPACE;
-                    else if (op.namespace.startsWith("http://"))
-                        ns = Namespace.getNamespace(op.namespace);
-                    else
-                        ns = Namespace.getNamespaceFromPrefix(op.namespace);
-                    
-                    PropertyTypeDefinition propDef = typeInfo.getPropertyTypeDefinition(ns, op.name);
-                    if (propDef.isMultiple()) {
-                        String[] values = op.values.toArray(new String[op.values.size()]);
-                        Property property = typeInfo.createProperty(ns, op.name, values);
-                        collection.addProperty(property);
-                    } else {
-                        Property property = typeInfo.createProperty(ns, op.name, op.values.get(0));
-                        collection.addProperty(property);
-                    }
-                }
-                repository.store(token, collection);
-            }
+        @Override
+        public String toString() {
+            return "CreateOperation(uri=" + uri + ", typeProperty=" 
+                    + typeProperty + ", propertyOps=" + propertyOps
+                    + ")";
         }
     }
 
-    private class PropertyOperation {
+    public static class PropertyOperation {
         String namespace, name;
         List<String> values;
 
@@ -199,7 +224,8 @@ public class CreateCollectionWithProperties {
 
         @Override
         public String toString() {
-            return "PropertyOp(namespace=" + namespace + ", name=" + name + ", values=" + values + ")";
+            return "PropertyOp(namespace=" + namespace + ", name=" + name 
+                    + ", values=" + values + ")";
         }
     }
 }

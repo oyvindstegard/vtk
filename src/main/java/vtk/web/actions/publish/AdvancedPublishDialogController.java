@@ -38,8 +38,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -47,14 +48,15 @@ import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 
-public class AdvancedPublishDialogController extends SimpleFormController {
+public class AdvancedPublishDialogController extends SimpleFormController<EditPublishingCommand> {
 
     private PropertyTypeDefinition publishDatePropDef;
     private PropertyTypeDefinition unpublishDatePropDef;
 
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    protected EditPublishingCommand formBackingObject(HttpServletRequest request) throws Exception {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
@@ -67,39 +69,43 @@ public class AdvancedPublishDialogController extends SimpleFormController {
 
         EditPublishingCommand command = new EditPublishingCommand(submitURL);
         command.setResource(resource);
-
         return command;
     }
 
-    @SuppressWarnings("rawtypes")
-    protected Map referenceData(HttpServletRequest request) throws Exception {
+    
+    
+    @Override
+    protected Map<String, Object> referenceData(HttpServletRequest request,
+            EditPublishingCommand command, Errors errors) throws Exception {
+
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("formName", this.getCommandName());
         return model;
     }
 
-    @SuppressWarnings("deprecation")
+    
+    
     @Override
-    protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object command,
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, EditPublishingCommand command,
             BindException errors) throws Exception {
 
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("command", command);
 
-        EditPublishingCommand publishCommand = (EditPublishingCommand) command;
-        if (publishCommand.getUpdateAction() != null) {
+        if (command.getUpdateAction() != null) {
 
             Date publishDate = null;
-            if (publishCommand.getPublishDateValue() != null) {
-                publishDate = publishCommand.getPublishDateValue().getDateValue();
+            if (command.getPublishDateValue() != null) {
+                publishDate = command.getPublishDateValue().getDateValue();
                 setPropertyDateValue(publishDatePropDef, publishDate);
             } else {
                 removePropertyValue(publishDatePropDef);
             }
 
             Date unpublishDate = null;
-            if (publishCommand.getUnpublishDateValue() != null) {
-                unpublishDate = publishCommand.getUnpublishDateValue().getDateValue();
+            if (command.getUnpublishDateValue() != null) {
+                unpublishDate = command.getUnpublishDateValue().getDateValue();
                 if (publishDate != null && unpublishDate.after(publishDate)) {
                     setPropertyDateValue(unpublishDatePropDef, unpublishDate);
                 }

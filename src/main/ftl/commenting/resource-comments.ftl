@@ -34,7 +34,8 @@
     <#list comments as comment>
         <li class="comment"><h2>
           <a href="${(commentURLMap[comment.ID] + '#comment-' + comment.ID)?html}">
-            ${comment.author.description?html}
+            <#-- XXX: look up principal -->
+            ${comment.author?html}
 	    <@vrtx.msg code="commenting.comments.on" default="about" />
             "${resourceMap[comment.URI].title?html}"
           </a></h2>

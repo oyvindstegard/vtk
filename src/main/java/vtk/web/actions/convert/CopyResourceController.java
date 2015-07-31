@@ -32,10 +32,10 @@ package vtk.web.actions.convert;
 
 import vtk.repository.Path;
 
-public class CopyResourceController extends CopyController {
+public class CopyResourceController extends CopyController<CopyCommand> {
 
     @Override
-    protected Object createCommand(String name, String url) {
+    protected CopyCommand createCommand(String name, String url) {
         return new CopyCommand(name, url);
     }
 

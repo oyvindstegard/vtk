@@ -30,32 +30,46 @@
  */
 package vtk.repository.store.db.ibatis;
 
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
 
 import vtk.repository.Path;
 
-import com.ibatis.sqlmap.client.extensions.ParameterSetter;
-import com.ibatis.sqlmap.client.extensions.ResultGetter;
-import com.ibatis.sqlmap.client.extensions.TypeHandlerCallback;
-
-
-public class PathTypeHandlerCallback implements TypeHandlerCallback {
+public class PathTypeHandlerCallback extends BaseTypeHandler<Path> {
 
     @Override
-    public Object getResult(ResultGetter getter) throws SQLException { 
-        String value = getter.getString();
-        return Path.fromString(value);
-    } 
+    public void setNonNullParameter(PreparedStatement ps, int i,
+            Path parameter, JdbcType jdbcType) throws SQLException {
+      ps.setString(i, parameter.toString());
+    }
 
     @Override
-    public void setParameter(ParameterSetter setter, Object parameter) throws SQLException {
-        Path path = (Path) parameter;
-        setter.setString(path.toString());
-    } 
+    public Path getNullableResult(ResultSet rs, String columnName)
+            throws SQLException {
+      String s = rs.getString(columnName);
+      if (s == null) return null;
+      return Path.fromString(s);
+    }
 
     @Override
-    public Object valueOf(String s) { 
+    public Path getNullableResult(ResultSet rs, int columnIndex)
+            throws SQLException {
+        String s = rs.getString(columnIndex);
+        if (s == null) return null;
         return Path.fromString(s);
-    } 
+    }
+
+    @Override
+    public Path getNullableResult(CallableStatement cs, int columnIndex)
+            throws SQLException {
+        String s = cs.getString(columnIndex);
+        if (s == null) return null;
+      return Path.fromString(s);
+    }
 }
     

@@ -19,7 +19,6 @@
   <bean id="publishDialogHandler" class="vtk.web.actions.publish.AdvancedPublishDialogController">
     <property name="formView" value="publishDialogView" />
     <property name="successView" value="publishDialogView" />
-    <property name="commandClass" value="vtk.web.actions.publish.EditPublishingCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.publish.EditPublishingCommandValidator">
         <property name="publishDatePropDef" ref="publishDatePropDef" />
