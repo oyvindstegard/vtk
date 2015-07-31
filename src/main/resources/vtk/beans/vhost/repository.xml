@@ -12,6 +12,13 @@
 
   <tx:annotation-driven transaction-manager="repository.transactionManager" />
 
+  <!-- Define AOP pointcut for the transactional methods as well: -->
+  <aop:config>
+    <aop:pointcut id="transactionalAnnotationPointcut"
+                  expression="@annotation(org.springframework.transaction.annotation.Transactional)"/>
+</aop:config>
+
+
   <!-- Main repository instance. -->
   <bean id="repository.internal" class="vtk.repository.RepositoryImpl"
         init-method="init" destroy-method="destroy">

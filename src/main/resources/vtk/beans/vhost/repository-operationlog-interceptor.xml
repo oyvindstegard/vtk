@@ -10,10 +10,8 @@
 
   <!--  Setup point-cut for operation log interceptor (only for bean 'repository.internal') -->
   <aop:config>
-    <aop:pointcut id="repository.operationLoggablePointcut"
-                  expression="@annotation(org.springframework.transaction.annotation.Transactional)"/>
     <aop:advisor advice-ref="repository.repositoryOperationLogInterceptor"
-                 pointcut-ref="repository.operationLoggablePointcut"
+                 pointcut-ref="transactionalAnnotationPointcut"
                  order="-1000"/> <!-- Run as early as possible, before all other interceptors -->
   </aop:config>
 
