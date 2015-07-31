@@ -10,7 +10,7 @@
     <property name="dataSource" ref="repository.dataSource" />
   </bean>
 
-  <tx:annotation-driven transaction-manager="repository.transactionManager" />
+  <tx:annotation-driven transaction-manager="repository.transactionManager" order="1000" />
 
   <!-- Define AOP pointcut for the transactional methods as well: -->
   <aop:config>
