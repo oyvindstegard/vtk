@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -42,15 +42,12 @@ import org.junit.Test;
 import vtk.resourcemanagement.property.PropertyDescription;
 
 public class StructuredResourceTest {
-
-    // Null manager, does nothing
-    private static final StructuredResourceManager NULL_MANAGER = null;
     // Dummy description, does nothing
     private static StructuredResourceDescription DUMMY_DESC;
 
     @BeforeClass
     public static void setUp() {
-        DUMMY_DESC = new StructuredResourceDescription(NULL_MANAGER);
+        DUMMY_DESC = new StructuredResourceDescription();
         DUMMY_DESC.setPropertyDescriptions(new ArrayList<PropertyDescription>());
     }
 

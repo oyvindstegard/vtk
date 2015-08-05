@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -44,24 +44,23 @@ import vtk.resourcemanagement.property.DerivedPropertyEvaluationDescription.Eval
 import vtk.resourcemanagement.property.PropertyDescription;
 
 public final class StructuredResourceDescription {
-
-    private StructuredResourceManager manager;
     private String name;
     private String inheritsFrom;
+    private StructuredResourceDescription parent;
     private List<PropertyDescription> propertyDescriptions;
     private List<EditRule> editRules;
     private DisplayTemplate displayTemplate;
     private List<ScriptDefinition> scripts;
     private List<ServiceDefinition> services;
 
-    private List<ComponentDefinition> componentDefinitions = new ArrayList<ComponentDefinition>();
-    private HashMap<String, Map<Locale, Map<Locale, String>>> localization = new HashMap<String, Map<Locale, Map<Locale, String>>>();
-    private HashMap<String, Map<Locale, String>> tooltips = new HashMap<String, Map<Locale, String>>();
+    private List<ComponentDefinition> componentDefinitions = new ArrayList<>();
+    private HashMap<String, Map<Locale, Map<Locale, String>>> localization = new HashMap<>();
+    private HashMap<String, Map<Locale, String>> tooltips = new HashMap<>();
 
     private static final String DEFAULT_LANG = "en";
 
-    public StructuredResourceDescription(StructuredResourceManager manager) {
-        this.manager = manager;
+
+    public StructuredResourceDescription() {
     }
 
     public void setInheritsFrom(String inheritsFrom) {
@@ -93,9 +92,8 @@ public final class StructuredResourceDescription {
         if (propertyDescriptions == null) {
             return result;
         }
-        if (this.inheritsFrom != null) {
-            StructuredResourceDescription ancestor = this.manager.get(this.inheritsFrom);
-            result.addAll(ancestor.getAllPropertyDescriptions());
+        if (this.parent != null) {
+            result.addAll(parent.getAllPropertyDescriptions());
         }
 
         Set<PropertyDescription> alreadyAdded = new HashSet<PropertyDescription>();
@@ -152,11 +150,14 @@ public final class StructuredResourceDescription {
         this.componentDefinitions.add(def);
     }
 
+    public void setComponentDefinitions(List<ComponentDefinition> componentDefinitions) {
+        this.componentDefinitions = componentDefinitions;
+    }
+
     public List<ComponentDefinition> getAllComponentDefinitions() {
         List<ComponentDefinition> result = new ArrayList<ComponentDefinition>();
-        if (this.inheritsFrom != null) {
-            StructuredResourceDescription ancestor = this.manager.get(this.inheritsFrom);
-            result.addAll(ancestor.getAllComponentDefinitions());
+        if (this.parent != null) {
+            result.addAll(parent.getAllComponentDefinitions());
         }
         result.addAll(this.getComponentDefinitions());
         return result;
@@ -176,8 +177,7 @@ public final class StructuredResourceDescription {
 
     public Map<String, Map<Locale, String>> getAllLocalizedTooltips() {
         Map<String, Map<Locale, String>> locales = new HashMap<String, Map<Locale, String>>();
-        if (this.inheritsFrom != null) {
-            StructuredResourceDescription parent = this.manager.get(this.inheritsFrom);
+        if (this.parent != null) {
             locales.putAll(parent.getAllLocalizedTooltips());
         }
         locales.putAll(this.tooltips);
@@ -199,8 +199,7 @@ public final class StructuredResourceDescription {
 
     public Map<String, Map<Locale, Map<Locale, String>>> getAllLocalization() {
         Map<String, Map<Locale, Map<Locale, String>>> locales = new HashMap<String, Map<Locale, Map<Locale, String>>>();
-        if (this.inheritsFrom != null) {
-            StructuredResourceDescription parent = this.manager.get(this.inheritsFrom);
+        if (this.parent != null) {
             locales.putAll(parent.getAllLocalization());
         }
         locales.putAll(this.localization);
@@ -298,8 +297,7 @@ public final class StructuredResourceDescription {
                     }
                     if (!found) {
                         // If not found in this definition, check parent:
-                        if (this.inheritsFrom != null) {
-                            StructuredResourceDescription parent = this.manager.get(this.inheritsFrom);
+                        if (this.parent != null) {
                             if (parent.getPropertyDescription(propName) != null) {
                                 found = true;
                             }
@@ -339,4 +337,7 @@ public final class StructuredResourceDescription {
 
     }
 
+    public void setParent(StructuredResourceDescription parent) {
+        this.parent = parent;
+    }
 }

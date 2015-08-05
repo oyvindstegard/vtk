@@ -37,74 +37,9 @@ thread() {
     return this;
 }
 
-
-
-
 void recompile() {
-
     setAccessibility(true);
-    controller = context.getBean("structuredResources.displayHandler");
-
     parser = context.getBean("structuredResource.parser");
-
-    mainLocation = parser.defaultResourceTypeDefinitions;
-
-    main = new String(StreamUtil.readInputStream(mainLocation.getInputStream()), "utf-8");
-
-    p = Pattern.compile("include (structured-resources/.*)");
-    m = p.matcher(main);
-    files = new ArrayList();
-    while (m.find()) files.add(m.group(1));
-
-    mgr = context.getBean("structuredResources.resourceManager");
-
-    for (f : files) {
-
-        defLocation = mainLocation.createRelative(f);
-
-        def = new String(StreamUtil.readInputStream(defLocation.getInputStream()), "utf-8");
-
-        p = Pattern.compile("resourcetype ([a-zA-Z\\-]+)");
-        m = p.matcher(def);
-        if (!m.find()) {
-            throw new RuntimeException("Unable to find resource type name in definition " + f);
-        }
-        name = m.group(1);
-
-        desc = mgr.get(name);
-        if (desc == null) {
-            print("No definition: " + name);
-        }
-        p = Pattern.compile("([a-zA-Z\\-]+)(\\s*\\([\\sa-zA-Z-,]+\\))?\\s+\\{\\s*##([^#]+)\\s+##\\s+\\}", Pattern.DOTALL);
-        m = p.matcher(def);
-
-        while (m.find()) {
-
-            identifier = m.group(1);
-            params = m.group(2);
-            content = m.group(3);
-            if ("view".equals(identifier)) {
-                displayTemplate = desc.getDisplayTemplate();
-                if (displayTemplate != null) {
-                    if (!content.equals(displayTemplate.getTemplate())) {
-                        print("Updating display template: " + desc.getName());
-                        displayTemplate.setContent(content);
-                    }
-                }
-            } else {
-                for (compDef: desc.getComponentDefinitions()) {
-                    old = compDef.getDefinition();
-                
-                    if (compDef.getName().equals(identifier)) {
-                        if (!old.equals(content)) {
-                            print("Updating component "
-                                  + desc.getName()  + ":" + compDef);
-                            compDef.setDefinition(content);
-                        }
-                    }
-                }
-            }
-        }
-    }
+    parser.parseAllAndRefresh()
 }
 
