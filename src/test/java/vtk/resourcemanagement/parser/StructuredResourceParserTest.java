@@ -44,7 +44,7 @@ public abstract class StructuredResourceParserTest {
     protected static List<StructuredResourceParser.ParsedNode> PARSE_TREE;
 
     public static Resource getSourceResource() {
-        return new ClassPathResource("/vtk/beans/vhost/structured-resources.vrtx");
+        return new ClassPathResource("/vtk/beans/structured-resources-test.vrtx");
     }
 
     @BeforeClass

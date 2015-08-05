@@ -1,1 +1,2 @@
 include structured-resources/person.vrtx
+include classpath:/vtk/beans/vhost/structured-resources/studies/course-schedule.vrtx
