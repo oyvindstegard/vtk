@@ -140,7 +140,7 @@ public class StructuredResourceManager {
     }
 
     public void registrationComplete() {
-        logger.info("Resource type tree:");
+        logger.info("Default resource type tree:");
         logger.info(this.resourceTypeTree.getResourceTypeTreeAsString());
     }
 
