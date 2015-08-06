@@ -111,7 +111,16 @@ public class StructuredResourceManager {
         if (oldDescription == null) {
             throw new IllegalStateException("Resource type of name " + name + " do not exists");
         }
-        if (!newDescription.getDisplayTemplate().equals(oldDescription.getDisplayTemplate())) {
+
+        if (oldDescription.getDisplayTemplate() == null
+                && newDescription.getDisplayTemplate() != null) {
+            logger.info("Adding display template: " + oldDescription.getName());
+            oldDescription.setDisplayTemplate(newDescription.getDisplayTemplate());
+        }
+        else if ((
+                oldDescription.getDisplayTemplate() != null
+                        && !newDescription.getDisplayTemplate().equals(oldDescription.getDisplayTemplate())
+        )) {
             logger.info("Updating display template: " + oldDescription.getName());
             oldDescription.getDisplayTemplate().setContent(newDescription.getDisplayTemplate().getTemplate());
         }
@@ -128,7 +137,6 @@ public class StructuredResourceManager {
             }
 
         }
-
     }
 
     public void registrationComplete() {

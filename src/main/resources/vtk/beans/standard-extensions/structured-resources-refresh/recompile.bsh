@@ -12,10 +12,6 @@
  *  o Interrupt handling on container shutdown
  *  o ...
  */
-
-import java.io.*;
-import java.util.regex.*;
-import vtk.util.io.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -38,8 +34,7 @@ thread() {
 }
 
 void recompile() {
-    setAccessibility(true);
     parser = context.getBean("structuredResource.parser");
-    parser.parseAllAndRefresh()
+    parser.parseAllAndRefresh();
 }
 

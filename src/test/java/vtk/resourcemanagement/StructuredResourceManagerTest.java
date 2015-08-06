@@ -137,4 +137,27 @@ public class StructuredResourceManagerTest {
         assertThat(titleComponent.getDefinition()).startsWith("new ");
         assertThat(baseType.getDisplayTemplate().getTemplate()).contains("new parent");
     }
+
+    @Test
+    public void handle_refresh_for_resource_without_template() throws Exception {
+        StructuredResourceDescription parent = new StructuredResourceDescription();
+        parent.setName("base-type");
+        resourceManager.register(parent);
+
+        ComponentDefinition titleComponent = new ComponentDefinition("title", "new title component");
+        StructuredResourceDescription newParent = new StructuredResourceDescription();
+        newParent.setName("base-type");
+        newParent.addComponentDefinition(titleComponent);
+
+        resourceManager.refresh(newParent);
+
+        newParent.setDisplayTemplate(new DisplayTemplate(
+                String.format(BASE_TEMPLATE, "parent", "<h1>parent</h1")
+        ));
+
+        resourceManager.refresh(newParent);
+
+        StructuredResourceDescription baseType = resourceManager.get("base-type");
+        assertThat(baseType.getDisplayTemplate().getTemplate()).contains("parent");
+    }
 }

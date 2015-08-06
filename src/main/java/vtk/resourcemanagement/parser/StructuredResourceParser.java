@@ -90,7 +90,7 @@ public class StructuredResourceParser {
     }
 
     private void parseResourceTypeDefinition(ParseUnit parseUnit) throws Exception {
-        logger.info("Parse: " + parseUnit.description);
+        logger.debug("Parse: " + parseUnit.description);
 
         ResourcetreeParser parser = parseUnit.parser;
         ResourcetreeParser.resources_return resources = parser.resources();

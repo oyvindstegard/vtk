@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import vtk.resourcemanagement.StructuredResourceDescription;
@@ -55,8 +56,9 @@ public class StructuredResourceSpringAdapter implements InitializingBean, Resour
         structuredResourceManager.registrationComplete();
     }
 
-    public void parseAndRegister(Resource sourceFile)  throws Exception {
+    public synchronized void parseAndRegister(Resource sourceFile) throws Exception {
         if (sourceFile.exists()) {
+            logger.info("Parse and register resources types in: " + sourceFile.getDescription());
             StructuredResourceParser parser = new StructuredResourceParser(sourceFile, resourceLoader);
             registerParsedResourceDescriptions(parser.parse());
             typeDefinitionFileStore.add(sourceFile);
@@ -65,13 +67,17 @@ public class StructuredResourceSpringAdapter implements InitializingBean, Resour
         }
     }
 
-    public void parseAllAndRefresh() throws Exception {
-        for (Resource resource : typeDefinitionFileStore) {
-            if (resource.exists()) {
-                StructuredResourceParser parser = new StructuredResourceParser(resource, resourceLoader);
-                refreshParsedResourceDescriptions(parser.parse());
+    public synchronized void parseAllAndRefresh() throws Exception {
+        for (Resource sourceFile : typeDefinitionFileStore) {
+            if (sourceFile.exists()) {
+                // Only refresh if the resource is not from the class path
+                if (!(sourceFile instanceof ClassPathResource)) {
+                    logger.debug("Refresh resources types in: " + sourceFile.getDescription());
+                    StructuredResourceParser parser = new StructuredResourceParser(sourceFile, resourceLoader);
+                    refreshParsedResourceDescriptions(parser.parse());
+                }
             } else {
-                logger.warn("Resource not found: " + resource.getURI());
+                logger.warn("Resource not found: " + sourceFile.getURI());
             }
         }
     }
@@ -105,7 +111,11 @@ public class StructuredResourceSpringAdapter implements InitializingBean, Resour
             List<StructuredResourceParser.ParsedNode> parseNodes
     ) throws Exception {
         for (StructuredResourceParser.ParsedNode node : parseNodes) {
-            structuredResourceManager.refresh(node.getStructuredResourceDescription());
+            try {
+                structuredResourceManager.refresh(node.getStructuredResourceDescription());
+            } catch (NullPointerException e) {
+                logger.error("Could not refresh " + node.getName(), e);
+            }
             if (node.hasChildren()) {
                 refreshParsedResourceDescriptions(node.getChildren());
             }
