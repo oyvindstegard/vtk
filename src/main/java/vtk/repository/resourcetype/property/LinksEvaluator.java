@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, University of Oslo, Norway
+/* Copyright (c) 2012,2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -246,11 +246,22 @@ public class LinksEvaluator implements LatePropertyEvaluator {
     private static class LinkCollector {
         private final List<Link> links = new ArrayList<>();
 
+        /**
+         * Add a link. Links with URL size greather than {@link Property#MAX_STRING_LENGTH}
+         * will be silently discarded.
+         * 
+         * @param link link to add
+         * @return <code>false</code> if maximum amount of links have been added
+         * to collector. This can be used to stop extraction from the current
+         * source.
+         */
         public boolean link(Link link) {
             if (links.size() >= MAX_LINKS) {
                 return false;
             }
-            links.add(link);
+            if (link.url.length() <= Property.MAX_STRING_LENGTH) {
+                links.add(link);
+            }
             return true;
         }
         public void clear() {
