@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, University of Oslo, Norway
+/* Copyright (c) 2009,2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
