@@ -117,6 +117,11 @@ public class StructuredResourceManager {
             logger.info("Adding display template: " + oldDescription.getName());
             oldDescription.setDisplayTemplate(newDescription.getDisplayTemplate());
         }
+        else if (newDescription.getDisplayTemplate() == null
+                && oldDescription.getDisplayTemplate() != null) {
+            logger.info("Removing display template: " + oldDescription.getName());
+            oldDescription.setDisplayTemplate(null);
+        }
         else if ((
                 oldDescription.getDisplayTemplate() != null
                         && !newDescription.getDisplayTemplate().equals(oldDescription.getDisplayTemplate())

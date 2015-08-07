@@ -140,17 +140,32 @@ public class StructuredResourceManagerTest {
 
     @Test
     public void handle_refresh_for_resource_without_template() throws Exception {
-        StructuredResourceDescription parent = new StructuredResourceDescription();
-        parent.setName("base-type");
-        resourceManager.register(parent);
+        ComponentDefinition titleComponent = new ComponentDefinition("title", "title component");
+        StructuredResourceDescription oldParent = new StructuredResourceDescription();
+        oldParent.setName("base-type");
+        oldParent.addComponentDefinition(titleComponent);
+        resourceManager.register(oldParent);
 
-        ComponentDefinition titleComponent = new ComponentDefinition("title", "new title component");
+        ComponentDefinition newTitleComponent = new ComponentDefinition("title", "new title component");
         StructuredResourceDescription newParent = new StructuredResourceDescription();
         newParent.setName("base-type");
-        newParent.addComponentDefinition(titleComponent);
+        newParent.addComponentDefinition(newTitleComponent);
 
         resourceManager.refresh(newParent);
 
+        StructuredResourceDescription baseType = resourceManager.get("base-type");
+        assertThat(baseType.getComponentDefinitions()).hasSize(1);
+        assertThat(baseType.getAllComponentDefinitions().get(0).getDefinition()).startsWith("new");
+    }
+
+    @Test
+    public void add_template_if_new_resource_have_it_but_the_old_do_not() throws Exception {
+        StructuredResourceDescription oldParent = new StructuredResourceDescription();
+        oldParent.setName("base-type");
+        resourceManager.register(oldParent);
+
+        StructuredResourceDescription newParent = new StructuredResourceDescription();
+        newParent.setName("base-type");
         newParent.setDisplayTemplate(new DisplayTemplate(
                 String.format(BASE_TEMPLATE, "parent", "<h1>parent</h1")
         ));
@@ -159,5 +174,24 @@ public class StructuredResourceManagerTest {
 
         StructuredResourceDescription baseType = resourceManager.get("base-type");
         assertThat(baseType.getDisplayTemplate().getTemplate()).contains("parent");
+    }
+
+    @Test
+    public void remove_template_if_new_resource_do_not_have_it_but_the_old_do() throws Exception {
+        StructuredResourceDescription oldParent = new StructuredResourceDescription();
+        oldParent.setName("base-type");
+        oldParent.setDisplayTemplate(new DisplayTemplate(
+                String.format(BASE_TEMPLATE, "parent", "<h1>parent</h1")
+        ));
+        resourceManager.register(oldParent);
+
+        StructuredResourceDescription newParent = new StructuredResourceDescription();
+        newParent.setName("base-type");
+        newParent.setDisplayTemplate(null);
+
+        resourceManager.refresh(newParent);
+
+        StructuredResourceDescription baseType = resourceManager.get("base-type");
+        assertThat(baseType.getDisplayTemplate()).isNull();
     }
 }
