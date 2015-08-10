@@ -15,7 +15,7 @@
     <property name="assertions">
       <list>
         <ref bean="contentTypeMatchesXml" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsFeedAssertion" />
         <ref bean="rssXslStylesheetAvailable" />
       </list>
     </property>

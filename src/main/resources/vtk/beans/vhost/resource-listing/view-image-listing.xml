@@ -114,17 +114,13 @@
     <property name="assertions">
       <list>
         <ref bean="resourceIsImageListing" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsFeedAssertion" />
       </list>
     </property>
     <property name="handler" ref="imageListing.feedHandler" />
   </bean>
 
-  <bean id="imageListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="imageListing.atomFeedGenerator" />
-  </bean>
-
-  <bean id="imageListing.atomFeedGenerator" class="vtk.web.display.collection.CollectionListingAtomFeedGenerator"
+  <bean id="imageListing.feedHandler" class="vtk.web.display.collection.CollectionListingAtomFeedGenerator"
     parent="atomFeedGenerator">
     <property name="searchComponent" ref="imageListing.searchComponent" />
   </bean>

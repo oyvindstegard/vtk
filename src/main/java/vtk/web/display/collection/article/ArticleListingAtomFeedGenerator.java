@@ -37,11 +37,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.web.RequestContext;
 import vtk.web.display.feed.AtomFeedGenerator;
 import vtk.web.search.Listing;
 
@@ -51,11 +51,10 @@ public class ArticleListingAtomFeedGenerator extends AtomFeedGenerator {
     private PropertyTypeDefinition overridePublishDatePropDef;
 
     @Override
-    protected void addFeedEntries(Feed feed, Resource feedScope) throws Exception {
+    protected void addFeedEntries(HttpServletRequest request, Feed feed, Resource feedScope) throws Exception {
 
         List<PropertySet> entryElements = new ArrayList<PropertySet>();
 
-        HttpServletRequest request = RequestContext.getRequestContext().getServletRequest();
         Listing featuredArticles = searcher.getFeaturedArticles(request, feedScope, 1, entryCountLimit, 0);
         if (featuredArticles != null && featuredArticles.size() > 0) {
             entryElements.addAll(featuredArticles.getPropertySets());
@@ -67,7 +66,7 @@ public class ArticleListingAtomFeedGenerator extends AtomFeedGenerator {
         }
 
         for (PropertySet feedEntry : entryElements) {
-            addPropertySetAsFeedEntry(feed, feedEntry);
+            addPropertySetAsFeedEntry(request, feed, feedEntry);
         }
     }
 

@@ -22,7 +22,7 @@
     <property name="assertions">
       <list>
         <ref bean="resourceInCollection" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsAnyFeed" />
       </list>
     </property>
     <property name="handler" ref="collectionListing.feedHandler" />

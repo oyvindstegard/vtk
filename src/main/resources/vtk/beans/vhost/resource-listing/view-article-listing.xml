@@ -41,11 +41,7 @@
     </property>
   </bean>
 
-  <bean id="articleListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="articleListing.atomFeedGenerator" />
-  </bean>
-
-  <bean id="articleListing.atomFeedGenerator" class="vtk.web.display.collection.article.ArticleListingAtomFeedGenerator"
+  <bean id="articleListing.feedHandler" class="vtk.web.display.collection.article.ArticleListingAtomFeedGenerator"
     parent="atomFeedGenerator">
     <property name="searcher" ref="articleListingSearcher" />
     <property name="overridePublishDatePropDef" ref="publishedDatePropDef" />

@@ -30,6 +30,8 @@
  */
 package vtk.web.display.collection;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
@@ -37,6 +39,7 @@ import org.apache.abdera.model.Link;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
@@ -54,7 +57,8 @@ public class AudioVideoListingAtomFeedGenerator extends CollectionListingAtomFee
     private PropertyTypeDefinition audioHtmlDescriptionPropDef;
 
     @Override
-    protected void addPropertySetAsFeedEntry(Feed feed, PropertySet result) {
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, 
+            PropertySet result) {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
