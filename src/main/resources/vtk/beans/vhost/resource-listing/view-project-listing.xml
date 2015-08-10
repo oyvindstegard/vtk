@@ -107,17 +107,13 @@
     <property name="assertions">
       <list>
         <ref bean="resourceIsProjectListing" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsFeedAssertion" />
       </list>
     </property>
     <property name="handler" ref="projectListing.feedHandler" />
   </bean>
 
-  <bean id="projectListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="projectListing.atomFeedGenerator" />
-  </bean>
-
-  <bean id="projectListing.atomFeedGenerator" class="vtk.web.display.collection.CollectionListingAtomFeedGenerator"
+  <bean id="projectListing.feedHandler" class="vtk.web.display.collection.CollectionListingAtomFeedGenerator"
     parent="atomFeedGenerator">
     <property name="searchComponent" ref="projectListing.searchComponent" />
   </bean>

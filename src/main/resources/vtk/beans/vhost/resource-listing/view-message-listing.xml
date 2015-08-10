@@ -74,17 +74,13 @@
     <property name="assertions">
       <list>
         <ref bean="resourceIsMessageListing" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsFeedAssertion" />
       </list>
     </property>
     <property name="handler" ref="messageListing.feedHandler" />
   </bean>
 
-  <bean id="messageListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="messageListing.feedGenerator" />
-  </bean>
-
-  <bean id="messageListing.feedGenerator" class="vtk.web.display.collection.message.MessageListingAtomFeedGenerator"
+  <bean id="messageListing.feedHandler" class="vtk.web.display.collection.message.MessageListingAtomFeedGenerator"
     parent="atomFeedGenerator">
     <property name="searchComponent" ref="messageListing.searchComponent" />
     <property name="authorPropDefPointer" value="createdBy" />

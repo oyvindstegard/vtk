@@ -103,31 +103,38 @@
     </property>
   </bean>
 
+  <bean id="vrtxParameterIsFeedOrRss" class="vtk.web.service.OrAssertion">
+    <property name="assertions">
+      <list>
+        <ref bean="vrtxParameterIsFeedAssertion" />
+        <ref bean="vrtxParameterIsRssAssertion" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="audioVideoListing.feedService" parent="collectionListing.feedService">
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
         <ref bean="resourceIsAudioVideoListing" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsAnyFeed" />
       </list>
     </property>
-    <property name="handler" ref="audioVideoListing.feedHandler" />
+    <property name="handler" ref="audioVideoListing.rssFeedHandler" />
   </bean>
 
-  <bean id="audioVideoListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="audioVideoListing.rssFeedGenerator" />
-    <property name="alternateGenerators">
-      <bean class="java.util.HashMap">
-        <constructor-arg>
-          <map>
-            <entry key="atom" value-ref="audioVideoListing.atomFeedGenerator" />
-          </map>
-        </constructor-arg>
-      </bean>
+  <bean id="audioVideoListing.atomFeedService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="audioVideoListing.feedService" />
+    <property name="assertions">
+      <list>
+        <ref bean="resourceIsAudioVideoListing" />
+        <ref bean="vrtxParameterIsAtomAssertion" />
+      </list>
     </property>
+    <property name="handler" ref="audioVideoListing.atomFeedHandler" />
   </bean>
 
-  <bean id="audioVideoListing.rssFeedGenerator" class="vtk.web.display.collection.AudioVideoListingRSSFeedGenerator"
+  <bean id="audioVideoListing.rssFeedHandler" class="vtk.web.display.collection.AudioVideoListingRSSFeedGenerator"
     parent="rssFeedGenerator">
     <property name="searchComponent" ref="audioVideoListing.searchComponent" />
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />
@@ -136,8 +143,8 @@
     <property name="contentTypePropDef" ref="contentTypePropDef" />
   </bean>
 
-  <bean id="audioVideoListing.atomFeedGenerator" class="vtk.web.display.collection.AudioVideoListingAtomFeedGenerator"
-    parent="collectionListing.atomFeedGenerator">
+  <bean id="audioVideoListing.atomFeedHandler" class="vtk.web.display.collection.AudioVideoListingAtomFeedGenerator"
+    parent="collectionListing.feedHandler">
     <property name="searchComponent" ref="audioVideoListing.searchComponent" />
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />
     <property name="videoHtmlDescriptionPropDef" ref="videoHtmlDescriptionPropDef" />

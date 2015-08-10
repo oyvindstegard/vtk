@@ -40,10 +40,6 @@
   </bean>
 
   <bean id="tags.personFeedHandler" parent="tags.feedHandler">
-    <property name="feedGenerator" ref="tags.personAtomFeedGenerator" />
-  </bean>
-
-  <bean id="tags.personAtomFeedGenerator" parent="tags.atomFeedGenerator">
     <property name="searchComponent" ref="tags.personSearchComponent" />
   </bean>
 

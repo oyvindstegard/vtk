@@ -96,11 +96,7 @@
     </property>
   </bean>
 
-  <bean id="tags.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="tags.atomFeedGenerator" />
-  </bean>
-
-  <bean id="tags.atomFeedGenerator" class="vtk.web.display.tags.TagsAtomFeedGenerator" parent="atomFeedGenerator">
+  <bean id="tags.feedHandler" class="vtk.web.display.tags.TagsAtomFeedGenerator" parent="atomFeedGenerator">
     <property name="viewService" ref="tags.viewService" />
     <property name="overridePublishDatePropDef" ref="publishedDatePropDef" />
     <property name="searchComponent" ref="tags.searchComponent" />
