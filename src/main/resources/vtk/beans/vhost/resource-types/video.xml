@@ -17,6 +17,8 @@
       <list>
         <ref bean="posterImagePropDef" />
         <ref bean="videoHtmlDescriptionPropDef" />
+        <ref bean="hideVideoDownloadLinkPropDef" />
+        <ref bean="hideVideoFallbackLinkPropDef" />
       </list>
     </property>
     <property name="mixinTypeDefinitions">
@@ -61,6 +63,8 @@
     <property name="viewService" ref="viewService" />
     <property name="thumbnailService" ref="displayThumbnailService" />
     <property name="thumbnailPropDef" ref="thumbnailPropDef" />
+    <property name="hideVideoDownloadLinkPropDef" ref="hideVideoDownloadLinkPropDef" />
+    <property name="hideVideoFallbackLinkPropDef" ref="hideVideoFallbackLinkPropDef" />
   </bean>
 
   <bean id="displayAudioResource" class="vtk.web.display.media.DisplayMediaController">
@@ -165,6 +169,56 @@
     <property name="type" value="IMAGE_REF" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
+  </bean>
+
+  <bean id="hideVideoDownloadLinkPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="hide-video-download-link" />
+    <property name="type" value="BOOLEAN" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <property name="values">
+          <list>
+            <ref bean="VALUE_TRUE" />
+          </list>
+        </property>
+      </bean>
+    </property>
+    <property name="metadata">
+      <map>
+        <entry key="editingHints">
+          <map>
+            <entry key="hideLabel" value="true" />
+          </map>
+        </entry>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="hideVideoFallbackLinkPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="remove-video-fallback-link" />
+    <property name="type" value="BOOLEAN" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <property name="values">
+          <list>
+            <ref bean="VALUE_TRUE" />
+          </list>
+        </property>
+      </bean>
+    </property>
+    <property name="metadata">
+      <map>
+        <entry key="editingHints">
+          <map>
+            <entry key="hideLabel" value="true" />
+          </map>
+        </entry>
+      </map>
+    </property>
   </bean>
 
 </beans>

@@ -47,13 +47,12 @@ import vtk.web.service.Service;
 import vtk.web.service.URL;
 
 /**
- * XXX This class needs complete documentation on model attributes for the two
- * main "provider" methods.
- * 
- * <p>Class adds model data required for displaying media files
- * in web pages using an embedded player/placeholder and download link. Used
- * both by component for insertion at arbitrary locations in HTML documents or
- * the web page view of Vortex media resources.
+ * XXX This class needs complete documentation on model attributes for the two main "provider" methods.
+ *
+ * <p>
+ * Class adds model data required for displaying media files in web pages using an embedded player/placeholder and
+ * download link. Used both by component for insertion at arbitrary locations in HTML documents or the web page view of
+ * Vortex media resources.
  */
 public class MediaPlayer {
 
@@ -61,27 +60,28 @@ public class MediaPlayer {
     private Service thumbnailService;
     private PropertyTypeDefinition posterImagePropDef;
     private PropertyTypeDefinition thumbnailPropDef;
+    private PropertyTypeDefinition hideVideoDownloadLinkPropDef;
+    private PropertyTypeDefinition hideVideoFallbackLinkPropDef;
 
     /**
      * Provided model data:
      * <ul>
-     *   <li><code>mediaResource</code> - if media reference points to a local
-     * resource, then the {@link Resource} will be provided under this key if it
-     * could be retrieved from the repository.</li>
-     *   <li><code>media</code> - a {@link URL} instance pointing to the media.
-     *   <li>TODO complete me</li>
+     * <li><code>mediaResource</code> - if media reference points to a local resource, then the {@link Resource} will be
+     * provided under this key if it could be retrieved from the repository.</li>
+     * <li><code>media</code> - a {@link URL} instance pointing to the media.
+     * <li>TODO complete me</li>
      * </ul>
-     * 
+     *
      * @param model model to add data to
      * @param mediaRef the media resource URI as a string
      * @param height height of inserted video
      * @param width width of inserted video
      * @param autoplay whether to setup player to start automatically or not.
-     * @param contentType 
+     * @param contentType
      * @param streamType
      * @param poster
      * @param showDL
-     * @throws AuthorizationException 
+     * @throws AuthorizationException
      */
     public void addMediaPlayer(Map<String, Object> model, String mediaRef, String height, String width,
             String autoplay, String contentType, String streamType, String poster, String showDL) {
@@ -93,14 +93,12 @@ public class MediaPlayer {
         Resource mediaResource = null;
         try {
             mediaResource = getLocalResource(mediaRef);
-        } catch (AuthorizationException e) {
-            return; // not able to read local resource - abort
-        } catch (AuthenticationException e) {
+        } catch (AuthorizationException | AuthenticationException e) {
             return; // not able to read local resource - abort
         } catch (Exception e) {
             // ignore
         }
-        
+
         if (mediaResource != null) {
             model.put("mediaResource", mediaResource);
         }
@@ -110,18 +108,23 @@ public class MediaPlayer {
             model.put("width", width);
         }
 
-        if (autoplay != null && !autoplay.isEmpty())
+        if (autoplay != null && !autoplay.isEmpty()) {
             model.put("autoplay", autoplay);
+        }
 
-        if (streamType != null && !streamType.isEmpty())
+        if (streamType != null && !streamType.isEmpty()) {
             model.put("streamType", streamType);
+        }
 
         model.put("showDL", showDL != null && showDL.equalsIgnoreCase("true") ? "true" : "false");
 
-        if (poster != null && !poster.isEmpty())
+        if (poster != null && !poster.isEmpty()) {
             model.put("poster", poster);
-        else
+        } else {
             addPosterUrl(mediaResource, model);
+        }
+
+        addLinkProperties(mediaResource, model);
 
         if (contentType != null && !contentType.isEmpty()) {
             model.put("contentType", contentType);
@@ -134,7 +137,7 @@ public class MediaPlayer {
         model.put("nanoTime", System.nanoTime());
 
         if (mediaResource != null) {
-            addMediaUrl(mediaResource,  model);
+            addMediaUrl(mediaResource, model);
         } else {
             addMediaUrl(mediaRef, model);
         }
@@ -143,16 +146,16 @@ public class MediaPlayer {
     /**
      * Provided model data:
      * <ul>
-     *   <li><code>mediaResource</code> - if media reference points to a local
-     * resource, then the {@link Resource} will be provided under this key if it
-     * could successfully be retrieved from the repository.</li>
-     *   <li><code>media</code> - a {@link URL} instance pointing to the media.
-     *   <li>TODO complete me</li>
+     * <li><code>mediaResource</code> - if media reference points to a local resource, then the {@link Resource} will be
+     * provided under this key if it could successfully be retrieved from the repository.</li>
+     * <li><code>media</code> - a {@link URL} instance pointing to the media.
+     * <li>TODO complete me</li>
      * </ul>
-     * 
+     *
      * @param model MVC model
      * @param mediaRef media reference/link as string
-     **/ 
+     *
+     */
     public void addMediaPlayer(Map<String, Object> model, String mediaRef) {
 
         if (URL.isEncoded(mediaRef)) {
@@ -162,9 +165,7 @@ public class MediaPlayer {
         Resource mediaResource = null;
         try {
             mediaResource = getLocalResource(mediaRef);
-        } catch (AuthorizationException e) {
-            return; // not able to read local resource - abort
-        } catch (AuthenticationException e) {
+        } catch (AuthorizationException | AuthenticationException e) {
             return; // not able to read local resource - abort
         } catch (Exception e) {
             // ignore
@@ -175,6 +176,7 @@ public class MediaPlayer {
         }
 
         addPosterUrl(mediaResource, model);
+        addLinkProperties(mediaResource, model);
         model.put("extension", MimeHelper.findExtension(mediaRef));
 
         if (mediaResource != null) {
@@ -199,11 +201,11 @@ public class MediaPlayer {
             String token = requestContext.getSecurityToken();
             return repository.retrieve(token, Path.fromString(resourceRef), true);
         }
-        
+
         return null;
     }
-    
-    private void addMediaUrl(Resource mediaResource, Map<String,Object> model) {
+
+    private void addMediaUrl(Resource mediaResource, Map<String, Object> model) {
         model.put("media", this.viewService.constructURL(mediaResource));
     }
 
@@ -216,14 +218,15 @@ public class MediaPlayer {
             if (RequestContext.getRequestContext().isPreviewUnpublished()) {
                 url.setParameter("vrtxPreviewUnpublished", "true");
             }
-            
+
             model.put("media", url);
         }
     }
 
     private void addPosterUrl(Resource mediaResource, Map<String, Object> model) {
-        if (mediaResource == null)
+        if (mediaResource == null) {
             return;
+        }
         URL poster = null;
         Property posterImageProp = mediaResource.getProperty(posterImagePropDef);
         Property thumbnail = mediaResource.getProperty(thumbnailPropDef);
@@ -246,19 +249,37 @@ public class MediaPlayer {
         }
     }
 
+    private void addLinkProperties(Resource mediaResource, Map<String, Object> model) {
+        if (mediaResource == null) {
+            return;
+        }
+
+        Property hideVideoDownloadLinkProp = mediaResource.getProperty(hideVideoDownloadLinkPropDef);
+        Property hideVideoFallbackLinkProp = mediaResource.getProperty(hideVideoFallbackLinkPropDef);
+
+        if (hideVideoDownloadLinkProp != null && hideVideoDownloadLinkProp.getBooleanValue() == true) {
+            model.put("hideVideoDownloadLink", true);
+        }
+
+        if (hideVideoFallbackLinkProp != null && hideVideoFallbackLinkProp.getBooleanValue() == true) {
+            model.put("hideVideoFallbackLink", true);
+        }
+    }
+
     /**
      * TODO support references relative to current resource, like "../foo.mp4".
-     * 
-     * @param mediaRef link/reference to a media resource. Must either be root
-     * relative path or an absolute URL with protocol.
-     * 
-     * @return a {@link URL} instance, or <code>null</code> if no appropriate URL
-     * could be created from reference. 
+     *
+     * @param mediaRef link/reference to a media resource. Must either be root relative path or an absolute URL with
+     * protocol.
+     *
+     * @return a {@link URL} instance, or <code>null</code> if no appropriate URL could be created from reference.
      */
     private URL createUrl(String mediaRef) {
 
-        if (mediaRef == null) return null;
-        
+        if (mediaRef == null) {
+            return null;
+        }
+
         if (URL.isEncoded(mediaRef)) {
             mediaRef = urlDecodeMediaRef(mediaRef);
         }
@@ -288,7 +309,7 @@ public class MediaPlayer {
         }
         return null;
     }
-    
+
     private String urlDecodeMediaRef(String mediaRef) {
         // For media file references we don't want '+' chars decoded into spaces.
         return URL.decode(TextUtils.replaceAll(mediaRef, "+", "%2B"));
@@ -312,6 +333,16 @@ public class MediaPlayer {
     @Required
     public void setThumbnailPropDef(PropertyTypeDefinition thumbnailPropDef) {
         this.thumbnailPropDef = thumbnailPropDef;
+    }
+
+    @Required
+    public void setHideVideoDownloadLinkPropDef(PropertyTypeDefinition hideVideoDownloadLinkPropDef) {
+        this.hideVideoDownloadLinkPropDef = hideVideoDownloadLinkPropDef;
+    }
+
+    @Required
+    public void setHideVideoFallbackLinkPropDef(PropertyTypeDefinition hideVideoFallbackLinkPropDef) {
+        this.hideVideoFallbackLinkPropDef = hideVideoFallbackLinkPropDef;
     }
 
 }
