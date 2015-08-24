@@ -30,8 +30,11 @@
  */
 package vtk.web.display.collection;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.web.RequestContext;
 import vtk.web.display.feed.AtomFeedGenerator;
@@ -44,13 +47,15 @@ public class CollectionListingAtomFeedGenerator extends AtomFeedGenerator {
     private SearchComponent searchComponent;
 
     @Override
-    protected void addFeedEntries(Feed feed, Resource feedScope) throws Exception {
+    protected void addFeedEntries(HttpServletRequest request, Feed feed,
+            Resource feedScope) throws Exception {
 
-        Listing entryElements = searchComponent.execute(RequestContext.getRequestContext().getServletRequest(),
+        Listing entryElements = searchComponent.execute(
+                RequestContext.getRequestContext().getServletRequest(),
                 feedScope, 1, entryCountLimit, 0);
 
         for (ListingEntry entry : entryElements.getEntries()) {
-            addPropertySetAsFeedEntry(feed, entry.getPropertySet());
+            addPropertySetAsFeedEntry(request, feed, entry.getPropertySet());
         }
 
     }

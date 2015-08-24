@@ -25,6 +25,31 @@
     <property name="handler" ref="eventListing.feedHandler" />
   </bean>
 
+  <bean id="eventListing.extendedFeedService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="eventListing.feedService" />
+    <property name="assertions">
+      <list>
+        <ref bean="feedParameterFormatIsExtended" />
+      </list>
+    </property>
+    <property name="handler" ref="eventListing.extendedFeedHandler" />
+  </bean>
+
+
+  <bean id="feedParameterFormatIsExtended" class="vtk.web.service.RequestParameterAssertion">
+    <property name="parameterName" value="format" />
+    <property name="parameterValue" value="extended" />
+  </bean>
+
+
+  <bean id="eventListing.extendedFeedHandler" 
+        class="vtk.web.display.collection.event.SimpleEventListingFeedController"
+        parent="atomFeedGenerator">
+    <property name="helper" ref="eventListingHelper" />
+    <property name="searcher" ref="eventListing.eventListingSearcher" />
+    <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
+  </bean>
+        
   <bean id="eventListing.handler" class="vtk.web.display.collection.event.EventListingController">
     <property name="resourceManager" ref="resourceManager" />
     <property name="subFolderMenuProvider" ref="subFolderMenuProvider" />
@@ -50,16 +75,12 @@
     <property name="specificDateEventSearchComponent" ref="${override.listing.prefix}eventListing.specificDateEventSearchComponent" />
   </bean>
 
-  <bean id="eventListing.atomFeedGenerator" class="vtk.web.display.collection.event.EventListingAtomFeedGenerator"
+  <bean id="eventListing.feedHandler" class="vtk.web.display.collection.event.EventListingAtomFeedGenerator"
     parent="atomFeedGenerator">
     <property name="helper" ref="eventListingHelper" />
     <property name="searcher" ref="eventListing.eventListingSearcher" />
     <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
     <property name="overridePublishDatePropDefPointer" ref="${override.listing.prefix}overridePublishDatePropDefPointer" />
-  </bean>
-
-  <bean id="eventListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="eventListing.atomFeedGenerator" />
   </bean>
 
   <bean id="overridePublishDatePropDefPointer" class="java.lang.String">

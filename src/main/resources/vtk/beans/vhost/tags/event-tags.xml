@@ -92,10 +92,6 @@
   </bean>
 
   <bean id="tags.eventListing.feedHandler" parent="eventListing.feedHandler">
-    <property name="feedGenerator" ref="tags.eventListing.atomFeedGenerator" />
-  </bean>
-
-  <bean id="tags.eventListing.atomFeedGenerator" parent="eventListing.atomFeedGenerator">
     <property name="searcher" ref="tags.eventListing.eventListingSearcher" />
   </bean>
 
