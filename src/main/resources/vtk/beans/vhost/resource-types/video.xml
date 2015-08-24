@@ -197,7 +197,7 @@
   </bean>
 
   <bean id="hideVideoFallbackLinkPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="name" value="remove-video-fallback-link" />
+    <property name="name" value="hide-video-fallback-link" />
     <property name="type" value="BOOLEAN" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
