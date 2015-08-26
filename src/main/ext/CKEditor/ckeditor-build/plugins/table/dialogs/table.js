@@ -31,16 +31,16 @@
 	  }
     }
     
-    function addDropdownStyleClass(field, clsField, clsType) { // Used for 'align-<left|middle|right>' classes
+    function addDropdownStyleClass(field, clsField, clsType) { // Used for 'align-<left|center|right>' classes
 	  if(clsField) {
 	    var clsName = field.getValue();
-	    addStyleClass(clsField, clsName, "(\\s+)?" + clsType + "\\-\\w+", "gi", clsName != "");
+	    addStyleClass(clsField, clsName, "(\\s+)?" + clsType + "\\-\\w+", clsName != "");
 	  }
     }
     
     function addStyleClass(clsField, clsName, regexStr, addCondition) {
       var classesVal = clsField.getValue();
-      var regex = new RegExp(regexStr);
+      var regex = new RegExp(regexStr, "gi");
       
       if(addCondition) {
         if(classesVal != "") {
@@ -415,7 +415,7 @@
 							  }
 							  if(alignOld == "left" || selectedTable.hasClass("align-left")) {
 							    this.setValue("align-left");
-							  } else if(alignOld == "middle" || selectedTable.hasClass("align-middle")) {
+							  } else if(alignOld == "middle" || selectedTable.hasClass("align-center")) {
 							    this.setValue("align-center");
 							  } else if(alignOld == "right" || selectedTable.hasClass("align-right")) {
 							    this.setValue("align-right");
