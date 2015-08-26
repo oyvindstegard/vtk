@@ -8,8 +8,16 @@
 
 <#import "/lib/vtk.ftl" as vrtx/>
 
+<#-- VTK-4124: generate mailto:-link instead
 <#if !emailLink?exists || !emailLink.url?exists>
   <#stop "Missing 'emailLink' entry in model"/>
 </#if>
+-->
 
-<a class="vrtx-email-friend dialog" target="_blank" title='<@vrtx.msg code="tip.emailtitle" default="E-mail this page" />' href="${emailLink.url?html}"><@vrtx.msg code="decorating.emailAFriendComponent.emaillink" default="E-mail this page" /></a>
+<#assign title = vrtx.propValue(resourceContext.currentResource, "title") />
+<#assign url = resourceContext.currentServiceURL />
+
+<a title='<@vrtx.msg code="tip.emailtitle" default="E-mail this page" />'
+   href="mailto:?subject=${title?url('UTF-8')}&amp;body=${url?url('UTF-8')}">
+   <@vrtx.msg code="decorating.emailAFriendComponent.emaillink" default="E-mail this page" />
+</a>
