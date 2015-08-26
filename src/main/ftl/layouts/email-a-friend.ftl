@@ -17,7 +17,7 @@
 <#assign title = vrtx.propValue(resourceContext.currentResource, "title") />
 <#assign url = resourceContext.currentServiceURL />
 
-<a title='<@vrtx.msg code="tip.emailtitle" default="E-mail this page" />'
+<a class="vrtx-email-friend" title='<@vrtx.msg code="tip.emailtitle" default="E-mail this page" />'
    href="mailto:?subject=${title?url('UTF-8')}&amp;body=${url?url('UTF-8')}">
    <@vrtx.msg code="decorating.emailAFriendComponent.emaillink" default="E-mail this page" />
 </a>
