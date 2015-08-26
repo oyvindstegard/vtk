@@ -30,8 +30,8 @@
  */
 package vtk.web.display.collection.article;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -53,20 +53,22 @@ public class ArticleListingAtomFeedGenerator extends AtomFeedGenerator {
     @Override
     protected void addFeedEntries(HttpServletRequest request, Feed feed, Resource feedScope) throws Exception {
 
-        List<PropertySet> entryElements = new ArrayList<PropertySet>();
-
         Listing featuredArticles = searcher.getFeaturedArticles(request, feedScope, 1, entryCountLimit, 0);
+        
         if (featuredArticles != null && featuredArticles.size() > 0) {
-            entryElements.addAll(featuredArticles.getPropertySets());
-        }
+            Map<String, Object> extensions = new HashMap<>();
+            extensions.put("featured-article", true);
+            for (PropertySet propSet: featuredArticles.getPropertySets()) {
+                addPropertySetAsFeedEntry(request, feed, propSet, extensions);
+            }
+        }        
 
         Listing articles = searcher.getArticles(request, feedScope, 1, entryCountLimit, 0);
         if (articles.size() > 0) {
-            entryElements.addAll(articles.getPropertySets());
-        }
 
-        for (PropertySet feedEntry : entryElements) {
-            addPropertySetAsFeedEntry(request, feed, feedEntry);
+            for (PropertySet propSet: articles.getPropertySets()) {
+                addPropertySetAsFeedEntry(request, feed, propSet);
+            }
         }
     }
 
