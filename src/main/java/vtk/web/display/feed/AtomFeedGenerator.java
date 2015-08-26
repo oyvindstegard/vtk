@@ -32,9 +32,11 @@ package vtk.web.display.feed;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -167,16 +169,22 @@ public abstract class AtomFeedGenerator implements Controller {
         feed.addLink(requestContext.getRequestURL().toString(), "self");
     }
 
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, PropertySet result) {
+        addPropertySetAsFeedEntry(request, feed, result, Collections.emptyMap());
+    }
+
     /**
      * Add the appropriate resource properties to the Entry
      * 
      * The numberofcomments element is only added if the resource in question
      * has comments attached to it.
      * 
-     * @param feed
-     * @param resource
+     * @param feed the resulting feed
+     * @param resource the current property set
+     * @param extensions additional fields in resulting feed entry 
+     *  (will appear in the {@code vrtx} name space)
      */
-    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, PropertySet resource) {
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, PropertySet resource, Map<String,?> extensions) {
         try {
 
             Entry entry = Abdera.getInstance().newEntry();
@@ -190,6 +198,17 @@ public abstract class AtomFeedGenerator implements Controller {
             Property title = resource.getProperty(titlePropDef);
             if (title != null) {
                 entry.setTitle(title.getFormattedValue());
+            }
+            
+            if (extensions != null) {
+                for (String key: extensions.keySet()) {
+                    entry.addSimpleExtension("vrtx", key, "v", extensions.get(key).toString());
+                }
+            }
+            
+            Property numberOfComments = resource.getProperty(numberOfCommentsPropDef);
+            if (numberOfComments != null) {
+                entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
             }
 
             // Set the summary
