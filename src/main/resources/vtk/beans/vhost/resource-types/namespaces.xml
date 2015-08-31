@@ -124,5 +124,10 @@
     <constructor-arg value="fixed-resources-collection" />
     <constructor-arg value="http://www.uio.no/resource-types/fixed-resources-collection" />
   </bean>
-  
+
+  <bean id="INTERNAL_ORGANIZATIONAL_UNIT_FOLDER_NAMESPACE" class="vtk.repository.Namespace">
+    <constructor-arg value="internal-organizational-unit-folder" />
+    <constructor-arg value="http://www.uio.no/resource-types/internal-organizational-unit-folder" />
+  </bean>
+
 </beans>

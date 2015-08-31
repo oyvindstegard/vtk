@@ -83,10 +83,18 @@ public final class MailExecutor {
         }
         try {
             new InternetAddress(addr);
-            return true;
         } catch (AddressException e) {
             return false;
         }
+
+        // VTK-4124 hotfix: ban any email address that is not ".uio.no" top level domain.
+        // TODO This should be considered a temporary place to fix the security issues
+        // outlined in VTK-4124.
+        if (! addr.toLowerCase().endsWith(".uio.no")) {
+            return false;
+        }
+
+        return true;
     }
     
     private static class SendMailTask implements Runnable {

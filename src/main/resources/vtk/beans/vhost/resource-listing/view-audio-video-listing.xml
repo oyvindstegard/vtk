@@ -31,7 +31,7 @@
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">
-          <property name="queryString" value="(type IN audio OR type IN video)" />
+          <property name="queryString" value="((type IN audio OR type IN video) AND hide-video-download-link not exists)" />
         </bean>
       </list>
     </property>

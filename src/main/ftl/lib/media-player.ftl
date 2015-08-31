@@ -23,8 +23,12 @@
 -->
 <#macro genPlaceholder url dateStr isAudio=false showPlayButton=false useVideoTag=false>
   <#if !isAudio>
-    <#if poster??>
+    <#if poster?? && hideVideoFallbackLink?? == false>
       <#local imgSrc = poster />
+    <#elseif mediaResource?? && mediaResource.resourceType == "videoref">
+      <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/video-streaming-only.png" />
+      <#local width = "500" />
+      <#local height = "279" />
     <#else>
       <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/video-noflash.png" />
       <#local width = "500" />
@@ -48,10 +52,10 @@
       <#if showPlayButton><a class="playbutton" href="${url}"></a></#if>
     </div>
     <div id="mediaspiller-${dateStr}"<#if showPlayButton> class="vrtx-media-player-no-flash"</#if>>
-      <a class="vrtx-media" href="${url}">
+      <#if hideVideoFallbackLink?? == false><a class="vrtx-media" href="${url}"></#if>
         <img src="${imgSrc?html}" width="${width}" height="${height}" alt="${alt}"/>
         <#if showPlayButton><span class="playbutton"></span></#if>
-      </a>
+      <#if hideVideoFallbackLink?? == false></a></#if>
     </div>
   </#if>
 
@@ -70,6 +74,7 @@
  *
 -->
 <#macro initFlash url dateStr isStream=false isAudio=false isSWF=false>
+
   <#local flashUrl = strobe?html />
   
   <script type="text/javascript"><!--
@@ -93,7 +98,7 @@
         <#if isStream>
           flashvars.streamType = "live";
         </#if>
-        <#if poster?exists>
+        <#if poster??>
           flashvars.poster = "${poster?url("UTF-8")}";
         <#else>
           flashvars.poster = "/vrtx/__vrtx/static-resources/themes/default/icons/video-noflash.png";
@@ -138,7 +143,8 @@
  *
 -->
 <#macro genDownloadLink url type="media" bypass=false>
-  <#if bypass || (showDL?exists && showDL == "true")>
+  <#if bypass || (hideVideoDownloadLink?? == false && 
+      (showDL?? && showDL == "true"))>
     <a class="vrtx-media" href="${url}">
       <#if type = "video">
         <@vrtx.msg code="article.video-file" />

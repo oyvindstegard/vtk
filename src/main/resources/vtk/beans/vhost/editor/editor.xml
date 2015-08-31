@@ -547,7 +547,6 @@
         </property>
       </bean>
     </property>
-
   </bean>
 
   <bean id="editor.videoResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -561,6 +560,8 @@
             <ref bean="userTitlePropDef" />
             <ref bean="videoHtmlDescriptionPropDef" />
             <ref bean="posterImagePropDef" />
+            <ref bean="hideVideoDownloadLinkPropDef" />
+            <ref bean="hideVideoFallbackLinkPropDef" />
           </list>
         </property>
       </bean>
@@ -645,7 +646,6 @@
       </bean>
     </property>
   </bean>
-
 
   <bean id="editor.projectResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />

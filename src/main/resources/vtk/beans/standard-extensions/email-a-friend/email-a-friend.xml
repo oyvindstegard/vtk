@@ -2,7 +2,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <bean id="emailafriendService" class="vtk.web.service.ServiceImpl">
+<!-- VTK-4124: Disable this service due to spam abuse. -->
+<!--  <bean id="emailafriendService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="viewService" />
     <property name="order" value="-999" />
     <property name="handler" ref="emailafriendHandler" />
@@ -23,8 +24,9 @@
     <property name="mailTemplateProvider" ref="emailafriend.mailTemplateProvider" />
     <property name="displayUpscoping" value="${displayUpscoping}" />
   </bean>
+  -->
 
-  <bean id="emailafriend.viewResolver" parent="viewResolver">
+<!--  <bean id="emailafriend.viewResolver" parent="viewResolver">
     <property name="views">
       <map>
         <entry key="emailafriend.view" value-ref="emailafriend.view" />
@@ -48,7 +50,7 @@
         </entry>
       </map>
     </property>
-  </bean>
+  </bean>-->
 
   <bean id="decorating.emailAFriendURLComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
     <property name="namespace" ref="decorating.resourceNamespace" />
@@ -61,24 +63,24 @@
     <property name="url" value="layouts/email-a-friend.ftl" />
     <property name="referenceDataProviders">
       <list>
-        <ref bean="decorating.emailAFriendURLComponent.urlProvider" />
+<!--        <ref bean="decorating.emailAFriendURLComponent.urlProvider" />-->
         <ref bean="resourceContextProvider" />
       </list>
     </property>
   </bean>
-
-  <bean id="decorating.emailAFriendURLComponent.urlProvider" class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
+  
+<!--  <bean id="decorating.emailAFriendURLComponent.urlProvider" class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
     <property name="modelName" value="emailLink" />
     <property name="urlName" value="url" />
     <property name="service" ref="emailafriendService" />
-  </bean>
+  </bean>-->
 
-  <bean id="emailafriend.mailTemplateProvider" class="vtk.util.mail.MailTemplateProvider">
+<!--  <bean id="emailafriend.mailTemplateProvider" class="vtk.util.mail.MailTemplateProvider">
     <property name="view" ref="emailFriend.mailTemplateView" />
   </bean>
 
   <bean id="emailFriend.mailTemplateView" parent="freemarkerView">
     <property name="url" value="pages/mail-template.ftl"></property>
-  </bean>
+  </bean>-->
 
 </beans>
