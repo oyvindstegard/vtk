@@ -46,9 +46,6 @@ import org.springframework.beans.factory.DisposableBean;
  * instance. All aspects of the cache behavior and item loading are controlled
  * by configuration of the injected cache instance underlying this {@link ContentCache}.
  * 
- * At most one thread will load a given key at any time,
- * other threads requesting the same key will block until the first thread has finished loading.
- *
  * TODO Ehcache also allows to set a blocking timeout, which we can consider
  * using to prevent thread pileups due to slow loading.
  * 
@@ -94,12 +91,9 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         config.setEternal(true);
 
         if (asynchronousRefresh) {
-            asyncRefreshExecutor = Executors.newFixedThreadPool(16, new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, EhContentCache.this.cache.getName() + ".async-refresh");
-                }
-            });
+            asyncRefreshExecutor = new ThreadPoolExecutor(0, 16, 60L, TimeUnit.SECONDS,
+                    new LinkedBlockingQueue<>(),
+                    (Runnable r) -> new Thread(r, EhContentCache.this.cache.getName() + ".async-refresh"));
         } else {
             asyncRefreshExecutor = null;
         }
@@ -108,18 +102,10 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         // A fix might be to expose refresh as a ContentCache API call, and have an external
         // static singleton common to all vhosts in JVM, which does refresh on shared Ehcache instances.
         if (refreshIntervalSeconds > 0) {
-            refreshAllExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory(){
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, EhContentCache.this.cache.getName() + ".refresh");
-                }
-            });
-            refreshAllExecutor.scheduleWithFixedDelay(new Runnable() {
-                @Override
-                public void run() {
-                    refreshAllExpired();
-                }
-            }, refreshIntervalSeconds, refreshIntervalSeconds, TimeUnit.SECONDS);
+            refreshAllExecutor = Executors.newSingleThreadScheduledExecutor(
+                    (Runnable r) -> new Thread(r, EhContentCache.this.cache.getName() + ".refresh"));
+            refreshAllExecutor.scheduleWithFixedDelay(this::refreshAllExpired,
+                    refreshIntervalSeconds, refreshIntervalSeconds, TimeUnit.SECONDS);
         } else {
             refreshAllExecutor = null;
         }
@@ -131,16 +117,13 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
             throw new IllegalArgumentException("Cache identifiers cannot be null");
         }
         
-        // TODO cache exceptions for a short time (grace time) before letting loaders retry.
-        // This may prove useful when loaders are slow and eventually fail (timeout on web resources for instance).
-
         Element element = cache.getQuiet(identifier);
         if (element != null) {
             if (isExpired(element)) {
                 // This will not stop multiple thread trying to refresh the cache entry at the same time,
                 // so it can cause unnecessary work to be done.
                 if (asynchronousRefresh) {
-                    triggerAsynchronousRefresh(identifier);
+                    asyncRefreshExecutor.execute( () -> { refresh(identifier); } );
                 } else {
                     refresh(identifier);
                 }
@@ -175,7 +158,7 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         }
     }
 
-
+    
     private boolean isExpired(Element element){
         long now = System.currentTimeMillis();
         long expirationTime = getExpirationTime(element);
@@ -197,16 +180,6 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
             expirationTime = Math.min(ttlExpiry, ttiExpiry);
         }
         return expirationTime;
-    }
-
-    private void triggerAsynchronousRefresh(final K identifier) {
-        Runnable fetcher = new Runnable() {
-            @Override
-            public void run() {
-                refresh(identifier);
-            }
-        };
-        asyncRefreshExecutor.execute(fetcher);
     }
 
     private void refresh(final Object identifier) {
