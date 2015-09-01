@@ -35,6 +35,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -62,6 +64,8 @@ public abstract class SimpleFormController<T> implements Controller {
     private String commandName = "form";
     private boolean sessionForm;
     private Validator validator;
+    
+    private final Log logger = LogFactory.getLog(SimpleFormController.class.getName());
 
     public String getFormView() {
         return formView;
@@ -143,7 +147,7 @@ public abstract class SimpleFormController<T> implements Controller {
         binder.bind(request);
         
         if (validator != null) {
-            System.out.println("__validator: " + validator);
+            logger.debug("__validator: " + validator);
             validator.validate(command, errors);
         }
         onBindAndValidate(request, command, errors);
