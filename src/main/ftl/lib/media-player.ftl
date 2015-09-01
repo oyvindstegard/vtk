@@ -23,7 +23,7 @@
 -->
 <#macro genPlaceholder url dateStr isAudio=false showPlayButton=false useVideoTag=false>
   <#if !isAudio>
-    <#if poster?? && hideVideoFallbackLink?? == false>
+    <#if poster?? && (hideVideoFallbackLink?? == false || useVideoTag)>
       <#local imgSrc = poster />
     <#elseif mediaResource?? && mediaResource.resourceType == "videoref">
       <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/video-streaming-only.png" />
