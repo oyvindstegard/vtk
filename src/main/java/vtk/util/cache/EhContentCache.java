@@ -91,10 +91,10 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
      * item is loaded.
      * @param refreshIntervalSeconds if set to something greater than 0, then a
      * background refresh task is scheduled to run at the provided interval in
-     * seconds. All items in cache will be refreshed at each run. Note that
-     * providing a value here less than {@code timeToLiveSeoncds} will
-     * effectively give eternal life to the cache entry if cache is below max
-     * capacity. The entry value will, however, be continually refreshed.
+     * seconds. All items eligible for expiry in cache will be refreshed at each
+     * run. Note that providing a value here less than {@code timeToLiveSeoncds}
+     * will effectively give eternal life to the cache entry if cache is below
+     * max capacity. The entry value will, however, be continually refreshed.
      */
     public EhContentCache(
             SelfPopulatingCache cache,
