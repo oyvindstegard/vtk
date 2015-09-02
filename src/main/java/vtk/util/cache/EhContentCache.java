@@ -46,9 +46,14 @@ import org.springframework.beans.factory.DisposableBean;
  * instance. All aspects of the cache behavior and item loading are controlled
  * by configuration of the injected cache instance underlying this {@link ContentCache}.
  * 
- * TODO Ehcache also allows to set a blocking timeout, which we can consider
+ * <p>TODO Ehcache also allows to set a blocking timeout, which we can consider
  * using to prevent thread pileups due to slow loading.
  * 
+ * <p>TODO provided Ehcache instance is not properly shareable due to configuration
+ * modification of the provided instance. (Considering use case where multiple
+ * {@code EhContentCache} instances share the same {@code SelfPopulatingCache}
+ * instance.)
+  * 
  * @param <K> key type for the cache
  * @param <V> value type for the cache
  */
