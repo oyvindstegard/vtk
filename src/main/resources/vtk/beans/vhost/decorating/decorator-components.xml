@@ -613,8 +613,7 @@
         </property>
       </bean>
     </constructor-arg>
-    <constructor-arg name="requireSerializable" value="false"/>
-    <constructor-arg name="refreshIntervalSeconds" value="30" />
+    <constructor-arg name="refreshIntervalSeconds" value="60" />
     <constructor-arg name="asynchronousRefresh" value="true" />
   </bean>
 
@@ -744,8 +743,7 @@
         </property>
       </bean>
     </constructor-arg>
-    <constructor-arg name="requireSerializable" value="false"/>
-    <constructor-arg name="refreshIntervalSeconds" value="30" />
+    <constructor-arg name="refreshIntervalSeconds" value="60" />
     <constructor-arg name="asynchronousRefresh" value="false" />
   </bean>
 

@@ -56,30 +56,53 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
     private final static Log logger = LogFactory.getLog(EhContentCache.class);
     private final SelfPopulatingCache cache;
 
-    private final boolean requireSerializable;
     private final int timeToIdleSeconds;
     private final int timeToLiveSeconds;
     private final boolean asynchronousRefresh;
     protected final ScheduledExecutorService refreshAllExecutor;
     protected final ExecutorService asyncRefreshExecutor;
 
+    /**
+     * Construct a new instance backed by the provided <code>SelfPopulatingCache</code>.
+     * 
+     * <p>The provided Eh cache should not be shared with others, as its configuration
+     * will be modified by this class.
+     * 
+     * <p>The constructed content cache will not have asynchronous refresh or
+     * background interval refresh enabled.
+     * @param cache the Eh cache instance used as backing
+     */
     public EhContentCache(SelfPopulatingCache cache) {
-        this(cache, true, -1, false);
+        this(cache, -1, false);
     }
 
     /**
-     * @param requireSerializable Whether to use Ehcache API which requires keys and values to be
-     * serializable or not.
+     * Construct a new instance backed by the provided
+     * <code>SelfPopulatingCache</code>.
+     *
+     * <p>
+     * The provided Eh cache instance should not be shared with others, as its
+     * configuration will be modified by this class.
+     *
+     * @param cache the Eh cache instance used as backing
+     * @param asynchronousRefresh whether to enable asynchronous refresh on get
+     * or not. If this is enabled, then <code>get</code> can return expired data
+     * until the refresh is finished. Otherwise get will block while the cache
+     * item is loaded.
+     * @param refreshIntervalSeconds if set to something greater than 0, then a
+     * background refresh task is scheduled to run at the provided interval in
+     * seconds. All items in cache will be refreshed at each run. Note that
+     * providing a value here less than {@code timeToLiveSeoncds} will
+     * effectively give eternal life to the cache entry if cache is below max
+     * capacity. The entry value will, however, be continually refreshed.
      */
     public EhContentCache(
             SelfPopulatingCache cache,
-            boolean requireSerializable,
             int refreshIntervalSeconds,
             boolean asynchronousRefresh
     ) {
         CacheConfiguration config = cache.getCacheConfiguration();
         this.cache = cache;
-        this.requireSerializable = requireSerializable;
         this.asynchronousRefresh = asynchronousRefresh;
 
         // Do our own cache expiration to enable us to return stale objects if we receive an error
@@ -131,11 +154,7 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         }
         element = cache.get(identifier);
 
-        if (requireSerializable) {
-            return (V) element.getValue();
-        } else {
-            return (V) element.getObjectValue();
-        }
+        return (V) element.getObjectValue();
     }
 
     @Override

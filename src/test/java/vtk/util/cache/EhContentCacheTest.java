@@ -182,7 +182,7 @@ public class EhContentCacheTest {
         );
 
         EhContentCache<String, String> cache = new EhContentCache<>(
-                makeCache(cc, threadSafeMockedLoader), true, -1, true
+                makeCache(cc, threadSafeMockedLoader), -1, true
         );
 
         threadSafeMockery.checking(new Expectations() {
@@ -226,7 +226,7 @@ public class EhContentCacheTest {
         assertEquals("b", cache.get("a"));
         context.assertIsSatisfied();
     }
-
+    
     @Test
     public void return_stale_data_on_error_in_asynchronous_refresh() throws Exception {
         CacheConfiguration cc = new CacheConfiguration("vtk.contentExipry", DEFAULT_CACHE_LIMIT);
@@ -238,7 +238,7 @@ public class EhContentCacheTest {
         );
 
         EhContentCache<String, String> cache = new EhContentCache<>(
-                makeCache(cc, threadSafeMockedLoader), true, -1, true
+                makeCache(cc, threadSafeMockedLoader), -1, true
         );
 
         threadSafeMockery.checking(new Expectations() {
@@ -308,7 +308,7 @@ public class EhContentCacheTest {
 
         CacheConfiguration cc = new CacheConfiguration(DEFAULT_CACHE_NAME + "-1", DEFAULT_CACHE_LIMIT);
         final EhContentCache<String, String> cache = new EhContentCache<>(
-                makeCache(cc, slowLoader), true, -1, true
+                makeCache(cc, slowLoader), -1, true
         );
 
         ExecutorService es = Executors.newFixedThreadPool(3);
@@ -388,7 +388,7 @@ public class EhContentCacheTest {
         );
 
         EhContentCache<String, String> cache = new EhContentCache<>(
-                makeCache(cc, threadSafeMockedLoader), true, 1, false
+                makeCache(cc, threadSafeMockedLoader), 1, false
         );
 
         threadSafeMockery.checking(new Expectations() {
