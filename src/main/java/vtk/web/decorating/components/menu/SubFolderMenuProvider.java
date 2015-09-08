@@ -101,7 +101,20 @@ public class SubFolderMenuProvider implements InitializingBean {
 
         return getSubfolderMenu(rs, collection, token, locale, 3, sortProperty);
     }
+    
+    public Map<String, Object> getSubfolderMenuWithOneGeneratedResultSet(Resource collection,
+            HttpServletRequest request) {
+        RequestContext requestContext = RequestContext.getRequestContext();
+        String token = requestContext.getSecurityToken();
+        ResultSet rs = listCollections(collection.getURI(), requestContext);
 
+        Locale locale = new org.springframework.web.servlet.support.RequestContext(request).getLocale();
+
+        PropertyTypeDefinition sortProperty = getSearchSorting(collection);
+
+        return getSubfolderMenu(rs, collection, token, locale, 1, sortProperty);
+    }
+    
     public Map<String, Object> getSubfolderMenu(ResultSet rs, Resource collection, String token, Locale locale,
             int resultSets, PropertyTypeDefinition sortProperty) {
         String title = null;
