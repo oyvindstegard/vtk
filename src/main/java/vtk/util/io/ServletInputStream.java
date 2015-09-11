@@ -33,13 +33,10 @@ package vtk.util.io;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.servlet.ReadListener;
-
 
 public class ServletInputStream extends javax.servlet.ServletInputStream {
 
     private InputStream inputStream;
-    private boolean eof = false;
 
     public ServletInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
@@ -51,9 +48,7 @@ public class ServletInputStream extends javax.servlet.ServletInputStream {
     
     @Override
     public int read() throws IOException {
-        int n = inputStream.read();
-        eof = n == -1;
-        return n;
+        return inputStream.read();
     }
 
     @Override
@@ -78,16 +73,12 @@ public class ServletInputStream extends javax.servlet.ServletInputStream {
 
     @Override
     public int read(byte[] b) throws IOException {
-        int n = inputStream.read(b);
-        eof = n == -1;
-        return n;
+        return inputStream.read(b);
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int n = inputStream.read(b, off, len);
-        eof = n == -1;
-        return n;
+        return inputStream.read(b, off, len);
     }
 
     @Override
@@ -100,24 +91,4 @@ public class ServletInputStream extends javax.servlet.ServletInputStream {
         return inputStream.skip(n);
     }
 
-    @Override
-    public boolean isFinished() {
-        return eof;
-    }
-
-    @Override
-    public boolean isReady() {
-        try {
-            return inputStream.available() > 0;
-        }
-        catch(IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void setReadListener(ReadListener readListener) {
-        // Noop
-    }
-    
 }
