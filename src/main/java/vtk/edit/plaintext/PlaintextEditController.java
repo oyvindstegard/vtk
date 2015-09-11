@@ -157,7 +157,7 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
             HttpServletResponse response, PlaintextEditCommand command,
             BindException errors) throws Exception {
 
-        Map<String, Object> model = new HashMap<>();
+        Map<String, Object> model = errors.getModel();
         if (command.getSaveAction() != null) {
             store(command);
             return new ModelAndView(getFormView(), model);
