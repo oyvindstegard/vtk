@@ -19,12 +19,13 @@
     <property name="propertyTypeDefinitions">
       <list>
         <ref bean="masterListing.displayTypePropDef" />
+        <ref bean="thesisListing.listingTypePropDef" />
       </list>
     </property>
   </bean>
 
   <bean id="masterListing.displayTypePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
-         parent="abstractPropDef">
+        parent="abstractPropDef">
     <property name="name" value="display-type" />
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
@@ -42,6 +43,43 @@
             <bean class="vtk.repository.resourcetype.Value">
               <constructor-arg type="java.lang.String">
                 <value>alphabetical</value>
+              </constructor-arg>
+              <constructor-arg ref="TYPE_STRING" />
+            </bean>
+          </list>
+        </property>
+      </bean>
+    </property>
+    <property name="metadata">
+      <map>
+        <entry key="editingHints">
+          <map>
+            <entry key="radio" value="true" />
+          </map>
+        </entry>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="thesisListing.listingTypePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
+        parent="abstractPropDef">
+    <property name="name" value="thesis-listing-type" />
+    <property name="type" value="STRING" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.thesis-listing-type" />
+        <constructor-arg value="STRING" />
+      </bean>
+    </property>
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <property name="values">
+          <list>
+            <bean class="vtk.repository.resourcetype.Value">
+              <constructor-arg type="java.lang.String">
+                <value>phd</value>
               </constructor-arg>
               <constructor-arg ref="TYPE_STRING" />
             </bean>
