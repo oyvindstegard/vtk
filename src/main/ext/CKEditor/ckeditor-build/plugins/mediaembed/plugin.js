@@ -5,8 +5,8 @@
 var paramsStandard = {
   "url": "",
   "poster": "",
-  "width": 504,
-  "height": 302,
+  "width": 507,
+  "height": 322,
   "autoplay": "false",
   "contentType": "",
   "streamType": "",
@@ -16,8 +16,8 @@ var paramsStandard = {
 var params = {
   "url": "",
   "poster": "",
-  "width": 504,
-  "height": 302,
+  "width": 507,
+  "height": 322,
   "autoplay": "false",
   "contentType": "",
   "streamType": "",

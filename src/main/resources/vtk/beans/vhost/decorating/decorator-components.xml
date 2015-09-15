@@ -273,8 +273,8 @@
     <property name="url" value="layouts/media-player.ftl" />
     <property name="attributes">
       <map>
-        <entry key="width" value="504px" />
-        <entry key="height" value="302px" />
+        <entry key="height" value="322px" />
+        <entry key="width" value="507px" />
         <entry key="autoplay" value="false" />
         <entry key="audioFlashPlayerJsURL" value="${jsBaseURL}/audio-player.js" />
         <entry key="audioFlashPlayerFlashURL" value="${flash.baseURL}/audioplayer.swf" />

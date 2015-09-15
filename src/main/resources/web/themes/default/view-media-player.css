@@ -6,8 +6,8 @@
   .vrtx-media-player-print { display: none; }
   .vrtx-media-player-no-flash,
   .vrtx-media-player-no-flash img {
-    width: 504px;
-    height: 302px;
+    width: 507px;
+    height: 282px;
     float: left;
   }
   .vrtx-media-player-no-flash { background-color: #000000; position: relative; }

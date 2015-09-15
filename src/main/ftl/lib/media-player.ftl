@@ -27,12 +27,12 @@
       <#local imgSrc = poster />
     <#elseif mediaResource?? && mediaResource.resourceType == "videoref">
       <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/video-streaming-only.png" />
-      <#local width = "504" />
-      <#local height = "302" />
+      <#local width = "500" />
+      <#local height = "279" />
     <#else>
       <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/video-noflash.png" />
-      <#local width = "504" />
-      <#local height = "302" />
+      <#local width = "500" />
+      <#local height = "279" />
     </#if>
     <#local alt = vrtx.getMsg("article.media-file") />
   <#else>
