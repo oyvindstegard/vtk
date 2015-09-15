@@ -22,9 +22,9 @@
       </list>
     </property>
   </bean>
-  
-   <bean id="masterListing.displayTypePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
-    parent="abstractPropDef">
+
+  <bean id="masterListing.displayTypePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
+         parent="abstractPropDef">
     <property name="name" value="display-type" />
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
@@ -59,11 +59,10 @@
       </map>
     </property>
   </bean>
-  
 
   <bean id="resourceIsMasterListing" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="masterListingResourceTypeDefinition" />
     <property name="exactMatch" value="true" />
   </bean>
-  
+
 </beans>
