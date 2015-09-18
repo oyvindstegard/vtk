@@ -68,6 +68,13 @@
   <bean id="repository.sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
     <property name="dataSource" ref="repository.dataSource" />
     <property name="configLocation" value="classpath:/vtk/repository/store/db/ibatis/${sqlDialect}-sql-map-config.xml" />
+    <property name="typeHandlers">
+      <list>
+        <bean class="vtk.repository.store.db.ibatis.UserPrincipalTypeHandlerCallback">
+          <property name="principalFactory" ref="principalFactory" />
+        </bean>
+      </list>
+    </property>
   </bean>
 
   <bean id="repository.sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
@@ -137,7 +144,6 @@
   <bean id="repository.sqlMapCommentDao" class="vtk.repository.store.db.SqlMapCommentDAO" 
         parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
-    <property name="principalFactory" ref="principalFactory" />
   </bean>
 
   <bean id="repositoryAware" abstract="true">

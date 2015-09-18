@@ -803,7 +803,7 @@
     <result property="id" column="id" />
     <result property="uri" column="uri" typeHandler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback" />
     <result property="time" column="time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
-    <result property="author" column="author" />
+    <result property="author" column="author" typeHandler="vtk.repository.store.db.ibatis.UserPrincipalTypeHandlerCallback"/>
     <result property="title" column="title" />
 
     <result property="content" column="content" javaType="string" />

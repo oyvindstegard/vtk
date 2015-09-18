@@ -280,10 +280,10 @@ public class ResourceArchiver {
 
         Comment comment = new Comment();
         comment.setURI(Path.fromString(getExpandedEntryUri(base, path)));
-        comment.setAuthor(this.principalFactory.getPrincipal(author, Type.USER).getQualifiedName());
+        comment.setAuthor(this.principalFactory.getPrincipal(author, Type.USER));
         comment.setTitle(title);
-        comment.setTime(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(time.toString()));
-        comment.setContent(content.toString());
+        comment.setTime(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(time));
+        comment.setContent(content);
 
         return comment;
     }
