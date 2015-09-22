@@ -2,6 +2,7 @@ resourcetype structured-master {
 
   properties {
     title : string overrides title,
+    thesis-type: string,
     status-available : boolean,
     introduction : simple_html,
     picture : image_ref,
@@ -18,6 +19,7 @@ resourcetype structured-master {
   }
   
   edit-rules {
+    thesis-type (dropdown),
     supervisorsUsernames (class[vrtx-autocomplete-username]),
     caption (size[small]),
     credits (dropdown),
@@ -220,6 +222,11 @@ resourcetype structured-master {
   }
   
   vocabulary {
+    thesis-type {
+      en : ("master" = "Master", "phd" = "PhD"),
+      no : ("master" = "Master", "phd" = "Ph.D."),
+      nn : ("master" = "Master", "phd" = "Ph.D.")
+    },
     status-available {
       en : ("true" = "Available", "false" = "Ongoing / completed"),
       no : ("true" = "Ledig", "false" = "Pågående / avsluttet"),
@@ -234,6 +241,7 @@ resourcetype structured-master {
   
   localization {
     title : (en : "Title", no : "Tittel", nn : "Tittel"),
+    thesis-type : (en : "Type of thesis", no : "Oppgavetype", nn : "Oppgåvetype"),
     introduction : (en : "Introduction",no : "Innledning", nn : "Innleiing"),
     status-available : (en : "Status", no : "Status", nn : "Status"),
     picture : (en: "Image", no: "Bilde", nn : "Bilete"),
@@ -261,7 +269,7 @@ resourcetype structured-master {
     content : (en : "Content", no :"Innhold",nn : "Innhold"),
     contactInfo : (en : "Contact information", no : "Kontaktinformasjon", nn : "Kontaktinformasjon"),
     contactInfoView : (en : "Contact", no : "Kontakt", nn : "Kontakt"),
-    header : (en : "Edit master project", no : "Rediger masteroppgave", nn : "Rediger masteroppgåve"),
+    header : (en : "Edit thesis", no : "Rediger oppgave", nn : "Rediger oppgåve"),
     publishedDate : (en : "Published", no :"Publisert", nn:"Publisert"),
     lastModifiedDate : (en : "Last modified", no : "Sist endret", nn : "Sist endra"),
     numberOfSupervisorsToDisplay : (
