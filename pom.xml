@@ -706,9 +706,9 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>owasp-java-html-sanitizer</groupId>
+      <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
       <artifactId>owasp-java-html-sanitizer</artifactId>
-      <version>r106</version>
+      <version>r239</version>
       <scope>compile</scope>
     </dependency>
 

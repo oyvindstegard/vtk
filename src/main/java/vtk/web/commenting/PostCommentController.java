@@ -70,34 +70,14 @@ import vtk.web.service.URL;
  * Optionally stores the binding errors object in the session.
  */
 public class PostCommentController extends SimpleFormController<PostCommentCommand> {
-    private static Log logger = LogFactory.getLog(PostCommentController.class);
+    private final Log logger = LogFactory.getLog(PostCommentController.class);
+    
     private String formSessionAttributeName;
     private HtmlPageParser parser;
     private HtmlPageFilter htmlFilter;
+    private PolicyFactory htmlSanitizerPolicy;
     private int maxCommentLength = 10000;
     private boolean requireCommentTitle = false;
-
-    @Required
-    public void setHtmlParser(HtmlPageParser parser) {
-        this.parser = parser;
-    }
-
-    public void setFormSessionAttributeName(String formSessionAttributeName) {
-        this.formSessionAttributeName = formSessionAttributeName;
-    }
-
-    @Required
-    public void setHtmlFilter(HtmlPageFilter htmlFilter) {
-        this.htmlFilter = htmlFilter;
-    }
-
-    public void setMaxCommentLength(int maxCommentLength) {
-        this.maxCommentLength = maxCommentLength;
-    }
-
-    public void setRequireCommentTitle(boolean requireCommentTitle) {
-        this.requireCommentTitle = requireCommentTitle;
-    }
 
     @Override
     protected PostCommentCommand formBackingObject(HttpServletRequest request) throws Exception {
@@ -136,12 +116,22 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
             errors.rejectValue("text", "commenting.post.text.missing",
                     "You must type something in the comment field");
         }
-        
-        String sanitizedText = sanitizeContent(commentText);
 
-        // TODO Should only use OWASP library for parsing/cleaning content (avoid two stages doing essentially the same thing).
+        // Apply first HTML sanitation step if configured (using OWASP policy)
+        if (this.htmlSanitizerPolicy != null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Input text before OWASP sanitation: " + commentText);
+            }
+            commentText = this.htmlSanitizerPolicy.sanitize(commentText);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Input text after OWASP sanitation: " + commentText);
+            }
+        }
+
+        // Apply second parse/cleanup step
+        String parsedText = parseContent(commentText);
         
-        String parsedText = parseContent(sanitizedText);
+        // Check cleaned up value and possibly reject
         if (StringUtils.isBlank(parsedText)) {
             errors.rejectValue("text", "commenting.post.text.missing",
                     "You must type something in the comment field");
@@ -157,7 +147,7 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
             return;
         }
         if (errors.hasErrors()) {
-            Map<String, Object> map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<>();
             map.put("form", command);
             map.put("errors", errors);
             request.getSession(true).setAttribute(this.formSessionAttributeName, map);
@@ -191,21 +181,6 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
         return new ModelAndView(getSuccessView());
     }
     
-    /**
-     * Initial integration of owasp library
-     */
-    protected String sanitizeContent(String text) throws Exception {
-        logger.debug("Text before sanitizing: '" + text + "'");
-        PolicyFactory policy = new HtmlPolicyBuilder()
-        	.allowStandardUrlProtocols()
-        	.allowAttributes("href").onElements("a")
-        	.allowElements("a", "p", "ul", "li", "ol", "em", "strong", "cite", "code", "s", "u")
-        	.toFactory();
-        String sanitizedText = policy.sanitize(text);
-        logger.debug("After sanitizing: '" + sanitizedText + "'");
-        return sanitizedText;
-    }
-
     protected String parseContent(String text) throws Exception {
         if (this.parser != null) {
             HtmlFragment fragment = this.parser.parseFragment(text);
@@ -223,7 +198,7 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
             }
             nodes = trimNodes(nodes);
 
-            List<HtmlContent> content = new ArrayList<HtmlContent>();
+            List<HtmlContent> content = new ArrayList<>();
             HtmlElement currentParagraph = new HtmlElementImpl("p", true, false);
             content.add(currentParagraph);
             for (HtmlContent c : nodes) {
@@ -251,7 +226,7 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
 
 
     private List<HtmlContent> trimNodes(List<HtmlContent> nodes) {
-        List<HtmlContent> result = new ArrayList<HtmlContent>();
+        List<HtmlContent> result = new ArrayList<>();
         boolean contentBegun = false;
         for (HtmlContent node : nodes) {
             if (!contentBegun && (node instanceof HtmlText)) {
@@ -293,4 +268,31 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
         }
         return false;
     }
+    
+    public void setHtmlSanitizerPolicy(PolicyFactory sanitizerPolicy) {
+        this.htmlSanitizerPolicy = sanitizerPolicy;
+    }
+    
+    @Required
+    public void setHtmlParser(HtmlPageParser parser) {
+        this.parser = parser;
+    }
+
+    public void setFormSessionAttributeName(String formSessionAttributeName) {
+        this.formSessionAttributeName = formSessionAttributeName;
+    }
+
+    @Required
+    public void setHtmlFilter(HtmlPageFilter htmlFilter) {
+        this.htmlFilter = htmlFilter;
+    }
+
+    public void setMaxCommentLength(int maxCommentLength) {
+        this.maxCommentLength = maxCommentLength;
+    }
+
+    public void setRequireCommentTitle(boolean requireCommentTitle) {
+        this.requireCommentTitle = requireCommentTitle;
+    }
+
 }

@@ -134,7 +134,7 @@ public final class HtmlPage {
     
     
     static List<HtmlContent> filterContent(List<HtmlContent> nodeList, HtmlPageFilter filter) {
-        List<HtmlContent> resultList = new ArrayList<HtmlContent>();
+        List<HtmlContent> resultList = new ArrayList<>();
 
         for (HtmlContent node: nodeList) {
             NodeResult result = filter.filter(node);
