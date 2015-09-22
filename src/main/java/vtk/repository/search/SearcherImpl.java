@@ -554,6 +554,8 @@ public class SearcherImpl implements Searcher, InitializingBean {
     /**
      * Set size of internal search result cache. Default value is
      * {@link LuceneResultCache#DEFAULT_MAX_ITEMS}.
+     * 
+     * <p>The cache only applies to unauthenticated queries.
       * 
      * @param maxItems maximum number of cached results, or -1 to disable result
      * caching.
