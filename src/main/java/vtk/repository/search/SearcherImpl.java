@@ -31,9 +31,6 @@
 package vtk.repository.search;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
@@ -95,7 +92,7 @@ public class SearcherImpl implements Searcher, InitializingBean {
      * is <em>not</em> affected by this limit.
      */
     private int luceneSearchLimit = 60000;
-
+    
     @Override
     public void afterPropertiesSet() throws BeanInitializationException {
         if (luceneSearchLimit <= 0) {

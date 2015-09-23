@@ -38,6 +38,8 @@ import java.util.Map;
  * 
  * <p>The cache is not internally thread safe and external synchronization must be
  * employed in shared scenarios.
+ * @param <K> type of keys for cache
+ * @param <V> type of values for cache
  */
 public class LruCache<K, V> extends LinkedHashMap<K, V> {
     private final int maxItems;

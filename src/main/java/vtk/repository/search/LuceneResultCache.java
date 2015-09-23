@@ -66,6 +66,10 @@ import org.apache.lucene.search.TopDocs;
  * become invalid for new readers opened on updated indexes. It is also
  * important not to keep strong references to stale index readers, because that
  * would cause memory leaks.
+ * 
+ * <p>The cache uses a two-stage lookup, where per index reader result
+ * caches are looked up first, and then search results are looked up in those
+ * result caches.
  */
 class LuceneResultCache {
     
@@ -141,7 +145,29 @@ class LuceneResultCache {
 
         resultCache.put(searchCacheKey, topDocs);
         
+        maybeLogStats(resultCache);
+        
         return topDocs;
+    }
+    
+    private int lastLoggedStats = 0;
+    private void maybeLogStats(Map<Object,TopDocs> currentResultCache) {
+        if (!logger.isDebugEnabled()) return;
+        
+        int lastLogged = this.lastLoggedStats;
+        
+        int cacheRequestCount = hits.get() + misses.get();
+        
+        if (cacheRequestCount < lastLogged || cacheRequestCount > lastLogged + 200) {
+            lastLogged = cacheRequestCount;
+            logger.debug("Stats: {total-requests: " + cacheRequestCount + ", hits: " 
+                    + hits.get() + ",misses: " + misses.get() 
+                    + ", ratio: " + hitRatio() +", weak-cached-reader-count: " 
+                    + this.cache.size() + ", current-result-cache-size: " 
+                    + currentResultCache.size() + "}");
+        }
+        
+        this.lastLoggedStats = lastLogged; // racy update doesn't matter.
     }
     
     /**
@@ -178,12 +204,6 @@ class LuceneResultCache {
             cache.put(indexReaderCacheKey, resultCache);
         }
         
-        // Some throttled debug logging in case we get problems with weak 
-        // refs not getting cleaned properly
-        if (logger.isDebugEnabled() && (hits.get() + misses.get()) % 100 == 0) {
-            logger.debug("Current number of index reader keys in cache: " + cache.size());
-        }
-
         return resultCache;
     }
     
