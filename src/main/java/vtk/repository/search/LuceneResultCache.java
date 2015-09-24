@@ -128,6 +128,7 @@ class LuceneResultCache {
                 misses.set(0);
             }
             // Cache hit
+            maybeLogStats(resultCache);
             return cachedResult;
         }
         
@@ -158,10 +159,10 @@ class LuceneResultCache {
         
         int cacheRequestCount = hits.get() + misses.get();
         
-        if (cacheRequestCount < lastLogged || cacheRequestCount > lastLogged + 200) {
+        if (cacheRequestCount < lastLogged || cacheRequestCount > lastLogged + 100) {
             lastLogged = cacheRequestCount;
             logger.debug("Stats: {total-requests: " + cacheRequestCount + ", hits: " 
-                    + hits.get() + ",misses: " + misses.get() 
+                    + hits.get() + ", misses: " + misses.get() 
                     + ", ratio: " + hitRatio() +", weak-cached-reader-count: " 
                     + this.cache.size() + ", current-result-cache-size: " 
                     + currentResultCache.size() + "}");
