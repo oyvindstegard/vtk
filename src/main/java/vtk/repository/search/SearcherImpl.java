@@ -557,7 +557,7 @@ public class SearcherImpl implements Searcher, InitializingBean {
      * @param maxItems maximum number of cached results, or -1 to disable result
      * caching.
      */
-    public void setResultCacheSzie(int maxItems) {
+    public void setResultCacheSize(int maxItems) {
         this.resultCacheSize = maxItems;
     }
 
