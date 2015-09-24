@@ -33,7 +33,7 @@
   <logger name="vtk.repository.OperationLog"><level value="info" /></logger>
   <logger name="vtk.repository.ChangeHistoryLog"><level value="debug" /></logger>
   <logger name="vtk.repository.store.db.SqlMapIndexDao"><level value="info" /></logger>
-  <logger name="vtk.repository.search.SearcherImpl"><level value="debug" /></logger>
+  <logger name="vtk.repository.search.SearcherImpl"><level value="info" /></logger>
   <logger name="vtk.repository.RepositoryResourceHelper"><level value="info" /></logger>
   <logger name="vtk.web.filter.ExpiresCacheResponseFilter"><level value="info" /></logger>
   <logger name="vtk.util.cache"><level value="info" /></logger>
