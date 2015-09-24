@@ -31,6 +31,7 @@
 package vtk.repository;
 
 import java.util.Date;
+import vtk.security.Principal;
 
 
 public final class Comment {
@@ -40,7 +41,7 @@ public final class Comment {
     private String id = null;
 
     private Date time;
-    private String author;
+    private Principal author;
     private String title;
     private String content;
     private boolean approved = false;
@@ -69,11 +70,11 @@ public final class Comment {
         this.time = time;
     }
 
-    public String getAuthor() {
+    public Principal getAuthor() {
         return this.author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(Principal author) {
         this.author = author;
     }
 

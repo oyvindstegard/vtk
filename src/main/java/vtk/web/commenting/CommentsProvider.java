@@ -47,12 +47,13 @@ import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 import vtk.web.RequestContext;
-import vtk.web.RequestContext.RepositoryTraversal;
-import vtk.web.RequestContext.TraversalCallback;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
+/**
+ * Provide resource comments and commenting related service URLs in model data.
+ */
 public class CommentsProvider implements ReferenceDataProvider {
     
     private Service postCommentService;
@@ -61,39 +62,6 @@ public class CommentsProvider implements ReferenceDataProvider {
     private Service loginService;
     private Service resourceCommentsFeedService;
     private String formSessionAttributeName;
-    private String trustedToken = null;
-    
-
-    @Required
-    public void setPostCommentService(Service postCommentService) {
-        this.postCommentService = postCommentService;
-    }
-    
-    @Required
-    public void setDeleteCommentService(Service deleteCommentService) {
-        this.deleteCommentService = deleteCommentService;
-    }
-    
-    @Required
-    public void setDeleteAllCommentsService(Service deleteAllCommentsService) {
-        this.deleteAllCommentsService = deleteAllCommentsService;
-    }
-    
-    public void setResourceCommentsFeedService(Service resourceCommentsFeedService) {
-        this.resourceCommentsFeedService = resourceCommentsFeedService;
-    }
-    
-    public void setLoginService(Service loginService) {
-        this.loginService = loginService;
-    }
-    
-    public void setFormSessionAttributeName(String formSessionAttributeName) {
-        this.formSessionAttributeName = formSessionAttributeName;
-    }
-    
-    public void setTrustedToken(String trustedToken) {
-        this.trustedToken = trustedToken;
-    }
     
     @Override
     public void referenceData(final Map<String, Object> model, HttpServletRequest servletRequest) throws Exception {
@@ -137,28 +105,14 @@ public class CommentsProvider implements ReferenceDataProvider {
         model.put("commentsLocked", commentsAllowed && locked);
         
         model.put("commentsEnabled", false);
+        Property commentsEnabled = resource.getPropertyByPrefix(null, "commentsEnabled");
+        if (commentsEnabled != null) {
+            model.put("commentsEnabled", commentsEnabled.getBooleanValue());
+        }
         
-        String traversalToken = this.trustedToken != null ? this.trustedToken : token;
-        RepositoryTraversal traversal = requestContext.rootTraversal(traversalToken, uri);
-        traversal.traverse(new TraversalCallback() {
-            @Override
-            public boolean callback(Resource resource) {
-                for (Property p: resource) {
-                    if (p.getDefinition().getName().equals("commentsEnabled")) {
-                        model.put("commentsEnabled", p.getBooleanValue());
-                        return false;
-                    }
-                }
-                return true;
-            }
-            @Override
-            public boolean error(Path uri, Throwable error) {
-                return false;
-            }});
-
         model.put("repositoryReadOnly", repository.isReadOnly(uri, false));
 
-        Map<String, URL> deleteCommentURLs = new HashMap<String, URL>();
+        Map<String, URL> deleteCommentURLs = new HashMap<>();
 
         URL baseDeleteURL = null;
         try {
@@ -214,4 +168,31 @@ public class CommentsProvider implements ReferenceDataProvider {
         return java.util.Collections.<String, String>emptyMap();
     }
 
+    @Required
+    public void setPostCommentService(Service postCommentService) {
+        this.postCommentService = postCommentService;
+    }
+    
+    @Required
+    public void setDeleteCommentService(Service deleteCommentService) {
+        this.deleteCommentService = deleteCommentService;
+    }
+    
+    @Required
+    public void setDeleteAllCommentsService(Service deleteAllCommentsService) {
+        this.deleteAllCommentsService = deleteAllCommentsService;
+    }
+    
+    public void setResourceCommentsFeedService(Service resourceCommentsFeedService) {
+        this.resourceCommentsFeedService = resourceCommentsFeedService;
+    }
+    
+    public void setLoginService(Service loginService) {
+        this.loginService = loginService;
+    }
+    
+    public void setFormSessionAttributeName(String formSessionAttributeName) {
+        this.formSessionAttributeName = formSessionAttributeName;
+    }
+    
 }

@@ -86,20 +86,24 @@
   </bean>
 
 
-  <bean name="commenting.postCommentController"
-        class="vtk.web.commenting.PostCommentController">
+  <bean name="commenting.postCommentController" class="vtk.web.commenting.PostCommentController">
     <property name="formView" value="commenting.redirectToDefault" />
     <property name="successView" value="commenting.redirectToDefault" />
     <property name="commandName" value="postCommentForm" />
     <property name="requireCommentTitle" ref="commenting.titlesEnabled" />
     <property name="formSessionAttributeName" ref="commenting.postFormSessionAttributeName" />
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlFilter" ref="commenting.htmlFilter" />
-  </bean>
-
-  <bean id="commenting.htmlFilter" class="vtk.text.html.SimpleHtmlPageFilter">
-    <property name="illegalElements" ref="safeHtml.illegalElementSet" />
-    <property name="validElements" ref="commenting.validHtmlElementSet" />
+    <property name="htmlFilter">
+      <bean class="vtk.text.html.SimpleHtmlPageFilter">
+        <property name="illegalElements" ref="safeHtml.illegalElementSet" />
+        <property name="validElements" ref="commenting.validHtmlElementSet" />
+      </bean>
+    </property>
+    <property name="htmlSanitizerPolicy">
+      <bean class="vtk.text.html.HtmlSanitizerPolicyFactoryBean">
+        <property name="validElements" ref="commenting.validHtmlElementSet" />
+      </bean>
+    </property>
   </bean>
 
   <bean id="commenting.validHtmlElementSet" class="org.springframework.beans.factory.config.SetFactoryBean">
@@ -271,8 +275,7 @@
         <property name="resourceCommentsFeedService" ref="commenting.feedService" />
         <property name="publishedDatePropDef" ref="publishedDatePropDef" />
         <property name="includeCommentsFromUnpublished" value="true" />
-        <property name="trustedToken" ref="trustedToken" />
-      </bean>    
+      </bean>
     </property>
     <property name="attributesMap">
       <map>
@@ -292,7 +295,6 @@
         <property name="recentCommentsService" ref="commenting.resourceCommentsService" />
         <property name="resourceCommentsFeedService" ref="commenting.feedService" />
         <property name="publishedDatePropDef" ref="publishedDatePropDef" />
-        <property name="trustedToken" ref="trustedToken" />
       </bean>    
     </property>  
   </bean>
@@ -385,7 +387,6 @@
           <property name="resourceCommentsFeedService" ref="commenting.feedService" />
           <property name="loginService" ref="loginService" />
           <property name="formSessionAttributeName" ref="commenting.postFormSessionAttributeName" />
-          <property name="trustedToken" ref="trustedToken" />
         </bean>
         <bean class="vtk.web.referencedata.provider.StaticURIServiceURLProvider">
           <property name="service" ref="staticResourceService" />
