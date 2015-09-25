@@ -1537,7 +1537,11 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
   }
   
   // Check if username with autocomplete and initiate on all fields
-  autocompleteUsernames(inputFieldParent.filter(".vrtx-autocomplete-username"), isEnriched);
+  if(inputFieldParent.hasClass("inputfield")) {
+    autocompleteUsernames(inputFieldParent.parent().filter(".vrtx-autocomplete-username"), isEnriched);
+  } else {
+    autocompleteUsernames(inputFieldParent.filter(".vrtx-autocomplete-username"), isEnriched);
+  }
 }
 
 function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown, init, json, isReadOnly) {
