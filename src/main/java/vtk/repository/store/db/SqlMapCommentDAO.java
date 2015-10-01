@@ -35,21 +35,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
-import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Comment;
 import vtk.repository.Resource;
 import vtk.repository.store.CommentDAO;
-import vtk.security.PrincipalFactory;
 
 public class SqlMapCommentDAO extends AbstractSqlMapDataAccessor implements CommentDAO {
-
-    private PrincipalFactory principalFactory;
-    
-    @Required
-    public void setPrincipalFactory(PrincipalFactory principalFactory) {
-        this.principalFactory = principalFactory;
-    }
 
     @Override
     public int getNumberOfComments(Resource resource) throws RuntimeException {
@@ -65,7 +56,7 @@ public class SqlMapCommentDAO extends AbstractSqlMapDataAccessor implements Comm
                 getSqlMap("listCommentsByResourceRecursively") :
                 getSqlMap("listCommentsByResource");
 
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("uri", resource.getURI().toString());
         parameters.put("max", max);
         parameters.put("uriWildcard", 
@@ -76,7 +67,7 @@ public class SqlMapCommentDAO extends AbstractSqlMapDataAccessor implements Comm
         
         return comments;
     }
-
+    
     @Override
     public void deleteComment(Comment comment) {
         String sqlMap = getSqlMap("deleteComment");

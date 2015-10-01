@@ -64,8 +64,8 @@ import java.util.Set;
  */
 public class SimpleHtmlPageFilter implements HtmlPageFilter {
 
-    private Set<String> illegalElements = new HashSet<String>();
-    private Map<String, HtmlElementDescriptor> validElements = new HashMap<String, HtmlElementDescriptor>();
+    private Set<String> illegalElements = new HashSet<>();
+    private Map<String, HtmlElementDescriptor> validElements = new HashMap<>();
     private boolean keepComments = true;
     private boolean checkValidElements = true;
     

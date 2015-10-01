@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <bean id="audioVideoListing.viewService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="collectionListing.viewService" />
@@ -15,14 +15,13 @@
   </bean>
 
   <bean id="audioVideoListing.handler" class="vtk.web.display.collection.CollectionListingController"
-    parent="collectionListing.abstract.handler">
+        parent="collectionListing.abstract.handler">
     <property name="searchComponents">
       <list>
         <ref bean="audioVideoListing.searchComponent" />
       </list>
     </property>
     <property name="viewName" value="audioVideoListing.view" />
-
   </bean>
 
   <bean id="audioVideoListing.searchComponent" parent="collectionListing.searchComponent">
@@ -31,7 +30,7 @@
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">
-          <property name="queryString" value="((type IN audio OR type IN video) AND hide-video-download-link not exists)" />
+          <property name="queryString" value="type IN audio OR type IN video" />
         </bean>
       </list>
     </property>
@@ -135,8 +134,8 @@
   </bean>
 
   <bean id="audioVideoListing.rssFeedHandler" class="vtk.web.display.collection.AudioVideoListingRSSFeedGenerator"
-    parent="rssFeedGenerator">
-    <property name="searchComponent" ref="audioVideoListing.searchComponent" />
+        parent="rssFeedGenerator">
+    <property name="searchComponent" ref="audioVideoListing.feedSearchComponent" />
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />
     <property name="videoHtmlDescriptionPropDef" ref="videoHtmlDescriptionPropDef" />
     <property name="contentLengthPropDef" ref="contentLengthPropDef" />
@@ -144,10 +143,22 @@
   </bean>
 
   <bean id="audioVideoListing.atomFeedHandler" class="vtk.web.display.collection.AudioVideoListingAtomFeedGenerator"
-    parent="collectionListing.feedHandler">
-    <property name="searchComponent" ref="audioVideoListing.searchComponent" />
+        parent="collectionListing.feedHandler">
+    <property name="searchComponent" ref="audioVideoListing.feedSearchComponent" />
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />
     <property name="videoHtmlDescriptionPropDef" ref="videoHtmlDescriptionPropDef" />
+  </bean>
+
+  <!-- Videos with hidden download link is not to be shown in feeds for audio and video listing -->
+  <bean id="audioVideoListing.feedSearchComponent" parent="audioVideoListing.searchComponent">
+    <property name="name" value="audioVideoListing.feedListing" />
+    <property name="queryBuilders">
+      <list>
+        <bean parent="queryStringParser">
+          <property name="queryString" value="((type IN audio OR type IN video) AND hide-video-download-link NOT EXISTS)" />
+        </bean>
+      </list>
+    </property>
   </bean>
 
 </beans>

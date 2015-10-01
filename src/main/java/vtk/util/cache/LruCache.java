@@ -1,21 +1,21 @@
-/* Copyright (c) 2010, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -28,41 +28,36 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.decorating.components;
+package vtk.util.cache;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Required;
-import vtk.repository.Path;
-import vtk.web.RequestContext;
-import vtk.web.decorating.DecoratorRequest;
-import vtk.web.decorating.DecoratorResponse;
-import vtk.web.service.Service;
-import vtk.web.service.URL;
+/**
+ * Simple LRU cache based on {@link LinkedHashMap}.
+ * 
+ * <p>The cache is not internally thread safe and external synchronization must be
+ * employed in shared scenarios.
+ * @param <K> type of keys for cache
+ * @param <V> type of values for cache
+ */
+public class LruCache<K, V> extends LinkedHashMap<K, V> {
+    private final int maxItems;
 
-public class SearchFormComponent extends ViewRenderingDecoratorComponent {
-
-    private Service service;
+    /**
+     * Construct an instance of the cache map with a maximal number of entries.
+     * 
+     * <p>If the number of entries inserted exceeds this maximum, then the
+     * least recently accessed entry will be evicted from the map.
+     * @param maxItems 
+     */
+    public LruCache(int maxItems) {
+        super(maxItems + 1, 0.75f, true);
+        this.maxItems = maxItems;
+    }
 
     @Override
-    protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
-            throws Exception {
-
-        Path scopeUri = RequestContext.getRequestContext().getCurrentCollection();
-
-        String uriParam = request.getStringParameter("uri");
-        try {
-            scopeUri = Path.fromStringWithTrailingSlash(uriParam);
-        } catch (Exception e) {}
-        
-        URL searchURL = service.constructURL(scopeUri);
-        model.put("url", searchURL);
-
+    protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+        return size() > maxItems;
     }
-
-    @Required
-    public void setService(Service service) {
-        this.service = service;
-    }
-
 }

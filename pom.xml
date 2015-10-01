@@ -125,7 +125,7 @@
     <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     <checkstyle.config.location>src/main/checkstyle/checkstyle.xml</checkstyle.config.location>
     <java.version>1.8</java.version>
-    <spring.version>4.1.7.RELEASE</spring.version>
+    <spring.version>4.2.1.RELEASE</spring.version>
   </properties>
 
   <build>
@@ -706,9 +706,9 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>owasp-java-html-sanitizer</groupId>
+      <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
       <artifactId>owasp-java-html-sanitizer</artifactId>
-      <version>r106</version>
+      <version>r239</version>
       <scope>compile</scope>
     </dependency>
 
@@ -790,18 +790,6 @@
       <groupId>org.outerj.daisy</groupId>
       <artifactId>daisydiff</artifactId>
       <version>1.2</version>
-    </dependency>
-
-    <!-- Jackson -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.4.3</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>2.4.3</version>
     </dependency>
 
   </dependencies>
