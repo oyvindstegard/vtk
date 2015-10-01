@@ -84,5 +84,10 @@ public class MetadataImpl implements Metadata {
     public Set<String> getAttributeNames() {
         return Collections.unmodifiableSet(this.attributes.keySet());
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + attributes + ")";
+    }
 
 }
