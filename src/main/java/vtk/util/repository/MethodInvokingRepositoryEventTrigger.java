@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,6 +71,8 @@ public class MethodInvokingRepositoryEventTrigger
 
     private LinkedHashMap<Object, String> multipleInvocations;
     private List<TargetAndMethod> methodInvocations;
+    
+    private  ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
     @Required
     public void setRepository(Repository repository)  {
@@ -191,19 +195,14 @@ public class MethodInvokingRepositoryEventTrigger
     
     private void invoke() {
         for (TargetAndMethod tm: this.methodInvocations) {
-            Method m = tm.getMethod();
-            Object target = tm.getTarget();
+            final Method m = tm.getMethod();
+            final Object target = tm.getTarget();
 
-            try {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Invoking method " + m + " on object "
-                            + this.targetObject);
-                }
-                m.invoke(target, new Object[0]);
-            } catch (Throwable t) {
-                logger.warn("Error occurred while invoking method '" + m +
-                        "' on object '" + target + "'", t);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Invoking method " + m + " on object "
+                        + this.targetObject);
             }
+            executorService.submit(() -> m.invoke(target, new Object[0]));
         }
     }
 
