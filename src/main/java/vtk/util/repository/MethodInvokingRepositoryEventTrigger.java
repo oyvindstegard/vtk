@@ -72,7 +72,9 @@ public class MethodInvokingRepositoryEventTrigger
     private LinkedHashMap<Object, String> multipleInvocations;
     private List<TargetAndMethod> methodInvocations;
     
-    private  ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private  ScheduledExecutorService executorService =
+	Executors.newSingleThreadScheduledExecutor(r -> 
+            new Thread(r, "repository-event-trigger"));
 
     @Required
     public void setRepository(Repository repository)  {
