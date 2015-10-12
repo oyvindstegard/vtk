@@ -58,6 +58,8 @@ import vtk.repository.resourcetype.Value;
 import vtk.resourcemanagement.StructuredResource;
 import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
+import vtk.resourcemanagement.property.JSONPropertyAttributeDescription;
+import vtk.resourcemanagement.property.JSONPropertyDescription;
 import vtk.resourcemanagement.property.PropertyDescription;
 import vtk.text.html.TagsoupParserFactory;
 import vtk.util.text.Json;
@@ -75,7 +77,8 @@ public class LinksEvaluator implements LatePropertyEvaluator {
         boolean evaluateContent = true;
         try {
             if (property.isValueInitialized()
-                    && ctx.getEvaluationType() != Type.ContentChange && ctx.getEvaluationType() != Type.Create) {
+                    && ctx.getEvaluationType() != Type.ContentChange 
+                    && ctx.getEvaluationType() != Type.Create) {
                 // Preserve existing content links, since this is not content change.
                 evaluateContent = false;
                 
@@ -115,7 +118,8 @@ public class LinksEvaluator implements LatePropertyEvaluator {
                         }
                         
                     }
-                } else if (p.getType() == PropertyType.Type.HTML) {
+                }
+                else if (p.getType() == PropertyType.Type.HTML) {
                     String[] values = propertyValues(p);
                     for (String value: values) {
                         InputStream is = new ByteArrayInputStream(value.getBytes());
@@ -126,10 +130,12 @@ public class LinksEvaluator implements LatePropertyEvaluator {
 
             if (evaluateContent && ctx.getContent() != null) {
                 if ("application/json".equals(resource.getContentType())) {
-                    StructuredResourceDescription desc = this.resourceManager.get(resource.getResourceType());
+                    StructuredResourceDescription desc = 
+                            resourceManager.get(resource.getResourceType());
                     if (desc != null) {
 
-                        StructuredResource res = desc.buildResource(ctx.getContent().getContentInputStream());
+                        StructuredResource res = 
+                                desc.buildResource(ctx.getContent().getContentInputStream());
 
                         for (PropertyDescription pdesc : desc.getAllPropertyDescriptions()) {
                             if (pdesc.isNoExtract()) {
@@ -138,17 +144,22 @@ public class LinksEvaluator implements LatePropertyEvaluator {
                                     continue;
                                 }
                                 if ("json".equals(pdesc.getType())) {
-                                    unwrapJSON(p, collector);
-                                } else {
+                                    JSONPropertyDescription jsonDesc = (JSONPropertyDescription) pdesc;
+                                    extractFromJson(p, jsonDesc, collector);
+                                }
+                                else {
                                     InputStream is = new ByteArrayInputStream(p.toString().getBytes());
                                     extractFromHtml(is, collector, LinkSource.CONTENT);
                                 }
                             }
                         }
                     }
-                } else if ("text/html".equals(resource.getContentType())) {
-                    extractFromHtml(ctx.getContent().getContentInputStream(), collector, LinkSource.CONTENT);
-                } else if ("text/xml".equals(resource.getContentType())) {
+                }
+                else if ("text/html".equals(resource.getContentType())) {
+                    extractFromHtml(ctx.getContent().getContentInputStream(), 
+                            collector, LinkSource.CONTENT);
+                }
+                else if ("text/xml".equals(resource.getContentType())) {
                     Document doc = ctx.getContent().getContentRepresentation(Document.class);
                     extractFromXml(doc, collector, LinkSource.CONTENT);
                 }
@@ -160,6 +171,7 @@ public class LinksEvaluator implements LatePropertyEvaluator {
             property.setBinaryValue(collector.serialize(), "application/json");
             return true;
         } catch (Throwable t) {
+            t.printStackTrace();
             return false;
         }
     }
@@ -202,15 +214,9 @@ public class LinksEvaluator implements LatePropertyEvaluator {
             this.type = type;
             this.source = source;
         }
-        public String getURL() {
-            return this.url;
-        }
-        public LinkType getType() {
-            return this.type;
-        }
-        public LinkSource getSource() {
-            return this.source;
-        }
+        public String getURL() { return url; }
+        public LinkType getType() { return type; }
+        public LinkSource getSource() { return source; }
         
         @Override
         public boolean equals(Object obj) {
@@ -325,8 +331,9 @@ public class LinksEvaluator implements LatePropertyEvaluator {
             if ("webadresse".equals(element.getName())
                     || "url".equals(element.getName())) {
                 href = element.getTextTrim();
-            } else {
-                if (parent != null) {                
+            }
+            else {
+                if (parent != null) {
                     if ("pensumpunkt".equals(parent.getName()) || "bilde-referanse".equals(parent.getName())) {
                         if ("src".equals(element.getName())
                             || "lenkeadresse".equals(element.getName())
@@ -383,23 +390,22 @@ public class LinksEvaluator implements LatePropertyEvaluator {
                     
                     if ("a".equals(localName) && "href".equals(attrName)) {
                         type = LinkType.ANCHOR;
-                        
-                    } else if ("img".equals(localName) && "src".equals(attrName)) {
+                    }
+                    else if ("img".equals(localName) && "src".equals(attrName)) {
                         type = LinkType.IMG;
-                        
-                    } else if ("script".equals(localName) && "src".equals(attrName)) {
+                    }
+                    else if ("script".equals(localName) && "src".equals(attrName)) {
                         type = LinkType.SCRIPT;
-                        
-                    } else if ("link".equals(localName) && "href".equals(attrName)) {
+                    }
+                    else if ("link".equals(localName) && "href".equals(attrName)) {
                         type = LinkType.LINK;
-                        
-                    } else if ("frame".equals(localName) && "src".equals(attrName)) {
+                    }
+                    else if ("frame".equals(localName) && "src".equals(attrName)) {
                         type = LinkType.FRAME;
-                        
-                    } else if ("iframe".equals(localName) && "src".equals(attrName)) {
+                    }
+                    else if ("iframe".equals(localName) && "src".equals(attrName)) {
                         type = LinkType.IFRAME;
                     }
-                    
                     if (type != null && attrValue != null) {
                         if (!this.listener.link(new Link(attrValue, type, this.linkSource))) {
                             throw new StopException();
@@ -409,21 +415,59 @@ public class LinksEvaluator implements LatePropertyEvaluator {
             }
         }
     }
-
-    private void unwrapJSON(Object object, LinkCollector collector) throws Exception {
-        if (object instanceof List) {
+    
+    private void extractFromJson(Object object, JSONPropertyDescription jsonDesc, 
+            LinkCollector collector) throws Exception {
+        List<JSONPropertyAttributeDescription> attributes = jsonDesc.getAttributes();
+        if (jsonDesc.isMultiple()) {
+            if (!(object instanceof List)) {
+                extractDefault(object, collector);
+                return;
+            }
             List<?> list = (List<?>) object;
             for (Object o: list) {
-                unwrapJSON(o, collector);
+                if (!(o instanceof Map)) {
+                    extractDefault(o, collector);
+                }
+                Map<?, ?> map = (Map<?, ?>) o;
+                extractFields(map, attributes, collector);
             }
-            
-        } else if (object instanceof Map) {
+        }
+        else {
+            if (!(object instanceof Map)) {
+                extractDefault(object, collector);
+                return;
+            }
             Map<?, ?> map = (Map<?, ?>) object;
-            for (Object k: map.keySet()) {
-                Object o = map.get(k);
-                unwrapJSON(o, collector);
+            extractFields(map, attributes, collector);
+        }
+    }
+    
+    private void extractFields(Map<?,?> map, 
+            List<JSONPropertyAttributeDescription> fields, 
+            LinkCollector collector) throws Exception {
+        
+        for (JSONPropertyAttributeDescription field: fields) {
+            Object o = map.get(field.getName());
+            if (o == null) continue;
+            
+            switch (field.getType()) {
+            
+            case "resource_ref":
+            case "image_ref":
+                Link link = new Link(o.toString(), LinkType.PROPERTY, LinkSource.CONTENT);
+                collector.link(link);
+                break;
+            default:
+                InputStream is = new ByteArrayInputStream(o.toString().getBytes());
+                extractFromHtml(is, collector, LinkSource.CONTENT);
             }
-        } else if (object != null) {
+        }
+    }
+    
+
+    private void extractDefault(Object object, LinkCollector collector) throws Exception {
+        if (object != null) {
             InputStream is = new ByteArrayInputStream(object.toString().getBytes());
             extractFromHtml(is, collector, LinkSource.CONTENT);
         }
