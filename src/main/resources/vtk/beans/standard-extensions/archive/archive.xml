@@ -38,6 +38,7 @@
     <property name="extension" value=".jar" />
     <property name="parentViewOnSuccess" value="true" />
     <property name="copyAction" ref="manage.createArchiveAction" />
+    <property name="commandName" value="command" />
     <property name="formView" value="admin" />
     <property name="successView" value="redirectToManage" />
     <property name="cancelView" value="redirectToManage" />
