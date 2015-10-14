@@ -9,7 +9,7 @@
       JavaScript domains 
      ********************
      
-     TODO: maybe move to XML, but a little nice to have it overviewely her
+     TODO: move to XML
 -->
 <#-- Listing (collection and trash-can) -->
 <#if (!RequestParameters.mode?exists && !RequestParameters.action?exists && resource.collection)
