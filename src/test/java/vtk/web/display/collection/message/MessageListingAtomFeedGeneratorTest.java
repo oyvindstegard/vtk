@@ -39,8 +39,11 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlFragment;
+import vtk.util.text.TextUtils;
+
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
@@ -74,6 +77,7 @@ public class MessageListingAtomFeedGeneratorTest {
     }
     
     private void doTest(String summaryText) throws Exception {
+        feed.setTitle(TextUtils.removeUnprintables(summaryText));
         HtmlFragment summary = makeSummary(summaryText);
         generator.setFeedEntrySummary(entry, summary);
         assertTrue("got here safely with no exception", true);
@@ -92,6 +96,12 @@ public class MessageListingAtomFeedGeneratorTest {
     public void testWhenContentContainsControlCharactersThenUnknownShouldBeRemoved() throws Exception {
         doTest("back \b space");
         assertEquals("should not contain back space", -1, entry.getSummary().indexOf('\b')); 
+    }
+
+    @Test
+    public void testWhenContentContainsControlCharactersThenUnknownShouldBeRemoved2() throws Exception {
+        doTest("some \u000btext");
+        assertEquals("should not contain control character", "some text", entry.getSummary()); 
     }
 
     @Test
