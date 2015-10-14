@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, 2009 University of Oslo, Norway
+/* Copyright (c) 2006, 2009, 2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -578,5 +578,25 @@ public class TextUtils {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Only keep the safe to print characters and discard the rest.
+     * Specifically, unknown control characters are removed.
+     * @param content
+     * @return content with harmful characters removed.
+     */
+    public static String removeUnprintables(String content) {
+        if (content == null) return null;
+        
+        StringBuilder result = new StringBuilder();
+        int length = content.length();
+        for (int i = 0; i < length; i++) {
+            char ch = content.charAt(i);
+            if (ch >= 32 || ch == '\t' || ch == '\n' || ch == '\r') {
+                result.append(ch);
+            }
+        }
+        return result.toString();
     }
 }
