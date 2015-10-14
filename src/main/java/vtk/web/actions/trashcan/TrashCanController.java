@@ -31,7 +31,6 @@
 package vtk.web.actions.trashcan;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +94,7 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
             HttpServletResponse response, TrashCanCommand command,
             BindException errors) throws Exception {
         
-        Map<String, Object> model = new HashMap<>();
+        Map<String, Object> model = errors.getModel();
         
         if (!command.hasSelectedObjectsForRecovery() || !command.isValidAction()) {
             return new ModelAndView(getFormView(), model);
