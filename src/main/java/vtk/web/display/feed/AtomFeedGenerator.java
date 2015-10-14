@@ -70,6 +70,7 @@ import vtk.repository.resourcetype.ValueFormatter;
 import vtk.text.html.HtmlElement;
 import vtk.text.html.HtmlFragment;
 import vtk.text.html.HtmlUtil;
+import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
@@ -126,7 +127,7 @@ public abstract class AtomFeedGenerator implements Controller {
         Feed feed = abdera.newFeed();
 
         String feedTitle = getFeedTitle(request, feedScope);
-        feed.setTitle(feedTitle);
+        feed.setTitle(TextUtils.removeUnprintables(feedTitle));
 
         Property publishedDateProp = getPublishDate(feedScope);
         publishedDateProp = publishedDateProp == null ? 
@@ -143,12 +144,12 @@ public abstract class AtomFeedGenerator implements Controller {
         if (showIntroduction) {
             String subTitle = getIntroduction(feedScope);
             if (subTitle != null) {
-                feed.setSubtitleAsXhtml(subTitle);
+                feed.setSubtitleAsXhtml(TextUtils.removeUnprintables(subTitle));
             }
             else {
                 subTitle = getDescription(feedScope);
                 if (subTitle != null) {
-                    feed.setSubtitle(subTitle);
+                    feed.setSubtitle(TextUtils.removeUnprintables(subTitle));
                 }
             }
 
