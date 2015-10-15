@@ -56,16 +56,16 @@ public final class HtmlFragment {
     }
     
     public String getStringRepresentation() {
-        String result = "";
-        String content;
+        StringBuilder result = new StringBuilder();
         for (HtmlContent c : this.content) {
+            String stringContent;
             if (c instanceof EnclosingHtmlContent) {
-                content = ((EnclosingHtmlContent) c).getEnclosedContent();
+                stringContent = ((EnclosingHtmlContent) c).getEnclosedContent();
             } else {
-                content = c.getContent();
+                stringContent = c.getContent();
             }
-            result = TextUtils.removeUnprintables(content);
+            result.append(TextUtils.removeUnprintables(stringContent));
         }
-        return result;
+        return result.toString();
     }
 }
