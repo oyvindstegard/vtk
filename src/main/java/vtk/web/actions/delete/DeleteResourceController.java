@@ -53,7 +53,6 @@ import vtk.web.service.Service;
 public class DeleteResourceController extends SimpleFormController<DeleteCommand> {
 
     private String cancelView;
-    protected Object cmd;
     
     @Override
     protected DeleteCommand formBackingObject(HttpServletRequest request) throws Exception {

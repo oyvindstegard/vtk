@@ -589,7 +589,7 @@ public class TextUtils {
     public static String removeUnprintables(String content) {
         if (content == null) return null;
         
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = new StringBuilder(content.length());
         int length = content.length();
         for (int i = 0; i < length; i++) {
             char ch = content.charAt(i);

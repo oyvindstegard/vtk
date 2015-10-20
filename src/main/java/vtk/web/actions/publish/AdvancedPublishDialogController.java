@@ -56,8 +56,8 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
     private PropertyTypeDefinition publishDatePropDef;
     private PropertyTypeDefinition unpublishDatePropDef;
 
+    @Override
     protected EditPublishingCommand formBackingObject(HttpServletRequest request) throws Exception {
-
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
@@ -72,8 +72,6 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
         return command;
     }
 
-    
-    
     @Override
     protected Map<String, Object> referenceData(HttpServletRequest request,
             EditPublishingCommand command, Errors errors) throws Exception {
@@ -83,14 +81,12 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
         return model;
     }
 
-    
-    
     @Override
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, EditPublishingCommand command,
             BindException errors) throws Exception {
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("command", command);
 
         if (command.getUpdateAction() != null) {
@@ -117,7 +113,7 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
         return new ModelAndView(getSuccessView(), model);
     }
 
-    public void removePropertyValue(PropertyTypeDefinition propDef) throws Exception {
+    private void removePropertyValue(PropertyTypeDefinition propDef) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = SecurityContext.getSecurityContext().getToken();
@@ -129,7 +125,7 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
         }
     }
 
-    public void setPropertyDateValue(PropertyTypeDefinition datePropDef, Date date) throws Exception {
+    private void setPropertyDateValue(PropertyTypeDefinition datePropDef, Date date) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = SecurityContext.getSecurityContext().getToken();

@@ -32,7 +32,6 @@ package vtk.web.actions.create;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,13 +97,13 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
         Path uri = requestContext.getResourceURI();
         String filenamesToCheck = request.getParameter("filenamesToBeChecked");
 
-        Map<String, Object> model = new HashMap<>();
+        Map<String, Object> model = errors.getModel();
         
         if (filenamesToCheck != null) {
             String[] filenames = filenamesToCheck.split(",");
 
-            ArrayList<String> existingFilenames = new ArrayList<String>();
-            ArrayList<String> existingFilenamesFixed = new ArrayList<String>();
+            ArrayList<String> existingFilenames = new ArrayList<>();
+            ArrayList<String> existingFilenamesFixed = new ArrayList<>();
             
             for (String name : filenames) {
                 name = stripWindowsPath(name);
@@ -170,7 +169,7 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
 
             // Iterate input stream. We can only safely consume the data once.
             FileItemIterator iter = upload.getItemIterator(request);
-            Map<Path, StreamUtil.TempFile> fileMap = new LinkedHashMap<Path, StreamUtil.TempFile>();
+            Map<Path, StreamUtil.TempFile> fileMap = new LinkedHashMap<>();
             while (iter.hasNext()) {
                 FileItemStream uploadItem = iter.next();
                 if (!uploadItem.isFormField()) {

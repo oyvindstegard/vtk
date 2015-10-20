@@ -37,6 +37,7 @@ CKEDITOR.plugins.add( 'studyreferencecomponent',
 									[ 'studieprogram'],
 									[ 'studieretning']
 								],
+                                                                'default': 'emne',
 								commit : function( data )
 								{
 									data.studietype = this.getValue();

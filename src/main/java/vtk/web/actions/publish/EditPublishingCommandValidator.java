@@ -40,6 +40,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
 import vtk.repository.Property;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
@@ -69,17 +70,13 @@ public class EditPublishingCommandValidator implements Validator {
 
     @Override
     public void validate(Object command, Errors errors) {
-
         EditPublishingCommand editPublishingCommand = (EditPublishingCommand) command;
-
+        
         if (editPublishingCommand.getCancelAction() != null) {
             return;
         }
-
         validatePublishedDate(errors, editPublishingCommand);
-
         validateUnpublishedDate(errors, editPublishingCommand);
-
     }
 
     protected void validateUnpublishedDate(Errors errors, EditPublishingCommand editPublishingCommand) {
@@ -87,7 +84,17 @@ public class EditPublishingCommandValidator implements Validator {
         if (date == null) {
             return;
         }
-
+        
+        if (editPublishingCommand.getPublishDateValue() != null) {
+            Date publishDate = editPublishingCommand.getPublishDateValue().getDateValue();
+            if (!publishDate.before(date)) {
+                errors.rejectValue("unpublishDate", "publishing.edit.invalid.unpublishDateBefore", "Invalid date");
+                return;
+            }
+            editPublishingCommand.setUnpublishDateValue(new Value(date, false));
+            return;
+        }
+        
         Property publishDateProp = editPublishingCommand.getResource().getProperty(this.publishDatePropDef);
         if (publishDateProp == null) {
             errors.rejectValue("unpublishDate", "publishing.edit.invalid.unpublishDateNonExisting", "Invalid date");

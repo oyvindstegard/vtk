@@ -45,6 +45,7 @@ import org.opensaml.util.storage.MapBasedStorageService;
 import org.opensaml.util.storage.ReplayCache;
 import org.opensaml.util.storage.ReplayCacheEntry;
 import org.opensaml.util.storage.StorageService;
+
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.web.InvalidRequestException;
@@ -90,6 +91,9 @@ public class Login extends SamlService {
             }
             return true;
         } catch (Throwable t) {
+            //if (logger.isDebugEnabled()) {
+                logger.warn("Failed to decode SAML response in request " + req, t);
+            //}
         }
         return false;
     }

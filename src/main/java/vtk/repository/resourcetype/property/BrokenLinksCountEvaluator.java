@@ -44,6 +44,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.PropertyEvaluator;
@@ -106,7 +107,7 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator{
             errorCount.write(property);
             return true;
         } catch (Exception e) {
-            logger.warn("Exception during evaluation: " + e.getMessage());
+            logger.warn("Exception during evaluation", e);
             return false;
         }
     }
