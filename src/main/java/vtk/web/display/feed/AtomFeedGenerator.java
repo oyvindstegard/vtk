@@ -200,7 +200,7 @@ public abstract class AtomFeedGenerator implements Controller {
             if (title != null) {
                 entry.setTitle(title.getFormattedValue());
             }
-            
+
             if (extensions != null) {
                 for (String key: extensions.keySet()) {
                     entry.addSimpleExtension("vrtx", key, "v", extensions.get(key).toString());
@@ -246,6 +246,10 @@ public abstract class AtomFeedGenerator implements Controller {
             link.setHref(urlString);
             link.setRel("alternate");
             entry.addLink(link);
+
+			if (resource.getResourceType().equals("structured-event")) {
+				entry.addSimpleExtension("vrtx", "ical-url", "v", urlString + "?vrtx=ical");
+			}
 
             Property mediaRef = getProperty(resource, mediaPropDefPointer);
             if (mediaRef != null) {
