@@ -61,11 +61,12 @@ public final class HtmlFragment {
             String stringContent;
             if (c instanceof EnclosingHtmlContent) {
                 stringContent = ((EnclosingHtmlContent) c).getEnclosedContent();
-            } else {
+            }
+	    else {
                 stringContent = c.getContent();
             }
             result.append(TextUtils.removeUnprintables(stringContent));
         }
-        return result;
+        return result.toString();
     }
 }
