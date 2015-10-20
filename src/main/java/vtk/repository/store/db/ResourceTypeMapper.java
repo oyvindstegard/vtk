@@ -71,6 +71,9 @@ public final class ResourceTypeMapper {
             def = (PrimaryResourceTypeDefinition)
                     resourceTypeTree.getResourceTypeDefinitionByName(input);
         } catch (Throwable t) {  }
+        if (def == null) {
+            return input;
+        }
         while (def.getParentTypeDefinition() != null) {
             list.add(0, def.getName());
             def = def.getParentTypeDefinition();
