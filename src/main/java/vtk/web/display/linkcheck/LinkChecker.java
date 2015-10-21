@@ -39,12 +39,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
 import vtk.web.service.URL;
 
 public class LinkChecker {
@@ -70,13 +70,13 @@ public class LinkChecker {
             this.reason = reason;
         }
         public String getLink() {
-            return this.link;
+            return link;
         }
         public Status getStatus() {
-            return this.status;
+            return status;
         }
         public String getReason() {
-            return this.reason;
+            return reason;
         }
         @Override
         public String toString() {
@@ -150,12 +150,14 @@ public class LinkChecker {
         URI uri;
         try {
             uri = url.toURI(); // This validates URI syntax of URL
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             // Something is not proper, build new URI which does encoding of each component
             try {
                 uri = new URI(url.getProtocol(), null, url.getHost(), url.getPort(), 
                           url.getPath(), url.getQuery(), url.getRef());
-            } catch (URISyntaxException ue) {
+            }
+            catch (URISyntaxException ue) {
                 throw new MalformedURLException(ue.getMessage());
             }
         }
@@ -176,7 +178,8 @@ public class LinkChecker {
         if (URL.isRelativeURL(href)) {
             try {
                 absolute = base.relativeURL(href).toString();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 return new LinkCheckResult(href, Status.MALFORMED_URL, t.getMessage());
             }
         }
@@ -184,14 +187,15 @@ public class LinkChecker {
         java.net.URL urlToCheck = null;
         try {
             urlToCheck = escape(new java.net.URL(absolute));
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             return new LinkCheckResult(href, Status.MALFORMED_URL, e.getMessage());
         }
         
         final String cacheKey = urlToCheck.toString();
-        Element cached = this.cache.get(cacheKey);
+        Element cached = cache.get(cacheKey);
         if (cached != null) {
-            LinkCheckResult r = (LinkCheckResult) cached.getValue();
+            LinkCheckResult r = (LinkCheckResult) cached.getObjectValue();
             // Multiple input hrefs can map to the same URL:
             if (r.link.equals(href)) {
                 return r;
@@ -207,7 +211,8 @@ public class LinkChecker {
                 logger.info("Validate (HEAD returned NOT_FOUND, retrying with GET): href='" + urlToCheck + "'");
                 status = validateURL(urlToCheck, sendReferrer ? base : null, "GET");
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             status = Status.ERROR;
             reason = t.getMessage();
         }
@@ -220,7 +225,7 @@ public class LinkChecker {
         }
         
         LinkCheckResult result = new LinkCheckResult(href, status, reason);
-        this.cache.put(new Element(cacheKey, result));
+        cache.put(new Element(cacheKey, result));
         return result;
     }
     
@@ -240,13 +245,17 @@ public class LinkChecker {
                 return Status.NOT_FOUND;
             }
             return Status.OK;
-        } catch (SocketTimeoutException e) {
+        }
+        catch (SocketTimeoutException e) {
             return Status.TIMEOUT;
-        } catch (UnknownHostException e) {
+        }
+        catch (UnknownHostException e) {
             return Status.NOT_FOUND;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return Status.ERROR;
-        } finally {
+        }
+        finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
@@ -274,9 +283,9 @@ public class LinkChecker {
     private HttpURLConnection createRequest(java.net.URL url, URL referrer, String method) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod(method);
-        urlConnection.setConnectTimeout(this.connectTimeout);
-        urlConnection.setReadTimeout(this.readTimeout);
-        urlConnection.setRequestProperty("User-Agent", this.userAgent);
+        urlConnection.setConnectTimeout(connectTimeout);
+        urlConnection.setReadTimeout(readTimeout);
+        urlConnection.setRequestProperty("User-Agent", userAgent);
         if (referrer != null) {
             urlConnection.setRequestProperty("Referer", referrer.toString());
         }

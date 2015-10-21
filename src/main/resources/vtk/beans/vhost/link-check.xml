@@ -33,5 +33,9 @@
     <property name="readTimeout" value="10000" />
     <property name="userAgent" value="Link checker for ${repositoryID}" />
   </bean>
-  
-  </beans>
+
+  <bean id="linkCheck.evictCachedEntriesOnPublish" class="vtk.web.display.linkcheck.LinkCheckCacheEvictor">
+    <constructor-arg name="cache" ref="ehCache.LINK_CHECK_CACHE" />
+  </bean>
+
+</beans>

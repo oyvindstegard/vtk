@@ -101,7 +101,8 @@ public class LinksEvaluator implements LatePropertyEvaluator {
                     }
                 }
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             // Some error in old property value, ignore and start fresh
             collector.clear();
         }
@@ -170,8 +171,8 @@ public class LinksEvaluator implements LatePropertyEvaluator {
             }
             property.setBinaryValue(collector.serialize(), "application/json");
             return true;
-        } catch (Throwable t) {
-            t.printStackTrace();
+        }
+        catch (Throwable t) {
             return false;
         }
     }
@@ -306,8 +307,10 @@ public class LinksEvaluator implements LatePropertyEvaluator {
 
         try {
             parser.parse(input);
-        } catch (StopException t) { 
-        } finally {
+        }
+        catch (StopException t) { 
+        }
+        finally {
             is.close();
         }
     }
