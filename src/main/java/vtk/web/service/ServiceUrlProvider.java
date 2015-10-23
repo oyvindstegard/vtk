@@ -1,6 +1,7 @@
 package vtk.web.service;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -11,18 +12,47 @@ import vtk.util.repository.LocaleHelper;
 
 import java.util.*;
 
+/**
+ *  Tries to locate a VTK Service with the given name and use that to construct
+ *  a URL to that Service. If the Service is not found it falls back to look up
+ *  the service name in a map of default URLs.
+ *
+ *  <pre>{@code
+ *  var serviceUrl1 = serviceUrlProvider.builder("service-name")
+ *      .withResource(aResource)
+ *      .build()
+ *  var serviceUrl2 = serviceUrlProvider.builder("other-name")
+ *      .withPath(Path.fromString("/vrtx"))
+ *      .build()
+ *  }</pre>
+ *
+ *  @see vtk.web.service.Service
+ */
 public class ServiceUrlProvider implements ApplicationContextAware {
+    private static final String NO_SUCH_SERVICE_EXCEPTION_TEMPLATE = "Service with name '%s' not found";
     private ApplicationContext context;
     private Map<String, String> defaultUrlMap;
 
+    /**
+     *
+     * @param serviceName unique name of the service
+     * @return the ServiceUrlBuilder
+     */
     public ServiceUrlBuilder builder(String serviceName) {
         try {
-            return new ServiceUrlBuilder((Service) context.getBean(serviceName));
+            return builder(context.getBean(serviceName, Service.class));
         } catch (NoSuchBeanDefinitionException e) {
             String serviceUrl = defaultUrlMap.get(serviceName);
-            if (serviceUrl == null) throw e;
+            if (serviceUrl == null)
+                throw new NoSuchServiceException(String.format(NO_SUCH_SERVICE_EXCEPTION_TEMPLATE, serviceName));;
             return new ServiceUrlBuilder(serviceUrl);
+        } catch (BeanNotOfRequiredTypeException e) {
+            throw new NoSuchServiceException(String.format(NO_SUCH_SERVICE_EXCEPTION_TEMPLATE, serviceName));
         }
+    }
+
+    public ServiceUrlBuilder builder(Service service) {
+        return new ServiceUrlBuilder(service);
     }
 
     public void setDefaultUrlMap(Map<String, String> defaultUrlMap) {
@@ -66,7 +96,9 @@ public class ServiceUrlProvider implements ApplicationContextAware {
         }
 
         public ServiceUrlBuilder withParameters(Map<String, List<String>> parameters) {
-            this.parameters.putAll(parameters);
+            if (parameters != null) {
+                this.parameters.putAll(parameters);
+            }
             return this;
         }
 
@@ -96,7 +128,7 @@ public class ServiceUrlProvider implements ApplicationContextAware {
                 if (resource == null)
                     url = service.constructURL(path);
                 else
-                    url =  service.constructURL(resource, principal, matchAssertions);
+                    url = service.constructURL(resource, principal, matchAssertions);
             }
             for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
                 for (String value : entry.getValue()) {
