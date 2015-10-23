@@ -1,9 +1,5 @@
 package vtk.web.decorating.tl;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import vtk.repository.Path;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
@@ -11,17 +7,14 @@ import vtk.text.tl.expr.Function;
 import vtk.web.decorating.tl.DomainTypes.Failure;
 import vtk.web.decorating.tl.DomainTypes.RequestContextType;
 import vtk.web.decorating.tl.DomainTypes.Success;
-import vtk.web.service.Service;
-import vtk.web.service.URL;
+import vtk.web.service.ServiceUrlProvider;
 
 public class ServiceURLFunction extends Function {
+    private final ServiceUrlProvider serviceUrlProvider;
     
-    private Map<String, Service> services = new HashMap<>();
-    
-    public ServiceURLFunction(Symbol symbol, Collection<Service> services) {
+    public ServiceURLFunction(Symbol symbol, ServiceUrlProvider serviceUrlProvider) {
         super(symbol, 3);
-        for (Service s: services) 
-            this.services.put(s.getName(), s);
+        this.serviceUrlProvider = serviceUrlProvider;
     }
 
     @Override
@@ -34,17 +27,15 @@ public class ServiceURLFunction extends Function {
         if (!(arg0 instanceof RequestContextType))
             return new Failure<>("Not a request context: " + arg0);
 
-        if (arg0 == null || arg1 == null || arg2 == null)
+        if (arg1 == null || arg2 == null)
             return new Failure<>("NULL argument(s)");
-        
-        Service service = services.get(arg2.toString());
-        if (service == null) {
-            return new Failure<>("No such service: " + arg2);
-        }
+        String path = arg1.toString();
+        String serviceName = arg2.toString();
+
         try {
-            Path uri = Path.fromString(arg1.toString());
-            URL url = service.constructURL(uri);
-            return new Success<>(url.toString());
+            return new Success<>(serviceUrlProvider.builder(serviceName)
+                .withPath(Path.fromString(path)).build().toString()
+            );
         } catch (Throwable t) { return new Failure<>(t); }
     }
 
