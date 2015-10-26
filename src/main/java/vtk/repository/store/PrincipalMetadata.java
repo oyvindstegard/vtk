@@ -30,6 +30,9 @@
  */
 package vtk.repository.store;
 
+import java.util.Map;
+
+import vtk.security.Principal;
 
 /**
  * Simplistic and generic interface for accessing principal metadata as
@@ -40,6 +43,14 @@ package vtk.repository.store;
  * 
  */
 public interface PrincipalMetadata extends Metadata {
+
+    public static PrincipalMetadata defaultPrincipalMetadata(Principal principal) {
+        return new PrincipalMetadataImpl(principal.getQualifiedName());
+    }
+
+    public static PrincipalMetadata defaultPrincipalMetadata(String str) {
+        return new PrincipalMetadataImpl(str);
+    }
 
     /**
      * Get the qualified name of the principal to which this instance's metadata
@@ -56,5 +67,7 @@ public interface PrincipalMetadata extends Metadata {
      * @return The user id as a <code>String</code>
      */
     public String getUid();
+
+    public Map<String,Object> toMap();
 
 }

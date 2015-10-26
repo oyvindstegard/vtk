@@ -30,6 +30,8 @@
  */
 package vtk.repository.store;
 
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Basic impl of <code>PrincipalMetadata</code>.
@@ -39,14 +41,16 @@ public class PrincipalMetadataImpl extends MetadataImpl implements PrincipalMeta
 
     public static final String DESCRIPTION_ATTRIBUTE = "description";
     public static final String UID_ATTRIBUTE = "uid";
-
+    public static final String QNAME_ATTRIBUTE = "qname";
     private String qualifiedName;
+
 
     public PrincipalMetadataImpl(String qualifiedName) {
         if (qualifiedName == null) {
             throw new IllegalArgumentException("Qualified name cannot be null");
         }
         this.qualifiedName = qualifiedName;
+        addAttributeValue(QNAME_ATTRIBUTE, qualifiedName);
     }
 
     @Override
@@ -85,6 +89,15 @@ public class PrincipalMetadataImpl extends MetadataImpl implements PrincipalMeta
     @Override
     public int hashCode() {
         return this.qualifiedName.hashCode();
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = new HashMap<>();
+        for (String name: getAttributeNames()) {
+            result.put(name, getValues(name));
+        }
+        return result;
     }
 
 }
