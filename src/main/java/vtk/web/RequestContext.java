@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,6 +59,8 @@ import vtk.repository.ResourceOverwriteException;
 import vtk.repository.Revision;
 import vtk.repository.Revision.Type;
 import vtk.repository.StoreContext;
+import vtk.repository.store.PrincipalMetadata;
+import vtk.repository.store.PrincipalMetadataDAO;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
 import vtk.security.SecurityContext;
@@ -83,6 +86,8 @@ public class RequestContext {
 
     private final HttpServletRequest servletRequest;
     private final SecurityContext securityContext;
+    private PrincipalMetadata cachedPrincipalMetadata = null;
+    private final PrincipalMetadataDAO principalLookup;
     private final boolean inRepository;
     private final Repository repository;
     private final Service service;
@@ -91,8 +96,8 @@ public class RequestContext {
     private final Path indexFileURI;
     private final boolean isIndexFile;
     private final boolean viewUnauthenticated;
-    private List<Message> infoMessages = new ArrayList<Message>(0);
-    private List<Message> errorMessages = new ArrayList<Message>(0);
+    private List<Message> infoMessages = new ArrayList<>(0);
+    private List<Message> errorMessages = new ArrayList<>(0);
 
     // Set on first invocation (otherwise JUnit tests fail):
     private RevisionWrapper revisionWrapper = null;
@@ -116,7 +121,7 @@ public class RequestContext {
      */
     public RequestContext(HttpServletRequest servletRequest, SecurityContext securityContext, Service service,
             Resource resource, Path uri, Path indexFileURI, boolean isIndexFile, boolean viewUnauthenticated,
-            boolean inRepository, Repository repository) {
+            boolean inRepository, Repository repository, PrincipalMetadataDAO principalLookup) {
         this.servletRequest = servletRequest;
         this.securityContext = securityContext;
         this.indexFileURI = indexFileURI;
@@ -129,7 +134,8 @@ public class RequestContext {
             this.resourceURI = resource.getURI();
             if (resource.isCollection()) {
                 this.currentCollection = resource.getURI();
-            } else {
+            }
+            else {
                 this.currentCollection = resource.getURI().getParent();
             }
         } 
@@ -137,7 +143,10 @@ public class RequestContext {
             this.resourceURI = uri;
             this.currentCollection = null;
         }
-        
+        if (principalLookup == null) {
+            throw new NullPointerException("principalLookup");
+        }
+        this.principalLookup = principalLookup;
     }
 
     public static void setRequestContext(RequestContext requestContext) {
@@ -283,6 +292,18 @@ public class RequestContext {
 
     public Principal getPrincipal() {
         return this.securityContext.getPrincipal();
+    }
+
+    public PrincipalMetadata principalMetadata(Locale locale) {
+        Principal principal = getPrincipal();
+        if (principal == null) return null;
+
+        if (cachedPrincipalMetadata != null) {
+            return cachedPrincipalMetadata;
+        }
+
+        cachedPrincipalMetadata = principalLookup.getMetadata(principal, locale);
+        return cachedPrincipalMetadata;
     }
 
     public RepositoryTraversal rootTraversal(String token, Path uri) {
