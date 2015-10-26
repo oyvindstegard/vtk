@@ -126,6 +126,8 @@
     <property name="principalFactory" ref="principalFactory" />
   </bean>
 
+  <bean id="principalMetadataDAO" class="vtk.repository.store.DefaultPrincipalMetadataDAO" />
+
   <bean id="principalManager"
         class="vtk.security.PrincipalManagerImpl">
     <property name="principalStores">
