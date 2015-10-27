@@ -549,13 +549,13 @@
 
 
 <#--
- * displayUserPrincipal
+ * displayPrincipal
  *
- * Display the user principal. If URL exists wrapped with a link and full description.
+ * Display the principal. If URL exists wrapped with a link and full description.
  *
  * @param principal the principal
 -->
-<#macro displayUserPrincipal principal>
+<#macro displayPrincipal principal>
   <#compress>
     <#if principal.URL?exists>
       <a title="${principal.name?html}" href="${principal.URL?html}">${principal.description?html}</a>

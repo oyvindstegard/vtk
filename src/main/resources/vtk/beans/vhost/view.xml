@@ -361,7 +361,9 @@
    </bean>
 
 
-   <bean id="linkConstructor" class="vtk.web.view.LinkConstructorImpl" />
+   <bean id="linkConstructor" class="vtk.web.view.LinkConstructorImpl">
+     <constructor-arg ref="serviceUrlProvider"/>
+   </bean>
    
   <bean id="romeFeedView" class="vtk.web.view.RomeFeedView"  abstract="true" />
  
