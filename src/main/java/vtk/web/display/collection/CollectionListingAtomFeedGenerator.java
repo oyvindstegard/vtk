@@ -49,6 +49,7 @@ public class CollectionListingAtomFeedGenerator extends AtomFeedGenerator {
     @Override
     protected void addFeedEntries(HttpServletRequest request, Feed feed,
             Resource feedScope) throws Exception {
+		feed.addSimpleExtension("vrtx", "feed-type", "v", "collection-list");
 
         Listing entryElements = searchComponent.execute(
                 RequestContext.getRequestContext().getServletRequest(),
