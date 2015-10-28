@@ -65,6 +65,7 @@ public class AudioVideoListingAtomFeedGenerator extends CollectionListingAtomFee
         String token = requestContext.getSecurityToken();
 
         try {
+			feed.addSimpleExtension("vrtx", "feed-type", "v", "audiovideo-list");
 
             Entry entry = Abdera.getInstance().newEntry();
 

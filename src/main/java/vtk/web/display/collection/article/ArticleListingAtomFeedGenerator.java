@@ -53,6 +53,8 @@ public class ArticleListingAtomFeedGenerator extends AtomFeedGenerator {
     @Override
     protected void addFeedEntries(HttpServletRequest request, Feed feed, Resource feedScope) throws Exception {
 
+		feed.addSimpleExtension("vrtx", "feed-type", "v", "article-list");
+
         Listing featuredArticles = searcher.getFeaturedArticles(request, feedScope, 1, entryCountLimit, 0);
         
         if (featuredArticles != null && featuredArticles.size() > 0) {
