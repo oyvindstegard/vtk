@@ -90,13 +90,11 @@
   </bean>
 
 
-  <!-- Link check job for recently modified resources, 
-       and for resources that link to recently published resources  -->
-  <bean id="repository.systemjob.linkcheck.recent" class="vtk.repository.systemjob.LinkCheckJob" parent="repository.systemjob">
+  <bean id="repository.systemjob.linkcheck.referencingResources" 
+        class="vtk.repository.systemjob.LinkCheckJob" parent="repository.systemjob">
     <property name="triggerExpression" value="${systemjob.linkcheck.recent.trigger}" />
     <property name="enabled" value="${systemjob.linkcheck.recent.enabled}" />
-    <property name="id" value="linkcheck-recent" />
-
+    <property name="id" value="linkcheck-referencing" />
     <property name="linksPropDef" ref="linksPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
@@ -113,51 +111,52 @@
       </list>
     </property>
     <property name="pathSelector">
-      <bean class="vtk.repository.systemjob.AggregatingPathSelector">
-        <constructor-arg name="selectors">
-          <list>
-            
-            <!-- Select recently modified resources: -->
-            <bean class="vtk.repository.systemjob.IndexQueryPathSelector" 
-                  parent="repository.systemjob.indexPathSelector">
-              <property name="queryString">
-                <value>
-                  ${systemjob.linkcheck.queryFilterExpression}
-                  AND
-                  link-status = AWAITING_LINKCHECK
-                </value>
-              </property>
-              <property name="sortString">
-                <value>lastModified ASC</value>
-              </property>
-              <property name="limit" value="${systemjob.linkcheck.batch}" />
-            </bean>
+      <bean class="vtk.repository.systemjob.ChangedUriReferencesPathSelector">
+        <constructor-arg name="hrefsPropDef" ref="hrefsPropDef" />
+        <constructor-arg name="searcher" ref="systemIndexSearcher" />
+      </bean>
+    </property>
+  </bean>
 
-            <!-- Select resources that link to recently published resources: -->
-            <bean class="vtk.repository.systemjob.ReferencingResourcesPathSelector">
-              <constructor-arg name="hrefsPropDef" ref="hrefsPropDef" />
-              <constructor-arg name="searcher" ref="systemIndexSearcher" />
-              <constructor-arg name="selector">
-                <bean class="vtk.repository.systemjob.IndexQueryPathSelector" 
-                      parent="repository.systemjob.indexPathSelector">
-                  <!-- Select recently published (last 10 minutes) resources: -->
-                  <property name="queryString">
-                    <value>
-                      ${systemjob.linkcheck.queryFilterExpression}
-                      AND
-                      publish-date &gt; {$currentTime-10M}
-                    </value>
-                  </property>
-                  <property name="sortString">
-                    <value>lastModified ASC</value>
-                  </property>
-                  <property name="limit" value="${systemjob.linkcheck.batch}" />
-                </bean>
-              </constructor-arg>
-            </bean>
 
-          </list>
-        </constructor-arg>
+  <!-- Link check job for recently modified resources, 
+       and for resources that link to recently published resources  -->
+  <bean id="repository.systemjob.linkcheck.recent" 
+        class="vtk.repository.systemjob.LinkCheckJob" parent="repository.systemjob">
+    <property name="triggerExpression" value="${systemjob.linkcheck.recent.trigger}" />
+    <property name="enabled" value="${systemjob.linkcheck.recent.enabled}" />
+    <property name="id" value="linkcheck-recent" />
+
+    <property name="linksPropDef" ref="linksPropDef" />
+    <property name="linkCheckPropDef" ref="linkCheckPropDef" />
+    <property name="linkChecker" ref="linkCheck.validator" />
+    <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
+    <property name="useRepositoryLocks" value="${systemjob.linkcheck.locking}" />
+    <property name="updateBatch" value="${systemjob.linkcheck.batch}" />
+    <property name="minRecheckSeconds" value="${systemjob.linkcheck.minRecheckSeconds}" />
+    <!--property name="minRecheckSeconds" value="-1" /-->
+    <property name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
+    <property name="affectedPropDefPointers">
+      <list>
+        <value>resource::link-check</value>
+        <value>resource::broken-links-count</value>
+        <value>resource::link-status</value>
+      </list>
+    </property>
+    <property name="pathSelector">
+      <bean class="vtk.repository.systemjob.IndexQueryPathSelector" 
+            parent="repository.systemjob.indexPathSelector">
+        <property name="queryString">
+          <value>
+            ${systemjob.linkcheck.queryFilterExpression}
+            AND
+            link-status = AWAITING_LINKCHECK
+          </value>
+        </property>
+        <property name="sortString">
+          <value>lastModified ASC</value>
+        </property>
+        <property name="limit" value="${systemjob.linkcheck.batch}" />
       </bean>
     </property>
   </bean>

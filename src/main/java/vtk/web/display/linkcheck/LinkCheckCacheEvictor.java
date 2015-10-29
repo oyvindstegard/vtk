@@ -34,16 +34,17 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationListener;
 
 import net.sf.ehcache.Ehcache;
 import vtk.repository.Resource;
 import vtk.repository.event.RepositoryEvent;
+import vtk.repository.event.ResourceCreationEvent;
 import vtk.repository.event.ResourceDeletionEvent;
 import vtk.repository.event.ResourceModificationEvent;
 import vtk.repository.event.ResourceMovedEvent;
+import vtk.util.repository.AbstractRepositoryEventHandler;
 
-public class LinkCheckCacheEvictor implements ApplicationListener<RepositoryEvent> {
+public class LinkCheckCacheEvictor extends AbstractRepositoryEventHandler {
     private static Log logger = LogFactory.getLog(LinkCheckCacheEvictor.class);
     
     private static int ITERATE_THRESHOLD = 1000000;
@@ -54,6 +55,29 @@ public class LinkCheckCacheEvictor implements ApplicationListener<RepositoryEven
         this.cache = cache;
     }
     
+    @Override
+    public void handleEvent(RepositoryEvent event) {
+        
+        if (event instanceof ResourceModificationEvent) {
+            ResourceModificationEvent modEvent = 
+                    (ResourceModificationEvent) event;
+            if (modEvent.getOriginal().isPublished() != 
+                    modEvent.getResource().isPublished()) {
+                evict(modEvent.getResource());
+            }
+        }
+        else if (event instanceof ResourceDeletionEvent) {
+            evict(((ResourceDeletionEvent) event).getResource());
+        }
+        else if (event instanceof ResourceCreationEvent) {
+            evict(((ResourceCreationEvent) event).getResource());
+        }
+        else if (event instanceof ResourceMovedEvent) {
+            evict(((ResourceMovedEvent) event).getFrom());
+            evict(((ResourceMovedEvent) event).getResource());
+        }
+    }
+
     private void evict(Resource resource) {
         try {
             int size = cache.getSize();
@@ -68,7 +92,7 @@ public class LinkCheckCacheEvictor implements ApplicationListener<RepositoryEven
                 // storing to disk:
                 for (String key: keys) {
                     if (key.contains(uri)) {
-                        logger.warn("Evict: " + key);
+                        logger.debug("Evict: " + key);
                         cache.remove(key);
                     }
                 }
@@ -80,23 +104,4 @@ public class LinkCheckCacheEvictor implements ApplicationListener<RepositoryEven
         }
     }
     
-    @Override
-    public void onApplicationEvent(RepositoryEvent event) {
-        
-        if (event instanceof ResourceModificationEvent) {
-            ResourceModificationEvent modEvent = 
-                    (ResourceModificationEvent) event;
-            if (modEvent.getOriginal().isPublished() != modEvent.getResource().isPublished()) {
-                evict(modEvent.getResource());
-            }
-        }
-        else if (event instanceof ResourceDeletionEvent) {
-            evict(((ResourceDeletionEvent) event).getResource());
-        }
-        else if (event instanceof ResourceMovedEvent) {
-            evict(((ResourceMovedEvent) event).getFrom());
-            evict(((ResourceMovedEvent) event).getResource());
-        }
-    }
-
 }
