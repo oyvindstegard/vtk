@@ -78,6 +78,7 @@ public class MessageListingAtomFeedGeneratorTest {
     
     private void doTest(String summaryText) throws Exception {
         feed.setTitle(TextUtils.removeUnprintables(summaryText));
+        entry.setTitle(TextUtils.removeUnprintables(summaryText));
         HtmlFragment summary = makeSummary(summaryText);
         generator.setFeedEntrySummary(entry, summary);
         assertTrue("got here safely with no exception", true);

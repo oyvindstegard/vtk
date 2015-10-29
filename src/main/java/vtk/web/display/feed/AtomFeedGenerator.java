@@ -198,7 +198,7 @@ public abstract class AtomFeedGenerator implements Controller {
 
             Property title = resource.getProperty(titlePropDef);
             if (title != null) {
-                entry.setTitle(title.getFormattedValue());
+                entry.setTitle(TextUtils.removeUnprintables(title.getFormattedValue()));
             }
             
             if (extensions != null) {
