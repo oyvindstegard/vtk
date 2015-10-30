@@ -179,6 +179,10 @@ public class LinkCheckerTest {
                 "http://www.øl.com/#/BedsteBryggeprocess", 
                 URL.parse("http://www.uio.no/index.html")).build();
         linkChecker.validate(request);
+        
+        request = LinkCheckRequest.builder("http://plain-ascii.com/foo/bar", 
+                URL.parse("http://www.uio.no/index.html")).build();
+        linkChecker.validate(request);
     }
 
     @Test
