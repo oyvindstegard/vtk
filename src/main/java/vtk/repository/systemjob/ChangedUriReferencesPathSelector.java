@@ -101,7 +101,7 @@ public class ChangedUriReferencesPathSelector
     }
     
     @Override
-    public synchronized void selectWithCallback(Repository repository,
+    public void selectWithCallback(Repository repository,
             SystemChangeContext context, PathSelectCallback callback)
                     throws Exception {
         

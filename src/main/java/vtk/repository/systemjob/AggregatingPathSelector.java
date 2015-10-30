@@ -31,7 +31,7 @@
 
 package vtk.repository.systemjob;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +41,8 @@ import vtk.repository.SystemChangeContext;
 
 /**
  * Path selector which aggregates selected paths of a configured list of
- * sub-selectors.
+ * sub-selectors. Removes (and keeps the first of) duplicate paths provided 
+ * by the sub-selectors. 
  */
 public class AggregatingPathSelector implements PathSelector {
 
@@ -59,7 +60,7 @@ public class AggregatingPathSelector implements PathSelector {
                                    SystemChangeContext context,
                                    PathSelectCallback callback) throws Exception {
 
-        Set<Path> aggregated = new HashSet<>();
+        Set<Path> aggregated = new LinkedHashSet<>();
 
         for (PathSelector selector: this.pathSelectors) {
             selector.selectWithCallback(repository, context, new PathSelectCallback() {
