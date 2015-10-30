@@ -59,7 +59,7 @@ public abstract class AbstractRepositoryEventHandler
     public AbstractRepositoryEventHandler(boolean async) {
         if (async) {
             executorService = Executors.newSingleThreadExecutor(r ->
-                new Thread(r, "repository-event-handler"));
+                new Thread(r, name()));
         }
     }
 
@@ -71,6 +71,10 @@ public abstract class AbstractRepositoryEventHandler
         else {
             handleEvent(event);
         }
+    }
+
+    protected String name() {
+        return getClass().getSimpleName();
     }
 
     public abstract void handleEvent(RepositoryEvent event);
