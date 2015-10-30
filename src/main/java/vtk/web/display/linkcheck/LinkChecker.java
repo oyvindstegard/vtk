@@ -92,7 +92,7 @@ public class LinkChecker {
         public static final class Builder {
             private String href;
             private URL base;
-            private boolean sendReferrer = false, allowCached = false;
+            private boolean sendReferrer = false, allowCached = true;
             public Builder(String href, URL base) {
                 if (href == null || "".equals(href.trim()))
                     throw new IllegalArgumentException("Empty href");
