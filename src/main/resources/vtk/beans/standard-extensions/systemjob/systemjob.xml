@@ -90,10 +90,12 @@
   </bean>
 
 
+  <!-- Link check job for resources that link to recently published, moved or deleted resources -->
   <bean id="repository.systemjob.linkcheck.referencingResources" 
         class="vtk.repository.systemjob.LinkCheckJob" parent="repository.systemjob">
     <property name="triggerExpression" value="${systemjob.linkcheck.recent.trigger}" />
     <property name="enabled" value="${systemjob.linkcheck.recent.enabled}" />
+    <property name="allowCachedResults" value="false" />
     <property name="id" value="linkcheck-referencing" />
     <property name="linksPropDef" ref="linksPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
@@ -119,14 +121,12 @@
   </bean>
 
 
-  <!-- Link check job for recently modified resources, 
-       and for resources that link to recently published resources  -->
+  <!-- Link check job for recently modified resources -->
   <bean id="repository.systemjob.linkcheck.recent" 
         class="vtk.repository.systemjob.LinkCheckJob" parent="repository.systemjob">
     <property name="triggerExpression" value="${systemjob.linkcheck.recent.trigger}" />
     <property name="enabled" value="${systemjob.linkcheck.recent.enabled}" />
     <property name="id" value="linkcheck-recent" />
-
     <property name="linksPropDef" ref="linksPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />

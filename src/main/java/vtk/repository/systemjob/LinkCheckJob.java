@@ -60,6 +60,7 @@ import vtk.util.text.Json;
 import vtk.util.text.JsonBuilder;
 import vtk.util.web.LinkTypesPrefixes;
 import vtk.web.display.linkcheck.LinkChecker;
+import vtk.web.display.linkcheck.LinkChecker.LinkCheckRequest;
 import vtk.web.display.linkcheck.LinkChecker.LinkCheckResult;
 import vtk.web.service.CanonicalUrlConstructor;
 import vtk.web.service.URL;
@@ -69,6 +70,7 @@ public class LinkCheckJob extends AbstractResourceJob {
     private PropertyTypeDefinition linkCheckPropDef;
     private PropertyTypeDefinition linksPropDef;
     private LinkChecker linkChecker;
+    boolean allowCachedResults = true;
     private List<String> blackListConfig;
     private List<Pattern> blackList;
     private int updateBatch = 0;
@@ -210,7 +212,12 @@ public class LinkCheckJob extends AbstractResourceJob {
                         this.url = base.relativeURL(this.url).toString();
                     }
                     
-                    LinkCheckResult result = linkChecker.validate(this.url, base, !resource.isReadRestricted());
+                    LinkCheckRequest request = LinkCheckRequest.builder(url, base)
+                            .sendReferrer(!resource.isReadRestricted())
+                            .allowCached(allowCachedResults)
+                            .build();
+                    
+                    LinkCheckResult result = linkChecker.validate(request);
                     switch (result.getStatus()) {
                     case OK:
                     case TIMEOUT:
@@ -500,6 +507,10 @@ public class LinkCheckJob extends AbstractResourceJob {
     @Required
     public void setLinkChecker(LinkChecker linkChecker) {
         this.linkChecker = linkChecker;
+    }
+    
+    public void setAllowCachedResults(boolean allowCachedResults) {
+        this.allowCachedResults = allowCachedResults;
     }
     
     @Required
