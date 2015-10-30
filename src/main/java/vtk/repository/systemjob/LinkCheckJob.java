@@ -241,7 +241,8 @@ public class LinkCheckJob extends AbstractResourceJob {
 
                     try {
                         checkForInterrupt();
-                    } catch (InterruptedException ie) {
+                    }
+                    catch (InterruptedException ie) {
                         throw new RuntimeException(ie);
                     }                   
                     this.field = this.url = this.type = null;
@@ -258,7 +259,8 @@ public class LinkCheckJob extends AbstractResourceJob {
             Property result = linkCheckPropDef.createProperty();
             state.write(result);
             return result;
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             if (t.getCause() instanceof InterruptedException) {
                 throw ((InterruptedException)t.getCause());
             }
