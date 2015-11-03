@@ -32,6 +32,7 @@ package vtk.web.display.shell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -82,7 +83,7 @@ public class CommandExecutorController extends SimpleFormController<ExecutorComm
         PrintStream resultStream = new PrintStream(bufferStream);
         this.console.eval(command.getCommand(), resultStream);
         command.setResult(new String(bufferStream.toByteArray()));
-        return new ModelAndView(getFormView());
+        return new ModelAndView(getFormView(), errors.getModel());
     }
 
 

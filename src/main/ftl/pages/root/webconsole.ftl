@@ -34,14 +34,9 @@
   </#if>
   <#if commandForm.result?exists>
     <p>
-      <pre>
-<#if commandForm.command?exists>[${commandForm.command?html}]:</#if>
-      </pre>
-      <textarea cols="80" rows="20">
-        ${commandForm.result?html}
-      </textarea>
+      <pre><#if commandForm.command?exists>[${commandForm.command?html}]:</#if></pre>
+      <textarea cols="80" rows="20">${commandForm.result?html}</textarea>
     </p>
   </#if>
-
 </body>
 </html>
