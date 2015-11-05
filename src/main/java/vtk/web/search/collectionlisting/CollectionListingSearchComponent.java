@@ -58,6 +58,7 @@ import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
 import vtk.web.search.ListingUriQueryBuilder;
+import vtk.web.search.MultiHostUtil;
 import vtk.web.search.QueryPartsSearchComponent;
 import vtk.web.search.SearchComponentQueryBuilder;
 import vtk.web.search.VHostScopeQueryRestricter;
@@ -138,7 +139,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
 
                 cache.put(new Element(cacheKey, clar));
             }
-            result = multiHostSearcher.search(token, search);
+            result = MultiHostUtil.resolveResultSetImageRefProperties(multiHostSearcher.search(token, search));
         } else {
             Repository repository = RequestContext.getRequestContext().getRepository();
             result = repository.search(token, search);
