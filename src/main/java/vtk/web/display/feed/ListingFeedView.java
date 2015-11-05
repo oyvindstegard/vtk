@@ -54,7 +54,6 @@ import org.openxri.IRIUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.View;
 
-import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -76,17 +75,17 @@ import vtk.web.display.collection.BaseCollectionListingController;
 import vtk.web.display.listing.ListingPager;
 import vtk.web.search.Listing;
 import vtk.web.search.ListingEntry;
+import vtk.web.search.MultiHostUtil;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
 /**
- * 
- * Creates an Atom feed using the Apache Abdera library, adhering to:
- * http://tools.ietf.org/html/rfc4287
- * 
- * Subclasses provide results for and add entries to feed, as well as override
- * title and certain other properties (date, author ++).
- * 
+ *
+ * Creates an Atom feed using the Apache Abdera library, adhering to: http://tools.ietf.org/html/rfc4287
+ *
+ * Subclasses provide results for and add entries to feed, as well as override title and certain other properties (date,
+ * author ++).
+ *
  */
 public class ListingFeedView implements View {
 
@@ -182,21 +181,20 @@ public class ListingFeedView implements View {
         }
 
         Property publishedDateProp = getPublishDate(feedScope);
-        publishedDateProp = publishedDateProp == null ? 
-                feedScope.getProperty(creationTimePropDef) : publishedDateProp;
+        publishedDateProp = publishedDateProp == null
+                ? feedScope.getProperty(creationTimePropDef) : publishedDateProp;
         feed.setId(getId(feedScope.getURI(), publishedDateProp, getFeedPrefix()));
 
         feed.addAuthor(requestContext.getRepository().getId());
         feed.setUpdated(getLastModified(feedScope));
-        
+
         // Whether or not to display collection introduction in feed
         boolean showIntroduction = showFeedIntroduction(feedScope);
         if (showIntroduction) {
             String subTitle = getIntroduction(feedScope);
             if (subTitle != null) {
                 feed.setSubtitleAsXhtml(TextUtils.removeUnprintables(subTitle));
-            }
-            else {
+            } else {
                 subTitle = getDescription(feedScope);
                 if (subTitle != null) {
                     feed.setSubtitle(TextUtils.removeUnprintables(subTitle));
@@ -226,16 +224,14 @@ public class ListingFeedView implements View {
 
     /**
      * Add the appropriate resource properties to the Entry
-     * 
-     * The numberofcomments element is only added if the resource in question
-     * has comments attached to it.
-     * 
+     *
+     * The numberofcomments element is only added if the resource in question has comments attached to it.
+     *
      * @param feed the resulting feed
      * @param resource the current property set
-     * @param extensions additional fields in resulting feed entry 
-     *  (will appear in the {@code vrtx} name space)
+     * @param extensions additional fields in resulting feed entry (will appear in the {@code vrtx} name space)
      */
-    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, PropertySet resource, Map<String,?> extensions) {
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, PropertySet resource, Map<String, ?> extensions) {
         try {
 
             Entry entry = Abdera.getInstance().newEntry();
@@ -252,11 +248,11 @@ public class ListingFeedView implements View {
             }
 
             if (extensions != null) {
-                for (String key: extensions.keySet()) {
+                for (String key : extensions.keySet()) {
                     entry.addSimpleExtension("vrtx", key, "v", extensions.get(key).toString());
                 }
             }
-            
+
             Property numberOfComments = resource.getProperty(numberOfCommentsPropDef);
             if (numberOfComments != null) {
                 entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
@@ -288,18 +284,19 @@ public class ListingFeedView implements View {
             }
 
             Link link = abdera.getFactory().newLink();
-            String urlString = viewService.constructLink(resource.getURI());
-            Property urlProp = resource.getProperty(Namespace.DEFAULT_NAMESPACE, MultiHostSearcher.URL_PROP_NAME);
-            if (urlProp != null) {
-                urlString = URL.parse(urlProp.getStringValue()).toString();
+            String urlString;
+            if (!MultiHostUtil.isMultiHostPropertySet(resource)) {
+                urlString = viewService.constructLink(resource.getURI());
+            } else {
+                urlString = MultiHostUtil.getMultiHostUrlProp(resource).getStringValue();
             }
             link.setHref(urlString);
             link.setRel("alternate");
             entry.addLink(link);
 
-			if (resource.getResourceType().equals("structured-event")) {
-				entry.addSimpleExtension("vrtx", "ical-url", "v", urlString + "?vrtx=ical");
-			}
+            if (resource.getResourceType().equals("structured-event")) {
+                entry.addSimpleExtension("vrtx", "ical-url", "v", urlString + "?vrtx=ical");
+            }
 
             Property mediaRef = getProperty(resource, mediaPropDefPointer);
             if (mediaRef != null) {
@@ -336,25 +333,25 @@ public class ListingFeedView implements View {
     protected boolean isExtendedFormat(HttpServletRequest request) {
         return "extended".equals(request.getParameter("format"));
     }
-    
+
     protected void addExtensions(Entry entry, PropertySet resource) {
         Property numberOfComments = resource.getProperty(numberOfCommentsPropDef);
         if (numberOfComments != null) {
             entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
         }
-        
+
         String imageRef = imageRef(resource);
         if (imageRef != null) {
             entry.addSimpleExtension("vrtx", "image", "v", imageRef);
         }
-        
+
         String imageThumbnailRef = imageThumbnailRef(resource);
         if (imageThumbnailRef != null) {
             entry.addSimpleExtension("vrtx", "image-thumbnail", "v", imageThumbnailRef);
         }
 
-        String imageCaption = null;        
-        for (Property property: resource) {
+        String imageCaption = null;
+        for (Property property : resource) {
             if ("caption".equals(property.getDefinition().getName())) {
                 imageCaption = property.getStringValue();
                 break;
@@ -364,7 +361,7 @@ public class ListingFeedView implements View {
             entry.addSimpleExtension("vrtx", "image-caption", "v", htmlUtil.flatten(imageCaption));
         }
     }
-    
+
     protected void printFeed(Feed feed, HttpServletResponse response) throws IOException {
         response.setContentType(getContentType());
         feed.writeTo("prettyxml", response.getWriter());
@@ -380,7 +377,7 @@ public class ListingFeedView implements View {
             Property picture = getProperty(propSet, picturePropDefPointer);
             if (picture != null) {
                 String imageRef = picture.getStringValue();
-                if (!imageRef.startsWith("/") && !imageRef.startsWith("https://") 
+                if (!imageRef.startsWith("/") && !imageRef.startsWith("https://")
                         && !imageRef.startsWith("https://")) {
                     try {
                         imageRef = propSet.getURI().getParent().expand(imageRef).toString();
@@ -392,9 +389,8 @@ public class ListingFeedView implements View {
                 String imgPath = picture.getFormattedValue(
                         PropertyType.THUMBNAIL_PROP_NAME, Locale.getDefault());
                 String imgAlt = getImageAlt(imgPath);
-                sb.append("<img src=\"" + HtmlUtil.encodeBasicEntities(imgPath)
-                        + "\" alt=\""
-                        + HtmlUtil.encodeBasicEntities(imgAlt) + "\"/>");
+                sb.append("<img src=\"").append(HtmlUtil.encodeBasicEntities(imgPath)).append("\" alt=\"");
+                sb.append(HtmlUtil.encodeBasicEntities(imgAlt)).append("\"/>");
             }
         }
 
@@ -410,61 +406,71 @@ public class ListingFeedView implements View {
         }
         return null;
     }
-    
+
     private String imageRef(PropertySet propSet) {
+        String ret = null;
+
         URL baseURL = viewService.constructURL(propSet.getURI());
+
         Property picture = getProperty(propSet, picturePropDefPointer);
         if (picture != null) {
-            String imageRef = picture.getStringValue();
-            if (!imageRef.startsWith("/") && !imageRef.startsWith("https://") && !imageRef.startsWith("https://")) {
-                try {
-                    imageRef = propSet.getURI().getParent().expand(imageRef).toString();
-                    picture.setValue(new Value(imageRef, PropertyType.Type.STRING));
-                }
-                catch (Throwable t) { }
+            String imageRef;
+            if (!MultiHostUtil.isMultiHostPropertySet(propSet)) {
+                imageRef = picture.getFormattedValue();
+            } else {
+                imageRef = MultiHostUtil.resolveImageRefStringValue(picture,
+                        MultiHostUtil.getMultiHostUrlProp(propSet), false); // false = Do not add thumbnail
             }
-            String imgPath = picture.getStringValue();
-            String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imgPath) + "\" />";
 
+            /**
+             * XXX: Wraps image URLs in a HTML fragment and uses {@link HtmlUtil#linkResolveFilter} to generate
+             * protocol-relative URLs, should have been a utility function operating directly on the values.
+             */
+            String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imageRef) + "\" />";
             HtmlFragment imgElem = htmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
                     .getRequestContext().getRequestURL(), useProtocolRelativeImages);
-            
             try {
-                return ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
-            }
-            catch (Exception e) {
+                ret = ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
+            } catch (Exception e) {
                 logger.warn("Failed to generate image thumbnail URL for resource " + propSet.getURI(), e);
             }
         }
-        return null;
+
+        return ret;
     }
-    
+
     private String imageThumbnailRef(PropertySet propSet) {
+        String ret = null;
+
         URL baseURL = viewService.constructURL(propSet.getURI());
 
         Property picture = getProperty(propSet, picturePropDefPointer);
         if (picture != null) {
-            String imageRef = picture.getStringValue();
-            if (!imageRef.startsWith("/") && !imageRef.startsWith("https://") && !imageRef.startsWith("https://")) {
+            String imageRef;
+            if (!MultiHostUtil.isMultiHostPropertySet(propSet)) {
+                imageRef = picture.getFormattedValue("thumbnail", Locale.getDefault());
+            } else {
+                imageRef = MultiHostUtil.resolveImageRefStringValue(picture,
+                        MultiHostUtil.getMultiHostUrlProp(propSet), true); // true = add thumbnail if possible
+            }
+
+            if (imageRef.contains("vrtx=thumbnail")) {
+                /**
+                 * XXX: Wraps image URLs in a HTML fragment and uses {@link HtmlUtil#linkResolveFilter} to generate
+                 * protocol-relative URLs, should have been a utility function operating directly on the values.
+                 */
+                String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imageRef) + "\" />";
+                HtmlFragment imgElem = htmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
+                        .getRequestContext().getRequestURL(), useProtocolRelativeImages);
                 try {
-                    imageRef = propSet.getURI().getParent().expand(imageRef).toString();
-                    picture.setValue(new Value(imageRef, PropertyType.Type.STRING));
+                    ret = ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
+                } catch (Exception e) {
+                    logger.warn("Failed to generate image thumbnail URL for resource " + propSet.getURI(), e);
                 }
-                catch (Throwable t) { }
-            }
-            String imgPath = picture.getFormattedValue(PropertyType.THUMBNAIL_PROP_NAME, Locale.getDefault());
-            String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imgPath) + "\" />";
-            
-            HtmlFragment imgElem = htmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
-                    .getRequestContext().getRequestURL(), useProtocolRelativeImages);
-            try {
-                return ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
-            }
-            catch (Exception e) {
-                logger.warn("Failed to generate image thumbnail URL for resource " + propSet.getURI(), e);
             }
         }
-        return null;
+
+        return ret;
     }
 
     protected Property getDefaultPublishDate(PropertySet result) {
@@ -501,7 +507,7 @@ public class ListingFeedView implements View {
     }
 
     protected String getId(Path resourceUri, Property publishedDateProp, String prefix) throws URIException,
-    UnsupportedEncodingException {
+            UnsupportedEncodingException {
         String host = viewService.constructURL(resourceUri).getHost();
         StringBuilder sb = new StringBuilder(TAG_PREFIX);
         sb.append(host + ",");
@@ -590,7 +596,7 @@ public class ListingFeedView implements View {
     }
 
     // To be overridden where necessary
-    protected void setFeedEntrySummary(HttpServletRequest request, 
+    protected void setFeedEntrySummary(HttpServletRequest request,
             Entry entry, PropertySet result) throws Exception {
         String type = result.getResourceType();
         if (type != null && introductionAsXHTMLSummaryResourceTypes.contains(type)) {
@@ -692,7 +698,7 @@ public class ListingFeedView implements View {
     public void setHtmlUtil(HtmlUtil htmlUtil) {
         this.htmlUtil = htmlUtil;
     }
-    
+
     public void setUseProtocolRelativeImages(boolean useProtocolRelativeImages) {
         this.useProtocolRelativeImages = useProtocolRelativeImages;
     }
