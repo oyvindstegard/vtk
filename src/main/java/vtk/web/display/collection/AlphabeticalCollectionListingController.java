@@ -134,8 +134,10 @@ public class AlphabeticalCollectionListingController extends CollectionListingCo
         URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
 
         model.put("alpthabeticalOrdredResult", alpthabeticalOrdredResult);
-        List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(totalHits, pageLimit, baseURL, page);
+        ListingPager.Pagination pagination = ListingPager.pagination(totalHits, pageLimit, baseURL, page);
+        List<ListingPagingLink> urls = pagination.pageThroughLinks();
         model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+        model.put(MODEL_KEY_PAGINATION, pagination);
         model.put(MODEL_KEY_PAGE, page);
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
     }

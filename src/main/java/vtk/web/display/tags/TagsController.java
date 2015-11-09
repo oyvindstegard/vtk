@@ -30,6 +30,7 @@
  */
 package vtk.web.display.tags;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
@@ -126,9 +128,11 @@ public class TagsController implements Controller {
         URL baseURL = service.constructURL(resource.getURI());
         tagsHelper.processUrl(baseURL, tag, resourceTypes, sortFieldParams, displayScope, overrideResourceTypeTitle);
 
-        List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(totalHits, pageLimit, baseURL, page);
+        ListingPager.Pagination pagination = ListingPager.pagination(totalHits, pageLimit, baseURL, page);
+        List<ListingPagingLink> urls = pagination.pageThroughLinks();
 
         model.put("listing", listing);
+        model.put("searchComponents", Collections.singletonList(listing));
         model.put("page", page);
         model.put("pageThroughUrls", urls);
 

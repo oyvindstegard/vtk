@@ -63,7 +63,7 @@ public class MessageListingAtomFeedGeneratorTest {
         }
     }
     
-    private MessageListingAtomFeedGenerator generator = new MessageListingAtomFeedGenerator();
+    private MessageListingAtomFeedView generator = new MessageListingAtomFeedView();
     private Feed feed = null;
     private Entry entry = null;
     private StringWriter stringWriter = null;

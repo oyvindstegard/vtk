@@ -34,7 +34,6 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
@@ -43,41 +42,14 @@ import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.event.EventListingHelper.SpecificDateSearchType;
-import vtk.web.display.feed.AtomFeedGenerator;
-import vtk.web.search.Listing;
-import vtk.web.search.ListingEntry;
+import vtk.web.display.feed.ListingFeedView;
 import vtk.web.service.Service;
 
-public class EventListingAtomFeedGenerator extends AtomFeedGenerator {
+public class EventListingAtomFeedView extends ListingFeedView {
 
     private EventListingHelper helper;
-    private EventListingSearcher searcher;
     private PropertyTypeDefinition displayTypePropDef;
     private String overridePublishDatePropDefPointer;
-
-    @Override
-    protected void addFeedEntries(HttpServletRequest request, 
-            Feed feed, Resource feedScope) throws Exception {
-
-		feed.addSimpleExtension("vrtx", "feed-type", "v", "event-list");
-
-        Listing entryElements = null;
-        Property displayTypeProp = feedScope.getProperty(displayTypePropDef);
-        if (displayTypeProp != null && "calendar".equals(displayTypeProp.getStringValue())) {
-            SpecificDateSearchType searchType = helper.getSpecificDateSearchType(request);
-            if (searchType != null) {
-                entryElements = searcher.searchSpecificDate(request, feedScope, entryCountLimit, 1);
-            }
-        }
-        if (entryElements == null) {
-            entryElements = searcher.searchUpcoming(request, feedScope, 1, entryCountLimit, 0);
-        }
-
-        for (ListingEntry entry : entryElements.getEntries()) {
-            PropertySet feedEntry = entry.getPropertySet();
-            addPropertySetAsFeedEntry(request, feed, feedEntry);
-		}
-    }
 
     @Override
     protected String getFeedTitle(HttpServletRequest request, Resource feedScope) {
@@ -138,11 +110,6 @@ public class EventListingAtomFeedGenerator extends AtomFeedGenerator {
     @Required
     public void setHelper(EventListingHelper helper) {
         this.helper = helper;
-    }
-
-    @Required
-    public void setSearcher(EventListingSearcher searcher) {
-        this.searcher = searcher;
     }
 
     @Required

@@ -73,6 +73,14 @@
     </property>
   </bean>
 
+  <bean id="audioVideoListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="audioVideoListing.atomFeedView" value-ref="audioVideoListing.atomFeedView" />
+      </map>
+    </property>
+  </bean>
+
   <bean id="audioVideoListing.viewResolver" parent="decoratorViewResolver">
     <property name="views">
       <map>
@@ -142,9 +150,23 @@
     <property name="contentTypePropDef" ref="contentTypePropDef" />
   </bean>
 
-  <bean id="audioVideoListing.atomFeedHandler" class="vtk.web.display.collection.AudioVideoListingAtomFeedGenerator"
-        parent="collectionListing.feedHandler">
-    <property name="searchComponent" ref="audioVideoListing.feedSearchComponent" />
+
+  <bean id="audioVideoListing.atomFeedHandler" parent="audioVideoListing.handler">
+    <property name="searchComponents">
+      <list>
+        <ref bean="audioVideoListing.feedSearchComponent" />
+      </list>
+    </property>
+    <property name="viewName" value="audioVideoListing.atomFeedView" />
+  </bean>
+
+  <bean id="audioVideoListing.atomFeedView" class="vtk.web.display.collection.AudioVideoListingAtomFeedView"
+        parent="collectionListing.feedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="audio-video-list" />
+      </map>
+    </property>
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />
     <property name="videoHtmlDescriptionPropDef" ref="videoHtmlDescriptionPropDef" />
   </bean>
@@ -155,7 +177,8 @@
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">
-          <property name="queryString" value="((type IN audio OR type IN video) AND hide-video-download-link NOT EXISTS)" />
+          <property name="queryString" 
+                    value="((type IN audio OR type IN video) AND hide-video-download-link NOT EXISTS)" />
         </bean>
       </list>
     </property>
