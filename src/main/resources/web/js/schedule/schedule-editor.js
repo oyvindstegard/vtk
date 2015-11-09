@@ -813,7 +813,7 @@ function createFixedResourcesFolders(cs, elm, baseUrl) {
   var createFixedResourceFolder = function(form, csrf) {
     var dataString = "uri=" + encodeURIComponent(collectionUrl) +
                      "&type=fixed-resources-collection" +
-                      addCreateProperty("http://www.uio.no/navigation", "userTitle", collectionTitle) +
+                      addCreateProperty("", "userTitle", collectionTitle) +
                       addCreateProperty("http://www.uio.no/resource-types/fixed-resources-collection", "fixed-resources-codes", sequenceId);
     // Disciplines if exists
     if(sessionDisciplines) {
@@ -862,9 +862,9 @@ function createFixedResourcesFolders(cs, elm, baseUrl) {
  * Add create property
  */
 function addCreateProperty(ns, name, val) {
-  return "&propertyNamespace%5B%5D=" + encodeURIComponent(ns) +
-         "&propertyName%5B%5D=" + name +
-         "&propertyValue%5B%5D=" + encodeURIComponent(val);
+  return "&propertyNamespace=" + encodeURIComponent(ns) +
+         "&propertyName=" + name +
+         "&propertyValue=" + encodeURIComponent(val);
 }
 
 /*
