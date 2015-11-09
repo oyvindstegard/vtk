@@ -41,6 +41,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
@@ -136,8 +137,11 @@ public class CollectionListingController extends BaseCollectionListingController
             model.put("editCurrentResource", helper.checkResourceForEditLink(repository, collection, principal));
         }
 
-        List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(totalHits, pageLimit, baseURL, page);
+        ListingPager.Pagination pagination = ListingPager.pagination(totalHits, pageLimit, baseURL, page);
+        List<ListingPagingLink> urls = pagination.pageThroughLinks();
+        
         model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+        model.put(MODEL_KEY_PAGINATION, pagination);
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
         model.put(MODEL_KEY_PAGE, page);
         if (results.size() > 0 && results.get(0) != null) {

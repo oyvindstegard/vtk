@@ -65,7 +65,8 @@ public class EventCalendarAllListingController extends EventCalendarListingContr
             if (result.getTotalHits() > 0) {
                 model.put(EventListingHelper.DISPLAY_LISTING_ICAL_LINK, true);
             }
-        } else {
+        }
+        else {
             model.put(MODEL_KEY_HIDE_ALTERNATIVE_REP, Boolean.TRUE);
             result = searcher.searchPrevious(request, collection, page, pageLimit, 0);
         }
@@ -84,10 +85,14 @@ public class EventCalendarAllListingController extends EventCalendarListingContr
                     false);
             String noPlannedTitleKey = viewType + "NoPlannedTitle";
             model.put(noPlannedTitleKey, noPlannedTitle);
-        } else {
-            List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(result.getTotalHits(), pageLimit,
+        }
+        else {
+            ListingPager.Pagination pagination = ListingPager.pagination(result.getTotalHits(), pageLimit,
                     serviceURL, page);
+            List<ListingPagingLink> urls = pagination.pageThroughLinks();
+            
             model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+            model.put(MODEL_KEY_PAGINATION, pagination);
         }
     }
 

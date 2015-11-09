@@ -42,33 +42,15 @@ import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
-import vtk.web.display.feed.AtomFeedGenerator;
-import vtk.web.search.Listing;
-import vtk.web.search.ListingEntry;
-import vtk.web.search.SearchComponent;
+import vtk.web.display.feed.ListingFeedView;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 import vtk.web.tags.TagsHelper;
 
-public class TagsAtomFeedGenerator extends AtomFeedGenerator {
+public class TagsAtomFeedView extends ListingFeedView {
 
     private PropertyTypeDefinition overridePublishDatePropDef;
-    private SearchComponent searchComponent;
     protected TagsHelper tagsHelper;
-
-    @Override
-    protected void addFeedEntries(HttpServletRequest request, Feed feed, 
-            Resource feedScope) throws Exception {
-
-        Listing entryElements = searchComponent.execute(RequestContext.getRequestContext().getServletRequest(),
-                feedScope, 1, entryCountLimit, 0);
-
-        for (ListingEntry entry : entryElements.getEntries()) {
-            PropertySet feedEntry = entry.getPropertySet();
-            addPropertySetAsFeedEntry(request, feed, feedEntry);
-        }
-
-    }
 
     @Override
     protected void addFeedLinks(HttpServletRequest request, Resource feedScope, Feed feed) {
@@ -123,10 +105,6 @@ public class TagsAtomFeedGenerator extends AtomFeedGenerator {
     @Required
     public void setTagsHelper(TagsHelper tagsHelper) {
         this.tagsHelper = tagsHelper;
-    }
-
-    public void setSearchComponent(SearchComponent searchComponent) {
-        this.searchComponent = searchComponent;
     }
 
     public void setOverridePublishDatePropDef(PropertyTypeDefinition overridePublishDatePropDef) {

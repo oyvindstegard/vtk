@@ -35,41 +35,27 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.web.display.feed.AtomFeedGenerator;
-import vtk.web.search.Listing;
-import vtk.web.search.ListingEntry;
+import vtk.web.display.feed.ListingFeedView;
 
 /**
- * A simpler feed controller for event listings. Sorts entries on
+ * A simpler feed view for event listings. Sorts entries on
  * {@code publish-date} (not {@code start-date/end-date}), 
  * and includes listing-specific data (such as {@code event-start}) as 
  * extension elements.
  */
-public class SimpleEventListingFeedController extends AtomFeedGenerator {
+public class SimpleEventListingFeedView extends ListingFeedView {
 
     private EventListingHelper helper;
     private EventListingSearcher searcher;
     private PropertyTypeDefinition displayTypePropDef;
 
-    @Override
-    protected void addFeedEntries(HttpServletRequest request, Feed feed, 
-            Resource feedScope) throws Exception {
-        Listing entryElements = searcher.searchUpcoming(request, feedScope, 1, entryCountLimit, 0);
-        for (ListingEntry entry : entryElements.getEntries()) {
-            PropertySet feedEntry = entry.getPropertySet();
-            addPropertySetAsFeedEntry(request, feed, feedEntry);
-        }
-    }
 
     @Override
     protected void addExtensions(Entry entry, PropertySet resource) {

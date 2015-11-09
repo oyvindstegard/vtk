@@ -41,12 +41,12 @@ import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.text.html.HtmlFragment;
 import vtk.web.RequestContext;
-import vtk.web.display.collection.CollectionListingAtomFeedGenerator;
+import vtk.web.display.feed.ListingFeedView;
 import vtk.web.service.URL;
 
-public class MessageListingAtomFeedGenerator extends CollectionListingAtomFeedGenerator {
+public class MessageListingAtomFeedView extends ListingFeedView {
 
-    private final Log logger = LogFactory.getLog(MessageListingAtomFeedGenerator.class);
+    private final Log logger = LogFactory.getLog(MessageListingAtomFeedView.class);
 
     @Override
     protected void setFeedEntrySummary(HttpServletRequest request, 
