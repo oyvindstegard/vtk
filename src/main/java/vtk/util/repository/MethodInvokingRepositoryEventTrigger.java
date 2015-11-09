@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,7 +44,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.context.ApplicationListener;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -59,7 +56,7 @@ import vtk.repository.event.ResourceMovedEvent;
  *  
  */
 public class MethodInvokingRepositoryEventTrigger 
-  implements ApplicationListener<RepositoryEvent>, InitializingBean {
+    extends AbstractRepositoryEventHandler implements InitializingBean {
 
     private static Log logger = LogFactory.getLog(MethodInvokingRepositoryEventTrigger.class);
 
@@ -72,10 +69,6 @@ public class MethodInvokingRepositoryEventTrigger
     private LinkedHashMap<Object, String> multipleInvocations;
     private List<TargetAndMethod> methodInvocations;
     
-    private  ScheduledExecutorService executorService =
-	Executors.newSingleThreadScheduledExecutor(r -> 
-            new Thread(r, "repository-event-trigger"));
-
     @Required
     public void setRepository(Repository repository)  {
         this.repository = repository;
@@ -152,7 +145,7 @@ public class MethodInvokingRepositoryEventTrigger
     }
 
     @Override
-    public void onApplicationEvent(RepositoryEvent event) {
+    public void handleEvent(RepositoryEvent event) {
         
         Repository rep = event.getRepository();
         if (! rep.getId().equals(this.repository.getId())) {
@@ -204,7 +197,14 @@ public class MethodInvokingRepositoryEventTrigger
                 logger.debug("Invoking method " + m + " on object "
                         + this.targetObject);
             }
-            executorService.submit(() -> m.invoke(target, new Object[0]));
+            try {
+                m.invoke(target, new Object[0]);
+            }
+            catch (Throwable t) {
+                logger.warn("Failed to invoke method " + m
+                        + " on object " + targetObject, t);
+                return;
+            }
         }
     }
 

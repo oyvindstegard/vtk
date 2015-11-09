@@ -35,7 +35,7 @@ import java.util.List;
 
 import javax.servlet.ServletRequest;
 
-import org.apache.commons.collections.EnumerationUtils;
+import org.apache.commons.collections4.EnumerationUtils;
 import org.springframework.web.bind.ServletRequestDataBinder;
 
 public class ACLEditBinder extends ServletRequestDataBinder {
