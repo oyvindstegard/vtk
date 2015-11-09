@@ -36,14 +36,15 @@ import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-
 import org.jmock.Expectations;
 import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
+import vtk.web.display.linkcheck.LinkChecker.LinkCheckRequest;
 import vtk.web.display.linkcheck.LinkChecker.LinkCheckResult;
 import vtk.web.display.linkcheck.LinkChecker.Status;
 import vtk.web.service.URL;
@@ -122,16 +123,20 @@ public class LinkCheckerTest {
         URL base = URL.parse("http://www.uio.no/index.html");
 
         // Test unencoded absolute link
-        linkChecker.validate(unencodedAbsolute, base);
+        LinkCheckRequest request = LinkCheckRequest.builder(unencodedAbsolute, base).build();
+        linkChecker.validate(request);
 
         // Test already encoded absolute link
-        linkChecker.validate(alreadyEncodedAbsolute, base);
+        request = LinkCheckRequest.builder(alreadyEncodedAbsolute, base).build();
+        linkChecker.validate(request);
 
         // Test unencoded host relative link
-        linkChecker.validate(unencodedHostRelative, base);
+        request = LinkCheckRequest.builder(unencodedHostRelative, base).build();
+        linkChecker.validate(request);
 
         // Test already encoded host relative link
-        linkChecker.validate(encodedHostRelative, base);
+        request = LinkCheckRequest.builder(encodedHostRelative, base).build();
+        linkChecker.validate(request);
     }
 
     @Test
@@ -170,9 +175,14 @@ public class LinkCheckerTest {
                 exactly(2).of(mockCache).put(with(any(Element.class)));
             }
         });
-
-        linkChecker.validate("http://www.øl.com/#/BedsteBryggeprocess", URL.parse("http://www.uio.no/index.html"));
-        linkChecker.validate("http://plain-ascii.com/foo/bar", URL.parse("http://www.uio.no/index.html"));
+        LinkCheckRequest request = LinkCheckRequest.builder(
+                "http://www.øl.com/#/BedsteBryggeprocess", 
+                URL.parse("http://www.uio.no/index.html")).build();
+        linkChecker.validate(request);
+        
+        request = LinkCheckRequest.builder("http://plain-ascii.com/foo/bar", 
+                URL.parse("http://www.uio.no/index.html")).build();
+        linkChecker.validate(request);
     }
 
     @Test
@@ -185,8 +195,10 @@ public class LinkCheckerTest {
             }
         });
 
-        linkChecker.validate("http://www.example.com/a–b", // "a" <ndash> "b"
-                URL.parse("http://www.uio.no/"));
+        LinkCheckRequest request = LinkCheckRequest.builder(
+                "http://www.example.com/a–b", // "a" <ndash> "b"
+                URL.parse("http://www.uio.no/")).build();
+        linkChecker.validate(request);
     }
 
     @Test
@@ -221,7 +233,8 @@ public class LinkCheckerTest {
                 }
             });
         }
-        LinkCheckResult actual = linkChecker.validate(href, testLink.testBase);
+        LinkCheckRequest request = LinkCheckRequest.builder(href, testLink.testBase).build();
+        LinkCheckResult actual = linkChecker.validate(request);
         assertNotNull("Did not return expected link check result for '" + testLink.testHref + "'", actual);
         assertEquals("Input href not equal to link in result", href, actual.getLink());
         assertEquals("Did not return expected status for '" + testLink.testHref + "'", expected.getStatus(),

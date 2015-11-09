@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,54 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package vtk.util.repository;
 
-package vtk.repository.systemjob;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import org.springframework.context.ApplicationListener;
 
-import vtk.repository.Path;
-import vtk.repository.Repository;
-import vtk.repository.SystemChangeContext;
+import vtk.repository.event.RepositoryEvent;
 
 /**
- * Path selector which aggregates selected paths of a configured list of
- * sub-selectors. Removes (and keeps the first of) duplicate paths provided 
- * by the sub-selectors. 
+ * Abstract base class for handlers of
+ * {@link RepositoryEvent repository events}.
+ * 
+ * <p>Can operate in either synchronous or asynchronous (the default)
+ * mode. In the synchronous mode events are processed in the
+ * currently executing thread, whereas in the asynchronous mode the
+ * event processing occurs in a separate thread, scheduled by a 
+ * single-threaded {@link ExecutorService}.</p>
  */
-public class AggregatingPathSelector implements PathSelector {
+public abstract class AbstractRepositoryEventHandler
+    implements ApplicationListener<RepositoryEvent> {
 
-    private List<PathSelector> pathSelectors;
-    
-    public AggregatingPathSelector(List<PathSelector> selectors) {
-        if (selectors == null) {
-            throw new IllegalArgumentException("Selectors cannot be null");
-        }
-        this.pathSelectors = selectors;
+    private  ExecutorService executorService = null;
+
+    public AbstractRepositoryEventHandler() {
+        this(true);
     }
-    
+
+    public AbstractRepositoryEventHandler(boolean async) {
+        if (async) {
+            executorService = Executors.newSingleThreadExecutor(r ->
+                new Thread(r, name()));
+        }
+    }
+
     @Override
-    public void selectWithCallback(Repository repository,
-                                   SystemChangeContext context,
-                                   PathSelectCallback callback) throws Exception {
-
-        Set<Path> aggregated = new LinkedHashSet<>();
-
-        for (PathSelector selector: this.pathSelectors) {
-            selector.selectWithCallback(repository, context, new PathSelectCallback() {
-                @Override
-                public void beginBatch(int total) throws Exception { }
-                @Override
-                public void select(Path path) throws Exception {
-                    aggregated.add(path);
-                }
-            });
+    public final void onApplicationEvent(RepositoryEvent event) {
+        if (executorService != null) {
+            executorService.submit(() -> handleEvent(event));
         }
-        
-        callback.beginBatch(aggregated.size());
-        for (Path path: aggregated) callback.select(path);
+        else {
+            handleEvent(event);
+        }
     }
+
+    protected String name() {
+        return getClass().getSimpleName();
+    }
+
+    public abstract void handleEvent(RepositoryEvent event);
 }

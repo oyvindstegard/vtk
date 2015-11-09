@@ -56,7 +56,7 @@ import vtk.repository.resourcetype.Value;
 /**
  *
  */
-public class BrokenLinksCountEvaluator implements PropertyEvaluator{
+public class BrokenLinksCountEvaluator implements PropertyEvaluator {
 
     private PropertyTypeDefinition linkCheckPropDef;
     private final Log logger = LogFactory.getLog(getClass());
