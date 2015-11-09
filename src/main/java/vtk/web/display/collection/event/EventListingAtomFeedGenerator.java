@@ -59,6 +59,8 @@ public class EventListingAtomFeedGenerator extends AtomFeedGenerator {
     protected void addFeedEntries(HttpServletRequest request, 
             Feed feed, Resource feedScope) throws Exception {
 
+		feed.addSimpleExtension("vrtx", "feed-type", "v", "event-list");
+
         Listing entryElements = null;
         Property displayTypeProp = feedScope.getProperty(displayTypePropDef);
         if (displayTypeProp != null && "calendar".equals(displayTypeProp.getStringValue())) {
@@ -74,7 +76,7 @@ public class EventListingAtomFeedGenerator extends AtomFeedGenerator {
         for (ListingEntry entry : entryElements.getEntries()) {
             PropertySet feedEntry = entry.getPropertySet();
             addPropertySetAsFeedEntry(request, feed, feedEntry);
-        }
+		}
     }
 
     @Override

@@ -8,14 +8,14 @@
       <Item>
         <New class="org.eclipse.jetty.server.ServerConnector">
           <Arg name="server"><Ref refid="Server" /></Arg>
-          <Set name="port">9322</Set>
+          <Set name="port"><SystemProperty name="vtk.web.port" default="9322" /></Set>
           <Set name="idleTimeout">600000</Set>
         </New>
       </Item>
       <Item>
         <New class="org.eclipse.jetty.server.ServerConnector">
           <Arg name="server"><Ref refid="Server" /></Arg>
-          <Set name="port">9321</Set>
+          <Set name="port"><SystemProperty name="vtk.webdav.port" default="9321" /></Set>
           <Set name="idleTimeout">600000</Set>
         </New>
       </Item>

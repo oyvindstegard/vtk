@@ -1,21 +1,21 @@
-/* Copyright (c) 2010, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -30,64 +30,55 @@
  */
 package vtk.repository.store;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-/*
- * Default implementation of container for metadata
- */
-public class MetadataImpl implements Metadata {
+import vtk.security.Principal;
 
-    private Map<String, List<Object>> attributes = new HashMap<String, List<Object>>();
+public class DefaultPrincipalMetadataDAO implements PrincipalMetadataDAO {
 
-    public void addAttributeValue(String attribute, Object value) {
-        List<Object> values = this.attributes.get(attribute);
-        if (values == null) {
-            values = new ArrayList<Object>();
-            this.attributes.put(attribute, values);
-        }
-        values.add(value);
-    }
-
-    public void setAttributeValues(String name, List<Object> values) {
-        if (values == null) {
-            this.attributes.remove(name);
-        } else {
-            this.attributes.put(name, values);
-        }
+    @Override
+    public PrincipalMetadata getMetadata(String qualifiedNameOrUid,
+            Locale preferredLocale) {
+        return PrincipalMetadata.defaultPrincipalMetadata(qualifiedNameOrUid);
     }
 
     @Override
-    public Object getValue(String attributeName) {
-        List<Object> values = this.attributes.get(attributeName);
-        if (values == null || values.isEmpty()) {
-            return null;
-        }
-        return values.get(0);
+    public PrincipalMetadata getMetadata(Principal principal,
+            Locale preferredLocale) {
+        return PrincipalMetadata.defaultPrincipalMetadata(principal);
     }
 
     @Override
-    public List<Object> getValues(String attributeName) {
-        List<Object> values = this.attributes.get(attributeName);
-        if (values != null) {
-            return Collections.unmodifiableList(values);
-        }
-
-        return null;
+    public List<PrincipalMetadata> search(PrincipalSearch search) {
+        return Collections.emptyList();
     }
 
     @Override
-    public Set<String> getAttributeNames() {
-        return Collections.unmodifiableSet(this.attributes.keySet());
+    public List<PrincipalMetadata> getMetadata(Set<String> qualifiedNamesOrUids,
+            Locale preferredLocale) {
+        return qualifiedNamesOrUids.stream()
+                .map(qname -> new PrincipalMetadataImpl(qname))
+                .collect(Collectors.toList());
     }
-    
+
+    private static Set<String> domains;
+    static {
+        Set<String> tmp = new HashSet<>();
+        tmp.add(Principal.PRINCIPAL_GROUP_DOMAIN);
+        tmp.add(Principal.PRINCIPAL_LOCALHOST_DOMAIN);
+        tmp.add(Principal.PRINCIPAL_USER_DOMAIN);
+        tmp.add(Principal.PRINCIPAL_WEBID_DOMAIN);
+        domains = Collections.unmodifiableSet(tmp);
+    }
+
     @Override
-    public String toString() {
-        return getClass().getSimpleName() + "(" + attributes + ")";
+    public Set<String> getSupportedPrincipalDomains() {
+        return domains;
     }
 
 }

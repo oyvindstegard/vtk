@@ -113,12 +113,7 @@
         <constructor-arg value="url" />
       </bean>
     </constructor-arg>
-    <constructor-arg>
-      <list>
-        <ref bean="viewService" />
-        <ref bean="manageService" />
-      </list>
-    </constructor-arg>
+    <constructor-arg ref="serviceUrlProvider"/>
   </bean>
 
   <bean id="decorating.requestContextFunction" 
