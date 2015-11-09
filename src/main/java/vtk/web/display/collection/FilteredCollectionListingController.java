@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -210,8 +211,9 @@ public abstract class FilteredCollectionListingController implements Controller 
             }
         }
 
-        List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(rs.getTotalHits(), getPageLimit(),
+        ListingPager.Pagination pagination = ListingPager.pagination(rs.getTotalHits(), getPageLimit(),
                 URL.create(request), page);
+        List<ListingPagingLink> urls = pagination.pageThroughLinks();
 
         Property showSubfolderMenu = collection.getProperty(showSubfolderMenuPropDef);
         if (showSubfolderMenu != null && showSubfolderMenu.getBooleanValue()) {

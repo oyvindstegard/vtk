@@ -38,6 +38,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
@@ -168,11 +169,14 @@ public class EventListingController extends BaseCollectionListingController {
         Service service = RequestContext.getRequestContext().getService();
         URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
 
-        List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(totalHits, pageLimit, totalUpcomingHits,
+        ListingPager.Pagination pagination = ListingPager.pagination(totalHits, pageLimit, totalUpcomingHits,
                 baseURL, true, userDisplayPage);
+        List<ListingPagingLink> urls = pagination.pageThroughLinks();
+
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
         model.put(MODEL_KEY_PAGE, userDisplayPage);
         model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+        model.put(MODEL_KEY_PAGINATION, pagination);
         model.put(MODEL_KEY_HIDE_NUMBER_OF_COMMENTS, getHideNumberOfComments(collection));
         model.put("currentDate", Calendar.getInstance().getTime());
         model.put(EventListingHelper.DISPLAY_LISTING_ICAL_LINK, atLeastOneUpcoming);

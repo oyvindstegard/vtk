@@ -30,49 +30,16 @@
  */
 package vtk.web.display.collection.article;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
-import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.web.display.feed.AtomFeedGenerator;
-import vtk.web.search.Listing;
+import vtk.web.display.feed.ListingFeedView;
 
-public class ArticleListingAtomFeedGenerator extends AtomFeedGenerator {
+public class ArticleListingAtomFeedView extends ListingFeedView {
 
-    private ArticleListingSearcher searcher;
     private PropertyTypeDefinition overridePublishDatePropDef;
-
-    @Override
-    protected void addFeedEntries(HttpServletRequest request, Feed feed, Resource feedScope) throws Exception {
-
-		feed.addSimpleExtension("vrtx", "feed-type", "v", "article-list");
-
-        Listing featuredArticles = searcher.getFeaturedArticles(request, feedScope, 1, entryCountLimit, 0);
-        
-        if (featuredArticles != null && featuredArticles.size() > 0) {
-            Map<String, Object> extensions = new HashMap<>();
-            extensions.put("featured-article", true);
-            for (PropertySet propSet: featuredArticles.getPropertySets()) {
-                addPropertySetAsFeedEntry(request, feed, propSet, extensions);
-            }
-        }        
-
-        Listing articles = searcher.getArticles(request, feedScope, 1, entryCountLimit, 0);
-        if (articles.size() > 0) {
-
-            for (PropertySet propSet: articles.getPropertySets()) {
-                addPropertySetAsFeedEntry(request, feed, propSet);
-            }
-        }
-    }
 
     @Override
     protected Property getPublishDate(PropertySet resource) {
@@ -84,13 +51,7 @@ public class ArticleListingAtomFeedGenerator extends AtomFeedGenerator {
     }
 
     @Required
-    public void setSearcher(ArticleListingSearcher searcher) {
-        this.searcher = searcher;
-    }
-
-    @Required
     public void setOverridePublishDatePropDef(PropertyTypeDefinition overridePublishDatePropDef) {
         this.overridePublishDatePropDef = overridePublishDatePropDef;
     }
-
 }

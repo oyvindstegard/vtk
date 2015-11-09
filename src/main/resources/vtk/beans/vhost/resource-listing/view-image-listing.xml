@@ -54,6 +54,14 @@
     </property>
   </bean>
 
+  <bean id="imageListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="imageListing.feedView" value-ref="imageListing.feedView" />
+      </map>
+    </property>
+  </bean>
+
   <bean id="imageListing.viewResolver" parent="decoratorViewResolver">
     <property name="views">
       <map>
@@ -120,9 +128,17 @@
     <property name="handler" ref="imageListing.feedHandler" />
   </bean>
 
-  <bean id="imageListing.feedHandler" class="vtk.web.display.collection.CollectionListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
-    <property name="searchComponent" ref="imageListing.searchComponent" />
+  <bean id="imageListing.feedHandler" parent="imageListing.handler">
+    <property name="viewName" value="imageListing.feedView" />
+  </bean>
+  
+  <bean id="imageListing.feedView" class="vtk.web.display.feed.ListingFeedView"
+    parent="atomFeedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="image-list" />
+      </map>
+    </property>
   </bean>
 
 </beans>

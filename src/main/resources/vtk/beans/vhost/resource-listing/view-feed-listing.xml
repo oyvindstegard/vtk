@@ -29,8 +29,7 @@
   </bean>
 
 
-  <!-- ## Parent Atom feed generator ## -->
-  <bean id="atomFeedGenerator" class="vtk.web.display.feed.AtomFeedGenerator" abstract="true" depends-on="resourceTypetree">
+  <bean id="atomFeedView" class="vtk.web.display.feed.ListingFeedView" abstract="true" depends-on="resourceTypetree">
     <property name="viewService" ref="viewService" />
     <property name="abdera" ref="abdera" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
@@ -59,7 +58,7 @@
 
     <property name="htmlUtil" ref="htmlUtil" />
   </bean>
-
+  
   <!-- ## Parent RSS 2.0 feed generator ## -->
   <bean id="rssFeedGenerator" class="vtk.web.display.feed.RSSFeedGenerator" abstract="true">
     <property name="viewService" ref="viewService" />
@@ -69,12 +68,6 @@
     <property name="lastModifiedPropDef" ref="lastModifiedPropDef" />
     <property name="introductionPropDef" ref="introductionPropDef" />
     <property name="viewName" value="rss.feedView" />
-  </bean>
-
-  <!-- ## Default feed controller. Generates Atom feed. ## -->
-  <bean id="collectionListing.feedHandler" class="vtk.web.display.collection.CollectionListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
-    <property name="searchComponent" ref="collectionListing.searchComponent" />
   </bean>
 
   <!-- ## RSS feed view resolver and template ## -->

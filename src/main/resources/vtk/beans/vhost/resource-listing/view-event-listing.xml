@@ -25,31 +25,6 @@
     <property name="handler" ref="eventListing.feedHandler" />
   </bean>
 
-  <bean id="eventListing.extendedFeedService" class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="eventListing.feedService" />
-    <property name="assertions">
-      <list>
-        <ref bean="feedParameterFormatIsExtended" />
-      </list>
-    </property>
-    <property name="handler" ref="eventListing.extendedFeedHandler" />
-  </bean>
-
-
-  <bean id="feedParameterFormatIsExtended" class="vtk.web.service.RequestParameterAssertion">
-    <property name="parameterName" value="format" />
-    <property name="parameterValue" value="extended" />
-  </bean>
-
-
-  <bean id="eventListing.extendedFeedHandler" 
-        class="vtk.web.display.collection.event.SimpleEventListingFeedController"
-        parent="atomFeedGenerator">
-    <property name="helper" ref="eventListingHelper" />
-    <property name="searcher" ref="eventListing.eventListingSearcher" />
-    <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
-  </bean>
-        
   <bean id="eventListing.handler" class="vtk.web.display.collection.event.EventListingController">
     <property name="resourceManager" ref="resourceManager" />
     <property name="subFolderMenuProvider" ref="subFolderMenuProvider" />
@@ -75,13 +50,51 @@
     <property name="specificDateEventSearchComponent" ref="${override.listing.prefix}eventListing.specificDateEventSearchComponent" />
   </bean>
 
-  <bean id="eventListing.feedHandler" class="vtk.web.display.collection.event.EventListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
+  <bean name="eventListing.feedHandler" parent="eventListing.handler">
+    <property name="viewName" value="eventListing.feedView" />
+  </bean>
+
+  <bean id="eventListing.feedView" class="vtk.web.display.collection.event.EventListingAtomFeedView"
+    parent="atomFeedView">
     <property name="helper" ref="eventListingHelper" />
-    <property name="searcher" ref="eventListing.eventListingSearcher" />
     <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
     <property name="overridePublishDatePropDefPointer" ref="${override.listing.prefix}overridePublishDatePropDefPointer" />
   </bean>
+
+
+  <bean id="eventListing.extendedFeedService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="eventListing.feedService" />
+    <property name="assertions">
+      <list>
+        <ref bean="feedParameterFormatIsExtended" />
+      </list>
+    </property>
+    <property name="handler" ref="eventListing.extendedFeedHandler" />
+  </bean>
+
+  <bean name="eventListing.extendedFeedHandler" parent="eventListing.feedHandler">
+    <property name="viewName" value="eventListing.extendedFeedView" />
+  </bean>
+
+  <bean id="feedParameterFormatIsExtended" class="vtk.web.service.RequestParameterAssertion">
+    <property name="parameterName" value="format" />
+    <property name="parameterValue" value="extended" />
+  </bean>
+
+
+  <bean id="eventListing.extendedFeedView" 
+        class="vtk.web.display.collection.event.SimpleEventListingFeedView"
+        parent="atomFeedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="event-list" />
+      </map>
+    </property>
+    <property name="helper" ref="eventListingHelper" />
+    <property name="searcher" ref="eventListing.eventListingSearcher" />
+    <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
+  </bean>
+        
 
   <bean id="overridePublishDatePropDefPointer" class="java.lang.String">
     <constructor-arg value="start-date" />
@@ -205,12 +218,20 @@
     </constructor-arg>
   </bean>
 
+  <bean id="eventListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="eventListing.feedView" value-ref="eventListing.feedView" />
+        <entry key="eventListing.extendedFeedView" value-ref="eventListing.extendedFeedView" />
+      </map>
+    </property>
+  </bean>
+
+
   <bean id="eventListing.viewResolver" parent="decoratorViewResolver">
     <property name="views">
       <map>
         <entry key="eventListing.view" value-ref="eventListing.view" />
-        <entry key="eventListingCalendar.view" value-ref="eventListingCalendar.view" />
-        <entry key="eventListingCalendarWithWidgetContextProvider.view" value-ref="eventListingCalendarWithWidgetContextProvider.view" />
       </map>
     </property>
   </bean>

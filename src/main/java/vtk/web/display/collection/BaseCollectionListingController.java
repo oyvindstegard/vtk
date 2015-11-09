@@ -41,6 +41,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
+
+import freemarker.template.TemplateModelException;
 import vtk.edit.editor.ResourceWrapperManager;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -54,16 +56,15 @@ import vtk.web.service.Service;
 import vtk.web.service.URL;
 import vtk.web.view.freemarker.MessageLocalizer;
 
-import freemarker.template.TemplateModelException;
-
 public class BaseCollectionListingController implements ListingController {
 
-    protected final static String MODEL_KEY_SEARCH_COMPONENTS = "searchComponents";
-    protected final static String MODEL_KEY_PAGE = "page";
-    protected final static String MODEL_KEY_PAGE_THROUGH_URLS = "pageThroughUrls";
-    protected final static String MODEL_KEY_HIDE_ALTERNATIVE_REP = "hideAlternativeRepresentation";
-    protected final static String MODEL_KEY_OVERRIDDEN_TITLE = "overriddenTitle";
-    protected final static String MODEL_KEY_HIDE_NUMBER_OF_COMMENTS = "hideNumberOfComments";
+    public final static String MODEL_KEY_SEARCH_COMPONENTS = "searchComponents";
+    public final static String MODEL_KEY_PAGE = "page";
+    public final static String MODEL_KEY_PAGINATION = "pagination";
+    public final static String MODEL_KEY_PAGE_THROUGH_URLS = "pageThroughUrls";
+    public final static String MODEL_KEY_HIDE_ALTERNATIVE_REP = "hideAlternativeRepresentation";
+    public final static String MODEL_KEY_OVERRIDDEN_TITLE = "overriddenTitle";
+    public final static String MODEL_KEY_HIDE_NUMBER_OF_COMMENTS = "hideNumberOfComments";
 
     protected ResourceWrapperManager resourceManager;
     protected int defaultPageLimit = 20;

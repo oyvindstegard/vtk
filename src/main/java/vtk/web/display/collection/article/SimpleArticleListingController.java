@@ -49,7 +49,7 @@ import vtk.web.search.Listing;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
-public class ArticleListingController extends BaseCollectionListingController {
+public class SimpleArticleListingController extends BaseCollectionListingController {
 
     private ArticleListingSearcher searcher;
     private final String defaultListingView = "regular";
@@ -58,7 +58,6 @@ public class ArticleListingController extends BaseCollectionListingController {
     @Override
     public void runSearch(HttpServletRequest request, Resource collection, Map<String, Object> model, int pageLimit)
             throws Exception {
-
         int featuredArticlesPage = ListingPager.getPage(request, ListingPager.UPCOMING_PAGE_PARAM);
         int defaultArticlesPage = ListingPager.getPage(request, ListingPager.PREVIOUS_PAGE_PARAM);
         int totalHits = 0;
@@ -85,7 +84,8 @@ public class ArticleListingController extends BaseCollectionListingController {
                     results.add(featuredArticles);
                 }
             }
-        } else {
+        }
+        else {
             featuredArticles = this.searcher.getFeaturedArticles(request, collection, featuredArticlesPage, 0, 0);
             if (featuredArticles != null) {
                 int hits = featuredArticles.getTotalHits();
@@ -108,10 +108,12 @@ public class ArticleListingController extends BaseCollectionListingController {
             }
             if (atLeastOneFeaturedArticle) {
                 userDisplayPage += defaultArticlesPage;
-            } else {
+            }
+            else {
                 userDisplayPage = defaultArticlesPage;
             }
-        } else if (featuredArticles.size() < pageLimit) {
+        }
+        else if (featuredArticles.size() < pageLimit) {
             // Fill up the rest of the page with default articles
             int upcomingOffset = pageLimit - featuredArticles.size();
             Listing defaultArticles = this.searcher.getArticles(request, collection, 1, upcomingOffset, 0);
@@ -119,18 +121,19 @@ public class ArticleListingController extends BaseCollectionListingController {
             if (defaultArticles.size() > 0) {
                 results.add(defaultArticles);
             }
-        } else {
+        }
+        else {
             Listing defaultArticles = this.searcher.getArticles(request, collection, defaultArticlesPage, 0, 0);
             totalHits += defaultArticles.getTotalHits();
             defaultArticles = null;
         }
         Service service = RequestContext.getRequestContext().getService();
         URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
-        
-        ListingPager.Pagination pagination = ListingPager.pagination(totalHits, pageLimit, 
+
+        ListingPager.Pagination pagination = ListingPager.pagination(totalHits, pageLimit,
                 featuredArticlesTotalHits, baseURL, true, userDisplayPage);
         List<ListingPagingLink> urls = pagination.pageThroughLinks();
-        
+
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
         model.put(MODEL_KEY_PAGE, userDisplayPage);
         model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);

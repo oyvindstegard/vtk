@@ -48,10 +48,11 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatter;
 import vtk.web.RequestContext;
+import vtk.web.display.feed.ListingFeedView;
 
-public class AudioVideoListingAtomFeedGenerator extends CollectionListingAtomFeedGenerator {
+public class AudioVideoListingAtomFeedView extends ListingFeedView {
 
-    private final Log logger = LogFactory.getLog(AudioVideoListingAtomFeedGenerator.class);
+    private final Log logger = LogFactory.getLog(AudioVideoListingAtomFeedView.class);
 
     private PropertyTypeDefinition videoHtmlDescriptionPropDef;
     private PropertyTypeDefinition audioHtmlDescriptionPropDef;
@@ -65,8 +66,6 @@ public class AudioVideoListingAtomFeedGenerator extends CollectionListingAtomFee
         String token = requestContext.getSecurityToken();
 
         try {
-			feed.addSimpleExtension("vrtx", "feed-type", "v", "audiovideo-list");
-
             Entry entry = Abdera.getInstance().newEntry();
 
             Property publishedDateProp = getPublishDate(result);

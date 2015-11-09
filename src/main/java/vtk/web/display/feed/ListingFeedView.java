@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -51,8 +52,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openxri.IRIUtils;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.Controller;
+import org.springframework.web.servlet.View;
 
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
@@ -72,6 +72,10 @@ import vtk.text.html.HtmlFragment;
 import vtk.text.html.HtmlUtil;
 import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
+import vtk.web.display.collection.BaseCollectionListingController;
+import vtk.web.display.listing.ListingPager;
+import vtk.web.search.Listing;
+import vtk.web.search.ListingEntry;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -84,11 +88,11 @@ import vtk.web.service.URL;
  * title and certain other properties (date, author ++).
  * 
  */
-public abstract class AtomFeedGenerator implements Controller {
+public class ListingFeedView implements View {
 
-    private final Log logger = LogFactory.getLog(AtomFeedGenerator.class);
+    private final Log logger = LogFactory.getLog(ListingFeedView.class);
     public static final String TAG_PREFIX = "tag:";
-
+    private Map<String,String> feedMetadata = null;
     protected Service viewService;
     protected Abdera abdera;
     protected ResourceTypeTree resourceTypeTree;
@@ -108,33 +112,79 @@ public abstract class AtomFeedGenerator implements Controller {
     private String mediaPropDefPointer;
     private List<String> introductionAsXHTMLSummaryResourceTypes;
 
-    // Must be overriden by subclasses to provide content for feed entries and
-    // add these to feed
-    protected abstract void addFeedEntries(HttpServletRequest request, Feed feed, Resource feedScope) 
-            throws Exception;
+    @Override
+    public String getContentType() {
+        return "application/atom+xml;charset=utf-8";
+    }
 
     @Override
-    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void render(Map<String, ?> model, HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
         Resource feedScope = getFeedScope(request);
-        Feed feed = createFeed(request, feedScope);
-        addFeedEntries(request, feed, feedScope);
+        
+        @SuppressWarnings("unchecked")
+        List<Listing> listings = (List<Listing>)
+                model.get(BaseCollectionListingController.MODEL_KEY_SEARCH_COMPONENTS);
+        
+        if (listings == null) throw new IllegalStateException(
+                "Expected object in model with key " 
+                        + BaseCollectionListingController.MODEL_KEY_SEARCH_COMPONENTS);
+        
+        ListingPager.Pagination pagination = (ListingPager.Pagination) 
+                model.get(BaseCollectionListingController.MODEL_KEY_PAGINATION);
+        
+        Feed feed = createFeed(request, feedScope, model);
+        addFeedLinks(request, feedScope, feed);
+
+        if (pagination != null) addPagination(feed, pagination);
+        
+        addEntries(request, listings, feedScope, feed);
         printFeed(feed, response);
-        return null;
     }
     
-    protected Feed createFeed(HttpServletRequest request, Resource feedScope) throws Exception {
+    
+    protected void addEntries(HttpServletRequest request, List<Listing> listings, 
+            Resource feedScope, Feed feed) {
+        for (Listing listing: listings) {
+            for (ListingEntry entry: listing.getEntries()) {
+                addPropertySetAsFeedEntry(request, feed, entry.getPropertySet());        
+            }
+        }
+    }
+    
+    
+    protected void addPagination(Feed feed, ListingPager.Pagination pagination) {
+        
+        feed.addLink(pagination.first().toString(), "first");
+        feed.addLink(pagination.last().toString(), "last");
+        
+        if (pagination.previous().isPresent())
+            feed.addLink(pagination.previous().get().toString(), "previous");
+        
+        if (pagination.next().isPresent())
+            feed.addLink(pagination.next().get().toString(), "next");
+    }
+    
+    protected Feed createFeed(HttpServletRequest request, Resource feedScope, 
+            Map<String, ?> model) throws Exception {
+        
         RequestContext requestContext = RequestContext.getRequestContext();
+        
         Feed feed = abdera.newFeed();
-
+        
         String feedTitle = getFeedTitle(request, feedScope);
         feed.setTitle(TextUtils.removeUnprintables(feedTitle));
+        
+        if (feedMetadata != null) {
+            for (String key: feedMetadata.keySet()) {
+                feed.addSimpleExtension("vrtx", key, "v", feedMetadata.get(key));
+            }
+        }
 
         Property publishedDateProp = getPublishDate(feedScope);
         publishedDateProp = publishedDateProp == null ? 
                 feedScope.getProperty(creationTimePropDef) : publishedDateProp;
         feed.setId(getId(feedScope.getURI(), publishedDateProp, getFeedPrefix()));
-
-        addFeedLinks(request, feedScope, feed);
 
         feed.addAuthor(requestContext.getRepository().getId());
         feed.setUpdated(getLastModified(feedScope));
@@ -316,7 +366,7 @@ public abstract class AtomFeedGenerator implements Controller {
     }
     
     protected void printFeed(Feed feed, HttpServletResponse response) throws IOException {
-        response.setContentType("application/atom+xml;charset=utf-8");
+        response.setContentType(getContentType());
         feed.writeTo("prettyxml", response.getWriter());
     }
 
@@ -564,6 +614,14 @@ public abstract class AtomFeedGenerator implements Controller {
         }
 
     }
+    
+    public void setFeedMetadata(Map<String,String> feedMetadata) {
+        if (feedMetadata != null) {
+            this.feedMetadata = new HashMap<>();
+            for (String key: feedMetadata.keySet())
+                this.feedMetadata.put(key, feedMetadata.get(key));
+        }
+    }
 
     @Required
     public void setViewService(Service viewService) {
@@ -605,11 +663,6 @@ public abstract class AtomFeedGenerator implements Controller {
         this.picturePropDefPointer = picturePropDefPointer;
     }
     
-//    @Required
-//    public void setPictureInSummary(boolean pictureInSummary) {
-//        this.pictureInSummary = pictureInSummary;
-//    }
-
     @Required
     public void setMediaPropDefPointer(String mediaPropDefPointer) {
         this.mediaPropDefPointer = mediaPropDefPointer;
