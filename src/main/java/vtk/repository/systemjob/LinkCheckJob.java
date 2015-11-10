@@ -68,7 +68,7 @@ import vtk.web.service.URL;
 public class LinkCheckJob extends AbstractResourceJob {
     
     private PropertyTypeDefinition linkCheckPropDef;
-    private PropertyTypeDefinition linksPropDef;
+    private PropertyTypeDefinition hrefsPropDef;
     private LinkChecker linkChecker;
     boolean allowCachedResults = true;
     private List<String> blackListConfig;
@@ -118,8 +118,8 @@ public class LinkCheckJob extends AbstractResourceJob {
     private Property linkCheck(final Resource resource, final SystemChangeContext context)
             throws InterruptedException {
 
-        Property linksProp = resource.getProperty(linksPropDef);
-        if (linksProp == null) {
+        Property hrefsProp = resource.getProperty(hrefsPropDef);
+        if (hrefsProp == null) {
             return null;
         }
         
@@ -140,8 +140,9 @@ public class LinkCheckJob extends AbstractResourceJob {
         }
 
         logger.debug("Running with link check state: " + state + " for " + resource.getURI());
-        
-        ContentStream linksStream = linksProp.getBinaryStream();
+
+        // Still supported for JSON properties:
+        ContentStream linksStream = hrefsProp.getBinaryStream();
         Json.ParseEvents parser = Json.parseAsEvents(linksStream.getStream());
         
         final URL base = urlConstructor.canonicalUrl(resource).setImmutable();
@@ -202,7 +203,6 @@ public class LinkCheckJob extends AbstractResourceJob {
                     if (this.url == null) {
                         this.field = this.url = this.type = null;
                         return true;
-                        
                     }
                     if (!shouldCheck(this.url)) {
                         this.field = this.url = this.type = null;
@@ -497,8 +497,8 @@ public class LinkCheckJob extends AbstractResourceJob {
     }
     
     @Required
-    public void setLinksPropDef(PropertyTypeDefinition linksPropDef) {
-        this.linksPropDef = linksPropDef;
+    public void setHrefsPropDef(PropertyTypeDefinition hrefsPropDef) {
+        this.hrefsPropDef = hrefsPropDef;
     }
 
     @Required
