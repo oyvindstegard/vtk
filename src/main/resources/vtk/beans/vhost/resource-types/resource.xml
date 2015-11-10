@@ -334,7 +334,7 @@
   <bean id="linkCheckPropDef" class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl"
     parent="abstractPropDef">
     <property name="name" value="link-check" />
-    <property name="type" value="BINARY" />
+    <property name="type" value="JSON" />
     <property name="multiple" value="false" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ROLE_ROOT" />
     <property name="mandatory" value="false" />
