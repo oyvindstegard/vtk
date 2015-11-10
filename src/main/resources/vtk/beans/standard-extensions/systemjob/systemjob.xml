@@ -97,7 +97,7 @@
     <property name="enabled" value="${systemjob.linkcheck.recent.enabled}" />
     <property name="allowCachedResults" value="false" />
     <property name="id" value="linkcheck-referencing" />
-    <property name="linksPropDef" ref="linksPropDef" />
+    <property name="hrefsPropDef" ref="hrefsPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
     <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
@@ -127,7 +127,7 @@
     <property name="triggerExpression" value="${systemjob.linkcheck.recent.trigger}" />
     <property name="enabled" value="${systemjob.linkcheck.recent.enabled}" />
     <property name="id" value="linkcheck-recent" />
-    <property name="linksPropDef" ref="linksPropDef" />
+    <property name="hrefsPropDef" ref="hrefsPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
     <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
@@ -168,7 +168,7 @@
     <property name="enabled" value="${systemjob.linkcheck.enabled}" />
     <property name="id" value="linkcheck" />
 
-    <property name="linksPropDef" ref="linksPropDef" />
+    <property name="hrefsPropDef" ref="hrefsPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
     <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
