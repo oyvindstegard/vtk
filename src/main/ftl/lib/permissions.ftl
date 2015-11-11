@@ -122,11 +122,11 @@
       <#if pseudoPrincipal_index &lt; pseudoPrincipals?size - 1  || users?size &gt; 0  || groups?size &gt; 0>, <#t/></#if>
     </#list>
     <#list users as user>
-      <#compress><@vrtx.displayPrincipal principal=user /></#compress><#t/>
+      <#compress><@vrtx.displayUserPrincipal principal=user /></#compress><#t/>
       <#if user_index &lt; users?size - 1 || groups?size &gt; 0>,<#t/></#if>
     </#list>
     <#list groups as group>
-      <#compress><@vrtx.displayPrincipal principal=group /></#compress><#t/>
+      <#compress><@vrtx.displayGroupPrincipal principal=group /></#compress><#t/>
       <#if group_index &lt; groups?size - 1>,<#t/></#if>
     </#list>
     <#if aclInfo.aclEditURLs[privilegeName]?exists>
@@ -244,9 +244,9 @@
             <li>
               <#compress>
                 <#if type == "user">
-                  <@vrtx.displayPrincipal principal=groupOrUser />
+                  <@vrtx.displayUserPrincipal principal=groupOrUser />
                 <#else>
-                  ${groupOrUser.name}
+                  <@vrtx.displayGroupPrincipal principal=groupOrUser />
                 </#if>
               
                 <#-- Remove -->
