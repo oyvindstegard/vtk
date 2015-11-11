@@ -79,11 +79,21 @@ public class CommandExecutorController extends SimpleFormController<ExecutorComm
             HttpServletResponse response, ExecutorCommand command,
             BindException errors) throws Exception {
         
+        if ("true".equals(request.getParameter("pipe-output"))) {
+            PrintStream out = new PrintStream(response.getOutputStream());
+            response.setContentType("text/plain;charset=utf-8");
+            console.eval(command.getCommand(), out);
+            out.flush();
+            out.close();
+            return null;
+        }
+        
+        Map<String, Object> model = errors.getModel();
         ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
         PrintStream resultStream = new PrintStream(bufferStream);
-        this.console.eval(command.getCommand(), resultStream);
+        console.eval(command.getCommand(), resultStream);
         command.setResult(new String(bufferStream.toByteArray()));
-        return new ModelAndView(getFormView(), errors.getModel());
+        return new ModelAndView(getFormView(), model);
     }
 
 
