@@ -558,7 +558,7 @@
 <#macro displayUserPrincipal principal>
   <#compress>
     <#if principal.URL?exists>
-      <a title="${principal.name?html}" href="${principal.URL?html}">${principal.description?html}</a>
+      <a class="user-principal" title="${principal.name?html}" href="${principal.URL?html}">${principal.description?html}</a>
     <#else>
       ${principal.name?html}
     </#if>
@@ -576,7 +576,7 @@
 <#macro displayGroupPrincipal principal>
   <#compress>
     <#if principal.URL?exists>
-      <a title="${principal.description?html}" href="${principal.URL?html}">${principal.name?html}</a>
+      <a class="group-principal" title="${principal.description?html}" href="${principal.URL?html}">${principal.name?html}</a>
     <#else>
       ${principal.name?html}
     </#if>
