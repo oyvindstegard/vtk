@@ -4,7 +4,7 @@ getDescription() {
 }
 
 getUsage() {
-    return "archive create <file:string> <uri:path>";
+    return "archive create [-pipe:boolean] [-file:string] <uri:path>";
 }
 
 
@@ -14,26 +14,38 @@ void execute(context, args, out) {
     archiver = context.get("context").getBean("repository.archiver");
     
     file = args.get("file");
+    pipe = "true".equals(args.get("pipe"));
     uri = args.get("uri");
+
 
     listener = new vtk.util.repository.ResourceArchiver.EventListener() {
         archived(vtk.repository.Path uri) {
-           out.println("add: " + uri);
+            if (!pipe) {
+                out.println("add: " + uri);
+            }
         }
         expanded(vtk.repository.Path uri) {
-            out.println("exp: " + uri);
+            if (!pipe) {
+                out.println("exp: " + uri);
+            }
         }
         warn(vtk.repository.Path uri, String msg) {
-            out.println("warn: " + uri + ": " + msg);
+            if (!pipe) {
+                out.println("warn: " + uri + ": " + msg);
+            }
         }
     };
 
-    try {
-        stream = new java.io.FileOutputStream(file);
-    } catch (e) {
-        out.println("Unable to create destination file: " + file
-                    + ": " + e.getMessage());
-        return;
+    stream = out;
+    if (!pipe) {
+        try {
+            stream = new java.io.FileOutputStream(file);
+        } 
+        catch (e) {
+            out.println("Unable to create destination file: " + file
+                        + ": " + e.getMessage());
+            return;
+        }
     }
 
     if (!repo.exists(token, uri)) {
@@ -51,7 +63,8 @@ void execute(context, args, out) {
     // props.put("ignored", new ArrayList());
     try {
         archiver.createArchive(token, resource, stream, props, listener);
-    } catch (e) {
+    }
+    catch (e) {
         out.println("Unable to create archive: "
                     + file + ": " + e.getMessage());
     }
