@@ -29,14 +29,58 @@
     <property name="handler" ref="webConsoleHandler"/>
   </bean>
 
+  <bean id="vshellConsoleService" class="vtk.web.service.ServiceImpl">
+    <property name="order" value="-300"/>
+    <property name="parent" ref="repositoryManageService"/>
+    <property name="categories">
+      <set>
+        <value>rootMenu</value>
+      </set>
+    </property>
+    <property name="attributes">
+      <map>
+        <entry key="tabOrder"><value type="java.lang.Integer">110</value></entry>
+      </map>
+    </property>
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.PrincipalQualifiedNameAssertion">
+          <property name="username" value="root@localhost"/>
+        </bean>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="mode"/>
+          <property name="parameterValue" value="vshell"/>
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="vshellConsoleHandler"/>
+  </bean>
+
+
 
   <bean id="webConsoleHandler"
+        class="vtk.web.display.shell.CommandExecutorController">
+    <property name="formView" value="webConsole" />
+    <property name="successView" value="webConsole" />
+    <property name="commandName" value="commandForm" />
+    <property name="console" ref="beanShellWebConsole" />
+  </bean>
+
+  <bean id="beanShellWebConsole" class="vtk.shell.BeanShellConsole">
+      <property name="runEvalLoop" value="false" />
+  </bean>
+
+  <bean id="vshellConsoleHandler"
         class="vtk.web.display.shell.CommandExecutorController">
 
     <property name="formView" value="webConsole" />
     <property name="successView" value="webConsole" />
     <property name="commandName" value="commandForm" />
-    <property name="console" ref="beanShellWebConsole" />
+    <property name="console" ref="vshellWebConsole" />
+  </bean>
+
+  <bean id="vshellWebConsole" class="vtk.shell.vshell.VShell">
+      <property name="runEvalLoop" value="false" />
   </bean>
 
   <bean id="webConsoleView" parent="freemarkerView">
@@ -49,11 +93,6 @@
         <entry key="webConsole" value-ref="webConsoleView" />
       </map>
     </property>
-  </bean>
-
-  
-  <bean id="beanShellWebConsole" class="vtk.shell.BeanShellConsole">
-      <property name="runEvalLoop" value="false" />
   </bean>
 
 </beans>
