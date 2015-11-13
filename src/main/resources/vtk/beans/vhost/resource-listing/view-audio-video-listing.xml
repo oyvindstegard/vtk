@@ -182,6 +182,7 @@
         </bean>
       </list>
     </property>
+    <property name="listingUriQueryBuilder" ref="collectionListing.alwaysRecursiveUriQueryBuilder" />
   </bean>
 
 </beans>

@@ -58,19 +58,18 @@
 
   <bean id="collectionListing.feedHandler" parent="collectionListing.handler">
     <property name="viewName" value="collectionListing.feedView" />
+    <property name="displayEditLinks" value="false" />
+    <property name="resolvePrincipalLink" value="false" />
   </bean>
 
   <bean id="collectionListing.feedView" class="vtk.web.display.feed.ListingFeedView" 
         parent="atomFeedView">
-    <!--
     <property name="feedMetadata">
       <map>
         <entry key="feed-type" value="collection-listing" />
       </map>
     </property>
-    -->
   </bean>
-
 
   <bean id="collectionListing.searchComponent" class="vtk.web.search.collectionlisting.CollectionListingSearchComponent">
     <property name="name" value="collectionListing.searchComponent" />
@@ -103,6 +102,10 @@
     <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="helper" ref="collectionListing.helper" />
     <property name="displayEditLinks" value="true" />
+  </bean>
+
+  <bean id="collectionListing.alwaysRecursiveUriQueryBuilder" class="vtk.web.search.ListingUriQueryBuilder">
+    <property name="defaultRecursive" value="true" />
   </bean>
 
   <bean id="collection.listingUriQueryBuilder" class="vtk.web.search.ListingUriQueryBuilder">
