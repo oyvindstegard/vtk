@@ -111,7 +111,6 @@ public class CollectionListingController extends BaseCollectionListingController
             if (numberOfFiles > 0) {
                 limit -= listing.getEntries().size();
             }
-
         }
 
         if (resolvePrincipalLink && results.size() > 0 && helper != null) {
@@ -127,7 +126,7 @@ public class CollectionListingController extends BaseCollectionListingController
             model.put("principalDocuments", principalDocuments);
         }
 
-        URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
+        URL baseURL = URL.create(request);
 
         if (getHideIcon(collection)) {
             model.put("hideIcon", true);
