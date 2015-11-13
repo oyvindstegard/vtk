@@ -33,7 +33,6 @@ package vtk.web.search;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Resource;
@@ -59,7 +58,8 @@ public class ListingUriQueryBuilder {
         // The default query, simple uri match on the current resource
         UriPrefixQuery uriPrefixQuery = new UriPrefixQuery(collectionUri.toString());
 
-        Property recursiveProp = collection.getProperty(this.recursivePropDef);
+        Property recursiveProp = recursivePropDef != null ? 
+                collection.getProperty(this.recursivePropDef) : null;
 
         // If explicit subfolders to retrieve from are defined
         Property subfolderProp = null;
@@ -114,7 +114,6 @@ public class ListingUriQueryBuilder {
         return query;
     }
 
-    @Required
     public void setRecursivePropDef(PropertyTypeDefinition recursivePropDef) {
         this.recursivePropDef = recursivePropDef;
     }
