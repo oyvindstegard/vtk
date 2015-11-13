@@ -39,6 +39,8 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -57,7 +59,6 @@ import vtk.web.service.URL;
 import vtk.web.view.freemarker.MessageLocalizer;
 
 public class BaseCollectionListingController implements ListingController {
-
     public final static String MODEL_KEY_SEARCH_COMPONENTS = "searchComponents";
     public final static String MODEL_KEY_PAGE = "page";
     public final static String MODEL_KEY_PAGINATION = "pagination";
@@ -65,6 +66,8 @@ public class BaseCollectionListingController implements ListingController {
     public final static String MODEL_KEY_HIDE_ALTERNATIVE_REP = "hideAlternativeRepresentation";
     public final static String MODEL_KEY_OVERRIDDEN_TITLE = "overriddenTitle";
     public final static String MODEL_KEY_HIDE_NUMBER_OF_COMMENTS = "hideNumberOfComments";
+
+    protected static Log logger = LogFactory.getLog(BaseCollectionListingController.class);
 
     protected ResourceWrapperManager resourceManager;
     protected int defaultPageLimit = 20;
@@ -85,9 +88,7 @@ public class BaseCollectionListingController implements ListingController {
     ) throws Exception {}
 
     @Override
-    @SuppressWarnings("unchecked")
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -105,23 +106,23 @@ public class BaseCollectionListingController implements ListingController {
                 model.put("subFolderMenu", subfolders);
             }
         }
-        model.put("collection", this.resourceManager.createResourceWrapper(collection));
+        model.put("collection", resourceManager.createResourceWrapper(collection));
 
         int pageLimit = getPageLimit(collection);
         if (pageLimit > 0) {
             /* Run the actual search (done in subclasses) */
-            runSearch(request, collection, model, pageLimit);
+             runSearch(request, collection, model, pageLimit);
         }
+ 
+        if (alternativeRepresentations != null) {
+            Set<Object> alt = new HashSet<>();
+            for (String contentType : alternativeRepresentations.keySet()) {
+                Map<String, Object> m = new HashMap<>();
+                Service service = alternativeRepresentations.get(contentType);
 
-        if (this.alternativeRepresentations != null) {
-            Set<Object> alt = new HashSet<Object>();
-            for (String contentType : this.alternativeRepresentations.keySet()) {
                 try {
-                    Map<String, Object> m = new HashMap<String, Object>();
-                    Service service = this.alternativeRepresentations.get(contentType);
-
                     URL url = service.constructURL(collection, principal);
-                    if (this.includeRequestParametersInAlternativeRepresentation) {
+                    if (includeRequestParametersInAlternativeRepresentation) {
                         Enumeration<String> requestParameters = request.getParameterNames();
                         while (requestParameters.hasMoreElements()) {
                             String requestParameter = requestParameters.nextElement();
@@ -130,25 +131,29 @@ public class BaseCollectionListingController implements ListingController {
                             String urlParameterValue = url.getParameter(requestParameter);
                             if (urlParameterValue == null) {
                                 url.addParameter(requestParameter, parameterValue);
-                            } else if ("".equals(urlParameterValue.trim())) {
+                            }
+                            else if ("".equals(urlParameterValue.trim())) {
                                 url.setParameter(requestParameter, parameterValue);
                             }
-
                         }
                     }
 
                     String title = service.getName();
 
-                    org.springframework.web.servlet.support.RequestContext rc = new org.springframework.web.servlet.support.RequestContext(
-                            request);
-                    title = rc.getMessage(service.getName(), new Object[] { collection.getTitle() }, service.getName());
+                    org.springframework.web.servlet.support.RequestContext rc = 
+                            new org.springframework.web.servlet.support.RequestContext(request);
+                    title = rc.getMessage(service.getName(), 
+                            new Object[] { collection.getTitle() }, service.getName());
 
                     m.put("title", title);
                     m.put("url", url);
                     m.put("contentType", contentType);
 
                     alt.add(m);
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
+                    logger.debug("Failed to Link to alternative representation '" 
+                            + contentType + "' for resource " + collection, t);
                 }
             }
             if (pageLimit > 0) {
@@ -156,7 +161,7 @@ public class BaseCollectionListingController implements ListingController {
             }
         }
         model.put("requestURL", requestContext.getRequestURL());
-        return new ModelAndView(this.viewName, model);
+        return new ModelAndView(viewName, model);
     }
 
     protected Map<String, Object> getSubFolderMenu(Resource collection, HttpServletRequest request) {
@@ -188,8 +193,8 @@ public class BaseCollectionListingController implements ListingController {
     }
 
     protected int getPageLimit(Resource collection) {
-        int pageLimit = this.defaultPageLimit;
-        Property pageLimitProp = collection.getProperty(this.pageLimitPropDef);
+        int pageLimit = defaultPageLimit;
+        Property pageLimitProp = collection.getProperty(pageLimitPropDef);
         if (pageLimitProp != null) {
             pageLimit = pageLimitProp.getIntValue();
         }
@@ -197,7 +202,7 @@ public class BaseCollectionListingController implements ListingController {
     }
 
     protected boolean getHideNumberOfComments(Resource collection) {
-        Property p = collection.getProperty(this.hideNumberOfComments);
+        Property p = collection.getProperty(hideNumberOfComments);
         if (p == null) {
             return false;
         }
