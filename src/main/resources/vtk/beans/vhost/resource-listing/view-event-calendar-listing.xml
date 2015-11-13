@@ -239,6 +239,11 @@
     <property name="helper" ref="eventListingHelper" />
     <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
     <property name="overridePublishDatePropDefPointer" ref="${override.listing.prefix}overridePublishDatePropDefPointer" />
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="event-calendar" />
+      </map>
+    </property>
   </bean>
 
   <bean id="eventListingCalendar.view" parent="freemarkerView">
