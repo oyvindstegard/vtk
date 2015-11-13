@@ -14,7 +14,8 @@
     <property name="serviceNameProvider" ref="collectionListing.viewService.serviceNameProvider" />
   </bean>
 
-  <bean id="personListing.handler" class="vtk.web.display.collection.CollectionListingController" parent="collectionListing.abstract.handler">
+  <bean id="personListing.handler" class="vtk.web.display.collection.CollectionListingController" 
+        parent="collectionListing.abstract.handler">
     <property name="searchComponents">
       <list>
         <ref bean="personListing.searchComponent" />
@@ -29,7 +30,8 @@
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">
-          <property name="queryString" value="(type IN person) AND (resource:surname exists AND resource:firstName exists)" />
+          <property name="queryString" 
+                    value="(type IN person) AND (resource:surname exists AND resource:firstName exists)" />
         </bean>
       </list>
     </property>
@@ -83,7 +85,7 @@
   </bean>
 
   <bean id="personListing.feedHandler" parent="personListing.handler">
-    <property name="viewName" value="personListing.view" />
+    <property name="viewName" value="personListing.feedView" />
   </bean>
 
   <bean id="personListing.feedView" class="vtk.web.display.feed.ListingFeedView"
