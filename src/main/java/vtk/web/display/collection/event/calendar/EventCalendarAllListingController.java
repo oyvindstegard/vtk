@@ -30,6 +30,7 @@
  */
 package vtk.web.display.collection.event.calendar;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -76,6 +77,11 @@ public class EventCalendarAllListingController extends EventCalendarListingContr
         String viewType = serviceURL.getParameter(EventListingHelper.REQUEST_PARAMETER_VIEW);
 
         model.put(viewType, result);
+        
+        if (viewType == null) {
+            viewType = upcoming ? "upcoming" : "previous";
+        }
+        
         String title = helper.getEventTypeTitle(request, collection, "eventListing." + viewType, false);
         String titleKey = viewType + "Title";
         model.put(titleKey, title);
@@ -85,14 +91,18 @@ public class EventCalendarAllListingController extends EventCalendarListingContr
                     false);
             String noPlannedTitleKey = viewType + "NoPlannedTitle";
             model.put(noPlannedTitleKey, noPlannedTitle);
+            
+            model.put(MODEL_KEY_SEARCH_COMPONENTS, Collections.emptyList());            
         }
         else {
             ListingPager.Pagination pagination = ListingPager.pagination(result.getTotalHits(), pageLimit,
                     serviceURL, page);
             List<ListingPagingLink> urls = pagination.pageThroughLinks();
             
+            model.put(MODEL_KEY_SEARCH_COMPONENTS, Collections.singletonList(result));
             model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
             model.put(MODEL_KEY_PAGINATION, pagination);
+
         }
     }
 
