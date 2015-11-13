@@ -145,16 +145,19 @@
     <#else>
       <div id="vrtx-events-nav" class="vrtx-events-nav-top-border">
     </#if>
-      <a href="${viewAllUpcomingURL}" id="vrtx-events-nav-all-upcoming">${viewAllUpcomingTitle?html}</a>
-      <a href="${viewAllPreviousURL}" id="vrtx-events-nav-all-previous">${viewAllPreviousTitle?html}</a>
+    <#if viewAllUpcomingURL??>
+    <a href="${viewAllUpcomingURL}" id="vrtx-events-nav-all-upcoming">${viewAllUpcomingTitle?html}</a>
+    </#if>
+    <#if viewAllPreviousURL??>
+    <a href="${viewAllPreviousURL}" id="vrtx-events-nav-all-previous">${viewAllPreviousTitle?html}</a>
+    </#if>
     </div>
-
-  </#if>
-    
+    </#if>
     <@viewutils.pagingSubscribeServices />
   </div>
 
   <div id="vrtx-additional-content">
+    <#if allowedDates?? && activeDate?? && dayHasPlannedEventsTitle?? && dayHasNoPlannedEventsTitle??>
     <div id="vrtx-event-calendar">
       <#local activeDate = "" />
       <#if requestedDate?exists && requestedDate?has_content>
@@ -172,10 +175,11 @@
     </div>
     <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
     <#if additionalContent?has_content>
-	  <div id="vrtx-related-content">
-        <@vrtx.invokeComponentRefs additionalContent />
-	  </div>
-	</#if>
+    <div id="vrtx-related-content">
+    <@vrtx.invokeComponentRefs additionalContent />
+   </div>
+  </#if>
+  </#if>
   </div>
 </#macro>
 
