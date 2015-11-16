@@ -30,11 +30,11 @@
  */
 package vtk.web.display.xml;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
-
-import static org.junit.Assert.*;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -42,10 +42,12 @@ import org.jmock.integration.junit4.JUnit4Mockery;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
+
 import vtk.context.BaseContext;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.repository.store.DefaultPrincipalMetadataDAO;
 import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 
@@ -69,7 +71,9 @@ public class DisplayXmlResourceControllerTest {
         BaseContext.pushContext();
         SecurityContext securityContext = new SecurityContext(this.token, null);
         SecurityContext.setSecurityContext(securityContext);
-        RequestContext requestContext = new RequestContext(request, securityContext, null, null, uri, null, false, false, true, mockRepository);
+        RequestContext requestContext = new RequestContext(
+                request, securityContext, null, null, uri, null, false, false, true,
+                mockRepository, new DefaultPrincipalMetadataDAO());
         RequestContext.setRequestContext(requestContext);
     }
 

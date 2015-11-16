@@ -71,6 +71,9 @@ public final class ResourceTypeMapper {
             def = (PrimaryResourceTypeDefinition)
                     resourceTypeTree.getResourceTypeDefinitionByName(input);
         } catch (Throwable t) {  }
+        if (def == null) {
+            return input;
+        }
         while (def.getParentTypeDefinition() != null) {
             list.add(0, def.getName());
             def = def.getParentTypeDefinition();
@@ -88,15 +91,27 @@ public final class ResourceTypeMapper {
         "/collection/article-listing",
         "/collection/audio-video-listing",
         "/collection/blog-listing",
+        "/collection/course-context",
+        "/collection/course-description-listing",
+        "/collection/course-group-listing",
         "/collection/employee-listing",
         "/collection/event-listing",
+        "/collection/fixed-resources-collection",
         "/collection/folder-listing",
         "/collection/image-listing",
+        "/collection/internal-organizational-unit-folder",
         "/collection/master-listing",
         "/collection/message-listing",
         "/collection/person-listing",
+        "/collection/program-context",
+        "/collection/program-listing",
+        "/collection/program-option-context",
+        "/collection/program-option-listing",
         "/collection/project-listing",
         "/collection/research-group-listing",
+        "/collection/semester-context",
+        "/collection/student-exchange-agreement-listing",
+        "/collection/student-exchange-university-agreement-listing",
         "/file",
         "/file/audio",
         "/file/image",

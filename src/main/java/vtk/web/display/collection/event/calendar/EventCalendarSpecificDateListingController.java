@@ -30,9 +30,11 @@
  */
 package vtk.web.display.collection.event.calendar;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -75,17 +77,26 @@ public class EventCalendarSpecificDateListingController extends EventCalendarLis
 
             if (specificDateEvents != null && !specificDateEvents.getEntries().isEmpty()) {
                 model.put("specificDateEvents", specificDateEvents);
+                model.put(MODEL_KEY_SEARCH_COMPONENTS, Collections.singletonList(specificDateEvents));
 
                 Service service = RequestContext.getRequestContext().getService();
                 URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
                 baseURL.setParameter(EventListingHelper.REQUEST_PARAMETER_DATE,
                         request.getParameter(EventListingHelper.REQUEST_PARAMETER_DATE));
 
-                List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(specificDateEvents.getTotalHits(),
-                        pageLimit, baseURL, page);
-                model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+                Optional<ListingPager.Pagination> pagination = 
+                        ListingPager.pagination(specificDateEvents.getTotalHits(),
+                                pageLimit, baseURL, page);
+                if (pagination.isPresent()) {
+                    List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+                    model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+                    model.put(MODEL_KEY_PAGINATION, pagination.get());
+                }
+
                 model.put(EventListingHelper.DISPLAY_LISTING_ICAL_LINK, true);
-            } else {
+            }
+            else {
+                model.put(MODEL_KEY_SEARCH_COMPONENTS, Collections.emptyList());
                 model.put("noPlannedEventsMsg",
                         helper.getEventTypeTitle(request, collection, "eventListing.noPlannedEvents", false));
             }

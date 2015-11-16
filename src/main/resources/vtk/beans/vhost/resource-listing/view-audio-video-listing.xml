@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <bean id="audioVideoListing.viewService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="collectionListing.viewService" />
@@ -15,14 +15,13 @@
   </bean>
 
   <bean id="audioVideoListing.handler" class="vtk.web.display.collection.CollectionListingController"
-    parent="collectionListing.abstract.handler">
+        parent="collectionListing.abstract.handler">
     <property name="searchComponents">
       <list>
         <ref bean="audioVideoListing.searchComponent" />
       </list>
     </property>
     <property name="viewName" value="audioVideoListing.view" />
-
   </bean>
 
   <bean id="audioVideoListing.searchComponent" parent="collectionListing.searchComponent">
@@ -31,7 +30,7 @@
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">
-          <property name="queryString" value="(type IN audio OR type IN video)" />
+          <property name="queryString" value="type IN audio OR type IN video" />
         </bean>
       </list>
     </property>
@@ -74,6 +73,14 @@
     </property>
   </bean>
 
+  <bean id="audioVideoListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="audioVideoListing.atomFeedView" value-ref="audioVideoListing.atomFeedView" />
+      </map>
+    </property>
+  </bean>
+
   <bean id="audioVideoListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
@@ -103,44 +110,79 @@
     </property>
   </bean>
 
+  <bean id="vrtxParameterIsFeedOrRss" class="vtk.web.service.OrAssertion">
+    <property name="assertions">
+      <list>
+        <ref bean="vrtxParameterIsFeedAssertion" />
+        <ref bean="vrtxParameterIsRssAssertion" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="audioVideoListing.feedService" parent="collectionListing.feedService">
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
         <ref bean="resourceIsAudioVideoListing" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsAnyFeed" />
       </list>
     </property>
-    <property name="handler" ref="audioVideoListing.feedHandler" />
+    <property name="handler" ref="audioVideoListing.rssFeedHandler" />
   </bean>
 
-  <bean id="audioVideoListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="audioVideoListing.rssFeedGenerator" />
-    <property name="alternateGenerators">
-      <bean class="java.util.HashMap">
-        <constructor-arg>
-          <map>
-            <entry key="atom" value-ref="audioVideoListing.atomFeedGenerator" />
-          </map>
-        </constructor-arg>
-      </bean>
+  <bean id="audioVideoListing.atomFeedService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="audioVideoListing.feedService" />
+    <property name="assertions">
+      <list>
+        <ref bean="resourceIsAudioVideoListing" />
+        <ref bean="vrtxParameterIsAtomAssertion" />
+      </list>
     </property>
+    <property name="handler" ref="audioVideoListing.atomFeedHandler" />
   </bean>
 
-  <bean id="audioVideoListing.rssFeedGenerator" class="vtk.web.display.collection.AudioVideoListingRSSFeedGenerator"
-    parent="rssFeedGenerator">
-    <property name="searchComponent" ref="audioVideoListing.searchComponent" />
+  <bean id="audioVideoListing.rssFeedHandler" class="vtk.web.display.collection.AudioVideoListingRSSFeedGenerator"
+        parent="rssFeedGenerator">
+    <property name="searchComponent" ref="audioVideoListing.feedSearchComponent" />
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />
     <property name="videoHtmlDescriptionPropDef" ref="videoHtmlDescriptionPropDef" />
     <property name="contentLengthPropDef" ref="contentLengthPropDef" />
     <property name="contentTypePropDef" ref="contentTypePropDef" />
   </bean>
 
-  <bean id="audioVideoListing.atomFeedGenerator" class="vtk.web.display.collection.AudioVideoListingAtomFeedGenerator"
-    parent="collectionListing.atomFeedGenerator">
-    <property name="searchComponent" ref="audioVideoListing.searchComponent" />
+
+  <bean id="audioVideoListing.atomFeedHandler" parent="audioVideoListing.handler">
+    <property name="searchComponents">
+      <list>
+        <ref bean="audioVideoListing.feedSearchComponent" />
+      </list>
+    </property>
+    <property name="viewName" value="audioVideoListing.atomFeedView" />
+  </bean>
+
+  <bean id="audioVideoListing.atomFeedView" class="vtk.web.display.collection.AudioVideoListingAtomFeedView"
+        parent="collectionListing.feedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="audio-video-list" />
+      </map>
+    </property>
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />
     <property name="videoHtmlDescriptionPropDef" ref="videoHtmlDescriptionPropDef" />
+  </bean>
+
+  <!-- Videos with hidden download link is not to be shown in feeds for audio and video listing -->
+  <bean id="audioVideoListing.feedSearchComponent" parent="audioVideoListing.searchComponent">
+    <property name="name" value="audioVideoListing.feedListing" />
+    <property name="queryBuilders">
+      <list>
+        <bean parent="queryStringParser">
+          <property name="queryString" 
+                    value="((type IN audio OR type IN video) AND hide-video-download-link NOT EXISTS)" />
+        </bean>
+      </list>
+    </property>
+    <property name="listingUriQueryBuilder" ref="collectionListing.alwaysRecursiveUriQueryBuilder" />
   </bean>
 
 </beans>

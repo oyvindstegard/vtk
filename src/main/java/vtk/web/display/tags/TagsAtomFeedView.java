@@ -42,35 +42,18 @@ import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
-import vtk.web.display.feed.AtomFeedGenerator;
-import vtk.web.search.Listing;
-import vtk.web.search.ListingEntry;
-import vtk.web.search.SearchComponent;
+import vtk.web.display.feed.ListingFeedView;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 import vtk.web.tags.TagsHelper;
 
-public class TagsAtomFeedGenerator extends AtomFeedGenerator {
+public class TagsAtomFeedView extends ListingFeedView {
 
     private PropertyTypeDefinition overridePublishDatePropDef;
-    private SearchComponent searchComponent;
     protected TagsHelper tagsHelper;
 
     @Override
-    protected void addFeedEntries(Feed feed, Resource feedScope) throws Exception {
-
-        Listing entryElements = searchComponent.execute(RequestContext.getRequestContext().getServletRequest(),
-                feedScope, 1, entryCountLimit, 0);
-
-        for (ListingEntry entry : entryElements.getEntries()) {
-            PropertySet feedEntry = entry.getPropertySet();
-            addPropertySetAsFeedEntry(feed, feedEntry);
-        }
-
-    }
-
-    @Override
-    protected void addFeedLinks(Resource feedScope, Feed feed) {
+    protected void addFeedLinks(HttpServletRequest request, Resource feedScope, Feed feed) {
         RequestContext requestContext = RequestContext.getRequestContext();
         URL feedAlternateURL = viewService.constructURL(feedScope);
         String tag = requestContext.getRequestURL().getParameter("tag");
@@ -81,18 +64,18 @@ public class TagsAtomFeedGenerator extends AtomFeedGenerator {
     
 
     @Override
-    protected Resource getFeedScope() throws Exception {
+    protected Resource getFeedScope(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
-        HttpServletRequest request = requestContext.getServletRequest();
 
         return tagsHelper.getScopedResource(token, request);
     }
 
     @Override
-    protected String getFeedTitle(Resource feedScope, RequestContext requestContext) {
+    protected String getFeedTitle(HttpServletRequest request, Resource feedScope) {
+        RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
-        return service.getLocalizedName(feedScope, requestContext.getServletRequest());
+        return service.getLocalizedName(feedScope, request);
     }
 
     @Override
@@ -122,10 +105,6 @@ public class TagsAtomFeedGenerator extends AtomFeedGenerator {
     @Required
     public void setTagsHelper(TagsHelper tagsHelper) {
         this.tagsHelper = tagsHelper;
-    }
-
-    public void setSearchComponent(SearchComponent searchComponent) {
-        this.searchComponent = searchComponent;
     }
 
     public void setOverridePublishDatePropDef(PropertyTypeDefinition overridePublishDatePropDef) {

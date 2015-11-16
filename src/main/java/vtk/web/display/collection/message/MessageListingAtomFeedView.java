@@ -30,29 +30,36 @@
  */
 package vtk.web.display.collection.message;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.abdera.model.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.text.html.HtmlFragment;
 import vtk.web.RequestContext;
-import vtk.web.display.collection.CollectionListingAtomFeedGenerator;
+import vtk.web.display.feed.ListingFeedView;
 import vtk.web.service.URL;
 
-public class MessageListingAtomFeedGenerator extends CollectionListingAtomFeedGenerator {
+public class MessageListingAtomFeedView extends ListingFeedView {
 
-    private final Log logger = LogFactory.getLog(MessageListingAtomFeedGenerator.class);
+    private final Log logger = LogFactory.getLog(MessageListingAtomFeedView.class);
 
     @Override
-    protected void setFeedEntrySummary(Entry entry, PropertySet result) throws Exception {
-        Property messageProp = result.getProperty(Namespace.STRUCTURED_RESOURCE_NAMESPACE, "listingDisplayedMessage");
+    protected void setFeedEntrySummary(HttpServletRequest request, 
+            Entry entry, PropertySet result) throws Exception {
+        Property messageProp = result.getProperty(
+                Namespace.STRUCTURED_RESOURCE_NAMESPACE, "listingDisplayedMessage");
         if (messageProp != null) {
             try {
                 URL baseURL = viewService.constructURL(result.getURI());
-                HtmlFragment summary = htmlUtil.linkResolveFilter(messageProp.getStringValue(), baseURL, RequestContext
-                        .getRequestContext().getRequestURL(), useProtocolRelativeImages);
+                HtmlFragment summary = htmlUtil.linkResolveFilter(
+                        messageProp.getStringValue(), baseURL, RequestContext
+                        .getRequestContext().getRequestURL(), 
+                        useProtocolRelativeImages);
                 setFeedEntrySummary(entry, summary);
             } catch (Exception e) {
                 logger.warn("Could not set feed entry summary as XHTML" + e.getMessage());

@@ -14,7 +14,8 @@
     <property name="serviceNameProvider" ref="collectionListing.viewService.serviceNameProvider" />
   </bean>
 
-  <bean id="collectionListing.viewService.serviceNameProvider" class="vtk.web.service.provider.CollectionListingViewServiceNameProvider" />
+  <bean id="collectionListing.viewService.serviceNameProvider" 
+        class="vtk.web.service.provider.CollectionListingViewServiceNameProvider" />
 
   <bean id="collectionListing.feedService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="viewService" />
@@ -22,7 +23,7 @@
     <property name="assertions">
       <list>
         <ref bean="resourceInCollection" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsAnyFeed" />
       </list>
     </property>
     <property name="handler" ref="collectionListing.feedHandler" />
@@ -53,6 +54,21 @@
     </property>
     <property name="displayEditLinks" value="true" />
     <property name="resolvePrincipalLink" value="true" />
+  </bean>
+
+  <bean id="collectionListing.feedHandler" parent="collectionListing.handler">
+    <property name="viewName" value="collectionListing.feedView" />
+    <property name="displayEditLinks" value="false" />
+    <property name="resolvePrincipalLink" value="false" />
+  </bean>
+
+  <bean id="collectionListing.feedView" class="vtk.web.display.feed.ListingFeedView" 
+        parent="atomFeedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="collection-listing" />
+      </map>
+    </property>
   </bean>
 
   <bean id="collectionListing.searchComponent" class="vtk.web.search.collectionlisting.CollectionListingSearchComponent">
@@ -86,6 +102,10 @@
     <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="helper" ref="collectionListing.helper" />
     <property name="displayEditLinks" value="true" />
+  </bean>
+
+  <bean id="collectionListing.alwaysRecursiveUriQueryBuilder" class="vtk.web.search.ListingUriQueryBuilder">
+    <property name="defaultRecursive" value="true" />
   </bean>
 
   <bean id="collection.listingUriQueryBuilder" class="vtk.web.search.ListingUriQueryBuilder">
@@ -123,6 +143,14 @@
       </set>
     </property>
     <property name="documentPrincipalMetadataRetriever" ref="documentPrincipalMetadataRetriever" />
+  </bean>
+
+  <bean id="collectionListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="collectionListing.feedView" value-ref="collectionListing.feedView" />
+      </map>
+    </property>
   </bean>
 
   <bean id="collectionListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">

@@ -32,14 +32,12 @@
     </form>
   </p>
   </#if>
-  <#if commandForm.result?exists>
+  <#if (commandForm.result)?exists>
     <p>
       <pre>
-<#if commandForm.command?exists>[${commandForm.command?html}]:</#if>
+        <#if (commandForm.command)?exists>[${commandForm.command?html}]:</#if>
       </pre>
-      <textarea cols="80" rows="20">
-        ${commandForm.result?html}
-      </textarea>
+      <textarea cols="80" rows="20">${commandForm.result?html}</textarea>
     </p>
   </#if>
 

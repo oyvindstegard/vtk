@@ -46,12 +46,14 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.OrderComparator;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.RepositoryException;
 import vtk.repository.Resource;
 import vtk.repository.ResourceLockedException;
 import vtk.repository.ResourceNotFoundException;
+import vtk.repository.store.PrincipalMetadataDAO;
 import vtk.security.AuthenticationException;
 import vtk.security.SecurityContext;
 import vtk.security.token.TokenManager;
@@ -82,25 +84,28 @@ import vtk.web.service.URL;
 public class RequestContextInitializer implements ContextInitializer {
 
     // Map containing parent -> children mapping, effectively representing top-down graph of the service trees.
-    private Map<Service, List<Service>> childServices = new HashMap<Service, List<Service>>();
+    private Map<Service, List<Service>> childServices = new HashMap<>();
     
     private IndexFileResolver indexFileResolver;
+    private PrincipalMetadataDAO principalMetadataDAO;
     private static Log logger = LogFactory.getLog(RequestContextInitializer.class);
-    private List<Service> rootServices = new ArrayList<Service>();
+    private List<Service> rootServices = new ArrayList<>();
 
     private String trustedToken;
     private Repository repository;
     
-    private Set<String> nonRepositoryRoots = new HashSet<String>();
+    private Set<String> nonRepositoryRoots = new HashSet<>();
     
     private String viewUnauthenticatedParameter = null;
     
-    @Required public void setRepository(Repository repository) {
+    @Required
+    public void setRepository(Repository repository) {
         this.repository = repository;
     }
  
 
-    @Required public void setServices(List<Service> services) {
+    @Required
+    public void setServices(List<Service> services) {
 
         if (services == null) {
             throw new IllegalArgumentException("Property 'services' cannot be null");
@@ -109,12 +114,13 @@ public class RequestContextInitializer implements ContextInitializer {
         for (Service service : services) {
             Service parent = service.getParent();
             if (parent == null) {
-                this.rootServices.add(service);
-            } else {
-                List<Service> children = this.childServices.get(parent);
+                rootServices.add(service);
+            }
+            else {
+                List<Service> children = childServices.get(parent);
                 if (children == null) {
-                    children = new ArrayList<Service>();
-                    this.childServices.put(parent, children);
+                    children = new ArrayList<>();
+                    childServices.put(parent, children);
                 }
                 if (!children.contains(service)) {
                     children.add(service);
@@ -122,20 +128,20 @@ public class RequestContextInitializer implements ContextInitializer {
             }
         }
 
-        if (this.rootServices.isEmpty()) {
+        if (rootServices.isEmpty()) {
             throw new BeanInitializationException(
                     "No services defined in context.");
         }
         
-        Collections.sort(this.rootServices, new OrderComparator());
+        Collections.sort(rootServices, new OrderComparator());
 
         OrderComparator orderComparator = new OrderComparator();
-        for (List<Service> children: this.childServices.values()) {
+        for (List<Service> children: childServices.values()) {
             Collections.sort(children, orderComparator);
         }
 
-        for (Service root: this.rootServices) {
-            List<Service> children = this.childServices.get(root);
+        for (Service root: rootServices) {
+            List<Service> children = childServices.get(root);
             if (children != null) {
                 List<Assertion> assertions = root.getAssertions();
                 for (Service child : children) {
@@ -152,7 +158,8 @@ public class RequestContextInitializer implements ContextInitializer {
         }
     }
     
-    @Required public void setTrustedToken(String trustedToken) {
+    @Required
+    public void setTrustedToken(String trustedToken) {
         this.trustedToken = trustedToken;
     }
 
@@ -161,7 +168,6 @@ public class RequestContextInitializer implements ContextInitializer {
             this.nonRepositoryRoots = nonRepositoryRoots;
         }
     }
-
 
     @Override
     public void createContext(HttpServletRequest request) throws Exception {
@@ -180,7 +186,7 @@ public class RequestContextInitializer implements ContextInitializer {
         boolean inRepository = true;
         // Avoid doing repository retrievals if we know that this URI 
         // does not exist in the repository:
-        for (String prefix : this.nonRepositoryRoots) {
+        for (String prefix : nonRepositoryRoots) {
             if (uri.toString().startsWith(prefix)) {
                 inRepository = false;
                 break;
@@ -189,13 +195,16 @@ public class RequestContextInitializer implements ContextInitializer {
         
         try {
             if (inRepository) {
-                resource = this.repository.retrieve(this.trustedToken, uri, false);
+                resource = repository.retrieve(trustedToken, uri, false);
             }
-        } catch (ResourceNotFoundException e) {
+        }
+        catch (ResourceNotFoundException e) {
             // Ignore, this is not an error
-        } catch (ResourceLockedException e) {
+        }
+        catch (ResourceLockedException e) {
             // Ignore, this is not an error
-        } catch (RepositoryException e) {
+        }
+        catch (RepositoryException e) {
             String msg = "Unable to retrieve resource for service " +
                 "matching: " + uri + ". A valid token is required.";
             logger.warn(msg, e);
@@ -205,27 +214,28 @@ public class RequestContextInitializer implements ContextInitializer {
         Path indexFileUri = null;
         boolean isIndexFile = false;
         if (indexFileResolver != null && resource != null) {
-            if (resource.isCollection())
+            if (resource.isCollection()) {
                 indexFileUri = indexFileResolver.getIndexFile(resource);
+            }
             else {
                 try {
-                    Resource parent = this.repository.retrieve(this.trustedToken, resource.getURI().getParent(), false);
+                    Resource parent = repository.retrieve(trustedToken, resource.getURI().getParent(), false);
                     isIndexFile = uri.equals(indexFileResolver.getIndexFile(parent));
                 } catch (Exception e) {
                     // Ignore
                 }
-                
             }
         }
         final boolean viewUnauthenticated = isViewUnauthenticated(request);
         
-        for (Service service: this.rootServices) {
+        for (Service service: rootServices) {
 
             // Set an initial request context (with the resource, but
             // without the matched service)
             RequestContext.setRequestContext(
                 new RequestContext(request, securityContext, service, resource, 
-                        uri, indexFileUri, isIndexFile, viewUnauthenticated, inRepository, this.repository));
+                        uri, indexFileUri, isIndexFile, viewUnauthenticated,
+                        inRepository, repository, principalMetadataDAO));
             
             // Resolve the request to a service:
             if (resolveService(service, request, resource, securityContext)) {
@@ -295,11 +305,11 @@ public class RequestContextInitializer implements ContextInitializer {
                                    requestContext.isIndexFile(),
                                    requestContext.isViewUnauthenticated(),
                                    requestContext.isInRepository(),
-                                   this.repository));
+                                   repository, principalMetadataDAO));
             throw(e);
         }
 
-        List<Service> children = this.childServices.get(service);
+        List<Service> children = childServices.get(service);
         if (children != null) {
             if (logger.isTraceEnabled()) {
                 logger.trace("Currently matched service: " + service.getName() +
@@ -324,7 +334,7 @@ public class RequestContextInitializer implements ContextInitializer {
                                requestContext.isIndexFile(),
                                requestContext.isViewUnauthenticated(),
                                requestContext.isInRepository(),
-                               this.repository));
+                               repository, principalMetadataDAO));
         return true;
     }
 
@@ -332,7 +342,7 @@ public class RequestContextInitializer implements ContextInitializer {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(this.getClass().getName());
+        sb.append(getClass().getName());
         sb.append(": ").append(System.identityHashCode(this));
         return sb.toString();
     }
@@ -341,7 +351,7 @@ public class RequestContextInitializer implements ContextInitializer {
     public StringBuilder printServiceTree(boolean printAssertions) {
         StringBuilder buffer = new StringBuilder();
         String lineSeparator = System.getProperty("line.separator");
-        printServiceList(this.rootServices, buffer, "->", lineSeparator, printAssertions);
+        printServiceList(rootServices, buffer, "->", lineSeparator, printAssertions);
         return buffer;
     }
 
@@ -366,12 +376,16 @@ public class RequestContextInitializer implements ContextInitializer {
                 }
             }
             buffer.append(lineSeparator);
-            printServiceList(this.childServices.get(service), buffer, "  " + indent, lineSeparator, printAssertions);
+            printServiceList(childServices.get(service), buffer, "  " + indent, lineSeparator, printAssertions);
         }
     }
 
     public void setIndexFileResolver(IndexFileResolver indexFileResolver) {
         this.indexFileResolver = indexFileResolver;
+    }
+    
+    public void setPrincipalMetadataDAO(PrincipalMetadataDAO principalMetadataDao) {
+        this.principalMetadataDAO = principalMetadataDao;
     }
     
     private void validateAssertions(Service child, 
@@ -390,12 +404,12 @@ public class RequestContextInitializer implements ContextInitializer {
             }
         }
 
-        List<Service> myChildren = this.childServices.get(child);
+        List<Service> myChildren = childServices.get(child);
         if (myChildren == null) {
             return;
         }
         
-        List<Assertion> assertions = new ArrayList<Assertion>(parentAssertions);
+        List<Assertion> assertions = new ArrayList<>(parentAssertions);
         assertions.addAll(child.getAssertions());
         for (Service myChild : myChildren) {
             validateAssertions(myChild, assertions);
@@ -414,7 +428,8 @@ public class RequestContextInitializer implements ContextInitializer {
     }
     
     private boolean isViewUnauthenticated(HttpServletRequest request) {
-        return this.viewUnauthenticatedParameter != null && request.getParameter(this.viewUnauthenticatedParameter) != null;
+        return viewUnauthenticatedParameter != null && 
+                request.getParameter(viewUnauthenticatedParameter) != null;
     }
     
     public void setViewUnauthenticatedParameter(String viewUnauthenticatedParameter) {

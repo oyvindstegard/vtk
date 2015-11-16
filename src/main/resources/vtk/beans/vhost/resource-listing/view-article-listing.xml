@@ -41,14 +41,18 @@
     </property>
   </bean>
 
-  <bean id="articleListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="articleListing.atomFeedGenerator" />
+  <bean id="articleListing.feedHandler" parent="articleListing.handler">
+    <property name="viewName" value="articleListing.feedView" />
   </bean>
 
-  <bean id="articleListing.atomFeedGenerator" class="vtk.web.display.collection.article.ArticleListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
-    <property name="searcher" ref="articleListingSearcher" />
+  <bean id="articleListing.feedView" class="vtk.web.display.collection.article.ArticleListingAtomFeedView" 
+        parent="atomFeedView">
     <property name="overridePublishDatePropDef" ref="publishedDatePropDef" />
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="article-list" />
+      </map>
+    </property>
   </bean>
 
   <bean id="articleListingSearcher" class="vtk.web.display.collection.article.ArticleListingSearcher">
@@ -159,6 +163,13 @@
     </property>
   </bean>
 
+  <bean id="articleListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="articleListing.feedView" value-ref="articleListing.feedView" />
+      </map>
+    </property>
+  </bean>
 
   <bean id="articleListing.viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">

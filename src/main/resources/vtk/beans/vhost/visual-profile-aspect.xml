@@ -91,6 +91,7 @@
         <ref bean="resourceTypeIsManagedXml" />
         <ref bean="structuredResources.typeAssertion" />
         <ref bean="resourceTypeIsHtml" />
+        <ref bean="contentTypeMatchesPhp" />
         <!--ref bean="resourceIsApt" /-->
       </list>
     </property>

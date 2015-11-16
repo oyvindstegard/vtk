@@ -7,6 +7,7 @@ import java.util.Calendar;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import vtk.context.BaseContext;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -20,6 +21,7 @@ import vtk.repository.resourcetype.HtmlValueFormatter;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.StringValueFormatter;
+import vtk.repository.store.DefaultPrincipalMetadataDAO;
 import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 
@@ -36,16 +38,17 @@ public class EventAsICalHelperTest {
     public static void init() throws Exception {
         helper = new EventAsICalHelper();
 
-        startDatePropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE,
-                "start-date", Type.DATE, new DateValueFormatter());
-        endDatePropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE,
-                "end-date", Type.DATE, new DateValueFormatter());
-        locationPropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE,
-                "location", Type.STRING, new StringValueFormatter());
-        introductionPropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE,
-                "introduction", Type.HTML, new HtmlValueFormatter());
-        titlePropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, "title",
-                Type.STRING, new StringValueFormatter());
+        startDatePropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(
+                Namespace.DEFAULT_NAMESPACE, "start-date", Type.DATE,
+                new DateValueFormatter());
+        endDatePropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(
+                Namespace.DEFAULT_NAMESPACE, "end-date", Type.DATE, new DateValueFormatter());
+        locationPropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(
+                Namespace.DEFAULT_NAMESPACE, "location", Type.STRING, new StringValueFormatter());
+        introductionPropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(
+                Namespace.DEFAULT_NAMESPACE, "introduction", Type.HTML, new HtmlValueFormatter());
+        titlePropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(
+                Namespace.DEFAULT_NAMESPACE, "title", Type.STRING, new StringValueFormatter());
 
         helper.setStartDatePropDef(startDatePropDef);
         helper.setEndDatePropDef(endDatePropDef);
@@ -58,14 +61,16 @@ public class EventAsICalHelperTest {
         BaseContext.pushContext();
         SecurityContext securityContext = new SecurityContext(null, null);
         SecurityContext.setSecurityContext(securityContext);
-        RequestContext requestContext = new RequestContext(null, securityContext, null, null, Path.ROOT, null, false,
-                false, true, repository);
+        RequestContext requestContext = new RequestContext(null, securityContext,
+                null, null, Path.ROOT, null, false,
+                false, true, repository, new DefaultPrincipalMetadataDAO());
         RequestContext.setRequestContext(requestContext);
     }
 
     @Test
     public void getAsICal() throws Exception {
-        String iCal = helper.getAsICal(Arrays.asList(this.getEvent(Path.fromString("/events/some-event.html"))));
+        String iCal = helper.getAsICal(Arrays.asList(
+                getEvent(Path.fromString("/events/some-event.html"))));
         assertNotNull(iCal);
     }
 

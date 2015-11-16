@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, University of Oslo, Norway
+/* Copyright (c) 2013,2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,57 +30,49 @@
  */
 package vtk.resourcemanagement.parser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.junit.BeforeClass;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import vtk.resourcemanagement.StructuredResourceDescription;
-import vtk.resourcemanagement.StructuredResourceManager;
+
+import java.util.List;
 
 public abstract class StructuredResourceParserTest {
+    private static final ResourceLoader resourceLoader = new DefaultResourceLoader();
+    protected static List<StructuredResourceParser.ParsedNode> PARSE_TREE;
 
-    protected static StructuredResourceParser RESOURCE_PARSER;;
+    public static Resource getSourceResource() {
+        return new ClassPathResource("/vtk/beans/structured-resources-test.vrtx");
+    }
 
     @BeforeClass
     public static void init() throws Exception {
-        RESOURCE_PARSER = new StructuredResourceParser();
-        RESOURCE_PARSER.setDefaultResourceTypeDefinitions(new ClassPathResource(
-                "/vtk/beans/vhost/structured-resources.vrtx"));
-        RESOURCE_PARSER.setStructuredResourceManager(new MockStructuredResourceManager());
-        RESOURCE_PARSER.afterPropertiesSet();
+        StructuredResourceParser parser = new StructuredResourceParser(getSourceResource(), resourceLoader);
+        PARSE_TREE = parser.parse();
     }
 
-    private static class MockStructuredResourceManager extends StructuredResourceManager {
+    public StructuredResourceDescription getNodeWithName(String name) {
+        return getNodeWithName(PARSE_TREE, name);
+    }
 
-        private Map<String, StructuredResourceDescription> types = new HashMap<String, StructuredResourceDescription>();
-
-        @Override
-        public void register(StructuredResourceDescription description) throws Exception {
-            description.validate();
-            this.types.put(description.getName(), description);
+    private StructuredResourceDescription getNodeWithName(
+            List<StructuredResourceParser.ParsedNode> nodes,
+            String name
+    ) {
+        for (StructuredResourceParser.ParsedNode node : nodes) {
+            if (node.getName().equals(name)) {
+                return node.getStructuredResourceDescription();
+            }
+            if (node.hasChildren()) {
+                StructuredResourceDescription foundChild = getNodeWithName(node.getChildren(), name);
+                if (foundChild != null) {
+                    return foundChild;
+                }
+            }
         }
-
-        @Override
-        public void registrationComplete() {
-            // Ignore, do nothing
-        }
-
-        @Override
-        public StructuredResourceDescription get(String name) {
-            StructuredResourceDescription description = this.types.get(name);
-            return description;
-        }
-
-        @Override
-        public List<StructuredResourceDescription> list() {
-            List<StructuredResourceDescription> result = new ArrayList<StructuredResourceDescription>();
-            result.addAll(this.types.values());
-            return result;
-        }
-
+        return null;
     }
 
 }

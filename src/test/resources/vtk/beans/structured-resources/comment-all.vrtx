@@ -1,0 +1,39 @@
+/*
+resourcetype exam {
+
+  properties {
+    tittel : string,
+    title : derived (tittel) eval ("exam"?localized) overrides title,
+    content : html noextract
+  }
+
+  edit-rules {
+    tittel (size[1]),
+    tittel (class[ui-helper-hidden]),
+    title (class[ui-helper-hidden]),
+    content (class[ui-helper-hidden])
+  }
+
+  view {
+    ##
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>[call "resource:contextual-title-new"]</title>
+      </head>
+      <body id="vrtx-exam">
+        <h1>[call "resource:property" {"id":"title"}]</h1>
+        [call "json:field" {"select":"content"}]
+      </body>
+    </html>
+    ##
+  }
+
+  localization {
+    exam : (en : "Examination: Time and place", no : "Eksamen: Tid og sted", nn : "Eksamen: Tid og stad"),
+    title : (en : "Title", no : "Tittel", nn : "Tittel"),
+    header : (en : "Edit exam", no : "Rediger eksamen", nn : "Rediger eksamen"),
+    content : (en : "Content", no : "Innhold", nn : "Innhald")
+  }
+}
+*/

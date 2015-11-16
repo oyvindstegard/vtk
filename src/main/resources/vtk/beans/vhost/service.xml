@@ -597,4 +597,7 @@
     <property name="webPort" value="${canonicalUrl.webPort}" />
   </bean>
 
+  <!-- Building URLs to a service -->
+  <bean id="serviceUrlProvider" class="vtk.web.service.ServiceUrlProvider" />
+
 </beans>

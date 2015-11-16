@@ -114,7 +114,7 @@ import vtk.web.service.ServiceUnlinkableException;
  * 
  */
 public class PropertyEditController extends SimpleFormController<PropertyEditCommand> 
-    implements ReferenceDataProvider, ReferenceDataProviding {
+    implements ReferenceDataProvider {
 
     private Log logger = LogFactory.getLog(this.getClass());
 
@@ -206,7 +206,6 @@ public class PropertyEditController extends SimpleFormController<PropertyEditCom
         }
 
         PropertyTypeDefinition def = command.getDefinition();
-        System.out.println("__command: " + command + ", " + command.getDefinition());
         // Special handling of 'take ownership' action:
         if (Namespace.DEFAULT_NAMESPACE.equals(def.getNamespace())
                 && PropertyType.OWNER_PROP_NAME.equals(def.getName())

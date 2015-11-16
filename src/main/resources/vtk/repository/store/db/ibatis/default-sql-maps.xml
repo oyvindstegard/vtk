@@ -121,7 +121,7 @@
     <result property="changeLogEntryId" column="changelog_entry_id" javaType="int"/>
     <result property="loggerId" column="logger_id" javaType="int"/>
     <result property="loggerType" column="logger_type" javaType="int"/>
-    <result property="uri" column="uri" typeHandler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback"/>
+    <result property="uri" column="uri" />
     <result property="resourceId" column="resource_id" javaType="int" />
     <result property="operation" column="operation" 
       typeHandler="vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback"/>
@@ -801,12 +801,12 @@
 
   <resultMap id="Comment" type="vtk.repository.Comment">
     <result property="id" column="id" />
-    <result property="uri" column="uri" typeHandler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback" />
+    <result property="uri" column="uri" />
     <result property="time" column="time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
     <result property="author" column="author" />
     <result property="title" column="title" />
 
-    <result property="content" column="content" javaType="string" />
+    <result property="content" column="content" jdbcType="CLOB" typeHandler="vtk.repository.store.db.ibatis.ClobTypeHandler" />
     <result property="approved" column="approved"
             typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback"/>
   </resultMap>
@@ -857,7 +857,7 @@
 
   <delete id="deleteAllComments" parameterType="vtk.repository.Resource">
     delete from vortex_comment where resource_id in 
-       (select resource_id from vortex_resource where uri = #URI,handler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback#)
+       (select resource_id from vortex_resource where uri = #{URI})
   </delete>
 
   <!-- See: http://issues.apache.org/jira/browse/IBATIS-244 -->
@@ -875,9 +875,9 @@
       (id, resource_id, author, time, title, content, approved)
     select <include refid="nextVortexCommentId" />, r.resource_id, 
            #{author}, #{time}, #{title},
-           #{content},
+           #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler},
            #{approved,typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
-    from vortex_resource r where r.uri = #{URI, typeHandler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback}
+    from vortex_resource r where r.uri = #{URI}
   </insert>
 
   <!--update id="updateComment" parameterType="vtk.repository.Comment">
@@ -894,7 +894,7 @@
       set author = #{author, jdbcType=VARCHAR},
           time = #{time},
           title = #{title},
-          content = #{content},
+          content = #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler},
           approved = #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
       where id = #{ID}
   </update>

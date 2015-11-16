@@ -40,6 +40,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Resource;
@@ -59,7 +61,7 @@ import vtk.web.service.Service;
  * title and certain other properties (date, author ++).
  * 
  */
-public abstract class RSSFeedGenerator implements FeedGenerator {
+public abstract class RSSFeedGenerator implements Controller {
 
     private String viewName;
     private String feedLogoPath;
@@ -75,7 +77,7 @@ public abstract class RSSFeedGenerator implements FeedGenerator {
     protected abstract List<Map<String, Object>> getFeedEntries(Resource feedScope) throws Exception;
 
     @Override
-    public ModelAndView generateFeed(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();

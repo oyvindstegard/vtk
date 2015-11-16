@@ -30,6 +30,8 @@
  */
 package vtk.web.display.collection;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
@@ -37,6 +39,7 @@ import org.apache.abdera.model.Link;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
@@ -45,23 +48,24 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatter;
 import vtk.web.RequestContext;
+import vtk.web.display.feed.ListingFeedView;
 
-public class AudioVideoListingAtomFeedGenerator extends CollectionListingAtomFeedGenerator {
+public class AudioVideoListingAtomFeedView extends ListingFeedView {
 
-    private final Log logger = LogFactory.getLog(AudioVideoListingAtomFeedGenerator.class);
+    private final Log logger = LogFactory.getLog(AudioVideoListingAtomFeedView.class);
 
     private PropertyTypeDefinition videoHtmlDescriptionPropDef;
     private PropertyTypeDefinition audioHtmlDescriptionPropDef;
 
     @Override
-    protected void addPropertySetAsFeedEntry(Feed feed, PropertySet result) {
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, 
+            PropertySet result) {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
 
         try {
-
             Entry entry = Abdera.getInstance().newEntry();
 
             Property publishedDateProp = getPublishDate(result);

@@ -10,13 +10,28 @@
     <property name="dataSource" ref="repository.dataSource" />
   </bean>
 
-  <tx:annotation-driven transaction-manager="repository.transactionManager" order="1000" />
+  <!-- AOP transaction advice setup -->
+  <tx:advice id="repository.txAdvice" transaction-manager="repository.transactionManager">
+    <tx:attributes>
+      <!-- Avoid rollback for exceptions which originate purely from business logic, and before any DAO layers have been 
+        touched. Typically this will be validation exceptions, authentication exceptions, etc. This is likely not 100% bulletproof, 
+        though. Consider an exception from property evaluation during a move where some DAO operations already have been performed.. 
+        The database-parts might not be rolled back, yuck.. -->
+      <tx:method name="*"
+        no-rollback-for="vtk.repository.RepositoryException,vtk.security.AuthenticationException" />
+    </tx:attributes>
+  </tx:advice>
+
 
   <!-- Define AOP pointcut for the transactional methods as well: -->
   <aop:config>
     <aop:pointcut id="transactionalAnnotationPointcut"
                   expression="@annotation(org.springframework.transaction.annotation.Transactional)"/>
-</aop:config>
+
+    <!-- Apply transactions to all @Transactional methods -->
+    <aop:advisor advice-ref="repository.txAdvice" pointcut-ref="transactionalAnnotationPointcut"
+                 order="1000" />
+  </aop:config>
 
 
   <!-- Main repository instance. -->
@@ -68,6 +83,13 @@
   <bean id="repository.sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
     <property name="dataSource" ref="repository.dataSource" />
     <property name="configLocation" value="classpath:/vtk/repository/store/db/ibatis/${sqlDialect}-sql-map-config.xml" />
+    <property name="typeHandlers">
+      <list>
+        <bean class="vtk.repository.store.db.ibatis.UserPrincipalTypeHandlerCallback">
+          <property name="principalFactory" ref="principalFactory" />
+        </bean>
+      </list>
+    </property>
   </bean>
 
   <bean id="repository.sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
@@ -137,7 +159,6 @@
   <bean id="repository.sqlMapCommentDao" class="vtk.repository.store.db.SqlMapCommentDAO" 
         parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
-    <property name="principalFactory" ref="principalFactory" />
   </bean>
 
   <bean id="repositoryAware" abstract="true">

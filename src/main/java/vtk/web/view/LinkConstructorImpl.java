@@ -31,32 +31,29 @@
 package vtk.web.view;
 
 import java.io.UnsupportedEncodingException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import vtk.repository.Path;
 import vtk.web.RequestContext;
-import vtk.web.service.Service;
+import vtk.web.service.ServiceUrlProvider;
 import vtk.web.service.URL;
 
 
-public class LinkConstructorImpl implements LinkConstructor, ApplicationContextAware {
-
-    private static Log logger = LogFactory.getLog(LinkConstructorImpl.class);
+public class LinkConstructorImpl implements LinkConstructor {
+    private static final Log logger = LogFactory.getLog(LinkConstructorImpl.class);
     
-	private ApplicationContext context;
-	
+	private final ServiceUrlProvider serviceUrlProvider;
+
+    public LinkConstructorImpl(ServiceUrlProvider serviceUrlProvider) {
+        this.serviceUrlProvider = serviceUrlProvider;
+    }
+
     public URL construct(String resourceUri, String parametersCSV, String serviceName) {
         try {
             if (resourceUri != null && resourceUri.contains("://")) {
-                URL url = getUrlFromUrl(resourceUri);
-                return url;
+                return getUrlFromUrl(resourceUri);
             }
 
             Path uri = RequestContext.getRequestContext().getResourceURI();
@@ -69,13 +66,15 @@ public class LinkConstructorImpl implements LinkConstructor, ApplicationContextA
                     uri = uri.expand(resourceUri);
                 }
             }
-            
-            Service service = RequestContext.getRequestContext().getService();
+
+            ServiceUrlProvider.ServiceUrlBuilder urlBuilder;
             if (isSet(serviceName)) {
-                service = getService(serviceName);
+                urlBuilder = serviceUrlProvider.builder(serviceName);
+            } else {
+                urlBuilder = serviceUrlProvider.builder(RequestContext.getRequestContext().getService());
             }
-            return service.constructURL(uri, getParametersMap(parametersCSV));
-		
+            return urlBuilder.withPath(uri).withParameters(getParametersMap(parametersCSV)).build();
+
 		} catch (Exception e) {
             logger.info("Caught exception on link construction", e);
             return null;
@@ -94,14 +93,14 @@ public class LinkConstructorImpl implements LinkConstructor, ApplicationContextA
         return value != null && !value.trim().equals("");
     }
 
-	private Map<String, String> getParametersMap(String parametersCSV) {
+	private Map<String, List<String>> getParametersMap(String parametersCSV) {
 	    if (parametersCSV == null || parametersCSV.trim().equals(""))
 	        return null;
 	    
-	    Map<String, String> parameters = new LinkedHashMap<String, String>();
+	    Map<String, List<String>> parameters = new LinkedHashMap<>();
 
 	    for (String mapping: parametersCSV.split(",")) {
-			if (mapping.indexOf("=") == -1) {
+			if (!mapping.contains("=")) {
 				throw new IllegalArgumentException(
 				        "Each entry in the parameters string must be in the format "
 						+ "'<paramname>=<paramvalue>'");
@@ -109,18 +108,11 @@ public class LinkConstructorImpl implements LinkConstructor, ApplicationContextA
 
 			String parameterName = mapping.substring(0, mapping.indexOf("=")).trim();
 			
-			String parameterValue = mapping.substring(mapping.lastIndexOf("=") + 1).trim();
-			parameters.put(parameterName, parameterValue);
+			List<String> parameterValues = Collections.singletonList(
+                    mapping.substring(mapping.lastIndexOf("=") + 1).trim()
+            );
+			parameters.put(parameterName, parameterValues);
 		}
 		return parameters;
 	}
-
-    private Service getService(String serviceName) {
-        return (Service) this.context.getBean(serviceName, Service.class);
-    }
-
-	@Required
-	public void setApplicationContext(ApplicationContext context) throws BeansException {
-        this.context = context;
-    }
 }

@@ -22,7 +22,7 @@ package vtk.repository.resource;
 }
 
 resources
-	:	(resourcetypedef)+;
+	:	(resourcetypedef)+ |;
 
 resourcetypedef
 	:	RESOURCETYPE NAME (parent)? LCB

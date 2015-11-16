@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -134,8 +135,14 @@ public class AlphabeticalCollectionListingController extends CollectionListingCo
         URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
 
         model.put("alpthabeticalOrdredResult", alpthabeticalOrdredResult);
-        List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(totalHits, pageLimit, baseURL, page);
-        model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+        
+        Optional<ListingPager.Pagination> pagination = 
+                ListingPager.pagination(totalHits, pageLimit, baseURL, page);
+        if (pagination.isPresent()) {
+            List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+            model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+            model.put(MODEL_KEY_PAGINATION, pagination.get());
+        }
         model.put(MODEL_KEY_PAGE, page);
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
     }

@@ -34,7 +34,7 @@
         <#assign "c" = 0>
 
         <#if subFolderMenu.resultSets?exists>
-            <div id="vrtx-folder-menu" class="vrtx-collections">
+            <div id="vrtx-folder-menu" class="vrtx-folder-menu">
             <#list subFolderMenu.resultSets as resultSet>
               <#assign counter = counter+1>
               <#assign counter2 = counter2+1>

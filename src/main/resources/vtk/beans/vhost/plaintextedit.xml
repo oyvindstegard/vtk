@@ -140,7 +140,7 @@
   <bean id="plaintextEditHandler"
         class="vtk.edit.plaintext.PlaintextEditController">
     <property name="formView" value="plaintextEdit" />
-    <property name="successView" value="plaintextEdit" />
+    <property name="successView" value="redirectToManage" />
     <property name="commandName" value="plaintextEditForm" />
     <property name="tooltipServices" ref="plaintextEditTooltipURLServicesFactory" />
     <property name="textResourceContentHelper" ref="textResourceContentHelper" />

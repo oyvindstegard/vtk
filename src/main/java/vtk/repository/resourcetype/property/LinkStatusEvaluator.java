@@ -41,6 +41,7 @@ import java.util.Set;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
@@ -50,11 +51,11 @@ import vtk.repository.resourcetype.Value;
 
 public class LinkStatusEvaluator implements LatePropertyEvaluator {
 
+    private PropertyTypeDefinition hrefsPropDef;
     private PropertyTypeDefinition linkCheckPropDef;
-    private PropertyTypeDefinition linksPropDef;
     
-    public void setLinksPropDef(PropertyTypeDefinition linksPropDef) {
-        this.linksPropDef = linksPropDef;
+    public void setHrefsPropDef(PropertyTypeDefinition hrefsPropDef) {
+        this.hrefsPropDef = hrefsPropDef;
     }
 
     public void setLinkCheckPropDef(PropertyTypeDefinition linkCheckPropDef) {
@@ -76,9 +77,9 @@ public class LinkStatusEvaluator implements LatePropertyEvaluator {
     @Override
     public boolean evaluate(Property property, PropertyEvaluationContext ctx)
             throws PropertyEvaluationException {
-        Property linksProp = ctx.getNewResource().getProperty(this.linksPropDef);
+        Property hrefsProp = ctx.getNewResource().getProperty(hrefsPropDef);
 
-        if (linksProp == null) {
+        if (hrefsProp == null) {
             property.setValues(new Value[] {new Value("NO_LINKS", Type.STRING)});
             return true;
         }

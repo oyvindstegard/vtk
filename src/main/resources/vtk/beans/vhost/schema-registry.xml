@@ -22,7 +22,6 @@
          </property>
        </bean>
      </constructor-arg>
-     <constructor-arg name="requireSerializable" value="false"/>
      <constructor-arg name="refreshIntervalSeconds" value="${xmlSchemaRegistry.cacheRefreshInterval}" />
      <constructor-arg name="asynchronousRefresh" value="false" />
    </bean>

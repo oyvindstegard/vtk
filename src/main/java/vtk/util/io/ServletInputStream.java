@@ -37,7 +37,6 @@ import java.io.InputStream;
 public class ServletInputStream extends javax.servlet.ServletInputStream {
 
     private InputStream inputStream;
-    private boolean eof = false;
 
     public ServletInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
@@ -49,9 +48,7 @@ public class ServletInputStream extends javax.servlet.ServletInputStream {
     
     @Override
     public int read() throws IOException {
-        int n = inputStream.read();
-        eof = n == -1;
-        return n;
+        return inputStream.read();
     }
 
     @Override
@@ -76,16 +73,12 @@ public class ServletInputStream extends javax.servlet.ServletInputStream {
 
     @Override
     public int read(byte[] b) throws IOException {
-        int n = inputStream.read(b);
-        eof = n == -1;
-        return n;
+        return inputStream.read(b);
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int n = inputStream.read(b, off, len);
-        eof = n == -1;
-        return n;
+        return inputStream.read(b, off, len);
     }
 
     @Override

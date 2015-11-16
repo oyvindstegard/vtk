@@ -126,7 +126,7 @@
       <#if user_index &lt; users?size - 1 || groups?size &gt; 0>,<#t/></#if>
     </#list>
     <#list groups as group>
-      <#compress>${group.name}</#compress><#t/>
+      <#compress><@vrtx.displayGroupPrincipal principal=group /></#compress><#t/>
       <#if group_index &lt; groups?size - 1>,<#t/></#if>
     </#list>
     <#if aclInfo.aclEditURLs[privilegeName]?exists>
@@ -246,7 +246,7 @@
                 <#if type == "user">
                   <@vrtx.displayUserPrincipal principal=groupOrUser />
                 <#else>
-                  ${groupOrUser.name}
+                  <@vrtx.displayGroupPrincipal principal=groupOrUser />
                 </#if>
               
                 <#-- Remove -->

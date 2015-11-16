@@ -398,6 +398,12 @@ public class BufferedResponse implements HttpServletResponse {
     public void writeTo(HttpServletResponse response, boolean closeOutputStream) 
         throws IOException {
         // Write/copy metadata
+
+        if (contentLength >= 0) {
+	    // XXX:
+	    response.setContentLength((int) getContentLength());
+        }
+
         String contentType = getContentType();
         if (contentType != null) {
             response.setContentType(contentType);

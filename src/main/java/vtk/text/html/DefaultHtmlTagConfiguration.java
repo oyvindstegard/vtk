@@ -73,6 +73,8 @@ public final class DefaultHtmlTagConfiguration {
         
         compositeTags.add("figure");
         compositeTags.add("figcaption");
+        compositeTags.add("audio");
+        compositeTags.add("video");
         
         emptyTags.add("br");
         emptyTags.add("area");
@@ -84,6 +86,7 @@ public final class DefaultHtmlTagConfiguration {
         emptyTags.add("col");
         emptyTags.add("base");
         emptyTags.add("meta");
+        emptyTags.add("source");
         emptyTags.add("esi:include");
     }
 

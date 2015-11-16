@@ -31,14 +31,18 @@
 
 package vtk.repository.systemjob;
 
-import vtk.repository.SystemChangeContext;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
+import vtk.repository.Path;
 import vtk.repository.Repository;
+import vtk.repository.SystemChangeContext;
 
 /**
  * Path selector which aggregates selected paths of a configured list of
- * sub-selectors.
+ * sub-selectors. Removes (and keeps the first of) duplicate paths provided 
+ * by the sub-selectors. 
  */
 public class AggregatingPathSelector implements PathSelector {
 
@@ -55,9 +59,21 @@ public class AggregatingPathSelector implements PathSelector {
     public void selectWithCallback(Repository repository,
                                    SystemChangeContext context,
                                    PathSelectCallback callback) throws Exception {
-        
+
+        Set<Path> aggregated = new LinkedHashSet<>();
+
         for (PathSelector selector: this.pathSelectors) {
-            selector.selectWithCallback(repository, context, callback);
+            selector.selectWithCallback(repository, context, new PathSelectCallback() {
+                @Override
+                public void beginBatch(int total) throws Exception { }
+                @Override
+                public void select(Path path) throws Exception {
+                    aggregated.add(path);
+                }
+            });
         }
+        
+        callback.beginBatch(aggregated.size());
+        for (Path path: aggregated) callback.select(path);
     }
 }

@@ -50,6 +50,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.support.RequestContext;
+
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
@@ -165,9 +166,9 @@ public final class EventListingHelper implements InitializingBean {
     public String getLocalizedTitle(HttpServletRequest request, String key, Object[] params) {
         RequestContext springRequestContext = new RequestContext(request);
         if (params != null) {
-            return springRequestContext.getMessage(key, params);
+            return springRequestContext.getMessage(key, params, key);
         }
-        return springRequestContext.getMessage(key);
+        return springRequestContext.getMessage(key, key);
     }
 
     public String getEventTypeTitle(Resource collection, boolean capitalize) {

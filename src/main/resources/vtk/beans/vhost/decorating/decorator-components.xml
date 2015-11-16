@@ -613,8 +613,7 @@
         </property>
       </bean>
     </constructor-arg>
-    <constructor-arg name="requireSerializable" value="false"/>
-    <constructor-arg name="refreshIntervalSeconds" value="30" />
+    <constructor-arg name="refreshIntervalSeconds" value="60" />
     <constructor-arg name="asynchronousRefresh" value="true" />
   </bean>
 
@@ -744,8 +743,7 @@
         </property>
       </bean>
     </constructor-arg>
-    <constructor-arg name="requireSerializable" value="false"/>
-    <constructor-arg name="refreshIntervalSeconds" value="30" />
+    <constructor-arg name="refreshIntervalSeconds" value="60" />
     <constructor-arg name="asynchronousRefresh" value="false" />
   </bean>
 
@@ -787,7 +785,11 @@
     class="vtk.web.decorating.components.SearchFormComponent">
     <property name="namespace" ref="decorating.includeNamespace" />
     <property name="view" ref="decorating.searchForm.view" />
-    <property name="description" value="Inserts search-form that searches current directory. To override you can specify 'uri'." />
+    <property name="description">
+      <value>Inserts search-form that searches current directory.
+             To override you can specify 'uri' parameter.
+      </value>
+    </property>
   </bean>
 
   <bean name="decorating.searchForm.view" parent="freemarkerView">

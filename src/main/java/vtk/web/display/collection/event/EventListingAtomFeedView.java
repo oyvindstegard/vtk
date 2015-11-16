@@ -34,58 +34,32 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.event.EventListingHelper.SpecificDateSearchType;
-import vtk.web.display.feed.AtomFeedGenerator;
-import vtk.web.search.Listing;
-import vtk.web.search.ListingEntry;
+import vtk.web.display.feed.ListingFeedView;
 import vtk.web.service.Service;
 
-public class EventListingAtomFeedGenerator extends AtomFeedGenerator {
+public class EventListingAtomFeedView extends ListingFeedView {
 
     private EventListingHelper helper;
-    private EventListingSearcher searcher;
     private PropertyTypeDefinition displayTypePropDef;
     private String overridePublishDatePropDefPointer;
 
     @Override
-    protected void addFeedEntries(Feed feed, Resource feedScope) throws Exception {
-
-        HttpServletRequest request = RequestContext.getRequestContext().getServletRequest();
-        Listing entryElements = null;
-        Property displayTypeProp = feedScope.getProperty(displayTypePropDef);
-        if (displayTypeProp != null && "calendar".equals(displayTypeProp.getStringValue())) {
-            SpecificDateSearchType searchType = helper.getSpecificDateSearchType(request);
-            if (searchType != null) {
-                entryElements = searcher.searchSpecificDate(request, feedScope, entryCountLimit, 1);
-            }
-        }
-        if (entryElements == null) {
-            entryElements = searcher.searchUpcoming(request, feedScope, 1, entryCountLimit, 0);
-        }
-
-        for (ListingEntry entry : entryElements.getEntries()) {
-            PropertySet feedEntry = entry.getPropertySet();
-            addPropertySetAsFeedEntry(feed, feedEntry);
-        }
-    }
-
-    @Override
-    protected String getFeedTitle(Resource feedScope, RequestContext requestContext) {
-
+    protected String getFeedTitle(HttpServletRequest request, Resource feedScope) {
+        RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         String feedTitle = service.getLocalizedName(feedScope, requestContext.getServletRequest());
-        feedTitle = feedTitle == null ? super.getFeedTitle(feedScope, requestContext) : feedTitle;
+        feedTitle = feedTitle == null ? super.getFeedTitle(request, feedScope) : feedTitle;
 
         Property displayTypeProp = feedScope.getProperty(displayTypePropDef);
         if (displayTypeProp != null && "calendar".equals(displayTypeProp.getStringValue())) {
-            HttpServletRequest request = requestContext.getServletRequest();
             SpecificDateSearchType searchType = helper.getSpecificDateSearchType(request);
             if (searchType != null) {
                 Date date = helper.getSpecificSearchDate(request);
@@ -136,11 +110,6 @@ public class EventListingAtomFeedGenerator extends AtomFeedGenerator {
     @Required
     public void setHelper(EventListingHelper helper) {
         this.helper = helper;
-    }
-
-    @Required
-    public void setSearcher(EventListingSearcher searcher) {
-        this.searcher = searcher;
     }
 
     @Required

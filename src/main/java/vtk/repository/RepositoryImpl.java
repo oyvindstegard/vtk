@@ -228,9 +228,6 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             throw new IllegalArgumentException("Revision is NULL");
         }
         Principal principal = this.tokenManager.getPrincipal(token);
-        if (principal == null) {
-            throw new AuthenticationException("Principal NULL not permitted to retrieve resource revisions");
-        }
 
         ResourceImpl resource = this.dao.load(uri);
 
@@ -1703,7 +1700,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             Comment comment = new Comment();
             comment.setURI(original.getURI());
             comment.setTime(new java.util.Date());
-            comment.setAuthor(principal.getQualifiedName());
+            comment.setAuthor(principal);
             comment.setTitle(title);
             comment.setContent(text);
             comment.setApproved(true);

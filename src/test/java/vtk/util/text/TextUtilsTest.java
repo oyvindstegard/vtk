@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009, 2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -435,4 +435,24 @@ public class TextUtilsTest {
         strings.add("two");
         assertEquals("join result", "one, two", TextUtils.join(strings, ", "));
     }
+
+    @Test
+    public void testRemoveUnprintablesWhenContentContainsControlCharactersThenUnknownShouldBeRemoved() throws Exception {
+        String result = TextUtils.removeUnprintables("back \b space");
+        assertEquals("should not contain back space", -1, result.indexOf('\b')); 
+    }
+
+    @Test
+    public void testRemoveUnprintablesWhenContentContainsControlCharactersThenUnknownShouldBeRemoved2() throws Exception {
+        String result = TextUtils.removeUnprintables("some \u000btext");
+        assertEquals("should not contain control character", "some text", result); 
+    }
+
+    @Test
+    public void testRemoveUnprintablesWhenContentContainsLocalizedQuotesThenShouldBeAcceptedSinceTheyAreValidUnicode() throws Exception {
+        String text = "\u201C some text \u201D";
+        String result = TextUtils.removeUnprintables(text);
+        assertEquals("text should be unchanged", text, result); 
+    }
+
 }

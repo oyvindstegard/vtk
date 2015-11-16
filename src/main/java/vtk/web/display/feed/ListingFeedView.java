@@ -32,9 +32,12 @@ package vtk.web.display.feed;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,7 +52,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openxri.IRIUtils;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
 
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
@@ -64,9 +67,15 @@ import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatter;
+import vtk.text.html.HtmlElement;
 import vtk.text.html.HtmlFragment;
 import vtk.text.html.HtmlUtil;
+import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
+import vtk.web.display.collection.BaseCollectionListingController;
+import vtk.web.display.listing.ListingPager;
+import vtk.web.search.Listing;
+import vtk.web.search.ListingEntry;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -79,11 +88,11 @@ import vtk.web.service.URL;
  * title and certain other properties (date, author ++).
  * 
  */
-public abstract class AtomFeedGenerator implements FeedGenerator {
+public class ListingFeedView implements View {
 
-    private final Log logger = LogFactory.getLog(AtomFeedGenerator.class);
+    private final Log logger = LogFactory.getLog(ListingFeedView.class);
     public static final String TAG_PREFIX = "tag:";
-
+    private Map<String,String> feedMetadata = null;
     protected Service viewService;
     protected Abdera abdera;
     protected ResourceTypeTree resourceTypeTree;
@@ -96,116 +105,177 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     protected PropertyTypeDefinition lastModifiedPropDef;
     protected PropertyTypeDefinition creationTimePropDef;
     protected PropertyTypeDefinition numberOfCommentsPropDef;
-    
+
     private String authorPropDefPointer;
     private String introductionPropDefPointer;
     private String picturePropDefPointer;
     private String mediaPropDefPointer;
     private List<String> introductionAsXHTMLSummaryResourceTypes;
 
-    // Must be overriden by subclasses to provide content for feed entries and
-    // add these to feed
-    protected abstract void addFeedEntries(Feed feed, Resource feedScope) throws Exception;
-
     @Override
-    public ModelAndView generateFeed(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        Resource feedScope = getFeedScope();
-        Feed feed = createFeed(feedScope);
-        addFeedEntries(feed, feedScope);
-        printFeed(feed, response);
-        return null;
+    public String getContentType() {
+        return "application/atom+xml;charset=utf-8";
     }
 
-    protected Feed createFeed(Resource feedScope) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Feed feed = abdera.newFeed();
+    @Override
+    public void render(Map<String, ?> model, HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+        Resource feedScope = getFeedScope(request);
+        
+        @SuppressWarnings("unchecked")
+        List<Listing> listings = (List<Listing>)
+                model.get(BaseCollectionListingController.MODEL_KEY_SEARCH_COMPONENTS);
+        
+        if (listings == null) throw new IllegalStateException(
+                "Expected object in model with key " 
+                        + BaseCollectionListingController.MODEL_KEY_SEARCH_COMPONENTS);
+        
+        ListingPager.Pagination pagination = (ListingPager.Pagination) 
+                model.get(BaseCollectionListingController.MODEL_KEY_PAGINATION);
+        
+        Feed feed = createFeed(request, feedScope, model);
+        addFeedLinks(request, feedScope, feed);
 
-        String feedTitle = getFeedTitle(feedScope, requestContext);
-        feed.setTitle(feedTitle);
+        if (pagination != null) addPagination(feed, pagination);
+        
+        addEntries(request, listings, feedScope, feed);
+        printFeed(feed, response);
+    }
+    
+    
+    protected void addEntries(HttpServletRequest request, List<Listing> listings, 
+            Resource feedScope, Feed feed) {
+        for (Listing listing: listings) {
+            for (ListingEntry entry: listing.getEntries()) {
+                addPropertySetAsFeedEntry(request, feed, entry.getPropertySet());        
+            }
+        }
+    }
+    
+    
+    protected void addPagination(Feed feed, ListingPager.Pagination pagination) {
+        
+        feed.addLink(pagination.first().toString(), "first");
+        feed.addLink(pagination.last().toString(), "last");
+        
+        if (pagination.previous().isPresent())
+            feed.addLink(pagination.previous().get().toString(), "previous");
+        
+        if (pagination.next().isPresent())
+            feed.addLink(pagination.next().get().toString(), "next");
+    }
+    
+    protected Feed createFeed(HttpServletRequest request, Resource feedScope, 
+            Map<String, ?> model) throws Exception {
+        
+        RequestContext requestContext = RequestContext.getRequestContext();
+        
+        Feed feed = abdera.newFeed();
+        
+        String feedTitle = getFeedTitle(request, feedScope);
+        feed.setTitle(TextUtils.removeUnprintables(feedTitle));
+        
+        if (feedMetadata != null) {
+            for (String key: feedMetadata.keySet()) {
+                feed.addSimpleExtension("vrtx", key, "v", feedMetadata.get(key));
+            }
+        }
 
         Property publishedDateProp = getPublishDate(feedScope);
-        publishedDateProp = publishedDateProp == null ? feedScope.getProperty(creationTimePropDef) : publishedDateProp;
+        publishedDateProp = publishedDateProp == null ? 
+                feedScope.getProperty(creationTimePropDef) : publishedDateProp;
         feed.setId(getId(feedScope.getURI(), publishedDateProp, getFeedPrefix()));
 
-        addFeedLinks(feedScope, feed);
-        
         feed.addAuthor(requestContext.getRepository().getId());
         feed.setUpdated(getLastModified(feedScope));
-
+        
         // Whether or not to display collection introduction in feed
         boolean showIntroduction = showFeedIntroduction(feedScope);
         if (showIntroduction) {
             String subTitle = getIntroduction(feedScope);
             if (subTitle != null) {
-                feed.setSubtitleAsXhtml(subTitle);
-            } else {
+                feed.setSubtitleAsXhtml(TextUtils.removeUnprintables(subTitle));
+            }
+            else {
                 subTitle = getDescription(feedScope);
                 if (subTitle != null) {
-                    feed.setSubtitle(subTitle);
+                    feed.setSubtitle(TextUtils.removeUnprintables(subTitle));
                 }
             }
 
             Property picture = getProperty(feedScope, picturePropDefPointer);
             if (picture != null) {
-                String val = picture.getFormattedValue(PropertyType.THUMBNAIL_PROP_NAME, Locale.getDefault());
+                String val = picture.getFormattedValue(
+                        PropertyType.THUMBNAIL_PROP_NAME, Locale.getDefault());
                 feed.setLogo(val);
             }
         }
         return feed;
     }
 
-    protected void addFeedLinks(Resource feedScope, Feed feed) {
+    protected void addFeedLinks(HttpServletRequest request, Resource feedScope, Feed feed) {
         RequestContext requestContext = RequestContext.getRequestContext();
         URL feedAlternateURL = viewService.constructURL(feedScope);
         feed.addLink(feedAlternateURL.toString(), "alternate");
         feed.addLink(requestContext.getRequestURL().toString(), "self");
     }
 
-	/**
-	 * Add the appropriate resource properties to the Entry
-	 * 
-	 * The numberofcomments element is only added if the resource in question
-	 * has comments attached to it.
-	 * 
-	 * @param feed
-	 * @param result
-	 */
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, PropertySet result) {
+        addPropertySetAsFeedEntry(request, feed, result, Collections.emptyMap());
+    }
 
-    protected void addPropertySetAsFeedEntry(Feed feed, PropertySet result) {
+    /**
+     * Add the appropriate resource properties to the Entry
+     * 
+     * The numberofcomments element is only added if the resource in question
+     * has comments attached to it.
+     * 
+     * @param feed the resulting feed
+     * @param resource the current property set
+     * @param extensions additional fields in resulting feed entry 
+     *  (will appear in the {@code vrtx} name space)
+     */
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, PropertySet resource, Map<String,?> extensions) {
         try {
-	        	
+
             Entry entry = Abdera.getInstance().newEntry();
 
-            Property publishedDateProp = getPublishDate(result);
-            publishedDateProp = publishedDateProp == null ? result.getProperty(creationTimePropDef) : publishedDateProp;
-            String id = getId(result.getURI(), publishedDateProp, null);
+            Property publishedDateProp = getPublishDate(resource);
+            publishedDateProp = publishedDateProp == null ? resource.getProperty(creationTimePropDef) : publishedDateProp;
+            String id = getId(resource.getURI(), publishedDateProp, null);
             entry.setId(id);
-            entry.addCategory(result.getResourceType());
+            entry.addCategory(resource.getResourceType());
 
-            Property title = result.getProperty(titlePropDef);
+            Property title = resource.getProperty(titlePropDef);
             if (title != null) {
-                entry.setTitle(title.getFormattedValue());
+                entry.setTitle(TextUtils.removeUnprintables(title.getFormattedValue()));
             }
 
-			Property numberOfComments = result.getProperty(numberOfCommentsPropDef);
-			if (numberOfComments != null) {
-				entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
-			}
+            if (extensions != null) {
+                for (String key: extensions.keySet()) {
+                    entry.addSimpleExtension("vrtx", key, "v", extensions.get(key).toString());
+                }
+            }
+            
+            Property numberOfComments = resource.getProperty(numberOfCommentsPropDef);
+            if (numberOfComments != null) {
+                entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
+            }
 
             // Set the summary
-            setFeedEntrySummary(entry, result);
+            setFeedEntrySummary(request, entry, resource);
 
-            Property publishDate = getPublishDate(result);
+            Property publishDate = getPublishDate(resource);
             if (publishDate != null) {
                 entry.setPublished(publishDate.getDateValue());
             }
 
-            Date updated = getLastModified(result);
+            Date updated = getLastModified(resource);
             if (updated != null) {
                 entry.setUpdated(updated);
             }
 
-            Property author = getProperty(result, authorPropDefPointer);
+            Property author = getProperty(resource, authorPropDefPointer);
             if (author != null) {
                 ValueFormatter vf = author.getDefinition().getValueFormatter();
                 if (author.getDefinition().isMultiple()) {
@@ -218,8 +288,8 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
             }
 
             Link link = abdera.getFactory().newLink();
-            String urlString = viewService.constructLink(result.getURI());
-            Property urlProp = result.getProperty(Namespace.DEFAULT_NAMESPACE, MultiHostSearcher.URL_PROP_NAME);
+            String urlString = viewService.constructLink(resource.getURI());
+            Property urlProp = resource.getProperty(Namespace.DEFAULT_NAMESPACE, MultiHostSearcher.URL_PROP_NAME);
             if (urlProp != null) {
                 urlString = URL.parse(urlProp.getStringValue()).toString();
             }
@@ -227,11 +297,15 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
             link.setRel("alternate");
             entry.addLink(link);
 
-            Property mediaRef = getProperty(result, mediaPropDefPointer);
+			if (resource.getResourceType().equals("structured-event")) {
+				entry.addSimpleExtension("vrtx", "ical-url", "v", urlString + "?vrtx=ical");
+			}
+
+            Property mediaRef = getProperty(resource, mediaPropDefPointer);
             if (mediaRef != null) {
                 try {
                     Link mediaLink = abdera.getFactory().newLink();
-                    Path propRef = getPropRef(result, mediaRef.getStringValue());
+                    Path propRef = getPropRef(resource, mediaRef.getStringValue());
                     if (propRef != null) {
                         RequestContext requestContext = RequestContext.getRequestContext();
                         mediaLink.setHref(viewService.constructLink(propRef));
@@ -244,44 +318,84 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
                     }
                 } catch (Throwable t) {
                     // Don't break the entire entry if media link breaks
-                    logger.warn("An error occured while setting media link for feed entry, " + result.getURI() + ": "
+                    logger.warn("An error occured while setting media link for feed entry, " + resource.getURI() + ": "
                             + t.getMessage());
                 }
             }
-
+            if (isExtendedFormat(request)) {
+                addExtensions(entry, resource);
+            }
             feed.addEntry(entry);
 
         } catch (Throwable t) {
             // Don't break the entire feed if the entry breaks
-            logger.warn("An error occured while creating feed entry for " + result.getURI(), t);
+            logger.warn("An error occured while creating feed entry for " + resource.getURI(), t);
         }
     }
 
+    protected boolean isExtendedFormat(HttpServletRequest request) {
+        return "extended".equals(request.getParameter("format"));
+    }
+    
+    protected void addExtensions(Entry entry, PropertySet resource) {
+        Property numberOfComments = resource.getProperty(numberOfCommentsPropDef);
+        if (numberOfComments != null) {
+            entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
+        }
+        
+        String imageRef = imageRef(resource);
+        if (imageRef != null) {
+            entry.addSimpleExtension("vrtx", "image", "v", imageRef);
+        }
+        
+        String imageThumbnailRef = imageThumbnailRef(resource);
+        if (imageThumbnailRef != null) {
+            entry.addSimpleExtension("vrtx", "image-thumbnail", "v", imageThumbnailRef);
+        }
+
+        String imageCaption = null;        
+        for (Property property: resource) {
+            if ("caption".equals(property.getDefinition().getName())) {
+                imageCaption = property.getStringValue();
+                break;
+            }
+        }
+        if (imageCaption != null) {
+            entry.addSimpleExtension("vrtx", "image-caption", "v", htmlUtil.flatten(imageCaption));
+        }
+    }
+    
     protected void printFeed(Feed feed, HttpServletResponse response) throws IOException {
-        response.setContentType("application/atom+xml;charset=utf-8");
+        response.setContentType(getContentType());
         feed.writeTo("prettyxml", response.getWriter());
     }
 
-    private HtmlFragment prepareSummary(PropertySet propSet) {
+    private HtmlFragment prepareSummary(HttpServletRequest request, PropertySet propSet) {
         StringBuilder sb = new StringBuilder();
 
         URL baseURL = viewService.constructURL(propSet.getURI());
 
-        Property picture = getProperty(propSet, picturePropDefPointer);
-        if (picture != null) {
-            String imageRef = picture.getStringValue();
-            if (!imageRef.startsWith("/") && !imageRef.startsWith("https://") && !imageRef.startsWith("https://")) {
-                try {
-                    imageRef = propSet.getURI().getParent().expand(imageRef).toString();
-                    picture.setValue(new Value(imageRef, PropertyType.Type.STRING));
-                } catch (Throwable t) {
+        if (!isExtendedFormat(request)) {
+            // Include picture in summary only if "regular" format:
+            Property picture = getProperty(propSet, picturePropDefPointer);
+            if (picture != null) {
+                String imageRef = picture.getStringValue();
+                if (!imageRef.startsWith("/") && !imageRef.startsWith("https://") 
+                        && !imageRef.startsWith("https://")) {
+                    try {
+                        imageRef = propSet.getURI().getParent().expand(imageRef).toString();
+                        picture.setValue(new Value(imageRef, PropertyType.Type.STRING));
+                    } catch (Throwable t) {
+                    }
                 }
-            }
 
-            String imgPath = picture.getFormattedValue(PropertyType.THUMBNAIL_PROP_NAME, Locale.getDefault());
-            String imgAlt = getImageAlt(imgPath);
-            sb.append("<img src=\"" + HtmlUtil.encodeBasicEntities(imgPath) + "\" alt=\""
-                    + HtmlUtil.encodeBasicEntities(imgAlt) + "\"/>");
+                String imgPath = picture.getFormattedValue(
+                        PropertyType.THUMBNAIL_PROP_NAME, Locale.getDefault());
+                String imgAlt = getImageAlt(imgPath);
+                sb.append("<img src=\"" + HtmlUtil.encodeBasicEntities(imgPath)
+                        + "\" alt=\""
+                        + HtmlUtil.encodeBasicEntities(imgAlt) + "\"/>");
+            }
         }
 
         String intro = getIntroduction(propSet);
@@ -293,6 +407,62 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
             HtmlFragment summary = htmlUtil.linkResolveFilter(sb.toString(), baseURL, RequestContext
                     .getRequestContext().getRequestURL(), useProtocolRelativeImages);
             return summary;
+        }
+        return null;
+    }
+    
+    private String imageRef(PropertySet propSet) {
+        URL baseURL = viewService.constructURL(propSet.getURI());
+        Property picture = getProperty(propSet, picturePropDefPointer);
+        if (picture != null) {
+            String imageRef = picture.getStringValue();
+            if (!imageRef.startsWith("/") && !imageRef.startsWith("https://") && !imageRef.startsWith("https://")) {
+                try {
+                    imageRef = propSet.getURI().getParent().expand(imageRef).toString();
+                    picture.setValue(new Value(imageRef, PropertyType.Type.STRING));
+                }
+                catch (Throwable t) { }
+            }
+            String imgPath = picture.getStringValue();
+            String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imgPath) + "\" />";
+
+            HtmlFragment imgElem = htmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
+                    .getRequestContext().getRequestURL(), useProtocolRelativeImages);
+            
+            try {
+                return ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
+            }
+            catch (Exception e) {
+                logger.warn("Failed to generate image thumbnail URL for resource " + propSet.getURI(), e);
+            }
+        }
+        return null;
+    }
+    
+    private String imageThumbnailRef(PropertySet propSet) {
+        URL baseURL = viewService.constructURL(propSet.getURI());
+
+        Property picture = getProperty(propSet, picturePropDefPointer);
+        if (picture != null) {
+            String imageRef = picture.getStringValue();
+            if (!imageRef.startsWith("/") && !imageRef.startsWith("https://") && !imageRef.startsWith("https://")) {
+                try {
+                    imageRef = propSet.getURI().getParent().expand(imageRef).toString();
+                    picture.setValue(new Value(imageRef, PropertyType.Type.STRING));
+                }
+                catch (Throwable t) { }
+            }
+            String imgPath = picture.getFormattedValue(PropertyType.THUMBNAIL_PROP_NAME, Locale.getDefault());
+            String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imgPath) + "\" />";
+            
+            HtmlFragment imgElem = htmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
+                    .getRequestContext().getRequestURL(), useProtocolRelativeImages);
+            try {
+                return ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
+            }
+            catch (Exception e) {
+                logger.warn("Failed to generate image thumbnail URL for resource " + propSet.getURI(), e);
+            }
         }
         return null;
     }
@@ -331,7 +501,7 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     }
 
     protected String getId(Path resourceUri, Property publishedDateProp, String prefix) throws URIException,
-            UnsupportedEncodingException {
+    UnsupportedEncodingException {
         String host = viewService.constructURL(resourceUri).getHost();
         StringBuilder sb = new StringBuilder(TAG_PREFIX);
         sb.append(host + ",");
@@ -397,16 +567,17 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     }
 
     // To be overridden where necessary
-    protected String getFeedTitle(Resource feedScope, RequestContext requestContext) {
+    protected String getFeedTitle(HttpServletRequest request, Resource feedScope) {
         String feedTitle = feedScope.getTitle();
         if (Path.ROOT.equals(feedScope.getURI())) {
+            RequestContext requestContext = RequestContext.getRequestContext();
             feedTitle = requestContext.getRepository().getId();
         }
         return feedTitle;
     }
 
     // To be overridden where necessary
-    protected Resource getFeedScope() throws Exception {
+    protected Resource getFeedScope(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -419,10 +590,11 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     }
 
     // To be overridden where necessary
-    protected void setFeedEntrySummary(Entry entry, PropertySet result) throws Exception {
+    protected void setFeedEntrySummary(HttpServletRequest request, 
+            Entry entry, PropertySet result) throws Exception {
         String type = result.getResourceType();
         if (type != null && introductionAsXHTMLSummaryResourceTypes.contains(type)) {
-            HtmlFragment summary = prepareSummary(result);
+            HtmlFragment summary = prepareSummary(request, result);
             if (summary != null) {
                 try {
                     entry.setSummaryAsXhtml(summary.getStringRepresentation());
@@ -430,7 +602,7 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
                     // Don't remove entry because of illegal characters in
                     // string. In the future, consider blacklist of illegal
                     // characters (VTK-3009).
-                    logger.error("Could not set summery as XHTML: " + e.getMessage());
+                    logger.error("Could not set summary as XHTML: " + e.getMessage());
                 }
             }
         } else {
@@ -441,6 +613,14 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
             }
         }
 
+    }
+    
+    public void setFeedMetadata(Map<String,String> feedMetadata) {
+        if (feedMetadata != null) {
+            this.feedMetadata = new HashMap<>();
+            for (String key: feedMetadata.keySet())
+                this.feedMetadata.put(key, feedMetadata.get(key));
+        }
     }
 
     @Required
@@ -482,7 +662,7 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     public void setPicturePropDefPointer(String picturePropDefPointer) {
         this.picturePropDefPointer = picturePropDefPointer;
     }
-
+    
     @Required
     public void setMediaPropDefPointer(String mediaPropDefPointer) {
         this.mediaPropDefPointer = mediaPropDefPointer;
@@ -497,13 +677,13 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     public void setPublishDatePropDef(PropertyTypeDefinition publishDatePropDef) {
         this.publishDatePropDef = publishDatePropDef;
     }
-    
+
     @Required
     public void setNumberOfCommentsPropDef(PropertyTypeDefinition numberOfCommentsPropDef) {
-		this.numberOfCommentsPropDef = numberOfCommentsPropDef;
-	}
+        this.numberOfCommentsPropDef = numberOfCommentsPropDef;
+    }
 
-	@Required
+    @Required
     public void setIntroductionAsXHTMLSummaryResourceTypes(List<String> introductionAsXHTMLSummaryResourceTypes) {
         this.introductionAsXHTMLSummaryResourceTypes = introductionAsXHTMLSummaryResourceTypes;
     }
@@ -512,7 +692,7 @@ public abstract class AtomFeedGenerator implements FeedGenerator {
     public void setHtmlUtil(HtmlUtil htmlUtil) {
         this.htmlUtil = htmlUtil;
     }
-
+    
     public void setUseProtocolRelativeImages(boolean useProtocolRelativeImages) {
         this.useProtocolRelativeImages = useProtocolRelativeImages;
     }

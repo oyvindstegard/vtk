@@ -102,6 +102,7 @@ public class RenameController extends SimpleFormController<RenameCommand> {
                 
                 repository.move(token, uri, newUri, overwrite);
                 resource = repository.retrieve(token, newUri, false);
+		model.put("resource", resource);
             }
             return new ModelAndView(getSuccessView(), model);
         }

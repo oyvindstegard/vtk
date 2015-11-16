@@ -96,16 +96,21 @@
     </property>
   </bean>
 
-  <bean id="tags.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="tags.atomFeedGenerator" />
+  <bean id="tags.feedHandler" parent="tags.handler">
+    <property name="viewName" value="tags.feedView" />
   </bean>
 
-  <bean id="tags.atomFeedGenerator" class="vtk.web.display.tags.TagsAtomFeedGenerator" parent="atomFeedGenerator">
+  <bean id="tags.feedView" class="vtk.web.display.tags.TagsAtomFeedView" parent="atomFeedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="tags" />
+      </map>
+    </property>
     <property name="viewService" ref="tags.viewService" />
     <property name="overridePublishDatePropDef" ref="publishedDatePropDef" />
-    <property name="searchComponent" ref="tags.searchComponent" />
     <property name="tagsHelper" ref="tagsHelper" />
   </bean>
+
 
   <bean id="tags.searchComponent" class="vtk.web.search.QueryPartsSearchComponent">
     <property name="name" value="tags.searchComponent" />
@@ -156,6 +161,14 @@
     <property name="sortOrderMapping">
       <map>
         <entry key="title" value-ref="SORT_ORDER.ASC" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="tags.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="tags.feedView" value-ref="tags.feedView" />
       </map>
     </property>
   </bean>

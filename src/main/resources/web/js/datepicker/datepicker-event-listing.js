@@ -4,18 +4,20 @@
  * TODO: Better interchange between format '2010-4-2' and '2010-04-02'
  * 
  */
+ 
+var activeDateForInit = null;
+var eventListingCalendarOpts = {};
 
 function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notClickableDayTitle, language) {
 
-  var activeDateForInit = makeActiveDateForInit(activeDate);
+  activeDateForInit = makeActiveDateForInit(activeDate);
 
   // i18n (default english)
   if (language === 'no' || language === 'nn') {
     $.datepicker.setDefaults($.datepicker.regional[language]);
   }
-
-  var datepick = $("#datepicker");
-  datepick.datepicker({
+  
+  eventListingCalendarOpts = {
     dateFormat: 'yy-mm-dd',
     onSelect: function (dateText, inst) {
       window.location.href = window.location.href.split('?')[0] + "?date=" + dateText;
@@ -47,7 +49,9 @@ function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notCl
       var date = $.datepicker.formatDate("yy-mm", new Date(year, month - 1)).toString();
       window.location.href = "./?date=" + date;
     }
-  });
+  };
+
+  $("#datepicker").datepicker(eventListingCalendarOpts);
 
   var interval = 15;
   var checkMonthYearHTMLLoaded = setInterval(function () {
@@ -59,7 +63,7 @@ function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notCl
       var datepickerPrevNext = $(".ui-datepicker-prev, .ui-datepicker-next");
       if(datepickerPrevNext.length) {
         datepickerPrevNext.attr("tabindex", "0");
-        datepick.on("keydown", ".ui-datepicker-prev, .ui-datepicker-next", function(e) {
+        $(document).on("keydown", ".ui-datepicker-prev, .ui-datepicker-next", function(e) {
           if((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
             $(this).click();
           }
@@ -68,6 +72,14 @@ function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notCl
       clearInterval(checkMonthYearHTMLLoaded);
     }
   }, interval);
+}
+
+function destroyEventListingDatepicker() {
+  $("#datepicker").datepicker("destroy");
+}
+
+function reviveEventListingDatepicker() {
+  $("#datepicker").datepicker(eventListingCalendarOpts);
 }
 
 // For init of datepicker()

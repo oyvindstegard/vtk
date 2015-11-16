@@ -36,6 +36,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -62,6 +64,8 @@ public abstract class SimpleFormController<T> implements Controller {
     private String commandName = "form";
     private boolean sessionForm;
     private Validator validator;
+    
+    private final Log logger = LogFactory.getLog(SimpleFormController.class.getName());
 
     public String getFormView() {
         return formView;
@@ -103,13 +107,22 @@ public abstract class SimpleFormController<T> implements Controller {
             HttpServletResponse response) throws Exception {
         
         if (isFormSubmission(request)) {
-            T command = getCommand(request);
-            if (command == null) 
-                throw new NullPointerException("formBackingObject()");
-            ServletRequestDataBinder binder = bindAndValidate(request, command);
-            BindException errors = new BindException(binder.getBindingResult());
-            return processFormSubmission(request, response, command, errors);
+            try {
+                T command = getCommand(request);
+                if (command == null) 
+                    throw new NullPointerException("formBackingObject()");
+                ServletRequestDataBinder binder = bindAndValidate(request, command);
+                BindException errors = new BindException(binder.getBindingResult());
+                return processFormSubmission(request, response, command, errors);
+            }
+            catch (SessionRequiredException e) {
+                T command = formBackingObject(request);
+                ServletRequestDataBinder binder = bindAndValidate(request, command);
+                BindException errors = new BindException(binder.getBindingResult());
+                return processFormSubmission(request, response, command, errors);
+            }
         }
+        
         else {
             T command = formBackingObject(request);
             ServletRequestDataBinder binder = createBinder(request, command);
@@ -125,10 +138,10 @@ public abstract class SimpleFormController<T> implements Controller {
         }
         HttpSession session = request.getSession(false);
         if (session == null) 
-            throw new IllegalStateException("Session required");
+            throw new SessionRequiredException("Session required");
         Object attr = session.getAttribute(formAttributeName());
         if (attr == null) 
-            throw new IllegalStateException("Missing session form attribute");
+            throw new SessionRequiredException("Missing session form attribute");
         session.removeAttribute(formAttributeName());
         return (T) attr;
     }
@@ -143,7 +156,6 @@ public abstract class SimpleFormController<T> implements Controller {
         binder.bind(request);
         
         if (validator != null) {
-            System.out.println("__validator: " + validator);
             validator.validate(command, errors);
         }
         onBindAndValidate(request, command, errors);
@@ -206,6 +218,7 @@ public abstract class SimpleFormController<T> implements Controller {
         }
         return onSubmit(request, response, command, errors);
     }
+    
 
     @SuppressWarnings("unused")
     protected ModelAndView onSubmit(HttpServletRequest request, 
@@ -225,6 +238,11 @@ public abstract class SimpleFormController<T> implements Controller {
     
     private String formAttributeName() { 
         return getClass().getName() + ".form." + System.identityHashCode(this); 
+    }
+    
+    private static class SessionRequiredException extends RuntimeException { 
+        private static final long serialVersionUID = -7967269569002028897L;
+        public SessionRequiredException(String msg) { super(msg); }
     }
     
 }
