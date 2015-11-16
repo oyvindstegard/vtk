@@ -157,7 +157,7 @@
   </div>
 
   <div id="vrtx-additional-content">
-    <#if allowedDates?? && activeDate?? && dayHasPlannedEventsTitle?? && dayHasNoPlannedEventsTitle??>
+    <#if allowedDates??>
     <div id="vrtx-event-calendar">
       <#local activeDate = "" />
       <#if requestedDate?exists && requestedDate?has_content>

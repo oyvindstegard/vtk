@@ -109,10 +109,8 @@ public class BaseCollectionListingController implements ListingController {
         model.put("collection", resourceManager.createResourceWrapper(collection));
 
         int pageLimit = getPageLimit(collection);
-        if (pageLimit > 0) {
-            /* Run the actual search (done in subclasses) */
-             runSearch(request, collection, model, pageLimit);
-        }
+        /* Run the actual search (done in subclasses) */
+        runSearch(request, collection, model, pageLimit);
  
         if (alternativeRepresentations != null) {
             Set<Object> alt = new HashSet<>();

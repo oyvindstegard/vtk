@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -136,11 +137,14 @@ public class CollectionListingController extends BaseCollectionListingController
             model.put("editCurrentResource", helper.checkResourceForEditLink(repository, collection, principal));
         }
 
-        ListingPager.Pagination pagination = ListingPager.pagination(totalHits, pageLimit, baseURL, page);
-        List<ListingPagingLink> urls = pagination.pageThroughLinks();
-        
-        model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
-        model.put(MODEL_KEY_PAGINATION, pagination);
+        Optional<ListingPager.Pagination> pagination = 
+                ListingPager.pagination(totalHits, pageLimit, baseURL, page);
+        if (pagination.isPresent()) {
+            List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+            model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+            model.put(MODEL_KEY_PAGINATION, pagination.get());
+        }
+
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
         model.put(MODEL_KEY_PAGE, page);
         if (results.size() > 0 && results.get(0) != null) {
