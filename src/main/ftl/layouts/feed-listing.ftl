@@ -56,9 +56,9 @@
   </#if>
   
   <#if displayIfEmptyMessage?exists && feed.entries?size = 0>
-	<span class="vrtx-empty-message">
+	 <p class="vrtx-empty-message">
 	 	${displayIfEmptyMessage}
-	 </span>
+	 </p>
   </#if>
 
   <#if conf.linkToAllMessages?exists && viewURL?exists>
