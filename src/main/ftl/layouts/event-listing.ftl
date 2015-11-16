@@ -29,6 +29,7 @@
         <@displayEvent eventEntry eventEntry_index+1 eventsSize />
       </#list>
     <#elseif (include = "true")>
+      <p class="vrtx-empty-message">
       <#if conf.emptyMsg?exists>
         ${conf.emptyMsg}
       <#elseif conf.showOnlyOngoing?exists && conf.showOnlyOngoing>
@@ -36,6 +37,7 @@
       <#else>
         <@vrtx.msg code="eventListing.noPlanned.allupcoming" />
       </#if>
+      </p>
     </#if>
     <#if (conf.allEventsLink && include = "true")>
       <div class="vrtx-more">
