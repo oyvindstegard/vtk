@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -81,11 +82,11 @@ public class EventListingController extends BaseCollectionListingController {
 
         boolean atLeastOneUpcoming = false;
 
-        List<Listing> results = new ArrayList<Listing>();
+        List<Listing> results = new ArrayList<>();
         Listing upcoming = null;
         if (request.getParameter(ListingPager.PREVIOUS_PAGE_PARAM) == null) {
             // Search upcoming events
-            upcoming = this.searcher.searchUpcoming(request, collection, upcomingEventPage, pageLimit, 0);
+            upcoming = searcher.searchUpcoming(request, collection, upcomingEventPage, pageLimit, 0);
             totalHits += upcoming.getTotalHits();
             totalUpcomingHits = upcoming.getTotalHits();
             upcomingAndOngoingSize = upcoming.size();
@@ -126,10 +127,11 @@ public class EventListingController extends BaseCollectionListingController {
                 results.add(upcoming);
 
             }
-        } else {
-            atLeastOneUpcoming = this.searcher.searchUpcoming(request, collection, 1, 1, 0).size() > 0;
+        }
+        else {
+            atLeastOneUpcoming = searcher.searchUpcoming(request, collection, 1, 1, 0).size() > 0;
             if (atLeastOneUpcoming) {
-                upcoming = this.searcher.searchUpcoming(request, collection, upcomingEventPage, 0, 0);
+                upcoming = searcher.searchUpcoming(request, collection, upcomingEventPage, 0, 0);
                 totalHits += upcoming.getTotalHits();
                 totalUpcomingHits = upcoming.getTotalHits();
                 upcomingAndOngoingSize = upcoming.size();
@@ -142,7 +144,7 @@ public class EventListingController extends BaseCollectionListingController {
             int upcomingOffset = getIntParameter(request, ListingPager.PREV_BASE_OFFSET_PARAM, 0);
             if (upcomingOffset > pageLimit)
                 upcomingOffset = 0;
-            Listing previous = this.searcher.searchPrevious(request, collection, prevEventPage, pageLimit,
+            Listing previous = searcher.searchPrevious(request, collection, prevEventPage, pageLimit,
                     upcomingOffset);
             totalHits += previous.getTotalHits();
             if (previous.size() > 0) {
@@ -153,30 +155,35 @@ public class EventListingController extends BaseCollectionListingController {
             } else {
                 userDisplayPage = prevEventPage;
             }
-        } else if (upcomingAndOngoingSize < pageLimit) {
+        }
+        else if (upcomingAndOngoingSize < pageLimit) {
             // Fill up the rest of the page with previous events
             int upcomingOffset = pageLimit - upcomingAndOngoingSize;
-            Listing previous = this.searcher.searchPrevious(request, collection, 1, upcomingOffset, 0);
+            Listing previous = searcher.searchPrevious(request, collection, 1, upcomingOffset, 0);
             totalHits += previous.getTotalHits();
             if (previous.size() > 0) {
                 results.add(previous);
             }
-        } else {
-            Listing previous = this.searcher.searchPrevious(request, collection, 1, 0, 0);
+        }
+        else {
+            Listing previous = searcher.searchPrevious(request, collection, 1, 0, 0);
             totalHits += previous.getTotalHits();
             previous = null;
         }
         Service service = RequestContext.getRequestContext().getService();
         URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
 
-        ListingPager.Pagination pagination = ListingPager.pagination(totalHits, pageLimit, totalUpcomingHits,
-                baseURL, true, userDisplayPage);
-        List<ListingPagingLink> urls = pagination.pageThroughLinks();
+        Optional<ListingPager.Pagination> pagination = 
+                ListingPager.pagination(totalHits, pageLimit, totalUpcomingHits,
+                        baseURL, true, userDisplayPage);
+        if (pagination.isPresent()) {
+            List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+            model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+            model.put(MODEL_KEY_PAGINATION, pagination.get());
+        }
 
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
         model.put(MODEL_KEY_PAGE, userDisplayPage);
-        model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
-        model.put(MODEL_KEY_PAGINATION, pagination);
         model.put(MODEL_KEY_HIDE_NUMBER_OF_COMMENTS, getHideNumberOfComments(collection));
         model.put("currentDate", Calendar.getInstance().getTime());
         model.put(EventListingHelper.DISPLAY_LISTING_ICAL_LINK, atLeastOneUpcoming);
@@ -200,7 +207,8 @@ public class EventListingController extends BaseCollectionListingController {
             long start = startProp.getDateValue().getTime();
             if (now > start) {
                 ongoingLastIdx = i;
-            } else {
+            }
+            else {
                 // Original list is sorted on start date. Once you no longer
                 // have an event with start date that has passed, just return.
                 return ongoingLastIdx;

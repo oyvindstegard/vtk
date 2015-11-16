@@ -39,6 +39,8 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -65,6 +67,8 @@ public class BaseCollectionListingController implements ListingController {
     public final static String MODEL_KEY_HIDE_ALTERNATIVE_REP = "hideAlternativeRepresentation";
     public final static String MODEL_KEY_OVERRIDDEN_TITLE = "overriddenTitle";
     public final static String MODEL_KEY_HIDE_NUMBER_OF_COMMENTS = "hideNumberOfComments";
+
+    protected static Log logger = LogFactory.getLog(BaseCollectionListingController.class);
 
     protected ResourceWrapperManager resourceManager;
     protected int defaultPageLimit = 20;
@@ -108,18 +112,15 @@ public class BaseCollectionListingController implements ListingController {
         model.put("collection", this.resourceManager.createResourceWrapper(collection));
 
         int pageLimit = getPageLimit(collection);
-        if (pageLimit > 0) {
-            /* Run the actual search (done in subclasses) */
-            runSearch(request, collection, model, pageLimit);
-        }
-
-        if (this.alternativeRepresentations != null) {
-            Set<Object> alt = new HashSet<Object>();
-            for (String contentType : this.alternativeRepresentations.keySet()) {
+        /* Run the actual search (done in subclasses) */
+        runSearch(request, collection, model, pageLimit);
+ 
+        if (alternativeRepresentations != null) {
+            Set<Object> alt = new HashSet<>();
+            for (String contentType : alternativeRepresentations.keySet()) {
+                Map<String, Object> m = new HashMap<>();
+                Service service = alternativeRepresentations.get(contentType);
                 try {
-                    Map<String, Object> m = new HashMap<String, Object>();
-                    Service service = this.alternativeRepresentations.get(contentType);
-
                     URL url = service.constructURL(collection, principal);
                     if (this.includeRequestParametersInAlternativeRepresentation) {
                         Enumeration<String> requestParameters = request.getParameterNames();
@@ -139,7 +140,8 @@ public class BaseCollectionListingController implements ListingController {
 
                     String title = service.getName();
 
-                    org.springframework.web.servlet.support.RequestContext rc = new org.springframework.web.servlet.support.RequestContext(
+                    org.springframework.web.servlet.support.RequestContext rc = 
+                        new org.springframework.web.servlet.support.RequestContext(
                             request);
                     title = rc.getMessage(service.getName(), new Object[] { collection.getTitle() }, service.getName());
 
@@ -148,7 +150,10 @@ public class BaseCollectionListingController implements ListingController {
                     m.put("contentType", contentType);
 
                     alt.add(m);
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
+                    logger.debug("Failed to Link to alternative representation '"
+                            + contentType + "' for resource " + collection, t);
                 }
             }
             if (pageLimit > 0) {

@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -83,12 +84,15 @@ public class EventCalendarSpecificDateListingController extends EventCalendarLis
                 baseURL.setParameter(EventListingHelper.REQUEST_PARAMETER_DATE,
                         request.getParameter(EventListingHelper.REQUEST_PARAMETER_DATE));
 
-                ListingPager.Pagination pagination = ListingPager.pagination(specificDateEvents.getTotalHits(),
-                        pageLimit, baseURL, page);
-                List<ListingPagingLink> urls = pagination.pageThroughLinks();
+                Optional<ListingPager.Pagination> pagination = 
+                        ListingPager.pagination(specificDateEvents.getTotalHits(),
+                                pageLimit, baseURL, page);
+                if (pagination.isPresent()) {
+                    List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+                    model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+                    model.put(MODEL_KEY_PAGINATION, pagination.get());
+                }
 
-                model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
-                model.put(MODEL_KEY_PAGINATION, pagination);
                 model.put(EventListingHelper.DISPLAY_LISTING_ICAL_LINK, true);
             }
             else {

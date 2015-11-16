@@ -66,6 +66,12 @@ public class ListingPager {
         public Optional<URL> previous() { return previous; }
         
         private Pagination(URL base, List<ListingPagingLink> urls) {
+            if (urls == null) {
+                throw new NullPointerException("urls");
+            }
+            if (urls.isEmpty()) {
+                throw new IllegalArgumentException("urls is empty");
+            }
             this.urls = Collections.unmodifiableList(urls);
             self = new URL(base);
 
@@ -100,16 +106,22 @@ public class ListingPager {
         }
     }
     
-    public static Pagination pagination(int hits, int pageLimit, URL baseURL, int currentPage) {
+    public static Optional<Pagination> pagination(int hits, int pageLimit, URL baseURL, int currentPage) {
         List<ListingPagingLink> urls = generatePageThroughUrls(hits, pageLimit, baseURL, currentPage);
-        return new Pagination(baseURL, urls);
+        if (urls == null || urls.size() == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(new Pagination(baseURL, urls));
     }
     
-    public static Pagination pagination(int hits, int pageLimit, int hitsInFirstSearch,
+    public static Optional<Pagination> pagination(int hits, int pageLimit, int hitsInFirstSearch,
             URL baseURL, boolean twoSearches, int currentPage) {
         List<ListingPagingLink> urls = generatePageThroughUrls(hits, pageLimit, hitsInFirstSearch, 
                 baseURL, twoSearches, currentPage);
-        return new Pagination(baseURL, urls);
+        if (urls == null || urls.size() == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(new Pagination(baseURL, urls));
     }
     
     
@@ -120,10 +132,10 @@ public class ListingPager {
 
     private static List<ListingPagingLink> generatePageThroughUrls(int hits, int pageLimit, int hitsInFirstSearch,
             URL baseURL, boolean twoSearches, int currentPage) {
-        if (pageLimit == 0) {
+        if (pageLimit == 0 || hits == 0) {
             return null;
         }
-        List<ListingPagingLink> urls = new ArrayList<ListingPagingLink>();
+        List<ListingPagingLink> urls = new ArrayList<>();
         baseURL = new URL(baseURL).removeParameter(PREVIOUS_PAGE_PARAM).removeParameter(PREV_BASE_OFFSET_PARAM)
                 .removeParameter(UPCOMING_PAGE_PARAM).removeParameter(USER_DISPLAY_PAGE).setCollection(true);
 

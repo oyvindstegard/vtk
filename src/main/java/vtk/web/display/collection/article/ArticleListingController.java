@@ -33,6 +33,7 @@ package vtk.web.display.collection.article;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -127,14 +128,17 @@ public class ArticleListingController extends BaseCollectionListingController {
         Service service = RequestContext.getRequestContext().getService();
         URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
         
-        ListingPager.Pagination pagination = ListingPager.pagination(totalHits, pageLimit, 
-                featuredArticlesTotalHits, baseURL, true, userDisplayPage);
-        List<ListingPagingLink> urls = pagination.pageThroughLinks();
-        
+        Optional<ListingPager.Pagination> pagination = 
+                ListingPager.pagination(totalHits, pageLimit, 
+                        featuredArticlesTotalHits, baseURL, true, userDisplayPage);
+        if (pagination.isPresent()) {
+            List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+            model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+            model.put(MODEL_KEY_PAGINATION, pagination.get());
+        }
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
         model.put(MODEL_KEY_PAGE, userDisplayPage);
-        model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
-        model.put(MODEL_KEY_PAGINATION, pagination);
+
         model.put(MODEL_KEY_HIDE_NUMBER_OF_COMMENTS, getHideNumberOfComments(collection));
         model.put("listingView", getListingView(collection));
     }

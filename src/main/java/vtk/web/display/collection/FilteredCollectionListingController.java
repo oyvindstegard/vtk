@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -211,9 +212,13 @@ public abstract class FilteredCollectionListingController implements Controller 
             }
         }
 
-        ListingPager.Pagination pagination = ListingPager.pagination(rs.getTotalHits(), getPageLimit(),
-                URL.create(request), page);
-        List<ListingPagingLink> urls = pagination.pageThroughLinks();
+        Optional<ListingPager.Pagination> pagination = 
+                ListingPager.pagination(rs.getTotalHits(), getPageLimit(),
+                        URL.create(request), page);
+        if (pagination.isPresent()) {
+            List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+            model.put("pageThroughUrls", urls);
+        }
 
         Property showSubfolderMenu = collection.getProperty(showSubfolderMenuPropDef);
         if (showSubfolderMenu != null && showSubfolderMenu.getBooleanValue()) {
@@ -228,7 +233,6 @@ public abstract class FilteredCollectionListingController implements Controller 
         model.put("filters", urlFilters);
         model.put("result", rs.getAllResults());
         model.put("page", page);
-        model.put("pageThroughUrls", urls);
         model.put("from", offset + 1);
         model.put("to", offset + Math.min(pageLimit, rs.getSize()));
         model.put("total", rs.getTotalHits());
