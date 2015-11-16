@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta name="viewport" content="width=1140, user-scalable=yes" /> 
-    ${manage:css}
+    ${manage:css place=[head]}
     <!--[if lte IE 8]>
       <link rel="stylesheet" href="/vrtx/__vrtx/static-resources/themes/default/default-ie8.css" type="text/css"/>
     <![endif]--> 
     <!--[if lte IE 7]>
       <link rel="stylesheet" href="/vrtx/__vrtx/static-resources/themes/default/default-ie7.css" type="text/css"/> 
     <![endif]--> 
-    ${manage:javascript}
+    ${manage:javascript place=[head]}
     ${document:element select=[html.head] exclude=[title]} 
     <title>${manage:title}</title>
   </head>
@@ -55,5 +55,6 @@
         ${manage:version-info}
       </div>
     </div>
+    ${manage:javascript place=[body_end]}
   </body>
 </html>
