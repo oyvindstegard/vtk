@@ -34,23 +34,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
+
 import vtk.repository.Acl;
 import vtk.repository.ChangeLogEntry;
 import vtk.repository.ChangeLogEntry.Operation;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
 import vtk.repository.index.PropertySetIndex;
-import vtk.repository.index.mapping.AclFields;
 import vtk.repository.store.ChangeLogDAO;
 import vtk.repository.store.IndexDao;
 import vtk.repository.store.PropertySetHandler;
-import vtk.security.Principal;
 
 /**
  * Incremental index updates from database resource change log.
@@ -75,7 +73,7 @@ public class IncrementalUpdater {
      * Handles any exceptions and takes care of all the necessary logging during
      * the course of an update round.
      */
-    @Transactional
+    @Transactional(readOnly=false)
     public synchronized void update() {
         
         try {

@@ -30,48 +30,43 @@
  */
 package vtk.repository.store.db.ibatis;
 
-import com.ibatis.sqlmap.client.extensions.ParameterSetter;
-import com.ibatis.sqlmap.client.extensions.ResultGetter;
-import com.ibatis.sqlmap.client.extensions.TypeHandlerCallback;
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.TypeHandler;
 
-public class BooleanCharTypeHandlerCallback implements TypeHandlerCallback {
+
+public class BooleanCharTypeHandlerCallback implements TypeHandler<Boolean> {
 
     private static final String TRUE = "Y"; 
-    private static final String FALSE = "N"; 
-
+    private static final String FALSE = "N";
+    
     @Override
-    public Object getResult(ResultGetter getter) throws SQLException { 
-        String value = getter.getString();
-        if (TRUE.equals(value)) {
-            return Boolean.TRUE;
-        } else if (FALSE.equals(value)) {
-            return Boolean.FALSE;
-        } else {
-            throw new SQLException(
-                "Unable to handle value '" + value
-                + "': expected one of '" + TRUE + "', '" + FALSE + "'");
-        }
-    } 
-
+    public void setParameter(PreparedStatement ps, int i, Boolean parameter,
+            JdbcType jdbcType) throws SQLException {
+        ps.setString(i, parameter ? TRUE : FALSE);
+    }
+    
     @Override
-    public void setParameter(ParameterSetter setter, Object parameter) throws SQLException { 
-        Boolean value = ((Boolean) parameter).booleanValue();
-        if (value) {
-            setter.setString(TRUE);
-        } else {
-            setter.setString(FALSE);
-        }
-    } 
-
+    public Boolean getResult(ResultSet rs, String columnName)
+            throws SQLException {
+        return TRUE.equals(rs.getString(columnName));
+        
+    }
+    
     @Override
-    public Object valueOf(String s) { 
-        if (TRUE.equals(s)) {
-            return Boolean.TRUE;
-        } else {
-            return Boolean.FALSE;
-        }
-    } 
+    public Boolean getResult(ResultSet rs, int columnIndex) throws SQLException {
+        return TRUE.equals(rs.getString(columnIndex));
+        
+    }
+    
+    @Override
+    public Boolean getResult(CallableStatement cs, int columnIndex)
+            throws SQLException {
+        return TRUE.equals(cs.getString(columnIndex));
+    }
 }
     

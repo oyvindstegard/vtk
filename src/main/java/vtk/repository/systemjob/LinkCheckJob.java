@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.ContentStream;
 import vtk.repository.Lock;
@@ -59,6 +60,7 @@ import vtk.util.text.Json;
 import vtk.util.text.JsonBuilder;
 import vtk.util.web.LinkTypesPrefixes;
 import vtk.web.display.linkcheck.LinkChecker;
+import vtk.web.display.linkcheck.LinkChecker.LinkCheckRequest;
 import vtk.web.display.linkcheck.LinkChecker.LinkCheckResult;
 import vtk.web.service.CanonicalUrlConstructor;
 import vtk.web.service.URL;
@@ -66,8 +68,9 @@ import vtk.web.service.URL;
 public class LinkCheckJob extends AbstractResourceJob {
     
     private PropertyTypeDefinition linkCheckPropDef;
-    private PropertyTypeDefinition linksPropDef;
+    private PropertyTypeDefinition hrefsPropDef;
     private LinkChecker linkChecker;
+    boolean allowCachedResults = true;
     private List<String> blackListConfig;
     private List<Pattern> blackList;
     private int updateBatch = 0;
@@ -89,7 +92,7 @@ public class LinkCheckJob extends AbstractResourceJob {
     protected void executeBegin(ExecutionContext ctx) throws Exception {
         ctx.setAttribute("UpdateBatch", 
                 new UpdateBatch(ctx.getRepository(), ctx.getToken(), ctx.getSystemChangeContext(),
-                        this.updateBatch, this.useRepositoryLocks));
+                        updateBatch, useRepositoryLocks));
     }
 
     @Override
@@ -97,7 +100,8 @@ public class LinkCheckJob extends AbstractResourceJob {
         Property prop = linkCheck(resource, ctx.getSystemChangeContext());
         if (prop != null) {
             resource.addProperty(prop);
-        } else {
+        }
+        else {
             // Delete any old stale value
             resource.removeProperty(linkCheckPropDef);
         }
@@ -114,12 +118,12 @@ public class LinkCheckJob extends AbstractResourceJob {
     private Property linkCheck(final Resource resource, final SystemChangeContext context)
             throws InterruptedException {
 
-        Property linksProp = resource.getProperty(this.linksPropDef);
-        if (linksProp == null) {
+        Property hrefsProp = resource.getProperty(hrefsPropDef);
+        if (hrefsProp == null) {
             return null;
         }
         
-        Property linkCheckProp = resource.getProperty(this.linkCheckPropDef);
+        Property linkCheckProp = resource.getProperty(linkCheckPropDef);
         
         final LinkCheckState state = LinkCheckState.create(linkCheckProp);
         if (shouldResetState(state, resource, context)) {
@@ -136,11 +140,12 @@ public class LinkCheckJob extends AbstractResourceJob {
         }
 
         logger.debug("Running with link check state: " + state + " for " + resource.getURI());
-        
-        ContentStream linksStream = linksProp.getBinaryStream();
+
+        // Still supported for JSON properties:
+        ContentStream linksStream = hrefsProp.getBinaryStream();
         Json.ParseEvents parser = Json.parseAsEvents(linksStream.getStream());
         
-        final URL base = this.urlConstructor.canonicalUrl(resource).setImmutable();
+        final URL base = urlConstructor.canonicalUrl(resource).setImmutable();
         final AtomicLong n = new AtomicLong(0);
         
         try {
@@ -164,7 +169,8 @@ public class LinkCheckJob extends AbstractResourceJob {
                  public boolean beginMember(String key) throws IOException {
                      if ("url".equals(key) || "type".equals(key)) {
                          this.field = key;
-                     } else {
+                     }
+                     else {
                          this.field = null;
                      }
                      return true;
@@ -179,9 +185,10 @@ public class LinkCheckJob extends AbstractResourceJob {
                     if (v.length() > 1500) {
                         return true;
                     }
-                    if ("url".equals(this.field)) {
+                    if ("url".equals(field)) {
                         this.url = v;
-                    } else if ("type".equals(this.field)){
+                    }
+                    else if ("type".equals(field)){
                         this.type = v;
                     }
                     return true;
@@ -196,7 +203,6 @@ public class LinkCheckJob extends AbstractResourceJob {
                     if (this.url == null) {
                         this.field = this.url = this.type = null;
                         return true;
-                        
                     }
                     if (!shouldCheck(this.url)) {
                         this.field = this.url = this.type = null;
@@ -206,7 +212,12 @@ public class LinkCheckJob extends AbstractResourceJob {
                         this.url = base.relativeURL(this.url).toString();
                     }
                     
-                    LinkCheckResult result = linkChecker.validate(this.url, base, !resource.isReadRestricted());
+                    LinkCheckRequest request = LinkCheckRequest.builder(url, base)
+                            .sendReferrer(!resource.isReadRestricted())
+                            .allowCached(allowCachedResults)
+                            .build();
+                    
+                    LinkCheckResult result = linkChecker.validate(request);
                     switch (result.getStatus()) {
                     case OK:
                     case TIMEOUT:
@@ -214,9 +225,9 @@ public class LinkCheckJob extends AbstractResourceJob {
                     default:
                         // Mark as broken
                         Map<String, Object> m = new HashMap<>();
-                        m.put("link", this.url);
+                        m.put("link", url);
                         if (this.type != null) {
-                            m.put("type", this.type);
+                            m.put("type", type);
                         }
                         m.put("status", result.getStatus().toString());
                         state.brokenLinks.add(m);
@@ -230,7 +241,8 @@ public class LinkCheckJob extends AbstractResourceJob {
 
                     try {
                         checkForInterrupt();
-                    } catch (InterruptedException ie) {
+                    }
+                    catch (InterruptedException ie) {
                         throw new RuntimeException(ie);
                     }                   
                     this.field = this.url = this.type = null;
@@ -244,10 +256,11 @@ public class LinkCheckJob extends AbstractResourceJob {
             });
             state.timestamp = context.getTimestampFormatted();
             state.index = n.get();
-            Property result = this.linkCheckPropDef.createProperty();
+            Property result = linkCheckPropDef.createProperty();
             state.write(result);
             return result;
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             if (t.getCause() instanceof InterruptedException) {
                 throw ((InterruptedException)t.getCause());
             }
@@ -260,8 +273,8 @@ public class LinkCheckJob extends AbstractResourceJob {
             Pattern.compile("^([a-z][a-z0-9+.-]+):", Pattern.CASE_INSENSITIVE);
     
     private boolean shouldCheck(String href) {
-        if (this.blackList != null) {
-            for (Pattern p: this.blackList) {
+        if (blackList != null) {
+            for (Pattern p: blackList) {
                 Matcher m = p.matcher(href);
                 if (m.matches()) {
                     if (logger.isDebugEnabled()) {
@@ -280,6 +293,11 @@ public class LinkCheckJob extends AbstractResourceJob {
     }
     
     private boolean shouldResetState(LinkCheckState state, Resource resource, SystemChangeContext context) {
+        if (minRecheckSeconds < 0) {
+            logger.debug("Force-resetting link check state (minRecheckSeconds="
+                    + minRecheckSeconds + ")");
+            return true;
+        }
         if (state.timestamp != null) {
             try {
                 final long lastCheckRun = SystemChangeContext.parseTimestamp(state.timestamp).getTime();
@@ -292,13 +310,14 @@ public class LinkCheckJob extends AbstractResourceJob {
                 // If complete and more than MIN_RECHECK_SECONDS between now and last run, do check again.
                 if (state.complete) {
                     long now = context.getTimestamp().getTime();
-                    if (now - lastCheckRun < this.minRecheckSeconds*1000) {
+                    if (now - lastCheckRun < minRecheckSeconds*1000) {
                         logger.debug("Not long enough since last completed check (min "
-                                + this.minRecheckSeconds + " seconds). Will not reset state.");
+                                + minRecheckSeconds + " seconds). Will not reset state.");
                         return false;
                     }
                 }
-            } catch (java.text.ParseException pe) {
+            }
+            catch (java.text.ParseException pe) {
                 return true;
             }
         }
@@ -307,13 +326,13 @@ public class LinkCheckJob extends AbstractResourceJob {
     }
     
     public void refreshBlackList() {
-        if (this.blackListConfig != null) {
+        if (blackListConfig != null) {
             List<Pattern> patterns = new ArrayList<>();
-            for (String regexp: this.blackListConfig) {
+            for (String regexp: blackListConfig) {
                 Pattern p = Pattern.compile(regexp);
                 patterns.add(p);
             }
-            this.blackList = patterns;
+            blackList = patterns;
         }
     }
 
@@ -325,7 +344,6 @@ public class LinkCheckJob extends AbstractResourceJob {
         
         private LinkCheckState() {}
 
-        @SuppressWarnings("unchecked")
         private static LinkCheckState create(Property statusProp) {
             LinkCheckState s = new LinkCheckState();
             if (statusProp != null) {
@@ -337,7 +355,8 @@ public class LinkCheckJob extends AbstractResourceJob {
                     }
                     s.index = status.optLongValue("index", 0L);
                     s.timestamp = status.optStringValue("timestamp", null);
-                } catch (Throwable t) { }
+                }
+                catch (Throwable t) { }
             }
             return s;
         }
@@ -346,19 +365,19 @@ public class LinkCheckJob extends AbstractResourceJob {
             try {
                 String jsonString = toJsonString();
                 statusProp.setBinaryValue(jsonString.getBytes("utf-8"), "application/json");
-            } catch (UnsupportedEncodingException ex) {
+            }
+            catch (UnsupportedEncodingException ex) {
                 throw new IllegalStateException(ex);
             }
         }
         
-        @SuppressWarnings("unchecked")
         private String toJsonString() {
             JsonBuilder jb = new JsonBuilder();
             jb.beginObject()
-                    .memberIfNotNull("brokenLinks", this.brokenLinks)
-                    .member("status", this.complete ? "COMPLETE" : "INCOMPLETE")
-                    .member("timestamp", this.timestamp)
-                    .member("index", this.index)
+                    .memberIfNotNull("brokenLinks", brokenLinks)
+                    .member("status", complete ? "COMPLETE" : "INCOMPLETE")
+                    .member("timestamp", timestamp)
+                    .member("index", index)
               .endObject();
             return jb.jsonString();
         }
@@ -377,7 +396,8 @@ public class LinkCheckJob extends AbstractResourceJob {
         private boolean locking = false;
         private final List<Resource> updateList = new ArrayList<>();
 
-        public UpdateBatch(Repository repository, String token, SystemChangeContext context, int batchSize, boolean locking) {
+        public UpdateBatch(Repository repository, String token, 
+                SystemChangeContext context, int batchSize, boolean locking) {
             this.repository = repository;
             this.token = token;
             this.context = context;
@@ -386,25 +406,27 @@ public class LinkCheckJob extends AbstractResourceJob {
         }
 
         public void add(Resource resource) {
-            this.updateList.add(resource);
-            if (this.updateList.size() >= this.batchSize) {
+            updateList.add(resource);
+            if (updateList.size() >= batchSize) {
                 flush();
             }
         }
 
         public void flush() {
-            if (this.updateList.size() > 0) {
-                logger.info("Attempting to store " + this.updateList.size() + " resources");
+            if (updateList.size() > 0) {
+                logger.info("Attempting to store " + updateList.size() + " resources");
+                logger.info("Attempting to store " + updateList);
             }
-            if (this.locking) {
+            if (locking) {
                 flushWithLocking();
                 return;
             }
-            for (Resource r: this.updateList) {
+            for (Resource r: updateList) {
                 try {
                     Resource existing = repository.retrieve(token, r.getURI(), false);
                     if (!existing.getLastModified().equals(r.getLastModified())) {
-                        logger.warn("Resource " + r.getURI() + " was modified during link check, skipping store");
+                        logger.warn("Resource " + r.getURI() 
+                        + " was modified during link check, skipping store");
                         continue;
                     }
                     // --> Here be race <--
@@ -416,41 +438,55 @@ public class LinkCheckJob extends AbstractResourceJob {
                     // since it will only be an ephemeral problem for props marked as affected
                     // in system change context.
                     repository.store(token, r, context);
-                } catch (ResourceLockedException e) {
+                }
+                catch (ResourceLockedException e) {
                     logger.warn("Resource " + r.getURI() + " was locked by another user, skipping");
-                } catch (AuthorizationException ae) {
-                    logger.warn("Could not store resource " + r.getURI() + " due to AuthorizationException: " + ae.getMessage());
-                } catch (Throwable t) {
+                }
+                catch (AuthorizationException ae) {
+                    logger.warn("Could not store resource " + r.getURI() 
+                    + " due to AuthorizationException: " + ae.getMessage());
+                }
+                catch (Throwable t) {
                     logger.warn("Unable to store resource " + r, t);
                 }
             }
-            this.updateList.clear();
+            updateList.clear();
         }
 
         public void flushWithLocking() {
             for (Resource r: this.updateList) {
                 Lock lock = null;
                 try {
-                    Resource resource = repository.lock(token, r.getURI(), context.getJobName(), Depth.ZERO, 60, null);
+                    Resource resource = repository.lock(token, r.getURI(), 
+                            context.getJobName(), Depth.ZERO, 60, null);
                     lock = resource.getLock();
+                    
                     if (!resource.getLastModified().equals(r.getLastModified())) {
-                        logger.warn("Resource " + r.getURI() + " was modified during link check, skipping store");
+                        logger.warn("Resource " + r.getURI() 
+                        + " was modified during link check, skipping store");
                         continue;
                     }
                     // Risk AuthorizationException here if resource is stored somewhere else
                     // WITHOUT locking (like resource evaluation does).
                     repository.store(token, r, context);
-                } catch (ResourceLockedException e) {
-                    logger.warn("Resource " + r.getURI() + " was locked by another user, skipping");
-                } catch (AuthorizationException ae) {
-                    logger.warn("Could not store resource " + r.getURI() + " due to AuthorizationException: " + ae.getMessage());
-                } catch (Throwable t) {
+                }
+                catch (ResourceLockedException e) {
+                    logger.warn("Resource " + r.getURI() 
+                    + " was locked by another user, skipping");
+                }
+                catch (AuthorizationException ae) {
+                    logger.warn("Could not store resource " + r.getURI() 
+                    + " due to AuthorizationException: " + ae.getMessage());
+                }
+                catch (Throwable t) {
                     logger.warn("Unable to store resource " + r, t);
-                } finally {
+                }
+                finally {
                     if (lock != null) {
                         try {
                             repository.unlock(token, r.getURI(), lock.getLockToken());
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e) {
                             logger.warn("Unable to unlock resource " + r.getURI(), e);
                         }
                     }
@@ -461,8 +497,8 @@ public class LinkCheckJob extends AbstractResourceJob {
     }
     
     @Required
-    public void setLinksPropDef(PropertyTypeDefinition linksPropDef) {
-        this.linksPropDef = linksPropDef;
+    public void setHrefsPropDef(PropertyTypeDefinition hrefsPropDef) {
+        this.hrefsPropDef = hrefsPropDef;
     }
 
     @Required
@@ -473,6 +509,10 @@ public class LinkCheckJob extends AbstractResourceJob {
     @Required
     public void setLinkChecker(LinkChecker linkChecker) {
         this.linkChecker = linkChecker;
+    }
+    
+    public void setAllowCachedResults(boolean allowCachedResults) {
+        this.allowCachedResults = allowCachedResults;
     }
     
     @Required
@@ -497,6 +537,9 @@ public class LinkCheckJob extends AbstractResourceJob {
      * Minimum number of seconds that must have passed since link check
      * was last COMPLETED for resource (without the resource having been
      * modified in the meantime), before a new round of checking is started.
+     * 
+     * If a negative value is specified, this link check job will always perform 
+     * a new link check, regardless of how long since the last time.
      * 
      * @param minRecheckSeconds 
      */

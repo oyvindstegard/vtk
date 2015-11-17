@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, University of Oslo, Norway
+/* Copyright (c) 2014,2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
@@ -43,9 +44,9 @@ import vtk.resourcemanagement.property.PropertyDescription;
 public class CourseScheduleResourceTypeDefinitionTest extends StructuredResourceParserTest {
 
     @Test
-    public void testCourseScheduleResourceType() {
+    public void testCourseScheduleResourceType() throws IOException {
 
-        StructuredResourceDescription courseSchedule = RESOURCE_PARSER.getResourceDescription("course-schedule");
+        StructuredResourceDescription courseSchedule = this.getNodeWithName("course-schedule");
         assertNotNull(courseSchedule);
 
         String inheritsFrom = courseSchedule.getInheritsFrom();

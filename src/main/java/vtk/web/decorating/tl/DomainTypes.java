@@ -35,11 +35,15 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.web.servlet.support.RequestContextUtils;
+
 import vtk.repository.Path;
+import vtk.repository.store.PrincipalMetadata;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
 import vtk.web.service.URL;
@@ -92,6 +96,13 @@ final class DomainTypes {
 
     public static final class RequestContextType extends DomainMap {
         
+        private static Map<String, Object> principalMetadata(RequestContext requestContext) {
+            Locale locale = RequestContextUtils.getLocale(requestContext.getServletRequest());
+            PrincipalMetadata metadata = requestContext.principalMetadata(locale);
+            if (metadata == null) return null;
+            return metadata.toMap();
+        }
+
         public RequestContextType(RequestContext requestContext) {
             super(
                "current-collection",   requestContext.getCurrentCollection(),
@@ -102,7 +113,8 @@ final class DomainTypes {
                "request-url",          new URLType(URL.create(requestContext.getServletRequest())),
                "headers",              headersToMap(requestContext.getServletRequest()),
                "principal",            requestContext.getPrincipal(),
-               "view-unauthenticated", requestContext.isViewUnauthenticated()
+               "view-unauthenticated", requestContext.isViewUnauthenticated(),
+               "principal-metadata",   principalMetadata(requestContext)
              );
         }
         public Path currentCollection() { return (Path) get("current-collection"); }

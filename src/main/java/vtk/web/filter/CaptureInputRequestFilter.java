@@ -32,7 +32,6 @@ package vtk.web.filter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -112,10 +111,10 @@ public class CaptureInputRequestFilter extends AbstractRequestFilter {
     private class InputStreamCopyWrapper extends ServletInputStream {
 
         private final ByteArrayOutputStream streamCopyBuffer;
-        private final InputStream wrappedStream;
+        private final ServletInputStream wrappedStream;
         private int streamBytesRead = 0;
 
-        InputStreamCopyWrapper(InputStream wrappedStream) {
+        InputStreamCopyWrapper(ServletInputStream wrappedStream) {
             this.wrappedStream = wrappedStream;
             this.streamCopyBuffer = new ByteArrayOutputStream();
         }
@@ -130,11 +129,12 @@ public class CaptureInputRequestFilter extends AbstractRequestFilter {
         }
 
         byte[] getCopiedBytes() {
-            return this.streamCopyBuffer.toByteArray();
+            return streamCopyBuffer.toByteArray();
         }
         
         int getStreamBytesRead() {
-            return this.streamBytesRead;
+            return streamBytesRead;
         }
+
     }
 }

@@ -38,6 +38,14 @@
     </property>
   </bean>
 
+  <bean id="researchGroupListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="researchGroupListing.feedView" value-ref="researchGroupListing.feedView" />
+      </map>
+    </property>
+  </bean>
+
   <bean id="researchGroupListing.viewResolver" parent="decoratorViewResolver">
     <property name="views">
       <map>
@@ -60,19 +68,23 @@
     <property name="assertions">
       <list>
         <ref bean="resourceIsResearchGroupListing" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsFeedAssertion" />
       </list>
     </property>
     <property name="handler" ref="researchGroupListing.feedHandler" />
   </bean>
 
-  <bean id="researchGroupListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="researchGroupListing.atomFeedGenerator" />
+  <bean id="researchGroupListing.feedHandler" parent="researchGroupListing.handler">
+    <property name="viewName" value="researchGroupListing.feedView" />
   </bean>
 
-  <bean id="researchGroupListing.atomFeedGenerator" class="vtk.web.display.collection.CollectionListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
-    <property name="searchComponent" ref="researchGroupListing.searchComponent" />
+  <bean id="researchGroupListing.feedView" class="vtk.web.display.feed.ListingFeedView"
+    parent="atomFeedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="research-group-list" />
+      </map>
+    </property>
   </bean>
-
+  
 </beans>

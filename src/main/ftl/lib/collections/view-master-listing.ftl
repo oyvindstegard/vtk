@@ -20,10 +20,10 @@
   <#if viewAllMastersLink?exists || viewOngoingMastersLink?exists>
 	<div id="vrtx-listing-completed-ongoing">
 	  <#if viewAllMastersLink?exists>
-	  	<a href="${viewAllMastersLink}">${vrtx.getMsg("masters.viewCompleted")}</a>
+        <a href="${viewAllMastersLink}"><#if listingType?? && listingType = "phd">${vrtx.getMsg("phd.viewCompleted")}<#else>${vrtx.getMsg("masters.viewCompleted")}</#if></a>
 	  </#if>
 	  <#if viewOngoingMastersLink?exists>
-	  	<a href="${viewOngoingMastersLink}">${vrtx.getMsg("masters.viewOngoing")}</a>
+        <a href="${viewOngoingMastersLink}"><#if listingType?? && listingType = "phd">${vrtx.getMsg("phd.viewOngoing")}<#else>${vrtx.getMsg("masters.viewOngoing")}</#if></a>
 	  </#if>
 	</div>
   </#if>
@@ -176,6 +176,6 @@
 
 <#macro completed>
   <#if viewOngoingMastersLink?exists>
-    <span>${vrtx.getMsg("masters.listCompleted")}</span>
+    <span><#if listingType?? && listingType = "phd">${vrtx.getMsg("phd.listCompleted")}<#else>${vrtx.getMsg("masters.listCompleted")}</#if></span>
   </#if>
 </#macro>

@@ -41,6 +41,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.SqlSession;
+
+import vtk.repository.Acl;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -53,15 +58,11 @@ import vtk.repository.store.db.SqlDaoUtils.PropHolder;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 
-import com.ibatis.sqlmap.client.event.RowHandler;
-import vtk.repository.Acl;
-
-
 
 /**
  *
  */
-class PropertySetRowHandler implements RowHandler {
+class PropertySetRowHandler implements ResultHandler {
 
     // Client callback for handling retrieved property set instances 
     protected PropertySetHandler clientHandler;
@@ -73,7 +74,9 @@ class PropertySetRowHandler implements RowHandler {
     protected List<Map<String, Object>> rowValueBuffer = new ArrayList<Map<String, Object>>();
 
     private final ResourceTypeTree resourceTypeTree;
+    private final ResourceTypeMapper resourceTypeMapper;
     private final SqlMapIndexDao indexDao;
+    private final SqlSession sqlSession;
     private final PrincipalFactory principalFactory;
     
     private final Map<Integer, Acl> aclCache
@@ -95,21 +98,24 @@ class PropertySetRowHandler implements RowHandler {
     public PropertySetRowHandler(PropertySetHandler clientHandler,
                                  ResourceTypeTree resourceTypeTree,
                                  PrincipalFactory principalFactory,
-                                 SqlMapIndexDao indexDao) {
+                                 SqlMapIndexDao indexDao,
+                                 SqlSession sqlSession) {
         this.clientHandler = clientHandler;
         this.resourceTypeTree = resourceTypeTree;
         this.principalFactory = principalFactory;
         this.indexDao = indexDao;
+        this.resourceTypeMapper = new ResourceTypeMapper(resourceTypeTree);
+        this.sqlSession = sqlSession;
     }
     
     /**
      * iBATIS callback
      */
     @Override
-    public void handleRow(Object valueObject) {
+    public void handleResult(ResultContext context) {
         
         @SuppressWarnings("unchecked")
-        Map<String, Object> rowMap = (Map<String, Object>) valueObject;
+        Map<String, Object> rowMap = (Map<String, Object>) context.getResultObject();
         Integer id = (Integer)rowMap.get("id");
         
         if (this.currentId != null && !this.currentId.equals(id)) {
@@ -117,7 +123,7 @@ class PropertySetRowHandler implements RowHandler {
             PropertySetImpl propertySet = createPropertySet(this.rowValueBuffer);
             
             // Get ACL 
-            Acl acl = getAcl(propertySet);
+            Acl acl = getAcl(propertySet, sqlSession);
             this.clientHandler.handlePropertySet(propertySet, acl);
             
             // Clear current row buffer
@@ -140,7 +146,7 @@ class PropertySetRowHandler implements RowHandler {
         PropertySetImpl propertySet = createPropertySet(this.rowValueBuffer);
         
         // Get ACL
-        Acl acl = getAcl(propertySet);
+        Acl acl = getAcl(propertySet, sqlSession);
         
         this.clientHandler.handlePropertySet(propertySet, acl);
     }
@@ -154,14 +160,14 @@ class PropertySetRowHandler implements RowHandler {
      * @param propertySet the property set to get the ACL for (may be an inherited ACL)
      * @return an instance of <code>Acl</code>.
      */
-    private Acl getAcl(PropertySetImpl propertySet) {
+    private Acl getAcl(PropertySetImpl propertySet, SqlSession sqlSession) {
         final Integer aclResourceId = propertySet.isInheritedAcl() ? 
                         propertySet.getAclInheritedFrom() : propertySet.getID();
                         
         // Try cache first:
         Acl acl = this.aclCache.get(aclResourceId);
         if (acl == null) {
-            acl = this.indexDao.loadAcl(aclResourceId);
+            acl = this.indexDao.loadAcl(aclResourceId, sqlSession);
             this.aclCache.put(aclResourceId, acl);
         }
         
@@ -179,9 +185,11 @@ class PropertySetRowHandler implements RowHandler {
         Map<String, Object> firstRow = rowBuffer.get(0);
         
         PropertySetImpl propertySet = new PropertySetImpl();
-        String uri = (String)firstRow.get("uri");
+        //String uri = (String)firstRow.get("uri");
+        //propertySet.setUri(Path.fromString(uri));
 
-        propertySet.setUri(Path.fromString(uri));
+        Path uri = (Path) firstRow.get("uri");
+        propertySet.setUri(uri);
         
         // Standard props found in vortex_resource table:
         populateStandardProperties(firstRow, propertySet);
@@ -311,7 +319,8 @@ class PropertySetRowHandler implements RowHandler {
             propertySet.addProperty(prop);
         }
         
-        propertySet.setResourceType((String)row.get("resourceType"));
+        String type = (String)row.get("resourceType");
+        propertySet.setResourceType(resourceTypeMapper.resolveResourceType(type));
         
         Integer aclInheritedFrom = (Integer)row.get("aclInheritedFrom");
         if (aclInheritedFrom == null) {
@@ -452,7 +461,8 @@ class PropertySetRowHandler implements RowHandler {
                 propValuesMap.put(holder, values);
                 
                 // Link current canonical PropHolder instance to inheritable map
-                Path p = Path.fromString((String) propEntry.get("uri"));
+                Path p = (Path) propEntry.get("uri");
+                //Path p = Path.fromString((String) propEntry.get("uri"));
                 Set<PropHolder> set = inheritableHolderMap.get(p);
                 if (set == null) {
                     set = new HashSet<PropHolder>();
@@ -482,5 +492,5 @@ class PropertySetRowHandler implements RowHandler {
         
         return inheritablePropsMap;
     }
-    
+
 }

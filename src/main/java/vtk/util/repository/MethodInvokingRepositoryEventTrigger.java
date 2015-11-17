@@ -44,7 +44,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.context.ApplicationListener;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -57,7 +56,7 @@ import vtk.repository.event.ResourceMovedEvent;
  *  
  */
 public class MethodInvokingRepositoryEventTrigger 
-  implements ApplicationListener<RepositoryEvent>, InitializingBean {
+    extends AbstractRepositoryEventHandler implements InitializingBean {
 
     private static Log logger = LogFactory.getLog(MethodInvokingRepositoryEventTrigger.class);
 
@@ -69,7 +68,7 @@ public class MethodInvokingRepositoryEventTrigger
 
     private LinkedHashMap<Object, String> multipleInvocations;
     private List<TargetAndMethod> methodInvocations;
-
+    
     @Required
     public void setRepository(Repository repository)  {
         this.repository = repository;
@@ -146,7 +145,7 @@ public class MethodInvokingRepositoryEventTrigger
     }
 
     @Override
-    public void onApplicationEvent(RepositoryEvent event) {
+    public void handleEvent(RepositoryEvent event) {
         
         Repository rep = event.getRepository();
         if (! rep.getId().equals(this.repository.getId())) {
@@ -191,18 +190,20 @@ public class MethodInvokingRepositoryEventTrigger
     
     private void invoke() {
         for (TargetAndMethod tm: this.methodInvocations) {
-            Method m = tm.getMethod();
-            Object target = tm.getTarget();
+            final Method m = tm.getMethod();
+            final Object target = tm.getTarget();
 
+            if (logger.isDebugEnabled()) {
+                logger.debug("Invoking method " + m + " on object "
+                        + this.targetObject);
+            }
             try {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Invoking method " + m + " on object "
-                            + this.targetObject);
-                }
                 m.invoke(target, new Object[0]);
-            } catch (Throwable t) {
-                logger.warn("Error occurred while invoking method '" + m +
-                        "' on object '" + target + "'", t);
+            }
+            catch (Throwable t) {
+                logger.warn("Failed to invoke method " + m
+                        + " on object " + targetObject, t);
+                return;
             }
         }
     }

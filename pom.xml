@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <groupId>vtk</groupId>
   <artifactId>vtk-jboss</artifactId>
-  <version>63-SNAPSHOT</version>
+  <version>65-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>The VTK Web Framework</name>
   <url>http://www.uio.no/tjenester/it/web/vortex/</url>
@@ -128,8 +128,8 @@
   <properties>
     <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     <checkstyle.config.location>src/main/checkstyle/checkstyle.xml</checkstyle.config.location>
-    <java.version>1.7</java.version>
-    <spring.version>3.1.4.RELEASE</spring.version>
+    <java.version>1.8</java.version>
+    <spring.version>4.2.2.RELEASE</spring.version>
   </properties>
 
   <build>
@@ -297,6 +297,7 @@
         <version>3.4</version>
         <executions>
           <execution>
+            <phase>generate-sources</phase>
             <goals>
               <goal>antlr</goal>
             </goals>
@@ -414,15 +415,15 @@
     <!-- ehcache -->
     <dependency>
       <groupId>net.sf.ehcache</groupId>
-      <artifactId>ehcache-core</artifactId>
-      <version>2.4.8</version>
+      <artifactId>ehcache</artifactId>
+      <version>2.10.0</version>
     </dependency>
 
     <!-- Joda -->
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>1.6.2</version>
+      <version>2.9</version>
     </dependency>
 
     <dependency>
@@ -443,7 +444,7 @@
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml</artifactId>
       <!-- <version>2.3.2</version> -->
-      <version>2.5.3</version>
+      <version>2.6.5</version>
       <exclusions>
         <!-- Prefer to pull in XML parsing stuff from direct Xerces/Xalan dependencies,
              so exclude here: -->
@@ -493,11 +494,15 @@
     <dependency>
       <groupId>org.openxri</groupId>
       <artifactId>openxri-syntax</artifactId>
-      <version>1.0.1</version>
+      <version>1.2.1</version>
       <exclusions>
         <exclusion>
           <groupId>com.ibm.icu</groupId>
           <artifactId>icu4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-jcl</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -510,19 +515,31 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.12</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jmock</groupId>
       <artifactId>jmock-junit4</artifactId>
-      <version>2.6.0</version>
+      <version>2.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>2.0.31-beta</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.1.3</version>
+      <version>1.2</version>
       <exclusions>
         <exclusion>
           <groupId>logkit</groupId>
@@ -541,14 +558,14 @@
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jdom</groupId>
+      <groupId>org.jdom</groupId>
       <artifactId>jdom</artifactId>
-      <version>1.0</version>
+      <version>2.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -558,6 +575,11 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
       <version>${spring.version}</version>
     </dependency>
     <dependency>
@@ -604,7 +626,7 @@
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
-      <version>2.3.19</version>
+      <version>2.3.23</version>
     </dependency>
     <dependency>
       <groupId>org.beanshell</groupId>
@@ -629,12 +651,12 @@
     <dependency>
 	  <groupId>commons-io</groupId>
 	  <artifactId>commons-io</artifactId>
-	  <version>2.1</version>
+	  <version>2.4</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.6</version>
+      <version>1.10</version>
     </dependency>
     <!-- <dependency> -->
     <!--   <groupId>commons-io</groupId> -->
@@ -645,7 +667,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.3.5</version>
+      <version>4.5.1</version>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
@@ -655,17 +677,22 @@
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-module-xhtml</artifactId>
-      <version>1.3</version>
+      <version>1.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-module-apt</artifactId>
-      <version>1.3</version>
+      <version>1.6</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.ibatis</groupId>
-      <artifactId>ibatis-sqlmap</artifactId>
-      <version>2.3.4.726</version>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis</artifactId>
+      <version>3.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis-spring</artifactId>
+      <version>1.2.3</version>
     </dependency>
     <dependency>
       <groupId>org.htmlparser</groupId>
@@ -680,28 +707,28 @@
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <version>2.10.0</version>
+      <version>2.11.0.SP4</version>
     </dependency>
     <dependency>
       <groupId>xalan</groupId>
       <artifactId>xalan</artifactId>
-      <version>2.7.1</version>
+      <version>2.7.2</version>
     </dependency>
     <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
-      <version>1.2.2</version>
+      <version>1.3.1</version>
     </dependency>
     <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-      <version>3.2.1</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>owasp-java-html-sanitizer</groupId>
+      <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
       <artifactId>owasp-java-html-sanitizer</artifactId>
-      <version>r106</version>
+      <version>20150501.1</version>
       <scope>compile</scope>
     </dependency>
 
@@ -719,19 +746,19 @@
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjweaver</artifactId>
-      <version>1.8.5</version>
+      <version>1.8.7</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>cglib</groupId>
       <artifactId>cglib-nodep</artifactId>
-      <version>2.2.2</version>
+      <version>3.2.0</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
-      <version>1.1.3</version>
+      <version>1.1.6</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -753,15 +780,15 @@
     </dependency>
     <!-- JDBC drivers and databases -->
     <dependency>
-      <groupId>postgresql</groupId>
+      <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.1-901.jdbc4</version>
+      <version>9.4-1201-jdbc41</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
-      <version>2.2.8</version>
+      <version>2.3.3</version>
       <scope>test</scope>
     </dependency>
 
@@ -769,7 +796,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>1.6.6</version>
+      <version>1.7.12</version>
       <scope>runtime</scope>
     </dependency>
 
@@ -783,18 +810,6 @@
       <groupId>org.outerj.daisy</groupId>
       <artifactId>daisydiff</artifactId>
       <version>1.2</version>
-    </dependency>
-
-    <!-- Jackson -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.4.3</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>2.4.3</version>
     </dependency>
 
   </dependencies>

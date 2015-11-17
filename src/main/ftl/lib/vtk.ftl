@@ -554,18 +554,67 @@
 <#--
  * displayUserPrincipal
  *
- * Display the user principal. If URL exists wrapped with a link and full description.
+ * Display the principal. If URL exists wrapped with a link and full description.
  *
  * @param principal the principal
 -->
 <#macro displayUserPrincipal principal>
   <#compress>
     <#if principal.URL?exists>
-      <a title="${principal.name?html}" href="${principal.URL?html}">${principal.description?html}</a>
+      <a class="user-principal" title="${principal.name?html}" href="${principal.URL?html}">${principal.description?html}</a>
     <#else>
       ${principal.name?html}
     </#if>
   </#compress>
+</#macro>
+
+
+<#--
+ * displayGroupPrincipal
+ *
+ * Display the principal. If URL exists wrapped with a link and full description.
+ *
+ * @param principal the principal
+-->
+<#macro displayGroupPrincipal principal>
+  <#compress>
+    <#if principal.URL?exists>
+      <a class="group-principal" title="${principal.description?html}" href="${principal.URL?html}">${principal.name?html}</a>
+    <#else>
+      ${principal.name?html}
+    </#if>
+  </#compress>
+</#macro>
+
+<#--
+ * cssPlaceholder
+ *
+ * Output css references for the given place
+ *
+ * @param place The name for this place
+-->
+<#macro cssPlaceholder place>
+  <#if cssRegistry?exists && place?exists>
+    <#list cssRegistry.getMedia(place) as cssURL>
+      <link rel="stylesheet" href="${cssURL?html}" type="text/css" />
+    </#list>
+  </#if>
+</#macro>
+
+
+<#--
+ * javascriptPlaceholder
+ *
+ * Output css references for the given place
+ *
+ * @param place The name for this place
+-->
+<#macro javascriptPlaceholder place>
+  <#if javascriptRegistry?exists && place?exists>
+    <#list javascriptRegistry.getMedia(place) as jsURL>
+      <script type="text/javascript" src="${jsURL}"></script>
+    </#list>
+  </#if>
 </#macro>
 
 

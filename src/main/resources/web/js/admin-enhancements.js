@@ -2481,9 +2481,11 @@ VrtxAdmin.prototype.loadScript = function loadScript(url, callback) {
 VrtxAdmin.prototype.log = function log(options) {
   if (vrtxAdmin.hasConsoleLog) {
     var fn = [];
+    /*
     if(options.args) {
       fn = options.args.callee.toString().match(/function\s+([^\s\(]+)/);
     }
+    */
     var msgMid = (fn.length > 1) ? " -> " + fn[1] : "";
     console.log("Vortex admin log" + msgMid + ": " + options.msg);
   }
@@ -2500,9 +2502,11 @@ VrtxAdmin.prototype.log = function log(options) {
 VrtxAdmin.prototype.error = function error(options) {
   if (vrtxAdmin.hasConsoleError) {
     var fn = [];
+    /*
     if(options.args) {
       fn = options.args.callee.toString().match(/function\s+([^\s\(]+)/);
     }
+    */
     var msgMid = (fn.length > 1) ? " -> " + fn[1] : "";
     console.error("Vortex admin error" + msgMid + ": " + options.msg);
   } else {

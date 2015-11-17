@@ -30,10 +30,12 @@
  */
 package vtk.web.display.tags;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +45,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
@@ -126,11 +129,16 @@ public class TagsController implements Controller {
         URL baseURL = service.constructURL(resource.getURI());
         tagsHelper.processUrl(baseURL, tag, resourceTypes, sortFieldParams, displayScope, overrideResourceTypeTitle);
 
-        List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(totalHits, pageLimit, baseURL, page);
+        Optional<ListingPager.Pagination> pagination = 
+                ListingPager.pagination(totalHits, pageLimit, baseURL, page);
+        if (pagination.isPresent()) {
+            List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+            model.put("pageThroughUrls", urls);
+        }
 
         model.put("listing", listing);
+        model.put("searchComponents", Collections.singletonList(listing));
         model.put("page", page);
-        model.put("pageThroughUrls", urls);
 
         if (alternativeRepresentations != null) {
             Set<Object> alt = new HashSet<Object>();

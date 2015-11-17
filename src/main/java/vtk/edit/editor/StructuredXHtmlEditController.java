@@ -36,13 +36,12 @@ import org.springframework.web.bind.ServletRequestDataBinder;
 
 public class StructuredXHtmlEditController extends ResourceEditController {
     
+    @Override
     protected ServletRequestDataBinder createBinder(HttpServletRequest request,
-            Object command) throws Exception {
+            ResourceEditWrapper command) throws Exception {
         ResourceWrapperManager resourceManager = getResourceManager();
         ServletRequestDataBinder binder = new StructuredXHtmlEditDataBinder(command, getCommandName(), 
                 resourceManager.getHtmlParser(), resourceManager.getHtmlPropsFilter());
-       prepareBinder(binder);
-       initBinder(request, binder);
        return binder;
     }
 

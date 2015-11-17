@@ -74,19 +74,31 @@
     <property name="assertions">
       <list>
         <ref bean="resourceIsMessageListing" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsFeedAssertion" />
       </list>
     </property>
     <property name="handler" ref="messageListing.feedHandler" />
   </bean>
 
-  <bean id="messageListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="messageListing.feedGenerator" />
+  <bean id="messageListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="messageListing.feedView" value-ref="messageListing.feedView" />
+      </map>
+    </property>
   </bean>
 
-  <bean id="messageListing.feedGenerator" class="vtk.web.display.collection.message.MessageListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
-    <property name="searchComponent" ref="messageListing.searchComponent" />
+  <bean id="messageListing.feedHandler" parent="messageListing.handler">
+    <property name="viewName" value="messageListing.feedView" />
+  </bean>
+
+  <bean id="messageListing.feedView" class="vtk.web.display.collection.message.MessageListingAtomFeedView"
+    parent="atomFeedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="message-list" />
+      </map>
+    </property>
     <property name="authorPropDefPointer" value="createdBy" />
   </bean>
 

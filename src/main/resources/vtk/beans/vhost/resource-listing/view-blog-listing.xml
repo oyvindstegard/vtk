@@ -89,7 +89,7 @@
     <property name="assertions">
       <list>
         <ref bean="resourceIsBlogListing" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsFeedAssertion" />
       </list>
     </property>
     <property name="handler" ref="articleListing.feedHandler" />

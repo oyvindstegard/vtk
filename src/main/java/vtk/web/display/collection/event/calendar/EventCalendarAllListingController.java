@@ -30,8 +30,10 @@
  */
 package vtk.web.display.collection.event.calendar;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -55,7 +57,6 @@ public class EventCalendarAllListingController extends EventCalendarListingContr
     @Override
     public void runSearch(HttpServletRequest request, Resource collection, Map<String, Object> model, int pageLimit)
             throws Exception {
-
         int page = ListingPager.getPage(request, ListingPager.UPCOMING_PAGE_PARAM);
         model.put(MODEL_KEY_PAGE, page);
 
@@ -65,16 +66,22 @@ public class EventCalendarAllListingController extends EventCalendarListingContr
             if (result.getTotalHits() > 0) {
                 model.put(EventListingHelper.DISPLAY_LISTING_ICAL_LINK, true);
             }
-        } else {
+        }
+        else {
             model.put(MODEL_KEY_HIDE_ALTERNATIVE_REP, Boolean.TRUE);
             result = searcher.searchPrevious(request, collection, page, pageLimit, 0);
         }
-
+        
         Service service = RequestContext.getRequestContext().getService();
         URL serviceURL = service.constructURL(collection.getURI());
         String viewType = serviceURL.getParameter(EventListingHelper.REQUEST_PARAMETER_VIEW);
 
         model.put(viewType, result);
+        
+        if (viewType == null) {
+            viewType = upcoming ? "upcoming" : "previous";
+        }
+        
         String title = helper.getEventTypeTitle(request, collection, "eventListing." + viewType, false);
         String titleKey = viewType + "Title";
         model.put(titleKey, title);
@@ -84,10 +91,20 @@ public class EventCalendarAllListingController extends EventCalendarListingContr
                     false);
             String noPlannedTitleKey = viewType + "NoPlannedTitle";
             model.put(noPlannedTitleKey, noPlannedTitle);
-        } else {
-            List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(result.getTotalHits(), pageLimit,
-                    serviceURL, page);
-            model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+            
+            model.put(MODEL_KEY_SEARCH_COMPONENTS, Collections.emptyList());            
+        }
+        else {
+            Optional<ListingPager.Pagination> pagination = 
+                    ListingPager.pagination(result.getTotalHits(), pageLimit,
+                            serviceURL, page);
+            if (pagination.isPresent()) {
+                List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+                model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+                model.put(MODEL_KEY_PAGINATION, pagination.get());
+            }
+            
+            model.put(MODEL_KEY_SEARCH_COMPONENTS, Collections.singletonList(result));
         }
     }
 

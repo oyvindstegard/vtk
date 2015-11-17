@@ -35,6 +35,7 @@ package vtk.repository.systemjob;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.ResourceTypeTree;
@@ -77,11 +78,11 @@ public class IndexQueryPathSelector implements PathSelector {
         search.setQuery(query);
         search.setSorting(sort);
         search.setLimit(this.limit);
-        if(!useDefaultExcludes){
+        if (!useDefaultExcludes){
             search.clearAllFilterFlags();
         }
         search.setPropertySelect(PropertySelect.NONE);
-        ResultSet results = this.searcher.execute(token, search);
+        ResultSet results = searcher.execute(token, search);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Ran query " + query + (sort != null ? ", sorting: " + sort + "," : "")
@@ -96,14 +97,14 @@ public class IndexQueryPathSelector implements PathSelector {
     }
     
     protected Query getQuery(SystemChangeContext context) {
-        if (this.queryString == null) {
+        if (queryString == null) {
             throw new IllegalStateException("No query string configured");
         }
-        return this.parser.parse(this.queryString);
+        return parser.parse(queryString);
     }
     
     protected Sorting getSorting(SystemChangeContext context) {
-        return this.parser.parseSortString(this.sortString);
+        return parser.parseSortString(sortString);
     }
     
     public void setQueryString(String queryString) {

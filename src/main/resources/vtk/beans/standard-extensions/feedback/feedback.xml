@@ -63,19 +63,19 @@
     </property>
   </bean>
 
-  <bean id="feedback.javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+<!--  <bean id="feedback.javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
     <property name="host" value="${emailAFriend.mailServer}" />
     <property name="port" value="${emailAFriend.mailServerPort}" />
     <property name="protocol" value="${emailAFriend.mailServerProtocol}" />
     <property name="defaultEncoding" value="utf-8" />
-  </bean>
+  </bean>-->
 
   <bean id="feedbackHandler" class="vtk.web.actions.feedback.FeedbackController">
     <property name="viewService" ref="viewService" />
     <property name="viewName" value="feedback.view" />
     <property name="siteName" value="${emailAFriend.siteName}" />
     <property name="resourceManager" ref="resourceManager" />
-    <property name="mailExecutor" ref="feedback.mailExecutor" />
+    <property name="mailExecutor" ref="email.executor" />
     <property name="mailTemplateProvider" ref="feedback.mailTemplateProvider" />
     <property name="recipients" value="${mailFeedback.recipients}" />
     <property name="sender" value="${mailFeedback.sender}" />
@@ -83,14 +83,14 @@
     <property name="localeResolver" ref="viewServiceResourceAwareLocaleResolver" />
   </bean>
 
-  <bean id="feedback.mailExecutor" class="vtk.util.mail.MailExecutor">
+<!--  <bean id="feedback.mailExecutor" class="vtk.util.mail.MailExecutor">
     <constructor-arg ref="feedback.taskExecutor" />
     <constructor-arg ref="feedback.javaMailSender" />
   </bean>
 
   <bean id="feedback.taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor">
     <property name="concurrencyLimit" value="${emailAFriend.concurrencyLimit}" />
-  </bean>
+  </bean>-->
 
   <bean id="decorating.feedbackURLComponent" class="vtk.web.decorating.components.FeedbackComponent">
     <property name="namespace" ref="decorating.resourceNamespace" />

@@ -1,11 +1,11 @@
 package vtk.web.actions.permissions;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
-
 import org.junit.Test;
 
 public class ACLEditBinderTest {
@@ -14,7 +14,7 @@ public class ACLEditBinderTest {
     
     @Before
     public void setUp() throws Exception {
-        binder = new ACLEditBinder("","");
+        binder = new ACLEditBinder(null, null);
     }
     
     @Test

@@ -41,8 +41,8 @@ import javax.servlet.ServletOutputStream;
  */
 public class WrappedServletOutputStream extends ServletOutputStream {
 
-    private OutputStream out;
-    private String characterEncoding;
+    private final OutputStream out;
+    private final String characterEncoding;
         
     public WrappedServletOutputStream(OutputStream out,
                                       String characterEncoding) {
@@ -54,88 +54,109 @@ public class WrappedServletOutputStream extends ServletOutputStream {
         return this.characterEncoding;
     }
 
+    @Override
     public void print(boolean b) throws IOException {
         this.out.write(String.valueOf(b).getBytes(this.characterEncoding));
     }
         
+    @Override
     public void print(char c) throws IOException {
         this.out.write(String.valueOf(c).getBytes(this.characterEncoding));
     }
         
+    @Override
     public void print(int n) throws IOException {
         this.out.write(String.valueOf(n).getBytes(this.characterEncoding));
     }
 
+    @Override
     public void print(long l) throws IOException {
         this.out.write(String.valueOf(l).getBytes(this.characterEncoding));
     }
 
+    @Override
     public void print(String s) throws IOException {
         this.out.write(s.getBytes(this.characterEncoding));
     }
 
+    @Override
     public void print(float f) throws IOException {
         this.out.write(String.valueOf(f).getBytes(this.characterEncoding));
     }
 
+    @Override
     public void print(double d) throws IOException {
         this.out.write(String.valueOf(d).getBytes(this.characterEncoding));
     }
 
+    @Override
     public void println() throws IOException {
         this.out.write("\r\n".getBytes(this.characterEncoding));
     }
 
+    @Override
     public void println(String s) throws IOException {
         print(s);
         println();
     }
 
+    @Override
     public void println(boolean b) throws IOException {
         print(b);
         println();
     }
 
+    @Override
     public void println(char c) throws IOException {
         print(c);
         println();
     }
 
+    @Override
     public void println(int n) throws IOException {
         print(n);
         println();
     }
         
+    @Override
     public void println(long l) throws IOException {
         print(l);
         println();
     }
 
+    @Override
     public void println(double d) throws IOException {
         print(d);
         println();
     }
 
+    @Override
     public void println(float f) throws IOException {
         print(f);
         println();
     }
 
+    @Override
     public void write(int n) throws IOException {
         this.out.write(n);
     }
 
+    @Override
     public void write(byte[] b) throws IOException {
         this.out.write(b);
     }
 
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         this.out.write(b, off, len);
     }
 
+    @Override
     public void close() throws IOException {
     }
 
+    @Override
     public void flush() throws IOException {
     }
+
 }

@@ -73,14 +73,14 @@
           <input type="hidden" name="contacturl" value="${contacturl?html}" />
         </#if>
         
-        <p><@vrtx.msg code="feedback.cant-respond" default="Thank you for your help. We can unfortunately not respond on your request." /></p>
+        <p><@vrtx.msg code="feedback.cant-respond" default="Questions?" /></p>
         <p>
         <#if contacturl?has_content>
           <a id="vrtx-feedback-contact" target="_top" href='${contacturl?html}'>
         <#else>
           <a id="vrtx-feedback-contact" target="_top" href='<@vrtx.msg code="feedback.contact-link" default="http://www.uio.no/english/about/contact/" />'>
         </#if>
-          <@vrtx.msg code="feedback.contact" default="Contact us if you have questions you wish to be answered" />
+          <@vrtx.msg code="feedback.contact" default="Contact our official contact points." />
         </a>
         </p>
            

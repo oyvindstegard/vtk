@@ -203,12 +203,12 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
                 return vals[0];
             }
             @Override
-            public Map<?,?> getParameterMap() {
+            public Map<String, String[]> getParameterMap() {
                 return paramsMap;
             }
 
             @Override
-            public Enumeration<?> getParameterNames() {
+            public Enumeration<String> getParameterNames() {
                 return Collections.enumeration(paramsMap.keySet());
                 
             }

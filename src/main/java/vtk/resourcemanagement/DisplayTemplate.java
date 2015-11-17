@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009,2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -52,5 +52,21 @@ public class DisplayTemplate {
     
     public Date getLastModified() {
         return this.lastModified;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DisplayTemplate that = (DisplayTemplate) o;
+
+        return !(content != null ? !content.equals(that.content) : that.content != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return content != null ? content.hashCode() : 0;
     }
 }

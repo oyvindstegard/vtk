@@ -82,7 +82,7 @@ DEFAULTVALUE
 LETTER	:	('a'..'z' | 'A'..'Z');
 NUMBER	:	('0'..'9')+;
 NAME	:	(LETTER | '-' | '_')+;
-FILENAME:	(NAME | '.' | '/')+;
+FILENAME:	('classpath:' | 'file:')?(NAME | '.' | '/')+;
 ESC_SEQ	:	'\\' ('\"'|'\''|'\\') ;
 QTEXT	:	'"'  ( ESC_SEQ | ~('\\'|'"') )* '"'
         { 	

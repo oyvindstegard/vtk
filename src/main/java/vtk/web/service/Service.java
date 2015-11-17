@@ -127,8 +127,6 @@ public interface Service extends Ordered, Categorizable {
      * the other service, <code>false</code> otherwise.
      */
     public boolean isDescendantOf(Service service);
-       
-
 
     /**
      * Constructs a link (URL) for this service to a given resource

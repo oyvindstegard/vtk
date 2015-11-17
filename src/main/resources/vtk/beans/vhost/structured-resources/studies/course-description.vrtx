@@ -46,6 +46,7 @@ resourcetype course-description {
     forsikring : string,
 
     assessment-and-grading : html noextract,
+    exam-shared-text : string,
     hjelpemidler-text-field : html noextract,
     hjelpemidler : string,
     eksamensspraak-text-field : simple_html noextract,
@@ -118,6 +119,9 @@ resourcetype course-description {
                 attribute[vrtx-shared-text-path:/vrtx/fellestekst/emne]),
     group teaching-group (teaching-text-field, forsikring, adgang, adgang-text-field) vertical,
 
+    exam-shared-text (class[vrtx-shared-text],
+                      attribute[vrtx-shared-text-path:/vrtx/fellestekst/emne],
+                      attribute[vrtx-shared-text-file-name:eksamen]),
     hjelpemidler (class[vrtx-shared-text],
                   attribute[vrtx-shared-text-path:/vrtx/fellestekst/emne]),
     eksamensspraak (class[vrtx-shared-text],
@@ -132,7 +136,7 @@ resourcetype course-description {
                          attribute[vrtx-shared-text-path:/vrtx/fellestekst/emne]),
     tilrettelagt-eksamen (class[vrtx-shared-text],
                           attribute[vrtx-shared-text-path:/vrtx/fellestekst/emne]),
-    group assessment-and-exam-group (assessment-and-grading, hjelpemidler, hjelpemidler-text-field, eksamensspraak, eksamensspraak-text-field, sensur, sensur-text-field, klage, klage-text-field, ny-utsatt-eksamen, ny-utsatt-eksamen-text-field, antall-forsok-trekk, antall-forsok-trekk-text-field, tilrettelagt-eksamen, tilrettelagt-eksamen-text-field) vertical,
+    group assessment-and-exam-group (assessment-and-grading, exam-shared-text, hjelpemidler, hjelpemidler-text-field, eksamensspraak, eksamensspraak-text-field, sensur, sensur-text-field, klage, klage-text-field, ny-utsatt-eksamen, ny-utsatt-eksamen-text-field, antall-forsok-trekk, antall-forsok-trekk-text-field, tilrettelagt-eksamen, tilrettelagt-eksamen-text-field) vertical,
 
     evaluering-av-emnet (class[vrtx-shared-text],
                          attribute[vrtx-shared-text-path:/vrtx/fellestekst/emne]),
@@ -563,6 +567,7 @@ resourcetype course-description {
         </div>
       [endif]
       [def assessment-and-grading document.properties.assessment-and-grading]
+      [def exam-shared-text document.properties.exam-shared-text]
       [def hjelpemidler document.properties.hjelpemidler]
       [def hjelpemidler-text-field document.properties.hjelpemidler-text-field]
       [def eksamensspraak document.properties.eksamensspraak]
@@ -577,7 +582,7 @@ resourcetype course-description {
       [def antall-forsok-trekk-text-field document.properties.antall-forsok-trekk-text-field]
       [def tilrettelagt-eksamen document.properties.tilrettelagt-eksamen]
       [def tilrettelagt-eksamen-text-field document.properties.tilrettelagt-eksamen-text-field]
-      [if (assessment-and-grading != null && assessment-and-grading != "") ||
+      [if (assessment-and-grading != null && assessment-and-grading != "") || (exam-shared-text != null && exam-shared-text != "") ||
           (hjelpemidler-text-field != null && hjelpemidler-text-field != "") || (hjelpemidler != null && hjelpemidler != "") ||
           (eksamensspraak-text-field != null && eksamensspraak-text-field != "") || (eksamensspraak != null && eksamensspraak != "") ||
           (sensur-text-field != null && sensur-text-field != "") || (sensur != null && sensur != "") ||
@@ -590,6 +595,7 @@ resourcetype course-description {
           [if assessment-and-grading != null && assessment-and-grading != ""]
             [val assessment-and-grading # unescaped]
           [endif]
+          [call "include:shared-text" {"propName":"exam-shared-text"}]
           [if (hjelpemidler-text-field != null && hjelpemidler-text-field != "") || (hjelpemidler != null && hjelpemidler != "")]
             <h3>[localized 'hjelpemidler-group']</h3>
           [endif]
@@ -896,6 +902,7 @@ resourcetype course-description {
     teaching-admission : (en : "Access to teaching", no : "Adgang til undervisning", nn : "Adgang til undervisning"),
 
     assessment-and-grading : (en : "Examination", no : "Eksamen", nn : "Eksamen"),
+    exam-shared-text : (en : "Examination shared text", no : "Eksamen fellestekst", nn : "Eksamen fellestest"),
     hjelpemidler : (en : "Examination support material shared text", no : "Hjelpemidler fellestekst", nn : "Hjelpemiddel fellestekst"),
     hjelpemidler-text-field : (en : "Examination support material text", no : "Hjelpemidler fritekst", nn : "Hjelpemiddel fritekst"),
     hjelpemidler-group : (en : "Examination support material", no : "Hjelpemidler", nn : "Hjelpemiddel"),

@@ -48,47 +48,47 @@ public class ServletInputStream extends javax.servlet.ServletInputStream {
     
     @Override
     public int read() throws IOException {
-        return this.inputStream.read();
+        return inputStream.read();
     }
 
     @Override
     public int available() throws IOException {
-        return this.inputStream.available();
+        return inputStream.available();
     }
 
     @Override
-    public void close() throws IOException {
-        this.inputStream.close();
+    public void close() throws IOException {        
+        inputStream.close();
     }
 
     @Override
     public void mark(int readlimit) {
-        this.inputStream.mark(readlimit);
+        inputStream.mark(readlimit);
     }
 
     @Override
     public boolean markSupported() {
-        return this.inputStream.markSupported();
+        return inputStream.markSupported();
     }
 
     @Override
     public int read(byte[] b) throws IOException {
-        return this.inputStream.read(b);
+        return inputStream.read(b);
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        return this.inputStream.read(b, off, len);
+        return inputStream.read(b, off, len);
     }
 
     @Override
     public void reset() throws IOException {
-        this.inputStream.reset();
+        inputStream.reset();
     }
 
     @Override
     public long skip(long n) throws IOException {
-        return this.inputStream.skip(n);
+        return inputStream.skip(n);
     }
-    
+
 }

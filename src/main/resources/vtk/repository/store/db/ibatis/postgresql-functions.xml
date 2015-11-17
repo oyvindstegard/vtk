@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
-      "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap>
+<mapper namespace="vtk.repository.store.db">
 
   <sql id="nextVortexResourceId">
     nextval('vortex_resource_seq_pk')
@@ -33,7 +34,7 @@
   </sql>
   
   <sql id="destinationUriCopy">
-    #destUri# || substring(uri, length(#srcUri#) + 1)
+    #{destUri} || substring(uri, length(#{srcUri}) + 1)
   </sql>
 
   <sql id="nextContentRevisionID">
@@ -49,22 +50,22 @@
   </sql>
 
   <sql id="destinationDescendantUriMove">
-    #destUri# || substring(uri, length(#srcUri#) + 1)
+    #{destUri} || substring(uri, length(#{srcUri}) + 1)
   </sql>
 
   <sql id="trashCanUri">
-    #trashCanID# || substring(uri, #uriTrimLength#)
+    #{trashCanID} || substring(uri, #{uriTrimLength})
   </sql>
 
   <sql id="recoverUri">
-    #parentUri# || substring(uri, #uriTrimLength#)
+    #{parentUri} || substring(uri, #{uriTrimLength})
   </sql>
 
-  <update id="updateAclInheritedFromByPreviousResourceId" parameterClass="java.util.Map">
+  <update id="updateAclInheritedFromByPreviousResourceId" parameterType="java.util.Map">
     update vortex_resource
       set acl_inherited_from = r.resource_id
         from vortex_resource r
-          where (vortex_resource.uri = #uri# or vortex_resource.uri like #uriWildcard# escape '@')
+          where (vortex_resource.uri = #{uri} or vortex_resource.uri like #{uriWildcard} escape '@')
                  and r.prev_resource_id = vortex_resource.acl_inherited_from
   </update>
 
@@ -73,7 +74,7 @@
   </sql>
 
   <sql id="listCommentsLimitAppend">
-    limit #max#
+    limit #{max}
   </sql>
 
   <sql id="limitPrepend">
@@ -82,8 +83,8 @@
   
   <sql id="limitAppend">
     <!--  Default (supported by at least PostgreSQL and MySQL) -->
-    LIMIT #limit# OFFSET 0
+    LIMIT #{limit} OFFSET 0
   </sql>
 
-</sqlMap>
+</mapper>
 

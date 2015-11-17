@@ -114,4 +114,12 @@ public class EditPublishingCommand extends UpdateCancelCommand {
         this.publishStatus = publishStatus;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + resource.getURI() + "," 
+                + publishStatus + "," + publishDate + "," + unpublishDate 
+                + "," + publishDateValue + "," + unpublishDateValue + ","
+                + unpublishDateUpdateAction + ")";
+    }
+    
 }

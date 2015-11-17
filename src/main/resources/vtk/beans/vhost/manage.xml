@@ -930,7 +930,6 @@
     <property name="formView" value="manageCollectionListing" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="uploadForm" />
-    <property name="commandClass" value="vtk.web.actions.create.FileUploadCommand" />
     <property name="downcaseNames" value="true" />
     <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
     <property name="tempDir" value="${repository.tempDir}" />
@@ -944,7 +943,6 @@
     <property name="formView" value="admin" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="unlockFormCommand" />
-    <property name="commandClass" value="vtk.web.actions.lock.UnlockFormCommand" />
   </bean>
 
   <bean id="createDocumentHandler" class="vtk.web.actions.create.TemplateBasedCreateController">
@@ -952,7 +950,6 @@
     <property name="cancelView" value="redirectToManage" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="createDocumentForm" />
-    <property name="commandClass" value="vtk.web.actions.create.CreateDocumentCommand" />
     <property name="downcaseNames" value="true" />
     <property name="descriptionPropDef" ref="descriptionPropDef" />
     <property name="removePropList">
@@ -1004,7 +1001,6 @@
     <property name="cancelView" value="redirectToManage" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="createCollectionForm" />
-    <property name="commandClass" value="vtk.web.actions.create.CreateCollectionCommand" />
     <property name="userTitlePropDef" ref="userTitlePropDef" />
     <property name="downcaseCollectionNames" value="true" />
     <property name="templateManager" ref="templates.resourceTemplateManager" />
@@ -1017,14 +1013,12 @@
     </property>
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
-
   </bean>
 
   <bean id="renameHandler" class="vtk.web.actions.copymove.RenameController">
     <property name="formView" value="admin" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="renameCommand" />
-    <property name="commandClass" value="vtk.web.actions.copymove.RenameCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.copymove.RenameCommandValidator">
         <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
@@ -1038,7 +1032,6 @@
 
   <bean id="abstractPermissionsHandler" abstract="true" class="vtk.web.actions.permissions.ACLEditController">
     <property name="formView" value="permissions" />
-    <property name="commandClass" value="vtk.web.actions.permissions.ACLEditCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.permissions.ACLEditCommandValidator">
         <property name="principalManager" ref="principalManager" />
@@ -1185,6 +1178,34 @@
     <constructor-arg type="java.lang.String" value="manage" />
   </bean>
 
+  <bean id="javascriptRegistry" class="vtk.web.MediaRegistry" />
+  <bean id="cssRegistry" class="vtk.web.MediaRegistry" />
+
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="javascriptRegistry" />
+    <constructor-arg value="head" />
+    <constructor-arg>
+      <list>
+        <value>${jquery.baseURL}/jquery.min.js</value>
+        <value>${jsBaseURL}/frameworks/es5-shim-dejavu.js</value>
+        <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
+        <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
+        <value>${jsBaseURL}/admin-enhancements.js</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="cssRegistry" />
+    <constructor-arg value="head" />
+    <constructor-arg>
+      <list>
+        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
+        <value>${themeBaseURL}/default.css</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
   <bean id="manage.lineTopComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
     <property name="namespace" ref="decorating.manageNamespace" />
     <property name="name" value="display-line-top" />
@@ -1229,18 +1250,18 @@
     <property name="description" value="Inserts the default admin CSS stylesheets" />
     <property name="view" ref="manage.cssView" />
     <property name="exposeMvcModel" value="true" />
+    <property name="parameterDescriptions">
+      <map>
+        <entry key="place" value="Defines the place to get CSS files from the registry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="manage.cssView" parent="freemarkerView">
     <property name="url" value="system/css.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="cssURLs">
-          <list>
-            <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
-            <value>${themeBaseURL}/default.css</value>
-          </list>
-        </entry>
+        <entry key="cssRegistry" value-ref="cssRegistry" />
       </map>
     </property>
   </bean>
@@ -1248,24 +1269,21 @@
   <bean id="manage.javascriptComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
     <property name="namespace" ref="decorating.manageNamespace" />
     <property name="name" value="javascript" />
-    <property name="description" value="Inserts the default admin javascript references" />
+    <property name="description" value="Inserts the default admin Javascript references" />
     <property name="view" ref="manage.javascriptView" />
     <property name="exposeMvcModel" value="true" />
+    <property name="parameterDescriptions">
+      <map>
+        <entry key="place" value="Defines the place to get Javascript files from the registry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="manage.javascriptView" parent="freemarkerView">
     <property name="url" value="system/javascript.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="jsURLs">
-          <list>
-            <value>${jquery.baseURL}/jquery.min.js</value>
-            <value>${jsBaseURL}/frameworks/es5-shim-dejavu.js</value>
-            <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
-            <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
-            <value>${jsBaseURL}/admin-enhancements.js</value>
-          </list>
-        </entry>
+        <entry key="javascriptRegistry" value-ref="javascriptRegistry" />
       </map>
     </property>
   </bean>

@@ -37,12 +37,14 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.web.SecurityInitializer;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
+import vtk.web.actions.logout.LogoutController.LogoutCommand;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -59,7 +61,7 @@ import vtk.web.service.URL;
  *   input <code>useRedirectService</code> is not specified.
  * </ul>
  */
-public class LogoutController extends SimpleFormController implements InitializingBean {
+public class LogoutController extends SimpleFormController<LogoutCommand> implements InitializingBean {
 
     private Service redirectService = null;
     private SecurityInitializer securityInitializer = null;
@@ -71,7 +73,8 @@ public class LogoutController extends SimpleFormController implements Initializi
     public void setSecurityInitializer(SecurityInitializer securityInitializer) {
         this.securityInitializer = securityInitializer;
     }
-    
+
+    @Override
     public void afterPropertiesSet() {
         if (this.redirectService == null) {
             throw new BeanInitializationException(
@@ -109,7 +112,7 @@ public class LogoutController extends SimpleFormController implements Initializi
     }
     
     @Override
-    protected Object formBackingObject(HttpServletRequest request)
+    protected LogoutCommand formBackingObject(HttpServletRequest request)
             throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
@@ -126,7 +129,7 @@ public class LogoutController extends SimpleFormController implements Initializi
 
     @Override
     protected ModelAndView onSubmit(HttpServletRequest request,
-            HttpServletResponse response, Object command, BindException errors)
+            HttpServletResponse response, LogoutCommand command, BindException errors)
             throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
@@ -135,14 +138,13 @@ public class LogoutController extends SimpleFormController implements Initializi
         Resource resource = repository.retrieve(
                 requestContext.getSecurityToken(), requestContext.getResourceURI(), true);
 
-        LogoutCommand logoutCommand = (LogoutCommand) command;
 
         boolean responseWritten = this.securityInitializer.logout(request, response);
         if (responseWritten) {
             return null;
         }
 
-        if (logoutCommand.getUseRedirectService() != null) {
+        if (command.getUseRedirectService() != null) {
             String url = this.redirectService.constructLink(resource, principal);
             sendRedirect(url, request, response);
             return null;

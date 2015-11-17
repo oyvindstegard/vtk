@@ -3,31 +3,33 @@
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <!-- ## Feed parameter assertion. Defines legal set of parmeter/value combinations for feed service invocation ## -->
-  <bean id="feedParameterSetAssertion" class="vtk.web.service.RequestParameterAssertion">
+  <bean id="vrtxParameterIsFeedAssertion" class="vtk.web.service.RequestParameterAssertion">
     <property name="parameterName" value="vrtx" />
     <property name="parameterValue" value="feed" />
-    <property name="legalValueParameters">
-      <set>
-        <value>feed</value>
-        <value>atom</value>
-        <value>rss</value>
-      </set>
+  </bean>
+
+  <bean id="vrtxParameterIsAtomAssertion" class="vtk.web.service.RequestParameterAssertion">
+    <property name="parameterName" value="vrtx" />
+    <property name="parameterValue" value="atom" />
+  </bean>
+
+  <bean id="vrtxParameterIsRssAssertion" class="vtk.web.service.RequestParameterAssertion">
+    <property name="parameterName" value="vrtx" />
+    <property name="parameterValue" value="rss" />
+  </bean>
+
+  <bean id="vrtxParameterIsAnyFeed" class="vtk.web.service.OrAssertion">
+    <property name="assertions">
+      <list>
+        <ref bean="vrtxParameterIsFeedAssertion" />
+        <ref bean="vrtxParameterIsAtomAssertion" />
+        <ref bean="vrtxParameterIsRssAssertion" />
+      </list>
     </property>
   </bean>
 
-  <!-- ## Default feed controller. Generates Atom feed. ## -->
-  <bean id="collectionListing.feedHandler" class="vtk.web.display.feed.FeedController">
-    <property name="feedParameterSetAssertion" ref="feedParameterSetAssertion" />
-    <property name="feedGenerator" ref="collectionListing.atomFeedGenerator" />
-  </bean>
 
-  <bean id="collectionListing.atomFeedGenerator" class="vtk.web.display.collection.CollectionListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
-    <property name="searchComponent" ref="collectionListing.searchComponent" />
-  </bean>
-
-  <!-- ## Parent Atom feed generator ## -->
-  <bean id="atomFeedGenerator" class="vtk.web.display.feed.AtomFeedGenerator" abstract="true" depends-on="resourceTypetree">
+  <bean id="atomFeedView" class="vtk.web.display.feed.ListingFeedView" abstract="true" depends-on="resourceTypetree">
     <property name="viewService" ref="viewService" />
     <property name="abdera" ref="abdera" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
@@ -35,7 +37,7 @@
     <property name="titlePropDef" ref="titlePropDef" />
     <property name="lastModifiedPropDef" ref="lastModifiedPropDef" />
     <property name="creationTimePropDef" ref="creationTimePropDef" />
-
+    <property name="numberOfCommentsPropDef" ref="numberOfCommentsPropDef" />
     <property name="authorPropDefPointer" value="resource:author" />
     <property name="introductionPropDefPointer" value="resource:introduction" />
     <property name="picturePropDefPointer" value="resource:picture" />
@@ -56,7 +58,7 @@
 
     <property name="htmlUtil" ref="htmlUtil" />
   </bean>
-
+  
   <!-- ## Parent RSS 2.0 feed generator ## -->
   <bean id="rssFeedGenerator" class="vtk.web.display.feed.RSSFeedGenerator" abstract="true">
     <property name="viewService" ref="viewService" />

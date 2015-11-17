@@ -114,6 +114,7 @@
                                ] heading=groupHeading />
 
     </div>
+    <@vrtx.javascriptPlaceholder place="permissions:body_end" />
   </body>
 </html>
 

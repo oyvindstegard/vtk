@@ -39,13 +39,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -61,6 +62,7 @@ import vtk.util.repository.ContentTypeHelper;
 import vtk.util.repository.TextResourceContentHelper;
 import vtk.util.text.HtmlExtractUtil;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
 
@@ -93,14 +95,12 @@ import vtk.web.service.ServiceUnlinkableException;
  *  resource content in, if unable to guess.
  * </ul>
  */
-@SuppressWarnings("deprecation")
-public class PlaintextEditController extends SimpleFormController {
+public class PlaintextEditController extends SimpleFormController<PlaintextEditCommand> {
 
     private PropertyTypeDefinition updateEncodingProperty;
     
     private final Log logger = LogFactory.getLog(this.getClass().getName());
     
-    private String manageView;
     private int lockTimeoutSeconds = 300;
 
     private String defaultCharacterEncoding = "utf-8";
@@ -108,16 +108,10 @@ public class PlaintextEditController extends SimpleFormController {
     
     private Service[] tooltipServices;
     
-
     public void setLockTimeoutSeconds(int lockTimeoutSeconds) {
         this.lockTimeoutSeconds = lockTimeoutSeconds;
     }
 
-    @Required
-    public void setManageView(String manageView) {
-        this.manageView = manageView;
-    }
-    
     public void setDefaultCharacterEncoding(String defaultCharacterEncoding) {
         this.defaultCharacterEncoding = defaultCharacterEncoding;
     }
@@ -135,7 +129,8 @@ public class PlaintextEditController extends SimpleFormController {
         this.textResourceContentHelper = helper;
     }
 
-    protected Object formBackingObject(HttpServletRequest request)
+    @Override
+    protected PlaintextEditCommand formBackingObject(HttpServletRequest request)
         throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
@@ -157,43 +152,43 @@ public class PlaintextEditController extends SimpleFormController {
     }
 
 
+    @Override
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, PlaintextEditCommand command,
+            BindException errors) throws Exception {
 
-    protected ModelAndView onSubmit(Object command, BindException errors)
-        throws Exception {
-
-        PlaintextEditCommand plaintextEditCommand =
-            (PlaintextEditCommand) command;
-
-        if (plaintextEditCommand.getSaveAction() != null) {
-            return super.onSubmit(command, errors);
+        Map<String, Object> model = errors.getModel();
+        if (command.getSaveAction() != null) {
+            store(command);
+            return new ModelAndView(getFormView(), model);
         }
-        
-        /** The user has selected "cancel" or "save and view". Unlock resource, return
-         *  the manage view. */
-        
-        if(plaintextEditCommand.getSaveViewAction() != null) {
-        	doSubmitAction(command);
+        else if (command.getSaveViewAction() != null) {
+            store(command);
+            unlock();
+            return new ModelAndView(getSuccessView(), model);
         }
-        
+        else {
+            // Cancel
+            unlock();
+            return new ModelAndView(getSuccessView(), model);
+        }
+    }
+    
+
+    private void unlock() throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
 
         Path uri = requestContext.getResourceURI();
         requestContext.getRepository().unlock(token, uri, null);
-        
-        return new ModelAndView(this.manageView);    
     }
-    
 
-
-    protected void doSubmitAction(Object command) throws Exception {        
+    private void store(PlaintextEditCommand plaintextEditCommand) throws Exception {        
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         
-        PlaintextEditCommand plaintextEditCommand = (PlaintextEditCommand) command;
-
         Resource resource = repository.retrieve(token, uri, false);
         TypeInfo typeInfo = repository.getTypeInfo(resource);
         String storedEncoding = resource.getCharacterEncoding();
@@ -216,16 +211,19 @@ public class PlaintextEditController extends SimpleFormController {
             characterEncoding = postedEncoding;
             maybeSetEncoding = true;
 
-        } else if (storedEncoding != null && postedEncoding == null) {
+        } 
+        else if (storedEncoding != null && postedEncoding == null) {
             characterEncoding = storedEncoding;
 
-        } else if (storedEncoding != null && postedEncoding != null) {
+        }
+        else if (storedEncoding != null && postedEncoding != null) {
             characterEncoding = postedEncoding;
             maybeSetEncoding = true;
         }
         try {
             Charset.forName(characterEncoding);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             characterEncoding = this.defaultCharacterEncoding;
         }
         
@@ -258,7 +256,8 @@ public class PlaintextEditController extends SimpleFormController {
         String encoding = resource.getCharacterEncoding();
         try {
             Charset.forName(encoding);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             encoding = this.defaultCharacterEncoding;
         }
         InputStream is = requestContext.getRepository().getInputStream(
@@ -276,7 +275,8 @@ public class PlaintextEditController extends SimpleFormController {
             postedEncoding = this.textResourceContentHelper.getXMLCharacterEncoding(
                 command.getContent());
             
-        } else if (ContentTypeHelper.isHTMLContentType(resource.getContentType())) {
+        } 
+        else if (ContentTypeHelper.isHTMLContentType(resource.getContentType())) {
 
             postedEncoding = HtmlExtractUtil.getCharacterEncodingFromBody(
                 command.getContent().getBytes());
@@ -286,17 +286,18 @@ public class PlaintextEditController extends SimpleFormController {
     
 
     private List<Map<String, String>> resolveTooltips(Resource resource, Principal principal) {
-        List<Map<String, String>> tooltips = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> tooltips = new ArrayList<>();
         if (this.tooltipServices != null) {
             for (Service service: this.tooltipServices) {
                 String url = null;
                 try {
                     url = service.constructLink(resource, principal);
-                    Map<String, String> tooltip = new HashMap<String, String>();
+                    Map<String, String> tooltip = new HashMap<>();
                     tooltip.put("url", url);
                     tooltip.put("messageKey", "plaintextEdit.tooltip." + service.getName());
                     tooltips.add(tooltip);
-                } catch (ServiceUnlinkableException e) {
+                }
+                catch (ServiceUnlinkableException e) {
                     // Ignore
                 }
             }

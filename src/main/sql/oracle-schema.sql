@@ -29,7 +29,7 @@ create table vortex_resource
     resource_owner varchar2 (64) not null,
     content_type varchar2 (128) null,
     content_length number null,
-    resource_type varchar2 (64) not null,
+    resource_type varchar2 (256) not null,
     character_encoding varchar2 (64) null,
     guessed_character_encoding varchar2 (64) null,
     user_character_encoding varchar2 (64) null,

@@ -73,7 +73,7 @@ public final class Path implements Comparable<Path>, Serializable {
 
     // This is the only method from which Path instances can be created.
     private static Path instance(String path) {
-        // Use cached instance of '/'
+        // Use singleton instance for '/'
         if (ROOT.path.equals(path))
             return ROOT;
 
@@ -105,15 +105,16 @@ public final class Path implements Comparable<Path>, Serializable {
     }
 
     /**
+     * Snips any number of consecutive trailing slashes from input path
+     * before constructing the real path.
      * @see #fromString(String)
-     * 
-     * Handles trailing slash if provided path string contains any
      */
     public static Path fromStringWithTrailingSlash(String path) {
-        if (!"/".equals(path) && path.endsWith("/")) {
-            path = path.replaceAll("/*$", "");
+        int i = path.length()-1;
+        while (i > 0 && path.charAt(i) == '/') {
+            --i;
         }
-        return fromString(path);
+        return fromString(path.substring(0, i+1));
     }
 
     /**
@@ -126,7 +127,10 @@ public final class Path implements Comparable<Path>, Serializable {
     }
 
     /**
-     * Compares this path to another path.
+     * Compares this path to another path lexicographically.
+     * 
+     * @param path other path
+     * @see Comparable#compareTo(java.lang.Object) 
      */
     @Override
     public int compareTo(Path path) {
@@ -272,14 +276,15 @@ public final class Path implements Comparable<Path>, Serializable {
      * Extends this path with a sub-path. For example, the path <code>/a</code>
      * when extended with the sub-path <code>b/c</code> would produce the
      * resulting path </code>/a/b/c</code>. The parameter may not contain
-     * <code>../<code> or <code>./</code>
-     * 
+     * <code>"../"<code> or <code>"./"</code> sequences - use {@link #expand(java.lang.String)}
+     * instead for such cases.
+      * 
      * @param subPath
      *            the (relative) path with which to extend this path
      * @return the extended path
      */
     public Path extend(String subPath) {
-        if ("/".equals(this.path)) {
+        if (isRoot()) {
             return fromString(this.path + subPath);
         } else {
             return fromString(this.path + "/" + subPath);
@@ -321,14 +326,16 @@ public final class Path implements Comparable<Path>, Serializable {
                 if (c != '/') {
                     segment.append(c);
                 }
-                if ("..".equals(segment.toString())) {
+
+                if (segment.length() == 2 
+                        && segment.charAt(0) == '.' && segment.charAt(1) == '.') { // dot-dot-<slash-or-end>
                     cur = cur.getParent();
-                    segment.delete(0, segment.length());
-                } else if (".".equals(segment.toString())) {
-                    segment.delete(0, segment.length());
+                    segment.setLength(0);
+                } else if (segment.length() == 1 && segment.charAt(0) == '.') {   // dot-<slash-or-end>
+                    segment.setLength(0);
                 } else {
                     cur = cur.extend(segment.toString());
-                    segment.delete(0, segment.length());
+                    segment.setLength(0);
                 }
             } else {
                 segment.append(c);
@@ -372,7 +379,7 @@ public final class Path implements Comparable<Path>, Serializable {
     }
 
     private List<String> elements() {
-        List<String> elements = new ArrayList<String>();
+        List<String> elements = new ArrayList<>();
         elements.add("/");
         if (this == ROOT) {
             return elements;
@@ -391,7 +398,7 @@ public final class Path implements Comparable<Path>, Serializable {
     }
     
     private List<Path> paths() {
-        List<Path> paths = new ArrayList<Path>();
+        List<Path> paths = new ArrayList<>();
         paths.add(ROOT);
         
         if (this == ROOT) {

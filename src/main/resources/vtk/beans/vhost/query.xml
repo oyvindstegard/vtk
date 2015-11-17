@@ -80,9 +80,6 @@
     <property name="storageId" value="property_index"/>
     <property name="forceUnlock" value="true"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
-<!--    <property name="maxReadOnlyReaders" value="${indexMaxReadOnlyReaders}" />
-    <property name="maxAgingReadOnlyReaders" value="${indexMaxAgingReadOnlyReaders}" />
-    <property name="agingReadOnlyReaderThreshold" value="${indexAgingReadOnlyReaderThreshold}" />-->
     <property name="searcherFactory" ref="searcherFactory"/>
   </bean>
 
@@ -128,7 +125,7 @@
         <property name="indexAccessor" ref="systemIndexAccessor"/>
         <property name="documentMapper" ref="documentMapper"/>
         <property name="queryBuilder" ref="queryBuilder"/>
-        <!--<property name="unauthenticatedQueryMaxDirtyAge" value="${indexUnauthenticatedQueryMaxDirtyAge}" />-->
+        <property name="resultCacheSize" value="${indexResultCacheSize}" />
       </bean>
     </property>
   </bean>

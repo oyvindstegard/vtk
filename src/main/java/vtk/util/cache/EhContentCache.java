@@ -46,12 +46,14 @@ import org.springframework.beans.factory.DisposableBean;
  * instance. All aspects of the cache behavior and item loading are controlled
  * by configuration of the injected cache instance underlying this {@link ContentCache}.
  * 
- * At most one thread will load a given key at any time,
- * other threads requesting the same key will block until the first thread has finished loading.
- *
- * TODO Ehcache also allows to set a blocking timeout, which we can consider
+ * <p>TODO Ehcache also allows to set a blocking timeout, which we can consider
  * using to prevent thread pileups due to slow loading.
  * 
+ * <p>TODO provided Ehcache instance is not properly shareable due to configuration
+ * modification of the provided instance. (Considering use case where multiple
+ * {@code EhContentCache} instances share the same {@code SelfPopulatingCache}
+ * instance.)
+  * 
  * @param <K> key type for the cache
  * @param <V> value type for the cache
  */
@@ -59,30 +61,53 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
     private final static Log logger = LogFactory.getLog(EhContentCache.class);
     private final SelfPopulatingCache cache;
 
-    private final boolean requireSerializable;
     private final int timeToIdleSeconds;
     private final int timeToLiveSeconds;
     private final boolean asynchronousRefresh;
     protected final ScheduledExecutorService refreshAllExecutor;
     protected final ExecutorService asyncRefreshExecutor;
 
+    /**
+     * Construct a new instance backed by the provided <code>SelfPopulatingCache</code>.
+     * 
+     * <p>The provided Eh cache should not be shared with others, as its configuration
+     * will be modified by this class.
+     * 
+     * <p>The constructed content cache will not have asynchronous refresh or
+     * background interval refresh enabled.
+     * @param cache the Eh cache instance used as backing
+     */
     public EhContentCache(SelfPopulatingCache cache) {
-        this(cache, true, -1, false);
+        this(cache, -1, false);
     }
 
     /**
-     * @param requireSerializable Whether to use Ehcache API which requires keys and values to be
-     * serializable or not.
+     * Construct a new instance backed by the provided
+     * <code>SelfPopulatingCache</code>.
+     *
+     * <p>
+     * The provided Eh cache instance should not be shared with others, as its
+     * configuration will be modified by this class.
+     *
+     * @param cache the Eh cache instance used as backing
+     * @param asynchronousRefresh whether to enable asynchronous refresh on get
+     * or not. If this is enabled, then <code>get</code> can return expired data
+     * until the refresh is finished. Otherwise get will block while the cache
+     * item is loaded.
+     * @param refreshIntervalSeconds if set to something greater than 0, then a
+     * background refresh task is scheduled to run at the provided interval in
+     * seconds. All items eligible for expiry in cache will be refreshed at each
+     * run. Note that providing a value here less than {@code timeToLiveSeoncds}
+     * will effectively give eternal life to the cache entry if cache is below
+     * max capacity. The entry value will, however, be continually refreshed.
      */
     public EhContentCache(
             SelfPopulatingCache cache,
-            boolean requireSerializable,
             int refreshIntervalSeconds,
             boolean asynchronousRefresh
     ) {
         CacheConfiguration config = cache.getCacheConfiguration();
         this.cache = cache;
-        this.requireSerializable = requireSerializable;
         this.asynchronousRefresh = asynchronousRefresh;
 
         // Do our own cache expiration to enable us to return stale objects if we receive an error
@@ -94,12 +119,9 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         config.setEternal(true);
 
         if (asynchronousRefresh) {
-            asyncRefreshExecutor = Executors.newFixedThreadPool(16, new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, EhContentCache.this.cache.getName() + ".async-refresh");
-                }
-            });
+            asyncRefreshExecutor = new ThreadPoolExecutor(0, 16, 60L, TimeUnit.SECONDS,
+                    new LinkedBlockingQueue<>(),
+                    (Runnable r) -> new Thread(r, EhContentCache.this.cache.getName() + ".async-refresh"));
         } else {
             asyncRefreshExecutor = null;
         }
@@ -108,18 +130,10 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         // A fix might be to expose refresh as a ContentCache API call, and have an external
         // static singleton common to all vhosts in JVM, which does refresh on shared Ehcache instances.
         if (refreshIntervalSeconds > 0) {
-            refreshAllExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory(){
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, EhContentCache.this.cache.getName() + ".refresh");
-                }
-            });
-            refreshAllExecutor.scheduleWithFixedDelay(new Runnable() {
-                @Override
-                public void run() {
-                    refreshAllExpired();
-                }
-            }, refreshIntervalSeconds, refreshIntervalSeconds, TimeUnit.SECONDS);
+            refreshAllExecutor = Executors.newSingleThreadScheduledExecutor(
+                    (Runnable r) -> new Thread(r, EhContentCache.this.cache.getName() + ".refresh"));
+            refreshAllExecutor.scheduleWithFixedDelay(this::refreshAllExpired,
+                    refreshIntervalSeconds, refreshIntervalSeconds, TimeUnit.SECONDS);
         } else {
             refreshAllExecutor = null;
         }
@@ -131,16 +145,13 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
             throw new IllegalArgumentException("Cache identifiers cannot be null");
         }
         
-        // TODO cache exceptions for a short time (grace time) before letting loaders retry.
-        // This may prove useful when loaders are slow and eventually fail (timeout on web resources for instance).
-
         Element element = cache.getQuiet(identifier);
         if (element != null) {
             if (isExpired(element)) {
                 // This will not stop multiple thread trying to refresh the cache entry at the same time,
                 // so it can cause unnecessary work to be done.
                 if (asynchronousRefresh) {
-                    triggerAsynchronousRefresh(identifier);
+                    asyncRefreshExecutor.execute( () -> { refresh(identifier); } );
                 } else {
                     refresh(identifier);
                 }
@@ -148,11 +159,7 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         }
         element = cache.get(identifier);
 
-        if (requireSerializable) {
-            return (V) element.getValue();
-        } else {
-            return (V) element.getObjectValue();
-        }
+        return (V) element.getObjectValue();
     }
 
     @Override
@@ -175,7 +182,7 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
         }
     }
 
-
+    
     private boolean isExpired(Element element){
         long now = System.currentTimeMillis();
         long expirationTime = getExpirationTime(element);
@@ -197,16 +204,6 @@ public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean
             expirationTime = Math.min(ttlExpiry, ttiExpiry);
         }
         return expirationTime;
-    }
-
-    private void triggerAsynchronousRefresh(final K identifier) {
-        Runnable fetcher = new Runnable() {
-            @Override
-            public void run() {
-                refresh(identifier);
-            }
-        };
-        asyncRefreshExecutor.execute(fetcher);
     }
 
     private void refresh(final Object identifier) {

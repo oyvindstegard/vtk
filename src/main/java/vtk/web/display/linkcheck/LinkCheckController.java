@@ -49,6 +49,7 @@ import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 import vtk.util.web.LinkTypesPrefixes;
 import vtk.web.RequestContext;
+import vtk.web.display.linkcheck.LinkChecker.LinkCheckRequest;
 import vtk.web.display.linkcheck.LinkChecker.LinkCheckResult;
 import vtk.web.service.URL;
 
@@ -60,11 +61,14 @@ public class LinkCheckController implements Controller {
     private final static String STATUS = "status";
     private final static String MSG = "msg";
 
-    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ModelAndView handleRequest(HttpServletRequest request, 
+            HttpServletResponse response) throws Exception {
+        
         List<String> urls;
         try {
             urls = readInput(request);
-        } catch (BadRequestException e) {
+        }
+        catch (BadRequestException e) {
             badRequest(e, response);
             return null;
         }
@@ -75,16 +79,23 @@ public class LinkCheckController implements Controller {
         return null;
     }
 
-    private List<LinkCheckResult> checkLinks(List<String> input, URL base, boolean sendReferrer) {
+    private List<LinkCheckResult> checkLinks(List<String> input, URL base, 
+            boolean sendReferrer) {
+        
         List<LinkCheckResult> results = new ArrayList<LinkCheckResult>();
         for (String link : input) {
-            LinkCheckResult r = this.linkChecker.validate(link, base, sendReferrer);
-            results.add(r);
+            LinkCheckRequest request = LinkCheckRequest.builder(link, base)
+                    .sendReferrer(sendReferrer)
+                    .build();
+            LinkCheckResult result = this.linkChecker.validate(request);
+            results.add(result);
         }
         return results;
     }
 
-    private void writeResults(List<LinkCheckResult> results, HttpServletResponse response) throws Exception {
+    private void writeResults(List<LinkCheckResult> results, 
+            HttpServletResponse response) throws Exception {
+        
         Json.ListContainer list = new Json.ListContainer();
         
         for (LinkCheckResult result : results) {
@@ -99,24 +110,30 @@ public class LinkCheckController implements Controller {
         okRequest(list, response);
     }
 
-    private void okRequest(Json.ListContainer arr, HttpServletResponse response) throws IOException {
+    private void okRequest(Json.ListContainer arr, HttpServletResponse response)
+            throws IOException {
+        
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("text/plain;charset=utf-8"); /* XXX: Should be application/json? */
+        /* XXX: Should be application/json? */
+        response.setContentType("text/plain;charset=utf-8");
         
         String str = JsonStreamer.toJson(arr, 1);
         writeResponse(str, response);
     }
 
-    private void badRequest(Throwable e, HttpServletResponse response) throws IOException {
+    private void badRequest(Throwable e, HttpServletResponse response) 
+            throws IOException {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         writeResponse(e.getMessage(), response);
     }
     
-    private void writeResponse(String responseText, HttpServletResponse response) throws IOException {
+    private void writeResponse(String responseText, HttpServletResponse response)
+            throws IOException {
         PrintWriter writer = response.getWriter();
         try {
             writer.write(responseText);
-        } finally {
+        }
+        finally {
             writer.close();
         }
     }
@@ -145,7 +162,8 @@ public class LinkCheckController implements Controller {
                 }
             }
             return urls;
-        } finally {
+        }
+        finally {
             reader.close();
         }
     }
@@ -165,8 +183,12 @@ public class LinkCheckController implements Controller {
         if ("".equals(input.trim())) {
             return null;
         }
-        if (input.startsWith(LinkTypesPrefixes.ANCHOR) || input.startsWith(LinkTypesPrefixes.MAIL_TO) || input.startsWith(LinkTypesPrefixes.FTP)
-                || input.startsWith(LinkTypesPrefixes.JAVASCRIPT) || input.startsWith(LinkTypesPrefixes.FILE) || input.startsWith(LinkTypesPrefixes.WEBCAL)) {
+        if (input.startsWith(LinkTypesPrefixes.ANCHOR) 
+                || input.startsWith(LinkTypesPrefixes.MAIL_TO) 
+                || input.startsWith(LinkTypesPrefixes.FTP)
+                || input.startsWith(LinkTypesPrefixes.JAVASCRIPT) 
+                || input.startsWith(LinkTypesPrefixes.FILE) 
+                || input.startsWith(LinkTypesPrefixes.WEBCAL)) {
             return null;
         }
         return input;
@@ -178,7 +200,8 @@ public class LinkCheckController implements Controller {
             Repository repo = rc.getRepository();
             Resource r = repo.retrieve(rc.getSecurityToken(), rc.getResourceURI(), true);
             return !r.isReadRestricted();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
     }
