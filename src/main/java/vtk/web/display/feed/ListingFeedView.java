@@ -31,6 +31,7 @@
 package vtk.web.display.feed;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.Date;
@@ -367,7 +368,9 @@ public class ListingFeedView implements View {
     
     protected void printFeed(Feed feed, HttpServletResponse response) throws IOException {
         response.setContentType(getContentType());
-        feed.writeTo("prettyxml", response.getWriter());
+        PrintWriter writer = response.getWriter();
+        feed.writeTo("prettyxml", writer);
+        writer.close();
     }
 
     private HtmlFragment prepareSummary(HttpServletRequest request, PropertySet propSet) {
