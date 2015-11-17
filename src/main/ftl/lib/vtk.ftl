@@ -583,6 +583,37 @@
   </#compress>
 </#macro>
 
+<#--
+ * cssPlaceholder
+ *
+ * Output css references for the given place
+ *
+ * @param place The name for this place
+-->
+<#macro cssPlaceholder place>
+  <#if cssRegistry?exists && place?exists>
+    <#list cssRegistry.getMedia(place) as cssURL>
+      <link rel="stylesheet" href="${cssURL?html}" type="text/css" />
+    </#list>
+  </#if>
+</#macro>
+
+
+<#--
+ * javascriptPlaceholder
+ *
+ * Output css references for the given place
+ *
+ * @param place The name for this place
+-->
+<#macro javascriptPlaceholder place>
+  <#if javascriptRegistry?exists && place?exists>
+    <#list javascriptRegistry.getMedia(place) as jsURL>
+      <script type="text/javascript" src="${jsURL}"></script>
+    </#list>
+  </#if>
+</#macro>
+
 
 <#--
  * csrfPreventionToken
