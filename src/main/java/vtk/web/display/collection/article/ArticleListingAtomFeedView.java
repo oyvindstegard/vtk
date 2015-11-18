@@ -30,11 +30,20 @@
  */
 package vtk.web.display.collection.article;
 
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.web.display.collection.BaseCollectionListingController;
 import vtk.web.display.feed.ListingFeedView;
 
 public class ArticleListingAtomFeedView extends ListingFeedView {
@@ -48,6 +57,20 @@ public class ArticleListingAtomFeedView extends ListingFeedView {
             return overridePublishDateProp;
         }
         return getDefaultPublishDate(resource);
+    }
+    
+    @Override
+    protected void addExtensions(HttpServletRequest request, Map<String, ?> model, 
+            Feed feed, Entry entry, PropertySet resource) {
+        super.addExtensions(request, model, feed, entry, resource);
+        
+        Object o = model.get(BaseCollectionListingController.MODEL_KEY_FEATURED_ARTICLES);
+        if (o != null && o instanceof Set<?>) {
+            Set<Path> featured = (Set<Path>) o;
+            if (featured.contains(resource.getURI())) {
+                entry.addSimpleExtension("vrtx", "featured-article", "v", "true");
+            }
+        }
     }
 
     @Required

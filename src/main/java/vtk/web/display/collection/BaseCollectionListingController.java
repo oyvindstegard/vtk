@@ -67,6 +67,7 @@ public class BaseCollectionListingController implements ListingController {
     public final static String MODEL_KEY_HIDE_ALTERNATIVE_REP = "hideAlternativeRepresentation";
     public final static String MODEL_KEY_OVERRIDDEN_TITLE = "overriddenTitle";
     public final static String MODEL_KEY_HIDE_NUMBER_OF_COMMENTS = "hideNumberOfComments";
+    public final static String MODEL_KEY_FEATURED_ARTICLES = "featuredArticles";
 
     protected static Log logger = LogFactory.getLog(BaseCollectionListingController.class);
 

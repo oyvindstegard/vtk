@@ -33,7 +33,6 @@ package vtk.web.display.feed;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -138,16 +137,16 @@ public class ListingFeedView implements View {
 
         if (pagination != null) addPagination(feed, pagination);
         
-        addEntries(request, listings, feedScope, feed);
+        addEntries(request, model, listings, feedScope, feed);
         printFeed(feed, response);
     }
     
     
-    protected void addEntries(HttpServletRequest request, List<Listing> listings, 
-            Resource feedScope, Feed feed) {
+    protected void addEntries(HttpServletRequest request, Map<String, ?> model, 
+            List<Listing> listings, Resource feedScope, Feed feed) {
         for (Listing listing: listings) {
             for (ListingEntry entry: listing.getEntries()) {
-                addPropertySetAsFeedEntry(request, feed, entry.getPropertySet());        
+                addPropertySetAsFeedEntry(request, model, feed, entry.getPropertySet());        
             }
         }
     }
@@ -220,28 +219,23 @@ public class ListingFeedView implements View {
         feed.addLink(requestContext.getRequestURL().toString(), "self");
     }
 
-    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, PropertySet result) {
-        addPropertySetAsFeedEntry(request, feed, result, Collections.emptyMap());
-    }
-
     /**
      * Add the appropriate resource properties to the Entry
      * 
-     * The numberofcomments element is only added if the resource in question
-     * has comments attached to it.
-     * 
+     * @param request the current servlet request
+     * @param model the MVC model
      * @param feed the resulting feed
      * @param resource the current property set
-     * @param extensions additional fields in resulting feed entry 
-     *  (will appear in the {@code vrtx} name space)
      */
-    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, PropertySet resource, Map<String,?> extensions) {
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Map<String, ?> model, 
+            Feed feed, PropertySet resource) {
         try {
 
             Entry entry = Abdera.getInstance().newEntry();
 
             Property publishedDateProp = getPublishDate(resource);
-            publishedDateProp = publishedDateProp == null ? resource.getProperty(creationTimePropDef) : publishedDateProp;
+            publishedDateProp = publishedDateProp == null 
+                    ? resource.getProperty(creationTimePropDef) : publishedDateProp;
             String id = getId(resource.getURI(), publishedDateProp, null);
             entry.setId(id);
             entry.addCategory(resource.getResourceType());
@@ -251,12 +245,6 @@ public class ListingFeedView implements View {
                 entry.setTitle(TextUtils.removeUnprintables(title.getFormattedValue()));
             }
 
-            if (extensions != null) {
-                for (String key: extensions.keySet()) {
-                    entry.addSimpleExtension("vrtx", key, "v", extensions.get(key).toString());
-                }
-            }
-            
             Property numberOfComments = resource.getProperty(numberOfCommentsPropDef);
             if (numberOfComments != null) {
                 entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());
@@ -323,7 +311,7 @@ public class ListingFeedView implements View {
                 }
             }
             if (isExtendedFormat(request)) {
-                addExtensions(entry, resource);
+                addExtensions(request, model, feed, entry, resource);
             }
             feed.addEntry(entry);
 
@@ -337,7 +325,8 @@ public class ListingFeedView implements View {
         return "extended".equals(request.getParameter("format"));
     }
     
-    protected void addExtensions(Entry entry, PropertySet resource) {
+    protected void addExtensions(HttpServletRequest request, Map<String, ?> model, 
+            Feed feed, Entry entry, PropertySet resource) {
         Property numberOfComments = resource.getProperty(numberOfCommentsPropDef);
         if (numberOfComments != null) {
             entry.addSimpleExtension("vrtx", "numberofcomments", "v", numberOfComments.getFormattedValue());

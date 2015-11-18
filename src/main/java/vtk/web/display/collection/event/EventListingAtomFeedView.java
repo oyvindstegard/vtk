@@ -34,10 +34,12 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
@@ -84,8 +86,9 @@ public class EventListingAtomFeedView extends ListingFeedView {
 
 
     @Override
-    protected void addExtensions(Entry entry, PropertySet resource) {
-        super.addExtensions(entry, resource);
+    protected void addExtensions(HttpServletRequest request, Map<String, ?> model, 
+            Feed feed, Entry entry, PropertySet resource) {
+        super.addExtensions(request, model, feed, entry, resource);
         DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_INSTANT;
         Property startDateProp = helper.getStartDateProperty(resource);
         if (startDateProp != null) {
