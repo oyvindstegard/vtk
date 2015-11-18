@@ -1745,6 +1745,11 @@
         </bean>
       </list>
     </property>
+    <property name="attributesMap">
+      <map>
+        <entry key="javascriptRegistry" value-ref="javascriptRegistry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="permissionShortcuts" class="org.springframework.beans.factory.config.MapFactoryBean">

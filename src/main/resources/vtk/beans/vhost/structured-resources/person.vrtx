@@ -8,6 +8,7 @@ resourcetype person {
     position : string,
     phone : string multiple,
     mobile : string multiple,
+    mobile : string multiple,
     fax : string multiple,
     email : string multiple,
     postalAddress : string multiple,
