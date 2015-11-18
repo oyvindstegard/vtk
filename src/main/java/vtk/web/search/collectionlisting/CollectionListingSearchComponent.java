@@ -138,11 +138,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
 
                 cache.put(new Element(cacheKey, clar));
             }
-            try {
-                result = multiHostSearcher.search(token, search);
-            } catch (Exception e) {
-                logger.error("An error occured while searching multiple hosts", e);
-            }
+            result = multiHostSearcher.search(token, search);
         } else {
             Repository repository = RequestContext.getRequestContext().getRepository();
             result = repository.search(token, search);
