@@ -283,8 +283,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("depth", r.getURI().getDepth());
 
         sqlMap = existed ? getSqlMap("updateResource") : getSqlMap("insertResource");
-        if (this.logger.isDebugEnabled()) {
-            this.logger.debug((existed ? "Updating" : "Storing") + " resource " + r + ", parameter map: " + parameters);
+        if (logger.isDebugEnabled()) {
+            logger.debug((existed ? "Updating" : "Storing") + " resource " + r + ", parameter map: " + parameters);
         }
         
         sqlSession.update(sqlMap, parameters);
@@ -494,8 +494,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                 if (property.getValue().getType() == PropertyType.Type.PRINCIPAL) {
                     value = ((Principal) value).getQualifiedName();
                 }
-                if (this.logger.isDebugEnabled()) {
-                    this.logger.debug("Copy: fixed property: " + property.getDefinition().getName() + ": " + value);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Copy: fixed property: " + property.getDefinition().getName() + ": " + value);
                 }
                 parameters.put(property.getDefinition().getName(), value);
             }
