@@ -34,12 +34,12 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -141,7 +141,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
             try {
                 result = multiHostSearcher.search(token, search);
             } catch (Exception e) {
-                logger.error("An error occured while searching multiple hosts: " + e.getMessage());
+                logger.error("An error occured while searching multiple hosts", e);
             }
         } else {
             Repository repository = RequestContext.getRequestContext().getRepository();
