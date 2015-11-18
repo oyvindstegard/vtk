@@ -30,10 +30,14 @@
  */
 package vtk.web.display.collection.event;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.abdera.model.Entry;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
@@ -78,6 +82,42 @@ public class EventListingAtomFeedView extends ListingFeedView {
         return feedTitle;
     }
 
+
+    @Override
+    protected void addExtensions(Entry entry, PropertySet resource) {
+        super.addExtensions(entry, resource);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_INSTANT;
+        Property startDateProp = helper.getStartDateProperty(resource);
+        if (startDateProp != null) {
+            Date date = startDateProp.getDateValue();
+            ZonedDateTime zdt = ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+            entry.addSimpleExtension("vrtx", "event-start", "v", dateFormatter.format(zdt));
+        }
+        Property endDateProp = helper.getEndDateProperty(resource);
+        if (endDateProp != null) {
+            Date date = endDateProp.getDateValue();
+            ZonedDateTime zdt = ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+            entry.addSimpleExtension("vrtx", "event-end", "v", dateFormatter.format(zdt));
+        }
+        
+        String location = null;
+        String mapURL = null;
+        for (Property property: resource) {
+            if ("location".equals(property.getDefinition().getName())) {
+                location = property.getStringValue();
+            }
+            else if ("mapurl".equals(property.getDefinition().getName())) {
+                mapURL = property.getStringValue();
+            }
+        }
+        if (location != null) {
+            entry.addSimpleExtension("vrtx", "event-location", "v", location);
+        }
+        if (mapURL != null) {
+            entry.addSimpleExtension("vrtx", "event-map-url", "v", mapURL);
+        }
+    }
+    
     @Override
     protected boolean showFeedIntroduction(Resource feedScope) {
         Property displayTypeProp = feedScope.getProperty(displayTypePropDef);

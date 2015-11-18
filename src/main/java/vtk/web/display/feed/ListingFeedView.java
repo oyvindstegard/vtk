@@ -99,7 +99,6 @@ public class ListingFeedView implements View {
     protected ResourceTypeTree resourceTypeTree;
     protected PropertyTypeDefinition publishDatePropDef;
     protected HtmlUtil htmlUtil;
-    protected int entryCountLimit = 200;
     protected boolean useProtocolRelativeImages = true;
 
     protected PropertyTypeDefinition titlePropDef;
