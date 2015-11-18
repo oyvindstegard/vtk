@@ -339,7 +339,7 @@
         <bean class="vtk.web.referencedata.provider.StaticModelDataProvider">
           <property name="modelDataMap">
             <map>
-              <entry key="cssURLs" value-ref="editor.editCSSURLs" />
+              <entry key="cssRegistry" value-ref="manage.cssRegistry" />
               <entry key="fckEditorAreaCSSURL" value-ref="editor.fckEditorAreaCSSURL" />
               <entry key="jsBaseURL" value="${jsBaseURL}" />
               <entry key="webResources" value="${webResources.baseURL}" />
@@ -388,12 +388,11 @@
     </property>
   </bean>
 
-  <bean id="editor.editCSSURLs" class="java.util.ArrayList">
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.cssRegistry" />
+    <constructor-arg value="editor:head" />
     <constructor-arg>
       <list>
-        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css
-        </value>
-        <value>${themeBaseURL}/default.css</value>
         <value>${themeBaseURL}/editor.css</value>
       </list>
     </constructor-arg>
