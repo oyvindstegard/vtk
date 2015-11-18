@@ -1,11 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    ${browse:css}
+    ${browse:css place=[head]}
     <!--[if lte IE 7]>
       <link rel="stylesheet" href="/vrtx/__vrtx/static-resources/themes/default/default-ie7.css" type="text/css"/> 
     <![endif]--> 
-    ${browse:javascript}
+    ${browse:javascript place=[head]}
     ${document:element select=[html.head] exclude=[title]}
     <title>${browse:title}</title>
   </head>
@@ -31,5 +31,6 @@
         </div>
       </div>
     </div>
+    ${browse:javascript place=[body_end]}
   </body>
 </html>
