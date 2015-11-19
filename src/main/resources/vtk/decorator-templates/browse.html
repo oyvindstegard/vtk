@@ -2,10 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     ${browse:css place=[head]}
+    ${browse:css}
     <!--[if lte IE 7]>
       <link rel="stylesheet" href="/vrtx/__vrtx/static-resources/themes/default/default-ie7.css" type="text/css"/> 
     <![endif]--> 
     ${browse:javascript place=[head]}
+    ${browse:javascript}
     ${document:element select=[html.head] exclude=[title]}
     <title>${browse:title}</title>
   </head>

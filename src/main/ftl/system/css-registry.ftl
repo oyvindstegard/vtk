@@ -3,3 +3,8 @@
     <link rel="stylesheet" href="${cssURL?html}" type="text/css" />
   </#list>
 </#if>
+<#if !place?exists && serviceCssURLs?exists>
+  <#list serviceCssURLs as cssURL>
+    <link rel="stylesheet" href="${cssURL?html}" type="text/css" />
+  </#list>
+</#if>
