@@ -1178,11 +1178,11 @@
     <constructor-arg type="java.lang.String" value="manage" />
   </bean>
 
-  <bean id="javascriptRegistry" class="vtk.web.MediaRegistry" />
-  <bean id="cssRegistry" class="vtk.web.MediaRegistry" />
+  <bean id="manage.javascriptRegistry" class="vtk.web.MediaRegistry" />
+  <bean id="manage.cssRegistry" class="vtk.web.MediaRegistry" />
 
   <bean class="vtk.web.AdminMedia">
-    <constructor-arg ref="javascriptRegistry" />
+    <constructor-arg ref="manage.javascriptRegistry" />
     <constructor-arg value="head" />
     <constructor-arg>
       <list>
@@ -1196,7 +1196,7 @@
   </bean>
 
   <bean class="vtk.web.AdminMedia">
-    <constructor-arg ref="cssRegistry" />
+    <constructor-arg ref="manage.cssRegistry" />
     <constructor-arg value="head" />
     <constructor-arg>
       <list>
@@ -1258,10 +1258,10 @@
   </bean>
 
   <bean id="manage.cssView" parent="freemarkerView">
-    <property name="url" value="system/css.ftl" />
+    <property name="url" value="system/css-registry.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="cssRegistry" value-ref="cssRegistry" />
+        <entry key="cssRegistry" value-ref="manage.cssRegistry" />
       </map>
     </property>
   </bean>
@@ -1280,10 +1280,10 @@
   </bean>
 
   <bean id="manage.javascriptView" parent="freemarkerView">
-    <property name="url" value="system/javascript.ftl" />
+    <property name="url" value="system/javascript-registry.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="javascriptRegistry" value-ref="javascriptRegistry" />
+        <entry key="javascriptRegistry" value-ref="manage.javascriptRegistry" />
       </map>
     </property>
   </bean>
@@ -1745,6 +1745,11 @@
         </bean>
       </list>
     </property>
+    <property name="attributesMap">
+      <map>
+        <entry key="javascriptRegistry" value-ref="manage.javascriptRegistry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="permissionShortcuts" class="org.springframework.beans.factory.config.MapFactoryBean">
@@ -1840,21 +1845,22 @@
     <property name="resourceLocation" value="${webResources.physicalLocation}" />
   </bean>
 
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.javascriptRegistry" />
+    <constructor-arg value="preview:head" />
+    <constructor-arg>
+      <list>
+        <value>${jsBaseURL}/cross-doc-com-link.js</value>
+        <value>${jsBaseURL}/iframe-admin.js</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
   <!-- Manage specific providers -->
   <bean id="iframeJSProvider" class="vtk.web.referencedata.provider.StaticModelDataProvider">
     <property name="modelDataMap">
       <map>
-        <entry key="jsURLs">
-          <list>
-            <value>${jquery.baseURL}/jquery.min.js</value>
-            <value>${jsBaseURL}/frameworks/es5-shim-dejavu.js</value>
-            <value>${jsBaseURL}/cross-doc-com-link.js</value>
-            <value>${jsBaseURL}/iframe-admin.js</value>
-            <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
-            <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
-            <value>${jsBaseURL}/admin-enhancements.js</value>
-          </list>
-        </entry>
+        <entry key="javascriptRegistry" value-ref="manage.javascriptRegistry"/>
       </map>
     </property>
   </bean>

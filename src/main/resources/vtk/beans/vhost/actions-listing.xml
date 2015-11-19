@@ -85,7 +85,7 @@
             <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
             <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
             <value>${jsBaseURL}/admin-enhancements.js</value>
-			<value>${jsBaseURL}/domains/listing.js</value>
+      			<value>${jsBaseURL}/domains/listing.js</value>
             <value>${jsBaseURL}/embedded-listing.js</value>
           </list>
         </entry>

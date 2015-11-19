@@ -5,9 +5,9 @@
   - 
   - Description: A HTML page that displays the permissions set on a
   - resource
-  - 
+  -
   - Required model data:
-  -  
+  -
   - Optional model data:
   -
   -->
@@ -117,4 +117,3 @@
     <@vrtx.javascriptPlaceholder place="permissions:body_end" />
   </body>
 </html>
-

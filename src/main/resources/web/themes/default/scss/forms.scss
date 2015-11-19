@@ -206,6 +206,7 @@
     .ui-dialog-titlebar-close {
       right: 3px;
       top: 3px;
+      z-index: 1;
       
       .ui-button-text {
         display: none;
@@ -245,6 +246,7 @@
         padding: 0;
       }
     }
+    .vrtx-dialog-content { height: 100%; }
     .ui-dialog-buttonpane {
       padding: 0;
       button {
@@ -279,6 +281,18 @@
     #submitButtons {
       padding: 30px 0 0 0;
       margin: 0 0 -15px;
+    }
+  }
+  .ui-dialog.dialog-no-title {
+    .ui-dialog-content {
+      padding: 0;
+    }
+    .ui-dialog-titlebar {
+        padding: 0;
+        background: none;
+    }
+    .ui-dialog-title {
+      display: none;
     }
   }
   .ui-widget {
