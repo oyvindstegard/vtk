@@ -66,6 +66,7 @@ public class BaseCollectionListingController implements ListingController {
     public final static String MODEL_KEY_HIDE_ALTERNATIVE_REP = "hideAlternativeRepresentation";
     public final static String MODEL_KEY_OVERRIDDEN_TITLE = "overriddenTitle";
     public final static String MODEL_KEY_HIDE_NUMBER_OF_COMMENTS = "hideNumberOfComments";
+    public final static String MODEL_KEY_FEATURED_ARTICLES = "featuredArticles";
 
     protected static Log logger = LogFactory.getLog(BaseCollectionListingController.class);
 
@@ -117,7 +118,6 @@ public class BaseCollectionListingController implements ListingController {
             for (String contentType : alternativeRepresentations.keySet()) {
                 Map<String, Object> m = new HashMap<>();
                 Service service = alternativeRepresentations.get(contentType);
-
                 try {
                     URL url = service.constructURL(collection, principal);
                     if (includeRequestParametersInAlternativeRepresentation) {
@@ -139,9 +139,10 @@ public class BaseCollectionListingController implements ListingController {
                     String title = service.getName();
 
                     org.springframework.web.servlet.support.RequestContext rc = 
-                            new org.springframework.web.servlet.support.RequestContext(request);
-                    title = rc.getMessage(service.getName(), 
-                            new Object[] { collection.getTitle() }, service.getName());
+                        new org.springframework.web.servlet.support.RequestContext(
+                            request);
+                    title = rc.getMessage(service.getName(),
+                        new Object[] { collection.getTitle() }, service.getName());
 
                     m.put("title", title);
                     m.put("url", url);
@@ -150,7 +151,7 @@ public class BaseCollectionListingController implements ListingController {
                     alt.add(m);
                 }
                 catch (Throwable t) {
-                    logger.debug("Failed to Link to alternative representation '" 
+                    logger.debug("Failed to Link to alternative representation '"
                             + contentType + "' for resource " + collection, t);
                 }
             }

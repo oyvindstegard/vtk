@@ -93,7 +93,7 @@ public class CommandExecutorController extends SimpleFormController<ExecutorComm
         PrintStream resultStream = new PrintStream(bufferStream);
         console.eval(command.getCommand(), resultStream);
         command.setResult(new String(bufferStream.toByteArray()));
-        return new ModelAndView(getFormView(), model);
+        return new ModelAndView(getFormView(), errors.getModel());
     }
 
 

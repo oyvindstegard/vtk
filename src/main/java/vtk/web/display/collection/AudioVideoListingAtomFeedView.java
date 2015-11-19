@@ -30,6 +30,8 @@
  */
 package vtk.web.display.collection;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.abdera.Abdera;
@@ -58,8 +60,8 @@ public class AudioVideoListingAtomFeedView extends ListingFeedView {
     private PropertyTypeDefinition audioHtmlDescriptionPropDef;
 
     @Override
-    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Feed feed, 
-            PropertySet result) {
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Map<String, ?> model, 
+            Feed feed, PropertySet result) {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
