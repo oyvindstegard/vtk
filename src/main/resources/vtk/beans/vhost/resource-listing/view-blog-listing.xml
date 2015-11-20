@@ -85,6 +85,7 @@
   </bean>
 
   <bean id="blogListing.feedService" parent="collectionListing.feedService">
+    <property name="parent" ref="collectionListing.feedService" />
     <property name="order" value="-2" />
     <property name="assertions">
       <list>

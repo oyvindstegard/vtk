@@ -48,14 +48,6 @@
     </property>
   </bean>
 
-  <bean id="personListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="personListing.feedView" value-ref="personListing.feedView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="personListing.viewResolver" parent="decoratorViewResolver">
     <property name="views">
       <map>
@@ -74,6 +66,7 @@
   </bean>
 
   <bean id="personListing.feedService" parent="collectionListing.feedService">
+    <property name="parent" ref="collectionListing.feedService" />
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
@@ -88,8 +81,15 @@
     <property name="viewName" value="personListing.feedView" />
   </bean>
 
-  <bean id="personListing.feedView" class="vtk.web.display.feed.ListingFeedView"
-    parent="atomFeedView">
+  <bean id="personListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="personListing.feedView" value-ref="personListing.feedView" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="personListing.feedView" parent="atomFeedView">
     <property name="feedMetadata">
       <map>
         <entry key="feed-type" value="person-listing" />
