@@ -129,7 +129,7 @@
     parent="atomFeedView">
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="project-list" />
+        <entry key="feed-type" value="project-listing" />
       </map>
     </property>
   </bean>

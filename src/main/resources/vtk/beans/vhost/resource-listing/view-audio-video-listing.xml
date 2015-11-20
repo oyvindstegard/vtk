@@ -164,7 +164,7 @@
         parent="collectionListing.feedView">
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="audio-video-list" />
+        <entry key="feed-type" value="audio-video-listing" />
       </map>
     </property>
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />

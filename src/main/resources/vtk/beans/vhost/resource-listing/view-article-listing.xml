@@ -50,7 +50,7 @@
     <property name="overridePublishDatePropDef" ref="publishedDatePropDef" />
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="article-list" />
+        <entry key="feed-type" value="article-listing" />
       </map>
     </property>
   </bean>

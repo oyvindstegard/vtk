@@ -82,7 +82,7 @@
     parent="atomFeedView">
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="research-group-list" />
+        <entry key="feed-type" value="research-group-listing" />
       </map>
     </property>
   </bean>

@@ -96,7 +96,7 @@
     parent="atomFeedView">
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="message-list" />
+        <entry key="feed-type" value="message-listing" />
       </map>
     </property>
     <property name="authorPropDefPointer" value="createdBy" />
