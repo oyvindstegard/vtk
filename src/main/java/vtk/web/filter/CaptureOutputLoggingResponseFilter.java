@@ -38,6 +38,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -296,6 +297,16 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
         
         int getStreamBytesWritten() {
             return streamBytesWritten;
+        }
+
+        @Override
+        public boolean isReady() {
+            return wrappedStream.isReady();
+        }
+
+        @Override
+        public void setWriteListener(WriteListener writeListener) {
+            wrappedStream.setWriteListener(writeListener);
         }
 
     }

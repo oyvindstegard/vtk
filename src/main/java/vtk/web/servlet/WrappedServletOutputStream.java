@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 
 
 /**
@@ -157,6 +158,16 @@ public class WrappedServletOutputStream extends ServletOutputStream {
 
     @Override
     public void flush() throws IOException {
+    }
+
+    @Override
+    public boolean isReady() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setWriteListener(WriteListener writeListener) {
+        throw new UnsupportedOperationException();
     }
 
 }

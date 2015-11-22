@@ -33,6 +33,8 @@ package vtk.util.io;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.servlet.ReadListener;
+
 
 public class ServletInputStream extends javax.servlet.ServletInputStream {
 
@@ -89,6 +91,31 @@ public class ServletInputStream extends javax.servlet.ServletInputStream {
     @Override
     public long skip(long n) throws IOException {
         return inputStream.skip(n);
+    }
+
+    @Override
+    public boolean isFinished() {
+        try {
+            return inputStream.available() == 0;
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean isReady() {
+        try {
+            return inputStream.available() != 0;
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void setReadListener(ReadListener readListener) {
+        throw new UnsupportedOperationException("setReadListener");
     }
 
 }
