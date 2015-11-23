@@ -21,7 +21,9 @@ void execute(context, args, out) {
     tm = beanContext.getBean("repository.transactionManager");
     searcher = beanContext.getBean("systemIndexSearcher");
     parser = beanContext.getBean("searchParser");
-    dao = beanContext.getBean("repository.cache");
+
+    setAccessibility(true);
+    dao = beanContext.getBean("repository.cache").wrappedAccessor;
     helper = beanContext.getBean("repositoryResourceHelper");
     contentStore = beanContext.getBean("repository.fsContentStore");
     contentRegistry = beanContext.getBean("contentRepresentationRegistry");
@@ -69,8 +71,9 @@ void execute(context, args, out) {
 
                 try {
                     evaluated = helper.contentModification(orig, orig.getOwner(), content);
-                } catch (t) {
-                    out.print("Error: " + t.getMessage());
+                }
+                catch (t) {
+                    log.print("Error: " + t.getMessage());
                     return true;
                 }
         
@@ -107,9 +110,10 @@ void execute(context, args, out) {
                             evaluated.removeProperty(p2.getDefinition());
                             evaluated.addProperty(p2);
                         }
-                    } catch (t) {
-                        out.print(t.getMessage());
-                        return;
+                    }
+                    catch (t) {
+                        log.print(t.getMessage());
+                        return true;
                     }
                 }
 
@@ -125,8 +129,8 @@ void execute(context, args, out) {
                         if (old == null) {
                             curVal = multi ? Arrays.asList(prop.getValues()) : prop.getValue();
                             log.println("  + " + prefix + name + ": '" + curVal + "'");
-                        } else if (!old.equals(prop)) {
-
+                        }
+                        else if (!old.equals(prop)) {
                             prevVal = old.getDefinition().isMultiple() ? Arrays.asList(old.getValues()) : old.getValue();
                             curVal = multi ? Arrays.asList(prop.getValues()) : prop.getValue();
                             log.println("   m " + prefix + name 
@@ -135,11 +139,14 @@ void execute(context, args, out) {
                     }
                 }
 
-
-
                 // store directly to DAO layer:
 
-                status = tm.getTransaction(null);
+                // def = new org.springframework.transaction.support.DefaultTransactionDefinition();
+                // def.setName("PropertyEvaluationTx");
+                // def.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED);
+                def = null;
+
+                status = tm.getTransaction(def);
                 try {
                     //tm.startTransaction();
                     dao.store(evaluated);
@@ -149,11 +156,16 @@ void execute(context, args, out) {
                     beanContext.publishEvent(event);
 
                     tm.commit(status);
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
+                    log.println("Error: " +  t.getMessage());
                     tm.rollback(status);
-                } finally {
+                    return true;
+                }
+                finally {
                     //tm.endTransaction();
                 }
+
                 log.flush();
                 return true;
             }
