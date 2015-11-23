@@ -87,14 +87,17 @@ public final class MailExecutor {
             return false;
         }
 
-        // VTK-4124 hotfix: ban any email address that is not ".uio.no" top level domain.
+        // VTK-4124 hack fix: white list of allowed email recipient domains.
         // TODO This should be considered a temporary place to fix the security issues
-        // outlined in VTK-4124.
-        if (! addr.toLowerCase().endsWith(".uio.no")) {
-            return false;
-        }
-
-        return true;
+        // outlined in VTK-4124. Should be removed from here and made configurable.
+        return addr.matches("(?i).*[@.]("
+                + "samordnaopptak|"
+                + "norgeshistorie|"
+                + "musikkarven|"
+                + "cristin|"
+                + "hlsenteret|"
+                + "uio)\\.no$|"
+                + ".*[@.]nordlys\\.info$");
     }
     
     private static class SendMailTask implements Runnable {
