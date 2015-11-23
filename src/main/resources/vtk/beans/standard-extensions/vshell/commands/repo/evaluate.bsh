@@ -113,7 +113,7 @@ void execute(context, args, out) {
                     }
                     catch (t) {
                         log.print(t.getMessage());
-                        return;
+                        return true;
                     }
                 }
 
@@ -156,7 +156,6 @@ void execute(context, args, out) {
                     beanContext.publishEvent(event);
 
                     tm.commit(status);
-
                 }
                 catch (Throwable t) {
                     log.println("Error: " +  t.getMessage());
