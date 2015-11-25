@@ -30,7 +30,6 @@
  */
 package vtk.web.search;
 
-import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,13 +39,11 @@ import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
-import vtk.repository.PropertySetImpl;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatException;
 import vtk.repository.search.ResultSet;
-import vtk.repository.search.ResultSetImpl;
 import vtk.web.service.URL;
 
 /**
@@ -85,20 +82,13 @@ public class MultiHostUtil {
      * @return PropertySet with new IMAGE_REF Property values
      */
     public static ResultSet resolveResultSetImageRefProperties(ResultSet rs) {
-        ResultSetImpl rsi = new ResultSetImpl(rs.getAllResults().size());
-
-        rsi.setTotalHits(rs.getTotalHits());
-
-        rs.getAllResults().stream().map((ps) -> {
+        for (PropertySet ps : rs.getAllResults()) {
             if (isMultiHostPropertySet(ps)) {
-                ps = resolveImageRefProperties(ps);
+                resolveImageRefProperties(ps);
             }
-            return ps;
-        }).forEach((ps) -> {
-            rsi.addResult(ps);
-        });
+        }
 
-        return rsi;
+        return rs;
     }
 
     /**
@@ -106,16 +96,16 @@ public class MultiHostUtil {
      * Property as a new value.
      *
      * @param propertySets Set to be changed
-     * @return PropertySet with new IMAGE_REF Property values
+     * @return Set of PropertySets with new IMAGE_REF Property values
      */
     public static Set<PropertySet> resolveSetImageRefProperties(Set<PropertySet> propertySets) {
-        Set<PropertySet> sps = new HashSet<>();
+        for (PropertySet ps : propertySets) {
+            if (isMultiHostPropertySet(ps)) {
+                resolveImageRefProperties(ps);
+            }
+        }
 
-        propertySets.stream().forEach((ps) -> {
-            sps.add(resolveImageRefProperties(ps));
-        });
-
-        return sps;
+        return propertySets;
     }
 
     /**
@@ -126,29 +116,26 @@ public class MultiHostUtil {
      * @return PropertySet with new IMAGE_REF Property values
      */
     public static PropertySet resolveImageRefProperties(PropertySet ps) {
-
-        PropertySetImpl psi = (PropertySetImpl) ps;
-
         Property multiHostUrl = getMultiHostUrlProp(ps);
 
-        for (Property prop : ps) {
-            try {
-                if (prop.getType().equals(Type.IMAGE_REF)) {
-                    /*
-                     * resolveImageRefProperty with thumbnailForNoneAbsoluteRefs=true to maintain
-                     * behavior form SolrResultMapper.java as default
-                     */
-                    prop = resolveImageRefProperty(prop, multiHostUrl, true);
+        if (multiHostUrl != null) {
+            for (Property prop : ps) {
+                try {
+                    if (prop.getType().equals(Type.IMAGE_REF)) {
+                        /*
+                         * resolveImageRefProperty with thumbnailForNoneAbsoluteRefs=true to maintain
+                         * behavior form SolrResultMapper.java as default
+                         */
+                        resolveImageRefProperty(prop, multiHostUrl, true);
+                    }
+                } catch (IllegalOperationException | ValueFormatException e) {
+                    logger.error("An error occured while mapping property '" + prop.getDefinition().getName() + "' for "
+                            + "resource " + ps.getURI() + ": " + e.getClass().getSimpleName() + ": " + e.getMessage());
                 }
-
-                psi.addProperty(prop);
-            } catch (IllegalOperationException | ValueFormatException e) {
-                logger.error("An error occured while mapping property '" + prop.getDefinition().getName() + "' for "
-                        + "resource " + ps.getURI() + ": " + e.getClass().getSimpleName() + ": " + e.getMessage());
             }
         }
 
-        return psi;
+        return ps;
     }
 
     /**

@@ -83,6 +83,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
     private MultiHostSearcher multiHostSearcher;
     private ListingUriQueryBuilder listingUriQueryBuilder;
     private Ehcache cache;
+    private boolean resolveMultiHostResultSet = true;
 
     @Override
     protected ResultSet getResultSet(HttpServletRequest request, Resource collection, String token, Sorting sorting,
@@ -140,7 +141,10 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
                 cache.put(new Element(cacheKey, clar));
             }
             try {
-                result = MultiHostUtil.resolveResultSetImageRefProperties(multiHostSearcher.search(token, search));
+                result = multiHostSearcher.search(token, search);
+                if (resolveMultiHostResultSet) {
+                    result = MultiHostUtil.resolveResultSetImageRefProperties(result);
+                }
             } catch (Exception e) {
                 logger.error("An error occured while searching multiple hosts: " + e.getMessage());
             }
@@ -291,6 +295,10 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
     @Required
     public void setCache(Ehcache cache) {
         this.cache = cache;
+    }
+
+    public void setResolveMultiHostResultSet(boolean resolveMultiHostResultSet) {
+        this.resolveMultiHostResultSet = resolveMultiHostResultSet;
     }
 
 }
