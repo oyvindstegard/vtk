@@ -50,7 +50,7 @@
     <property name="specificDateEventSearchComponent" ref="${override.listing.prefix}eventListing.specificDateEventSearchComponent" />
   </bean>
 
-  <bean name="eventListing.feedHandler" parent="eventListing.handler">
+  <bean name="eventListing.feedHandler" parent="eventListing.calendarAllUpcomingHandler">
     <property name="viewName" value="eventListing.feedView" />
   </bean>
 
