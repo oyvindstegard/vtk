@@ -43,6 +43,7 @@
 
   <bean id="articleListing.feedHandler" parent="articleListing.handler">
     <property name="viewName" value="articleListing.feedView" />
+    <property name="searcher" ref="articleListingFeedSearcher" />
   </bean>
 
   <bean id="articleListing.feedView" class="vtk.web.display.collection.article.ArticleListingAtomFeedView" 
@@ -95,6 +96,15 @@
     <property name="searchSorting" ref="articleListing.searchSorting" />
     <property name="configurablePropertySelectPointers" ref="${override.listing.prefix}article.configurablePropertySelectPointersList" />
     <property name="displayEditLinks" value="false" />
+  </bean>
+
+  <bean id="articleListingFeedSearcher" parent="articleListingSearcher">
+    <property name="defaultSearch" ref="articleListingFeed.searchComponent" />
+  </bean>
+
+  <bean id="articleListingFeed.searchComponent" parent="articleListing.searchComponent">
+    <property name="name" value="articleListingFeed.defaultArticles" />
+    <property name="resolveMultiHostResultSet" value="false" />
   </bean>
 
   <bean id="articleListing.listingUriQueryBuilder" parent="collection.defaultRecursiveListingUriQueryBuilder">

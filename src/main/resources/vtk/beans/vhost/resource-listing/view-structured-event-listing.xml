@@ -24,6 +24,11 @@
     <property name="configurablePropertySelectPointers" ref="structured.event.configurablePropertySelectPointersList" />
   </bean>
 
+  <bean id="structured.eventListingFeed.specificDateEventSearchComponent" parent="structured.eventListing.specificDateEventSearchComponent">
+    <property name="name" value="structured.eventListingFeed.specificDateEventSearchComponent" />
+    <property name="resolveMultiHostResultSet" value="false" />
+  </bean>
+
   <bean id="structured.eventListing.currentMonthSearchComponent" parent="structured.eventListing.specificDateEventSearchComponent">
     <property name="name" value="structured.eventListing.currentMonthSearchComponent" />
     <property name="queryBuilders">
