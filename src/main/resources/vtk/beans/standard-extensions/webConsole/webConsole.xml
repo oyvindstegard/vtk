@@ -29,6 +29,7 @@
     <property name="handler" ref="webConsoleHandler"/>
   </bean>
 
+  <!--
   <bean id="vshellConsoleService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-300"/>
     <property name="parent" ref="repositoryManageService"/>
@@ -55,8 +56,7 @@
     </property>
     <property name="handler" ref="vshellConsoleHandler"/>
   </bean>
-
-
+  -->
 
   <bean id="webConsoleHandler"
         class="vtk.web.display.shell.CommandExecutorController">
