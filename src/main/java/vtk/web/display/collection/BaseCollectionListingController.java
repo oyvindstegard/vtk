@@ -59,7 +59,6 @@ import vtk.web.service.URL;
 import vtk.web.view.freemarker.MessageLocalizer;
 
 public class BaseCollectionListingController implements ListingController {
-
     public final static String MODEL_KEY_SEARCH_COMPONENTS = "searchComponents";
     public final static String MODEL_KEY_PAGE = "page";
     public final static String MODEL_KEY_PAGINATION = "pagination";
@@ -90,9 +89,7 @@ public class BaseCollectionListingController implements ListingController {
     ) throws Exception {}
 
     @Override
-    @SuppressWarnings("unchecked")
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -110,9 +107,16 @@ public class BaseCollectionListingController implements ListingController {
                 model.put("subFolderMenu", subfolders);
             }
         }
-        model.put("collection", this.resourceManager.createResourceWrapper(collection));
+        model.put("collection", resourceManager.createResourceWrapper(collection));
 
         int pageLimit = getPageLimit(collection);
+        if (request.getParameter("page-size") != null) {
+            try {
+                int size = Integer.parseInt(request.getParameter("page-size").toString());
+                if (size > 0 && size <= 500) pageLimit = size;
+            }
+            catch (Throwable t) { }
+        }
         /* Run the actual search (done in subclasses) */
         runSearch(request, collection, model, pageLimit);
  
@@ -123,7 +127,7 @@ public class BaseCollectionListingController implements ListingController {
                 Service service = alternativeRepresentations.get(contentType);
                 try {
                     URL url = service.constructURL(collection, principal);
-                    if (this.includeRequestParametersInAlternativeRepresentation) {
+                    if (includeRequestParametersInAlternativeRepresentation) {
                         Enumeration<String> requestParameters = request.getParameterNames();
                         while (requestParameters.hasMoreElements()) {
                             String requestParameter = requestParameters.nextElement();
@@ -132,10 +136,10 @@ public class BaseCollectionListingController implements ListingController {
                             String urlParameterValue = url.getParameter(requestParameter);
                             if (urlParameterValue == null) {
                                 url.addParameter(requestParameter, parameterValue);
-                            } else if ("".equals(urlParameterValue.trim())) {
+                            }
+                            else if ("".equals(urlParameterValue.trim())) {
                                 url.setParameter(requestParameter, parameterValue);
                             }
-
                         }
                     }
 
@@ -144,7 +148,8 @@ public class BaseCollectionListingController implements ListingController {
                     org.springframework.web.servlet.support.RequestContext rc = 
                         new org.springframework.web.servlet.support.RequestContext(
                             request);
-                    title = rc.getMessage(service.getName(), new Object[] { collection.getTitle() }, service.getName());
+                    title = rc.getMessage(service.getName(),
+                        new Object[] { collection.getTitle() }, service.getName());
 
                     m.put("title", title);
                     m.put("url", url);
@@ -162,7 +167,7 @@ public class BaseCollectionListingController implements ListingController {
             }
         }
         model.put("requestURL", requestContext.getRequestURL());
-        return new ModelAndView(this.viewName, model);
+        return new ModelAndView(viewName, model);
     }
 
     protected Map<String, Object> getSubFolderMenu(Resource collection, HttpServletRequest request) {
@@ -194,8 +199,8 @@ public class BaseCollectionListingController implements ListingController {
     }
 
     protected int getPageLimit(Resource collection) {
-        int pageLimit = this.defaultPageLimit;
-        Property pageLimitProp = collection.getProperty(this.pageLimitPropDef);
+        int pageLimit = defaultPageLimit;
+        Property pageLimitProp = collection.getProperty(pageLimitPropDef);
         if (pageLimitProp != null) {
             pageLimit = pageLimitProp.getIntValue();
         }
@@ -203,7 +208,7 @@ public class BaseCollectionListingController implements ListingController {
     }
 
     protected boolean getHideNumberOfComments(Resource collection) {
-        Property p = collection.getProperty(this.hideNumberOfComments);
+        Property p = collection.getProperty(hideNumberOfComments);
         if (p == null) {
             return false;
         }
