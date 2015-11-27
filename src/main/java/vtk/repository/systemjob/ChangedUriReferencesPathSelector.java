@@ -50,9 +50,12 @@ import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
 import vtk.repository.search.Sorting;
+import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
 import vtk.repository.search.query.PropertyWildcardQuery;
 import vtk.repository.search.query.TermOperator;
+import vtk.repository.search.query.UriDepthQuery;
+import vtk.repository.search.query.UriPrefixQuery;
 import vtk.security.SecurityContext;
 import vtk.util.repository.AbstractRepositoryEventHandler;
 
@@ -123,10 +126,23 @@ public class ChangedUriReferencesPathSelector
         OrQuery query = new OrQuery();
         
         for (Path uri: uris) {
+            // Root-relative and full URLs:
             String term = "*" + uri.toString().replaceAll(" ", "\\") + "*";
             PropertyWildcardQuery hrefQuery = new PropertyWildcardQuery(hrefsPropDef, term, TermOperator.EQ);
             hrefQuery.setComplexValueAttributeSpecifier("links.url");
             query.add(hrefQuery);
+
+            if (!uri.isRoot()) {
+                // Relative references:
+                term = "*" + uri.getName().replaceAll(" ", "\\") + "*";
+                AndQuery andQuery = new AndQuery();
+                hrefQuery = new PropertyWildcardQuery(hrefsPropDef, term, TermOperator.EQ);
+                hrefQuery.setComplexValueAttributeSpecifier("links.url");
+                andQuery.add(hrefQuery);
+                andQuery.add(new UriPrefixQuery(uri.getParent().toString().replaceAll(" ", "\\")));
+                andQuery.add(new UriDepthQuery(uri.getDepth()));
+                query.add(andQuery);
+            }
         }
 
         Search search = new Search();
