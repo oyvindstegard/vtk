@@ -134,6 +134,7 @@ public class FeedImageInlineFilter extends AbstractResponseFilter {
     }
     
     private static class FilterServletOutputStream extends ServletOutputStream {
+        private static final long MAX_IMG_INLINE_SIZE = 1000000L;
         private OutputStream out;
         private ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         private boolean committed = false;
@@ -228,16 +229,28 @@ public class FeedImageInlineFilter extends AbstractResponseFilter {
                 url = requestContext.getRequestURL().relativeURL(ref);
             }
             Path uri = url.getPath();
+            InputStream imageStream = null;
+            String contentType = null;
             Resource resource = repo.retrieve(token, uri, true);
             Property thumbnail = resource.getProperty(
                     Namespace.DEFAULT_NAMESPACE, PropertyType.THUMBNAIL_PROP_NAME);
             
             if (thumbnail != null) {
-                InputStream encoderStream = Base64.encoderStream(thumbnail.getBinaryStream().getStream());
-                writer.write("data:" + thumbnail.getBinaryContentType() + ";base64,");
-                int n = 0;
-                while ((n = encoderStream.read(buffer)) > 0) {
-                    writer.write(new String(buffer, 0, n, "US-ASCII"));
+                imageStream = thumbnail.getBinaryStream().getStream();
+                contentType = thumbnail.getBinaryContentType();
+            }
+            else if (resource.getContentLength() < MAX_IMG_INLINE_SIZE) {
+                imageStream = repo.getInputStream(token, uri, true);
+                contentType = resource.getContentType();
+            }
+
+            if (imageStream != null) {
+                try (InputStream encoderStream = Base64.encoderStream(imageStream)) {
+                    writer.write("data:" + contentType + ";base64,");
+                    int n = 0;
+                    while ((n = encoderStream.read(buffer)) > 0) {
+                        writer.write(new String(buffer, 0, n, "US-ASCII"));
+                    }
                 }
             }
         }
