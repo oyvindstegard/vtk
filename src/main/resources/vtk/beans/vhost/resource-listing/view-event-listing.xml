@@ -50,8 +50,15 @@
     <property name="specificDateEventSearchComponent" ref="${override.listing.prefix}eventListing.specificDateEventSearchComponent" />
   </bean>
 
+  <bean id="eventListingFeed.eventListingSearcher" class="vtk.web.display.collection.event.EventListingSearcher">
+    <property name="upcomingEventsSearch" ref="eventListingFeed.upcomingEventsSearchComponent" />
+    <property name="previousEventsSearch" ref="eventListingFeed.previousEventsSearchComponent" />
+    <property name="specificDateEventSearchComponent" ref="${override.listing.prefix}eventListingFeed.specificDateEventSearchComponent" />
+  </bean>
+
   <bean name="eventListing.feedHandler" parent="eventListing.handler">
     <property name="viewName" value="eventListing.feedView" />
+    <property name="searcher" ref="eventListingFeed.eventListingSearcher" />
   </bean>
 
   <bean id="eventListing.feedView" class="vtk.web.display.collection.event.EventListingAtomFeedView"
@@ -135,6 +142,11 @@
     <property name="configurablePropertySelectPointers" ref="${override.listing.prefix}event.configurablePropertySelectPointersList" />
   </bean>
 
+  <bean id="eventListingFeed.upcomingEventsSearchComponent" parent="eventListing.upcomingEventsSearchComponent">
+    <property name="name" value="eventListingFeed.upcomingEventsSearchComponent" />
+    <property name="resolveMultiHostResultSet" value="false" />
+  </bean>
+
   <bean id="eventListing.upcomingEventsQueryBuilder" class="vtk.web.search.eventlisting.EventsDateAndTimeQueryBuilder">
     <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="startPropDefPointer" ref="${override.listing.prefix}eventListing.startDatePropDefPointer" />
@@ -180,6 +192,11 @@
     </property>
     <property name="searchSorting" ref="eventListing.previous.searchSorting" />
     <property name="configurablePropertySelectPointers" ref="${override.listing.prefix}event.configurablePropertySelectPointersList" />
+  </bean>
+
+  <bean id="eventListingFeed.previousEventsSearchComponent" parent="eventListing.previousEventsSearchComponent">
+    <property name="name" value="eventListingFeed.previousEventsSearchComponent" />
+    <property name="resolveMultiHostResultSet" value="false" />
   </bean>
 
   <bean id="eventListing.previous.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">

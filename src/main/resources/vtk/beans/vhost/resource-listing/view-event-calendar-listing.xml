@@ -182,6 +182,11 @@
     </property>
   </bean>
 
+  <bean id="eventListingFeed.specificDateEventSearchComponent" parent="eventListing.specificDateEventSearchComponent">
+    <property name="name" value="eventListingFeed.specificDateEventSearchComponent" />
+    <property name="resolveMultiHostResultSet" value="false" />
+  </bean>
+
   <bean id="eventListing.currentMonthSearchComponent" parent="eventListing.specificDateEventSearchComponent">
     <property name="name" value="eventListing.currentMonthSearchComponent" />
     <property name="queryBuilders">

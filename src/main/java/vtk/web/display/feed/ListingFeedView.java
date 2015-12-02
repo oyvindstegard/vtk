@@ -91,6 +91,7 @@ public class ListingFeedView implements View {
 
     private final Log logger = LogFactory.getLog(ListingFeedView.class);
     public static final String TAG_PREFIX = "tag:";
+    private static final String THUMBNAIL = "thumbnail";
     private Map<String,String> feedMetadata = null;
     protected Service viewService;
     protected Abdera abdera;
@@ -203,8 +204,7 @@ public class ListingFeedView implements View {
 
             Property picture = getProperty(feedScope, picturePropDefPointer);
             if (picture != null) {
-                String val = picture.getFormattedValue(
-                        PropertyType.THUMBNAIL_PROP_NAME, Locale.getDefault());
+                String val = picture.getFormattedValue(THUMBNAIL, Locale.getDefault());
                 feed.setLogo(val);
             }
         }
@@ -373,6 +373,11 @@ public class ListingFeedView implements View {
         URL baseURL = viewService.constructURL(propSet.getURI());
 
         if (!isExtendedFormat(request)) {
+            // Maintain same behavior for IMAGE_REF in SearchResultMapper as before VTK-4174
+            if (MultiHostUtil.isMultiHostPropertySet(propSet)) {
+                propSet = MultiHostUtil.resolveImageRefProperties(propSet);
+            }
+
             // Include picture in summary only if "regular" format:
             Property picture = getProperty(propSet, picturePropDefPointer);
             if (picture != null) {
@@ -386,8 +391,7 @@ public class ListingFeedView implements View {
                     }
                 }
 
-                String imgPath = picture.getFormattedValue(
-                        PropertyType.THUMBNAIL_PROP_NAME, Locale.getDefault());
+                String imgPath = picture.getFormattedValue(THUMBNAIL, Locale.getDefault());
                 String imgAlt = getImageAlt(imgPath);
                 sb.append("<img src=\"").append(HtmlUtil.encodeBasicEntities(imgPath)).append("\" alt=\"");
                 sb.append(HtmlUtil.encodeBasicEntities(imgAlt)).append("\"/>");
@@ -448,7 +452,7 @@ public class ListingFeedView implements View {
         if (picture != null) {
             String imageRef;
             if (!MultiHostUtil.isMultiHostPropertySet(propSet)) {
-                imageRef = picture.getFormattedValue("thumbnail", Locale.getDefault());
+                imageRef = picture.getFormattedValue(THUMBNAIL, Locale.getDefault());
             } else {
                 imageRef = MultiHostUtil.resolveImageRefStringValue(picture,
                         MultiHostUtil.getMultiHostUrlProp(propSet), true); // true = add thumbnail if possible
