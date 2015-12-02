@@ -58,6 +58,7 @@ import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
 import vtk.web.search.ListingUriQueryBuilder;
+import vtk.web.search.MultiHostUtil;
 import vtk.web.search.QueryPartsSearchComponent;
 import vtk.web.search.SearchComponentQueryBuilder;
 import vtk.web.search.VHostScopeQueryRestricter;
@@ -82,6 +83,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
     private MultiHostSearcher multiHostSearcher;
     private ListingUriQueryBuilder listingUriQueryBuilder;
     private Ehcache cache;
+    private boolean resolveMultiHostResultSet = true;
 
     @Override
     protected ResultSet getResultSet(HttpServletRequest request, Resource collection, String token, Sorting sorting,
@@ -139,6 +141,9 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
                 cache.put(new Element(cacheKey, clar));
             }
             result = multiHostSearcher.search(token, search);
+            if (resolveMultiHostResultSet) {
+                result = MultiHostUtil.resolveResultSetImageRefProperties(result);
+            }
         } else {
             Repository repository = RequestContext.getRequestContext().getRepository();
             result = repository.search(token, search);
@@ -286,6 +291,10 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
     @Required
     public void setCache(Ehcache cache) {
         this.cache = cache;
+    }
+
+    public void setResolveMultiHostResultSet(boolean resolveMultiHostResultSet) {
+        this.resolveMultiHostResultSet = resolveMultiHostResultSet;
     }
 
 }
