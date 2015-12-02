@@ -30,7 +30,6 @@
  */
 package vtk.web.actions.convert;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -92,7 +91,7 @@ public abstract class CopyController<T extends CopyCommand> extends SimpleFormCo
             HttpServletResponse response, T copyCommand, BindException errors)
             throws Exception {
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = errors.getModel();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();

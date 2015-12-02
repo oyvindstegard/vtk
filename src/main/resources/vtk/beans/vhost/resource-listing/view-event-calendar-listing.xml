@@ -246,7 +246,7 @@
     <property name="overridePublishDatePropDefPointer" ref="${override.listing.prefix}overridePublishDatePropDefPointer" />
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="event-calendar" />
+        <entry key="feed-type" value="event-calendar-listing" />
       </map>
     </property>
   </bean>
