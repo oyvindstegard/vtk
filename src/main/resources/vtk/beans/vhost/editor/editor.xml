@@ -1045,7 +1045,7 @@
               <value>align</value>
               <value>cellpadding</value>
               <value>cellspacing</value>
-              <value>summery</value>
+              <value>summary</value>
             </set>
           </property>
         </bean>
