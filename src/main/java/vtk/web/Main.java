@@ -1,3 +1,33 @@
+/* Copyright (c) 2015, University of Oslo, Norway
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of the University of Oslo nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package vtk.web;
 
 import java.io.File;
@@ -7,31 +37,32 @@ import java.util.List;
 
 import javax.servlet.Servlet;
 
+import org.eclipse.jetty.server.NetworkTrafficServerConnector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.DispatcherServletAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.ServerPropertiesAutoConfiguration;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
-import vtk.web.Main.VTKConfiguration;
 import vtk.web.servlet.VTKServlet;
 
-@Configuration
-@EnableAutoConfiguration(
-   exclude={
-        DataSourceAutoConfiguration.class,
-        ErrorMvcAutoConfiguration.class
-   })
 @EnableWebMvc
-@ComponentScan(basePackageClasses = { VTKConfiguration.class })
+@Import({
+    AopAutoConfiguration.class,
+    AopAutoConfiguration.JdkDynamicAutoProxyConfiguration.class,
+    DispatcherServletAutoConfiguration.class,
+    ServerPropertiesAutoConfiguration.class
+ })
+
 public class Main extends SpringBootServletInitializer {
 
     public static class VTKConfiguration extends WebMvcConfigurationSupport { }
@@ -42,17 +73,37 @@ public class Main extends SpringBootServletInitializer {
         return servlet;
     }
 
-    @Component
-    public static class CustomizationBean implements EmbeddedServletContainerCustomizer {
+    @Bean
+    public EmbeddedServletContainerFactory containerFactory() {
 
-        public CustomizationBean() { }
+        int[] ports = { 9321, 9322 };
 
-        public void init() {}
+        final int maxThreads = 200;
+        final int minThreads = 8;
+        final int idleTimeout = 60000;
 
-        @Override
-        public void customize(ConfigurableEmbeddedServletContainer container) {
-            container.setPort(9322);
-        }
+        JettyEmbeddedServletContainerFactory factory =
+                new JettyEmbeddedServletContainerFactory();
+
+        factory.addServerCustomizers(new JettyServerCustomizer() {
+            @Override
+            public void customize(Server server) {
+                final QueuedThreadPool threadPool = server.getBean(QueuedThreadPool.class);
+                threadPool.setMaxThreads(maxThreads);
+                threadPool.setMinThreads(minThreads);
+                threadPool.setIdleTimeout(idleTimeout);
+
+                for (int port: ports) {
+                    NetworkTrafficServerConnector connector =
+                            new NetworkTrafficServerConnector(server);
+                    connector.setPort(port);
+                    server.addConnector(connector);
+                }
+
+                //server.setSessionIdManager(sessionIdManager);
+            }
+        });
+        return factory;
     }
 
     public static void main(String[] args) throws IOException {
