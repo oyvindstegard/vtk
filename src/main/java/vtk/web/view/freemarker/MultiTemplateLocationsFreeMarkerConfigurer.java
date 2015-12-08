@@ -86,8 +86,7 @@ import freemarker.template.TemplateException;
 public class MultiTemplateLocationsFreeMarkerConfigurer
   implements FreeMarkerConfig, InitializingBean, ApplicationContextAware, ServletContextAware {
 
-    private Log logger = LogFactory.getLog(this.getClass());
-    
+    private final Log logger = LogFactory.getLog(this.getClass());
 
     private ApplicationContext applicationContext;
     private Resource configLocation;
@@ -101,10 +100,12 @@ public class MultiTemplateLocationsFreeMarkerConfigurer
     private Map<String, Object> sharedVariables;
 
     
+    @Override
     public Configuration getConfiguration() {
         return this.configuration;
     }
 
+    @Override
     public void afterPropertiesSet() throws Exception {
         if (this.configuration == null) {
             this.configuration = createConfiguration();
@@ -113,9 +114,16 @@ public class MultiTemplateLocationsFreeMarkerConfigurer
     
     @SuppressWarnings("rawtypes")
     public Configuration createConfiguration() throws IOException, TemplateException {
-        List<TemplateLoader> loaders = new ArrayList<TemplateLoader>();
-        
-        FreeMarkerConfigurationFactory factory = new FreeMarkerConfigurationFactory();
+        List<TemplateLoader> loaders = new ArrayList<>();
+
+        class LatestCompatFreeMarkerConfigurationFactory extends FreeMarkerConfigurationFactory {
+            @Override
+            protected Configuration newConfiguration() throws IOException, TemplateException {
+                return new Configuration(Configuration.VERSION_2_3_23);
+            }
+        }
+
+        LatestCompatFreeMarkerConfigurationFactory factory = new LatestCompatFreeMarkerConfigurationFactory();
         
         factory.setPreferFileSystemAccess(this.preferFileSystemAccess);
         
@@ -148,7 +156,7 @@ public class MultiTemplateLocationsFreeMarkerConfigurer
                 new TemplateLoader[0]);
             MultiTemplateLoader loader = new MultiTemplateLoader(templateLoaders);
 
-            factory = new FreeMarkerConfigurationFactory();
+            factory = new LatestCompatFreeMarkerConfigurationFactory();
             
             if (this.configLocation != null)
                 factory.setConfigLocation(this.configLocation);
@@ -180,6 +188,7 @@ public class MultiTemplateLocationsFreeMarkerConfigurer
     
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
@@ -213,11 +222,14 @@ public class MultiTemplateLocationsFreeMarkerConfigurer
 
     /**
      * Initialize the {@link TaglibFactory} for the given ServletContext.
+     * @param servletContext
      */
+    @Override
     public void setServletContext(ServletContext servletContext) {
         this.taglibFactory = new TaglibFactory(servletContext);
     }
 
+    @Override
     public TaglibFactory getTaglibFactory() {
         return taglibFactory;
     }
