@@ -1051,10 +1051,18 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             Principal p = null;
 
             if (isGroup) {
-                p = principalFactory.getPrincipal(name, Type.GROUP);
+                /* We don't fetch metadata for groups here due to performance
+                   concerns. Metadata for GROUP principals must be retreived on demand
+                   by higher level code.
+                */
+                p = principalFactory.getPrincipal(name, Type.GROUP, false);
             } else if (name.startsWith("pseudo:")) {
                 p = principalFactory.getPrincipal(name, Type.PSEUDO);
             } else {
+                /* We really shouldn't fetch metadata for principals here, but do so
+                   due to compatibility concerns with higher level code expecting it
+                   to be present.
+                */
                 p = principalFactory.getPrincipal(name, Type.USER);
             }
             Privilege action = Privilege.forName(privilege);
@@ -1406,7 +1414,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         Set<Principal> groups = new HashSet<Principal>();
         for (String groupName : groupNames) {
-            Principal group = principalFactory.getPrincipal(groupName, Principal.Type.GROUP);
+            Principal group = principalFactory.getPrincipal(groupName, Principal.Type.GROUP, false);
             groups.add(group);
         }
 
