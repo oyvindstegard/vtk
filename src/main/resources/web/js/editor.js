@@ -390,10 +390,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
   setupCTRLS: function() {
     var rteFacade = this;
     var setupCTRLSPrivate = function(event) {
-      _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
-        ctrlSEventHandler(_$, e);
-      }));
-      _$(".cke_contents iframe").contents().find("body").bind('keydown', 'meta+s', $.debounce(150, true, function (e) {
+      _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s meta+s', $.debounce(150, true, function (e) {
         ctrlSEventHandler(_$, e);
       }));
       
