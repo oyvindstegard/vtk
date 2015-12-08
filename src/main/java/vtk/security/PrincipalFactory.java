@@ -88,12 +88,9 @@ public class PrincipalFactory {
         PrincipalImpl principal = new PrincipalImpl(id, type);
         if (includeMetadata && this.principalMetadataDao != null) {
             try {
-                PrincipalMetadata metadata = this.principalMetadataDao.getMetadata(principal, preferredLocale);
-                if (metadata != null) {
-                    principal.setDescription((String) metadata.getValue(PrincipalMetadataImpl.DESCRIPTION_ATTRIBUTE));
-                    principal.setURL((String) metadata.getValue(Metadata.URL_ATTRIBUTE));
-                    principal.setMetadata(metadata);
-                }
+                // Setup instance for lazy-load of metadata
+                PrincipalMetadata metadata = new PrincipalMetadataImpl(id, this.principalMetadataDao);
+                principal.setMetadata(metadata);
             } catch (UnsupportedPrincipalDomainException d) {
                 // Ignore
             } catch (Exception e) {

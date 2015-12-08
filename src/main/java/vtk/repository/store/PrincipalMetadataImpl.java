@@ -31,7 +31,9 @@
 package vtk.repository.store;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Basic impl of <code>PrincipalMetadata</code>.
@@ -43,7 +45,8 @@ public class PrincipalMetadataImpl extends MetadataImpl implements PrincipalMeta
     public static final String UID_ATTRIBUTE = "uid";
     public static final String QNAME_ATTRIBUTE = "qname";
     private String qualifiedName;
-
+    private PrincipalMetadataDAO dao;
+    private boolean lazyLoaded = false;
 
     public PrincipalMetadataImpl(String qualifiedName) {
         if (qualifiedName == null) {
@@ -52,7 +55,30 @@ public class PrincipalMetadataImpl extends MetadataImpl implements PrincipalMeta
         this.qualifiedName = qualifiedName;
         addAttributeValue(QNAME_ATTRIBUTE, qualifiedName);
     }
+    
+    public PrincipalMetadataImpl(String qualifiedName, PrincipalMetadataDAO dao) {
+        this(qualifiedName);
+        this.dao = dao;
+    }
 
+    @Override
+    public Set<String> getAttributeNames() {
+        maybeLazyLoad();
+        return super.getAttributeNames();
+    }
+
+    @Override
+    public List<Object> getValues(String attributeName) {
+        maybeLazyLoad();
+        return super.getValues(attributeName);
+    }
+
+    @Override
+    public Object getValue(String attributeName) {
+        maybeLazyLoad();
+        return super.getValue(attributeName);
+    }
+    
     @Override
     public String getQualifiedName() {
         return this.qualifiedName;
@@ -60,6 +86,7 @@ public class PrincipalMetadataImpl extends MetadataImpl implements PrincipalMeta
 
     @Override
     public String getUid() {
+        maybeLazyLoad();
         String uid = (String) this.getValue(UID_ATTRIBUTE);
         if (uid == null) {
             uid = (String) this.getValue("username");
@@ -93,11 +120,38 @@ public class PrincipalMetadataImpl extends MetadataImpl implements PrincipalMeta
 
     @Override
     public Map<String, Object> toMap() {
+        maybeLazyLoad();
         Map<String, Object> result = new HashMap<>();
         for (String name: getAttributeNames()) {
             result.put(name, getValues(name));
         }
         return result;
+    }
+    
+    /**
+     * Lazy load whatever we can.
+     * This method will not overwrite already existing attributes.
+     */
+    private void maybeLazyLoad() {
+        if (dao == null) return;
+        
+        if (!lazyLoaded) {
+            synchronized (this) {
+                // No problem if multiple threads queue up before this syncro point.
+                try {
+                    final PrincipalMetadata pm = dao.getMetadata(qualifiedName, null);
+                    if (pm != null) {
+                        Set<String> existingAttribs = super.getAttributeNames();
+                        for (String loadedAttrib : pm.getAttributeNames()) {
+                            if (!existingAttribs.contains(loadedAttrib)) {
+                                super.setAttributeValues(loadedAttrib, pm.getValues(loadedAttrib));
+                            }
+                        }
+                    }
+                } catch (Throwable e) {}
+                lazyLoaded = true;
+            }
+        }
     }
 
 }

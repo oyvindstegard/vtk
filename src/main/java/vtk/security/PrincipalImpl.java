@@ -30,7 +30,9 @@
  */
 package vtk.security;
 
+import vtk.repository.store.Metadata;
 import vtk.repository.store.PrincipalMetadata;
+import vtk.repository.store.PrincipalMetadataImpl;
 
 public class PrincipalImpl implements Principal {
 
@@ -52,7 +54,7 @@ public class PrincipalImpl implements Principal {
         this.domain = "pseudo:";
         this.type = Type.PSEUDO;
     }
-
+    
     public PrincipalImpl(String id, Type type) throws InvalidPrincipalException {
 
         this.type = type;
@@ -197,15 +199,36 @@ public class PrincipalImpl implements Principal {
 
     @Override
     public String getDescription() {
+        if (description == null) {
+            // Try looking in configured metadata
+            if (metadata != null) {
+                String descAttr = (String)metadata.getValue(PrincipalMetadataImpl.DESCRIPTION_ATTRIBUTE);
+                if (descAttr != null) {
+                    description = descAttr;
+                }
+            }
+        }
+        
         if (description != null) {
             return description;
         }
-        return this.name;
+        
+        return name;
     }
 
     @Override
     public String getURL() {
-        return this.url;
+        if (url == null) {
+            // Try looking in configured metadata
+            if (metadata != null) {
+                String urlAttr = (String)metadata.getValue(Metadata.URL_ATTRIBUTE);
+                if (urlAttr != null) {
+                    url = urlAttr;
+                }
+            }
+        }
+        
+        return url;
     }
 
     /**
