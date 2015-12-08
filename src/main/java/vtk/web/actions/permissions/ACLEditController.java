@@ -38,6 +38,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -138,8 +141,10 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
         command.setAcl(acl);
         command.setPrivilege(this.privilege);
 
-        List<Principal> authorizedGroups = new ArrayList<Principal>(Arrays.asList(acl
-                .listPrivilegedGroups(this.privilege)));
+        // Load group principals with metadata
+        List<Principal> authorizedGroups = Arrays.<Principal>stream(acl.listPrivilegedGroups(this.privilege))
+                .<Principal>map(p -> principalFactory.getPrincipal(p.getQualifiedName(), Type.GROUP, true, preferredLocale))
+                .collect(Collectors.toList());
 
         Principal[] privilegedPrincipals = acl.listPrivilegedUsers(this.privilege);
 

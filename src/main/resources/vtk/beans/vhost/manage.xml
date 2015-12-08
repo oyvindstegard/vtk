@@ -1881,6 +1881,7 @@
     <property name="permissionShortcutsConfig" ref="permissionShortcutsProvider.config" />
     <property name="localeResolver" ref="manageLocaleResolver" />
     <property name="documentPrincipalMetadataRetriever" ref="documentPrincipalMetadataRetriever" />
+    <property name="principalFactory" ref="principalFactory" />
   </bean>
 
   <bean id="manageCollectionlistingProvider" class="vtk.web.referencedata.provider.CollectionListingProvider">
