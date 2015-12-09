@@ -47,6 +47,7 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.Ordered;
+
 import vtk.repository.Path;
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
@@ -101,11 +102,6 @@ public class OpenIDAuthenticationHandler
         this.categories = categories;
     }
 
-    @Override
-    public Set<?> getCategories() {
-        return this.categories;
-    }
-    
     public void afterPropertiesSet() {
         if (this.consumerManager == null) {
             throw new BeanInitializationException(

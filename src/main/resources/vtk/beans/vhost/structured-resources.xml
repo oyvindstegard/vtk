@@ -65,11 +65,6 @@
         <ref bean="editableResourcesAssertion" />
       </list>
     </property>
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -84,6 +79,10 @@
         <ref bean="editor.urlPostProcessor" />
       </list>
     </property>
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="structuredResources.editService" />
   </bean>
 
   <bean id="editableResourcesAssertion" class="vtk.web.service.AndAssertion">
@@ -308,9 +307,16 @@
     <property name="readTimeoutSeconds" value="1" />
   </bean>
 
+  <bean id="structuredResources.customFunctions" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+  </bean>
 
-  <bean id="structuredResources.customFunctions" class="vtk.context.CategoryResolvingFactoryBean">
-    <property name="category" value="structuredResources.customFunction" />
+  <bean id="structuredResources.customFunctionsBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="structuredResources.customFunctions" />
+    <property name="targetMethod" value="add" />
   </bean>
 
   <bean id="structuredResources.resourceFunction" class="vtk.resourcemanagement.view.tl.RetrieveHandler">

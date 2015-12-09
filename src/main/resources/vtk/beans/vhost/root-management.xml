@@ -44,17 +44,16 @@
         </bean>
       </list>
     </property>
-    <property name="categories">
-      <set>
-        <value>rootMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder"><value type="java.lang.Integer">-400</value></entry>
       </map>
     </property>
     <property name="handler" ref="root1Handler" />
+  </bean>
+
+  <bean parent="rootManage.tabsBuilder">
+    <property name="arguments" ref="repositoryManageDefaultService" />
   </bean>
 
   <bean id="root1Handler"
@@ -101,16 +100,19 @@
     <property name="matchAncestorServices" value="true" />
   </bean>
 
-  <bean id="rootManage.tabServicesFactory"
-    class="vtk.context.CategoryResolvingFactoryBean">
-    <property name="category" value="rootMenu" />
-    <property name="comparator">
+  <bean id="rootManage.tabServicesFactory" class="vtk.util.SortedCollection">
+    <constructor-arg>
       <bean class="vtk.web.service.ServiceAttributeComparator">
         <property name="attributeName" value="tabOrder" />
       </bean>
-    </property>
+    </constructor-arg>
   </bean>
 
+  <bean id="rootManage.tabsBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="rootManage.tabServicesFactory" />
+    <property name="targetMethod" value="add" />
+  </bean>
 
   <bean id="managementStatsGroups" class="java.util.HashMap">
     <constructor-arg>
@@ -221,6 +223,10 @@
 
   <!-- Service tree -->
 
+  <bean parent="rootManage.tabsBuilder">
+    <property name="arguments" ref="serviceTreeService" />
+  </bean>
+
   <bean id="serviceTreeService"
     class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="repositoryManageService" />
@@ -236,11 +242,13 @@
         </bean>
       </list>
     </property>
+    <!--
     <property name="categories">
       <set>
         <value>rootMenu</value>
       </set>
     </property>
+    -->
     <property name="attributes">
       <map>
         <entry key="tabOrder"><value type="java.lang.Integer">-300</value></entry>
@@ -295,11 +303,6 @@
     </description>
     <property name="parent" ref="repositoryManageService" />
     <property name="order" value="-1" />
-    <property name="categories">
-      <set>
-        <value>rootMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder"><value type="java.lang.Integer">0</value></entry>
@@ -317,6 +320,10 @@
       </list>
     </property>
     <property name="handler" ref="repositoryReadOnlyHandler" />
+  </bean>
+
+  <bean parent="rootManage.tabsBuilder">
+    <property name="arguments" ref="repositoryReadOnlyService" />
   </bean>
 
   <bean id="repositoryReadOnlyHandler"

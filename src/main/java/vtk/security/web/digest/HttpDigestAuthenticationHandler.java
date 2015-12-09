@@ -27,7 +27,6 @@ package vtk.security.web.digest;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,6 +42,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.InvalidPrincipalException;
@@ -96,8 +96,6 @@ public class HttpDigestAuthenticationHandler
 
     private String identifier;
     private PrincipalFactory principalFactory;
-    
-    private Set<?> categories = Collections.EMPTY_SET;
     
     private String nonceKey = NetUtils.guessHostName() + "." + System.currentTimeMillis();
     private MD5PasswordStore principalStore = null;
@@ -546,15 +544,6 @@ public class HttpDigestAuthenticationHandler
     
     public String getIdentifier() {
         return this.identifier;
-    }
-
-    public void setCategories(Set<?> categories) {
-        this.categories = categories;
-    }
-
-    @Override
-    public Set<?> getCategories() {
-        return this.categories;
     }
 
 }

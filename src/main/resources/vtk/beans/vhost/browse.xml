@@ -26,13 +26,11 @@
   <bean id="createLinkToResourceService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="browseService" />
     <property name="order" value="-998" />
-    <property name="categories">
-      <set>
-        <value>browseMenu</value>
-      </set>
-    </property>
   </bean>
 
+  <bean parent="browse.actionServices.builder">
+    <property name="arguments" ref="createLinkToResourceService" />
+  </bean>
 
   <bean id="defaultBrowseHandler" 
     class="vtk.web.display.file.ResourceAwareParameterizableViewController">
@@ -248,14 +246,21 @@
 
   <bean id="browseMenuProvider" 
     class="vtk.web.view.components.menu.DefaultListMenuProvider">
-    <constructor-arg ref="browseActionServicesFactory" />
+    <constructor-arg ref="browse.actionServices" />
     <constructor-arg value="resourceMenuLeft" />
   </bean>
 
 
-  <bean id="browseActionServicesFactory"
-    class="vtk.context.CategoryResolvingFactoryBean" parent="ordered">
-    <property name="category" value="browseMenu" />
+  <bean id="browse.actionServices" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+  </bean>
+
+  <bean id="browse.actionServices.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="browse.actionServices" />
+    <property name="targetMethod" value="add" />
   </bean>
 
 </beans>

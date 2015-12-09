@@ -15,16 +15,22 @@
         <ref bean="editor.parameterEqualsEdit" />
       </list>
     </property>
+    <property name="attributes">
+      <map>
+        <entry key="tabOrder">
+          <value type="java.lang.Integer">152</value>
+        </entry>
+      </map>
+    </property>
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.service" />
   </bean>
 
   <bean id="editor.abstractEditService" class="vtk.web.service.ServiceImpl" abstract="true">
     <property name="parent" ref="editor.service" />
     <property name="order" value="-9800" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -33,14 +39,14 @@
       </map>
     </property>
     <property name="urlPostProcessors">
-        <list>
-            <ref bean="editor.urlPostProcessor"/>
-        </list>
+      <list>
+        <ref bean="editor.urlPostProcessor"/>
+      </list>
     </property>
   </bean>
   
   <bean id="editor.urlPostProcessor" class="vtk.web.service.PreviewUnpublishedURLPostProcessor">
-        <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
+    <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>
 
   <bean id="editor.unstructuredXhtmlEditService" parent="editor.abstractEditService">

@@ -30,10 +30,9 @@
  */
 package vtk.security.web.saml;
 
-import vtk.context.Categorizable;
 import vtk.security.Principal;
 
-public interface LoginListener extends Categorizable {
+public interface LoginListener {
 
     public void onLogin(Principal principal, UserData userData) throws Exception;
 }
