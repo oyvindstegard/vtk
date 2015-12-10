@@ -1329,7 +1329,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             if (objectValue.getClass() == String.class) {
                 values[i] = this.valueFactory.createValue((String)objectValue, propDef.getType());
             } else if (objectValue.getClass() == Integer.class) {
-                // Value stored as binary (BLOB reference in property row)
+                // Binary value reference
                 BinaryValueReference binVal = new BinaryValueReference(this, (Integer)objectValue);
                 try {
                     values[i] = this.valueFactory.createValue(binVal, propDef.getType());
@@ -1340,6 +1340,9 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                             + holder.namespaceUri);
                     throw ia;
                 }
+            } else if (objectValue instanceof BinaryValue) {
+                // Already (buffered/loaded) binary value
+                values[i] = this.valueFactory.createValue((BinaryValue)objectValue, propDef.getType());
             } else {
                 throw new DataAccessException("Expected PropHolder value to be either string or integer reference for property " + prop);
             }
@@ -1416,7 +1419,12 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     byte[] getBinaryPropertyBytes(Integer reference) throws DataAccessException {
         String sqlMap = getSqlMap("selectBinaryPropertyEntry");
         Map<String, Object> map = getSqlSession().selectOne(sqlMap, reference);
-        return (byte[]) map.get("byteArray");
+        final byte[] result = (byte[])map.get("byteArray");
+        if (result == null) {
+            throw new DataAccessException("Binary value with reference " + reference + " does not exist.");
+        }
+        
+        return result;
     }
 
     String getBinaryPropertyContentType(Integer reference) throws DataAccessException {
