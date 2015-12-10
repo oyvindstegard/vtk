@@ -35,6 +35,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -43,17 +45,17 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.security.AuthenticationProcessingException;
 import vtk.util.io.StreamUtil;
+import vtk.util.text.Json;
+import vtk.util.text.JsonStreamer;
 import vtk.web.service.URL;
 
 public class LostPostHandler implements Controller {
@@ -116,7 +118,7 @@ public class LostPostHandler implements Controller {
         response.addCookie(cookie);
         
         URL postURL = state.getPostURL();
-        JSONObject body = state.getBody();
+        Json.MapContainer body = state.getBody();
         state.delete();
 
         Map<String, Object> model = new HashMap<String, Object>();
@@ -279,12 +281,12 @@ public class LostPostHandler implements Controller {
                 throw new IOException("Cannot create file");
             }
             
-            JSONObject json = new JSONObject();
+            Json.MapContainer json = new Json.MapContainer();
             @SuppressWarnings("unchecked")
             Map<String, String[]> parameterMap = request.getParameterMap();
             for (Map.Entry<String, String[]> entry: parameterMap.entrySet()) {
                 String name = entry.getKey();
-                JSONArray values = new JSONArray();
+                Json.ListContainer values = new Json.ListContainer();
                 for (String value: entry.getValue()) {
                     if (!value.equals(postURL.getParameter(name))) {
                         values.add(value);
@@ -294,7 +296,14 @@ public class LostPostHandler implements Controller {
                     json.put(name, values);
                 }
             }
-            StreamUtil.dump(json.toString(2).getBytes(), new FileOutputStream(body), true);
+            
+            Writer writer = new OutputStreamWriter(new FileOutputStream(body));
+            JsonStreamer streamer = new JsonStreamer(writer, 2);
+            try {
+                streamer.object(json);
+            } finally {
+                writer.close();
+            }
             return state;
         }
         
@@ -359,9 +368,9 @@ public class LostPostHandler implements Controller {
             return URL.parse(s);
         }
         
-        public JSONObject getBody() {
+        public Json.MapContainer getBody() {
             String s = field("body");
-            return JSONObject.fromObject(s);
+            return Json.parseToContainer(s).asObject();
         }
         
         private String field(String name) {

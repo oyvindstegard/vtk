@@ -78,6 +78,8 @@ public class SchemaDocumentDefinition {
         structuredTextImplementations.put(
                 "org.vortikal.util.text.EvenStructuredText", EvenStructuredText.class);
         structuredTextImplementations.put(
+                "org.vortikal.util.text.DefaultStructuredText", DefaultStructuredText.class);
+        structuredTextImplementations.put(
                 "no.uio.vortex.util.text.DefaultStructuredText", DefaultStructuredText.class);
         structuredTextImplementations.put(
                 EvenStructuredText.class.getName(), EvenStructuredText.class);

@@ -1,0 +1,184 @@
+/* 
+ * Mixins 
+ *
+ * Commonly used patterns (DRY)
+ *
+ * Don't overdo it, and generally not for single properties;
+ * e.g. "@include floatLeft" causes more text than "float: left",
+ * take some time to compile and is not a (good) pattern.
+ *
+ * Exception for long common properties configurations like e.g.
+ * "@include bg(url)" (transparent background image no-repeat top left).
+ *
+ */
+
+@mixin appHeadLine {
+  margin: 0 auto;
+  position: relative;
+  @include wh($appWidth, 34px);
+}
+
+@mixin resetFont {
+  font-family: inherit;
+  font-size: 100%;
+  font-style: inherit; 
+  font-weight: inherit;
+}
+@mixin noMargPadd {
+  margin: 0px;
+  padding: 0px;
+}
+@mixin floatBlock {
+  float: left;
+  display: block;
+}
+@mixin floatClearFix {
+  clear: left;
+  float: left;
+  width: 100%;
+}
+@mixin wh($width: 0, $height: 0) {
+  width: $width;
+  height: $height;
+}
+
+@mixin posAbs($top: 0, $left: 0) {
+  position: absolute;
+  top: $top;
+  left: $left;
+}
+@mixin posAbsRight($top: 0, $right: 0) {
+  position: absolute;
+  top: $top;
+  right: $right;
+}
+@mixin posAbsBottom($bottom: 0, $left: 0) {
+  position: absolute;
+  bottom: $bottom;
+  left: $left;
+}
+@mixin posAbsBottomRight($bottom: 0, $right: 0) {
+  position: absolute;
+  bottom: $bottom;
+  right: $right;
+}
+
+@mixin bg($url, $imp: false) {
+  @if $imp == false { background: transparent url($url) no-repeat 0 0; }
+  @else             { background: transparent url($url) no-repeat 0 0 !important; }
+}
+@mixin borderRadius($radius) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  border-radius: $radius; 
+}
+@mixin boxShadow($opts) {
+  -moz-box-shadow: $opts;
+  -webkit-box-shadow: $opts;
+  box-shadow: $opts;
+}
+@mixin borderBox {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+@mixin gradientTopToBottom($col1, $col2, $col3, $col4, $percent1, $percent2, $percent3, $percent4) {
+  background: $col1;
+  background: -moz-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop($percent1, $col1), color-stop($percent2, $col2), color-stop($percent3, $col3), color-stop($percent4, $col4));
+  background: -webkit-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: -o-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: -ms-linear-gradient(top, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+  background: linear-gradient(to bottom, $col1 $percent1, $col2 $percent2, $col3 $percent3, $col4 $percent4);
+}
+
+@mixin transitions($opts) {
+  -webkit-transition: $opts;
+  -moz-transition:    $opts;
+  -ms-transition:     $opts;
+  -o-transition:      $opts;
+  transition:         $opts;
+}
+@mixin transforms($opts) {
+  -webkit-transform: $opts;
+  -moz-transform:    $opts;
+  -ms-transform:     $opts;
+  -o-transform:      $opts;
+  transform:         $opts;
+}
+@mixin transitionsTransforms($optsA, $optsB) {
+  -webkit-transition: $optsA, -webkit-transform $optsB;
+  -moz-transition:    $optsA, -moz-transform    $optsB;
+  -ms-transition:     $optsA, -ms-transform     $optsB;
+  -o-transition:      $optsA, -o-transform      $optsB;
+  transition:         $optsA, transform         $optsB;
+}
+
+@mixin resourceTitleIcon($type, $pos, $h1MarginLeft: null, $firstIsPng: false, $hasUnpublished: true) {
+  $resourceType: file-#{$type};
+  $class: $type;
+  @if $type == folder {
+    $resourceType: #{$type};
+    $class: "true";
+  } @else if $type == text {
+    $resourceType: "file-txt";
+  } @else if $type == videoref {
+    $resourceType: "file-video";
+  }
+  &.#{$class} {
+    @if $firstIsPng {
+      background: transparent url("images/#{$resourceType}.png") no-repeat $pos;
+    } @else {
+      background: transparent url("images/#{$resourceType}.gif") no-repeat $pos;
+    }
+    @if $hasUnpublished {
+      &.unpublished {
+        background: transparent url("images/#{$resourceType}-unpublished.png") no-repeat $pos;
+      }
+    }
+    @if $h1MarginLeft != null {
+      h1 {
+        margin-left: $h1MarginLeft;
+      }
+    }
+  }
+}
+@mixin listingIcon($type, $firstIsPng: false, $hasUnpublished: true) {
+  $resourceType: file-#{$type};
+  $class: $type;
+  @if $type == folder {
+    $resourceType: #{$type};
+    $class: "true";
+  } @else if $type == text {
+    $resourceType: "file-txt";
+  } @else if $type == videoref {
+    $resourceType: "file-video";
+  }
+  &.#{$class} {
+    @if $hasUnpublished {
+      &.unpublished {
+        td {
+          &.name a,
+          &.name .unauthorizedListedResource-wrapper,
+          &.name span.vrtx-trash-can-name-text,
+          &.vrtx-report-name a {
+            background: transparent url("images/#{$resourceType}-small-unpublished.png") no-repeat center left;
+          }
+        }
+      }
+    }
+    td {
+      &.name a,
+      &.name .unauthorizedListedResource-wrapper,
+      &.name span.vrtx-trash-can-name-text,
+      &.vrtx-report-name a {
+        @if $firstIsPng {
+          background: transparent url("images/#{$resourceType}-small.png") no-repeat center left;
+        } @else {
+          background: transparent url("images/#{$resourceType}-small.gif") no-repeat center left;
+        }
+      }
+    }
+  }
+}

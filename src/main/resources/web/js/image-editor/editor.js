@@ -73,7 +73,7 @@ VrtxImageEditor.prototype.init = function init(imageURL, imageSupported) {
   var editor = this;
   
   editor.canvas = document.getElementById("vrtx-image-editor");
-  editor.isIE8 = vrtxAdmin.isIE && vrtxAdmin.browserVersion < 9;
+  editor.isIE8 = vrtxAdmin.isIE8;
   editor.canvasSupported = (editor.isIE8 || ('getContext' in document.createElement('canvas'))) && imageSupported === "true";
   if(editor.canvasSupported) {
     if(editor.isIE8 && typeof editor.canvas.getContext === "undefined") {
@@ -149,9 +149,12 @@ VrtxImageEditor.prototype.init = function init(imageURL, imageSupported) {
         editor.resetCropPlugin();
         $("#vrtx-image-crop-coordinates").remove();
         $(this).val(startCropText + "...");
-        $("#vrtx-image-editor").resizable("option", "maxWidth", editor.cropWidth);  
-        $("#vrtx-image-editor").resizable("option", "maxHeight", editor.cropHeight);  
-        $("#vrtx-image-editor").resizable("enable");  
+        
+        var imageEditor = $("#vrtx-image-editor");
+        
+        imageEditor.resizable("option", "maxWidth", editor.cropWidth);  
+        imageEditor.resizable("option", "maxHeight", editor.cropHeight);  
+        imageEditor.resizable("enable");  
 
         editor.hasCropBeenInitialized = false;
       } else {

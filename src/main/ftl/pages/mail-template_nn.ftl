@@ -17,5 +17,5 @@
 Denne meldinga er sendt på oppmoding frå ${mailFrom}.
 Di e-postadresse vert ikkje lagra.
 Du vil ikkje få tilsendt fleire meldinger som denne,
-med mindre nokon tipsar deg om andre artiklar på ${site}.
+med mindre nokon deler andre artiklar på ${site}.
 </p>

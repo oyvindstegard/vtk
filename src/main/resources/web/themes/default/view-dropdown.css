@@ -21,13 +21,13 @@
 
 .vrtx-dropdown-component .vrtx-dropdown-link {
   padding-right: 30px;
-  background: transparent url(images/dropdown-toggle-white-bg.png) no-repeat scroll top right;
+  background: transparent url(/vrtx/__vrtx/static-resources/themes/default/images/dropdown-toggle-white-bg.png) no-repeat scroll top right;
 }
 
 .vrtx-dropdown-component .vrtx-dropdown-link.active,
 .vrtx-dropdown-component .vrtx-dropdown-link:hover,
 .vrtx-dropdown-component .vrtx-dropdown-link:focus {
-  background-image: url(images/dropdown-toggle-white-bg-hover.png);
+  background-image: url(/vrtx/__vrtx/static-resources/themes/default/images/dropdown-toggle-white-bg-hover.png);
 }
 
 .vrtx-dropdown-wrapper {
@@ -38,7 +38,11 @@
   display: none;
   z-index: 999;
   padding-top: 5px;
-  background: transparent url(images/dropdown-white-bg.png) no-repeat scroll top right;
+  background: transparent url(/vrtx/__vrtx/static-resources/themes/default/images/dropdown-white-bg.png) no-repeat scroll top right;
+}
+
+.vrtx-dropdown-wrapper.activated {
+  display: block;
 }
 
 .vrtx-dropdown-component-not-toggled .vrtx-dropdown-wrapper {

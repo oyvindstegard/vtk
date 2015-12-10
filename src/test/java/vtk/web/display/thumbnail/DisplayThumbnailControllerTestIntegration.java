@@ -1,5 +1,7 @@
 package vtk.web.display.thumbnail;
 
+import static junit.framework.TestCase.assertNull;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,12 +10,12 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
-import static junit.framework.TestCase.assertNull;
 
 import org.jmock.Expectations;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.ContentStream;
 import vtk.repository.Namespace;
 import vtk.repository.Path;

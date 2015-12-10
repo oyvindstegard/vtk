@@ -109,6 +109,10 @@ public class ConfigurablePropertySelect implements PropertySelect {
         this.includeAcl = includeAcl;
     }
 
+    /**
+     * 
+     * @return <code>true</code> if ACLs will be included for search results.
+     */
     @Override
     public boolean isIncludeAcl() {
         return includeAcl;

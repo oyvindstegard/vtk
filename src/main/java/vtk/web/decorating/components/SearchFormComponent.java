@@ -52,8 +52,8 @@ public class SearchFormComponent extends ViewRenderingDecoratorComponent {
 
         String uriParam = request.getStringParameter("uri");
         try {
-            scopeUri = Path.fromString(uriParam);
-        } catch (IllegalArgumentException iae) {}
+            scopeUri = Path.fromStringWithTrailingSlash(uriParam);
+        } catch (Exception e) {}
         
         URL searchURL = service.constructURL(scopeUri);
         model.put("url", searchURL);

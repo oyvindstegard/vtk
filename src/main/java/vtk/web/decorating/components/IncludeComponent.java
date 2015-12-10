@@ -49,6 +49,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.context.ServletContextAware;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -149,10 +150,14 @@ implements ServletContextAware {
 
         String esi = request.getStringParameter("esi");
         
-        if (esi != null && this.esiLocations != null) {
+        if (esi != null && esiLocations == null) {
+            throw new DecoratorComponentException("ESI  not enabled in this location");
+        }
+        
+        if (esi != null) {
             StringBuffer requestURL = request.getServletRequest().getRequestURL();
             
-            if (!this.esiLocations.matcher(requestURL).matches()) {
+            if (!esiLocations.matcher(requestURL).matches()) {
                 throw new DecoratorComponentException("ESI  not enabled in this location");
             }
             
@@ -160,7 +165,7 @@ implements ServletContextAware {
                 throw new DecoratorComponentException("Invalid ESI URL: must start with '/'");
             }
             
-            if (this.inlineEsiLocations != null && this.inlineEsiLocations.matcher(requestURL).matches()) {
+            if (inlineEsiLocations != null && inlineEsiLocations.matcher(requestURL).matches()) {
                 try {
                     URL url = URL.create(request.getServletRequest());
                     url = url.relativeURL(esi);
@@ -201,8 +206,8 @@ implements ServletContextAware {
             "One of parameters 'file' or 'virtual' must be specified");
         }
 
-        if (this.uriPreProcessor != null) {
-            uri = this.uriPreProcessor.process(uri);
+        if (uriPreProcessor != null) {
+            uri = uriPreProcessor.process(uri);
         }
 
         if (uri.startsWith("http:") || uri.startsWith("https:")) {
@@ -269,7 +274,7 @@ implements ServletContextAware {
         String elementParam = request.getStringParameter(PARAMETER_ELEMENT);
 
         if (elementParam != null && ContentTypeHelper.isHTMLOrXHTMLContentType(r.getContentType())) {
-            HtmlPage page = this.htmlParser.parse(is, characterEncoding);
+            HtmlPage page = htmlParser.parse(is, characterEncoding);
 
             String result = "";
             List<HtmlElement> elements = page.select(elementParam);
@@ -342,7 +347,7 @@ implements ServletContextAware {
             String servletName = (String) servletRequest
             .getAttribute(VTKServlet.SERVLET_NAME_REQUEST_ATTRIBUTE);
 
-            RequestDispatcher rd = this.servletContext
+            RequestDispatcher rd = servletContext
             .getNamedDispatcher(servletName);
             if (rd == null) {
                 throw new RuntimeException("No request dispatcher for name '"
@@ -372,7 +377,7 @@ implements ServletContextAware {
             byte[] bytes = servletResponse.getContentBuffer();
             InputStream is = new ByteArrayInputStream(bytes);
 
-            HtmlPage page = this.htmlParser.parse(is, servletResponse.getCharacterEncoding());
+            HtmlPage page = htmlParser.parse(is, servletResponse.getCharacterEncoding());
             String result = "";
 
             List<HtmlElement> elements = page.select(elementParam);
@@ -395,13 +400,13 @@ implements ServletContextAware {
     
     private void handleHttpInclude(String uri,
             DecoratorRequest request, DecoratorResponse response) throws Exception {
-        URLObject obj = this.httpIncludeCache.get(uri);
+        URLObject obj = httpIncludeCache.get(uri);
         String result = "";
         String elementParam = request.getStringParameter(PARAMETER_ELEMENT);
         if (elementParam != null) {
             try {
                 // XXX: cache results
-                HtmlPage page = this.htmlParser.parse(obj.getInputStream(), obj.getCharacterEncoding());
+                HtmlPage page = htmlParser.parse(obj.getInputStream(), obj.getCharacterEncoding());
                 List<HtmlElement> elements = page.select(elementParam);
                 if (elements.size() > 0) {
                     result = elements.get(0).getContent();

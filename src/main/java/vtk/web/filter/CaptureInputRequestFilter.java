@@ -32,7 +32,6 @@ package vtk.web.filter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -41,13 +40,15 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import vtk.context.BaseContext;
 
 /**
- * Capture/copy all request data that is read from input stream.
+ * Capture/copy request data that is read from input stream.
  * 
  * This filter will store an instance of {@link CaptureInputRequestWrapper } in
  * {@link BaseContext} under class name key and capture all input that is read.
  *
  */
 public class CaptureInputRequestFilter extends AbstractRequestFilter {
+    
+    private int maxCaptureBytes = 4096;
 
     @Override
     public HttpServletRequest filterRequest(HttpServletRequest request) {
@@ -60,8 +61,18 @@ public class CaptureInputRequestFilter extends AbstractRequestFilter {
         return requestWrapper;
     }
 
+    /**
+     * Set maximum nunber of bytes to capture and store from body
+     * of request.
+     * 
+     * <p>Default value is <code>4096</code> bytes.
+     * @param maxCaptureBytes the maxCapturedBytes to set
+     */
+    public void setMaxCaptureBytes(int maxCaptureBytes) {
+        this.maxCaptureBytes = maxCaptureBytes;
+    }
 
-    static class CaptureInputRequestWrapper extends HttpServletRequestWrapper {
+    class CaptureInputRequestWrapper extends HttpServletRequestWrapper {
 
         private InputStreamCopyWrapper streamWrapper;
 
@@ -81,21 +92,29 @@ public class CaptureInputRequestFilter extends AbstractRequestFilter {
             return this.streamWrapper;
         }
         
-        byte[] getInputBytes() {
+        byte[] getCapturedBytes() {
             if (this.streamWrapper != null) {
-                return this.streamWrapper.getInputBytes();
+                return this.streamWrapper.getCopiedBytes();
             }
             return new byte[0];
+        }
+        
+        int getStreamBytesRead() {
+            if (this.streamWrapper != null) {
+                return this.streamWrapper.getStreamBytesRead();
+            }
+            return 0;
         }
 
     }
 
-    static class InputStreamCopyWrapper extends ServletInputStream {
+    private class InputStreamCopyWrapper extends ServletInputStream {
 
-        private ByteArrayOutputStream streamCopyBuffer;
-        private InputStream wrappedStream;
+        private final ByteArrayOutputStream streamCopyBuffer;
+        private final ServletInputStream wrappedStream;
+        private int streamBytesRead = 0;
 
-        InputStreamCopyWrapper(InputStream wrappedStream) {
+        InputStreamCopyWrapper(ServletInputStream wrappedStream) {
             this.wrappedStream = wrappedStream;
             this.streamCopyBuffer = new ByteArrayOutputStream();
         }
@@ -103,14 +122,19 @@ public class CaptureInputRequestFilter extends AbstractRequestFilter {
         @Override
         public int read() throws IOException {
             int b = this.wrappedStream.read();
-            if (b > -1) {
+            if (b > -1 && streamBytesRead++ < maxCaptureBytes) {
                 streamCopyBuffer.write(b);
             }
             return b;
         }
 
-        byte[] getInputBytes() {
-            return this.streamCopyBuffer.toByteArray();
+        byte[] getCopiedBytes() {
+            return streamCopyBuffer.toByteArray();
         }
+        
+        int getStreamBytesRead() {
+            return streamBytesRead;
+        }
+
     }
 }

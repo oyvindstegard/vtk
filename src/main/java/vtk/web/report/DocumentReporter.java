@@ -1,4 +1,4 @@
-/* Copyright (c) 2010, University of Oslo, Norway
+/* Copyright (c) 2010–2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,11 +39,16 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import vtk.repository.Path;
+
+import vtk.repository.Acl;
+import vtk.repository.Privilege;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
+import vtk.repository.search.PropertySelect;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
+import vtk.security.PrincipalFactory;
+import vtk.web.ACLTooltipHelper;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -54,6 +59,7 @@ public abstract class DocumentReporter extends AbstractReporter {
     private int pageSize = DEFAULT_SEARCH_LIMIT;
     private Service manageService, reportService;
     private String backReportName;
+    private ACLTooltipHelper aclTooltipHelper;
 
     protected abstract Search getSearch(String token, Resource currentResource, HttpServletRequest request);
 
@@ -81,6 +87,7 @@ public abstract class DocumentReporter extends AbstractReporter {
         }
         search.setCursor(pos.cursor);
         search.setLimit(pageSize);
+        search.setPropertySelect(PropertySelect.ALL); // Require all props AND also ACLs
 
         ResultSet rs = searcher.execute(token, search);
         if (pos.cursor + Math.min(pageSize, rs.getSize()) >= rs.getTotalHits()) {
@@ -99,34 +106,38 @@ public abstract class DocumentReporter extends AbstractReporter {
         boolean[] isReadRestricted = new boolean[rs.getSize()];
         boolean[] isInheritedAcl = new boolean[rs.getSize()];
         URL[] viewURLs = new URL[rs.getSize()];
+        String[] permissionTooltips = new String[rs.getSize()];
         List<PropertySet> list = new ArrayList<PropertySet>();
-        int i = 0;
-        for (PropertySet propSet : rs.getAllResults()) {
-            Path path = propSet.getURI();
-            try {
-                Resource res = repository.retrieve(token, path, true);
-                propSet = res; // fresh copy of resource
-                isReadRestricted[i] = res.isReadRestricted();
-                isInheritedAcl[i] = res.isInheritedAcl();
-                if (manageService != null) {
-                    viewURLs[i] = manageService.constructURL(path).setProtocol("http");
-                }
-                handleResult(res, result);
-            } catch (Exception e) {
-                logger.error("Exception while preparing report. Offending resource: " + path + ": " + e.getMessage());
+        
+        
+        List<PropertySet> allResults = rs.getAllResults();
+        for (int i = 0; i < allResults.size(); i++) {
+            PropertySet propSet = allResults.get(i);
+            Acl acl = rs.getAcl(i);
+            isReadRestricted[i] = !acl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL)
+                    && !acl.hasPrivilege(Privilege.READ_PROCESSED, PrincipalFactory.ALL);
+            isInheritedAcl[i] = rs.isInheritedAcl(i);
+            if (manageService != null) {
+                viewURLs[i] = manageService.constructURL(propSet.getURI()).setProtocol("http");
             }
-            i++;
+            if (aclTooltipHelper != null) {
+                permissionTooltips[i] = aclTooltipHelper.generateTitle(
+                        propSet, acl, rs.isInheritedAcl(i), request);
+            }
+            handleResult(propSet, result);
             list.add(propSet);
         }
+        
         result.put("result", list);
         result.put("isReadRestricted", isReadRestricted);
         result.put("isInheritedAcl", isInheritedAcl);
         result.put("viewURLs", viewURLs);
+        result.put("permissionTooltips", permissionTooltips);
         return result;
     }
 
     // To be overridden where necessary
-    protected void handleResult(Resource resource, Map<String, Object> model) {
+    protected void handleResult(PropertySet resource, Map<String, Object> model) {
     }
 
     public void setManageService(Service manageService) {
@@ -149,6 +160,10 @@ public abstract class DocumentReporter extends AbstractReporter {
         this.pageSize = pageSize;
     }
 
+    public void setAclTooltipHelper(ACLTooltipHelper aclTooltipHelper) {
+        this.aclTooltipHelper = aclTooltipHelper;
+    }
+    
     private static class Position {
         int cursor = 0;
         int limit = 0;

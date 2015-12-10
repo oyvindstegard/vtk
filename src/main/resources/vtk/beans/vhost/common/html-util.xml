@@ -623,6 +623,10 @@
         <value>s</value>
         <value>dd</value>
         <value>dl</value>
+        <value>figure</value>
+        <value>figcaption</value>
+        <value>audio</value>
+        <value>video</value>
         <value>v:component</value>
       </set>
     </property>
@@ -641,6 +645,7 @@
         <value>col</value>
         <value>base</value>
         <value>meta</value>
+        <value>source</value>
         <value>v:parameter</value>
         <value>esi:include</value>
       </set>

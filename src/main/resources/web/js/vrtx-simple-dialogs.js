@@ -9,17 +9,22 @@
  *     - requiresTree: true
  *     - requiresDatepicker: true
  */
-
-var VrtxSimpleDialogInterface = dejavu.Interface.declare({
-  $name: "VrtxSimpleDialogInterface",
-  open: function() {},
-  close: function() {},
-  destroy: function() {}
-});
+ 
+/* Public
+ * ----------------------
+ * initialize(opts)
+ * open()
+ * close()
+ * destroy()
+ *
+ * Private
+ * ----------------------
+ * __generateButtons()
+ * __addDOM()
+ */
 
 var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
   $name: "AbstractVrtxSimpleDialog",        // Meta-attribute useful for debugging
-  $implements: [VrtxSimpleDialogInterface],
   __opts: {},
   __dialogOpts: {},
   initialize: function(opts) {              // Constructor
@@ -33,6 +38,7 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
       if (opts.width)      { dialogOpts.width = opts.width; }
       if (opts.height)     { dialogOpts.height = opts.height; }
       if (opts.unclosable) { dialogOpts.closeOnEscape = false; }
+      if (opts.noTitle)    { dialogOpts.dialogClass = "dialog-no-title"; }
       var dialog = this;
       dialogOpts.open = function(e, ui) {
         var ctx = $(this).parent();
@@ -84,7 +90,7 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
       }
     }
     if (this.__opts.hasCancel) {
-      var cancel = this.__opts.btnTextCancel || ((typeof cancelI18n != "undefined") ? cancelI18n : "Cancel");
+      var cancel = this.__opts.btnTextCancel || ((typeof cancelI18n !== "undefined") ? cancelI18n : "Cancel");
       if(/^\(/.test(cancel)) {
         this.__opts.cancelIsNotAButton = true;
       }
@@ -102,7 +108,8 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
     if (this.__opts.title) {
       html += " title='" + this.__opts.title + "'";
     }
-    $("body").append(html + "><div id='" + this.__opts.selector.substring(1) + "-content'>" + (!this.__opts.hasHtml ? "<p>" + this.__opts.msg + "</p>" : this.__opts.msg) + "</div></div>");
+    $("body").append(html + "><div id='" + this.__opts.selector.substring(1) + "-content' class='vrtx-dialog-content'>"
+        + (!this.__opts.hasHtml ? "<p>" + this.__opts.msg + "</p>" : this.__opts.msg) + "</div></div>");
     $(".vrtx-dialog").hide();
   },
   open: function () {
@@ -123,8 +130,10 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
     }
     $.when(futureUi).done(function() {
       dialog.__opts.elm = $(dialog.__opts.selector);
-      dialog.__opts.elm.dialog(dialog.__dialogOpts);
-      dialog.__opts.elm.dialog("open");
+      if(!dialog.__opts.elm.filter(":visible").length) {
+        dialog.__opts.elm.dialog(dialog.__dialogOpts);
+        dialog.__opts.elm.dialog("open");
+      }
     });
   },
   close: function () {
@@ -146,7 +155,7 @@ var VrtxLoadingDialog = dejavu.Class.declare({
       title: opts.title,
       hasHtml: true,
       unclosable: true,
-      width: 208,
+      width: opts.width || 208,
       onOpen: function() {
         $("body").attr("aria-busy", "true");
       },
@@ -215,6 +224,25 @@ var VrtxConfirmDialog = dejavu.Class.declare({
       onOkOpts: opts.onOkOpts,
       onCancel: opts.onCancel,
       extraBtns: opts.extraBtns
+    });
+  }
+});
+
+var VrtxIFrameDialog = dejavu.Class.declare({
+  $name: "VrtxIFrameDialog",
+  $extends: AbstractVrtxSimpleDialog,
+  initialize: function (opts) {
+    var html = '<iframe width="100%" height="100%" style="min-width: 95%;height:100%;"'
+        + ' frameborder="0" src="' + opts.url + '"></iframe>';
+    this.$super({
+      selector: "#dialog-iframe-" + opts.name,
+      msg: html,
+      noTitle: opts.noTitle,
+      hasHtml: true,
+      width: opts.width,
+      height: opts.height,
+      onOpen: opts.onOpen,
+      onClose: opts.onClose
     });
   }
 });

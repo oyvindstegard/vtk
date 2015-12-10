@@ -285,8 +285,8 @@ var MANUALLY_APPROVE_INITIALIZED = $.Deferred();
           pages--;
         }
         if (len > prPage) {
-          html += "<a href='#page-" + (pages - 1) + "' class='prev' id='page-" + (pages - 1) + "'>" 
-                + approvePrev + " " + prPage + "</a>";
+          html += "<div class='prev-next'><a href='#page-" + (pages - 1) + "' class='prev' id='page-" + (pages - 1) + "'>" 
+                + approvePrev + " " + prPage + "</a></div>";
         }
         html += "</div>";
         manuallyApproveContainer.append(html);

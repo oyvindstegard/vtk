@@ -40,11 +40,24 @@
   </bean>
 
   <bean id="tags.personFeedHandler" parent="tags.feedHandler">
-    <property name="feedGenerator" ref="tags.personAtomFeedGenerator" />
+    <property name="searchComponent" ref="tags.personSearchComponent" />
+    <property name="viewName" value="personTags.feedView" />
   </bean>
 
-  <bean id="tags.personAtomFeedGenerator" parent="tags.atomFeedGenerator">
-    <property name="searchComponent" ref="tags.personSearchComponent" />
+  <bean id="personTags.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="personTags.feedView" value-ref="personTags.feedView" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="personTags.feedView" parent="tags.feedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="person-tags" />
+      </map>
+    </property>
   </bean>
 
   <bean id="tags.personSearchComponent" parent="tags.searchComponent">
@@ -61,6 +74,18 @@
         </bean>
       </list>
     </property>
+    <property name="searchSorting" ref="tags.personSearchSorting" />
+  </bean>
+
+  <bean id="tags.personSearchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+    <property name="sortOrderPropDefPointers">
+      <list>
+        <value>resource:surname</value>
+        <value>resource:firstName</value>
+      </list>
+    </property>
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
+    <property name="defaultSortOrder" ref="SORT_ORDER.ASC" />
   </bean>
 
 </beans>

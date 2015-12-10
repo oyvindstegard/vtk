@@ -82,6 +82,8 @@ public class CollectionListingAggregatedResources implements Serializable {
         return getHostResolvedSet(host, manuallyApprovedSet);
     }
 
+    
+    // Return set of all paths that belong to a host
     private Set<Path> getHostResolvedSet(URL host, Map<URL, Set<Path>> aggregatedResourceMap) {
         if (aggregatedResourceMap != null) {
             Set<Path> result = new HashSet<Path>();
@@ -132,8 +134,8 @@ public class CollectionListingAggregatedResources implements Serializable {
             return count;
         }
 
-        for (Entry<URL, Set<Path>> entry : aggregatedResourceMap.entrySet()) {
-            count += entry.getValue().size();
+        for (Set<Path> value: aggregatedResourceMap.values()) {
+            count += value.size();
         }
 
         return count;

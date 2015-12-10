@@ -35,8 +35,7 @@
        $(window).load(function() {
          var cut = $("#right-main").length ? ".last-four" : ".last-five";
 	     $('ul.vrtx-image-listing').find(".vrtx-image-entry:not(" + cut + ")")
-	       .css("marginRight", "18px !important;").end()
-	       .masonry({singleMode: false});
+	       .css("marginRight", "18px !important;").end();
 	   });
      // -->
      </script>

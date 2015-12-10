@@ -1,0 +1,1561 @@
+/*
+ * Vortex
+ * 
+ * ToC:
+ *
+ * 1. Tags / typography
+ * 2. Resource bar
+ * 3. Tab bar
+ * 4. Content
+ *
+ */
+
+@import "base";
+@import "forms";
+@import "grid";
+@import "breadcrumbs";
+@import "tabs";
+@import "embedded";
+@import "tooltip";
+@import "dropdowns";
+@import "messages";
+@import "directorylisting";
+@import "upload";
+
+/*-----------------------------------------*\
+	1. Tags / typography
+\*-----------------------------------------*/
+
+body {
+  color: $textColor;
+  font: normal 81.25%/1.3 $baseFont;
+}
+ 
+h1 {
+  font-size: 1.84em;
+  font-weight: bold;
+  line-height: 1.2em;
+  margin: 0 0 15px 0;
+}
+
+h2 {
+  font-size: 1.76em;
+  font-weight: normal;
+  margin: 15px 0 8px 0;
+}
+
+#app-content h2:first-child {
+  margin-top: 0;
+}
+
+h3,
+caption {
+  font-size: 1.538em;
+  font-weight: normal;
+}
+
+caption {
+  text-align: left;
+}
+
+h4 {
+  font-size: 1em;
+  font-weight: bold;
+}
+
+h3,
+h4,
+caption { 
+  margin: 10px 0 8px 0; 
+}
+
+p {
+  margin: 3px 0 8px 0;
+}
+
+p.larger-p {
+  font-size: 1.077em;
+  max-width: 50em;
+  margin: 4px 0 11px;
+}
+
+pre {
+  font-family: courier;
+  line-height: 1.9;
+}
+
+#contents pre {
+  color: #2b2b2b;
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 8px 0 15px 10px;
+}
+
+img,
+iframe {
+  border: 0;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0 0;
+}
+
+a {
+  color: $linkColor;
+  text-decoration: none;
+
+  &:focus,
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+abbr {
+    text-decoration: none;
+}
+
+
+/*-----------------------------------------*\
+	2. Resource bar
+\*-----------------------------------------*/
+
+.hidden-server-info {
+  display: none;
+}
+
+#title-container {
+  position: relative;
+  color: $titleContainerTextColor;
+}
+
+/* Icons - TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later) */
+
+#resource-title {
+  background: transparent url(images/file.gif) no-repeat 0px 3px;
+  padding-top: 8px;
+  position: relative;
+
+  &.unpublished {
+    background: transparent url(images/file-unpublished.png) no-repeat 0px 3px;
+  }
+  h1 {
+    margin: 0 0 15px 32px;
+    float: left;
+    min-width: 85px; /* at least as wide as 'Endre navn' in dropdown + 15px */
+
+    .title-split {
+      display: block;
+    }
+  }
+
+  @include resourceTitleIcon(folder,   0px 5px,  42px);
+  @include resourceTitleIcon(text,     0px 2px);
+  @include resourceTitleIcon(pdf,      0px 2px);
+  @include resourceTitleIcon(doc,      0px 2px);
+  @include resourceTitleIcon(xls,      0px 2px);
+  @include resourceTitleIcon(ppt,      0px 2px);
+  @include resourceTitleIcon(image,    0px 10px, 39px);
+  @include resourceTitleIcon(audio,    0px 12px, 26px, $firstIsPng: true);
+  @include resourceTitleIcon(video,    0px 5px,  40px);
+  @include resourceTitleIcon(videoref, 0px 5px,  40px);
+  @include resourceTitleIcon(binary,   0px 3px);
+  @include resourceTitleIcon(dmg,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(zip,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(jar,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+}
+
+.ie8 #resource-title {
+  display: inline-block;
+}
+
+#server-going-down {
+  display: none;
+}
+
+/* Resource menus */
+
+#resourceMenuLeft {
+  margin: 0 0 20px 0;
+  clear: left;
+  float: left;
+}
+
+#resourceMenuRight {
+  float: left;
+  min-height: 86px;
+  margin: -12px 0 20px 25px;
+  padding: 0 0 0 25px;
+  @include bg("images/seperator-grey-gradient-big.png");
+}
+
+#resourceMenuRight.overflow-hidden {
+  overflow: hidden;
+}
+
+#resourceMenuRight > li {
+  background: url(images/seperator-grey-gradient-big.png) no-repeat top right;  
+  float: left;
+  margin: 0 25px 0 0;
+  padding: 0 25px 0 0;
+  min-height: 86px;
+}
+
+#resourceMenuRight > li.last {
+  background: none;
+  @include noMargPadd;
+}
+
+#resourceMenuRight > li h3 {
+  font-size: 1.15em;
+  font-weight: bold;
+  margin: 9px 0 5px 0;
+}
+
+#resourceMenuRight .manage\.unlockFormService h3 {
+  background: url(images/lock.png) no-repeat 100% 1px;
+  padding-right: 18px;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+#resource-title h1 {
+  max-width: 30%;
+}
+
+#resourceMenuRight > li.publish\.globalPublishService,
+#resourceMenuRight > li.publish\.globalUnpublishService,
+#resourceMenuRight > li.manage\.unlockFormService {
+  max-width: 130px;
+}
+
+#resource-title h1,
+#resourceMenuRight > li.manage\.unlockFormService p, 
+#resourceMenuRight > li.manage\.unlockFormService p a {
+  white-space: pre;           /* CSS 2.0 */
+  white-space: pre-wrap;      /* CSS 2.1 */
+  white-space: pre-line;      /* CSS 3.0 */
+  white-space: -pre-wrap;     /* Opera 4-6 */
+  white-space: -o-pre-wrap;   /* Opera 7 */
+  white-space: -moz-pre-wrap; /* Mozilla */
+  word-wrap: break-word;      /* IE 5+ */
+}
+
+#resourceMenuRight span.published,
+#publishing-status span.published {
+  background: url(images/menu-active-green.gif) no-repeat 100% 1px;
+  padding-right: 18px;
+}
+
+#resourceMenuRight p span,
+#publishing-status span.published,
+#publishing-status span.unpublished {
+  font-weight: bold;
+}
+
+#resourceMenuRight span.unpublished span {
+  font-weight: normal;
+}
+
+#resourceMenuRight > li.resourceType p {
+  color: #888;
+}
+
+
+/*-----------------------------------------*\
+  3. Tab bar
+\*-----------------------------------------*/
+
+#active-tab {
+  margin: 0 0 5px 0;
+
+  ul.list-menu a {
+    font-weight: bold;
+  }
+}
+
+#tabMenuLeft,
+#tabMenuLeft li {
+  float: left;
+}
+
+#tabMenuLeft a#navigateToParentService {
+  display: block;
+  background: url(images/tab-menu-navigate-up.png) no-repeat center left;
+  padding: 5px 0 5px 28px;
+}
+
+#tabMenuRight {
+  float: right;
+
+  li {
+    float: left;
+    margin: -10px 0 0 30px;
+    padding: 10px 0 10px;
+
+    a {
+      display: block;
+      padding: 5px 0 6px 30px;
+    }
+    &.deleteResourcesService a {
+      background: url(images/tab-menu-delete.png) no-repeat center left;
+      padding-left: 25px;
+    }
+    &.moveResourcesService a {
+      background: url(images/tab-menu-move.png) no-repeat center left;
+      padding-left: 41px;
+    }
+    &.copyResourcesService a {
+      background: url(images/tab-menu-copy.png) no-repeat center left;
+      padding-left: 38px;
+    }
+    &.fileUploadService a {
+      background: url(images/tab-menu-upload.png) no-repeat center left;
+    }
+    &.createDocumentService a {
+      background: url(images/tab-menu-new-file.png) no-repeat center left;
+    }
+    &.createCollectionService a {
+      background: url(images/tab-menu-new-folder.png) no-repeat center left;
+    }
+    &.recoverResourceService a,
+    &.deleteResourcePermanentService a {
+      padding-left: 0;
+    }
+  }
+}
+
+
+/*-----------------------------------------*\
+  3. Content
+\*-----------------------------------------*/
+
+/* Tab forms */
+
+.vrtx-admin-form p#vrtx-file-upload-info-text {
+  margin: 10px 0 0;
+}
+
+.vrtx-admin-form .vrtx-admin-label {
+  margin-bottom: 5px;
+  margin-top: 10px;
+}
+
+.vrtx-admin-form #createCollectionService-form .radio-buttons,
+.vrtx-admin-form #vrtx-create-document-templates {
+  background: transparent url("images/line-dotted-tighter.gif") repeat-x scroll left bottom;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+}
+
+.vrtx-admin-form #vrtx-create-document-templates .radio-buttons {
+  margin-bottom: 0;
+}
+
+#vrtx-create-templates-not-recommended-toggle {
+  display: inline-block;
+  margin-top: 8px;
+}
+
+.vrtx-admin-form #createDocumentService-form .radio-buttons,
+.vrtx-admin-form #createCollectionService-form .radio-buttons {
+  position: relative;
+}
+
+.vrtx-admin-form #createDocumentService-form .radio-buttons input,
+.vrtx-admin-form #createCollectionService-form .radio-buttons input {
+  margin-right: 4px;
+}
+
+.vrtx-admin-form .radioDescription {
+  margin: 2px 0 8px 22px;
+}
+
+.vrtx-admin-form #vrtx-div-file-title,
+.vrtx-admin-form #vrtx-div-file-name,
+.vrtx-admin-form #vrtx-div-collection-title,
+.vrtx-admin-form #vrtx-div-collection-name {
+  clear: left;
+}
+
+.vrtx-admin-form #initCreateChangeTemplate,
+.vrtx-admin-form #vrtx-div-file-title {
+  display: none;
+}
+
+.vrtx-admin-form #vrtx-div-file-name input[type='text'][disabled],
+.vrtx-admin-form #vrtx-textfield-file-type.disabled {
+  color: #777 !important;
+}
+
+.vrtx-admin-form.file-name-from-title #vrtx-div-file-name input[type='text'],
+.vrtx-admin-form.file-name-from-title #vrtx-div-collection-name input[type='text'],
+.vrtx-admin-form.file-name-from-title #vrtx-div-file-type input[type='text'] {
+  color: #555;
+}
+
+.vrtx-admin-form #vrtx-div-file-name input[type='text'],
+.vrtx-admin-form #vrtx-div-collection-name input[type='text'],
+.vrtx-admin-form #vrtx-checkbox-hide-from-navigation,
+.vrtx-admin-form #vrtx-checkbox-is-index {
+  float: left;
+}
+
+.vrtx-admin-form #vrtx-checkbox-hide-from-navigation,
+.vrtx-admin-form #vrtx-checkbox-is-index {
+  background: transparent url("images/seperator-grey-gradient-small-darker.png") no-repeat scroll left center;
+  height: 23px;
+  margin: 1px 6px 0 18px;
+  padding: 7px 0 0 18px;
+}
+
+.vrtx-admin-form #vrtx-textfield-collection-name,
+.vrtx-admin-form #vrtx-textfield-file-name {
+  width: 35px;
+}
+
+.vrtx-admin-form #vrtx-textfield-file-type {
+  float: left;
+  padding: 7px 0 0 5px;
+}
+
+.vrtx-admin-form #vrtx-checkbox-hide-from-navigation label,
+.vrtx-admin-form #vrtx-checkbox-is-index label {
+  vertical-align: top;
+}
+
+.vrtx-radio-button > *  {
+  margin: 0;
+}
+.vrtx-radio-button  {
+  margin-bottom: 10px;
+}
+.vrtx-radio-button:last-child {
+  margin-bottom: 0px;
+}
+ul.radio-buttons label {
+ font-size: 1.154em;
+}
+ul.radio-buttons li {
+  margin-bottom: 5px;
+}
+ul.radio-buttons li:last-child {
+  margin-bottom: 0px;
+}
+.vrtx-checkbox {
+  margin-top: 5px;
+}
+
+ul.radio-buttons input[type='radio'],
+.vrtx-radio-button input[type='radio'],
+.vrtx-checkbox-square input[type='checkbox'],
+.vrtx-checkbox input[type='checkbox'] {
+  margin: 0 3px 0 0;
+}
+
+ul.radio-buttons li > * {
+  vertical-align: middle;
+}
+
+.vrtx-radio-button label,
+.vrtx-radio-button input[type='radio'],
+.vrtx-radio-buttons label,
+.vrtx-radio-buttons input[type='radio'],
+.vrtx-checkbox-square label,
+.vrtx-checkbox-square input[type='checkbox'],
+.vrtx-checkbox label,
+.vrtx-checkbox input[type='checkbox'] {
+  vertical-align: top;
+  line-height: 1;
+}
+
+ol.vrtx-help-step-by-step {
+  font-size: 1.154em;
+  margin-left: 0;
+  padding-left: 22px;
+
+  li {
+    margin-bottom: 15px;
+  }
+  span.vrtx-help-step-by-step-url,
+  span.vrtx-help-step-by-step-cmd {
+    color: #777;
+    font-weight: bold;
+  }
+}
+
+#vrtx-report-filters ul.vrtx-report-filter-last {
+  margin-right: 0;
+}
+
+#vrtx-report-filters ul li,
+#preview-mode li {
+  float: left;
+  margin-right: 2px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: visible;
+  height: 22px;
+}
+
+#vrtx-report-filters ul li.active-filter span,
+#vrtx-report-filters ul li a,
+#preview-mode li.active-mode span,
+#preview-mode li a {
+  height: 19px;
+  padding: 3px 9px 0 10px;
+  display: inline-block;
+}
+
+#vrtx-report-filters ul li.active-filter,
+#vrtx-report-filters ul li.active-filter:hover,
+#preview-mode li.active-mode,
+#preview-mode li.active-mode:hover {
+  @include bg("images/report-filter-hover-left.png");
+}
+
+#vrtx-report-filters ul li.active-filter span,
+#vrtx-report-filters ul li.active-filter:hover span,
+#preview-mode li.active-mode span,
+#preview-mode li.active-mode:hover span {
+  background: url(images/report-filter-hover-right.png) no-repeat top right;
+  display: inline-block;
+}
+
+/* Preview */
+
+body#vrtx-preview {
+  overflow-y: scroll;
+}
+
+body#vrtx-preview #app-content #contents iframe#previewIframe {
+  border: 1px solid #d9d9d9;
+}
+
+body#vrtx-preview #app-content #contents .previewUnavailable {
+  margin: 10px 14px;
+}
+
+p.previewUnavailableReasons {
+  margin-top: 15px;
+  padding-top: 15px;
+  background: url(images/line-dotted.gif) repeat-x 0 2px;
+}
+
+#preview-loading {
+  @include posAbs;
+  background: $contentBackgroundColor;
+  display: block;
+  width: 100%;
+  padding: 2px;
+}
+
+#preview-loading-inner {
+  @include posAbs;
+  width: 100%;
+  display: block;
+  background: transparent;
+}
+
+#preview-loading-inner span {
+  background: transparent url(images/ajax-loader.gif) no-repeat center left;
+  display: block;
+  padding: 10px 5px 10px 42px;
+  font-size: 1.308em;
+  color: #5e5e5e;
+  position: relative;
+  @include posAbs(45%, 41%);
+}
+
+/* Preview mode and actions */
+
+#preview-mode-mobile-rotate-hv,
+#previewIframeMobileBg,
+#preview-mode,
+#preview-actions {
+  display: none;
+  margin-top: 0;
+}
+
+.js ul#preview-mode,
+.js ul#preview-actions {
+  display: block;
+}
+
+body#vrtx-preview.js #app-content #main {
+  padding-top: 4px;
+}
+
+ul#preview-mode {
+  float: left;
+}
+
+#preview-mode-actions {
+  padding-top: 15px;
+}
+
+/* Mobile preview */
+
+.mobile body#vrtx-preview #app-content #contents #previewIframeWrapper {
+  background: #ececec;
+  clear: both;
+  height: 494px !important;
+  padding: 190px 0;
+  position: relative;
+  text-align: center;
+}
+
+.mobile #previewIframeWrapper #previewIframeMobileBg {
+  @include bg("images/preview-mobile-bg.png");
+  @include wh(400px, 745px);
+  margin: -135px auto 0;
+  display: block;
+  position: relative;
+  top: 0px;
+  z-index: 0;
+  
+  /* Move down faster to avoid collision with link */         
+  @include transitionsTransforms(top 200ms ease-in-out 0ms, 300ms ease-in-out);
+}
+
+.mobile.horizontal #previewIframeWrapper #previewIframeMobileBg {
+  @include transforms(rotate(-90deg));
+  top: -170px;
+  
+  /* Move up faster after some delay to avoid collision with link */
+  @include transitionsTransforms(top 200ms ease-in-out 100ms, 300ms ease-in-out);
+}
+
+/* Move shadow below mobile */
+.mobile.horizontal.change-bg #previewIframeWrapper #previewIframeMobileBg {
+  background: transparent url(images/preview-mobile-bg-horizontal.png) no-repeat -2px 0;
+  left: 4px;
+  top: -167px;
+  border: 1px solid transparent;
+  @include transitions(none);
+}
+
+.mobile body#vrtx-preview #app-content #contents #previewIframeWrapper #previewIframeInnerWrapper {
+  @include wh(327px !important, 493px !important);
+  overflow: scroll;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background-color: $contentBackgroundColor;
+  display: block;
+  margin: -622px auto 0;
+  border: none;
+  position: relative;
+}
+
+.mobile body#vrtx-preview #app-content #contents iframe#previewIframe {
+  overflow: hidden !important;
+  border-width: 0px;
+}
+
+.mobile body#vrtx-preview #app-content #contents iframe#previewIframe::-webkit-scrollbar {  
+  display: none !important;
+}
+
+.mobile.horizontal body#vrtx-preview #app-content #contents #previewIframeWrapper #previewIframeInnerWrapper {
+  @include wh(494px !important, 327px !important);
+  top: -86px;
+  left: -4px;
+}
+
+.mobile body#vrtx-preview #app-content #contents #previewIframeWrapper #preview-mode-mobile-rotate-hv {
+  display: inline-block;
+  padding-left: 24px;
+  background: #ececec url(images/refresh.png) no-repeat center left;
+  font-size: 1.15em;
+  top: -167px;
+  position: relative;
+}
+
+/* ^ Mobile preview */
+
+ul#preview-actions {
+  float: right;
+  margin-top: 3px;
+}
+
+ul#preview-actions li {
+  display: inline-block;
+}
+
+#contents ul#preview-actions li {
+  margin-left: 30px;
+}
+
+ul#preview-actions li a {
+  padding: 2px 0;
+}
+
+ul#preview-actions #preview-actions-share {
+  padding-left: 20px;
+  background: url(images/preview-share.png) no-repeat center left;
+}
+
+ul#preview-actions #preview-actions-print {
+  padding-left: 22px;
+  background: url(images/preview-print.png) no-repeat center left;
+}
+
+/* ^ Preview mode and actions  */
+
+/* Preview action fullscreen */
+
+ul#preview-actions #preview-actions-fullscreen-toggle {
+  padding-left: 22px;
+  background: url(images/preview-maximize.png) no-repeat 0 3px;
+}
+
+.fullscreen-toggle-open ul#preview-actions #preview-actions-fullscreen-toggle {
+  background-image: url(images/preview-minimize.png);
+}
+
+.fullscreen-toggle-open,
+.fullscreen-toggle-open body {
+  background-color: $contentBackgroundColor;
+}
+
+.mobile.fullscreen-toggle-open,
+.mobile.fullscreen-toggle-open body {
+  background-color: #ececec;
+}
+
+.fullscreen-toggle-open #app-head-wrapper,
+.fullscreen-toggle-open #title-container,
+.fullscreen-toggle-open #app-tabs,
+.fullscreen-toggle-open #app-footer-wrapper,
+.fullscreen-toggle-open #active-tab,
+.fullscreen-toggle-open .tabMessage-big {
+  display: none;
+}
+
+.fullscreen-toggle-open body#vrtx-preview #app-content #main {
+  border: none;
+  padding: 0;
+}
+
+.fullscreen-toggle-open .app-fluid #app-content {
+  @include noMargPadd;
+  min-width: 0;
+  max-width: none;
+}
+
+.fullscreen-toggle-open body#vrtx-preview #app-content #contents iframe#previewIframe {
+  border-width: 1px 0;
+}
+
+.fullscreen-toggle-open.mobile body#vrtx-preview #app-content #contents iframe#previewIframe {
+  border-width: 0px;
+}
+
+.mobile.fullscreen-toggle-open body#vrtx-preview #app-content #contents #previewIframeWrapper {
+  border-top: 1px solid #D9D9D9;
+}
+
+.fullscreen-toggle-open #app-content .vrtx-sticky-preview-mode-actions {
+  position: fixed;
+  top: 0px;
+  z-index: 9999;
+  background-color: $contentBackgroundColor;
+  @include boxShadow(0px 7px 14px -8px rgba(0, 0, 0, 0.5));
+}
+
+.fullscreen-toggle-open #app-content #preview-mode-actions-inner {
+  margin: 0 auto;
+  width: auto;
+  min-width: 914px;
+  max-width: 1200px;
+  padding-left: 50px;
+  padding-right: 50px;
+}
+
+.fullscreen-toggle-open #app-content .vrtx-sticky-preview-mode-actions .sticky-bg-ie8-below {
+  @include posAbsBottom(-13px, 0);
+  @include wh(100%, 13px);
+  background: transparent url(images/sticky-bar-fade-to-grey-ie8-bg.png) repeat-x bottom left;
+  display: block;
+}
+
+/* ^ Preview action fullscreen */
+
+/* Preview popup */
+
+html#vrtx-preview-popup,
+html#vrtx-preview-popup body {
+  background-color: #fff !important;
+}
+
+html#vrtx-preview-popup body {
+  padding: 0 35px 35px 35px;
+  text-align: left;
+  min-width: 760px;
+}
+
+html#vrtx-preview-popup h1 {
+  margin: 15px 0 10px 0;
+  padding: 0 30px 10px 0;
+  font-weight: normal;
+  background: url("images/line-dotted.gif") repeat-x scroll left bottom transparent;
+  position: relative;
+}
+
+html#vrtx-preview-popup h1 span#vrtx-preview-popup-close {
+  background: url(images/thickbox-close.png) no-repeat top right;
+  display: block;
+  @include wh(18px, 18px);
+  @include posAbsBottomRight(14px, 5px);
+}
+
+html#vrtx-preview-popup h1 span#vrtx-preview-popup-close:hover {
+  cursor: pointer;
+}
+
+#vrtx-preview-message-box {
+  background: url("images/message-info-grey-bg.png") no-repeat scroll 14px center #F0F0F0;
+  border: 1px solid #e4e4e4;
+  font-size: 1.15em;
+  font-weight: bold;
+  padding: 16px 12px 16px 46px;
+  margin: 0 0 20px 0;
+}
+
+#vrtx-preview-popup-open {
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+}
+
+html#vrtx-preview-popup iframe#previewViewIframe {
+  border: 1px solid #e4e4e4;
+}
+
+/* ^ Preview popup */
+
+#permissions-read-write-admin {
+  padding-bottom: 15px;
+  padding-top: 5px;
+  margin: 15px 0;
+  border-top: 1px solid $expandedFormBorderColor;
+  border-bottom: 1px solid $expandedFormBorderColor;
+}
+
+#permissions-read-write-admin .permissions-read-wrapper,
+#permissions-read-write-admin .permissions-read-write-wrapper {
+  padding-bottom: 15px;
+  border-bottom: 1px solid $expandedFormBorderColor; 
+}
+
+/* Remove borders around expanded forms */
+
+.permissions-read-wrapper .permissions-read-wrapper,
+.permissions-read-wrapper.expandedForm {
+  margin-top: -6px ;
+}
+
+.permissions-read-write-wrapper .permissions-read-write-wrapper,
+.permissions-read-write-wrapper.expandedForm {
+  margin-top: -1px;
+}
+
+.permissions-all-wrapper .permissions-all-wrapper,
+.permissions-all-wrapper.expandedForm {
+  margin-top: -1px;
+  margin-bottom: -16px;
+}
+
+/* ^ Remove borders around expanded forms */
+
+body#vrtx-permissions ul.shortcuts {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+#permissions-inheritance,
+#permissions-read-write-admin div.read,
+#permissions-read-write-admin div.read-write,
+#permissions-read-write-admin div.all,
+body#vrtx-permissions ul.shortcuts li {
+  font-size: 1.154em;
+}
+
+#permissions-inheritance .vrtx-button-small,
+#permissions-read-write-admin div.read a.vrtx-button-small,
+#permissions-read-write-admin div.read-write a.vrtx-button-small,
+#permissions-read-write-admin div.all a.vrtx-button-small {
+  font-size: 0.867em;
+}
+
+body#vrtx-permissions ul.shortcuts li {
+  margin: 0 0 5px 0;
+}
+
+#app-content .principalList.hidden { 
+  display: none;
+}
+
+body#vrtx-permissions li.groups,
+body#vrtx-permissions li.users {
+  float: left;
+  border: 1px solid #bebebe;
+  padding: 7px 19px 19px 19px;
+}
+
+body#vrtx-permissions li.groups {
+  margin-right: 20px;
+}
+
+body#vrtx-permissions li.groups .vrtx-button,
+body#vrtx-permissions li.users .vrtx-button {
+  margin-left: 15px;
+}
+
+body#vrtx-permissions li.groups legend,
+body#vrtx-permissions li.users legend {
+  font-size: 1.23em;
+  padding: 0 0 8px 0;
+}
+
+body#vrtx-permissions li.groups ul,
+body#vrtx-permissions li.users ul {
+  margin: 0;
+  padding: 0 0 10px 0;
+}
+
+ul.vrtx-reporters li,
+body#vrtx-permissions li.groups ul li,
+body#vrtx-permissions li.users ul li,
+body#vrtx-preview-ssl-mixed-mode #contents ul li {
+  background: url(images/list-bullet-dark-grey.png) no-repeat center left;
+  margin: 0 0 5px 5px;
+  padding: 0 0 0 10px;
+}
+
+body#vrtx-permissions li.groups div.errorContainer ul li,
+body#vrtx-permissions li.users div.errorContainer ul li {
+  background: none;
+  @include noMargPadd;
+}
+
+body#vrtx-permissions .removePermission {
+  background: url(images/list-remove-red.png) no-repeat 0px 4px;
+  color: $expandedFormBackgroundColor;
+  width: 12px;
+  display: inline-block;
+  text-indent: -9999px;
+  overflow: hidden;
+  cursor: pointer;
+  border: none !important;
+}
+
+body#vrtx-permissions .addGroup,
+body#vrtx-permissions .addUser {
+  display: block;
+}
+
+/* Autocomplete */
+
+.properties .tags input.ac_input {
+  width: 320px;
+}
+
+.expandedForm span.addGroup input.ac_input,
+.expandedForm span.addUser input.ac_input {
+  width: 200px; 
+}
+
+.vrtx-autocomplete-username.vrtx-textfield,
+.vrtx-autocomplete-tag.vrtx-textfield,
+#principalList .vrtx-textfield {
+  position: relative;
+}
+
+.vrtx-textfield.ac_active_parent {
+  z-index: 9999;
+  position: relative;
+}
+
+/* ^ Autocomplete */
+
+ul.errors li {
+  color: $errorRestrictedTextColor;
+}
+
+table.resourceInfo,
+table.privilegeTable {
+  border: 1px solid #d9d9d9;
+  width: 100%;
+}
+
+table tbody th {
+  text-align: left;
+}
+
+table.resourceInfo td,
+table.resourceInfo th,
+table.privilegeTable td,
+table.privilegeTable th {
+  padding: 3px 5px;
+  border-top: 1px solid #F0F0F0;
+  vertical-align: top;
+}
+
+table.resourceInfo tr.first td,
+table.resourceInfo tr.first th,
+table.privilegeTable tr.first td,
+table.privilegeTable tr.first th {
+  border-top: none;
+}
+
+table.resourceInfo tr.even td,
+table.resourceInfo tr.even th,
+table.privilegeTable tr.even td,
+table.privilegeTable tr.even th,
+table.report-urchin-table tr.even td,
+table.report-urchin-table tr.even th {
+  background-color: $contentTablesEvenBackgroundColor;
+}
+
+table.resourceInfo tr:nth-child(even) td,
+table.resourceInfo tr:nth-child(even) th {
+  background-color: $contentTablesEvenBackgroundColor;
+}
+
+table.resourceInfo tr.first td,
+table.resourceInfo tr.first th,
+table.report-urchin-table tr.first td,
+table.report-urchin-table tr.first th {
+  border-top: none;
+}
+
+table.resourceInfo tr:first-child td,
+table.resourceInfo tr:first-child th {
+  border-top: none;
+}
+
+table.resourceInfo .key,
+table.privilegeTable .key {
+  font-weight: bold;
+  width: 1%;
+  white-space: nowrap;
+}
+
+table.resourceInfo form#propertyForm ul.property .vrtx-textfield {
+  margin-right: 10px;
+}
+
+ul.property {
+  margin: 0px;
+}
+
+#vrtx-admin-ownership-form {
+  display: inline;
+}
+
+.ac_results {
+  margin-left: -8px !important;
+  margin-top: -3px !important;
+}
+
+body#vrtx-edit-plaintext textarea {
+  width: 100%;
+  @include borderBox;
+}
+
+body#vrtx-edit-plaintext .contextual-help {
+  float: right;
+}
+
+.vrtx-visual-profile-rows {
+  margin: 0 0 10px 0;
+}
+
+#publishing-status,
+#publishing-publish-date,
+.vrtx-visual-profile-rows {
+  padding-bottom: 15px;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.vrtx-visual-profile-rows.last {
+  padding-bottom: 0px;
+  border-bottom: none;
+}
+
+.vrtx-visual-profile-rows .radio-buttons {
+  margin-bottom: 0px;
+}
+
+#publishing-publish-date.expandedForm,
+#publishing-unpublish-date.expandedForm {
+  margin-top: -1px !important;
+}
+
+/* Urchin reports */
+
+#vrtx-resource-visit {
+  @include floatClearFix;
+  position: relative;
+}
+
+h3#resourceVisitHeader {
+  margin-top: 20px;
+}
+
+h3.resourceInfoHeader {
+  clear: left;
+}
+
+#urchin-loading {
+  display: block;
+  @include wh(100%, 200px);
+  background: url(images/loadingAnimation.gif) no-repeat center center;
+}
+
+/* Tab menu */
+
+#vrtx-manually-approve-tab-menu {
+  padding: 15px 0 0 0;
+}
+
+#vrtx-resource-visit-tab-menu li,
+#vrtx-manually-approve-tab-menu li {
+  float: left;
+}
+
+#vrtx-resource-visit-tab-menu li a,
+#vrtx-manually-approve-tab-menu li a,
+#vrtx-manually-approve-tab-menu li span {
+  display: inline-block;
+}
+
+#vrtx-resource-visit-tab-menu li.active a,
+#vrtx-manually-approve-tab-menu li span {
+  padding: 5px 15px 5px 10px;
+  margin: 0 0 0 5px;
+}
+
+#vrtx-resource-visit-tab-menu li a,
+#vrtx-manually-approve-tab-menu li a {
+  padding: 5px 15px;
+}
+
+#vrtx-resource-visit-tab-menu li a,
+#vrtx-manually-approve-tab-menu li a {
+  background: url(images/report-tab-middle.png) repeat-x 0px 25px;
+  white-space: nowrap;
+}
+
+#vrtx-resource-visit-tab-menu li.active,
+#vrtx-manually-approve-tab-menu li.active {
+  @include bg("images/report-tab-active-left.png", true);
+}
+
+#vrtx-resource-visit-tab-menu li.active a,
+#vrtx-manually-approve-tab-menu li.active span {
+  background: url(images/report-tab-active-right.png) no-repeat top right !important;
+}
+
+#vrtx-resource-visit-tab-menu li.active.active-first,
+#vrtx-manually-approve-tab-menu li.active.active-first {
+  @include bg("images/report-tab-active-left-first.png", true);
+}
+
+#vrtx-resource-visit-tab-menu li.active.active-first a,
+#vrtx-manually-approve-tab-menu li.active.active-first span {
+  background: url(images/report-tab-active-right-first.png) no-repeat top right !important;
+}
+
+/* ^ Tab menu */
+
+#vrtx-resource-visit,
+#vrtx-resource-visit-no-stat {
+  margin-bottom: 25px;
+}
+
+#vrtx-resource-visit-info {
+  @include posAbsBottom(22px, 650px);
+  background: #f9f9f9 url(images/info-icon-grey-grey-bg.png) no-repeat 8px 7px;
+  border: 1px solid #d9d9d9;
+  padding: 8px 13px 8px 30px;
+  font-size: 0.85em;
+}
+
+#vrtx-resource-visit-chart {
+  clear: left;
+  float: left;
+  margin: 0 50px 0 0;
+  width: 600px;
+}
+
+#vrtx-resource-visit-stats {
+  float: left;
+  position: relative;
+  top: 10px;
+  left: 0px;
+  width: 35%;
+}
+
+#vrtx-resource-visit-wrapper ul {
+  margin: 0 0 10px 0;
+  padding: 0;
+  list-style: none;
+  float: left;
+}
+
+/* Responsive design */
+
+.vrtx-resource-visit-stat {
+  float: left;
+  text-align: left;
+  margin: 0 3.317535545023696682% 1.5em 0;
+  width: 46.6824645%;
+  color: #363534;
+  font-size: 1.154em;
+}
+
+.vrtx-resource-visit-stat span {
+  color: #a6a6a6;
+  font-weight: bold;
+  font-size: 2em;
+  display: block;
+}
+
+@media screen and (max-width: 1270px) {
+  #resource-title #resourceMenuRight {
+    margin-right: -40%;
+  }
+}
+
+@media screen and (max-width: 1170px) {
+  .vrtx-resource-visit-stat {
+    width: 20%;
+    margin-bottom: 0px;
+  }
+  #vrtx-resource-visit-stats {
+    clear: left;
+    width: 100%;
+    margin: 10px 0 0 0;
+    top: 0px;
+  }
+  #vrtx-resource-visit-info {
+    bottom: 90px;
+  }
+}
+
+/* ^ Responsive design */
+
+/* ^ Urchin reports */
+
+/* Versioning */
+
+#vrtx-revisions table.resourceInfo { 
+  border: none;
+}
+
+#vrtx-revisions .resourceInfo td,
+#vrtx-revisions .resourceInfo th {
+  border: none;
+  border-bottom: 1px solid #D9D9D9;
+}
+
+#vrtx-revisions .resourceInfo td {
+  font-size: 1.154em;
+  padding: 14px 10px 14px 0;
+}
+
+table.resourceInfo.revisions tr:nth-child(even) td {
+  background-color: $contentBackgroundColor;
+}
+
+#vrtx-revisions .resourceInfo th {
+  padding: 0 0 10px 0;
+  text-align: left;
+}
+
+#vrtx-revisions .resourceInfo td.vrtx-revisions-buttons-column {
+  font-size: 1em;
+  width: 450px;
+  padding: 11px;
+} 
+
+#vrtx-revisions .resourceInfo td.vrtx-revisions-buttons-column .vrtx-revision-view-changes,
+#vrtx-revisions .resourceInfo td.vrtx-revisions-buttons-column form {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+#vrtx-revisions .resourceInfo td.vrtx-revisions-buttons-column form:after {
+  display: none;
+}
+
+#vrtx-revisions .resourceInfo tr#vrtx-revisions-working-copy td {
+  font-style: italic;
+  color: #999;
+}
+
+#vrtx-revisions .resourceInfo tr#vrtx-revisions-working-copy td.vrtx-revisions-buttons-column {
+  font-style: normal;
+}
+
+#vrtx-revisions .resourceInfo td#vrtx-revisions-current {
+  color: $publishedAllowedTextColor;
+}
+
+.vrtx-revision-amount,
+.vrtx-revision-amount-rest {
+  display: block;
+  @include wh(3px, 10px);
+  float: left;
+  margin: 0 4px 0 0;
+}
+
+.vrtx-revision-amount {
+  background: url(images/report-revision-change-amount-dark-grey.png) no-repeat center center;
+}
+
+.vrtx-revision-amount-rest {
+  background: url(images/report-revision-change-amount-grey.png) no-repeat center center;
+}
+
+/* OoXML editor */
+
+#vrtx-ooxml-editor #vrtx-open-webdav-wrapper {
+  display: none;
+}
+
+#vrtx-ooxml-editor #app-content h2 {
+  margin-top: 10px;
+}
+
+/* Paging */
+
+.vrtx-course-schedule .prev-next,
+#manually-approve-container .prev-next { 
+  float: right;
+}
+
+.vrtx-course-schedule .next,
+.vrtx-report-paging .next,
+#manually-approve-container .next {
+  margin-left: 20px !important;
+  background: url(images/arrow-grey-next.gif) no-repeat center right;
+  padding: 0 12px 0 0;
+}
+
+.vrtx-course-schedule .prev,
+.vrtx-report-paging .prev,
+#manually-approve-container .prev {
+  background: url(images/arrow-grey-prev.gif) no-repeat center left;
+  padding: 0 0 0 12px;
+}
+
+.vrtx-report-paging .next {
+  margin-left: 0px !important;
+}
+
+.vrtx-report-paging .prev {
+  margin-right: 20px !important;
+}
+
+#app-head:after,
+#app-footer:after,
+#app-content:after,
+#main:after,
+#title-container:after,
+#resource-title:after,
+ul#resourceMenuLeft:after,
+ul#resourceMenuRight:after,
+div.globalmenu:after,
+#active-tab:after,
+#contents:after,
+#app-content .principalList:after,
+#app-content form:after {
+  clear: both;
+  content: ".";
+  display: block;
+  height: 0;
+  visibility: hidden;
+}
+
+ul.radio-buttons,
+ul.radio-buttons li,
+.expandedForm form ul,
+.expandedForm form ul li,
+form.vrtx-admin-form ul,
+form.vrtx-admin-form ul li,
+ul#preview-mode,
+ul#preview-mode li,
+ul#preview-actions,
+ul#preview-actions li,
+ul#vrtx-manually-approve-tab-menu,
+ul#vrtx-manually-approve-tab-menu li,
+#vrtx-preview-ssl-mixed-mode #contents ul,
+#vrtx-preview-ssl-mixed-mode #contents ul li,
+#vrtx-report-filters ul,
+#vrtx-report-filter ul li {
+  margin-left: 0px;
+  padding-left: 0px;
+  list-style: none;
+}
+
+div.globalmenu h3,
+form.vrtx-admin-form h3,
+.expandedForm h3,
+.solidExpandedForm h3 {
+  margin-top: 0;
+}
+
+div.expandedForm,
+div.solidExpandedForm,
+tr.expandedForm td {
+  margin: 5px -20px 14px -20px;
+  padding: 14px 19px;
+  background-color: $expandedFormBackgroundColor !important;
+  border: 1px solid $expandedFormBorderColor !important;
+}
+
+div.globalmenu {
+  margin: 0 0 20px 0;
+  padding: 13px 15px;
+  background-color: $expandedFormBackgroundColor;
+  border: 1px solid $expandedFormBorderColor;
+  clear: left;
+}
+
+div.vrtx-admin-form {
+  @include floatClearFix;
+}
+
+div.globalmenu .vrtx-button,
+div.expandedForm .vrtx-button,
+div.solidExpandedForm .vrtx-button,
+tr.expandedForm td .vrtx-button,
+div.globalmenu .vrtx-button-small,
+div.expandedForm .vrtx-button-small,
+div.solidExpandedForm .vrtx-button-small,
+tr.expandedForm td .vrtx-button-small {
+  background: $buttonExpandedFormBackgroundColor;
+}
+
+/* Smaller button in resource-info tables */
+
+.forms-new .resourceInfo table .vrtx-button-small {
+  margin-left: 2px;
+  font-size: 0.846em;
+  padding: 2px 13px;
+}
+
+.forms-new .resourceInfo table .vrtx-button-small:hover,
+.forms-new .resourceInfo table .vrtx-button-small:focus,
+.forms-new .resourceInfo table .vrtx-button-small.hover {
+  padding: 3px 14px;
+}
+
+/* Create dialog */
+
+.vrtx-create-tree .vrtx-button-small {
+  margin-top: -2px;
+  margin-bottom: -2px;
+}
+
+.vrtx-create-tree .tree-create {
+  @include posAbs;
+  padding: 0 15px !important;
+}
+
+.vrtx-create-tree a.tree-link {
+  color: #2b2b2b !important;
+  font-size: 1.077em;
+}
+
+.loading-tree-node {
+  background: transparent url(images/spinner.gif) no-repeat center left;
+  padding-left: 26px;
+}
+
+#TB_window {
+  @include borderRadius(7px);
+}
+
+#TB_closeAjaxWindow {
+  display: none;
+}
+
+#TB_title {
+  padding-right: 0px !important;
+  margin: 30px 30px 0 30px !important;
+}
+
+#TB_title.show-close-window {
+  padding-right: 70px !important;
+}
+
+#TB_title.show-close-window #TB_closeAjaxWindow {
+  display: block;
+}
+
+#TB_ajaxContent {
+  padding: 2px 0 30px 30px !important;
+}
+
+/* Copy and move */
+
+#app-content .vrtx-cancel-link {
+  display: inline-block;
+  font-size: 1px;
+  @include wh(12px, 12px);
+  margin-left: 7px;
+  position: relative;
+  top: -3.8em;
+  color: #F8F8F8;
+  background: url(images/resource-menu-dialog-close.png) no-repeat center center;
+  border: none;
+ 
+  &:hover {
+    cursor: pointer;
+  }
+  &:focus {
+    outline: 1px solid #aaa;
+  }
+}
+
+#app-content .vrtx-show-processing {
+  background: url(images/spinner.gif) no-repeat center left;
+  display: block;
+  @include wh(16px, 16px);
+}
+
+/* Loading dialog */
+
+#dialog-loading-content img {
+  opacity: 0.7;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)" !important;
+}
+
+/* Fix rendering bug in Firefox for hover in table (VTK-2562)
+ * TODO: the problems lays though with 'overflow:hidden' on table cells and resource link
+ */
+#directory-listing tr input, x:-moz-any-link, x:only-child {
+  margin: 3px 3px 3px 4px;
+}
+
+#resource-title .button-row li form input[type="submit"], x:-moz-any-link, x:only-child {
+  padding: 5px 15px 6px;
+}
+
+#resource-title .button-row li form input[type="submit"]:hover, x:-moz-any-link, x:only-child,
+#resource-title .button-row li form input[type="submit"]:focus, x:-moz-any-link, x:only-child {
+  padding: 6px 16px 7px;  
+}
+
+#resource-title .dropdown-shortcut-menu-container li form input[type="submit"], x:-moz-any-link, x:only-child {
+  padding-left: 11px !important;
+  padding-right: 11px !important;
+}
+
+/* ^ Vortex */

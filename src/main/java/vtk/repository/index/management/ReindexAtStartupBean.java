@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.index.IndexException;
 import vtk.repository.index.PropertySetIndex;
 import vtk.repository.store.IndexDao;
@@ -50,8 +51,11 @@ public class ReindexAtStartupBean implements InitializingBean {
     
     private PropertySetIndex index;
     private IndexDao indexDao;
+    private boolean enabled = false;
     
     public void afterPropertiesSet() throws Exception {
+        if (!enabled) return;
+        
         IndexOperationManager manager = new IndexOperationManagerImpl(this.index, 
                                                                       this.indexDao);
         logger.info("Starting synchronous re-indexing of index with ID '" 
@@ -84,5 +88,9 @@ public class ReindexAtStartupBean implements InitializingBean {
         this.indexDao = indexDao;
     }
     
+    @Required
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
 }

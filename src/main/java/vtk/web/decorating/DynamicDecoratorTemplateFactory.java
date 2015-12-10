@@ -265,7 +265,7 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
         public Object eval(Context ctx, Object... args) {
             Object o1 = args[0];
             Object o2 = args[1];
-            if (o1 == null || o1 == null) {
+            if (o1 == null || o2 == null) {
                 throw new IllegalArgumentException("Arguments must have valid names");
             }
             Path url = Path.fromString(o1.toString());

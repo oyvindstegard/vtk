@@ -31,31 +31,53 @@
 
 package vtk.web.view;
 
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.view.AbstractView;
-import vtk.util.io.StreamUtil;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONSerializer;
+import vtk.util.text.JsonStreamer;
 
 /**
- * Simple JSON view, which an object using the <code>net.sf.json.JSONObject</code>
- * library.
+ * Simple JSON view, which can render maps, lists and primitive objects as a JSON
+ * data stream.
+ * 
+ * <p>Supports the following structural data types for model object:
+ * <ul>
+ * <li>{@code java.util.Map} (JSON objects)
+ * <li>{@code java.util.List} (JSON arrays)
+ * <li>Java arrays (JSON arrays)
+ * </ul>
+ * 
+ * <p>Supported primitive data types:
+ * <ul>
+ * <li>{@code java.lang.String} (JSON strings)
+ * <li>{@code java.lang.Number} (JSON numbers)
+ * <li>{@code java.lang.Boolean} (JSON booleans)
+ * <li>Java {@code null} values (JSON nulls)
+ * </ul>
+ * 
+ * <p>Other types will be serialized to a string representation using their
+ * {@code toString} method. In other words, this view does not support serializing
+ * POJOs, beans and other complex Java types.
  * 
  * <p>Bean properties:
  *  <ul>
  *   <li><code>modelKey</code> - key used to lookup the object to serialize in model.
- * Default value "jsonObject".
+ * Default value is "jsonObject".
  *   <li><code>httpStatusKey</code> - key used to lookup optional HTTP status code. The
  * status code should be an <code>Integer</code> instance.
  *   <li><code>indentFactor</code> - if greater than 0, JSON will be pretty printed
  * with the indent factor requested. Default is -1 (no pretty printing).
+ * <li><code>escapeSlashes</code> - whether to escape slashes in JSON output or not.
+ * </ul>
+ * 
+ * <p>Request params:
+ * <ul>
+ * <li>{@code indent} - override default indentation value (integer).
+ * <li>{@code escapeSlashes} - override default escape slash setting (boolean by presence)
  * </ul>
  */
 public class JsonView extends AbstractView {
@@ -63,6 +85,7 @@ public class JsonView extends AbstractView {
     private String modelKey = "jsonObject";
     private String httpStatusKey = "httpStatus";
     private int indentFactor = -1;
+    private boolean escapeSlashes = false;
 
     @Override
     protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request,
@@ -73,31 +96,21 @@ public class JsonView extends AbstractView {
                                                 + modelKey + "' in model data.");
         }
         
-        Object toSerialize = model.get(modelKey);
-        JSON json;
-        if (toSerialize instanceof JSON) {
-            json = (JSON)toSerialize;
-        } else {
-            json = JSONSerializer.toJSON(toSerialize);
-        }
-
         response.setContentType("application/json; charset=UTF-8");
         if (model.containsKey(httpStatusKey)) {
             response.setStatus((Integer)model.get(httpStatusKey));
         }
-
-        int indent = getIndent(request);
-        if (indent > 0) {
-            OutputStream out = response.getOutputStream();
-            StreamUtil.dump(json.toString(indent).getBytes("UTF-8"), out, true);
-        } else {
-            PrintWriter writer = response.getWriter();
-            try {
-                json.write(writer);
-            } finally {
-                writer.close();
-            }
-        }
+        
+        Object toSerialize = model.get(modelKey);
+        
+        JsonStreamer js = new JsonStreamer(response.getWriter(), 
+                getIndent(request), isEscapeSlashes(request));
+        
+        js.value(toSerialize);
+    }
+    
+    private boolean isEscapeSlashes(HttpServletRequest r) {
+        return r.getParameter("escapeSlashes") != null ? true : this.escapeSlashes;
     }
 
     private int getIndent(HttpServletRequest request) {
@@ -132,12 +145,22 @@ public class JsonView extends AbstractView {
         }
         this.indentFactor = indentFactor;
     }
-
+    
     /**
      * @param httpStatusKey the httpStatusKey to set
      */
     public void setHttpStatusKey(String httpStatusKey) {
         this.httpStatusKey = httpStatusKey;
+    }
+
+    /**
+     * Whether to escape slash characters in JSON data by default.
+     * 
+     * <p>Default value is {@code false}.
+     * @param escapeSlashes the escapeSlashes to set
+     */
+    public void setEscapeSlashes(boolean escapeSlashes) {
+        this.escapeSlashes = escapeSlashes;
     }
 
 }

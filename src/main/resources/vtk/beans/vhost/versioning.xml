@@ -55,7 +55,7 @@
         <entry key="jsURLs">
           <list>
             <value>${webResources.baseURL}/jquery/include-jquery.js</value>
-            <value>${jsBaseURL}/frameworks/dejavu.js</value>
+            <value>${jsBaseURL}/frameworks/es5-shim-dejavu.js</value>
             <value>${webResources.baseURL}/js/vrtx-sticky-bar.js</value>
           </list>
         </entry>

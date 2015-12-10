@@ -6,22 +6,22 @@
 if(typeof agentWebDav === "undefined") {
   $(function() {
     var ua = window.navigator.userAgent.toLowerCase();         
-    var isWin = ((ua.indexOf("win") != -1) || (ua.indexOf("16bit") != -1));
+    var isWin = ((ua.indexOf("win") !== -1) || (ua.indexOf("16bit") !== -1));
     if ((($.browser.msie && $.browser.version >= 7) || /.*trident\/7\.0.*/.test(ua)) && isWin) {  
       
       // Show / hide WebDAV link on hover in collection listing
       $(".vrtx-resource").hover(function (e) { 
         var resourceWrp = $(this);
-        resourceWrp.find(".vrtx-resource-open-webdav").css("left", (resourceWrp.find(".vrtx-title-link").width() + 63) + "px").show(0);
+        resourceWrp.find(".vrtx-resource-open-webdav, .vrtx-resource-locked-webdav").css("left", (resourceWrp.find(".vrtx-title-link").width() + 63) + "px").show(0);
       }, function (e) {
-        $(this).find(".vrtx-resource-open-webdav").hide(0).css("left", "0px");
+        $(this).find(".vrtx-resource-open-webdav, .vrtx-resource-locked-webdav").hide(0).css("left", "0px");
       });
       
       // Show / hide WebDAV link on hover in collection table
       $(".vrtx-collection-listing-table tr").hover(function (e) { 
-        $(this).find(".vrtx-resource-open-webdav").show(0);
+        $(this).find(".vrtx-resource-open-webdav, .vrtx-resource-locked-webdav").show(0);
       }, function (e) {
-        $(this).find(".vrtx-resource-open-webdav").hide(0);
+        $(this).find(".vrtx-resource-open-webdav, .vrtx-resource-locked-webdav").hide(0);
       });
       
       // Open WebDAV link via Sharepoint extension

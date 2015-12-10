@@ -35,7 +35,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,8 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.orm.ibatis.SqlMapClientCallback;
+
 import vtk.repository.Acl;
 import vtk.repository.Privilege;
 import vtk.repository.Resource;
@@ -58,8 +58,6 @@ import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
 import vtk.util.io.StreamUtil;
-
-import com.ibatis.sqlmap.client.SqlMapExecutor;
 
 public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements RevisionStore {
 
@@ -90,8 +88,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
     public List<Revision> list(Resource resource) {
 
         String sqlMap = getSqlMap("loadResourceIdByUri");
-        @SuppressWarnings("unchecked")
-        Map<String, Object> idMap = (Map<String, Object>) getSqlMapClientTemplate().queryForObject(sqlMap,
+        Map<String, Object> idMap = getSqlSession().selectOne(sqlMap,
                 resource.getURI().toString());
         Integer id = (Integer) idMap.get("resourceId");
 
@@ -102,9 +99,8 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
             
         sqlMap = getSqlMap("listRevisionsByResource");
         List<Revision> result = new ArrayList<Revision>();
-        @SuppressWarnings("unchecked")
         List<Map<String, Object>> revisions =
-            getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+            getSqlSession().selectList(sqlMap, parameters);
 
         for (Map<String, Object> map: revisions) {
             Number n = (Number) map.get("id");
@@ -113,8 +109,6 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
             String name = (String) map.get("name");
             String uid = map.get("uid").toString();
             String checksum = map.get("checksum").toString();
-            n = (Number) map.get("changeAmount");
-            Integer changeAmount = n != null ? n.intValue() : null;
             Revision.Type type = Revision.Type.WORKING_COPY.name().equals(name) ? 
                     Revision.Type.WORKING_COPY : Revision.Type.REGULAR;
             Acl acl = aclMap.get(revId);
@@ -127,7 +121,6 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
                     .timestamp(timestamp)
                     .acl(acl)
                     .checksum(checksum)
-                    .changeAmount(changeAmount)
                     .build();
             result.add(rev);
         }         
@@ -136,13 +129,14 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
 
     @Override
     public long newRevisionID() {
-        return (Long) getSqlMapClientTemplate()
-                .queryForObject(getSqlMap("nextRevisionID"));
+        return getSqlSession()
+                .selectOne(getSqlMap("nextRevisionID"));
     }
 
     @Override
     public void create(ResourceImpl resource, Revision revision, InputStream content) {
-        insertRevision(resource, revision);
+        SqlSession sqlSession = getSqlSession();
+        insertRevision(resource, revision, sqlSession);
         File revisionFile = revisionFile(resource, revision, true);
         if (!revisionFile.exists()) {
             throw new DataAccessException("Cannot create revision " + revision.getID() 
@@ -156,7 +150,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         }
     }
     
-    private void insertRevision(ResourceImpl resource, Revision revision) {
+    private void insertRevision(ResourceImpl resource, Revision revision, SqlSession sqlSession) {
         Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("resourceId", resource.getID());
         parameters.put("revisionId", revision.getID());
@@ -164,13 +158,12 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         parameters.put("name", revision.getName());
         parameters.put("timestamp", revision.getTimestamp());
         parameters.put("checksum", revision.getChecksum());
-        parameters.put("changeAmount", revision.getChangeAmount());
         
         String sqlMap = getSqlMap("insertRevision");
-        getSqlMapClientTemplate().insert(sqlMap, parameters);
+        sqlSession.insert(sqlMap, parameters);
 
         if (revision.getAcl() != null) {
-            insertAcl(resource, revision);
+            insertAcl(resource, revision, sqlSession);
         }
         
         List<Revision> list = list(resource);
@@ -192,7 +185,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         parameters.put("resourceId", resource.getID());
         parameters.put("revisionId", revision.getID());
         String sqlMap = getSqlMap("deleteRevision");
-        getSqlMapClientTemplate().delete(sqlMap, parameters);
+        getSqlSession().delete(sqlMap, parameters);
         
         File revisionFile = revisionFile(resource, revision, false);
         if (!revisionFile.exists()) {
@@ -245,10 +238,9 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
             parameters.put("name", revision.getName());
             parameters.put("timestamp", revision.getTimestamp());
             parameters.put("checksum", revision.getChecksum());
-            parameters.put("changeAmount", revision.getChangeAmount());
             
             String sqlMap = getSqlMap("updateRevision");
-            getSqlMapClientTemplate().update(sqlMap, parameters);
+            getSqlSession().update(sqlMap, parameters);
             
             File dest = revisionFile(resource, revision, true);
             
@@ -273,7 +265,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
     }
     
     
-    private void insertAcl(final ResourceImpl resource, final Revision revision) {
+    private void insertAcl(final ResourceImpl resource, final Revision revision, SqlSession sqlSession) {
         final Map<String, Integer> actionTypes = loadActionTypes();
         final Acl acl = revision.getAcl();
         if (acl == null) {
@@ -281,47 +273,38 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         }
         final Set<Privilege> actions = acl.getActions();
         final String sqlMap = getSqlMap("insertRevisionAclEntry");
-        getSqlMapClientTemplate().execute(new SqlMapClientCallback() {
-            @Override
-            public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
-                executor.startBatch();
-                Map<String, Object> parameters = new HashMap<String, Object>();
-                for (Privilege action : actions) {
-                    String actionName = action.getName();
-                    for (Principal p : acl.getPrincipalSet(action)) {
+        
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        for (Privilege action : actions) {
+            String actionName = action.getName();
+            for (Principal p : acl.getPrincipalSet(action)) {
 
-                        Integer actionID = actionTypes.get(actionName);
-                        if (actionID == null) {
-                            throw new SQLException(
-                                    "insertAcl(): No action id exists for action '" + action + "'");
-                        }
-
-                        parameters.put("actionId", actionID);
-                        parameters.put("revisionId", revision.getID());
-                        parameters.put("principal", p.getQualifiedName());
-                        parameters.put("isUser", p.getType() == Principal.Type.GROUP ? "N" : "Y");
-                        parameters.put("grantedBy", resource.getOwner().getQualifiedName());
-                        parameters.put("grantedDate", new Date());
-                        executor.insert(sqlMap, parameters);
-                    }
+                Integer actionID = actionTypes.get(actionName);
+                if (actionID == null) {
+                    throw new DataAccessException(
+                            "insertAcl(): No action id exists for action '" + action + "'");
                 }
-                executor.executeBatch();
-                return null;
+
+                parameters.put("actionId", actionID);
+                parameters.put("revisionId", revision.getID());
+                parameters.put("principal", p.getQualifiedName());
+                parameters.put("isUser", p.getType() == Principal.Type.GROUP ? "N" : "Y");
+                parameters.put("grantedBy", resource.getOwner().getQualifiedName());
+                parameters.put("grantedDate", new Date());
+                sqlSession.insert(sqlMap, parameters);
             }
-        });
+        }
     }
     
 
     private Map<Long, Acl> loadAclMap(Integer resourceID) {
         String sqlMap = getSqlMap("listRevisionAclEntriesByResource");
         Map<String, Integer> parameters = Collections.singletonMap("resourceId", resourceID);
-        @SuppressWarnings("unchecked")
         List<Map<String, Object>> acls =
-            getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+            getSqlSession().selectList(sqlMap, parameters);
 
         Map<Long, AclHolder> aclMap = new HashMap<Long, AclHolder>();
         
-
         for (Map<String, Object> map: acls) {
             Long revisionID = (Long) map.get("revisionId");
             AclHolder holder = aclMap.get(revisionID);
@@ -469,9 +452,8 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         
         String sqlMap = getSqlMap("listRevisionsByResourceIds");
 
-        @SuppressWarnings("unchecked")
         List<Long> revisions =
-            getSqlMapClientTemplate().queryForList(sqlMap, parameters);
+            getSqlSession().selectList(sqlMap, parameters);
         for (Long id: revisions) {
             if (batch.contains(id)) {
                 batch.remove(id);
@@ -510,8 +492,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         Map<String, Integer> actionTypes = new HashMap<String, Integer>();
 
         String sqlMap = getSqlMap("loadActionTypes");
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> list = getSqlMapClientTemplate().queryForList(sqlMap, null);
+        List<Map<String, Object>> list = getSqlSession().selectList(sqlMap, null);
         for (Map<String, Object> map : list) {
             actionTypes.put((String) map.get("name"), (Integer) map.get("id"));
         }

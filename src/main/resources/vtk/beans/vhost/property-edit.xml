@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+  
+
+  <bean id="manage.propertyEditService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="mode" />
+          <property name="parameterValue" value="edit-property" />
+        </bean>
+        <bean class="vtk.web.service.RequestParameterExistsAssertion">
+          <property name="parameterName" value="name" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="manage.propertyEditHandler" />
+  </bean>
+
+  <bean id="manage.propertyEditHandler" class="vtk.web.actions.properties.SinglePropertyEditController">
+    <constructor-arg value="manage.propertyEditView" />
+  </bean>
+
+
+  <bean id="manage.propertyEdit.viewResolver" parent="system.decoratingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="manage.propertyEditView" value-ref="manage.propertyEditView" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="manage.propertyEditView" parent="freemarkerView">
+    <property name="url" value="pages/property-edit.ftl" />
+  </bean>
+  
+</beans>

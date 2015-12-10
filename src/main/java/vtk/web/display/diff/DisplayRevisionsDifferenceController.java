@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.ParameterizableViewController;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -225,7 +226,6 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
             rev.put("principal", this.principalFactory.getPrincipal(revision.getUid(), Type.USER)); 
             rev.put("acl", revision.getAcl());
             rev.put("checksum", revision.getChecksum());
-            rev.put("changeAmount", revision.getChangeAmount());
             allRevisions.add(rev);
             if (haveRecentlySeenRevisionA) {
                 model.put("revisionAPrevious", revision.getName());

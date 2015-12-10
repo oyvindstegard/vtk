@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" 
-                 "http://ibatis.apache.org/dtd/sql-map-2.dtd"> 
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap>
+<mapper namespace="vtk.repository.store.db">
 
-  <resultMap id="Resource" class="java.util.HashMap">
-    <result property="uri" column="uri" />
+  <resultMap id="Resource" type="java.util.HashMap">
+    <result property="uri" column="uri" typeHandler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback" />
     <result property="id" column="resource_id" javaType="int"/>
     <result property="resourceType" column="resource_type"/>
     <result property="creationTime" column="creation_time" javaType="date"/>
@@ -27,19 +28,19 @@
   </resultMap>
 
 
-  <resultMap id="UriResourceId" class="java.util.HashMap">
+  <resultMap id="UriResourceId" type="java.util.HashMap">
     <result property="uri" column="uri" />
     <result property="resourceId" column="resource_id" javaType="int" />
   </resultMap>
 
 
-  <resultMap id="ResourceIdInheritedFromMap" class="java.util.HashMap">
+  <resultMap id="ResourceIdInheritedFromMap" type="java.util.HashMap">
     <result property="resourceId" column="resource_id" javaType="int" />
     <result property="inheritedFrom" column="inherited_from" javaType="int" />
   </resultMap>
 
 
-  <resultMap id="Property" class="java.util.HashMap">
+  <resultMap id="Property" type="java.util.HashMap">
     <result property="id" column="extra_prop_entry_id" javaType="int" />
     <result property="resourceId" column="resource_id" javaType="int" />
     <result property="name" column="name" />
@@ -51,8 +52,8 @@
             typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback"/>
   </resultMap>
 
-  <resultMap id="UriAndProperty" class="java.util.HashMap">
-    <result property="uri" column="uri" />
+  <resultMap id="UriAndProperty" type="java.util.HashMap">
+    <result property="uri" column="uri" typeHandler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback" />
     <result property="id" column="extra_prop_entry_id" javaType="int" />
     <result property="resourceId" column="resource_id" javaType="int" />
     <result property="name" column="name" />
@@ -67,7 +68,7 @@
 
 
 
-  <resultMap id="AclEntry" class="java.util.HashMap">
+  <resultMap id="AclEntry" type="java.util.HashMap">
     <result property="id" column="acl_entry_id" javaType="int" />
     <result property="resourceId" column="resource_id" javaType="int" />
     <result property="action" column="action_type" />
@@ -75,22 +76,22 @@
     <result property="isUser" column="is_user" />
   </resultMap>
 
-  <resultMap id="Principal" class="java.util.HashMap">
+  <resultMap id="Principal" type="java.util.HashMap">
     <result property="name" column="user_or_group_name" />
     <result property="isUser" column="is_user" 
             typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback" />
   </resultMap>
 
-  <resultMap id="ActionType" class="java.util.HashMap">
+  <resultMap id="ActionType" type="java.util.HashMap">
     <result property="id" column="action_type_id" javaType="int" />
     <result property="name" column="name" />
   </resultMap>
   
-  <resultMap id="UserOrGroupName" class="java.lang.String">
-    <result property="userOrGroupName"/>
+  <resultMap id="UserOrGroupName" type="java.lang.String">
+    <result property="userOrGroupName" column="user_or_group_name" />
   </resultMap>
   
-  <resultMap id="Lock" class="java.util.HashMap">
+  <resultMap id="Lock" type="java.util.HashMap">
     <result property="id" column="lock_id" javaType="int" />
     <result property="resourceId" column="resource_id" javaType="int" />
     <result property="uri" column="uri" />
@@ -101,7 +102,7 @@
     <result property="timeout" column="timeout" javaType="date" />
   </resultMap>
 
-  <resultMap id="ResourceAndExtraProperties" class="java.util.HashMap"
+  <resultMap id="ResourceAndExtraProperties" type="java.util.HashMap"
     extends="Resource">
     
     <!-- Some columns from 'extra_prop_entry' -->
@@ -116,12 +117,12 @@
   </resultMap>
   
   <!-- ChangeLog entry result mapping -->
-  <resultMap id="ChangeLogEntry" class="vtk.repository.ChangeLogEntry">
+  <resultMap id="ChangeLogEntry" type="vtk.repository.ChangeLogEntry">
     <result property="changeLogEntryId" column="changelog_entry_id" javaType="int"/>
     <result property="loggerId" column="logger_id" javaType="int"/>
     <result property="loggerType" column="logger_type" javaType="int"/>
-    <result property="uri" column="uri" typeHandler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback"/>
-    <result property="resourceId" column="resource_id" javaType="int" nullValue="-1"/>
+    <result property="uri" column="uri" />
+    <result property="resourceId" column="resource_id" javaType="int" />
     <result property="operation" column="operation" 
       typeHandler="vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback"/>
     <result property="collection" column="is_collection"
@@ -131,35 +132,35 @@
 
 
   <select id="loadResourceByUri" resultMap="Resource">
-    select * from vortex_resource where uri = #value#
+    select * from vortex_resource where uri = #{value}
   </select>
 
   <select id="loadResourceIdByUri" resultMap="UriResourceId">
-    select uri, resource_id from vortex_resource where uri = #value#
+    select uri, resource_id from vortex_resource where uri = #{value}
   </select>
 
-  <update id="updateResource" parameterClass="java.util.Map">
+  <update id="updateResource" parameterType="java.util.Map">
     update vortex_resource set
-      content_last_modified = #contentLastModified#,
-      properties_last_modified = #propertiesLastModified#,
-      content_modified_by = #contentModifiedBy#,
-      properties_modified_by = #propertiesModifiedBy#,
-      resource_owner = #owner#,
-      content_type = #contentType#,
-      character_encoding = #characterEncoding#,
-      guessed_character_encoding = #guessedCharacterEncoding#,
-      user_character_encoding = #userSpecifiedCharacterEncoding#,
-      creation_time = #creationTime#,
-      resource_type = #resourceType#,
-      content_length = #contentLength#,
-      created_by = #createdBy#,
-      modified_by = #modifiedBy#,
-      last_modified = #lastModified#
-    where uri = #uri#
+      content_last_modified = #{contentLastModified},
+      properties_last_modified = #{propertiesLastModified},
+      content_modified_by = #{contentModifiedBy},
+      properties_modified_by = #{propertiesModifiedBy},
+      resource_owner = #{owner},
+      content_type = #{contentType},
+      character_encoding = #{characterEncoding},
+      guessed_character_encoding = #{guessedCharacterEncoding},
+      user_character_encoding = #{userSpecifiedCharacterEncoding},
+      creation_time = #{creationTime},
+      resource_type = #{resourceType},
+      content_length = #{contentLength},
+      created_by = #{createdBy},
+      modified_by = #{modifiedBy},
+      last_modified = #{lastModified}
+    where uri = #{uri}
   </update>
 
 
-  <insert id="insertResource" parameterClass="java.util.Map">
+  <insert id="insertResource" parameterType="java.util.Map">
     insert into vortex_resource 
       (resource_id,
        uri,
@@ -184,31 +185,31 @@
 
     values 
       (<include refid="nextVortexResourceId" />,
-       #uri#,
-       #resourceType#,
-       #contentLength#,
-       #depth#,
-       #creationTime#,
-       #contentLastModified#,
-       #propertiesLastModified#,
-       #contentModifiedBy#,
-       #propertiesModifiedBy#,
-       #owner#,
-<!--       #contentLanguage#, -->
-       #contentType#,
-       #characterEncoding#,
-       #guessedCharacterEncoding#,
-       #userSpecifiedCharacterEncoding#,
-       #collection#,
-       #aclInheritedFrom#,
-       #createdBy#,
-       #modifiedBy#,
-       #lastModified#)
+       #{uri},
+       #{resourceType},
+       #{contentLength},
+       #{depth},
+       #{creationTime},
+       #{contentLastModified},
+       #{propertiesLastModified},
+       #{contentModifiedBy},
+       #{propertiesModifiedBy},
+       #{owner},
+<!--       #{contentLanguage}, -->
+       #{contentType},
+       #{characterEncoding},
+       #{guessedCharacterEncoding},
+       #{userSpecifiedCharacterEncoding},
+       #{collection},
+       #{aclInheritedFrom},
+       #{createdBy},
+       #{modifiedBy},
+       #{lastModified})
   </insert>
 
 
   <!-- Allows overriding most of the properties by supplying values in the parameter map -->
-  <insert id="copyResource" parameterClass="java.util.Map">
+  <insert id="copyResource" parameterType="java.util.Map">
     insert into vortex_resource 
       (resource_id,
        uri,
@@ -238,78 +239,65 @@
       resource_id,
       resource_type,
       content_length,
-      depth + #depthDiff#,
-      <isPropertyAvailable property="creationTime">#creationTime#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="creationTime">creation_time,</isNotPropertyAvailable>
-      <isPropertyAvailable property="contentLastModified">#contentLastModified#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="contentLastModified">content_last_modified,</isNotPropertyAvailable>
-      <isPropertyAvailable property="propertiesLastModified">#propertiesLastModified#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="propertiesLastModified">properties_last_modified,</isNotPropertyAvailable>
-      <isPropertyAvailable property="contentModifiedBy">#contentModifiedBy#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="contentModifiedBy">content_modified_by,</isNotPropertyAvailable>
-      <isPropertyAvailable property="propertiesModifiedBy">#propertiesModifiedBy#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="propertiesModifiedBy">properties_modified_by,</isNotPropertyAvailable>
-      <isPropertyAvailable property="owner">#owner#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="owner">resource_owner,</isNotPropertyAvailable>
-      <isPropertyAvailable property="contentType">#contentType#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="contentType">content_type,</isNotPropertyAvailable>
-      <isPropertyAvailable property="characterEncoding">#characterEncoding#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="characterEncoding">character_encoding,</isNotPropertyAvailable>
-      <isPropertyAvailable property="guessedCharacterEncoding">#guessedCharacterEncoding#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="guessedCharacterEncoding">guessed_character_encoding,</isNotPropertyAvailable>
-      <isPropertyAvailable property="userSpecifiedCharacterEncoding">#userSpecifiedCharacterEncoding#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="userSpecifiedCharacterEncoding">user_character_encoding,</isNotPropertyAvailable>
+      depth + #{depthDiff},
+      <choose><when test="_parameter.containsKey('creationTime')">#{creationTime},</when><otherwise>creation_time,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('contentLastModified')">#{contentLastModified},</when><otherwise>content_last_modified,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('propertiesLastModified')">#{propertiesLastModified},</when><otherwise>properties_last_modified,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('contentModifiedBy')">#{contentModifiedBy},</when><otherwise>content_modified_by,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('propertiesModifiedBy')">#{propertiesModifiedBy},</when><otherwise>properties_modified_by,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('owner')">#{owner},</when><otherwise>owner,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('contentType')">#{contentType},</when><otherwise>content_type,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('characterEncoding')">#{characterEncoding},</when><otherwise>character_encoding,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('guessedCharacterEncoding')">#{guessedCharacterEncoding},</when><otherwise>guessed_character_encoding,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('userSpecifiedCharacterEncoding')">#{userSpecifiedCharacterEncoding},</when><otherwise>user_character_encoding,</otherwise></choose>
       is_collection,
       acl_inherited_from,
-      <isPropertyAvailable property="createdBy">#createdBy#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="createdBy">created_by,</isNotPropertyAvailable>
-      <isPropertyAvailable property="modifiedBy">#modifiedBy#,</isPropertyAvailable>
-      <isNotPropertyAvailable property="modifiedBy">modified_by,</isNotPropertyAvailable>
-      <isPropertyAvailable property="lastModified">#lastModified#</isPropertyAvailable>
-      <isNotPropertyAvailable property="lastModified">last_modified</isNotPropertyAvailable>
+      <choose><when test="_parameter.containsKey('createdBy')">#{createdBy},</when><otherwise>created_by,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('modifiedBy')">#{modifiedBy},</when><otherwise>modified_by,</otherwise></choose>
+      <choose><when test="_parameter.containsKey('lastModified')">#{lastModified}</when><otherwise>last_modified</otherwise></choose>
     from vortex_resource
-    where uri = #srcUri# or uri like #uriWildcard# escape '@'
+    where uri = #{srcUri} or uri like #{uriWildcard} escape '@'
   </insert>
 
   
-  <update id="moveResource" parameterClass="java.util.Map">
+  <update id="moveResource" parameterType="java.util.Map">
     update vortex_resource set
-        uri = #destUri#,
-        depth = depth + #depthDiff#
-    where uri = #srcUri#
+        uri = #{destUri},
+        depth = depth + #{depthDiff}
+    where uri = #{srcUri}
   </update>
 
-  <update id="moveDescendants" parameterClass="java.util.Map">
+  <update id="moveDescendants" parameterType="java.util.Map">
     update vortex_resource set
         uri = <include refid="destinationDescendantUriMove" />,
-        depth = depth + #depthDiff#
-    where uri like #uriWildcard# escape '@'
+        depth = depth + #{depthDiff}
+    where uri like #{uriWildcard} escape '@'
   </update>
 
 
   <!-- ## DELETING ## -->
   
   <!-- ## Permanently delete ## -->
-  <delete id="deleteResourceByUri" parameterClass="java.util.Map">
-    delete from vortex_resource where uri = #uri# or uri like #uriWildcard# escape '@'
+  <delete id="deleteResourceByUri" parameterType="java.util.Map">
+    delete from vortex_resource where uri = #{uri} or uri like #{uriWildcard} escape '@'
   </delete>
   
   <!-- ## Mark as deleted ("put in trash can") ## -->
-  <update id="markDeleted" parameterClass="java.util.Map">
+  <update id="markDeleted" parameterType="java.util.Map">
     update vortex_resource set
       uri = <include refid="trashCanUri" />,
-      depth = depth + #depthDiff#
-      where uri = #uri# or uri like #uriWildcard# escape '@'
+      depth = depth + #{depthDiff}
+      where uri = #{uri} or uri like #{uriWildcard} escape '@'
   </update>
 
-  <insert id="insertTrashCanEntry" parameterClass="java.util.Map">
+  <insert id="insertTrashCanEntry" parameterType="java.util.Map">
     insert into deleted_resource (id, resource_trash_uri, parent_id, deleted_by, deleted_time, was_inherited_acl)
       values (<include refid="nextDeletedResourceId" />,
-              #trashCanURI#, #parentID#, #principal#, #deletedTime#, #wasInheritedAcl#)
+              #{trashCanURI}, #{parentID}, #{principal}, #{deletedTime}, #{wasInheritedAcl})
   </insert>
 
   <!-- ## Display recoverable resources (trash can contents) ## -->
-  <resultMap id="recoverableResource" class="vtk.repository.RecoverableResource">
+  <resultMap id="recoverableResource" type="vtk.repository.RecoverableResource">
     <result property="id" column="id" />
     <result property="trashUri" column="resource_trash_uri" />
     <result property="parentId" column="parent_id" />
@@ -323,40 +311,40 @@
             typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback" />
   </resultMap>
 
-  <select id="getRecoverableResources" parameterClass="int" resultMap="recoverableResource">
+  <select id="getRecoverableResources" parameterType="int" resultMap="recoverableResource">
     select d.*, r.resource_type, r.content_type, r.is_collection
       from deleted_resource d, vortex_resource r
-      where d.parent_id = #value# and d.resource_trash_uri = r.uri
+      where d.parent_id = #{value} and d.resource_trash_uri = r.uri
   </select>
 
-  <select id="getRecoverableResourceById" parameterClass="int" resultMap="recoverableResource">
+  <select id="getRecoverableResourceById" parameterType="int" resultMap="recoverableResource">
     select d.*, r.resource_type, r.content_type, r.is_collection
       from deleted_resource d, vortex_resource r
-      where d.id = #value# and d.resource_trash_uri = r.uri
+      where d.id = #{value} and d.resource_trash_uri = r.uri
   </select>
 
   <!--  ## Recover deleted resource ## -->
-  <update id="recoverResource" parameterClass="java.util.Map">
+  <update id="recoverResource" parameterType="java.util.Map">
     update vortex_resource set
       uri = <include refid="recoverUri" />,
-      depth = depth + #depthDiff#
-      where uri like #trashIDWildcard# escape '@'
+      depth = depth + #{depthDiff}
+      where uri like #{trashIDWildcard} escape '@'
   </update>
 
-  <delete id="deleteFromTrashCan" parameterClass="int">
-    delete from deleted_resource where id = #value#
+  <delete id="deleteFromTrashCan" parameterType="int">
+    delete from deleted_resource where id = #{value}
   </delete>
 
   <!-- ## Permanently delete a resource that has already been marked for deletion (moved to trash can) ##-->
-  <delete id="deletePermanentlyMarkDeleted" parameterClass="java.util.Map">
-    delete from vortex_resource where uri = #trashCanURI# or uri like #trashCanURIWildCard# escape '@'
+  <delete id="deletePermanentlyMarkDeleted" parameterType="java.util.Map">
+    delete from vortex_resource where uri = #{trashCanURI} or uri like #{trashCanURIWildCard} escape '@'
   </delete>
 
   <!-- ## Get resources that have been deleted longer than a given limit ## -->
-  <select id="getOverdue" parameterClass="java.util.Date" resultMap="recoverableResource">
+  <select id="getOverdue" parameterType="java.util.Date" resultMap="recoverableResource">
     select d.*, r.resource_type, r.content_type, r.is_collection
       from deleted_resource d, vortex_resource r
-      where d.deleted_time &lt; #value# and d.resource_trash_uri = r.uri
+      where d.deleted_time &lt; #{value} and d.resource_trash_uri = r.uri
   </select>
 
   <!-- ## Get resources that have been deleted and are orphans (parent has been permanently deleted) ## -->
@@ -367,61 +355,60 @@
         and d.parent_id not in (select resource_id from vortex_resource)
   </select>
 
-  <select id="loadChildren" parameterClass="java.util.Map"
+  <select id="loadChildren" parameterType="java.util.Map"
           resultMap="Resource">
-    select * from vortex_resource where uri like #uriWildcard# escape '@' and depth = #depth#
+    select * from vortex_resource where uri like #{uriWildcard} escape '@' and depth = #{depth}
   </select>
 
-  <select id="loadChildUrisForChildren" parameterClass="java.util.Map"
-                                        resultClass="vtk.repository.Path">
-    select uri from vortex_resource where uri like #uriWildcard# escape '@' and depth = #depth# 
+  <select id="loadChildUrisForChildren" parameterType="java.util.Map" resultType="vtk.repository.Path">
+    select uri from vortex_resource where uri like #{uriWildcard} escape '@' and depth = #{depth} 
   </select>
 
-  <update id="updateAclInheritedFromByResourceId" parameterClass="java.util.Map">
+  <update id="updateAclInheritedFromByResourceId" parameterType="java.util.Map">
     update vortex_resource
-      set acl_inherited_from = #inheritedFrom#
-      where resource_id = #resourceId#
+      set acl_inherited_from = #{inheritedFrom}
+      where resource_id = #{resourceId}
   </update>
 
 
-  <update id="updateAclInheritedFromByUri" parameterClass="java.util.Map">
+  <update id="updateAclInheritedFromByUri" parameterType="java.util.Map">
     update vortex_resource
-      set acl_inherited_from = #inheritedFrom#
-      where uri = #uri# or uri like #uriWildcard# escape '@'
+      set acl_inherited_from = #{inheritedFrom}
+      where uri = #{uri} or uri like #{uriWildcard} escape '@'
   </update>
 
 
-  <update id="updateAclInheritedFromByPreviousInheritedFromAndUri" parameterClass="java.util.Map">
+  <update id="updateAclInheritedFromByPreviousInheritedFromAndUri" parameterType="java.util.Map">
     update vortex_resource
-      set acl_inherited_from = #inheritedFrom#
-      where (uri = #uri# or uri like #uriWildcard# escape '@')
-             and acl_inherited_from = #previouslyInheritedFrom#
+      set acl_inherited_from = #{inheritedFrom}
+      where (uri = #{uri} or uri like #{uriWildcard} escape '@')
+             and acl_inherited_from = #{previouslyInheritedFrom}
   </update>
 
 
-  <update id="updateAclInheritedFromByResourceIdOrPreviousInheritedFrom" parameterClass="java.util.Map">
+  <update id="updateAclInheritedFromByResourceIdOrPreviousInheritedFrom" parameterType="java.util.Map">
     update vortex_resource
-      set acl_inherited_from = #inheritedFrom#
-      where acl_inherited_from = #previouslyInheritedFrom#
-        or resource_id = #resourceId#
+      set acl_inherited_from = #{inheritedFrom}
+      where acl_inherited_from = #{previouslyInheritedFrom}
+        or resource_id = #{resourceId}
   </update>
 
 
-  <select id="loadPreviousInheritedFromMap" parameterClass="java.util.Map"
+  <select id="loadPreviousInheritedFromMap" parameterType="java.util.Map"
           resultMap="ResourceIdInheritedFromMap">
     select
       r1.resource_id,
       r2.resource_id as inherited_from 
     from vortex_resource r1, vortex_resource r2 
-    where (r1.uri = #uri# or r1.uri like #uriWildcard# escape '@')
+    where (r1.uri = #{uri} or r1.uri like #{uriWildcard} escape '@')
            and r2.prev_resource_id = r1.acl_inherited_from
   </select>
 
 
-  <update id="clearPrevResourceIdByUri" parameterClass="java.util.Map">
+  <update id="clearPrevResourceIdByUri" parameterType="java.util.Map">
     update vortex_resource
       set prev_resource_id = null
-      where uri = #uri# or uri like #uriWildcard# escape '@'
+      where uri = #{uri} or uri like #{uriWildcard} escape '@'
   </update>
 
 
@@ -430,74 +417,95 @@
   </select>
 
 
-  <select id="loadPropertiesForResource" parameterClass="int" resultMap="Property">
+  <select id="loadPropertiesForResource" parameterType="int" resultMap="Property">
     select
-      p.*,
-      case when binary_content is null then 'N' else 'Y' end as is_binary
+      p.extra_prop_entry_id,
+      p.resource_id,
+      p.name,
+      p.name_space,
+      p.value,
+      p.is_inheritable,
+      case when p.binary_content is null then 'N' else 'Y' end as is_binary
     from extra_prop_entry p
-    where resource_id = #value#
+    where p.resource_id = #{value}
     order by p.extra_prop_entry_id
   </select>
 
 
-  <select id="loadPropertiesForChildren" parameterClass="java.util.Map"
+  <select id="loadPropertiesForChildren" parameterType="java.util.Map"
           resultMap="Property">
     select
-      p.*,
-      case when binary_content is null then 'N' else 'Y' end as is_binary
+      p.extra_prop_entry_id,
+      p.resource_id,
+      p.name,
+      p.name_space,
+      p.value,
+      p.is_inheritable,
+      case when p.binary_content is null then 'N' else 'Y' end as is_binary
     from extra_prop_entry p
     where p.resource_id in
       (select resource_id from vortex_resource
-        where uri like #uriWildcard# escape '@' and depth = #depth#)
+        where uri like #{uriWildcard} escape '@' and depth = #{depth})
     order by p.resource_id, p.extra_prop_entry_id
   </select>
   
-  <select id="loadInheritableProperties" parameterClass="java.util.Map"
+  <select id="loadInheritableProperties" parameterType="java.util.Map"
           resultMap="UriAndProperty">
     select
       r.uri,
-      p.*,
+      p.extra_prop_entry_id,
+      p.resource_id,
+      p.name,
+      p.name_space,
+      p.value,
+      p.is_inheritable,
       case when p.binary_content is null then 'N' else 'Y' end as is_binary
     from vortex_resource r inner join extra_prop_entry p on p.resource_id = r.resource_id
     where p.is_inheritable = 'Y'
           and r.uri in 
-          <iterate prepend="" property="uris" open="(" close=")" conjunction=","> 
-               #uris[]# 
-          </iterate>
+          <foreach item="uri" collection="uris" open="(" close=")" separator=",">
+            #{uri, typeHandler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback}
+          </foreach>
     order by p.resource_id, p.extra_prop_entry_id
   </select>
 
-  <resultMap id="ByteArray" class="java.util.HashMap">
+  <!--
+  <resultMap id="ByteArray" type="java.util.HashMap">
+    <result property="byteArray" column="binary_content" javaType="byte[]" />
+  </resultMap>
+  -->
+
+  <resultMap id="binaryPropertyByteArray" type="java.util.HashMap">
     <result property="byteArray" column="binary_content"
-            typeHandler="org.springframework.orm.ibatis.support.BlobByteArrayTypeHandler" />
+            typeHandler="vtk.repository.store.db.ibatis.BlobTypeHandler" />
   </resultMap>
 
-  <select id="selectBinaryPropertyEntry" parameterClass="java.lang.Integer"
-                                         resultMap="ByteArray">
-    select binary_content from extra_prop_entry where extra_prop_entry_id = #value#
+  <select id="selectBinaryPropertyEntry" parameterType="java.lang.Integer"
+                                         resultMap="binaryPropertyByteArray">
+    select binary_content from extra_prop_entry where extra_prop_entry_id = #{value}
   </select>
   
-  <select id="selectBinaryMimeTypeEntry" parameterClass="java.lang.Integer" resultClass="java.lang.String">
-    select binary_mimetype from extra_prop_entry where extra_prop_entry_id = #value#
+  <select id="selectBinaryMimeTypeEntry" parameterType="java.lang.Integer" resultType="java.lang.String">
+    select binary_mimetype from extra_prop_entry where extra_prop_entry_id = #{value}
   </select>
   
-  <insert id="insertPropertyEntry" parameterClass="java.util.Map">
+  <insert id="insertPropertyEntry" parameterType="java.util.Map">
     insert into extra_prop_entry
       (extra_prop_entry_id, resource_id, name_space, name, value
-        <isNotEmpty property="binaryContent">
+        <if test="_parameter.containsKey('binaryContent')">
           , binary_content, binary_mimetype
-        </isNotEmpty>
+        </if>
         , is_inheritable)
-    values (<include refid="nextExtraPropEntryId" />, #resourceId#, 
-      #namespaceUri#, #name#, #value#
-        <isNotEmpty property="binaryContent">
-          , #binaryContent,handler=org.springframework.orm.ibatis.support.BlobByteArrayTypeHandler#,
-          #binaryMimeType#
-        </isNotEmpty>
-        , #inheritable,handler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback#)
+    values (<include refid="nextExtraPropEntryId" />, #{resourceId}, 
+      #{namespaceUri}, #{name}, #{value}
+        <if test="_parameter.containsKey('binaryContent')">
+          , #{binaryContent, typeHandler=vtk.repository.store.db.ibatis.BlobTypeHandler},
+          #{binaryMimeType}
+        </if>
+        , #{inheritable, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback})
   </insert>
   
-  <insert id="copyProperties" parameterClass="java.util.Map">
+  <insert id="copyProperties" parameterType="java.util.Map">
     insert into extra_prop_entry
       (extra_prop_entry_id,
        resource_id,
@@ -520,26 +528,24 @@
           p.is_inheritable
         from vortex_resource r inner join extra_prop_entry p 
              on r.prev_resource_id = p.resource_id
-        where (r.uri = #destUri# or r.uri like #destUriWildcard# escape '@')
+        where (r.uri = #{destUri} or r.uri like #{destUriWildcard} escape '@')
           and r.prev_resource_id is not null
+          and not (p.name in <foreach item="prop" collection="uncopyableProperties" open="(" close=")" separator=","> 
+                                    #{prop}
+                             </foreach> 
+                             and p.name_space is null)
           order by p.extra_prop_entry_id) t
   </insert>
-  
-  <delete id="deleteUncopyableProperties" parameterClass="java.util.HashMap">
-    delete from extra_prop_entry
-      where name = #name# and name_space is null and resource_id in
-        (select resource_id from vortex_resource where uri = #destUri# or uri like #uriWildcard#)
-  </delete>
-  
-  <delete id="deletePropertiesByResourceId" parameterClass="int">
-    delete from extra_prop_entry where resource_id = #resourceId#
+
+  <delete id="deletePropertiesByResourceId" parameterType="int">
+    delete from extra_prop_entry where resource_id = #{resourceId}
   </delete>
 
 
-  <delete id="deletePropertiesByUri" parameterClass="java.util.Map">
+  <delete id="deletePropertiesByUri" parameterType="java.util.Map">
     delete from extra_prop_entry where resource_id in
       (select resource_id from vortex_resource
-       where uri = #uri# or uri like #uriWildcard# escape '@')
+       where uri = #{uri} or uri like #{uriWildcard} escape '@')
   </delete>
 
 
@@ -553,22 +559,22 @@
       inner join vortex_resource r on r.resource_id = a.resource_id
     where r.resource_id in 
 
-    <iterate prepend="" property="resourceIds" open="(" close=")" conjunction=","> 
-             #resourceIds[]# 
-    </iterate> 
+    <foreach item="id" collection="resourceIds" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
   </select>
 
   
-  <insert id="insertAclEntry" parameterClass="java.util.Map">
+  <insert id="insertAclEntry" parameterType="java.util.Map">
     insert into acl_entry
       (acl_entry_id, action_type_id, resource_id, user_or_group_name,
        is_user, granted_by_user_name, granted_date)
-    values (<include refid="nextAclEntryId" />, #actionId#, #resourceId#, #principal#,
-            #isUser#, #grantedBy#, #grantedDate#)
+    values (<include refid="nextAclEntryId" />, #{actionId}, #{resourceId}, #{principal},
+            #{isUser}, #{grantedBy}, #{grantedDate})
   </insert>
 
   
-  <insert id="copyAclEntries" parameterClass="java.util.Map">
+  <insert id="copyAclEntries" parameterType="java.util.Map">
     insert into acl_entry
       (acl_entry_id,
        resource_id,
@@ -587,37 +593,37 @@
        a.granted_date
      from vortex_resource r inner join acl_entry a
        on r.prev_resource_id = a.resource_id 
-     where (r.uri = #destUri#  or r.uri like #destUriWildcard# escape '@')
+     where (r.uri = #{destUri}  or r.uri like #{destUriWildcard} escape '@')
             and r.prev_resource_id is not null    
   </insert>
   
 
-  <select id="discoverAcls" parameterClass="java.util.Map" resultClass="vtk.repository.Path">
+  <select id="discoverAcls" parameterType="java.util.Map" resultType="vtk.repository.Path">
     select distinct
       r.uri as uri
     from acl_entry a inner join vortex_resource r on a.resource_id = r.resource_id
     where r.acl_inherited_from is null and r.resource_id in
-      (select resource_id from vortex_resource where uri like #uriWildcard# escape '@' or uri =  #uri#)
+      (select resource_id from vortex_resource where uri like #{uriWildcard} escape '@' or uri =  #{uri})
   </select>
 
 
-  <delete id="deleteAclEntriesByUri" parameterClass="java.util.Map">
+  <delete id="deleteAclEntriesByUri" parameterType="java.util.Map">
     delete from acl_entry where resource_id in
       (select resource_id from vortex_resource
-       where uri = #uri# or uri like #uriWildcard# escape '@')
+       where uri = #{uri} or uri like #{uriWildcard} escape '@')
   </delete>
 
 
-  <delete id="deleteAclEntriesByResourceId" parameterClass="int">
-    delete from acl_entry where resource_id = #id#
+  <delete id="deleteAclEntriesByResourceId" parameterType="int">
+    delete from acl_entry where resource_id = #{id}
   </delete>
 
 
-  <select id="isInheritedAcl" parameterClass="int" resultMap="ResourceIdInheritedFromMap">
+  <select id="isInheritedAcl" parameterType="int" resultMap="ResourceIdInheritedFromMap">
     select
       acl_inherited_from as inherited_from, resource_id
     from vortex_resource
-    where resource_id = #value#
+    where resource_id = #{value}
   </select>
 
 
@@ -627,87 +633,87 @@
     from acl_entry a
       inner join vortex_resource r on r.resource_id = a.resource_id 
     where r.uri in 
-    <iterate prepend="" property="path" open="(" close=")" conjunction=","> 
-             #path[]# 
-    </iterate> 
+    <foreach item="path" collection="path" open="(" close=")" separator=",">
+      #{path}
+    </foreach>
   </select>
 
 
-  <select id="loadLocksForChildren" parameterClass="java.util.Map"
+  <select id="loadLocksForChildren" parameterType="java.util.Map"
           resultMap="Lock">
     select
       r.uri as uri, l.*
     from vortex_resource r
       inner join vortex_lock l on r.resource_id = l.resource_id
-      where l.timeout >= #timestamp# and r.resource_id in (select resource_id 
-        from vortex_resource where uri like #uriWildcard# escape '@' and depth = #depth#)
+      where l.timeout >= #{timestamp} and r.resource_id in (select resource_id 
+        from vortex_resource where uri like #{uriWildcard} escape '@' and depth = #{depth})
   </select>
 
 
-  <select id="loadLocksByUris" parameterClass="java.util.Map"
+  <select id="loadLocksByUris" parameterType="java.util.Map"
           resultMap="Lock">
     select
       r.uri as uri, l.*
     from vortex_resource r
       inner join vortex_lock l on r.resource_id = l.resource_id
-      where l.timeout >= #timestamp# and r.uri in 
-    <iterate prepend="" property="uris" open="(" close=")" conjunction=","> 
-             #uris[]# 
-    </iterate> 
+      where l.timeout >= #{timestamp} and r.uri in 
+    <foreach item="uri" collection="uris" open="(" close=")" separator=","> 
+             #{uri}
+    </foreach> 
   </select>
 
 
-  <select id="loadLockByLockToken" parameterClass="string" resultMap="Lock">
+  <select id="loadLockByLockToken" parameterType="string" resultMap="Lock">
     select
       r.uri as uri, l.*
     from vortex_resource r
       inner join vortex_lock l on r.resource_id = l.resource_id
-      where l.token = #value#
+      where l.token = #{value}
   </select>
 
 
-  <insert id="insertLock" parameterClass="java.util.Map">
+  <insert id="insertLock" parameterType="java.util.Map">
     insert into vortex_lock
       (lock_id, token, resource_id, lock_owner,
        lock_owner_info, depth, timeout)
      values (<include refid="nextLockId" />,
-            #lockToken#, #resourceId#, #owner#,
-            #ownerInfo#, #depth#, #timeout#)
+            #{lockToken}, #{resourceId}, #{owner},
+            #{ownerInfo}, #{depth}, #{timeout})
   </insert>
 
 
-  <update id="updateLock" parameterClass="java.util.Map">
+  <update id="updateLock" parameterType="java.util.Map">
     update vortex_lock
-      set lock_owner = #owner#,
-          lock_owner_info = #ownerInfo#,
-          depth = #depth#,
-          timeout = #timeout#
-      where token = #lockToken#
+      set lock_owner = #{owner},
+          lock_owner_info = #{ownerInfo},
+          depth = #{depth},
+          timeout = #{timeout}
+      where token = #{lockToken}
   </update>
 
 
-  <delete id="deleteLockByResourceId" parameterClass="int">
-    delete from vortex_lock where resource_id = #value#
+  <delete id="deleteLockByResourceId" parameterType="int">
+    delete from vortex_lock where resource_id = #{value}
   </delete>
 
 
-  <delete id="deleteLocksByUri" parameterClass="java.util.Map">
+  <delete id="deleteLocksByUri" parameterType="java.util.Map">
     delete from vortex_lock where resource_id in
       (select resource_id from vortex_resource
-       where uri = #uri# or uri like #uriWildcard# escape '@')
+       where uri = #{uri} or uri like #{uriWildcard} escape '@')
   </delete>
 
 
   <delete id="deleteExpiredLocks">
-    delete from vortex_lock where timeout &lt; #value#
+    delete from vortex_lock where timeout &lt; #{value}
   </delete>
 
-  <select id="discoverLocks" parameterClass="java.util.Map"
-                             resultClass="java.lang.String">
+  <select id="discoverLocks" parameterType="java.util.Map"
+                             resultType="java.lang.String">
     select
       r.uri from vortex_resource r
         inner join vortex_lock l on r.resource_id = l.resource_id
-    where l.timeout &gt; #timestamp# and r.uri like #uriWildcard# escape '@'
+    where l.timeout &gt; #{timestamp} and r.uri like #{uriWildcard} escape '@'
   </select>
   
   <select id="discoverGroups" resultMap="UserOrGroupName">
@@ -718,159 +724,195 @@
   
   <!-- Change log section -->
   <insert id="insertChangeLogEntriesRecursively" 
-          parameterClass="java.util.Map">
+          parameterType="java.util.Map">
     insert into changelog_entry 
       (changelog_entry_id, logger_id, logger_type,
       operation, timestamp, uri, resource_id, is_collection)
-    select <include refid="nextChangelogEntryId" />, #entry.loggerId#, #entry.loggerType#,
-      #entry.operation,handler=vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback#, 
-      #entry.timestamp#, uri, resource_id, is_collection 
+    select <include refid="nextChangelogEntryId" />, #{entry.loggerId}, #{entry.loggerType},
+      #{entry.operation,typeHandler=vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback}, 
+      #{entry.timestamp}, uri, resource_id, is_collection 
     from vortex_resource 
-    where uri = #entry.uri,handler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback# or uri like #uriWildcard# escape '@'
+    where uri = #{entry.uri,typeHandler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback} or uri like #{uriWildcard} escape '@'
   </insert>
 
 
   <insert id="insertChangeLogEntryInherited" 
-          parameterClass="vtk.repository.ChangeLogEntry">
+          parameterType="vtk.repository.ChangeLogEntry">
     insert into changelog_entry 
       (changelog_entry_id, logger_id, logger_type,
       operation, timestamp, uri, resource_id, is_collection)
-    select <include refid="nextChangelogEntryId" />, #loggerId#, #loggerType#,
-      #operation,handler=vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback#, 
-      #timestamp#, uri, resource_id, is_collection 
+    select <include refid="nextChangelogEntryId" />, #{loggerId}, #{loggerType},
+      #{operation,typeHandler=vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback}, 
+      #{timestamp}, uri, resource_id, is_collection 
     from vortex_resource 
-    where acl_inherited_from = #resourceId:NUMERIC:-1#
-    or resource_id = #resourceId:NUMERIC:-1#
+    <choose>
+      <when test="resourceId == null">
+        where acl_inherited_from = -1
+        or resource_id = -1
+      </when>
+      <otherwise>
+        where acl_inherited_from = #{resourceId}
+        or resource_id = #{resourceId}
+      </otherwise>
+    </choose>
   </insert>
 
 
   <insert id="insertChangeLogEntryInheritedToInheritance" 
-          parameterClass="java.util.Map">
+          parameterType="java.util.Map">
     insert into changelog_entry 
       (changelog_entry_id, logger_id, logger_type,
       operation, timestamp, uri, resource_id, is_collection)
-    select <include refid="nextChangelogEntryId" />, #entry.loggerId#, #entry.loggerType#,
-      #entry.operation,handler=vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback#, 
-      #entry.timestamp#, vr2.uri, vr2.resource_id, vr2.is_collection 
+    select <include refid="nextChangelogEntryId" />, #{entry.loggerId}, #{entry.loggerType},
+      #{entry.operation,typeHandler=vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback}, 
+      #{entry.timestamp}, vr2.uri, vr2.resource_id, vr2.is_collection 
     from vortex_resource vr1,
          vortex_resource vr2
-    where vr1.resource_id = #entry.resourceId:NUMERIC:-1# 
-    and (vr2.resource_id = #entry.resourceId:NUMERIC:-1#
+    <choose>
+    <when test="entry.resourceId == null">
+    where vr1.resource_id = -1 
+    and (vr2.resource_id = -1
          or (vr2.acl_inherited_from = vr1.acl_inherited_from 
-             and vr2.uri like #uriWildcard# escape '@'))
+             and vr2.uri like #{uriWildcard} escape '@'))
+    </when>
+    <otherwise>
+    where vr1.resource_id = #{entry.resourceId} 
+    and (vr2.resource_id = #{entry.resourceId}
+         or (vr2.acl_inherited_from = vr1.acl_inherited_from 
+             and vr2.uri like #{uriWildcard} escape '@'))
+    </otherwise>
+    </choose>
   </insert>
 
 
   <insert id="insertChangeLogEntry" 
-          parameterClass="vtk.repository.ChangeLogEntry">
+          parameterType="vtk.repository.ChangeLogEntry">
     insert into changelog_entry 
       (changelog_entry_id, logger_id, logger_type,
       operation, timestamp, uri, resource_id, is_collection)
-    values (<include refid="nextChangelogEntryId" />, #loggerId#, #loggerType#,
-    #operation,handler=vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback#, 
-    #timestamp#, #uri,handler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback#, #resourceId:NUMERIC:-1#, #collection,handler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback#)
+    values (<include refid="nextChangelogEntryId" />, #{loggerId}, #{loggerType},
+    #{operation, typeHandler=vtk.repository.store.db.ibatis.ChangeLogEntryOperationTypeHandlerCallback}, 
+    #{timestamp}, #{uri, typeHandler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback}, #{resourceId}, 
+    #{collection, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback})
   </insert>
 
 
   <!-- Comments section -->
 
-  <resultMap id="Comment" class="java.util.HashMap">
-    <result property="ID" column="ID" />
-    <result property="URI" column="URI"/>
-    <result property="time" column="time" jdbcType="TIMESTAMP" javaType="java.sql.Timestamp" />
-    <result property="author" column="author"/>
-    <result property="title" column="title"/>
+  <resultMap id="Comment" type="vtk.repository.Comment">
+    <result property="id" column="id" />
+    <result property="uri" column="uri" />
+    <result property="time" column="time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+    <result property="author" column="author" />
+    <result property="title" column="title" />
 
-    <result property="content" column="content" typeHandler="org.springframework.orm.ibatis.support.ClobStringTypeHandler" />
+    <result property="content" column="content" jdbcType="CLOB" typeHandler="vtk.repository.store.db.ibatis.ClobTypeHandler" />
     <result property="approved" column="approved"
             typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback"/>
   </resultMap>
 
-  <select id="numberOfCommentsByResource" resultClass="java.lang.Integer">
+  <select id="numberOfCommentsByResource" resultType="java.lang.Integer">
     select count(c.id) as num
     from vortex_comment c inner join vortex_resource r on c.resource_id = r.resource_id
-    where r.uri = #value#
+    where r.uri = #{value}
   </select>
 
   <select id="listCommentsByResource"
-          parameterClass="java.util.Map"
+          parameterType="java.util.Map"
           resultMap="Comment">
     <include refid="listCommentsLimitPrepend" />
     select c.id as ID, r.uri as URI, c.time, c.author, c.title, c.content, c.approved
     from vortex_comment c inner join vortex_resource r on c.resource_id = r.resource_id 
     where c.resource_id in
-      (select resource_id from vortex_resource where uri = #uri#)
+      (select resource_id from vortex_resource where uri = #{uri})
     order by c.time desc
     <include refid="listCommentsLimitAppend" />
   </select>
 
 
   <select id="listCommentsByResourceRecursively"
-          parameterClass="java.util.Map"
+          parameterType="java.util.Map"
           resultMap="Comment">
     <include refid="listCommentsLimitPrepend" />
     select c.id as ID, r.uri as URI, c.time, c.author, c.title, c.content, c.approved
     from vortex_comment c inner join vortex_resource r on c.resource_id = r.resource_id 
     where c.resource_id in
-      (select resource_id from vortex_resource where uri = #uri# or uri like #uriWildcard# escape '@')
+      (select resource_id from vortex_resource where uri = #{uri} or uri like #{uriWildcard} escape '@')
     order by c.time desc
     <include refid="listCommentsLimitAppend" />
   </select>
 
 
-  <select id="loadCommentById" parameterClass="java.lang.Integer"
+  <select id="loadCommentById" parameterType="java.lang.Integer"
           resultMap="Comment">
-    select c.id as ID, #URI# as URI, c.time, c.author, c.title, c.content, c.approved
+    select c.id as ID, #{URI} as URI, c.time, c.author, c.title, c.content, c.approved
     from vortex_comment c inner join vortex_resource r on c.resource_id = r.resource_id
-    where c.id = #value#
+    where c.id = #{value}
   </select>
   
 
-  <delete id="deleteComment" parameterClass="java.lang.Integer">
-    delete from vortex_comment where id = #value#
+  <delete id="deleteComment" parameterType="java.lang.Integer">
+    delete from vortex_comment where id = #{value}
   </delete>
 
-  <delete id="deleteAllComments" parameterClass="vtk.repository.Resource">
+  <delete id="deleteAllComments" parameterType="vtk.repository.Resource">
     delete from vortex_comment where resource_id in 
-       (select resource_id from vortex_resource where uri = #URI,handler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback#)
+       (select resource_id from vortex_resource where uri = #{URI})
   </delete>
 
   <!-- See: http://issues.apache.org/jira/browse/IBATIS-244 -->
-  <insert id="insertComment" parameterClass="vtk.repository.Comment">
+  <!--insert id="insertComment" parameterType="vtk.repository.Comment">
     insert into vortex_comment 
       (id, resource_id, author, time, title, content, approved)
     select <include refid="nextVortexCommentId" />, r.resource_id, 
-           #author.qualifiedName#, #time#, #title#,
-           #content,handler=org.springframework.orm.ibatis.support.ClobStringTypeHandler#,
-           #approved,handler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback#
-    from vortex_resource r where r.uri = #URI,handler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback#
+           #{author}, #{time}, #{title},
+           #{content},
+           #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
+    from vortex_resource r where r.uri = #{URI, typeHandler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback}
+  </insert-->
+  <insert id="insertComment" parameterType="vtk.repository.Comment">
+    insert into vortex_comment 
+      (id, resource_id, author, time, title, content, approved)
+    select <include refid="nextVortexCommentId" />, r.resource_id, 
+           #{author}, #{time}, #{title},
+           #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler},
+           #{approved,typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
+    from vortex_resource r where r.uri = #{URI}
   </insert>
 
-  <update id="updateComment" parameterClass="vtk.repository.Comment">
+  <!--update id="updateComment" parameterType="vtk.repository.Comment">
     update vortex_comment
-      set author = #author#,
-          time = #time#,
-          title = #title#,
-          content = #content,handler=org.springframework.orm.ibatis.support.ClobStringTypeHandler#,
-          approved = #approved,handler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback#
-      where id = #ID#
+      set author = #{author, jdbcType=VARCHAR},
+          time = #{time},
+          title = #{title},
+          content = #{content},
+          approved = #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
+      where id = #{ID}
+  </update-->
+  <update id="updateComment" parameterType="vtk.repository.Comment">
+    update vortex_comment
+      set author = #{author, jdbcType=VARCHAR},
+          time = #{time},
+          title = #{title},
+          content = #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler},
+          approved = #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
+      where id = #{ID}
   </update>
 
 
   <!-- Versioning section -->
 
 
-  <resultMap id="Revision" class="java.util.HashMap">
+  <resultMap id="Revision" type="java.util.HashMap">
     <result property="id" column="id" />
     <result property="resourceId" column="resource_id" />
     <result property="name" column="revision_name"/>
     <result property="uid" column="user_id"/>
     <result property="timestamp" column="timestamp" jdbcType="TIMESTAMP" javaType="java.sql.Timestamp" />
     <result property="checksum" column="checksum" />
-    <result property="changeAmount" column="change_amount" />
   </resultMap>
 
-  <resultMap id="RevisionAclEntry" class="java.util.HashMap">
+  <resultMap id="RevisionAclEntry" type="java.util.HashMap">
     <result property="id" column="id" javaType="int" />
     <result property="revisionId" column="revision_id" javaType="long" />
     <result property="action" column="action_type" />
@@ -879,80 +921,79 @@
   </resultMap>
 
 
-  <select id="nextRevisionID" resultClass="Long">
+  <select id="nextRevisionID" resultType="Long">
     select <include refid="nextContentRevisionID" />
   </select>
 
-  <insert id="insertRevision" parameterClass="java.util.Map">
+  <insert id="insertRevision" parameterType="java.util.Map">
     insert into simple_content_revision
-      (id, resource_id, revision_name, user_id, timestamp, checksum, change_amount)
-    values (#revisionId#, #resourceId#, #name#, #uid#, #timestamp#, #checksum#, #changeAmount#)
+      (id, resource_id, revision_name, user_id, timestamp, checksum)
+    values (#{revisionId}, #{resourceId}, #{name}, #{uid}, #{timestamp}, #{checksum})
   </insert>
 
-  <update id="updateRevision" parameterClass="java.util.Map">
+  <update id="updateRevision" parameterType="java.util.Map">
      update simple_content_revision
-      set revision_name = #name#,
-          user_id = #uid#,
-          timestamp = #timestamp#,
-          checksum = #checksum#,
-          change_amount = #changeAmount#
-      where id = #revisionId# and resource_id = #resourceId#
+      set revision_name = #{name},
+          user_id = #{uid},
+          timestamp = #{timestamp},
+          checksum = #{checksum}
+      where id = #{revisionId} and resource_id = #{resourceId}
   </update>
 
-  <delete id="deleteRevision" parameterClass="java.util.Map">
-    delete from simple_content_revision where id = #revisionId# and resource_id = #resourceId#
+  <delete id="deleteRevision" parameterType="java.util.Map">
+    delete from simple_content_revision where id = #{revisionId} and resource_id = #{resourceId}
   </delete>
 
-  <select id="listRevisionsByResource" parameterClass="java.util.Map" resultMap="Revision">
-    select id, resource_id, revision_name, user_id, timestamp, checksum, change_amount
-         from simple_content_revision where resource_id = #resourceId#
+  <select id="listRevisionsByResource" parameterType="java.util.Map" resultMap="Revision">
+    select id, resource_id, revision_name, user_id, timestamp, checksum
+         from simple_content_revision where resource_id = #{resourceId}
          order by timestamp desc
   </select>
 
-  <select id="listRevisionsByResourceIds" parameterClass="java.util.Map" resultClass="Long">
+  <select id="listRevisionsByResourceIds" parameterType="java.util.Map" resultType="Long">
     select distinct resource_id from simple_content_revision
     where resource_id in 
-    <iterate prepend="" property="resourceIds" open="(" close=")" conjunction=","> 
-             #resourceIds[]# 
-    </iterate> 
+    <foreach item="id" collection="resourceIds" open="(" close=")" separator=","> 
+      #{id}
+    </foreach> 
   </select>
 
-  <insert id="insertRevisionAclEntry" parameterClass="java.util.Map">
+  <insert id="insertRevisionAclEntry" parameterType="java.util.Map">
     insert into revision_acl_entry
       (id, action_type_id, revision_id, user_or_group_name,
        is_user, granted_by_user_name, granted_date)
-    values (<include refid="nextRevisionAclEntryId" />, #actionId#, #revisionId#, #principal#,
-            #isUser#, #grantedBy#, #grantedDate#)
+    values (<include refid="nextRevisionAclEntryId" />, #{actionId}, #{revisionId}, #{principal},
+            #{isUser}, #{grantedBy}, #{grantedDate})
   </insert>
 
-  <select id="listRevisionAclEntriesByResource" parameterClass="java.util.Map" resultMap="RevisionAclEntry">
+  <select id="listRevisionAclEntriesByResource" parameterType="java.util.Map" resultMap="RevisionAclEntry">
     select a.id, t.name as action_type, a.revision_id, a.user_or_group_name, a.is_user, a.granted_by_user_name, a.granted_date
     from revision_acl_entry a
       inner join action_type t on a.action_type_id = t.action_type_id
     where a.revision_id in
-       (select id from simple_content_revision where resource_id = #resourceId#)
+       (select id from simple_content_revision where resource_id = #{resourceId})
   </select>
 
   <!-- System index DAO statement section -->
-  <select id="nextTempTableSessionId" resultClass="java.lang.Integer">
+  <select id="nextTempTableSessionId" resultType="java.lang.Integer">
     select <include refid="nextTempTableSessionId" />
   </select>
   
-  <insert id="insertUriIntoTempTable" parameterClass="java.util.Map">
-    insert into vortex_tmp(session_id, uri) values (#sessionId#, #uri#)
+  <insert id="insertUriIntoTempTable" parameterType="java.util.Map">
+    insert into vortex_tmp(session_id, uri) values (#{sessionId}, #{uri})
   </insert>
   
   <!--  TODO: Column vortex_tmp.resource_id should be renamed to vortex_tmp.generic_id -->
-  <insert id="insertChangelogEntryIdIntoTempTable" parameterClass="java.util.Map">
-    insert into vortex_tmp(session_id, resource_id) values (#sessionId#, #changelogEntryId#)
+  <insert id="insertChangelogEntryIdIntoTempTable" parameterType="java.util.Map">
+    insert into vortex_tmp(session_id, resource_id) values (#{sessionId}, #{changelogEntryId})
   </insert>
   
-  <insert id="insertResourceIdIntoTempTable" parameterClass="java.util.Map">
-    insert into vortex_tmp(session_id, resource_id) values (#sessionId#, #resourceId#)
+  <insert id="insertResourceIdIntoTempTable" parameterType="java.util.Map">
+    insert into vortex_tmp(session_id, resource_id) values (#{sessionId}, #{resourceId})
   </insert>
   
-  <delete id="deleteFromTempTableBySessionId" parameterClass="java.lang.Integer">
-    delete from vortex_tmp where session_id = #value#
+  <delete id="deleteFromTempTableBySessionId" parameterType="java.lang.Integer">
+    delete from vortex_tmp where session_id = #{value}
   </delete>
   
   <select id="orderedPropertySetIteration" resultMap="ResourceAndExtraProperties">
@@ -969,7 +1010,7 @@
     order by r.uri, p.extra_prop_entry_id
   </select>
   
-  <select id="orderedPropertySetIterationWithStartUri" parameterClass="java.util.Map"
+  <select id="orderedPropertySetIterationWithStartUri" parameterType="java.util.Map"
                                                        resultMap="ResourceAndExtraProperties">
     select r.*,
            p.name_space,
@@ -980,14 +1021,14 @@
            case when p.binary_content is null then 'N' else 'Y' end as is_binary
            from vortex_resource r
     left outer join extra_prop_entry p  on r.resource_id = p.resource_id
-    where r.uri = #uri# or r.uri like #uriWildcard#
+    where r.uri = #{uri} or r.uri like #{uriWildcard}
     escape '@' order by r.uri, p.extra_prop_entry_id
   </select>
 
   <!-- FIXME This will fail when a resource has *NO* rows in extra_prop_entry, due to
        mapping of 'inheritable' field (right side of join gets all null values, while not null expected for certain columns.
        Same thing for other statements in this file.  -->
-  <select id="orderedPropertySetIterationForUris" parameterClass="java.lang.Integer"
+  <select id="orderedPropertySetIterationForUris" parameterType="java.lang.Integer"
                                                   resultMap="ResourceAndExtraProperties">
     select r.*,
            p.name_space,
@@ -998,27 +1039,27 @@
            case when p.binary_content is null then 'N' else 'Y' end as is_binary
        from vortex_tmp t, vortex_resource r
        left outer join extra_prop_entry p on r.resource_id = p.resource_id
-       where r.uri = t.uri AND t.session_id=#value#
+       where r.uri = t.uri AND t.session_id=#{value}
        order by p.resource_id, p.extra_prop_entry_id
   </select>
 
-  <delete id="removeChangelogEntriesByTempTable" parameterClass="java.lang.Integer">
+  <delete id="removeChangelogEntriesByTempTable" parameterType="java.lang.Integer">
     delete from changelog_entry 
-      where changelog_entry_id in (select resource_id from vortex_tmp where session_id=#value#)
+      where changelog_entry_id in (select resource_id from vortex_tmp where session_id=#{value})
   </delete>
 
-  <select id="getChangeLogEntries" parameterClass="java.util.Map" 
+  <select id="getChangeLogEntries" parameterType="java.util.Map" 
                                    resultMap="ChangeLogEntry">
-    <isNotNull property="limit">
+    <if test="limit != null">
       <!--  Needed for Oracle, renders to empty string by default. -->
       <include refid="limitPrepend"/>
-    </isNotNull>
+    </if>
     select * from changelog_entry
-      where logger_type=#loggerType# and logger_id=#loggerId# 
+      where logger_type=#{loggerType} and logger_id=#{loggerId} 
       order by changelog_entry_id
-    <isNotNull property="limit" >
+    <if test="limit != null">
        <include refid="limitAppend"/>
-    </isNotNull>
+    </if>
   </select>
 
-</sqlMap>
+</mapper>

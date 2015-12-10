@@ -2,7 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <!-- Temporarily redirect ?vrtx=thumbnail on manage hostname to view hostname until editor is fixed to use thumbnail service 
+  <!-- Temporarily redirect ?vrtx=thumbnail on manage hostname to view hostname until editor is fixed to use thumbnail service
     to generate image URLs -->
   <bean id="manage.redirectThumbnails" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-5" />
@@ -82,7 +82,7 @@
 
 
 
-  <!-- Kicks in when webHostName != manage.hostName and request.hostname = manage.hostname and manage.protocol == https and 
+  <!-- Kicks in when webHostName != manage.hostName and request.hostname = manage.hostname and manage.protocol == https and
     request.protocol == http: -->
   <bean id="manage.redirectToHTTPSService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-100" />
@@ -377,7 +377,7 @@
     </property>
     <property name="assertions">
       <list>
-        <!-- <ref bean="manage.postRequestAssertion" /> <bean class="vtk.web.service.RequestContentTypeRegexpAssertion"> 
+        <!-- <ref bean="manage.postRequestAssertion" /> <bean class="vtk.web.service.RequestContentTypeRegexpAssertion">
           <property name="pattern" value="multipart/form-data" /> </bean> -->
         <bean class="vtk.web.service.RequestParameterAssertion">
           <property name="parameterName" value="action" />
@@ -547,9 +547,9 @@
   </bean>
 
 
-  <!-- <bean id="editBindPermissionsService" class="vtk.web.service.ServiceImpl"> <property name="parent" ref="permissionsService" 
-    /> <property name="assertions"> <list> <ref local="writeACLPermissionAssertion" /> <bean class="vtk.web.service.RequestParameterAssertion"> 
-    <property name="parameterName" value="action" /> <property name="parameterValue" value="edit-bind-permissions" /> </bean> 
+  <!-- <bean id="editBindPermissionsService" class="vtk.web.service.ServiceImpl"> <property name="parent" ref="permissionsService"
+    /> <property name="assertions"> <list> <ref local="writeACLPermissionAssertion" /> <bean class="vtk.web.service.RequestParameterAssertion">
+    <property name="parameterName" value="action" /> <property name="parameterValue" value="edit-bind-permissions" /> </bean>
     </list> </property> <property name="handler" ref="editBindPermissionsHandler" /> </bean> -->
 
   <bean id="editReadProcessedPermissionsService" class="vtk.web.service.ServiceImpl">
@@ -589,7 +589,7 @@
 
 
   <!-- Create collection with properties (mainly used from Ajax): -->
-  
+
   <bean id="manage.createCollectionWithPropertiesService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-9999" />
@@ -602,7 +602,7 @@
       </list>
     </property>
     <property name="handler" ref="manage.createCollectionWithPropertiesHandler" />
-  </bean>  
+  </bean>
 
   <bean id="manage.createCollectionWithPropertiesHandler"
         class="vtk.web.actions.create.CreateCollectionWithProperties">
@@ -703,7 +703,7 @@
     <property name="order" value="-1" />
     <property name="assertions">
       <list>
-        <!-- <bean class="vtk.web.service.RequestProtocolAssertion"> <property name="protocol" value="https" /> 
+        <!-- <bean class="vtk.web.service.RequestProtocolAssertion"> <property name="protocol" value="https" />
           </bean> -->
         <bean class="vtk.web.service.OrAssertion">
           <property name="assertions">
@@ -739,7 +739,7 @@
                 <property name="name" value="sslMixedMode" />
                 <property name="pattern" value="attr:style" />
               </bean>
-              <!-- <bean class="vtk.web.service.ResourcePropertyRegexpAssertion"> <property name="namespace" ref="DEFAULT_NAMESPACE" 
+              <!-- <bean class="vtk.web.service.ResourcePropertyRegexpAssertion"> <property name="namespace" ref="DEFAULT_NAMESPACE"
                 /> <property name="name" value="sslMixedMode" /> <property name="pattern" value="attr:on" /> </bean> -->
             </list>
           </property>
@@ -882,7 +882,7 @@
         <ref bean="contentLengthPropDef" />
         <ref bean="userTitlePropDef" />
         <ref bean="titlePropDef" />
-        <!-- Don't pass in hidden and navigational importance <ref bean="hiddenPropDef" /> <ref bean="importancePropDef" 
+        <!-- Don't pass in hidden and navigational importance <ref bean="hiddenPropDef" /> <ref bean="importancePropDef"
           /> -->
         <ref bean="keywordsPropDef" />
         <ref bean="descriptionPropDef" />
@@ -906,7 +906,7 @@
 
         <!-- Collection type -->
         <ref bean="collection.typePropDef" />
-        
+
         <!-- Media-mxin type -->
         <ref bean="mediaHeightPropDef" />
         <ref bean="mediaWidthPropDef" />
@@ -930,7 +930,6 @@
     <property name="formView" value="manageCollectionListing" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="uploadForm" />
-    <property name="commandClass" value="vtk.web.actions.create.FileUploadCommand" />
     <property name="downcaseNames" value="true" />
     <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
     <property name="tempDir" value="${repository.tempDir}" />
@@ -944,7 +943,6 @@
     <property name="formView" value="admin" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="unlockFormCommand" />
-    <property name="commandClass" value="vtk.web.actions.lock.UnlockFormCommand" />
   </bean>
 
   <bean id="createDocumentHandler" class="vtk.web.actions.create.TemplateBasedCreateController">
@@ -952,7 +950,6 @@
     <property name="cancelView" value="redirectToManage" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="createDocumentForm" />
-    <property name="commandClass" value="vtk.web.actions.create.CreateDocumentCommand" />
     <property name="downcaseNames" value="true" />
     <property name="descriptionPropDef" ref="descriptionPropDef" />
     <property name="removePropList">
@@ -1004,25 +1001,24 @@
     <property name="cancelView" value="redirectToManage" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="createCollectionForm" />
-    <property name="commandClass" value="vtk.web.actions.create.CreateCollectionCommand" />
     <property name="userTitlePropDef" ref="userTitlePropDef" />
-    <property name="hiddenPropDef" ref="publishDatePropDef" />
     <property name="downcaseCollectionNames" value="true" />
     <property name="templateManager" ref="templates.resourceTemplateManager" />
     <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
     <property name="descriptionPropDef" ref="descriptionPropDef" />
-
+    <property name="normalFolderProperties">
+      <map>
+        <entry key-ref="collection.recursiveListingPropDef" value-ref="VALUE_FALSE" />
+      </map>
+    </property>
     <property name="publishDatePropDef" ref="publishDatePropDef" />
-    <property name="unpublishDatePropDef" ref="unpublishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
-    
   </bean>
 
   <bean id="renameHandler" class="vtk.web.actions.copymove.RenameController">
     <property name="formView" value="admin" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="renameCommand" />
-    <property name="commandClass" value="vtk.web.actions.copymove.RenameCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.copymove.RenameCommandValidator">
         <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
@@ -1036,7 +1032,6 @@
 
   <bean id="abstractPermissionsHandler" abstract="true" class="vtk.web.actions.permissions.ACLEditController">
     <property name="formView" value="permissions" />
-    <property name="commandClass" value="vtk.web.actions.permissions.ACLEditCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.permissions.ACLEditCommandValidator">
         <property name="principalManager" ref="principalManager" />
@@ -1183,6 +1178,34 @@
     <constructor-arg type="java.lang.String" value="manage" />
   </bean>
 
+  <bean id="manage.javascriptRegistry" class="vtk.web.MediaRegistry" />
+  <bean id="manage.cssRegistry" class="vtk.web.MediaRegistry" />
+
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.javascriptRegistry" />
+    <constructor-arg value="head" />
+    <constructor-arg>
+      <list>
+        <value>${jquery.baseURL}/jquery.min.js</value>
+        <value>${jsBaseURL}/frameworks/es5-shim-dejavu.js</value>
+        <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
+        <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
+        <value>${jsBaseURL}/admin-enhancements.js</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.cssRegistry" />
+    <constructor-arg value="head" />
+    <constructor-arg>
+      <list>
+        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
+        <value>${themeBaseURL}/default.css</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
   <bean id="manage.lineTopComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
     <property name="namespace" ref="decorating.manageNamespace" />
     <property name="name" value="display-line-top" />
@@ -1227,19 +1250,18 @@
     <property name="description" value="Inserts the default admin CSS stylesheets" />
     <property name="view" ref="manage.cssView" />
     <property name="exposeMvcModel" value="true" />
+    <property name="parameterDescriptions">
+      <map>
+        <entry key="place" value="Defines the place to get CSS files from the registry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="manage.cssView" parent="freemarkerView">
-    <property name="url" value="system/css.ftl" />
+    <property name="url" value="system/css-registry.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="cssURLs">
-          <list>
-            <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css
-            </value>
-            <value>${themeBaseURL}/default.css</value>
-          </list>
-        </entry>
+        <entry key="cssRegistry" value-ref="manage.cssRegistry" />
       </map>
     </property>
   </bean>
@@ -1247,24 +1269,21 @@
   <bean id="manage.javascriptComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
     <property name="namespace" ref="decorating.manageNamespace" />
     <property name="name" value="javascript" />
-    <property name="description" value="Inserts the default admin javascript references" />
+    <property name="description" value="Inserts the default admin Javascript references" />
     <property name="view" ref="manage.javascriptView" />
     <property name="exposeMvcModel" value="true" />
+    <property name="parameterDescriptions">
+      <map>
+        <entry key="place" value="Defines the place to get Javascript files from the registry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="manage.javascriptView" parent="freemarkerView">
-    <property name="url" value="system/javascript.ftl" />
+    <property name="url" value="system/javascript-registry.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="jsURLs">
-          <list>
-            <value>${jquery.baseURL}/jquery.min.js</value>
-            <value>${jsBaseURL}/frameworks/dejavu.js</value>
-            <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
-            <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
-            <value>${jsBaseURL}/admin-enhancements.js</value>
-          </list>
-        </entry>
+        <entry key="javascriptRegistry" value-ref="manage.javascriptRegistry" />
       </map>
     </property>
   </bean>
@@ -1726,6 +1745,11 @@
         </bean>
       </list>
     </property>
+    <property name="attributesMap">
+      <map>
+        <entry key="javascriptRegistry" value-ref="manage.javascriptRegistry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="permissionShortcuts" class="org.springframework.beans.factory.config.MapFactoryBean">
@@ -1821,21 +1845,22 @@
     <property name="resourceLocation" value="${webResources.physicalLocation}" />
   </bean>
 
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.javascriptRegistry" />
+    <constructor-arg value="preview:head" />
+    <constructor-arg>
+      <list>
+        <value>${jsBaseURL}/cross-doc-com-link.js</value>
+        <value>${jsBaseURL}/iframe-admin.js</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
   <!-- Manage specific providers -->
   <bean id="iframeJSProvider" class="vtk.web.referencedata.provider.StaticModelDataProvider">
     <property name="modelDataMap">
       <map>
-        <entry key="jsURLs">
-          <list>
-            <value>${jquery.baseURL}/jquery.min.js</value>
-            <value>${jsBaseURL}/frameworks/dejavu.js</value>
-            <value>${jsBaseURL}/cross-doc-com-link.js</value>
-            <value>${jsBaseURL}/iframe-admin.js</value>
-            <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
-            <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
-            <value>${jsBaseURL}/admin-enhancements.js</value>
-          </list>
-        </entry>
+        <entry key="javascriptRegistry" value-ref="manage.javascriptRegistry"/>
       </map>
     </property>
   </bean>
@@ -1856,6 +1881,7 @@
     <property name="permissionShortcutsConfig" ref="permissionShortcutsProvider.config" />
     <property name="localeResolver" ref="manageLocaleResolver" />
     <property name="documentPrincipalMetadataRetriever" ref="documentPrincipalMetadataRetriever" />
+    <property name="principalFactory" ref="principalFactory" />
   </bean>
 
   <bean id="manageCollectionlistingProvider" class="vtk.web.referencedata.provider.CollectionListingProvider">
@@ -2209,16 +2235,6 @@
     </property>
   </bean>
 
-  <bean id="noCacheHandlerInterceptor" class="vtk.web.interceptors.HeaderControlHandlerInterceptor">
-    <property name="staticHeaders">
-      <map>
-        <entry key="Cache-Control" value="no-cache, no-store, must-revalidate, max-age=0" />
-        <entry key="Expires" value="0" />
-        <entry key="Pragma" value="no-cache" />
-      </map>
-    </property>
-  </bean>
-
   <!-- Email -->
   <bean id="email.executor" class="vtk.util.mail.MailExecutor">
     <constructor-arg ref="email.taskExecutor" />
@@ -2236,7 +2252,7 @@
     <property name="concurrencyLimit" value="${email.concurrencyLimit}" />
   </bean>
 
-  <!-- <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"> <property name="corePoolSize" 
+  <!-- <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"> <property name="corePoolSize"
     value="10" /> <property name="maxPoolSize" value="25" /> <property name="queueCapacity" value="50" /> </bean> -->
 
   <bean id="emailApprovalService" class="vtk.web.service.ServiceImpl">

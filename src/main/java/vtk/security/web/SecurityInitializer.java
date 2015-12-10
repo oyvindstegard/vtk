@@ -51,7 +51,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.OrderComparator;
+
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.CookieLinkStore;
@@ -120,28 +120,18 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
     // Assertion that must match in order to use authentication challenge from cookie:
     private Assertion spCookieAssertion;
 
-    @SuppressWarnings("unchecked")
     @Override
     public void afterPropertiesSet() {
         if (this.authenticationHandlers == null) {
-            logger.info("No authentication handlers specified, looking in context");
-
-            Map<?, AuthenticationHandler> matchingBeans = this.applicationContext.getBeansOfType(
-                    AuthenticationHandler.class, false, false);
-
-            List<AuthenticationHandler> handlers = new ArrayList<AuthenticationHandler>(matchingBeans.values());
-            if (handlers.isEmpty()) {
-                throw new IllegalStateException("At least one authentication handler must be specified, "
-                        + "either explicitly or in application context");
-            }
-
-            Collections.sort(handlers, new OrderComparator());
-            this.authenticationHandlers = handlers;
-
+            throw new IllegalStateException("No authentication handlers specified");
         }
-        this.authHandlerMap = new HashMap<String, AuthenticationHandler>();
+        authHandlerMap = new HashMap<>();
         for (AuthenticationHandler handler : this.authenticationHandlers) {
-            this.authHandlerMap.put(handler.getIdentifier(), handler);
+            if (authHandlerMap.containsKey(handler.getIdentifier()))
+                throw new IllegalStateException(
+                        "Multiple authentication handlers with identifier '" 
+                                + handler.getIdentifier() + "'");
+            authHandlerMap.put(handler.getIdentifier(), handler);
         }
         logger.info("Using authentication handlers: " + this.authenticationHandlers);
     }
@@ -183,7 +173,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
                     c.setPath("/");
                     resp.addCookie(c);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Setting cookie: " + VRTXLINK_COOKIE + ": " + cookieLinkID.toString());
+                        logger.debug("Setting cookie: " + c + ": " + cookieLinkID.toString());
                     }
                 }
                 return true;
@@ -322,7 +312,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
                     + "' - method: '<none>' - status: OK");
         }
         if (this.rememberAuthMethod) {
-            List<String> spCookies = new ArrayList<String>();
+            List<String> spCookies = new ArrayList<>();
             spCookies.add(vrtxAuthSP);
             spCookies.add(uioAuthIDP);
             spCookies.add(VRTXLINK_COOKIE);
@@ -401,7 +391,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
         SecurityContext.setSecurityContext(null);
 
         if (this.rememberAuthMethod) {
-            List<String> spCookies = new ArrayList<String>();
+            List<String> spCookies = new ArrayList<>();
             spCookies.add(vrtxAuthSP);
             spCookies.add(uioAuthIDP);
             if (this.cookieLinksEnabled) {
@@ -562,7 +552,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
         if (categories == null)
             categories = Collections.EMPTY_SET;
         if (this.rememberAuthMethod && categories.contains(AUTH_HANDLER_SP_COOKIE_CATEGORY)) {
-            List<String> spCookies = new ArrayList<String>();
+            List<String> spCookies = new ArrayList<>();
             spCookies.add(vrtxAuthSP);
             spCookies.add(uioAuthIDP);
 
@@ -577,7 +567,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
 
                 resp.addCookie(c);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Setting cookie: " + cookie + ": " + handler.getIdentifier());
+                    logger.debug("Setting cookie: " + c + ": " + handler.getIdentifier());
                 }
             }
         }
@@ -587,7 +577,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
             c.setPath("/");
             resp.addCookie(c);
             if (logger.isDebugEnabled()) {
-                logger.debug("Setting cookie: " + VRTXLINK_COOKIE + ": " + cookieLinkID.toString());
+                logger.debug("Setting cookie: " + c + ": " + cookieLinkID.toString());
             }
         }
     }

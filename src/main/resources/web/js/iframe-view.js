@@ -55,7 +55,7 @@ if (window != top) { // Obs IE bug: http://stackoverflow.com/questions/4850978/i
   var mobilePreviewZoomNoneResponsive = function(isZoomIn) {
     var previewViewIframeWrp = $("#previewViewIframeWrapper");
     var zoom = previewViewIframeWrp.css(supportedProp);
-    if(!zoom || zoom == "none") return;
+    if(!zoom || zoom === "none") return;
     var zoom = parseFloat(zoom.match(/[0-9]*[.][0-9]+/)[0], 10);
 
     if(originalZoom === 0) originalZoom = zoom;

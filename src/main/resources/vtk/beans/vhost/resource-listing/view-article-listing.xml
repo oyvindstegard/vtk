@@ -41,14 +41,19 @@
     </property>
   </bean>
 
-  <bean id="articleListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="articleListing.atomFeedGenerator" />
+  <bean id="articleListing.feedHandler" parent="articleListing.handler">
+    <property name="viewName" value="articleListing.feedView" />
+    <property name="searcher" ref="articleListingFeedSearcher" />
   </bean>
 
-  <bean id="articleListing.atomFeedGenerator" class="vtk.web.display.collection.article.ArticleListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
-    <property name="searcher" ref="articleListingSearcher" />
+  <bean id="articleListing.feedView" class="vtk.web.display.collection.article.ArticleListingAtomFeedView" 
+        parent="atomFeedView">
     <property name="overridePublishDatePropDef" ref="publishedDatePropDef" />
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="article-listing" />
+      </map>
+    </property>
   </bean>
 
   <bean id="articleListingSearcher" class="vtk.web.display.collection.article.ArticleListingSearcher">
@@ -91,6 +96,15 @@
     <property name="searchSorting" ref="articleListing.searchSorting" />
     <property name="configurablePropertySelectPointers" ref="${override.listing.prefix}article.configurablePropertySelectPointersList" />
     <property name="displayEditLinks" value="false" />
+  </bean>
+
+  <bean id="articleListingFeedSearcher" parent="articleListingSearcher">
+    <property name="defaultSearch" ref="articleListingFeed.searchComponent" />
+  </bean>
+
+  <bean id="articleListingFeed.searchComponent" parent="articleListing.searchComponent">
+    <property name="name" value="articleListingFeed.defaultArticles" />
+    <property name="resolveMultiHostResultSet" value="false" />
   </bean>
 
   <bean id="articleListing.listingUriQueryBuilder" parent="collection.defaultRecursiveListingUriQueryBuilder">
@@ -155,6 +169,14 @@
       <map>
         <entry key="title" value-ref="SORT_ORDER.ASC" />
         <entry key="name" value-ref="SORT_ORDER.ASC" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="articleListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="articleListing.feedView" value-ref="articleListing.feedView" />
       </map>
     </property>
   </bean>

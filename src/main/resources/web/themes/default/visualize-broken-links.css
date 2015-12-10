@@ -39,6 +39,8 @@ html#vrtx-preview-popup #vrtx-link-check-spinner {
   display: none !important;
 }
 
+/* Scale to fit 1024px into "viewport" of iframe if not responsive design */
+
 #previewViewIframeWrapper.mobile-none-responsive,
 #previewViewIframeWrapper.mobile-none-responsive-horizontal {
   width: 1020px !important;

@@ -39,11 +39,14 @@
   <!-- Decorating and decorator components -->
   <import resource="decorating/decorating.xml" />
   <import resource="decorating/decorator-components.xml" />
+  <import resource="decorating/dynamic-decorating.xml" />
 
   <!-- Default editor -->
   <import resource="editor/editor.xml" />
 
   <import resource="manage.xml" />
+  <import resource="actions-listing.xml" />
+  <import resource="property-edit.xml" />
   <import resource="visual-profile-aspect.xml" />
   <import resource="report.xml" />
   <import resource="commenting.xml" />

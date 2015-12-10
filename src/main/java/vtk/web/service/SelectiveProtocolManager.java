@@ -105,6 +105,9 @@ public class SelectiveProtocolManager extends RequestProtocolAssertion
         if (!services.contains(service)) {
             return;
         }
+        // XXX this is wrong if request [page] context is secure and the URL
+        // points to an element which will be used inline in document (causes mixed-mode
+        // in such cases). However, don't know if fix for such situations is appropriate here.
         url.setProtocol("http");
     }
 

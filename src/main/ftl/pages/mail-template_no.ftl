@@ -19,5 +19,5 @@
 Denne meldingen er sendt på oppfordring fra ${mailFrom}.
 Din e-postadresse blir ikke lagret.
 Du vil ikke motta flere meldinger av denne typen,
-med mindre noen tipser deg om andre artikler på ${site}.
+med mindre noen deler andre artikler på ${site}.
 </p>

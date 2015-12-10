@@ -2,7 +2,7 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
 <xsd:import namespace="http://www.w3.org/XML/1998/namespace" 
-  schemaLocation="http://www.uio.no/xsd/eksternt/xml-v001.xsd" />
+  schemaLocation="http://www.w3.org/2001/03/xml.xsd" />
 
    <xsd:element name="onlyFritekst2" type="OnlyFritekst2"/>
 

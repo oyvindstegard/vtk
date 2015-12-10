@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -73,8 +74,8 @@ public class ReportHandler implements Controller {
     protected List<Reporter> reporters;
 
     // Reports used as part of other reports, i.e. not explicit reports on
-    // report flap, but only accessible via other reports (primarily via
-    // "primaryReportes"
+    // report service, but only accessible via other reports (primarily via
+    // "primaryReportes")
     protected List<Reporter> hiddenReporters;
 
     // Reports only visible on specific collections

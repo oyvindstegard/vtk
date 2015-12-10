@@ -37,8 +37,7 @@ import vtk.repository.StoreContext;
 import vtk.repository.SystemChangeContext;
 import vtk.repository.resourcetype.PropertyEvaluator;
 import vtk.repository.resourcetype.Value;
-
-import net.sf.json.JSONObject;
+import vtk.util.text.Json;
 
 /**
  *
@@ -64,7 +63,7 @@ public class SystemJobStatusEvaluator implements PropertyEvaluator {
     }
     
     private Value updateStatusValue(Value existing, SystemChangeContext context) {
-        JSONObject json = new JSONObject();
+        Json.MapContainer json = new Json.MapContainer();
         if (existing != null) {
             json = existing.getJSONValue();
         } 

@@ -1,14 +1,11 @@
 /*
  * View Toggle * 
- * - Store cached refs and i18n at init in configs-obj (on toggle link id)
- * 
- * XXX: JSDoc
- * XXX: ARIA/focus
- * XXX: Should possible be combined with view-dropdown and simplified (is just another show/hide thing)
+ *
+ * - Stores cached refs and i18n at init in configs-obj (on toggle link id)
  * 
  */
 
- if (typeof toggler !== "function") {
+if (typeof toggler !== "function") {
   function Toggler() {
     this.configs = {
       /* name 
@@ -19,7 +16,7 @@
        */
     };
   }
-  var toggler = new Toggler(); /* Global accessible object - XXX: proper singleton */
+  var toggler = new Toggler(); /* Global accessible object */
 
   $(document).ready(function () {
     toggler.init();
@@ -34,17 +31,29 @@
 
     for (var key in self.configs) {
       var config = self.configs[key];
-      var container = null;
+      
       if(config.combinator) {
-        container = $(config.combinator + "." + config.name);
+        var selector = config.combinator + "." + config.name;
       } else {
-        container = $("#vrtx-" + config.name);
+        var selector = "#vrtx-" + config.name;
       }
+      var container = $(selector);
       var link = $("#" + key);
+      
       if (container.length && link.length) {
         container.hide();
         link.addClass("togglable");
         link.parent().show();
+
+        // ARIA
+        container.attr("aria-hidden", "true");
+        if(!config.combinator) {
+          link.attr({
+            "aria-expanded": "false",
+            "aria-controls": selector.substring(1)
+          });
+        }
+        
         config.container = container;
         config.link = link;
       }
@@ -72,14 +81,27 @@
   };
 
   Toggler.prototype.toggleLinkText = function (config) {
-    if (config.container.filter(":visible").length) {
+    var link = config.link;
+    var container = config.container;
+  
+    if (container.filter(":visible").length) {
       if(!config.hideLinkText) {
-        config.link.parent().hide();
+        link.parent().hide();
       } else {
-        config.link.text(config.hideLinkText);
+        link.text(config.hideLinkText);
+      }
+      // ARIA
+      container.attr("aria-hidden", "false");
+      if(!config.combinator) {
+        link.attr("aria-expanded", "true");
       }
     } else {
-      config.link.text(config.showLinkText);
+      link.text(config.showLinkText);
+      // ARIA
+      container.attr("aria-hidden", "true");
+      if(!config.combinator) {
+        link.attr("aria-expanded", "false");
+      }
     }
   };
 }

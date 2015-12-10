@@ -35,22 +35,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
 import vtk.resourcemanagement.property.PropertyDescription;
 import vtk.resourcemanagement.property.SimplePropertyDescription;
-import vtk.util.text.JSON;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import vtk.util.text.Json;
 
 public class StructuredResource {
-
-    // Is thread safe
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private StructuredResourceDescription desc;
     private Map<String, Object> properties;
@@ -65,21 +58,30 @@ public class StructuredResource {
 
     @SuppressWarnings("unchecked")
     static StructuredResource create(StructuredResourceDescription desc, InputStream source) throws Exception {
-        JSONObject json = MAPPER.readValue(source, JSONObject.class);
+        Object json = Json.parse(source);
+        
+        
         ValidationResult validation = validateInternal(desc, json);
         if (!validation.isValid()) {
             throw new RuntimeException("Invalid document: " + validation.getErrors());
         }
-        JSONObject object = json.getJSONObject("properties");
-        Map<String, Object> properties = new HashMap<String, Object>();
-        for (Iterator<String> iter = object.keys(); iter.hasNext();) {
-            String name = iter.next();
-            properties.put(name, object.get(name));
+        Map<?,?> jsonObject= (Map<?,?>) json;
+        Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
+        return new StructuredResource(desc, properties);
+    }
+    
+    @SuppressWarnings("unchecked")
+    static StructuredResource createFromMap(StructuredResourceDescription desc, Map<String, Object> json) throws Exception {
+        ValidationResult validation = validateInternal(desc, json);
+        if (!validation.isValid()) {
+            throw new RuntimeException("Invalid document: " + validation.getErrors());
         }
+        Map<?,?> jsonObject = (Map<?,?>) json;
+        Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
         return new StructuredResource(desc, properties);
     }
 
-    public boolean isValidDocument(JSONObject document) {
+    public boolean isValidDocument(Object document) {
         try {
             ValidationResult validation = validateInternal(this.desc, document);
             return validation.isValid();
@@ -89,11 +91,11 @@ public class StructuredResource {
     }
 
     // XXX: make recursive:
-    public JSONObject toJSON() {
-        JSONObject json = new JSONObject();
-        json.put("resourcetype", this.desc.getName());
-
-        JSONObject props = new JSONObject();
+    public Map<String, Object> toJSON() {
+        Map<String, Object> json = new HashMap<String, Object>();
+        json.put("resourcetype", desc.getName());
+        Map<String, Object> props = new HashMap<String, Object>();
+        
         for (String name : this.properties.keySet()) {
             Object value = this.properties.get(name);
             if (value != null) {
@@ -110,26 +112,39 @@ public class StructuredResource {
         return json;
     }
 
-    private static ValidationResult validateInternal(StructuredResourceDescription desc, JSONObject json) {
+    private static ValidationResult validateInternal(StructuredResourceDescription desc, Object json) {
         if (json == null) {
             throw new IllegalStateException("Input is NULL");
         }
-        String type = json.getString("resourcetype");
-        if (type == null) {
-            throw new IllegalStateException(
+        if (!(json instanceof Map<?,?>)) {
+            throw new IllegalArgumentException("Not a JSON object");
+        }
+        Map<?,?> map = (Map<?,?>) json;
+        Object typeEntry = map.get("resourcetype");
+        if (typeEntry == null) {
+            throw new IllegalArgumentException(
             "Unable to validate: missing 'resourcetype' element");
         }
-        JSONObject properties = json.getJSONObject("properties");
-        if (properties == null) {
-            throw new IllegalStateException(
+        
+        String type = typeEntry.toString();
+        
+        Object propertiesEntry = map.get("properties");
+        if (propertiesEntry == null) {
+            throw new IllegalArgumentException(
             "Unable to validate: missing 'properties' element");
         }
+        if (!(propertiesEntry instanceof Map<?,?>)) {
+            throw new IllegalArgumentException(
+            "Unable to validate: 'properties' element is not a JSON object");
+        }
+        
+        Map<?,?> properties = (Map<?,?>) propertiesEntry;
+        
         List<ValidationError> errors = new ArrayList<ValidationError>();
         for (PropertyDescription propDesc : desc.getPropertyDescriptions()) {
             if (propDesc instanceof SimplePropertyDescription) {
                 if (((SimplePropertyDescription) propDesc).isRequired()) {
-
-                    Object value = JSON.select(json, "properties." + propDesc.getName());
+                    Object value = properties.get(propDesc.getName());
                     if (value == null) {
                         errors.add(new ValidationError(propDesc.getName(), 
                         "property is required"));

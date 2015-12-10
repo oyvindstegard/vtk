@@ -33,11 +33,11 @@ package vtk.repository.resourcetype;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
-import net.sf.json.JSONObject;
-
 import vtk.repository.IllegalOperationException;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.security.Principal;
+import vtk.util.text.Json;
+import vtk.util.text.JsonStreamer;
 
 /**
  * Holds a single property value of appropriate type. Does not enforce value limits.
@@ -116,9 +116,9 @@ public class Value implements Cloneable, Comparable<Value> {
         this.principalValue = principalValue;
     }
 
-    public Value(JSONObject value) {
+    public Value(Json.MapContainer value) {
         this.type = Type.JSON;
-        this.stringValue = value.toString();
+        this.stringValue = JsonStreamer.toJson(value);
     }
 
     /**
@@ -180,7 +180,7 @@ public class Value implements Cloneable, Comparable<Value> {
                 if (valueContentType == null
                         || !("application/json".equals(valueContentType) || valueContentType.startsWith("text/"))) {
                     throw new IllegalArgumentException("Content type 'application/json' or 'text/*'"
-                            + " required for creating " + valueType + " value type from binary storage");
+                            + " required for creating " + valueType + " value type from binary storage (got content type '" + valueContentType + "' from binary value reference)");
                 }
                 // Copy binary data to stringValue field after sanity checking content type
                 try {
@@ -225,8 +225,8 @@ public class Value implements Cloneable, Comparable<Value> {
         return this.stringValue;
     }
 
-    public JSONObject getJSONValue() {
-        return JSONObject.fromObject(getStringValue());
+    public Json.MapContainer getJSONValue() {
+        return Json.parseToContainer(getStringValue()).asObject();
     }
 
     /**
@@ -357,7 +357,7 @@ public class Value implements Cloneable, Comparable<Value> {
         case PRINCIPAL:
             return new Value(this.principalValue);
         case BINARY:
-            return new Value(this.binaryValue, getType());
+            return new Value(this.binaryValue, Type.BINARY);
         case JSON:
             return new Value(getStringValue(), Type.JSON);
         default:

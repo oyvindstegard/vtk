@@ -32,6 +32,7 @@ package vtk.repository.resourcetype.property;
 
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
+import vtk.repository.Revision;
 import vtk.repository.resourcetype.PropertyEvaluator;
 
 public class PropertiesLastModifiedEvaluator implements PropertyEvaluator {
@@ -40,8 +41,13 @@ public class PropertiesLastModifiedEvaluator implements PropertyEvaluator {
     public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
         PropertyEvaluationContext.Type type = ctx.getEvaluationType();
         if (type == PropertyEvaluationContext.Type.PropertiesChange
-                || type == PropertyEvaluationContext.Type.Create) {
+                || type == PropertyEvaluationContext.Type.Create
+                || type == PropertyEvaluationContext.Type.InheritablePropertiesChange) {
             property.setDateValue(ctx.getTime());
+        }
+        else if (type == PropertyEvaluationContext.Type.LoadRevision) {
+            Revision rev = ctx.getRevision();
+            property.setDateValue(rev.getTimestamp());
         }
         return true;
     }

@@ -50,17 +50,22 @@
     <property name="specificDateEventSearchComponent" ref="${override.listing.prefix}eventListing.specificDateEventSearchComponent" />
   </bean>
 
-  <bean id="eventListing.atomFeedGenerator" class="vtk.web.display.collection.event.EventListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
-    <property name="helper" ref="eventListingHelper" />
-    <property name="searcher" ref="eventListing.eventListingSearcher" />
-    <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
-    <property name="overridePublishDatePropDefPointer" ref="${override.listing.prefix}overridePublishDatePropDefPointer" />
+  <bean name="eventListing.feedHandler" parent="eventListing.calendarAllUpcomingHandler">
+    <property name="viewName" value="eventListing.feedView" />
   </bean>
 
-  <bean id="eventListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="eventListing.atomFeedGenerator" />
+  <bean id="eventListing.feedView" class="vtk.web.display.collection.event.EventListingAtomFeedView"
+    parent="atomFeedView">
+    <property name="helper" ref="eventListingHelper" />
+    <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
+    <property name="overridePublishDatePropDefPointer" ref="${override.listing.prefix}overridePublishDatePropDefPointer" />
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="event-listing" />
+      </map>
+    </property>
   </bean>
+
 
   <bean id="overridePublishDatePropDefPointer" class="java.lang.String">
     <constructor-arg value="start-date" />
@@ -184,12 +189,19 @@
     </constructor-arg>
   </bean>
 
+  <bean id="eventListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="eventListing.feedView" value-ref="eventListing.feedView" />
+      </map>
+    </property>
+  </bean>
+
+
   <bean id="eventListing.viewResolver" parent="decoratorViewResolver">
     <property name="views">
       <map>
         <entry key="eventListing.view" value-ref="eventListing.view" />
-        <entry key="eventListingCalendar.view" value-ref="eventListingCalendar.view" />
-        <entry key="eventListingCalendarWithWidgetContextProvider.view" value-ref="eventListingCalendarWithWidgetContextProvider.view" />
       </map>
     </property>
   </bean>

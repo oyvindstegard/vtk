@@ -26,6 +26,14 @@
     </constructor-arg>
   </bean>
   
+  <bean id="templateLanguage.appendFunction" class="vtk.text.tl.expr.Append">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg  value="append" />
+      </bean>
+    </constructor-arg>
+  </bean>
+  
   <bean id="templateLanguage.lengthFunction" class="vtk.text.tl.expr.Length">
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
@@ -46,6 +54,14 @@
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
         <constructor-arg  value="split" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <bean id="templateLanguage.trimFunction" class="vtk.text.tl.expr.Trim">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg  value="trim" />
       </bean>
     </constructor-arg>
   </bean>

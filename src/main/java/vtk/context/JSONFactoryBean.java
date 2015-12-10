@@ -31,18 +31,17 @@
 package vtk.context;
 
 import org.springframework.beans.factory.config.AbstractFactoryBean;
-
+@SuppressWarnings("rawtypes")
 public class JSONFactoryBean extends AbstractFactoryBean {
 
     private Object object;
 
     public JSONFactoryBean(String input) {
-        this.object = vtk.util.text.JSON.parse(input);
+        object = vtk.util.text.Json.parse(input);
     }
     
     @Override
-    @SuppressWarnings("rawtypes")
-    public Class getObjectType() {
+    public Class<?> getObjectType() {
         if (this.object == null) {
             return Object.class;
         }

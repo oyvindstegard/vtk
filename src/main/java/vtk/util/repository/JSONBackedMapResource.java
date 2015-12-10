@@ -40,10 +40,11 @@ import java.util.Set;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.util.ReverseMap;
-import vtk.util.text.JSON;
+import vtk.util.text.Json;
 
 public class JSONBackedMapResource implements ReverseMap<Object, Object>, InitializingBean {
 
@@ -86,7 +87,7 @@ public class JSONBackedMapResource implements ReverseMap<Object, Object>, Initia
         Map<Object, Set<Object>> newReverseMap = null;
         try {
             InputStream inputStream = this.repository.getInputStream(this.token, this.uri, false);
-            Object parsed = JSON.parse(inputStream);
+            Object parsed = Json.parse(inputStream);
             if (!(parsed instanceof Map<?, ?>)) {
                 return;
             }

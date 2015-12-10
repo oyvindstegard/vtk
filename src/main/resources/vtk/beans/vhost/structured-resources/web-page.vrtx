@@ -1,0 +1,108 @@
+resourcetype web-page : structured-document {
+
+  properties {
+    related-content : html noextract,
+    showAdditionalContent : boolean defaultvalue("true")
+  }
+
+  edit-rules {
+    caption (size[small]),
+    group introImageAndCaption (picture, caption, hidePicture, pictureAlt) (after introduction),
+    group relatedContent (showAdditionalContent, related-content) (after tags),
+    title (size[large]),
+    link-other-language (after relatedContent)
+  }
+  
+  view-components {
+  
+    related-content-in-additional-column {
+      ##
+      [def document structured-document()]
+      [def theshowAdditionalContent document.properties.showAdditionalContent]
+      [def theRelated-content document.properties.related-content]
+      [if (theshowAdditionalContent = "true") || (theshowAdditionalContent = null)]
+        [if theRelated-content != null]
+          <div id="vrtx-additional-content">
+            <div id="vrtx-related-content">
+              [val theRelated-content # unescaped]
+            </div>
+          </div>
+        [endif]
+      [endif]
+      ##
+    }
+    
+    related-content-in-main-column {
+      ##
+      [def document structured-document()]
+      [def theshowAdditionalContent document.properties.showAdditionalContent]
+      [def theRelated-content document.properties.related-content]
+      [if (theshowAdditionalContent = "false")]
+        [if theRelated-content != null]
+          <div id="vrtx-related-content">
+            [val theRelated-content # unescaped]
+          </div>
+        [endif]
+      [endif]
+      ##
+    }
+    
+  }
+
+  view {
+    ##
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        [call "resource:comments-feed-link"]
+        <title>[call "comp:title"]</title>
+      </head>
+      <body id="vrtx-web-page">
+        <div id="vrtx-content">
+        [def document structured-document()]
+        [def theShowAdditionalContent document.properties.showAdditionalContent]
+        [if theShowAdditionalContent = "true" || theShowAdditionalContent = null]
+          <div id="vrtx-main-content" class="vrtx-hide-additional-content-false">
+        [else]
+          <div id="vrtx-main-content" class="vrtx-hide-additional-content-true">
+        [endif]
+            [call "comp:link-other-language"]
+            <h1>[call "comp:title"]</h1>
+            [call "comp:introduction"]
+            [def theHidePicture document.properties.hidePicture]
+            [if theHidePicture = "false" || theHidePicture = null]
+              [call "comp:introduction-image"]
+            [endif]
+            [call "json:field" {"select":"content"}]
+            [call "comp:related-content-in-main-column"]
+            [call "comp:vrtx-date-info"]
+            <div class="vrtx-social-components">
+              [call "resource:email-friend"]
+              [call "resource:share-at" {"use-facebook-api": true}]
+            </div>
+            [call "resource:comments"]
+          </div>
+          [call "comp:related-content-in-additional-column"]
+        </div>
+      </body>
+    </html>
+    ##
+  }
+  
+  vocabulary {
+    showAdditionalContent {
+      en : ("true" = "Yes", "false" = "No"),
+      no : ("true" = "Ja", "false" = "Nei"),
+      nn : ("true" = "Ja", "false" = "Nei")
+    }
+  }
+
+  localization {
+    hidePicture : (en : "Hide image on web page", no : "Skjul bilde på nettside", nn : "Skjul bilete nå nettside"),
+    published : (en : "Published", no : "Publisert", nn : "Publisert"),
+    showAdditionalContent : (en : "Show in right-column", no : "Vis i høyrekolonne", nn : "Vis i høgrekolonne"),
+    related-content : (en : "Content", no : "Innhold", nn : "Innhold"),
+    relatedContent : (en : "Related content", no : "Relatert innhold", nn : "Relatert innhald"),
+    header : (en : "Edit web page", no : "Rediger nettside", nn : "Rediger nettside")
+  }
+}

@@ -3,7 +3,7 @@ getDescription() {
 }
 
 getUsage() {
-    return "repo cat <uri:path>";
+    return "repo cat [-revision:string] [-out:string] <uri:path>";
 }
 
 void execute(context, args, out) {
@@ -12,27 +12,71 @@ void execute(context, args, out) {
     token = context.get("context").getBean("writeAllToken");
 
     uri = args.get("uri");
+    
+    rev = args.get("revision");
 
     if (!repo.exists(token, uri)) {
         out.println("No such resource");
         return;
     }
 
-    r = repo.retrieve(token, uri, true);
+    revision = null;
+    if (rev != null) {
+        revs = repo.getRevisions(token, uri);
+        for (r: revs) {
+            if (r.getName().equals(rev)) {
+                revision = r;
+                break;
+            }
+        }
+    }
+    
+    if (rev != null && revision == null) {
+        out.println("No such revision");
+        return;
+    }
+
+    r = revision == null ? repo.retrieve(token, uri, true) : 
+        repo.retrieve(token, uri, true, revision);
+
     if (r.isCollection()) {
         out.println("Resource is collection");
         return;
     }
 
-    is = repo.getInputStream(token, uri, true);
-    encoding = (r.getCharacterEncoding() != null) ? r.getCharacterEncoding() : "utf-8";
+    is = revision == null ? repo.getInputStream(token, uri, true) :
+        repo.getInputStream(token, uri, true, revision);
     
-    byte[] buf = new byte[1024];
-    n = 0;
-    while (true) {
-        n = n = is.read(buf, 0, 1024);
-        if (n <= 0) break;
-        out.print(new String(buf, 0, n, encoding));
+    outArg = args.get("out");
+    if (outArg != null) {
+        fout = null;
+        try {
+            fout = new java.io.FileOutputStream(new java.io.File(outArg));
+            byte[] buf = new byte[1024];
+            n = 0;
+            while (true) {
+                n = is.read(buf, 0, 1024);
+                if (n <= 0) break;
+                fout.write(buf, 0, n);
+            }
+        } catch (e) {
+            out.println("Error writing file " + outArg + ": " + e.getMessage());
+            return;
+        }
+        finally {
+            if (fout != null) fout.close();
+        }
     }
-    is.close();
+    else {
+
+        encoding = (r.getCharacterEncoding() != null) ? r.getCharacterEncoding() : "utf-8";
+        byte[] buf = new byte[1024];
+        n = 0;
+        while (true) {
+            n = is.read(buf, 0, 1024);
+            if (n <= 0) break;
+            out.print(new String(buf, 0, n, encoding));
+        }
+        is.close();
+    }
 }

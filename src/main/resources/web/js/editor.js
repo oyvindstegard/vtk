@@ -44,7 +44,8 @@ function VrtxEditor() {
     "teachingsemester":  ["particular-semester", "every-other"],
     "examsemester":      ["particular-semester", "every-other"],
     "typeToDisplay":     ["so", "nm", "em"],
-    "type-of-agreement": ["other"]
+    "type-of-agreement": ["other"],
+    "program-type":      ["phd"]
   };
 
   /** Initial state for the need to confirm navigation away from editor */
@@ -101,7 +102,7 @@ $(document).ready(function () {
   vrtxEdit.initPreviewImage();
   
   var waitALittle = setTimeout(function() {
-    autocompleteUsernames(".vrtx-autocomplete-username");
+    autocompleteUsernames($(".vrtx-autocomplete-username"));
     autocompleteTags(".vrtx-autocomplete-tag");
     vrtxEdit.initSendToApproval();
     
@@ -172,6 +173,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
   initAsyncInterval: 15,
  /**
   * Setup multiple instances
+  * @param {boolean} isInAdmin Is the editor in admin?
   * @this {richtextEditorFacade}
   */
   setupMultiple: function(isInAdmin) {
@@ -220,6 +222,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
     // Initialize
     this.init({
       name: opts.name,
+      isReadOnly: opts.isReadOnly || false,
       linkBrowseUrl: linkBrowseUrl,
       imageBrowseUrl: classification.isMain ? imageBrowseUrl : null,
       flashBrowseUrl: classification.isMain ? flashBrowseUrl : null,
@@ -244,6 +247,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
    * @this {richtextEditorFacade}
    * @param {object} opts The config
    * @param {string} opts.name Name of textarea
+   * @param {string} opts.isReadOnly Make it read only
    * @param {string} opts.linkBrowseUrl Link browse integration URL
    * @param {string} opts.imageBrowseUrl Image browse integration URL
    * @param {string} opts.flashBrowseUrl Flash browse integration URL
@@ -266,6 +270,10 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.contentsCss = opts.cssFileList;
     config.entities = false;
     
+    if(opts.isReadOnly) {
+      config.readOnly = true;
+    }
+    
     if (opts.linkBrowseUrl) {
       config.filebrowserBrowseUrl = opts.linkBrowseUrl;
       config.filebrowserImageBrowseLinkUrl = opts.linkBrowseUrl;
@@ -275,15 +283,15 @@ VrtxEditor.prototype.richtextEditorFacade = {
       config.filebrowserImageBrowseUrl = opts.imageBrowseUrl;
       config.filebrowserFlashBrowseUrl = opts.flashBrowseUrl;
       if(opts.requiresStudyRefPlugin) {
-    	// Temporarily remove before new plugins are tested
-    	// config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2';
-    	config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal';
+        config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax';	    
       } else {
-        // config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2';
-        config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal';
+        config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax'; 
       }
+      config.image2_alignClasses = [ 'image-left', 'image-center', 'image-right' ];
+      config.image2_captionedClass = 'image-captioned';
+      
       config.stylesSet = this.divContainerStylesSet;
-      if (opts.isSimple) { // XHTML
+      if (opts.isSimple) { // HTML
         config.format_tags = 'p;h1;h2;h3;h4;h5;h6;pre;div';
       } else {
         config.format_tags = 'p;h2;h3;h4;h5;h6;pre;div';
@@ -292,10 +300,11 @@ VrtxEditor.prototype.richtextEditorFacade = {
       config.removePlugins = 'elementspath';
     }
     
+	//  Remove h2 in frontpage box content?
     //  if (opts.isFrontpageBox) {
     //	config.format_tags = 'p;h3;h4;h5;h6;pre;div';
     //  }
-
+    
     config.resize_enabled = opts.resizable;
     config.toolbarCanCollapse = false;
     config.defaultLanguage = 'no';
@@ -310,7 +319,22 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.forcePasteAsPlainText = false;
     config.disableObjectResizing = true;
     config.disableNativeSpellChecker = false;
+    
     config.allowedContent = true;
+  
+    /* Enable ACF - with all elements
+     *
+     * Use the ability to specify elements as an object.
+     *
+    config.allowedContent = {
+      $1: {
+        elements: CKEDITOR.dtd,
+        attributes: true,
+        styles: true,
+        classes: true
+      }
+    };
+    */
     
     // Enable ACF
     if (vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
@@ -361,19 +385,41 @@ VrtxEditor.prototype.richtextEditorFacade = {
       });
     }
   },
+  
+  /* Save with CTRL-S */
   setupCTRLS: function() {
-    CKEDITOR.on('instanceReady', function (event) {
-      _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
+    var rteFacade = this;
+    var setupCTRLSPrivate = function(event) {
+      _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s meta+s', $.debounce(150, true, function (e) {
         ctrlSEventHandler(_$, e);
       }));
+      
       // Fix bug (http://dev.ckeditor.com/ticket/9958) with IE triggering onbeforeunload on dialog click
       event.editor.on('dialogShow', function(dialogShowEvent) {
         if(CKEDITOR.env.ie) {
           $(dialogShowEvent.data._.element.$).find('a[href*="void(0)"]').removeAttr('href');
         }
       });
+      if(event.editor.name == "caption" || event.editor.name == "resource.caption") {
+        event.editor.on('change', function() {
+          var ref = $("input.preview-image-inputfield");
+          if(ref.length) {
+            previewImage(ref[0].id, false);
+          }
+        });
+      }
+    };
+    
+    CKEDITOR.on('instanceReady', function (event) {
+      setupCTRLSPrivate(event);
+      
+      // Re-run code when source-button is toggled (VTK-4023)
+      var instance = rteFacade.getInstance(event.editor.name);
+      instance.on('contentDom', setupCTRLSPrivate);
     });
   },
+  
+  /* Minimize/maximize */
   setupMaximizeMinimize: function() {
     vrtxAdmin.cachedAppContent.on("click", ".cke_button__maximize.cke_button_on", this.maximize);
     vrtxAdmin.cachedAppContent.on("click", ".cke_button__maximize.cke_button_off", this.minimize);
@@ -397,7 +443,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
       var helpMenu = "<div id='editor-help-menu' class='js-on'>" + shortcuts.find("#editor-help-menu").html() + "</div>";
       ckInject.append("<div class='ck-injected-save-help'>" + save + helpMenu + "</div>");
 
-      // Fix markup
+      // Fix markup - add class for button
       var saveInjected = ckInject.find(".ck-injected-save-help > a");
       if (!saveInjected.hasClass("vrtx-button")) {
         saveInjected.addClass("vrtx-button");
@@ -414,9 +460,20 @@ VrtxEditor.prototype.richtextEditorFacade = {
     stickyBar.show();
     var ckInject = _$(this).closest(".cke_reset").find(".ck-injected-save-help").hide();
   },
+  
+  /* Get/Set/Update instance or data */
   getInstanceValue: function(name) {
     var inst = this.getInstance(name);
     return inst !== null ? inst.getData() : null;
+  },
+  updateInstanceByInstance: function(instance) {
+    instance.updateElement();
+  },
+  updateInstance: function(name) {
+    var inst = this.getInstance(name);
+    if(inst !== null) {
+      inst.updateElement();
+    }
   },
   updateInstances: function() {
     for (var instance in CKEDITOR.instances) {
@@ -425,6 +482,9 @@ VrtxEditor.prototype.richtextEditorFacade = {
   },
   getValue: function(instance) {
     return instance.getData();
+  },
+  setValue: function(instance, data) {
+    instance.setData(data);
   },
   setInstanceValue: function(name, data) {
     var inst = this.getInstance(name);
@@ -470,7 +530,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
       });
     }, 10);
   }
-}
+};
 
 /* Toolbars */
 
@@ -487,8 +547,8 @@ vrtxEditor.richtextEditorFacade.toolbars.commentsToolbar = [
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
-  ['About', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'], ['Replace'], ['Link', 'Unlink', 'Anchor'],
-  ['Image', 'CreateDiv', 'MediaEmbed', 'Table', 'HorizontalRule', 'SpecialChar'],
+  ['PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'], ['Replace'], ['Link', 'Unlink', 'Anchor'],
+  ['Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'Mathjax', 'SpecialChar'],
   ['Maximize'], ['Source'], '/', ['Format'], 
   ['Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'TextColor', '-', 'RemoveFormat'],
   ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote']
@@ -497,14 +557,14 @@ vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
 vrtxEditor.richtextEditorFacade.toolbars.studyToolbar = [
   ['Source', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
    'RemoveFormat', '-', 'Link', 'Unlink', 'Studyreferencecomponent', 'Anchor',
-   'Image', 'CreateDiv', 'MediaEmbed', 'Table', 'Studytable', 'HorizontalRule', 'SpecialChar'],
+   'Image', 'MediaEmbed', 'CreateDiv', 'Table', 'Studytable', 'HorizontalRule', 'SpecialChar'],
   ['Format', 'Bold', 'Italic', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Maximize']
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.studyRefToolbar = [
   ['Source', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
    'RemoveFormat', '-', 'Link', 'Unlink', 'Studyreferencecomponent', 'Anchor',
-   'Image', 'CreateDiv', 'MediaEmbed', 'Table', 'HorizontalRule', 'SpecialChar'],
+   'Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'SpecialChar'],
   ['Format', 'Bold', 'Italic', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Maximize']
 ];
 
@@ -522,30 +582,7 @@ vrtxEditor.richtextEditorFacade.toolbars.resourcesTextToolbar = [
 
 vrtxEditor.richtextEditorFacade.divContainerStylesSet = [
   { name: 'Facts left',                 element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-left'  } },
-  { name: 'Facts right',                element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-right' } },
-  { name: 'Image left',                 element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-left'    } },
-  { name: 'Image center',               element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-middle vrtx-img-container-middle-ie' } },
-  { name: 'Image right',                element: 'div', attributes: { 'class': 'vrtx-img-container vrtx-container-right' } },
-  { name: 'Img & capt left (800px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxl vrtx-container-left' } },
-  { name: 'Img & capt left (700px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xl vrtx-container-left' } },
-  { name: 'Img & capt left (600px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-l vrtx-container-left' } },
-  { name: 'Img & capt left (500px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-left' } },
-  { name: 'Img & capt left (400px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-left' } },
-  { name: 'Img & capt left (300px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xs vrtx-container-left' } },
-  { name: 'Img & capt left (200px)',    element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxs vrtx-container-left' } },
-  { name: 'Img & capt center (full)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-full vrtx-container-middle' } },
-  { name: 'Img & capt center (800px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxl vrtx-container-middle' } },
-  { name: 'Img & capt center (700px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xl vrtx-container-middle' } },
-  { name: 'Img & capt center (600px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-l vrtx-container-middle' } },
-  { name: 'Img & capt center (500px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-middle' } },
-  { name: 'Img & capt center (400px)',  element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-middle' } },
-  { name: 'Img & capt right (800px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxl vrtx-container-right' } },
-  { name: 'Img & capt right (700px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xl vrtx-container-right' } },
-  { name: 'Img & capt right (600px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-l vrtx-container-right' } },
-  { name: 'Img & capt right (500px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-m vrtx-container-right' } },
-  { name: 'Img & capt right (400px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-s vrtx-container-right' } },
-  { name: 'Img & capt right (300px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xs vrtx-container-right' } },
-  { name: 'Img & capt right (200px)',   element: 'div', attributes: { 'class': 'vrtx-container vrtx-container-size-xxs vrtx-container-right' } }
+  { name: 'Facts right',                element: 'div', attributes: { 'class': 'vrtx-facts-container vrtx-container-right' } }
 ];
 
 /* Functions for generating editor config based on classification
@@ -559,7 +596,7 @@ VrtxEditor.prototype.setupEditorHeight = function setupEditorHeight(c, opts) {
                                               : (c.isCaption ? 55 
                                                              : ((c.isStudyField || c.isScheduleComment || c.isAdditionalContent) ? 150 
                                                                                                                                  : (c.isIntro ? 100 
-                                                                                                                                              : 90))))
+                                                                                                                                              : 90))));
 };
 
 VrtxEditor.prototype.setupEditorMaxHeight = function setupEditorMaxHeight(c, opts) {
@@ -595,9 +632,9 @@ VrtxEditor.prototype.classifyEditorInstance = function classifyEditorInstance(op
       classification = {};
 
   // Content
-  classification.isOldContent = name == "resource.content";
-  classification.isStudyContent = name == "content-study";
-  classification.isContent = name == "content" ||
+  classification.isOldContent = name === "resource.content";
+  classification.isStudyContent = name === "content-study";
+  classification.isContent = name === "content" ||
                              classification.isOldContent ||
                              classification.isStudyContent;
   classification.isSimple = classification.isOldContent && opts.simple;
@@ -638,38 +675,207 @@ VrtxEditor.prototype.classifyEditorInstance = function classifyEditorInstance(op
                                 vrtxEdit.contains(name, "description-nn") ||
                                 vrtxEdit.contains(name, "description-no");
   classification.isScheduleComment = vrtxEdit.contains(name, "comment") && vrtxEdit.editorForm.hasClass("vrtx-schedule");
-  classification.isCourseDescriptionA = name == "teachingsemester-other" ||
-                                        name == "examsemester-other" ||
-                                        name == "teaching-language-text-field" ||
-                                        name == "eksamensspraak-text-field" ||
-                                        name == "sensur-text-field" ||
-                                        name == "antall-forsok-trekk-text-field" ||
-                                        name == "tilrettelagt-eksamen-text-field";
-  classification.isCourseDescriptionB = name == "course-content" ||
-                                        name == "learning-outcomes" ||
-                                        name == "opptak-og-adgang-text-field" ||
-                                        name == "ikke-privatist-text-field" ||
-                                        name == "obligatoriske-forkunnskaper-text-field" ||
-                                        name == "recommended-prerequisites-text-field" ||
-                                        name == "overlapping-courses-text-field" ||
-                                        name == "teaching-text-field" ||
-                                        name == "adgang-text-field" ||
-                                        name == "assessment-and-grading" ||
-                                        name == "hjelpemidler-text-field" ||
-                                        name == "klage-text-field" ||
-                                        name == "ny-utsatt-eksamen-text-field" ||
-                                        name == "evaluering-av-emnet-text-field" ||
-                                        name == "other-text-field";
-  classification.isCourseGroup = name == "course-group-about" ||
-                                 name == "courses-in-group" ||
-                                 name == "course-group-admission" ||
-                                 name == "relevant-study-programmes" ||
-                                 name == "course-group-other";       
+  classification.isCourseDescriptionA = name === "teachingsemester-other" ||
+                                        name === "examsemester-other" ||
+                                        name === "teaching-language-text-field" ||
+                                        name === "eksamensspraak-text-field" ||
+                                        name === "sensur-text-field" ||
+                                        name === "antall-forsok-trekk-text-field" ||
+                                        name === "tilrettelagt-eksamen-text-field";
+  classification.isCourseDescriptionB = name === "course-content" ||
+                                        name === "learning-outcomes" ||
+                                        name === "opptak-og-adgang-text-field" ||
+                                        name === "ikke-privatist-text-field" ||
+                                        name === "obligatoriske-forkunnskaper-text-field" ||
+                                        name === "recommended-prerequisites-text-field" ||
+                                        name === "overlapping-courses-text-field" ||
+                                        name === "teaching-text-field" ||
+                                        name === "adgang-text-field" ||
+                                        name === "assessment-and-grading" ||
+                                        name === "hjelpemidler-text-field" ||
+                                        name === "klage-text-field" ||
+                                        name === "ny-utsatt-eksamen-text-field" ||
+                                        name === "evaluering-av-emnet-text-field" ||
+                                        name === "other-text-field";
+  classification.isCourseGroup = name === "course-group-about" ||
+                                 name === "courses-in-group" ||
+                                 name === "course-group-admission" ||
+                                 name === "relevant-study-programmes" ||
+                                 name === "course-group-other";       
                                  
   classification.requiresStudyRefPlugin = classification.isStudyContent || classification.isCourseDescriptionB || classification.isCourseGroup || classification.isStudyField;
          
   return classification;
 };
+    
+/* 
+ * VTK-3873
+ * 
+ * Migrate old image div-containers to new image plugin on interaction
+ *
+ */
+         
+function migrateOldDivContainersCheck(data) {
+  return /<div[^>]+class=(\'|\")([^\']*[^\"]* |)vrtx-(img-|)container( |(\'|\"))/i.test(data);
+}
+
+function showMigrateDialog(instance) {
+  var d = new VrtxConfirmDialog({
+    title: vrtxAdmin.messages.oldImageContainers.convert.title,
+    msg: vrtxAdmin.messages.oldImageContainers.convert.msg,
+    btnTextOk: vrtxAdmin.messages.oldImageContainers.convert.yes,
+    btnTextCancel: vrtxAdmin.messages.oldImageContainers.convert.no,
+    onOk: function () {
+      migrateOldDivContainersToNewImagePlugin(instance);
+    }
+  });
+  d.open();
+}
+         
+function migrateOldDivContainersToNewImagePlugin(instance) {
+  var rteFacade = vrtxEditor.richtextEditorFacade;
+  var data = $($.parseHTML("<div>" + rteFacade.getValue(instance) + "</div>"));
+  var containers = data.find(".vrtx-container, .vrtx-img-container");
+  
+  for(var i = 0, len = containers.length; i < len; i++) {
+    var container = $(containers[i]);
+    var containerChildren = container.children();
+    var childrenLen = containerChildren.length;
+    if((childrenLen == 1 || childrenLen == 2) && container.find("> img, > p").length == childrenLen) {
+      var images = container.find("img");
+      if(images.length == 1) {
+        var out = "";
+        
+        var img = images.clone();
+        
+        // Limit to this width (can maybe be optimized a little)
+        var overrideWidth = 999999;
+        if(container.hasClass("vrtx-container-size-xxl")) {
+          overrideWidth = 800;
+        } else if(container.hasClass("vrtx-container-size-xl")) {
+          overrideWidth = 700;
+        } else if(container.hasClass("vrtx-container-size-l")) {
+          overrideWidth = 600;
+        } else if(container.hasClass("vrtx-container-size-m")) {
+          overrideWidth = 500;
+        } else if(container.hasClass("vrtx-container-size-s")) {
+          overrideWidth = 400;
+        } else if(container.hasClass("vrtx-container-size-xs")) {
+          overrideWidth = 300;
+        } else if(container.hasClass("vrtx-container-size-xxs")) {
+          overrideWidth = 200;
+        }
+        
+        // Width/height conversion
+        var style = img.attr("style");
+        var hasStyle = typeof style !== "undefined" && style != "";
+        var hasStyleWidth = hasStyle && style.indexOf("width:") !== -1;
+        var hasStyleHeight = hasStyle && style.indexOf("height:") !== -1;
+        var width = 0;
+        var height = 0;
+        if(hasStyleWidth || hasStyleHeight) {
+          if(hasStyleWidth) {
+            var widthRegex = /(.*)(width\:[\s]*[\d]+px[;]*)(.*)/i;
+            var matches = style.match(widthRegex);
+            if(matches.length > 2) {
+              width = matches[2].replace(/[^0-9.]/g, "");
+            }
+            style = style.replace(widthRegex, "$1$3", "");
+          }
+          if(hasStyleHeight) {
+            var heightRegex = /(.*)(height\:[\s]*[\d]+px[;]*)(.*)/i;
+            var matches = style.match(heightRegex);
+            if(matches.length > 2) {
+              height = matches[2].replace(/[^0-9.]/g, "");
+            }
+            style = style.replace(heightRegex, "$1$3", "");
+          }
+          
+          img.attr("style", style);
+          
+          if(width > overrideWidth) {
+            img.attr("width", overrideWidth);
+            img.removeAttr("height");
+          } else {
+            if(width > 0) {
+              img.attr("width", width);
+            } else {
+              img.removeAttr("width");
+            }
+            if(height > 0) {
+              img.attr("height", height);
+            } else {
+              img.removeAttr("height");
+            }
+          }
+        } else {
+          var widthAttr = img.attr("width");
+          if(typeof widthAttr !== "undefined" && widthAttr != "") {
+            width = parseInt(widthAttr, 10);
+          }
+          if(width > overrideWidth || (width == 0 && overrideWidth != 999999)) {
+            img.attr("width", overrideWidth);
+            img.removeAttr("height");
+          }
+        }
+              
+        // Alignment
+        var align = container.hasClass("vrtx-container-left") ? "image-left" : "";
+            align += container.hasClass("vrtx-container-right") ? "image-right" : "";
+            align += container.hasClass("vrtx-container-middle") ? "image-center" : "";
+              
+        // Has caption?
+        var caption = container.find("p");
+        if($.trim(caption.text()) !== "") {
+           caption.find("img").remove();
+           if(align !== "") {
+             if(align === "image-center") {
+               out = "<div class='" + align + "'><figure class='image-captioned'>";
+             } else {
+               out = "<figure class='image-captioned " + align + "'>";
+             }
+           } else {
+             out = "<figure class='image-captioned'>";
+           }
+           out += img[0].outerHTML +
+                  "<figcaption>" +
+                    caption.html() +
+                  "</figcaption></figure>";
+           if(align === "image-center") {
+             out += "</div>";
+           }
+                    
+         // Only image
+         } else {
+           if(align !== "" && align !== "image-center") {
+             img.addClass(align);
+           }
+           if(align === "image-center") {
+             out += "<p class='image-center'>" + img[0].outerHTML + "</p>";
+           } else {
+             out += img[0].outerHTML;
+           }
+         }
+       
+         if(out !== "") {
+           container.replaceWith(out);
+         }
+       }
+     }
+   }
+   if(len) {
+     rteFacade.setValue(instance, data.html());
+     rteFacade.updateInstance();
+     if(migrateOldDivContainersCheck(rteFacade.getValue(instance))) { // Any that not could be converted?
+       var d = new VrtxHtmlDialog({
+         title: vrtxAdmin.messages.oldImageContainers.notAllConverted.title,
+         html: "<p>" + vrtxAdmin.messages.oldImageContainers.notAllConverted.msg + "</p>",
+         btnTextOk: "Ok"
+       });
+       d.open();
+     }
+   }  
+}
 
 
 /*-------------------------------------------------------------------*\
@@ -726,7 +932,7 @@ function unsavedChangesInEditor() {
       radioLen = currentStateOfRadioButtons.length;
 
   // Check if count has changed
-  if (textLen != vrtxEdit.editorInitInputFields.length || selectsLen != vrtxEdit.editorInitSelects.length || checkboxLen != vrtxEdit.editorInitCheckboxes.length || radioLen != vrtxEdit.editorInitRadios.length) return true;
+  if (textLen !== vrtxEdit.editorInitInputFields.length || selectsLen !== vrtxEdit.editorInitSelects.length || checkboxLen !== vrtxEdit.editorInitCheckboxes.length || radioLen !== vrtxEdit.editorInitRadios.length) return true;
   
   // Check if values have changed
   for (var i = 0; i < textLen; i++) if (currentStateOfInputFields[i].value !== vrtxEdit.editorInitInputFields[i]) return true;
@@ -735,7 +941,7 @@ function unsavedChangesInEditor() {
   for (i = 0; i < radioLen; i++) if (currentStateOfRadioButtons[i].name + " " + currentStateOfRadioButtons[i].value !== vrtxEdit.editorInitRadios[i]) return true;
 
   var currentStateOfTextFields = contents.find("textarea"); // CK->checkDirty()
-  if (typeof CKEDITOR != "undefined") {
+  if (typeof CKEDITOR !== "undefined") {
     var rteFacade = vrtxEdit.richtextEditorFacade;
     for (i = 0, len = currentStateOfTextFields.length; i < len; i++) {
       var ckInstance = rteFacade.getInstance(currentStateOfTextFields[i].name);
@@ -824,7 +1030,7 @@ function validTextLengthsInEditor(isOldEditor) {
   }
 
   // Textareas that are not content-fields (RichText)
-  if (typeof CKEDITOR != "undefined") {
+  if (typeof CKEDITOR !== "undefined") {
     var currentTextAreas = isOldEditor ? contents.find(RTE_OLD) : contents.find(RTE_NEW);
     var rteFacade = vrtxEditor.richtextEditorFacade;
     for (i = 0, len = currentTextAreas.length; i < len; i++) {
@@ -895,22 +1101,19 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
   var previewInputFields = _$("input.preview-image-inputfield"),
       hideImagePreviewCaptionFunc = hideImagePreviewCaption;
   for (i = previewInputFields.length; i--;) {
-    if (previewInputFields[i].value === "") {
-      hideImagePreviewCaptionFunc($(previewInputFields[i]), true);
+    var elm = $(previewInputFields[i]);
+    if (previewInputFields[i].value === "" && !hasImageCaption(elm, true)) {
+      hideImagePreviewCaptionFunc(elm, true);
     }
   }
   
   /* Inputfield events for image preview */
-  vrtxAdmin.cachedDoc.on("blur", "input.preview-image-inputfield", function (e) {
-    previewImage(this.id, true);
+  eventListen(vrtxAdmin.cachedDoc, "blur", "input.preview-image-inputfield", function (ref) {
+    previewImage(ref.id, true);
   });
-
-  vrtxAdmin.cachedDoc.on("keydown", "input.preview-image-inputfield", _$.debounce(50, true, function (e) { // ENTER-key
-    if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
-      previewImage(this.id);
-      e.preventDefault();
-    }
-  }));
+  eventListen(vrtxAdmin.cachedDoc, "keyup", "input.preview-image-inputfield", function (ref) {
+    previewImage(ref.id);
+  }, null, 50, true);
 };
 
 function initPictureAddJsonField(elm) {
@@ -973,13 +1176,10 @@ function previewImage(urlobj, isBlurEvent) {
     var elm = $("#" + urlobj);
     if (elm.length) {
       var url = elm.val();
-      if (url !== "") {
+      if (url !== "" || hasImageCaption(elm, false)) {
         var parentPreviewNode = previewNode.parent();
         previewNode.find("img").attr("src", url + "?vrtx=thumbnail");
-        if (parentPreviewNode.hasClass("no-preview")) {
-          parentPreviewNode.removeClass("no-preview");
-          previewNode.find("img").attr("alt", "thumbnail");
-        }
+        previewNode.find("img").attr("alt", "thumbnail");
         showImagePreviewCaption(elm);
         if(typeof isBlurEvent === "undefined") elm.focus();
       } else {
@@ -987,6 +1187,22 @@ function previewImage(urlobj, isBlurEvent) {
       } 
     }
   }
+}
+
+function hasImageCaption(input, init) {
+  var captionWrp = input.closest(".introImageAndCaption, #vrtx-resource\\.picture");
+  if(captionWrp.length) {
+    if(init) {
+      var captionTextAreaValue = captionWrp.find(".caption textarea").val();
+      return captionTextAreaValue != "";
+    } else {
+      var captionId = captionWrp.find(".caption textarea")[0].id;
+      vrtxEditor.richtextEditorFacade.updateInstance(captionId)
+      var captionCkValue = vrtxEditor.richtextEditorFacade.getInstanceValue(captionId);
+      return captionCkValue != null && captionCkValue != "";
+    }
+  }
+  return false;
 }
 
 
@@ -999,6 +1215,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
     _$ = vrtxAdm._$,
     vrtxEdit = this;
     
+  /* Show / hide for fields */
   var initResetAggregationManuallyApproved = function(_$, checkboxId, name) {
     if (!_$(checkboxId + "\\.true").is(":checked")) {
       _$("#vrtx-resource\\." + name).slideUp(0, "linear");
@@ -1030,7 +1247,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
       afterOut: function(animation) {
         animation.__opts.elem.addClass("hidden");
       }
-    })
+    });
     if (courseStatus.val() === "continued-as") {
       animation.updateElem(_$("#vrtx-resource\\.courseContext\\.course-continued-as.hidden"));
       animation.topDown();
@@ -1042,38 +1259,37 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
   });
   _$("#resource\\.courseContext\\.course-status").change();
   
+  
   // Show/hide mappings for radios/booleans
   
   // Exchange sub-folder title
-  
   setShowHideBooleanOldEditor("#resource\\.show-subfolder-menu\\.true, #resource\\.show-subfolder-menu\\.unspecified",
     "#vrtx-resource\\.show-subfolder-title",
     "#resource\\.show-subfolder-menu\\.unspecified:checked",
     "");
     
   // Recursive
-
   setShowHideBooleanOldEditor("#resource\\.recursive-listing\\.false, #resource\\.recursive-listing\\.unspecified",
     "#vrtx-resource\\.recursive-listing-subfolders",
     "#resource\\.recursive-listing\\.false:checked",
     "false");
     
   // Calendar title
-
   setShowHideBooleanOldEditor("#resource\\.display-type\\.unspecified, #resource\\.display-type\\.calendar",
     "#vrtx-resource\\.event-type-title",
     "#resource\\.display-type\\.calendar:checked",
     null);
-
   setShowHideBooleanOldEditor("#resource\\.display-type\\.unspecified, #resource\\.display-type\\.calendar",
     "#vrtx-resource\\.hide-additional-content",
     "#resource\\.display-type\\.calendar:checked",
     "calendar");
 
+
+  // Show / hide mappings for selects
   vrtxEdit.setShowHideSelectNewEditor();
   
-  // Documenttype
   
+  // Documenttype domains
   if(vrtxEdit.editorForm.hasClass("vrtx-course-schedule")) {
     editorCourseSchedule = new courseSchedule();
   } else if (vrtxEdit.editorForm.hasClass("vrtx-hvordan-soke")) {
@@ -1098,8 +1314,8 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
     vrtxEdit.accordionGroupedInit(".vrtx-sea-accordion", "fast");
   } else if (vrtxEdit.editorForm.hasClass("vrtx-contact-supervisor")) {
     vrtxAdm.cachedDoc.on("keyup", ".vrtx-string.id input[type='text']", $.debounce(50, true, function () {
-      updateField({
-        field: $(this),
+      vrtxAdm.inputUpdateEngine.update({
+        input: $(this),
         substitutions: {
           "#": "",
           " ": "-"
@@ -1144,21 +1360,13 @@ function toggleShowHideBoolean(props, show, init) {
     if (!vrtxAdmin.isIE9) {
       theProps.addClass("animate-optimized");
     }
-    if (show && !init) {
-      theProps.show();
-    } else {
-      theProps.hide();
-    }
+    theProps[(show && !init) ? "show" : "hide"]();
   } else {
     var animation = new VrtxAnimation({
       animationSpeed: vrtxAdmin.transitionPropSpeed,
       elem: theProps
     });
-    if (show) {
-      animation.topDown();
-    } else {
-      animation.bottomUp();
-    }
+    animation[show ? "topDown" : "bottomUp"]();
   }
 }
 
@@ -1182,7 +1390,8 @@ VrtxEditor.prototype.setShowHideSelectNewEditor = function setShowHideSelectNewE
  * Select field show/hide
  *
  * @this {VrtxEditor}
- * @param {object} select The select field
+ * @param {object} select The select field jQElement
+ * @param {boolean} init
  */
 VrtxEditor.prototype.showHideSelect = function showHideSelect(select, init) {
   var vrtxEdit = this;
@@ -1217,8 +1426,26 @@ VrtxEditor.prototype.showHideSelect = function showHideSelect(select, init) {
     8. Multiple fields and boxes
 \*-------------------------------------------------------------------*/
 
-/*
- * Multiple comma-seperated inputfields (supports JSON inputfields)
+/* 
+ * A. Multiple inputfields (vrtx-multiple-inputfield)
+ *
+ * 1. (NORMAL - HTML)
+ * --------------------
+ *
+ *    Multiple data comes separated by comma in a textfield.
+ *
+ *    Is enhanced into addable, removable, browsable and movable fields
+ *    based on classname and parameters
+ *
+ * 2. (SCHEDULE - JSON)
+ * --------------------
+ *
+ *    Multiple JSON data is added to a textfield separated by $$$.
+ *
+ *    It can then be splitted into multiple fields for each field by ###.
+ *
+ *    If the user is enriched by URL and fullname then
+ *    %%URL%% and %%TEXT%% is in the field.
  *
  */
 
@@ -1235,94 +1462,102 @@ function getMultipleFieldsBoxesTemplates() {
 
 function initMultipleInputFields() {
   getMultipleFieldsBoxesTemplates();
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-multipleinputfield button.remove", function (e) {
-    if(e.type == "click" || ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13))) {
-      removeFormField($(this));
-      e.preventDefault();
-      e.stopPropagation();
+  
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-multipleinputfield button.remove", function (ref) {
+    removeFormField($(ref));
+  }, "clickOrEnter");
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-multipleinputfield button.movedown", function (ref) {
+    swapContentTmp($(ref), 1);
+  }, "clickOrEnter");
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-multipleinputfield button.moveup", function (ref) {
+    swapContentTmp($(ref), -1);
+  }, "clickOrEnter");
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-multipleinputfield button.browse-resource-ref", function (ref) {
+    var m = $(ref).closest(".vrtx-multipleinputfield");
+    var elm = m.find('input.resource_ref');
+    if(!elm.length) {
+      elm = m.find('input');
     }
-  });
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-multipleinputfield button.movedown", function (e) {
-    if(e.type == "click" || ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13))) {
-      swapContentTmp($(this), 1);
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-multipleinputfield button.moveup", function (e) {
-    if(e.type == "click" || ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13))) {
-      swapContentTmp($(this), -1);
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-multipleinputfield button.browse-resource-ref", function (e) {
-    if(e.type == "click" || ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13))) {
-      var m = $(this).closest(".vrtx-multipleinputfield");
-      var elm = m.find('input.resource_ref');
-      if(!elm.length) elm = m.find('input');
-      browseServer(elm.attr('id'), vrtxAdmin.multipleFormGroupingPaths.baseBrowserURL, vrtxAdmin.multipleFormGroupingPaths.baseFolderURL, vrtxAdmin.multipleFormGroupingPaths.basePath, 'File');
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
+    browseServer(elm.attr('id'), vrtxAdmin.multipleFormGroupingPaths.baseBrowserURL, vrtxAdmin.multipleFormGroupingPaths.baseFolderURL, vrtxAdmin.multipleFormGroupingPaths.basePath, 'File');
+  }, "clickOrEnter");
 }
 
-function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json) { // TODO: simplify
+var userEnrichmentSeperators = {
+  url: "%%URL%%",
+  text: "%%TEXT%%"
+};
+
+function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, isReadOnly) {
+  // Field with data
   var inputField = $("." + name + " input[type='text']");
   if (!inputField.length || vrtxAdmin.isIE7 || vrtxAdmin.isIETridentInComp) return;
 
+  // ENHANCE!
+  
   // Config
   var size = inputField.attr("size");
-  
   var isDropdown = inputField.hasClass("vrtx-multiple-dropdown");
   isMovable = !isDropdown && isMovable;
-
   var inputFieldParent = inputField.parent();
   if (inputFieldParent.hasClass("vrtx-resource-ref-browse")) {
     isBrowsable = true;
     inputField.next().filter(".vrtx-button").hide();
   }
 
-  inputFieldParent.addClass("vrtx-multipleinputfields").data("name", name); // Don't like to do this need get it easily
-  $($.parseHTML(vrtxEditor.htmlFacade.getMultipleInputFieldsAddButton(name, size, isBrowsable, isMovable, isDropdown, JSON.stringify(json, null, 2)), document, true)).insertAfter(inputField);
-
+  // Keeping track
+  inputFieldParent.addClass("vrtx-multipleinputfields").data("name", name);
+  vrtxEditor.multipleFieldsBoxes[name] = { counter: 1, limit: limit };
+  
+  // Hide field with data, get its value and split it into multiple entries
   var inputFieldVal = inputField.hide().val();
   var formFields = json && json.length ? inputFieldVal.split("$$$")
                                        : inputFieldVal.split(",");
+  
+  // Render add button after field with data
+  $($.parseHTML(vrtxEditor.htmlFacade.getMultipleInputFieldsAddButton(name, size, isBrowsable, isMovable, isDropdown, JSON.stringify(json, null, 2)), document, true)).insertAfter(inputField);
 
-  vrtxEditor.multipleFieldsBoxes[name] = { counter: 1, limit: limit };
-
-  var addFormFieldFunc = addFormField, html = "";
+  // Render the multiple entries after add button
+  var addFormFieldFunc = addFormField, html = "", isEnriched = false;
   for (var i = 0, len = formFields.length; i < len; i++) {
-    html += addFormFieldFunc(name, len, $.trim(formFields[i]), size, isBrowsable, isMovable, isDropdown, true, json);
+    var htmlEnriched = addFormFieldFunc(name, len, $.trim(formFields[i]), size, isBrowsable, isMovable, isDropdown, true, json, isReadOnly);
+    html += htmlEnriched.html;
+    isEnriched = htmlEnriched.isEnriched;
   }
   html = $.parseHTML(html, document, true);
   $(html).insertBefore("#vrtx-" + name + "-add");
   inputFieldParent.find(".vrtx-multipleinputfield:first").addClass("first");
   
-  // Hide add button if limit is reached or gone over
-  if(len >= vrtxEditor.multipleFieldsBoxes[name].limit) {
+  // Hide add button if limit is reached or is read only
+  var isLimitReached = len >= vrtxEditor.multipleFieldsBoxes[name].limit;
+  if(isLimitReached || isReadOnly) {
     var moreBtn = $("#vrtx-" + name + "-add");
-    $("<p class='vrtx-" + name + "-limit-reached'>" + vrtxAdmin.multipleFormGroupingMessages.limitReached + "</p>").insertBefore(moreBtn);
+    if(isLimitReached) {
+   	  $("<p class='vrtx-" + name + "-limit-reached'>" + vrtxAdmin.multipleFormGroupingMessages.limitReached + "</p>").insertBefore(moreBtn);
+	}
     moreBtn.hide();
   }
-
-  autocompleteUsernames(".vrtx-autocomplete-username");
+  
+  // Check if username with autocomplete and initiate on all fields
+  if(inputFieldParent.hasClass("inputfield")) {
+    autocompleteUsernames(inputFieldParent.parent().filter(".vrtx-autocomplete-username"), isEnriched);
+  } else {
+    autocompleteUsernames(inputFieldParent.filter(".vrtx-autocomplete-username"), isEnriched);
+  }
 }
 
-function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown, init, json) {
-  var fields = $("." + name + " div.vrtx-multipleinputfield"),
-    idstr = "vrtx-" + name + "-",
-    i = vrtxEditor.multipleFieldsBoxes[name].counter,
-    removeButton = "",
-    moveUpButton = "",
-    moveDownButton = "",
-    browseButton = "";
-    
-  len = !init ? fields.length : len; /* If new field set len to fields length */
+function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown, init, json, isReadOnly) {
+  var fields = $("." + name + " div.vrtx-multipleinputfield");
+  var idstr = "vrtx-" + name + "-";
+	
+  // Keeping track
+  var i = vrtxEditor.multipleFieldsBoxes[name].counter;
+  len = !init ? fields.length : len;
 
-  removeButton = vrtxEditor.htmlFacade.getMultipleInputfieldsInteractionsButton("remove", " " + name, idstr, "", vrtxAdmin.multipleFormGroupingMessages.remove);
+  // Render buttons
+  var removeButton = vrtxEditor.htmlFacade.getMultipleInputfieldsInteractionsButton("remove", " " + name, idstr, "", vrtxAdmin.multipleFormGroupingMessages.remove);
+  var moveUpButton = "";
+  var moveDownButton = "";
+  var browseButton = "";
   if (isMovable) {
     if (i > 1 && len > 0) {
       moveUpButton = vrtxEditor.htmlFacade.getMultipleInputfieldsInteractionsButton("moveup", "", idstr, vrtxAdmin.multipleFormGroupingMessages.moveUp, "<span class='moveup-arrow'></span>");
@@ -1335,22 +1570,29 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
     browseButton = vrtxEditor.htmlFacade.getMultipleInputfieldsInteractionsButton("browse", "-resource-ref", idstr, "", vrtxAdmin.multipleFormGroupingMessages.browse);
   }
   
-  if(json && value && value.indexOf("###") != -1) {
-    value = value.split("###");
-    var j = 0;
-    for(var prop in json) {
-      json[prop].val = value[j];
-      j++;
+  // JSON and user enrichments
+  var isEnriched = false;
+  var hasEnrichedText = false;
+  var hasEnrichedUrl = false;
+  var jsonProcessed = null;
+  if(json) {
+    if(value && value.indexOf("###") !== -1) {
+      value = value.split("###");
     }
-  } else if(json) {
-    for(var prop in json) {
-      json[prop].val = "";
-    }
+    jsonProcessed = jQuery.extend(true, [], json);
+    var enriched = addFormFieldUserEnrichment(value, jsonProcessed, isEnriched, hasEnrichedText, hasEnrichedUrl);
+    isEnriched = enriched.isEnriched;
+    hasEnrichedText = enriched.hasEnrichedText;
+    hasEnrichedUrl = enriched.hasEnrichedUrl;
   }
-  var html = vrtxEditor.htmlFacade.getMultipleInputfield(name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json);
+  
+  // Render the finished field
+  var html = vrtxEditor.htmlFacade.getMultipleInputfield(name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, jsonProcessed, isReadOnly, hasEnrichedText, hasEnrichedUrl);
 
+  // Keeping track
   vrtxEditor.multipleFieldsBoxes[name].counter++;
 
+  // If new added field: update buttons, classes, autocomplete and add directly
   if (!init) {
     if (len > 0 && isMovable) {
       var last = fields.filter(":last");
@@ -1369,21 +1611,26 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
       fields.filter(":first").addClass("first");
     }
     
+    // Setup autocomplete on username fields
     autocompleteUsername(".vrtx-autocomplete-username", idstr + i);
-    autocompleteUsername(".vrtx-autocomplete-username", idstr + "id-" + i); // JSON name='id' fix
+    autocompleteUsername(".vrtx-autocomplete-username", idstr + "id-" + i, isEnriched); // JSON name='id' fix
     
-    var focusable = moreBtn.prev().find("input[type='text'], select")
+    var focusable = moreBtn.prev().find("input[type='text'], select");
     if(focusable.length) {
       focusable[0].focus();
     }
 
-    // Hide add button if limit is reached
-    if((len == (vrtxEditor.multipleFieldsBoxes[name].limit - 1))) {
-      $("<p class='vrtx-" + name + "-limit-reached'>" + vrtxAdmin.multipleFormGroupingMessages.limitReached + "</p>").insertBefore(moreBtn);
-      moreBtn.hide();
+    // Hide add button if limit is reached or is read only
+    var isLimitReached = (len === (vrtxEditor.multipleFieldsBoxes[name].limit - 1));
+    if(isLimitReached || isReadOnly) {
+      if(isLimitReached) {
+	    $("<p class='vrtx-" + name + "-limit-reached'>" + vrtxAdmin.multipleFormGroupingMessages.limitReached + "</p>").insertBefore(moreBtn);
+      }
+	  moreBtn.hide();
     }
+  // Otherwise: return the rendered field
   } else {
-    return html;
+    return { "html": html, "isEnriched": isEnriched };
   }
 }
 
@@ -1393,6 +1640,7 @@ function removeFormField(input) {
   var name = parent.data("name");
   field.remove();
 
+  // Find and set focus on first field
   var fields = parent.find(".vrtx-multipleinputfield");
   var firstField = fields.filter(":first");
   if(firstField.length) {
@@ -1426,10 +1674,105 @@ function swapContentTmp(moveBtn, move) {
     curElmInputs[i].value = movedElmInputs[i].value;
     movedElmInputs[i].value = tmp;
   }
+  swapUserEnrichment(curElm, movedElm, curElmInputs, movedElmInputs);
+  
   movedElmInputs.filter(":first")[0].focus();
 }
 
-/* DEHANCE PART */
+function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, hasEnrichedUrl) {
+  var enrichedUrl = "";
+  var enrichedText = "";
+  var sep = userEnrichmentSeperators;
+  
+  // Extract user enrichments if exists
+  if(value && value.length) {
+    var valueIsMultiple = typeof value === "object";
+    var lastVal = valueIsMultiple ? value[value.length - 1] : value;
+    if(lastVal.indexOf(sep.url) !== -1) {
+      var enrichedUrl = lastVal.split(sep.url);
+      if(enrichedUrl[1].indexOf(sep.text) !== -1) {
+        enrichedText = enrichedUrl[1].split(sep.text)[0];
+        enrichedUrl = enrichedUrl[0];
+      } else {
+        enrichedText = "";
+      }
+      value = [ value[0] ];
+    } else if(lastVal.indexOf(sep.text) !== -1) {
+      var enrichedText = lastVal.split(sep.text)[0];
+      value = [ value[0] ];
+    } else {
+      if(!valueIsMultiple) {
+        value = [ value ];
+      }
+    }
+  } else {
+    value = [ "" ];
+  }
+  
+  // Prepare JSON multiple and user enrichments for template rendering
+  var i = 0;
+  var enrichedTextProp = null;
+  var val = "";
+  for(var prop in json) {
+    switch(json[prop].type) {
+      case "enrichedText":
+        isEnriched = true;
+        json[prop].enrichedText = true; // Access for template
+        enrichedTextProp = prop;
+        if(enrichedText.length) {
+          json[prop].enrichedTextVal = enrichedText;
+          hasEnrichedText = true;
+        }
+        break;
+      case "enrichedUrl":
+        isEnriched = true;
+        json[prop].enrichedUrl = true; // Access for template
+        if(enrichedUrl.length) {
+          json[prop].enrichedUrlVal = enrichedUrl;
+          hasEnrichedUrl = true;
+        }
+        break;
+      default:
+        json[prop].val = value[i];
+        if(json[prop].val != "") {
+          val = json[prop].val;
+        }
+        break;
+    }
+    i++;
+  }
+  if(!hasEnrichedText && !hasEnrichedUrl && enrichedTextProp != null && val != "") {
+    json[enrichedTextProp].enrichedTextVal = val;
+    hasEnrichedText = true;
+  }
+  return { "isEnriched": isEnriched,
+           "hasEnrichedText": hasEnrichedText,
+           "hasEnrichedUrl": hasEnrichedUrl };
+}
+
+function swapUserEnrichment(curElm, movedElm, curElmInputs, movedElmInputs) {
+  var curElmEnrichment = curElm.find(".vrtx-multiple-inputfield-enrichment");
+  var movedElmEnrichment = movedElm.find(".vrtx-multiple-inputfield-enrichment");
+  if(curElmEnrichment.length) {
+    if(movedElmEnrichment.length) {
+      var tmp = curElmEnrichment[0].outerHTML;
+      curElmEnrichment.replaceWith(movedElmEnrichment[0].outerHTML);
+      movedElmEnrichment.replaceWith(tmp);
+    } else {
+      $(curElmInputs[0]).removeClass("vrtx-multipleinputfield-field-enriched");
+      $(movedElmInputs[0]).addClass("vrtx-multipleinputfield-field-enriched");
+      $(curElmEnrichment.remove())
+        .insertAfter(movedElm.find(".vrtx-multipleinputfield-json-wrapper").filter(":last"));
+    }
+  } else if(movedElmEnrichment.length) {
+    $(movedElmInputs[0]).removeClass("vrtx-multipleinputfield-field-enriched");
+    $(curElmInputs[0]).addClass("vrtx-multipleinputfield-field-enriched");
+    $(movedElmEnrichment.remove())
+      .insertAfter(curElm.find(".vrtx-multipleinputfield-json-wrapper").filter(":last"));
+  }
+}
+
+/* DEHANCE! back to original data field on saving or checking if changes */
 function saveMultipleInputFields(content, arrSeperator) {
   var multipleFields = (typeof content !== "undefined")
                        ? content.find(".vrtx-multipleinputfields")
@@ -1437,7 +1780,7 @@ function saveMultipleInputFields(content, arrSeperator) {
   var arrSep = (typeof arrSeperator === "string") ? arrSeperator : ",";
   for (var i = 0, len = multipleFields.length; i < len; i++) {
     var multiple = $(multipleFields[i]);
-    var multipleInput = multiple.find("> input");
+    var multipleInput = multiple.find("> input, .ui-accordion-content > input");
     if (!multipleInput.length) continue;
     var multipleInputFields = multiple.find(".vrtx-multipleinputfield");
     if (!multipleInputFields.length) {
@@ -1467,7 +1810,18 @@ function saveMultipleInputFields(content, arrSeperator) {
   }
 }
 
-/* Multiple JSON boxes */
+
+/* 
+ * B. Multiple boxes (vrtx-json)
+ *
+ *  Multiple data comes as JSON generated with Freemarker.
+ *
+ *  Is enhanced into addable, removable, browsable and movable fields
+ *  based on classes.
+ *
+ *  Supports accordion around a field
+ *
+ */
 
 function initJsonMovableElements() {
   $.when(vrtxEditor.multipleFieldsBoxesDeferred, vrtxEditor.multipleBoxesTemplatesContractBuilt).done(function () {
@@ -1485,40 +1839,19 @@ function initJsonMovableElements() {
 
     JSON_ELEMENTS_INITIALIZED.resolve();
   });
-
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-json .vrtx-move-down-button", function (e) {
-    if(e.type == "click" || ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13))) {
-      swapContent($(this), 1);
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  });
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-json .vrtx-move-up-button", function (e) {
-    if(e.type == "click" || ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13))) {
-      swapContent($(this), -1);
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  });
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-json .vrtx-add-button", function (e) {
-    if(e.type == "click" || ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13))) {
-    
-      console.log(e.target);
-      addJsonField($(this));
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  });
-  vrtxAdmin.cachedAppContent.on("click keypress", ".vrtx-json .vrtx-remove-button", function (e) {
-    if(e.type == "click" || ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13))) {
-      removeJsonField($(this));
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  });
+  
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-json .vrtx-move-down-button", function (ref) {
+    swapContent($(ref), 1);
+  }, "clickOrEnter");
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-json .vrtx-move-up-button", function (ref) {
+    swapContent($(ref), -1);
+  }, "clickOrEnter");
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-json .vrtx-add-button", addJsonField, "clickOrEnter");
+  eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-json .vrtx-remove-button", removeJsonField, "clickOrEnter");
 }
 
-function addJsonField(btn) {
+function addJsonField(ref) {
+  var btn = $(ref);
   var jsonParent = btn.closest(".vrtx-json");
   var numOfElements = jsonParent.find(".vrtx-json-element").length;
   var j = vrtxEditor.multipleBoxesTemplatesContract[parseInt(btn.data('number'), 10)];
@@ -1613,8 +1946,9 @@ function addJsonField(btn) {
   vrtxEditor.multipleFieldsBoxes[j.name].counter++;
 }
 
-function removeJsonField(btn) {
-  var removeElement = btn.closest(".vrtx-json-element"),
+function removeJsonField(ref) {
+  var btn = $(ref),
+      removeElement = btn.closest(".vrtx-json-element"),
       accordionWrapper = removeElement.closest(".vrtx-json-accordion"),
       hasAccordion = accordionWrapper.length,
       removeElementParent = removeElement.parent(),
@@ -1712,7 +2046,7 @@ function scrollToElm(movedElm) {
   var absPos = movedElm.offset();
   var absPosTop = absPos.top;
   var stickyBar = $("#vrtx-editor-title-submit-buttons");
-  if (stickyBar.css("position") == "fixed") {
+  if (stickyBar.css("position") === "fixed") {
     var stickyBarHeight = stickyBar.height();
     absPosTop -= (stickyBarHeight <= absPosTop) ? stickyBarHeight : 0;
   }
@@ -1733,19 +2067,25 @@ function scrollToElm(movedElm) {
  */
 VrtxEditor.prototype.htmlFacade = {
   /* 
-   * Turn a block of JSON into HTML (Only working for Schedule per. 14.08.2014)
+   * Turn a block of JSON into HTML (only working for Schedule)
    */
-  jsonToHtml: function(id, sessionId, idForLookup, session, fixedResourcesUrl, fixedResources, descs, i18n) {
+  jsonToHtml: function(isMedisin, id, sessionId, idForLookup, session, fixedResourcesUrl, fixedResources, descs, i18n, embeddedAdminService) {
     var html = "";
     var multiples = [];
     var rtEditors = [];
     var vrtxEdit = vrtxEditor;
+    var sep = userEnrichmentSeperators;
+    
     for(var name in descs) {
-      var desc = descs[name],
-          descProps = jQuery.extend(true, [], desc.props),
-          val = session[name] || fixedResources[name],
+      var desc = descs[name];
+      if((desc.notMedisin && isMedisin) || (desc.onlyMedisin && !isMedisin)) {
+        continue;
+      }
+      var descProps = jQuery.extend(true, [], desc.props),
+          val = session[name] != undefined ? session[name] : fixedResources[name],
           origVal = "",
           propsVal = "",
+          readOnly = session.vrtxOrphan,
           browsable = false,
           hasOrig = false;
     
@@ -1753,7 +2093,7 @@ VrtxEditor.prototype.htmlFacade = {
       if(origName) {
         var origVal = session[origName.toLowerCase()];
         if(origVal && origVal != "") {
-          if(!val || !val.length) {
+          if(val == undefined) {
             val = origVal;
           }
           hasOrig = true;
@@ -1762,84 +2102,81 @@ VrtxEditor.prototype.htmlFacade = {
       switch(desc.type) {
         case "json":
           for(var i = 0, descPropsLen = descProps.length; i < descPropsLen; i++) {
-            descProps[i].title = i18n[name + "-" + descProps[i].name];
-            if(desc.multiple && desc.props[i].type === "resource_ref") {
+            descProps[i].title = i18n[name + "-" + descProps[i].name]; // Placeholder
+            if(desc.multiple && desc.props[i].type === "resource_ref" && !isMedisin) {
               browsable = true;
             }
           }
-          if(val) {
+          if(val && val.length) {
             for(var j = 0, propsLen = val.length; j < propsLen; j++) {
               for(i = 0; i < descPropsLen; i++) {
-                propsVal += (val[j][descProps[i].name] || "") + "###";
+                if(desc.props[i].type === "enrichedUrl") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.url;
+                } else if(desc.props[i].type === "enrichedText") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.text;
+                } else {
+                  propsVal += (val[j][descProps[i].name] || "") + "###";
+                }
               }
               if(j < (propsLen - 1)) propsVal += "$$$";
             }
           }
         case "string":
-          val = (propsVal != "") ? propsVal : val;
+          val = (propsVal !== "") ? propsVal : val;
           val = (desc.multiple && typeof val === "object" && val.length != undefined) ? val.join(",") : val;
           if(desc.multiple) {
             multiples.push({
               name: name,
               json: descProps ? descProps : null, 
               movable: desc.multiple.movable,
-              browsable: browsable
+              browsable: browsable,
+              readOnly: readOnly
             });
           }
-          html += vrtxEdit.htmlFacade.getStringField({ title: i18n[name],
-                                                       name: (desc.autocomplete ? "vrtx-autocomplete-" + desc.autocomplete + " " : "") + name + "-" + sessionId,
+          var nameI18n = isMedisin && name === "vrtxResources" ? name + "NotFixed" : name;
+          html += vrtxEdit.htmlFacade.getStringField({ title: i18n[nameI18n],
+                                                       name: (desc.autocomplete ? "vrtx-autocomplete-" + desc.autocomplete + " " : "") + name + " " + name + "-" + sessionId,
                                                        id: name + "-" + sessionId,
                                                        val: val,
-                                                       size: desc.size
+                                                       size: desc.size,
+                                                       divide: desc.divide,
+                                                       readOnly: readOnly
                                                      }, name);
           break;
         case "json-fixed":
-          if(fixedResourcesUrl) {
-            html += "<div class='vrtx-simple-html'><label>" + i18n[name] + "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n.vrtxResourcesFixedInfo + "'></abbr></label>";
-            if(!val) { // Create
-              var buttons = "<a class='vrtx-button create-fixed-resources-folder' id='create-fixed-resources-folder-" + idForLookup + "SID" + sessionId + "' href='javascript:void(0);'>" + i18n[name + "CreateFolder"] + "</a>";
-              html += buttons;
-            } else { // Admin
-              if(val.length != undefined) {
-                for(var i = 0, len = val.length; i < len; i++) {
-                  var propsArr = val[i].resources;
-                  var propsLen = propsArr.length;
-                  for(var j = 0; j < propsLen; j++) {
-                    if(propsLen > 1) propsVal += "<li>";
-                    propsVal += "<a href='" + propsArr[j].url + "'>" + propsArr[j].title + "</a>";
-                    if(propsLen > 1) propsVal += "</li>";
-                  }
-                  if(propsLen > 1) {
-                    propsVal = "<ul>" + propsVal + "</ul>";
-                  }
-                  var buttons = "<a class='vrtx-button admin-fixed-resources-folder' href='" + val[i].folderUrl + "?vrtx=admin&displaymsg=yes'>" + i18n[name + "UploadAdminFolder"] + "</a>";
-                  html += "<div class='preview-html'>" + propsVal + "</div>" + buttons;
-                }
-              } else { // Object
-                var propsArr = val.resources;
-                var propsLen = propsArr.length;
-                for(var j = 0; j < propsLen; j++) {
-                  if(propsLen > 1) propsVal += "<li>";
-                  propsVal += "<a href='" + propsArr[j].url + "'>" + propsArr[j].title + "</a>";
-                  if(propsLen > 1) propsVal += "</li>";
-                }
-                if(propsLen > 1) {
-                  propsVal = "<ul>" + propsVal + "</ul>";
-                }
-                var buttons = "<a class='vrtx-button admin-fixed-resources-folder' href='" + val.folderUrl + "?vrtx=admin&displaymsg=yes'>" + i18n[name + "UploadAdminFolder"] + "</a>";
-                html += "<div class='preview-html'>" + propsVal + "</div>" + buttons;
+          if(fixedResourcesUrl && val.length) {
+            for(i = 0, len = val.length; i < len; i++) {
+              var fr = val[i];
+              var folderUrl = fr.folderUrl;
+              var folderType = fr.folderType;
+              var folderName = fr.folderName;
+              var folderRoot = fr.folderRoot;
+              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'>" + 
+                      "<label>" + i18n[name + "-" + folderType] +
+                        (i18n[name + "-" + folderType + "-info"] ? "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n[name + "-" + folderType + "-info"] + "'></abbr>" : "") +
+                      "</label>";
+              if(folderUrl && folderUrl.length) {
+                /* Iframe placeholder */
+                html += "<div class='admin-fixed-resources-iframe' data-src='" + folderUrl + embeddedAdminService + "'></div>";
+              } else {
+                html += "<a class='vrtx-button create-fixed-resources-folder' id='create-fixed-resources-folder-" + idForLookup +
+                        "SID" + sessionId +
+                        "SUBF" + folderName +
+                        ((folderRoot && folderRoot != "") ? ("PARENTR" + encodeURIComponent(folderRoot)) : "") +
+                        "' href='javascript:void(0);'>" + i18n[name + "CreateFolder"] + "</a>" + "<p class='fixed-resources-permissions-info'>" + i18n.vrtxResourcesFixedInfo + "</p>";
               }
+              html += "</div>";
             }
-            html += "</div>";
           }
           break;
         case "html":
           html += vrtxEdit.htmlFacade.getSimpleHtmlField({ title: i18n[name],
                                                            name: name + "-" + sessionId,
                                                            id: name + "-" + sessionId,
+                                                           divide: desc.divide,
                                                            val: val
                                                          }, name + "-" + sessionId);
-          rtEditors.push(name + "-" + sessionId);
+          rtEditors.push({ name: name + "-" + sessionId, readOnly: readOnly });
           break;
         case "checkbox":
           if(!session.vrtxOrphan) {
@@ -1848,6 +2185,7 @@ VrtxEditor.prototype.htmlFacade = {
                                                              name: name + "-" + sessionId,
                                                              id: name + "-" + sessionId,
                                                              checked: (val === desc.checkedVal ? val : null),
+                                                             divide: desc.divide,
                                                              tooltip: i18n.cancelledVortexTooltip
                                                            }, name);
             } else {
@@ -1862,19 +2200,22 @@ VrtxEditor.prototype.htmlFacade = {
     return { html: html, multiples: multiples, rtEditors: rtEditors };
   },
  /* 
-  * Turn a block of HTML/DOM into JSON (Only working for Schedule per. 14.08.2014)
+  * Turn a block of HTML/DOM into JSON (only working for Schedule)
   */
-  htmlToJson: function (sessionElms, sessionId, descs, rawOrig, rawOrigTP, rawPtr) {
+  htmlToJson: function (isMedisin, sessionElms, sessionId, descs, rawOrig, rawOrigTP, rawPtr) {
     var vrtxEdit = vrtxEditor;
     var hasChanges = false;
     var editorDetectChangeFunc = editorDetectChange;
+    
     for(var name in descs) {
       var desc = descs[name],
           val = "";
-      if(descs[name].type === "json-fixed") {
+      // Skip fixed resources and branch: Medisin | Not Medisin
+      if(desc.type === "json-fixed" || (desc.notMedisin && isMedisin) 
+                                    || (desc.onlyMedisin && !isMedisin)) {
         continue;
+      } else if(desc.type === "html") {
         // XXX: support multiple CK-fields starting with same name
-      } else if(descs[name].type === "html") {
         var elm = sessionElms.find("textarea[name^='" + name + "']");
       } else {
         var elm = sessionElms.find("input[name='" + name + "']");
@@ -1888,6 +2229,7 @@ VrtxEditor.prototype.htmlFacade = {
       } else if(desc.type === "html") {
         val = vrtxEdit.richtextEditorFacade.getInstanceValue(elm.attr("name"));
       } else {
+        // Reconstruct data from flattened string to objects
         val = elm.val(); // To string (string)
         if(desc.multiple && val.length) { // To array (multiple)
           val = val.split("$$$");
@@ -1898,6 +2240,9 @@ VrtxEditor.prototype.htmlFacade = {
             var newProp = null;
             var prop = val[i].split("###");
             for(var j = 0, descPropsLen = desc.props.length; j < descPropsLen; j++) { // Definition
+              if(desc.props[j].type == "enrichedUrl"
+              || desc.props[j].type == "enrichedText") continue;
+              
               if(prop[j] !== "") {
                 if(!newProp) {
                   newProp = {};
@@ -1913,22 +2258,37 @@ VrtxEditor.prototype.htmlFacade = {
         }
       }
 
-      // Changes in Vortex properties
+      // Has content
       if(val && val.length) {
-        // If changes in Vortex properties and differs from TP/UIOWS-data
-        if(editorDetectChangeFunc(sessionId, val, rawOrig[name], name === "vrtxResourcesText") &&
-           editorDetectChangeFunc(sessionId, val, rawOrigTP[name.split("vrtx")[1].toLowerCase()], name === "vrtxResourcesText")) {
-          vrtxAdmin.log({msg: "ADD / CHANGE " + name + (typeof val === "string" ? " " + val : "")});
-          rawPtr[name] = val;
-          hasChanges = true;
+        if(editorDetectChangeFunc(sessionId, val, rawOrig[name], name === "vrtxResourcesText")) { // Has changed
+          var isChangedFromTP = editorDetectChangeFunc(sessionId, val, rawOrigTP[name.split("vrtx")[1].toLowerCase()], name === "vrtxResourcesText");
+          if(isChangedFromTP) { // Differs from TP
+            vrtxAdmin.log({msg: "ADD / CHANGE " + name + (typeof val === "string" ? " " + val : "")});
+            rawPtr[name] = val;
+            hasChanges = true;
+          } else { // Otherwise Delete
+            if(rawOrig[name] != undefined) { // If exists
+              vrtxAdmin.log({msg: "DEL " + name + (typeof val === "string" ? " " + val : "")});
+              delete rawPtr[name];
+              hasChanges = true;
+            }
+          }
         }
-      } else {
-        // If removed in Vortex properties
-        if(rawOrig[name]) {
-          vrtxAdmin.log({msg: "DEL " + name});
-          delete rawPtr[name];
-          hasChanges = true;
-        }
+      } else { // Empty
+        // Is "vrtxStaff" and has "staff" set to []
+        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) {
+	      if(rawPtr[name] == undefined || rawPtr[name].length > 0) {
+            vrtxAdmin.log({msg: "DEL EMPTY " + name});
+            rawPtr[name] = [];
+            hasChanges = true;
+	      }
+        } else { // Otherwise Delete
+	      if(rawOrig[name] != undefined) { // If exists
+            vrtxAdmin.log({msg: "DEL " + name});
+            delete rawPtr[name];
+            hasChanges = true;
+	      }
+	    }
       }
     }
     return hasChanges;
@@ -1976,7 +2336,7 @@ VrtxEditor.prototype.htmlFacade = {
   /* 
    * Type / fields 
    */
-  getMultipleInputfield: function (name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json) {
+  getMultipleInputfield: function (name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json, isReadOnly, hasEnrichedText, hasEnrichedUrl) {
     return vrtxAdmin.templateEngineFacade.render(vrtxEditor.multipleFieldsBoxesTemplates["multiple-inputfield"], {
       idstr: idstr,
       i: i,
@@ -1988,7 +2348,10 @@ VrtxEditor.prototype.htmlFacade = {
       moveDownButton: moveDownButton,
       isDropdown: isDropdown,
       dropdownArray: "dropdown" + name,
-      json: json
+      json: json,
+      isReadOnly: isReadOnly,
+      hasEnrichedText: hasEnrichedText,
+      hasEnrichedUrl: hasEnrichedUrl
     });
   },
   getTypeHtml: function (elem, inputFieldName) {
@@ -2014,7 +2377,9 @@ VrtxEditor.prototype.htmlFacade = {
         elemId: elem.id || inputFieldName,
         elemVal: elem.val,
         elemSize: elem.size || 40,
-        elemPlaceholder: elem.placeholder
+        elemDivide: elem.divide,
+        elemPlaceholder: elem.placeholder,
+        elemReadOnly: elem.readOnly
       });
     }
   },
@@ -2028,6 +2393,7 @@ VrtxEditor.prototype.htmlFacade = {
       elemTitle: elem.title,
       inputFieldName: inputFieldName,
       elemId: elem.id || inputFieldName,
+      elemDivide: elem.divide,
       elemVal: elem.val
     });
   },
@@ -2043,6 +2409,7 @@ VrtxEditor.prototype.htmlFacade = {
       elemId: elem.id || inputFieldName,
       elemChecked: elem.checked,
       elemTooltip: elem.tooltip,
+      elemDivide: elem.divide,
       inputFieldName: inputFieldName
     });
   },
@@ -2071,8 +2438,7 @@ VrtxEditor.prototype.htmlFacade = {
   },
   getImageRefField: function (elem, inputFieldName) {
     return this.getBrowseField(elem, inputFieldName, "browse-images", "vrtx-image-ref", "", 30, {
-      previewTitle: browseImagesPreview,
-      previewNoImageText: browseImagesNoPreview
+      previewTitle: browseImagesPreview
     });
   },
   getResourceRefField: function (elem, inputFieldName) {
@@ -2107,6 +2473,8 @@ VrtxEditor.prototype.htmlFacade = {
 
 /**
  * Initialize grouped as accordion
+ * @param {string} subGroupedSelector The sub grouping selector
+ * @param {string} customSpeed The custom animation speed (only "fast" or "slow")
  * @this {VrtxEditor}
  */
 VrtxEditor.prototype.accordionGroupedInit = function accordionGroupedInit(subGroupedSelector, customSpeed) { /* param name pending */
@@ -2152,7 +2520,6 @@ VrtxEditor.prototype.accordionGroupedInit = function accordionGroupedInit(subGro
 
 function accordionJsonInit() {
   accordionContentSplitHeaderPopulators(true);
-
   accordionJsonRefresh($(".vrtx-json-accordion .fieldset"), false);
 
   // Because accordion needs one content wrapper
@@ -2189,7 +2556,7 @@ function accordionJsonRefresh(elem, active) {
   });
 }
 
-// XXX: avoid hardcoded enhanced fields
+// XXX: avoid hardcoded enhanced fields..
 function accordionContentSplitHeaderPopulators(init) {
   var sharedTextItems = $("#editor.vrtx-shared-text #shared-text-box .vrtx-json-element");
   var semesterResourceLinksItems = $("#editor.vrtx-semester-page .vrtx-grouped[class*=link-box]");
@@ -2363,5 +2730,35 @@ VrtxEditor.prototype.initEventHandler = function initEventHandler(selector, opts
     opts.callback.apply(vrtxEdit, opts.callbackParams, false);
   });
 };
+
+function autocompleteUsernames(elms, useEnrichment) {
+  var _$ = vrtxAdmin._$;
+  var autocompleteTextfields = elms.find('.vrtx-textfield');
+  for (var i = autocompleteTextfields.length; i--;) {
+    var id = autocompleteTextfields[i].id;
+    permissionsAutocomplete(id, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+    if(typeof useEnrichment === "boolean" && useEnrichment) {
+      enrichedUsersAutocomplete(id, ".vrtx-button.add");
+    }
+  }
+}
+
+function autocompleteUsername(selector, subselector, useEnrichment) {
+  var autocompleteTextfield = vrtxAdmin._$(selector).find('input#' + subselector);
+  if (autocompleteTextfield.length) {
+    permissionsAutocomplete(subselector, 'userNames', vrtxAdmin.usernameAutocompleteParams, true);
+    if(typeof useEnrichment === "boolean" && useEnrichment) {
+      enrichedUsersAutocomplete(subselector, ".vrtx-button.add");
+    }
+  }
+}
+
+function autocompleteTags(selector) {
+  var _$ = vrtxAdmin._$;
+  var autocompleteTextfields = _$(selector).find('.vrtx-textfield');
+  for (var i = autocompleteTextfields.length; i--;) {
+    setAutoComplete(autocompleteTextfields[i].id, 'tags', vrtxAdmin.tagAutocompleteParams);
+  }
+}
 
 /* ^ Vortex Editor */

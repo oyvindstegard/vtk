@@ -14,13 +14,13 @@ are necessary:
 3. Set up the configuration. Configuration should be placed in the
    files ~/.vtk.properties and ~/.vrtx.properties
 
-  indexStorageRootPath = [an empty directory for storing indices]
-  jdbcUsername = [your JDBC user]
-  jdbcPassword = [your JDBC password]
-  repositoryDataDirectory = [an empty directory for storing files]
-  repositoryTrashCanDirectory = [an empty directory for storing "deleted" files]
-  repositoryRevisionDirectory = [an empty directory for storing file revisions]
-  databaseURL = [your JDBC URL, e.g. jdbc:postgresql:my-user>]
+   indexStorageRootPath = [an empty directory for storing indices]
+   jdbcUsername = [your JDBC user]
+   jdbcPassword = [your JDBC password]
+   repositoryDataDirectory = [an empty directory for storing files]
+   repositoryTrashCanDirectory = [an empty directory for storing "deleted" files]
+   repositoryRevisionDirectory = [an empty directory for storing file revisions]
+   databaseURL = [your JDBC URL, e.g. jdbc:postgresql:my-user>]
   
 4. Run the command 'mvn jetty:run' (standing in the project
    directory). 

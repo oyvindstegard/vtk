@@ -31,6 +31,8 @@
 package vtk.web.service.manuallyapprove;
 
 import java.io.PrintWriter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,12 +42,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -55,7 +56,10 @@ import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.security.SecurityContext;
+import vtk.util.text.Json;
+import vtk.util.text.JsonStreamer;
 import vtk.web.RequestContext;
+import vtk.web.search.MultiHostUtil;
 import vtk.web.service.URL;
 
 /**
@@ -71,8 +75,6 @@ import vtk.web.service.URL;
  */
 public class ManuallyApproveResourcesHandler implements Controller {
 
-    private ManuallyApproveResourcesSearcher searcher;
-
     private static final String LOCATIONS_PARAM = "locations";
     private static final String AGGREGATE_PARAM = "aggregate";
     private static final String APPROVED_ONLY_PARAM = "approved-only";
@@ -86,6 +88,8 @@ public class ManuallyApproveResourcesHandler implements Controller {
     private PropertyTypeDefinition manuallyApproveFromPropDef;
     private PropertyTypeDefinition manuallyApprovedResourcesPropDef;
     private PropertyTypeDefinition aggregationPropDef;
+    
+    private ManuallyApproveResourcesSearcher searcher;
     private MultiHostSearcher multiHostSearcher;
     private Ehcache cache;
 
@@ -157,7 +161,7 @@ public class ManuallyApproveResourcesHandler implements Controller {
         }
 
         // Nothing to do here...
-        if (locations.size() == 0 && alreadyApproved.size() == 0) {
+        if (locations.isEmpty() && alreadyApproved.isEmpty()) {
             return null;
         }
 
@@ -166,7 +170,7 @@ public class ManuallyApproveResourcesHandler implements Controller {
         Element cached = cache.get(cacheKey);
         Object cachedObj = cached != null ? cached.getObjectValue() : null;
 
-        List<ManuallyApproveResource> result = null;
+        List<ManuallyApproveResource> result;
         if (cachedObj != null) {
             result = (List<ManuallyApproveResource>) cachedObj;
         } else {
@@ -174,18 +178,19 @@ public class ManuallyApproveResourcesHandler implements Controller {
             cache.put(new Element(cacheKey, result));
         }
 
-        if (result == null || result.size() == 0) {
+        if (result == null || result.isEmpty()) {
             return null;
         }
 
         boolean approvedOnly = request.getParameter(APPROVED_ONLY_PARAM) != null;
-        JSONArray arr = new JSONArray();
+        Json.ListContainer arr = new Json.ListContainer();
+
         for (ManuallyApproveResource m : result) {
             boolean approved = m.isApproved();
             if (approvedOnly && !approved) {
                 continue;
             }
-            JSONObject obj = new JSONObject();
+            Json.MapContainer obj = new Json.MapContainer();
             obj.put(TITLE, m.getTitle());
             obj.put(URI, m.getUrl().toString());
             obj.put(SOURCE, m.getSource());
@@ -198,7 +203,8 @@ public class ManuallyApproveResourcesHandler implements Controller {
         response.setContentType("text/plain;charset=utf-8");
         PrintWriter writer = response.getWriter();
         try {
-            writer.write(arr.toString(1));
+            JsonStreamer streamer = new JsonStreamer(writer, 1);
+            streamer.array(arr);
         } finally {
             writer.flush();
             writer.close();
@@ -224,7 +230,7 @@ public class ManuallyApproveResourcesHandler implements Controller {
         try {
             URL url = URL.parse(location);
             if (multiHostSearcher.isMultiHostSearchEnabled()) {
-                PropertySet ps = multiHostSearcher.retrieve(token, url);
+                PropertySet ps = MultiHostUtil.resolveImageRefProperties(multiHostSearcher.retrieve(token, url));
                 if (ps == null) {
                     return false;
                 }

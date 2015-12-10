@@ -20,7 +20,7 @@ function visualizeBrokenLinks(options) {
   var links = filterOutDecorationTmpFix(linkClass, context);
 
   for (var i = 0, linksLength = links.length; i < linksLength; i++) {
-    if (urls[idx].length == chunk) {
+    if (urls[idx].length === chunk) {
       idx++;
     }
     if (!urls[idx]) {
@@ -30,7 +30,7 @@ function visualizeBrokenLinks(options) {
     list[list.length] = links[i].href;
   }
   var urlsLength = urls.length;
-  if (urlsLength == 0) {
+  if (urlsLength === 0) {
     if (options.completed) options.completed(0);
     return;
   }
@@ -53,7 +53,7 @@ function visualizeBrokenLinks(options) {
       },
       complete: function (req, status) {
         reqs++;
-        if (reqs == urlsLength && options.completed) {
+        if (reqs === urlsLength && options.completed) {
           options.completed(reqs, brokenLinks);
         }
       }
@@ -71,7 +71,7 @@ function filterOutDecorationTmpFix(linkClass, context) {
   links.find("table.vrtx-unit-listing, table.vrtx-person-listing, .vrtx-alphabetical-project-listing, .vrtx-alphabetical-master-listing, .vrtx-listing-filter-results, .vrtx-listing-filter-status, .vrtx-listing-completed-ongoing, #vrtx-events-nav, .vrtx-paging-feed-wrapper, .comments, .comments-header, .vrtx-subfolder-menu, .vrtx-tab-menu, .vrtx-breadcrumb-menu, #vrtx-tags, .vrtx-tags, .vrtx-tags-service, .vrtx-tag-cloud").remove();
   
   // Remove all non-user content inside resources listings
-  links.find(".vrtx-resources, #vrtx-daily-events, .vrtx-master-table, .vrtx-masters, .vrtx-programs, .vrtx-programs-inactive, .vrtx-program-options, .vrtx-program-options-inactive, .vrtx-person-list-participants").find("*:not(.description) a").remove()
+  links.find(".vrtx-resources, #vrtx-daily-events, .vrtx-master-table, .vrtx-masters, .vrtx-programs, .vrtx-programs-inactive, .vrtx-program-options, .vrtx-program-options-inactive, .vrtx-person-list-participants").find("*:not(.description) a").remove();
   links.find(".vrtx-image-listing-container *:not(.vrtx-image-description) a").remove();
   links.find(".vrtx-image-table *:not(.vrtx-table-description) a").remove();
 
@@ -90,14 +90,14 @@ function linkCheckResponse(results, context, localizer, linkClass) {
   for (var j = 0, linksLength = links.length; j < linksLength; j++) {
     var href = links[j].href;
     for (var i = 0, resultsLength = results.length; i < resultsLength; i++) {
-      if (results[i].status != "OK") {
-        if (href == results[i].link) {
-          if (results[i].status == "NOT_FOUND") {
+      if (results[i].status !== "OK") {
+        if (href === results[i].link) {
+          if (results[i].status === "NOT_FOUND") {
             var color = "red";
             brokenLinks++;
           } else {
             var color = "brown";
-            if (results[i].status == "ERROR") {
+            if (results[i].status === "ERROR") {
               //brokenLinks++;
             }
           }

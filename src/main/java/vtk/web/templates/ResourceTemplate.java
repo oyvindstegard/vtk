@@ -42,47 +42,38 @@ public class ResourceTemplate {
     private Path uri;
     private String title;
     private String name;
-    
-    public ResourceTemplate() {}
+    private String resourceType;
 
-    public ResourceTemplate(Path uri, String title, String name) {
+    public ResourceTemplate(Path uri, String title, String name, String resourceType) {
         this.uri = uri;
         this.title = title;
         this.name = name;
+        this.resourceType = resourceType;
     }
     
     public Path getUri() {
         return uri;
     }
     
-    public void setUri(Path uri) {
-        this.uri = uri;
-    }
-    
     public String getTitle() {
         return title;
-    }
-    
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getResourceType() {
+        return resourceType;
     }
     
     public String toString() {
         StringBuilder builder = new StringBuilder(
                                         ResourceTemplate.class.getSimpleName());
-        
         builder.append("[").append("uri = ").append(this.uri);
         builder.append(", ").append("name = ").append(this.name);
-        builder.append(", ").append("title = ").append(this.title).append("]");
-        
+        builder.append(", ").append("title = ").append(this.title);
+        builder.append(", ").append("resourceType = ").append(this.resourceType).append("]");
         return builder.toString();
     }
 }

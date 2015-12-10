@@ -6,6 +6,7 @@
     
   <bean id="davRequestLogger" parent="defaultRequestFilterCategoryBean" class="vtk.web.filter.CaptureInputRequestFilter" >
     <property name="order" value="-1000" />
+    <property name="maxCaptureBytes" value="${davlogger.maxLogBytesBody}"/>
   </bean>
   
   <bean id="davResponseLogger" parent="defaultResponseFilterCategoryBean" class="vtk.web.filter.CaptureOutputLoggingResponseFilter" >

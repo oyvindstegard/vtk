@@ -41,6 +41,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
+
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -233,7 +234,8 @@ public class CollectionListingProvider implements ReferenceDataProvider {
                 // do nothing
             }
             if (aclTooltipHelper != null) {
-                permissionTooltips[i] = aclTooltipHelper.generateTitle(child, request);
+                permissionTooltips[i] = aclTooltipHelper.generateTitle(
+                        child, child.getAcl(), child.isInheritedAcl(), request);
             }
         }
         collectionListingModel.put("permissionTooltips", permissionTooltips);

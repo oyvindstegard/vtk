@@ -30,9 +30,6 @@
  */
 package vtk.web.service;
 
-import java.util.Iterator;
-import java.util.Set;
-
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
@@ -46,7 +43,6 @@ public class RequestParameterAssertion implements Assertion {
 
     private String parameterName = "";
     private String parameterValue = "";
-    private Set<String> legalValueParameters; 
 
     public void setParameterName(String parameterName) {
         this.parameterName = parameterName;
@@ -57,20 +53,20 @@ public class RequestParameterAssertion implements Assertion {
     }
 
     public String getParameterName() {
-        return this.parameterName;
+        return parameterName;
     }
 
     public String getParameterValue() {
-        return this.parameterValue;
+        return parameterValue;
     }
 
     public boolean conflicts(Assertion assertion) {
         if (assertion instanceof RequestParameterAssertion) {
 
-            if (this.parameterName.equals(
+            if (parameterName.equals(
                     ((RequestParameterAssertion)assertion).getParameterName())) {
 
-                return ! (this.parameterValue.equals(
+                return ! (parameterValue.equals(
                         ((RequestParameterAssertion)assertion).getParameterValue()));
             }
         }
@@ -84,37 +80,18 @@ public class RequestParameterAssertion implements Assertion {
     }
 
     public void processURL(URL url) {
-        url.setParameter(this.parameterName, this.parameterValue);
+        url.setParameter(parameterName, parameterValue);
     }
 
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        if (this.legalValueParameters != null) {
-            return this.legalValueParameters.contains(request.getParameter(this.parameterName));
-        }
-        return this.parameterValue.equals(request.getParameter(this.parameterName)); 
+        return parameterValue.equals(request.getParameter(parameterName)); 
     }
 
-    public void setLegalValueParameters(Set<String> legalValueParameters) {
-        this.legalValueParameters = legalValueParameters;
-    }
-
-    public Set<String> getLegalParameters() {
-        return legalValueParameters;
-    }
     
     public String toString() {
         StringBuilder sb = new StringBuilder("request.parameters[");
-        sb.append(this.parameterName).append("]");
-        if (this.legalValueParameters != null) {
-            sb.append(" in (");
-            for (Iterator<String> i = this.legalValueParameters.iterator(); i.hasNext();) {
-                sb.append(i.next());
-                if (i.hasNext()) sb.append(", ");
-            }
-            sb.append(")");
-            return sb.toString();
-        }
-        sb.append(" = ").append(this.parameterValue);
+        sb.append(parameterName).append("]");
+        sb.append(" = ").append(parameterValue);
         return sb.toString();
     }
 }

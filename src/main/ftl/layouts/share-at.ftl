@@ -21,17 +21,17 @@
 <div class="vrtx-share-at-component">
   <ul>
   <#list socialWebsiteLinks as link>
-     <#if (link.name = "FacebookAPI" && !useFacebookAPI)
-          || (link.name = "Facebook" && useFacebookAPI)>
-       <#assign url = false name = link.name />
+     <#if (link.name = "FacebookAPI" && !useFacebookAPI)>
+       <#assign url = false  />
+       <#assign name = link.name />
      <#else>
-       <#assign url = link.url name = link.name />
+       <#assign url = link.url />
+       <#assign name = link.name />
      </#if>
 
-     <#if name = "FacebookAPI"><#assign name = "Facebook" /></#if>
-     
      <#if url?is_string>
-       <li>
+       <li class="vrtx-share-at-${name}-${useFacebookAPI?string}">
+         <#if name = "FacebookAPI"><#assign name = "Facebook" /></#if>
          <a href="${url}" target="_blank" class="${name?lower_case}">${prefixLinkText} ${name}</a>
        </li>
     </#if>

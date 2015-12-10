@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 
 
@@ -56,7 +57,8 @@ public class SimpleMethodInvokingTriggerBeanTest {
         this.trigger.setArguments(new Object[]{new Character('x'), new Object()});
         
         try {
-            this.trigger.afterPropertiesSet(); // Starts the trigger
+            this.trigger.afterPropertiesSet();
+            this.trigger.onApplicationEvent((ContextRefreshedEvent)null);  // Starts the trigger
         } catch (BeanInitializationException e) {
             fail("Failed: " + e.getMessage());
         }
@@ -87,6 +89,7 @@ public class SimpleMethodInvokingTriggerBeanTest {
         
         try {
             this.trigger.afterPropertiesSet(); // Starts the trigger
+            this.trigger.onApplicationEvent((ContextRefreshedEvent)null);  // Starts the trigger
         } catch (BeanInitializationException e) {
             fail("Failed: " + e.getMessage());
         }
@@ -129,6 +132,7 @@ public class SimpleMethodInvokingTriggerBeanTest {
         
         try {
             this.trigger.afterPropertiesSet(); // Starts the trigger
+            this.trigger.onApplicationEvent((ContextRefreshedEvent)null);  // Starts the trigger
         } catch (BeanInitializationException e) {
             fail("Failed: " + e.getMessage());
         }
@@ -176,6 +180,7 @@ public class SimpleMethodInvokingTriggerBeanTest {
         
         try {
             this.trigger.afterPropertiesSet(); // Starts the trigger
+            this.trigger.onApplicationEvent((ContextRefreshedEvent)null);  // Starts the trigger
         } catch (BeanInitializationException e) {
             fail("Failed: " + e.getMessage());
         }

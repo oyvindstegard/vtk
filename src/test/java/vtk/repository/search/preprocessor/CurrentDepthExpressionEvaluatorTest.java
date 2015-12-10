@@ -30,14 +30,18 @@
  */
 package vtk.repository.search.preprocessor;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import javax.servlet.http.HttpServletRequest;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
-
 import org.springframework.mock.web.MockHttpServletRequest;
+
 import vtk.context.BaseContext;
 import vtk.repository.Path;
+import vtk.repository.store.DefaultPrincipalMetadataDAO;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceImpl;
@@ -85,7 +89,7 @@ public class CurrentDepthExpressionEvaluatorTest {
 
         RequestContext.setRequestContext(
                 new RequestContext(request, null, service, null, Path.fromString(uri),
-                        null, false, false, true, null));
+                        null, false, false, true, null, new DefaultPrincipalMetadataDAO()));
         String s = evaluator.evaluate(token);
 
         BaseContext.popContext();

@@ -44,6 +44,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.text.html.HtmlAttribute;
 import vtk.text.html.HtmlComment;
 import vtk.text.html.HtmlContent;
@@ -70,7 +71,6 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
 
     private Map<String, DecoratorComponent> ssiDirectiveComponentMap;
     private Set<String> availableComponentNamespaces = new HashSet<String>();
-    private Set<String> prohibitedComponentNamespaces = new HashSet<String>();
     private TextualComponentParser contentComponentParser;
     private boolean parseAttributes = false;
 
@@ -84,10 +84,6 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
 
     public void setAvailableComponentNamespaces(Set<String> availableComponentNamespaces) {
         this.availableComponentNamespaces = availableComponentNamespaces;
-    }
-
-    public void setProhibitedComponentNamespaces(Set<String> prohibitedComponentNamespaces) {
-        this.prohibitedComponentNamespaces = prohibitedComponentNamespaces;
     }
 
     public void setContentComponentParser(TextualComponentParser contentComponentParser) {
@@ -106,10 +102,6 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
         if (this.ssiDirectiveComponentMap == null) {
             throw new BeanInitializationException(
             "JavaBean property 'ssiDirectiveComponentMap' not specified");
-        }
-        if (this.prohibitedComponentNamespaces == null) {
-            throw new BeanInitializationException(
-            "JavaBean property 'prohibitedComponentNamespaces' not specified");
         }
     }
 
@@ -278,25 +270,8 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
                             + ":" + invocation.getName());
                     continue;
                 }
-                boolean render = true;
-                if (component.getNamespace() != null) {
-                    if (!this.availableComponentNamespaces.contains(component.getNamespace()) 
-                            && !this.availableComponentNamespaces.contains("*")) {
-                        result = "Invalid component reference: " + component.getNamespace()
-                        + ":" + component.getName();
-                        render = false;
-
-                    } else if (this.prohibitedComponentNamespaces.contains(component.getNamespace())) {
-                        result = "Invalid component reference: " + component.getNamespace()
-                        + ":" + component.getName();
-                        render = false;
-                    }
-                } 
-
-                if (render) {
-                    component.render(decoratorRequest, response);
-                    result = response.getContentAsString();
-                }
+                component.render(decoratorRequest, response);
+                result = response.getContentAsString();
 
             } catch (Throwable t) {
                 if (logger.isDebugEnabled()) {

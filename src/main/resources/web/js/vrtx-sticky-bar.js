@@ -4,14 +4,14 @@
  *  * Requires Dejavu OOP library
  */
 
-var VrtxStickyBarInterface = dejavu.Interface.declare({
-  $name: "VrtxStickyBarInterface",
-  destroy: function () {}     
-});
-
+/* Public
+ * ----------------------
+ * initialize(opts)
+ * destroy()
+ */
+ 
 var VrtxStickyBar = dejavu.Class.declare({
   $name: "VrtxStickyBar",
-  $implements: [VrtxStickyBarInterface],
   __opts: {},
   initialize: function(opts) {
     this.__opts = opts;
@@ -27,16 +27,10 @@ var VrtxStickyBar = dejavu.Class.declare({
     var thisWindow = $(window);
     var ua = window.navigator.userAgent.toLowerCase();
     if (wrapper.length && !/iphone/.test(ua)) { // Turn off for iPhone. 
-      if (window.navigator.appName == "Microsoft Internet Explorer" && /msie 8/.test(ua)) { // Shadow below in IE8
-        var imageStickyShadow = "<span class='sticky-bg-ie8-below' />";
-        if(opts.isBottomSticky) {
-          wrapper.prepend(imageStickyShadow);
-        } else {
-          wrapper.append(imageStickyShadow);
-        }
+      if (/msie 8/.test(ua)) { // Shadow below in IE8
+        wrapper[opts.isBottomSticky ? "prepend" : "append"]("<span class='sticky-bg-ie8-below' />");
         wrapper.addClass("ie8");
       }
-
       var wrapperPos = wrapper.offset();
       if(opts.isBottomSticky) {
         wrapper.addClass("sticky-bottom");
@@ -59,7 +53,7 @@ var VrtxStickyBar = dejavu.Class.declare({
           if (!wrapper.hasClass(stickyClass)) {
             wrapper.addClass(stickyClass);
             if(!opts.alwaysFixed) contents.css("paddingTop", wrapper.outerHeight(true) + "px");
-            if(stickFn != null) {
+            if(typeof stickFn === "function") {
               stickFn();
             }
           }
@@ -69,7 +63,7 @@ var VrtxStickyBar = dejavu.Class.declare({
             wrapper.removeClass(stickyClass);
             wrapper.css("width", "auto");
             if(!opts.alwaysFixed) contents.css("paddingTop", "0px");
-            if(unstickFn != null) {
+            if(typeof unstickFn === "function") {
               unstickFn();
             }
           }

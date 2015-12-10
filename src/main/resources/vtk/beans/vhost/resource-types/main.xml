@@ -7,6 +7,7 @@
   <import resource="file.xml" />
   <import resource="collection.xml" />
   <import resource="article-listing.xml" />
+  <import resource="folder-listing.xml" />
   <import resource="blog-listing.xml" />
   <import resource="event-listing.xml" />
   <import resource="project-listing.xml" />
@@ -76,7 +77,6 @@
   <import resource="mixins/navigation.xml" />
   <import resource="mixins/additional-content-mixin.xml" />
   <import resource="mixins/ssi.xml" />
-  <import resource="mixins/visual-profile.xml" />
   <import resource="mixins/media-mixin.xml" />
   <import resource="mixins/show-subfolder-mixin.xml" />
   <import resource="mixins/link-other-language-mixin.xml" />

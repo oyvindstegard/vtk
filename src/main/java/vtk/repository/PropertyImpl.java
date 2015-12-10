@@ -39,8 +39,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import vtk.repository.resourcetype.ConstraintViolationException;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyType.Type;
@@ -50,6 +48,7 @@ import vtk.repository.resourcetype.ValueFormatException;
 import vtk.repository.resourcetype.ValueFormatter;
 import vtk.repository.resourcetype.ValueSeparator;
 import vtk.security.Principal;
+import vtk.util.text.Json;
 
 
 /**
@@ -300,7 +299,7 @@ public class PropertyImpl implements Cloneable, Property {
     }
     
     @Override
-    public JSONObject getJSONValue() throws IllegalOperationException {
+    public Json.MapContainer getJSONValue() throws IllegalOperationException {
         if (this.value == null || getType() != PropertyType.Type.JSON) {
             throw new IllegalOperationException("Property " + this + " not of type JSON");
         }
@@ -308,7 +307,7 @@ public class PropertyImpl implements Cloneable, Property {
     }
     
     @Override
-    public void setJSONValue(JSONObject jsonObject) {
+    public void setJSONValue(Json.MapContainer jsonObject) {
         setValue(new Value(jsonObject));
     }
 
@@ -450,7 +449,7 @@ public class PropertyImpl implements Cloneable, Property {
         
         if (strictValidation && getType() == Type.JSON) {
             try {
-                JSONObject.fromObject(value.getStringValue());
+                Json.parse(value.getStringValue());
             } catch (Exception e) {
                 throw new ValueFormatException(
                         "Value of property '" + this + "': invalid JSON object: " 

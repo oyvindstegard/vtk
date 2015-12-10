@@ -31,18 +31,23 @@
 
 package vtk.repository.index.mapping;
 
+import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED;
+import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_LOWERCASE;
+import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_STORED;
+import static vtk.repository.index.mapping.Fields.FieldSpec.STORED;
+
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
+
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertyImpl;
@@ -51,8 +56,7 @@ import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFactory;
-
-import static vtk.repository.index.mapping.Fields.FieldSpec.*;
+import vtk.util.text.Json;
 
 /**
  * TODO missing JavaDoc for most methods
@@ -108,9 +112,51 @@ public class PropertyFields extends Fields {
         }
     }
     
+    // Flatten JSON object to a map of dot-nation field names to list of values.
+    // Multiple objects in JSON structure can have individual primitive values
+    // mapped to the same index field due to the flattening, but this should
+    // at least provide a general solution for searching in different JSON object values.
+    private void gatherIndexFieldsFromJson(StringBuilder fldNameBuf, Map<String,List<Object>> fields, Object json) {
+        if (json instanceof Json.MapContainer) {
+            for (Map.Entry<String, Object> entry : ((Json.MapContainer)json).entrySet()) {
+                String key = entry.getKey();
+                if (fldNameBuf.length() > 0) {
+                    fldNameBuf.append(".");
+                }
+                fldNameBuf.append(key);
+                gatherIndexFieldsFromJson(fldNameBuf, fields, entry.getValue());
+                int lastDot = fldNameBuf.lastIndexOf(".");
+                if (lastDot > -1) {
+                    fldNameBuf.setLength(lastDot);
+                } else {
+                    fldNameBuf.setLength(0);
+                }
+            }
+        } else if (json instanceof Json.ListContainer) {
+            for (Object value: (Json.ListContainer)json) {
+                gatherIndexFieldsFromJson(fldNameBuf, fields, value);
+            }
+        } else {
+            // Some primitive value, use current field name and add values
+            String field = fldNameBuf.toString();
+            List<Object> values = fields.get(field);
+            if (values == null) {
+                values = new ArrayList<>();
+                fields.put(field, values);
+            }
+            values.add(json);
+        }
+    }
+    
     /**
      * Adds all fields for a given JSON property to field list, both lowercased
      * and regular variants, and a stored field for the raw JSON string value.
+     * 
+     * <p>
+     * Field values encountered in indexable JSON data that are larger than
+     * {@link Property#MAX_STRING_LENGTH} will not be added. A warning will be
+     * logged in such cases.
+     *
      * @param prop
      * @param fields list of fields to add to
      * @return
@@ -140,51 +186,98 @@ public class PropertyFields extends Fields {
             return;
         }
         
-        // Drill one level into JSON for possible extra indexable fields
+        final Map<String,List<Object>> jsonFields = new HashMap<>();
+        for (Value v: jsonPropValues) {
+            gatherIndexFieldsFromJson(new StringBuilder(), jsonFields, v.getJSONValue());
+        }
+        
         try {
-            final List<Object> indexFieldValues = new ArrayList<Object>();
-            for (Value jsonValue : jsonPropValues) {
-                JSONObject json = jsonValue.getJSONValue();
-                for (Iterator it = json.entrySet().iterator(); it.hasNext();) {
-                    indexFieldValues.clear();
-                    Map.Entry entry = (Map.Entry) it.next();
-                    final String jsonAttribute = (String) entry.getKey();
-                    final Object value = entry.getValue();
-                    if (value == null) {
+            for (Map.Entry<String,List<Object>> entry: jsonFields.entrySet()) {
+                final String jsonDottedField = entry.getKey();
+                final List<Object> values = entry.getValue();
+                if (jsonDottedField.isEmpty()) continue;
+                
+                String indexFieldName = jsonFieldName(def, jsonDottedField, false);
+                Type dataType = PropertyFields.jsonFieldDataType(def, jsonDottedField);
+                for (Object indexFieldValue : values) {
+                    // Guard against terms that are too large, since we don't really know
+                    // what kind of JSON data we are dealing with. Lucene has limits
+                    // on token size.
+                    if (indexFieldValue instanceof String
+                            && indexFieldValue.toString().length() > Property.MAX_STRING_LENGTH) {
+                        logger.warn("Skipped indexing of too large field value in JSON property " 
+                                + prop + "(@" + jsonDottedField + ")");
                         continue;
                     }
-                    if (value.getClass() == JSONArray.class) {
-                        for (Iterator iter = ((JSONArray) value).iterator(); iter.hasNext();) {
-                            Object nextVal = iter.next();
-                            if (nextVal != null && nextVal.getClass() != JSONObject.class && nextVal.getClass() != JSONArray.class) {
-                                indexFieldValues.add(nextVal);
-                            }
-                        }
-                    } else if (value.getClass() != JSONObject.class) {
-                        indexFieldValues.add(value);
-                    }
-                    Type dataType = PropertyFields.jsonFieldDataType(def, jsonAttribute);
-                    String fieldName = jsonFieldName(def, jsonAttribute, false);
-                    for (Object indexFieldValue: indexFieldValues) {
-                        // Indexed fields
-                        fields.addAll(objectFields(fieldName, indexFieldValue, dataType, INDEXED));
-                        
-                        // Lowercased fields for STRING and HTML
-                        if (dataType == Type.STRING || dataType == Type.HTML) {
-                            String lcFieldName = jsonFieldName(def, jsonAttribute, true);
-                            fields.addAll(objectFields(lcFieldName, indexFieldValue, dataType, INDEXED_LOWERCASE));
-                        }
-                    }
                     
-                    // Sort field if single value STRING type
-                    if (dataType == Type.STRING && indexFieldValues.size() == 1) {
-                        fields.add(makeSortField(jsonSortFieldName(def, jsonAttribute), indexFieldValues.get(0).toString()));
+                    // Indexed fields
+                    fields.addAll(objectFields(indexFieldName, indexFieldValue, dataType, INDEXED));
+
+                    // Lowercased fields for STRING and HTML
+                    if (dataType == Type.STRING || dataType == Type.HTML) {
+                        String lcFieldName = jsonFieldName(def, jsonDottedField, true);
+                        fields.addAll(objectFields(lcFieldName, indexFieldValue, dataType, INDEXED_LOWERCASE));
+                    }
+                }
+                // Sort field if single value STRING type
+                if (dataType == Type.STRING && values.size() == 1) {
+                    final String stringValue = values.get(0).toString();
+                    if (stringValue.length() <= Property.MAX_STRING_LENGTH) {
+                        fields.add(makeSortField(jsonSortFieldName(def, jsonDottedField), stringValue));
                     }
                 }
             }
         } catch (Exception e) {
-            logger.warn("JSON property " + prop + " has a value(s) containing invalid or non-indexable JSON data: " + e.getMessage());
+            logger.warn("JSON property " + prop 
+                    + " has a value(s) containing invalid or non-indexable JSON data: "
+                    + e.getMessage());
         }
+
+// Old code implementing one-level of JSON structure indexing:
+//        // Drill one level into JSON for possible extra indexable fields
+//        try {
+//            final List<Object> indexFieldValues = new ArrayList<Object>();
+//            for (Value jsonValue : jsonPropValues) {
+//                Json.MapContainer json = jsonValue.getJSONValue();
+//                
+//                for (final String jsonAttribute: json.keySet()) {
+//                    final Object value = json.get(jsonAttribute);
+//                    if (value == null) {
+//                        continue;
+//                    }
+//                    if (value instanceof List<?>) {
+//                        List<Object> list = json.arrayValue(jsonAttribute);
+//                        for (Object val: list) {
+//                            if (val != null && !(val instanceof List<?>) && !(val instanceof Map<?,?>)) {
+//                                indexFieldValues.add(val);
+//                            }
+//                        }
+//                    }
+//                    else if (!(value instanceof Map<?,?>)) {
+//                        indexFieldValues.add(value);
+//                    }
+//                    Type dataType = PropertyFields.jsonFieldDataType(def, jsonAttribute);
+//                    String fieldName = jsonFieldName(def, jsonAttribute, false);
+//                    for (Object indexFieldValue: indexFieldValues) {
+//                        // Indexed fields
+//                        fields.addAll(objectFields(fieldName, indexFieldValue, dataType, INDEXED));
+//                        
+//                        // Lowercased fields for STRING and HTML
+//                        if (dataType == Type.STRING || dataType == Type.HTML) {
+//                            String lcFieldName = jsonFieldName(def, jsonAttribute, true);
+//                            fields.addAll(objectFields(lcFieldName, indexFieldValue, dataType, INDEXED_LOWERCASE));
+//                        }
+//                    }
+//                    
+//                    // Sort field if single value STRING type
+//                    if (dataType == Type.STRING && indexFieldValues.size() == 1) {
+//                        fields.add(makeSortField(jsonSortFieldName(def, jsonAttribute), indexFieldValues.get(0).toString()));
+//                    }
+//                }
+//            }
+//        } catch (Exception e) {
+//            logger.warn("JSON property " + prop + " has a value(s) containing invalid or non-indexable JSON data: " + e.getMessage());
+//        }
     }
     
     /**

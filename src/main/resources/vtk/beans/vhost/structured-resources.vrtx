@@ -1,4 +1,5 @@
 include structured-resources/person.vrtx
+include structured-resources/web-page.vrtx
 include structured-resources/structured-article.vrtx
 include structured-resources/structured-event.vrtx
 include structured-resources/structured-document.vrtx
@@ -32,4 +33,3 @@ include structured-resources/studies/student-exchange-agreement.vrtx
 include structured-resources/studies/course-schedule.vrtx
 
 include structured-resources/publications/unit-publications.vrtx
-

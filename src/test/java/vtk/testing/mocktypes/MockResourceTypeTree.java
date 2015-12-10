@@ -1,4 +1,4 @@
-/* Copyright (c) 2009,2014 University of Oslo, Norway
+/* Copyright (c) 2009,2014,2015 University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ package vtk.testing.mocktypes;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import vtk.repository.Namespace;
@@ -47,6 +48,13 @@ import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.ValueFormatter;
 
 public class MockResourceTypeTree implements ResourceTypeTree {
+    private Map<String, ResourceTypeDefinition> resourceTypeNameMap = null;
+
+    public MockResourceTypeTree() {}
+
+    public MockResourceTypeTree(Map<String, ResourceTypeDefinition> resourceTypeNameMap) {
+        this.resourceTypeNameMap = resourceTypeNameMap;
+    }
 
     public List<MixinResourceTypeDefinition> getMixinTypes(PrimaryResourceTypeDefinition def) {
         return null;
@@ -84,11 +92,14 @@ public class MockResourceTypeTree implements ResourceTypeTree {
     }
 
     public ResourceTypeDefinition getResourceTypeDefinitionByName(String name) {
-        PrimaryResourceTypeDefinitionImpl def = new PrimaryResourceTypeDefinitionImpl();
-        def.setName(name);
-        def.setNamespace(Namespace.DEFAULT_NAMESPACE);
-        def.afterPropertiesSet();
-        return def;
+        if (resourceTypeNameMap == null) {
+            PrimaryResourceTypeDefinitionImpl def = new PrimaryResourceTypeDefinitionImpl();
+            def.setName(name);
+            def.setNamespace(Namespace.DEFAULT_NAMESPACE);
+            def.afterPropertiesSet();
+            return def;
+        }
+        return resourceTypeNameMap.get(name);
     }
 
     public PropertyTypeDefinition getPropertyDefinitionByPointer(String pointer) {
@@ -128,6 +139,7 @@ public class MockResourceTypeTree implements ResourceTypeTree {
     }
 
     public void registerDynamicResourceType(PrimaryResourceTypeDefinition def) {
+        resourceTypeNameMap.put(def.getName(), def);
     }
 
     public List<String> getDescendants(String entry) {

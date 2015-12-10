@@ -83,10 +83,21 @@ public final class MailExecutor {
         }
         try {
             new InternetAddress(addr);
-            return true;
         } catch (AddressException e) {
             return false;
         }
+
+        // VTK-4124 hack fix: white list of allowed email recipient domains.
+        // TODO This should be considered a temporary place to fix the security issues
+        // outlined in VTK-4124. Should be removed from here and made configurable.
+        return addr.matches("(?i).*[@.]("
+                + "samordnaopptak|"
+                + "norgeshistorie|"
+                + "musikkarven|"
+                + "cristin|"
+                + "hlsenteret|"
+                + "uio)\\.no$|"
+                + ".*[@.]nordlys\\.info$");
     }
     
     private static class SendMailTask implements Runnable {

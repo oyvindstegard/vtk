@@ -38,7 +38,6 @@ import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import vtk.repository.index.mapping.ResourceFields;
 import vtk.repository.search.query.QueryBuilder;
 import vtk.repository.search.query.QueryBuilderException;
@@ -62,14 +61,14 @@ public class TypeTermQueryBuilder implements QueryBuilder {
 
     @Override
     public Query buildQuery() throws QueryBuilderException {
-        Term t = new Term(ResourceFields.RESOURCETYPE_FIELD_NAME, this.term.toString());
+        Term term = new Term(ResourceFields.RESOURCETYPE_FIELD_NAME, this.term.toString());
+        Filter filter = new TermFilter(term);
         
         if (op == TermOperator.NE) {
-            Filter filter = FilterFactory.inversionFilter(new TermFilter(t));
-            return new ConstantScoreQuery(filter);
+            filter = FilterFactory.inversionFilter(filter);
         } 
 
-        return new TermQuery(t);
+        return new ConstantScoreQuery(filter);
     }
 
 }

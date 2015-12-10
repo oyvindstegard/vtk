@@ -48,39 +48,21 @@ import vtk.repository.search.query.Query;
  * The implementation must take into consideration what happens when the
  * complete result set changes between queries with cursor/maxResults.
  * 
- * @param token
- *            The security token associated with the principal executing the
- *            query.
- * 
- * @param query
- *            The <code>Query</code> object, containing the query conditions.
- * 
- * @param maxResults
- *            Number of results to include from (and including) cursor position.
- * 
- * @param cursor
- *            Positition to start in the query result set (zero-based).
- * 
- * @param sorting
- *            The {@link Sorting} to use.
- * 
- * @param selectedProperties
- *            The {@link PropertySelecy properties} queried for.
- * 
- * 
- * @return A <code>ResultSet</code> containing a subset of the results.
- * 
- * @throws vtk.repository.search.QueryException
- *             If the query could not be executed.
- * 
  * @see Query
  * @see ResultSet
+ * @see Sorting
+ * @see PropertySelect
  */
 public final class Search {
 
     public final static int DEFAULT_LIMIT = 40000;
 
-    private PropertySelect propertySelect = PropertySelect.ALL;
+    public enum FilterFlag {
+        UNPUBLISHED,
+        UNPUBLISHED_COLLECTIONS,
+    }
+    
+    private PropertySelect propertySelect = PropertySelect.ALL_PROPERTIES;
     private Query query;
     private Sorting sorting;
     private int limit = DEFAULT_LIMIT;
@@ -91,7 +73,7 @@ public final class Search {
         Sorting defaultSorting = new Sorting();
         defaultSorting.addSortField(new TypedSortField(PropertySet.URI_IDENTIFIER));
         this.sorting = defaultSorting;
-        filterFlags = getAllFilterFlags();
+        this.filterFlags = EnumSet.allOf(FilterFlag.class);
     }
 
     public int getCursor() {
@@ -118,10 +100,30 @@ public final class Search {
         return this;
     }
 
+    /**
+     * 
+     * @return the configured <code>PropertySelect</code>. May also return <code>null</code>,
+     * which in general means no particular selection.
+     * @see #setPropertySelect(vtk.repository.search.PropertySelect) 
+     */
     public PropertySelect getPropertySelect() {
         return propertySelect;
     }
 
+    /**
+     * Set a custom property selection. This decides what index fields to load
+     * for search results, and thus which properties will be available for
+     * retrieval in property sets.
+     * 
+     * <p>Default is {@link PropertySelect#ALL_PROPERTIES}, which gives you
+     * all resources properties, but not the resource ACL.
+     * @param propertySelect the property selection to use in search result mapping
+     * @return this search instance
+     * @see PropertySelect#ALL_PROPERTIES
+     * @see PropertySelect#ALL
+     * @see PropertySelect#NONE
+     * @see ConfigurablePropertySelect
+     */
     public Search setPropertySelect(PropertySelect propertySelect) {
         this.propertySelect = propertySelect;
         return this;
@@ -206,21 +208,14 @@ public final class Search {
     }
 
     /*
-     * Checks which filter flags that are configured for the current search.
-     * 
-     * @return true if all listed flags are set for the search object.
+     * Checks if a filter flag is set.
      */
-    public boolean hasFilterFlag(FilterFlag... flags) {
-        for (FilterFlag flag : flags) {
-            if (!filterFlags.contains(flag))
-                return false;
-        }
-        return true;
+    public boolean hasFilterFlag(FilterFlag flag) {
+        return filterFlags.contains(flag);
     }
 
     /*
-     * Remove search filter flags. Default set to remove all unpublished
-     * resources from the result.
+     * Remove one or more filter flags.
      */
     public Search removeFilterFlag(FilterFlag... flags) {
         for (FilterFlag flag : flags) {
@@ -229,28 +224,21 @@ public final class Search {
         return this;
     }
 
-    /* Removes all filter flags from search. */
-    public Search removeAllFilterFlags() {
-        filterFlags.removeAll(getAllFilterFlags());
-        return this;
-    }
-
-    /*
-     * Set Search filter flags. Default set to remove all unpublished resources
-     * from the result.
-     */
+    /* Add filter flags to search.
+    */
     public Search addFilterFlag(FilterFlag... flags) {
-        for (FilterFlag flag : flags) {
+        for (FilterFlag flag: flags) {
             filterFlags.add(flag);
         }
         return this;
     }
-
-    private EnumSet<FilterFlag> getAllFilterFlags() {
-        return EnumSet.of(FilterFlag.UNPUBLISHED_COLLECTIONS, FilterFlag.UNPUBLISHED);
+    
+    /* Removes all filter flags set on search.
+     */
+    public Search clearAllFilterFlags() {
+        filterFlags.clear();
+        return this;
     }
 
-    public enum FilterFlag {
-        UNPUBLISHED, UNPUBLISHED_COLLECTIONS;
-    }
+
 }

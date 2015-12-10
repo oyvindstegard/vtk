@@ -31,24 +31,29 @@
 package vtk.web.display.collection.article;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
+import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
-import vtk.web.display.collection.AbstractCollectionListingController;
+import vtk.web.display.collection.BaseCollectionListingController;
 import vtk.web.display.listing.ListingPager;
 import vtk.web.display.listing.ListingPagingLink;
 import vtk.web.search.Listing;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
-public class ArticleListingController extends AbstractCollectionListingController {
+public class ArticleListingController extends BaseCollectionListingController {
 
     private ArticleListingSearcher searcher;
     private final String defaultListingView = "regular";
@@ -125,13 +130,27 @@ public class ArticleListingController extends AbstractCollectionListingControlle
         }
         Service service = RequestContext.getRequestContext().getService();
         URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
-
-        List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(totalHits, pageLimit,
-                featuredArticlesTotalHits, baseURL, true, userDisplayPage);
+        
+        Optional<ListingPager.Pagination> pagination = 
+                ListingPager.pagination(totalHits, pageLimit, 
+                        featuredArticlesTotalHits, baseURL, true, userDisplayPage);
+        if (pagination.isPresent()) {
+            List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+            model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+            model.put(MODEL_KEY_PAGINATION, pagination.get());
+        }
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
         model.put(MODEL_KEY_PAGE, userDisplayPage);
-        model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+
         model.put(MODEL_KEY_HIDE_NUMBER_OF_COMMENTS, getHideNumberOfComments(collection));
+        
+        Set<Path> featuredSet = new HashSet<>();
+        if (featuredArticles != null) {
+            featuredArticles.getEntries()
+                .stream().forEach(entry -> featuredSet.add(entry.getPropertySet().getURI()));
+        }
+        
+        model.put(MODEL_KEY_FEATURED_ARTICLES, featuredSet);
         model.put("listingView", getListingView(collection));
     }
     

@@ -34,6 +34,7 @@ import vtk.repository.RepositoryContentEvaluationAssertion;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.Content;
 import vtk.security.Principal;
+import vtk.util.text.Json;
 
 /**
  * XXX Not usable as web service assertion.
@@ -49,13 +50,14 @@ public class JSONObjectParseableAssertion implements RepositoryContentEvaluation
         // Could fallback to Resource.getInputStream instead,but that will not
         // work in all cases when
         // this assertion is called from evaluation framework.
+        
         if (content == null)
             return false;
         if (resource.isCollection())
             return false;
 
         try {
-            content.getContentRepresentation(net.sf.json.JSONObject.class);
+            content.getContentRepresentation(Json.MapContainer.class);
             return true;
         } catch (Exception e) {
             return false;

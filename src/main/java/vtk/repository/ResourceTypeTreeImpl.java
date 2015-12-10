@@ -51,6 +51,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
 import vtk.repository.resourcetype.AbstractResourceTypeDefinitionImpl;
 import vtk.repository.resourcetype.HierarchicalNode;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
@@ -757,7 +758,9 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         sb.append(" ");
         sb.append(def.getName());
         if (def.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
-            sb.append(" [ns: ").append(def.getNamespace().getUri()).append("]");
+            Namespace ns = def.getNamespace();
+            sb.append(" [ns:").append(ns.getPrefix()).append(" = ")
+              .append(ns.getUri()).append("]");
         }
         if (def instanceof MixinResourceTypeDefinition) {
             sb.append(" (mixin)");
@@ -803,8 +806,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         if (propDefs != null) {
             for (PropertyTypeDefinition definition: propDefs) {
                 sb.append("  ");
-                for (int j = 0; j < level; j++)
-                    sb.append("  ");
+                for (int j = 0; j < level; j++) sb.append("  ");
 
                 if (resourceType.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
                     sb.append(resourceType.getNamespace().getPrefix()).append(":");
@@ -813,27 +815,40 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
                 sb.append(" ");
                 
                 String type = definition.getType().toString();
-                sb.append("(").append(type.toLowerCase());
+                sb.append(": ").append(type.toLowerCase());
                 if (definition.isMultiple())
                     sb.append("[]");
-                sb.append(") ");
+                sb.append(" ");
+                List<String> flags = new ArrayList<String>();
                 if (definition.getProtectionLevel() == RepositoryAction.UNEDITABLE_ACTION) {
-                    sb.append("(readonly) ");
+                    flags.add("readonly");
                 }
                 if (definition.getPropertyEvaluator() instanceof LatePropertyEvaluator) {
-                    sb.append("(evaluated late) ");
-                } else if (definition.getPropertyEvaluator() != null) {
-                    sb.append("(evaluated) ");
+                    flags.add("evaluated_late");
+                }
+                else if (definition.getPropertyEvaluator() != null) {
+                    flags.add("evaluated");
                 }
                 if (definition instanceof OverridablePropertyTypeDefinition) {
                     if (definition instanceof OverridablePropertyTypeDefinitionImpl) {
-                        sb.append("(overridable)");
+                        flags.add("overridable");
                     } else {
-                        sb.append("(overriding)");
+                        flags.add("overriding");
                     }
                 }
                 if (definition.isInheritable()) {
-                    sb.append(" (inheritable)");
+                    flags.add("inheritable");
+                }
+                if (definition.getDefaultValue() != null) {
+                    flags.add("default=" + definition.getDefaultValue());
+                }
+                if (flags.size() > 0) {
+                    sb.append("(");
+                    for (int i = 0; i < flags.size(); i++) {
+                        if (i > 0) sb.append(",");
+                        sb.append(flags.get(i));
+                    }
+                    sb.append(")");
                 }
                 sb.append("\n");
             }

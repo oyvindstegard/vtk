@@ -3,7 +3,7 @@ getDescription() {
 }
 
 getUsage() {
-    return "repo info <uri:path>";
+    return "repo info [-revision:string] <uri:path>";
 }
 
 void execute(context, args, out) {
@@ -18,7 +18,19 @@ void execute(context, args, out) {
         return;
     }
 
-    r = repo.retrieve(token, uri, true);
+    revision = null;
+    revArg = args.get("revision");
+    if (revArg != null) {
+        for (rev: repo.getRevisions(token, uri)) {
+            if (rev.getName().equals(revArg)) {
+                revision = rev;
+            }
+        }
+    }
+
+
+    r = revision == null ? repo.retrieve(token, uri, true) : 
+        repo.retrieve(token, uri, true, revision);
     out.println("id: " + r.getID());
     out.println("type: " + r.getResourceType());
 

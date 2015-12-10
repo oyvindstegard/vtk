@@ -30,22 +30,19 @@
  */
 package vtk.web.report;
 
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.json.simple.JSONValue;
 import org.springframework.beans.factory.annotation.Required;
-import vtk.repository.ContentStream;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
@@ -68,6 +65,7 @@ import vtk.repository.search.query.PropertyTermQuery;
 import vtk.repository.search.query.Query;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.UriPrefixQuery;
+import vtk.util.text.Json;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -172,7 +170,7 @@ public class BrokenLinksReport extends DocumentReporter {
 
         result.put("filters", filters);
     }
-
+    
     @Override
     public Map<String, Object> getReportContent(String token, Resource resource, HttpServletRequest request) {
         
@@ -181,7 +179,7 @@ public class BrokenLinksReport extends DocumentReporter {
         /* Regular view */
         if(request.getParameter(getAlternativeName()) == null) {
             result = super.getReportContent(token, resource, request);
-
+            
             populateMap(token, resource, result, request, false);
 
             result.put("brokenLinkCount", getBrokenLinkCount(token, resource, request, (String) result.get("linkType")));
@@ -279,6 +277,7 @@ public class BrokenLinksReport extends DocumentReporter {
         search.setLimit(Integer.MAX_VALUE);
         ConfigurablePropertySelect cfg = new ConfigurablePropertySelect();
         cfg.addPropertyDefinition(this.brokenLinksCountPropDef);
+        cfg.setIncludeAcl(true);
         search.setPropertySelect(cfg);
         search.setSorting(null);
 
@@ -314,12 +313,12 @@ public class BrokenLinksReport extends DocumentReporter {
                 Property prop = propertySet.getProperty(brokenLinksCountPropDef);
                 if (prop == null)
                     return true;
-                net.sf.json.JSONObject obj = prop.getJSONValue();
+                Json.MapContainer obj = prop.getJSONValue();
                 for (String includeType : this.includeTypes) {
-                    sum += obj.optInt(includeType);
+                    sum += obj.optIntValue(includeType, 0);
                 }
                 for (String excludeType : this.excludeTypes) {
-                    sum -= obj.optInt(excludeType);
+                    sum -= obj.optIntValue(excludeType, 0);
                 }
 
                 return true;
@@ -456,15 +455,15 @@ public class BrokenLinksReport extends DocumentReporter {
             }
 
             count = 0;
-            net.sf.json.JSONObject obj = prop.getJSONValue();
+            Json.MapContainer obj = prop.getJSONValue();
             for (String includeType : this.includeTypes) {
-                optInt = obj.optInt(includeType);
+                optInt = obj.optIntValue(includeType, 0);
                 sum += optInt;
                 cs.linkCount += optInt;
                 count += optInt;
             }
             for (String excludeType : this.excludeTypes) {
-                optInt = obj.optInt(excludeType);
+                optInt = obj.optIntValue(excludeType, 0);
                 sum -= optInt;
                 cs.linkCount -= optInt;
                 count -= optInt;
@@ -579,27 +578,18 @@ public class BrokenLinksReport extends DocumentReporter {
     }
 
     @Override
-    protected void handleResult(Resource resource, Map<String, Object> model) {
+    protected void handleResult(PropertySet resource, Map<String, Object> model) {
         Property linkCheck = resource.getProperty(this.linkCheckPropDef);
-        if (linkCheck == null) {
-            return;
-        }
+        if (linkCheck == null) return;
+        
         @SuppressWarnings("unchecked")
         Map<String, Object> map = (Map<String, Object>) model.get("linkCheck");
         if (map == null) {
-            map = new HashMap<String, Object>();
+            map = new HashMap<>();
             model.put("linkCheck", map);
         }
 
-        ContentStream binaryStream = linkCheck.getBinaryStream();
-
-        Object obj;
-        try {
-            obj = JSONValue.parse(new InputStreamReader(binaryStream.getStream(), "utf-8"));
-            map.put(resource.getURI().toString(), obj);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        map.put(resource.getURI().toString(), linkCheck.getJSONValue());
     }
 
     public static class FilterOption {

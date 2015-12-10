@@ -46,7 +46,6 @@ public final class Revision {
     private final Date timestamp;
     private final Acl acl;
     private final String checksum;
-    private final Integer changeAmount;
     
     private final String toString;
 
@@ -78,10 +77,6 @@ public final class Revision {
         return checksum;
     }
     
-    public Integer getChangeAmount() {
-        return changeAmount;
-    }
-    
     public String toString() {
         return this.toString;
     }
@@ -94,7 +89,6 @@ public final class Revision {
         this.timestamp = builder.timestamp;
         this.acl = builder.acl;
         this.checksum = builder.checksum;
-        this.changeAmount = builder.changeAmount;
         
         StringBuilder sb = new StringBuilder("{");
         sb.append("id: ").append(this.id);
@@ -103,7 +97,6 @@ public final class Revision {
         sb.append(", timestamp: ").append(this.timestamp);
         sb.append(", acl: ").append(this.acl);
         sb.append(", checksum: ").append(this.checksum);
-        sb.append(", changeAmount: ").append(this.changeAmount);
         sb.append("}");
         this.toString = sb.toString();
     }
@@ -117,7 +110,6 @@ public final class Revision {
         builder.timestamp = this.timestamp;
         builder.acl = this.acl;
         builder.checksum = this.checksum;
-        builder.changeAmount = changeAmount;
         return builder;
     }
     
@@ -133,7 +125,6 @@ public final class Revision {
         private Date timestamp = null;
         private Acl acl = null;
         private String checksum = null;
-        private Integer changeAmount = null;
 
         public Builder id(long id) {
             this.id = id;
@@ -167,11 +158,6 @@ public final class Revision {
         
         public Builder checksum(String checksum) {
             this.checksum = checksum;
-            return this;
-        }
-        
-        public Builder changeAmount(Integer changeAmount) {
-            this.changeAmount = changeAmount;
             return this;
         }
         

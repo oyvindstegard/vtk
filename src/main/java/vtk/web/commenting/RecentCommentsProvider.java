@@ -49,8 +49,6 @@ import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
-import vtk.web.RequestContext.RepositoryTraversal;
-import vtk.web.RequestContext.TraversalCallback;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
@@ -64,7 +62,6 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
     private Service recentCommentsService;
     private boolean includeCommentsFromUnpublished;
     private PropertyTypeDefinition publishedDatePropDef;
-    private String trustedToken;
 
     public void setDeepCommentsListing(boolean deepCommentsListing) {
         this.deepCommentsListing = deepCommentsListing;
@@ -98,10 +95,6 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
         this.publishedDatePropDef = publishedDatePropDef;
     }
     
-    public void setTrustedToken(String trustedToken) {
-        this.trustedToken = trustedToken;
-    }
-
     @Override
     public void referenceData(final Map<String, Object> model, HttpServletRequest servletRequest) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
@@ -126,9 +119,9 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
 
         List<Comment> comments = repository.getComments(token, resource, this.deepCommentsListing, this.maxComments);
 
-        Map<String, Resource> resourceMap = new HashMap<String, Resource>();
-        Map<String, URL> commentURLMap = new HashMap<String, URL>();
-        List<Comment> filteredComments = new ArrayList<Comment>();
+        Map<String, Resource> resourceMap = new HashMap<>();
+        Map<String, URL> commentURLMap = new HashMap<>();
+        List<Comment> filteredComments = new ArrayList<>();
         for (Comment comment : comments) {
             try { 
                 Resource r = repository.retrieve(token, comment.getURI(), true);
@@ -183,24 +176,11 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
         }
 
         model.put("commentsEnabled", false);
-        String traversalToken = this.trustedToken != null ? this.trustedToken : token;
-        RepositoryTraversal traversal = requestContext.rootTraversal(traversalToken, uri);
-        traversal.traverse(new TraversalCallback() {
-            @Override
-            public boolean callback(Resource resource) {
-                for (Property p: resource) {
-                    if (p.getDefinition().getName().equals("commentsEnabled")) {
-                        model.put("commentsEnabled", p.getBooleanValue());
-                        return false;
-                    }
-                }
-                return true;
-            }
-            @Override
-            public boolean error(Path uri, Throwable error) {
-                return false;
-            }
-        });
+        Property commentsEnabled = resource.getPropertyByPrefix(null, "commentsEnabled");
+        if (commentsEnabled != null) {
+            model.put("commentsEnabled", commentsEnabled.getBooleanValue());
+        }
+
         model.put("resource", resource);
         model.put("principal", principal);
         model.put("comments", filteredComments);

@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, University of Oslo, Norway
+/* Copyright (c) 2015, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
@@ -45,9 +46,6 @@ import net.sf.ehcache.config.DiskStoreConfiguration;
 import net.sf.ehcache.constructs.blocking.LockTimeoutException;
 import net.sf.ehcache.constructs.blocking.SelfPopulatingCache;
 import org.jmock.Expectations;
-import static org.jmock.Expectations.any;
-import static org.jmock.Expectations.returnValue;
-import static org.jmock.Expectations.throwException;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
 import org.junit.After;
@@ -64,9 +62,8 @@ import org.junit.BeforeClass;
  *
  * This test case serves mostly as a documentation and verification on the
  * behaviour of Ehcache under various configurations.
- *
- * TODO test background refresh functionality.
  */
+@SuppressWarnings("unchecked")
 public class EhContentCacheTest {
 
     static {
@@ -103,20 +100,16 @@ public class EhContentCacheTest {
     @Before
     public void setUp() throws Exception {
         CacheConfiguration ehCacheConfig = new CacheConfiguration(DEFAULT_CACHE_NAME, DEFAULT_CACHE_LIMIT);
-        cache = makeCache(ehCacheConfig, mockedLoader);
+        cache = new EhContentCache<>(makeCache(ehCacheConfig, mockedLoader));
     }
 
-    private EhContentCache<String, String> makeCache(CacheConfiguration ehCacheConfig, ContentCacheLoader loader)
+    private SelfPopulatingCache makeCache(CacheConfiguration ehCacheConfig, ContentCacheLoader loader)
             throws Exception {
         Cache ehBackingCache = new Cache(ehCacheConfig);
         SelfPopulatingCache sc = new SelfPopulatingCache(ehBackingCache, new ContentCacheLoaderEhcacheAdapter(loader));
 
         EHCM.addCache(sc);
-
-        EhContentCache<String, String> contentCache = new EhContentCache<String, String>();
-        contentCache.setCache(sc);
-        contentCache.afterPropertiesSet();
-        return contentCache;
+        return sc;
     }
 
     @After
@@ -156,26 +149,119 @@ public class EhContentCacheTest {
     }
 
     @Test
-    public void expiry() throws Exception {
+    public void expiry_synchronous_refresh() throws Exception {
         CacheConfiguration cc = new CacheConfiguration("vtk.contentExipry", DEFAULT_CACHE_LIMIT);
         cc.setTimeToIdleSeconds(1);
-        EhContentCache<String, String> cache = makeCache(cc, mockedLoader);
+        EhContentCache<String, String> cache = new EhContentCache<>(makeCache(cc, mockedLoader));
 
         context.checking(new Expectations() {
             {
-                atLeast(2).of(mockedLoader).load("a");
-                will(returnValue("b"));
+                exactly(2).of(mockedLoader).load("a");
+                will(onConsecutiveCalls(
+                        returnValue("b"),
+                        returnValue("c")
+                ));
+            }
+        });
+
+        assertEquals("b", cache.get("a"));
+        sleep(1500);
+        assertEquals("c", cache.get("a"));
+        assertEquals("c", cache.get("a"));
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void expiry_asynchronous_refresh() throws Exception {
+        CacheConfiguration cc = new CacheConfiguration("vtk.contentExipry", DEFAULT_CACHE_LIMIT);
+        cc.setTimeToIdleSeconds(1);
+        Mockery threadSafeMockery = new Mockery();
+        threadSafeMockery.setThreadingPolicy(new Synchroniser());
+        final ContentCacheLoader<String,String> threadSafeMockedLoader = threadSafeMockery.mock(
+                ContentCacheLoader.class
+        );
+
+        EhContentCache<String, String> cache = new EhContentCache<>(
+                makeCache(cc, threadSafeMockedLoader), -1, true
+        );
+
+        threadSafeMockery.checking(new Expectations() {
+            {
+                exactly(2).of(threadSafeMockedLoader).load("a");
+                will(onConsecutiveCalls(
+                        returnValue("b"),
+                        returnValue("c")
+                ));
+            }
+        });
+        assertEquals("b", cache.get("a"));
+        sleep(1500);
+        assertEquals("b", cache.get("a"));
+        cache.asyncRefreshExecutor.shutdown();
+        boolean terminated = cache.asyncRefreshExecutor.awaitTermination(1, TimeUnit.SECONDS);
+        assertTrue("asyncRefreshExecutor did not terminate before timeout", terminated);
+        assertEquals("c", cache.get("a"));
+        threadSafeMockery.assertIsSatisfied();
+    }
+
+    @Test
+    public void return_stale_data_on_error_in_synchronous_refresh() throws Exception {
+        CacheConfiguration cc = new CacheConfiguration("vtk.contentExipry", DEFAULT_CACHE_LIMIT);
+        cc.setTimeToIdleSeconds(1);
+        EhContentCache<String, String> cache = new EhContentCache<>(makeCache(cc, mockedLoader));
+
+        context.checking(new Expectations() {
+            {
+                exactly(2).of(mockedLoader).load("a");
+                will(onConsecutiveCalls(
+                        returnValue("b"),
+                        throwException(new CacheException())
+                ));
             }
         });
 
         assertEquals("b", cache.get("a"));
         sleep(1500);
         assertEquals("b", cache.get("a"));
+        assertEquals("b", cache.get("a"));
         context.assertIsSatisfied();
+    }
+    
+    @Test
+    public void return_stale_data_on_error_in_asynchronous_refresh() throws Exception {
+        CacheConfiguration cc = new CacheConfiguration("vtk.contentExipry", DEFAULT_CACHE_LIMIT);
+        cc.setTimeToIdleSeconds(1);
+        Mockery threadSafeMockery = new Mockery();
+        threadSafeMockery.setThreadingPolicy(new Synchroniser());
+        final ContentCacheLoader<String,String> threadSafeMockedLoader = threadSafeMockery.mock(
+                ContentCacheLoader.class
+        );
+
+        EhContentCache<String, String> cache = new EhContentCache<>(
+                makeCache(cc, threadSafeMockedLoader), -1, true
+        );
+
+        threadSafeMockery.checking(new Expectations() {
+            {
+                exactly(2).of(threadSafeMockedLoader).load("a");
+                will(onConsecutiveCalls(
+                        returnValue("b"),
+                        throwException(new CacheException())
+                ));
+            }
+        });
+        assertEquals("b", cache.get("a"));
+        sleep(1500);
+        assertEquals("b", cache.get("a"));
+        cache.asyncRefreshExecutor.shutdown();
+        boolean terminated = cache.asyncRefreshExecutor.awaitTermination(1, TimeUnit.SECONDS);
+        assertTrue("asyncRefreshExecutor did not terminate before timeout", terminated);
+        assertEquals("b", cache.get("a"));
+        threadSafeMockery.assertIsSatisfied();
     }
 
     @Test
-    public void loaderReturnsNull() throws Exception {
+    public void loader_returns_null() throws Exception {
 
         context.checking(new Expectations() {
             {
@@ -189,7 +275,7 @@ public class EhContentCacheTest {
     }
 
     @Test
-    public void loaderException() throws Exception {
+    public void loader_exception() throws Exception {
 
         final IOException loaderException = new IOException("could not load object with key 'a'");
         context.checking(new Expectations() {
@@ -208,7 +294,7 @@ public class EhContentCacheTest {
     }
 
     @Test
-    public void concurrentAccessSingleKeySlowLoader() throws Exception {
+    public void concurrent_access_single_key_slow_loader() throws Exception {
 
         final AtomicInteger loaderCallCount = new AtomicInteger();
         ContentCacheLoader<String, String> slowLoader = new ContentCacheLoader<String, String>() {
@@ -221,7 +307,9 @@ public class EhContentCacheTest {
         };
 
         CacheConfiguration cc = new CacheConfiguration(DEFAULT_CACHE_NAME + "-1", DEFAULT_CACHE_LIMIT);
-        final EhContentCache<String, String> cache = makeCache(cc, slowLoader);
+        final EhContentCache<String, String> cache = new EhContentCache<>(
+                makeCache(cc, slowLoader), -1, true
+        );
 
         ExecutorService es = Executors.newFixedThreadPool(3);
         for (int i = 0; i < 3; i++) {
@@ -242,7 +330,7 @@ public class EhContentCacheTest {
     }
 
     @Test
-    public void concurrentAccessLockTimeout() throws Exception {
+    public void concurrent_access_lock_timeout() throws Exception {
         ContentCacheLoader<String, String> slowLoader = new ContentCacheLoader<String, String>() {
             @Override
             public String load(String identifier) throws Exception {
@@ -252,7 +340,7 @@ public class EhContentCacheTest {
         };
 
         CacheConfiguration cc = new CacheConfiguration(DEFAULT_CACHE_NAME + "-1", DEFAULT_CACHE_LIMIT);
-        final EhContentCache<String, String> cache = makeCache(cc, slowLoader);
+        final EhContentCache<String, String> cache = new EhContentCache<>(makeCache(cc, slowLoader));
         SelfPopulatingCache sc = (SelfPopulatingCache) EHCM.getEhcache(DEFAULT_CACHE_NAME + "-1");
         sc.setTimeoutMillis(250);
 
@@ -287,6 +375,39 @@ public class EhContentCacheTest {
 
         assertNotNull(blockedClient.e);
         assertTrue(blockedClient.e.getClass() == LockTimeoutException.class);
+    }
+
+    @Test
+    public void cache_is_refreshed_when_refresh_interval_seconds_is_set() throws Exception {
+        CacheConfiguration cc = new CacheConfiguration("vtk.contentExipry", DEFAULT_CACHE_LIMIT);
+        cc.setTimeToLiveSeconds(2);
+        Mockery threadSafeMockery = new Mockery();
+        threadSafeMockery.setThreadingPolicy(new Synchroniser());
+        final ContentCacheLoader<String,String> threadSafeMockedLoader = threadSafeMockery.mock(
+                ContentCacheLoader.class
+        );
+
+        EhContentCache<String, String> cache = new EhContentCache<>(
+                makeCache(cc, threadSafeMockedLoader), 1, false
+        );
+
+        threadSafeMockery.checking(new Expectations() {
+            {
+                exactly(2).of(threadSafeMockedLoader).load("a");
+                will(onConsecutiveCalls(
+                        returnValue("b"),
+                        returnValue("c")
+                ));
+            }
+        });
+        assertEquals("b", cache.get("a"));
+        sleep(1500);
+        assertEquals("b", cache.get("a"));
+        sleep(1500);
+        cache.refreshAllExecutor.shutdown();
+        boolean terminated = cache.refreshAllExecutor.awaitTermination(1, TimeUnit.SECONDS);
+        assertTrue("asyncRefreshExecutor did not terminate before timeout", terminated);
+        threadSafeMockery.assertIsSatisfied();
     }
 
     private void sleep(long millis) throws InterruptedException {

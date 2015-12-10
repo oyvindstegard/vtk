@@ -36,11 +36,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -65,8 +68,9 @@ public class ImageEditController extends ResourceEditController {
     private PropertyTypeDefinition widthPropDef;
 
     @Override
-    protected ModelAndView onSubmit(Object command) throws Exception {
-        ResourceEditWrapper wrapper = (ResourceEditWrapper) command;
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, ResourceEditWrapper wrapper,
+            BindException errors) throws Exception {
         Resource resource = wrapper.getResource();
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
@@ -74,7 +78,7 @@ public class ImageEditController extends ResourceEditController {
         String token = requestContext.getSecurityToken();
 
         if (wrapper.hasErrors()) {
-            Map<String, Object> model = getModelProperties(command, resource, principal, repository);
+            Map<String, Object> model = getModelProperties(wrapper, resource, principal, repository);
             return new ModelAndView(getFormView(), model);
         }
         
@@ -107,7 +111,7 @@ public class ImageEditController extends ResourceEditController {
         }
 
         if (!wrapper.isView()) {
-            Map<String, Object> model = getModelProperties(command, resource, principal, repository);
+            Map<String, Object> model = getModelProperties(wrapper, resource, principal, repository);
             wrapper.setSave(false);
             model = addImageEditorServices(model, resource, principal);
             return new ModelAndView(getFormView(), model);
@@ -118,22 +122,15 @@ public class ImageEditController extends ResourceEditController {
     }
 
     @Override
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
-        resourceManager.lock();
-        return resourceManager.createResourceEditWrapper();
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    protected Map referenceData(HttpServletRequest request, Object command, Errors errors) throws Exception {
+    protected Map<String, Object> referenceData(HttpServletRequest request, ResourceEditWrapper command, Errors errors) throws Exception {
         Resource resource = ((ResourceWrapper) command).getResource();
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
 
-        Map model = super.referenceData(request, command, errors);
+        Map<String, Object> model = super.referenceData(request, command, errors);
 
         if (model == null) {
-            model = new HashMap();
+            model = new HashMap<>();
         }
 
         model = addImageEditorServices(model, resource, principal);
@@ -144,6 +141,11 @@ public class ImageEditController extends ResourceEditController {
     private Map<String, Object> addImageEditorServices(Map<String, Object> model, Resource resource, Principal principal) {
         if (this.loadImageService != null) {
             URL imageSourceURL = this.loadImageService.constructURL(resource, principal);
+            
+            RequestContext requestContext = RequestContext.getRequestContext();
+            if(requestContext.getServletRequest().isSecure() && imageSourceURL.getProtocol().equals("http")) {
+                imageSourceURL.setProtocol("https");
+            }
             model.put("imageURL", imageSourceURL);
         }
         return model;

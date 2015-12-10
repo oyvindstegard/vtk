@@ -37,13 +37,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.util.text.TextUtils;
@@ -124,21 +124,6 @@ public class PropertyLinkedValueDecoratorComponent extends ViewRenderingDecorato
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        super.afterPropertiesSet();
-        if (this.propertyTypeDefinition == null) {
-            throw new BeanInitializationException("JavaBean property 'propertyTypeDefinition' not set");
-        }
-        if (this.propertyTypeDefinition.getType() != PropertyType.Type.STRING) {
-            throw new BeanInitializationException("JavaBean property 'propertyTypeDefinition' not of required type "
-                    + "PropertyType.Type.STRING");
-        }
-        if (this.defaultURLpattern == null) {
-            throw new BeanInitializationException("JavaBean property 'defaultURLpattern' not set");
-        }
-    }
-
-    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
         Map<String, String> map = new HashMap<String, String>();
         map.put(PARAMETER_TITLE, PARAMETER_TITLE_DESC);
@@ -151,10 +136,12 @@ public class PropertyLinkedValueDecoratorComponent extends ViewRenderingDecorato
         return DESCRIPTION;
     }
 
+    @Required
     public void setPropertyTypeDefinition(PropertyTypeDefinition propertyTypeDefinition) {
         this.propertyTypeDefinition = propertyTypeDefinition;
     }
 
+    @Required
     public void setDefaultURLpattern(String defaultURLpattern) {
         this.defaultURLpattern = defaultURLpattern;
     }
@@ -162,5 +149,5 @@ public class PropertyLinkedValueDecoratorComponent extends ViewRenderingDecorato
     public void setForProcessing(boolean forProcessing) {
         this.forProcessing = forProcessing;
     }
-    
+
 }

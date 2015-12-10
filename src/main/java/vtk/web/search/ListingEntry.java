@@ -41,12 +41,12 @@ public class ListingEntry {
     private URL url;
     // Indicates if the accessing principal is allowed to edit the contents of
     // the property set
-    private boolean isEditAuthorized;
+    private EditInfo editInfo;
 
-    public ListingEntry(PropertySet propertySet, URL url, boolean isEditAuthorized) {
+    public ListingEntry(PropertySet propertySet, URL url, EditInfo editInfo) {
         this.propertySet = propertySet;
         this.url = url;
-        this.isEditAuthorized = isEditAuthorized;
+        this.editInfo = editInfo;
     }
 
     public PropertySet getPropertySet() {
@@ -56,11 +56,19 @@ public class ListingEntry {
     public URL getUrl() {
         return url;
     }
-
+    
     public boolean isEditAuthorized() {
-        return isEditAuthorized;
+        return editInfo.isEditAuthorized();
+    }
+    
+    public boolean isEditLocked() {
+        return editInfo.isEditLocked();
     }
 
+    public String getLockedByNameHref() {
+        return editInfo.getLockedByNameHref();
+    }
+    
     @Override
     public String toString() {
         return propertySet.getName().concat(" - ").concat(this.url.toString());

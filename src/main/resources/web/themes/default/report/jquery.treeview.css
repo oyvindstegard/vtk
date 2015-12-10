@@ -58,7 +58,7 @@
 
 .treeview span.file,
 .treeview span.folder {
-  background: url(../images/folder-small.gif) no-repeat left center;
+  background: url(../images/folder-small.gif) no-repeat 0 5px;
   padding: 5px 0 5px 30px;
   cursor: pointer;
   display: block;

@@ -30,12 +30,11 @@
  */
 package vtk.util.repository;
 
-import net.sf.json.JSONObject;
-
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.util.text.Json;
 import vtk.web.RequestContext;
 import vtk.web.RequestContext.RepositoryTraversal;
 import vtk.web.RequestContext.TraversalCallback;
@@ -52,9 +51,9 @@ public class PropertyAspectResolver {
         this.token = token;
     }
 
-    public JSONObject resolve(final Path uri, final String aspect) throws Exception {
+    public Json.MapContainer resolve(final Path uri, final String aspect) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
-        final JSONObject result = new JSONObject();
+        final Json.MapContainer result = new Json.MapContainer();
         String token = this.token != null ? this.token : requestContext.getSecurityToken();
         RepositoryTraversal traversal = requestContext.rootTraversal(token, uri);
 
@@ -63,13 +62,13 @@ public class PropertyAspectResolver {
             public boolean callback(Resource resource) {
                 Property property = resource.getProperty(aspectsPropdef);
                 if (property != null) {
-                    JSONObject value = property.getJSONValue();
+                    Json.MapContainer value = property.getJSONValue();
                     
                     if (value.get(aspect) != null) {
-                        value = value.getJSONObject(aspect);
+                        value = value.objectValue(aspect);
 
                         for (PropertyAspectField field : fieldConfig.getFields()) {
-                            Object key = field.getIdentifier();
+                            String key = field.getIdentifier();
                             Object newValue = value.get(key);
 
                             if (resource.getURI().equals(uri)) {

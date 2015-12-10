@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="decorating.dynamicTemplateFactory"
+            class="vtk.web.decorating.DynamicDecoratorTemplateFactory">
+    <property name="repository" ref="repository" />
+    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
+    <property name="aspectsPropdef" ref="resourceAspectsPropDef" />
+    <property name="fieldConfig" ref="visualProfileAspect.fieldConfig" />
+    <property name="token" ref="trustedToken" />
+    <property name="functions" ref="decorating.tlFunctions" />
+  </bean>
+
+  <bean id="decorating.tlDirectives" class="org.springframework.beans.factory.config.ListFactoryBean">
+    <property name="sourceList">
+      <list>
+        <ref bean="decorating.ifDirective" />
+        <ref bean="decorating.valDirective" />
+        <ref bean="decorating.listDirective" />
+        <ref bean="decorating.defDirective" />
+        <ref bean="decorating.captureDirective" />
+        <!-- ref bean="structuredResources.callDirective" / -->
+      </list>
+    </property>
+  </bean>
+
+  <bean id="decorating.ifDirective" class="vtk.text.tl.IfHandler">
+    <constructor-arg ref="decorating.tlFunctions" />
+  </bean>
+
+  <bean id="decorating.valDirective" class="vtk.text.tl.ValHandler">
+    <constructor-arg ref="decorating.valDirective.valueFormatters" />
+    <constructor-arg ref="decorating.tlFunctions" />
+  </bean>
+
+  <bean id="decorating.valDirective.valueFormatters" 
+        class="org.springframework.beans.factory.config.MapFactoryBean">
+    <property name="sourceMap">
+      <map>
+        <entry>
+          <key>
+            <value type="java.lang.Class">vtk.repository.PropertyImpl</value>
+          </key>
+          <bean class="vtk.resourcemanagement.view.tl.PropertyValueFormatHandler">
+            <constructor-arg>
+              <ref bean="valueFormatterRegistry" />
+            </constructor-arg>
+          </bean>
+        </entry>
+        <entry>
+          <key>
+            <value type="java.lang.Class">vtk.repository.resourcetype.Value</value>
+          </key>
+          <bean class="vtk.resourcemanagement.view.tl.PropertyValueFormatHandler">
+            <constructor-arg ref="valueFormatterRegistry" />
+          </bean>
+        </entry>
+        <entry>
+          <key>
+            <value type="java.lang.Class">vtk.repository.resourcetype.Value[]</value>
+          </key>
+          <bean class="vtk.resourcemanagement.view.tl.PropertyValueFormatHandler">
+            <constructor-arg ref="valueFormatterRegistry" />
+          </bean>
+        </entry>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="decorating.listDirective" class="vtk.text.tl.ListHandler">
+    <constructor-arg ref="decorating.tlFunctions" />
+  </bean>
+
+  <bean id="decorating.defDirective" class="vtk.text.tl.DefineHandler">
+    <constructor-arg ref="decorating.tlFunctions" />
+  </bean>
+
+  <bean id="decorating.captureDirective" class="vtk.text.tl.CaptureHandler" />
+
+
+  <bean id="decorating.tlFunctions"
+        class="org.springframework.beans.factory.config.SetFactoryBean">
+    <property name="sourceSet">
+      <set>
+        <ref bean="templateLanguage.toStringFunction" />
+        <ref bean="templateLanguage.toIntFunction" />
+        <ref bean="templateLanguage.concatFunction" />
+        <ref bean="templateLanguage.splitFunction" />
+        <ref bean="templateLanguage.trimFunction" />
+        <ref bean="templateLanguage.lengthFunction" />
+        <ref bean="templateLanguage.getFunction" />
+        <ref bean="decorating.requestContextFunction" />
+        <ref bean="decorating.retrieveFunction" />
+        <ref bean="decorating.serviceURLFunction" />
+      </set>
+    </property>
+  </bean>
+
+  <bean id="decorating.retrieveFunction"
+        class="vtk.web.decorating.tl.RetrieveFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="retrieve" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <bean id="decorating.serviceURLFunction"
+        class="vtk.web.decorating.tl.ServiceURLFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="url" />
+      </bean>
+    </constructor-arg>
+    <constructor-arg ref="serviceUrlProvider"/>
+  </bean>
+
+  <bean id="decorating.requestContextFunction" 
+        class="vtk.web.decorating.tl.RequestContextFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="request-context" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <bean id="decorating.searchFunction" class="vtk.resourcemanagement.view.tl.SearchResultValueProvider">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="search" />
+      </bean>
+    </constructor-arg>
+    <constructor-arg ref="searchParser" />
+    <constructor-arg ref="systemIndexSearcher" />
+    <property name="titlePropDef" ref="titlePropDef" />
+  </bean>
+
+
+  <bean id="decorating.userDefinedComponentResolver" class="vtk.web.decorating.CollectionComponentManager">
+    <constructor-arg ref="repository" />
+    <constructor-arg ref="trustedToken" />
+    <constructor-arg ref="decorating.userDefinedComponentLibrary.collections" />
+    <constructor-arg ref="decorating.userDefinedComponentLibrary.parser" />
+  </bean>
+
+
+  <bean id="decorating.userDefinedComponentResolver.refreshTrigger"
+        class="vtk.util.repository.MethodInvokingRepositoryEventTrigger">
+    <property name="repository" ref="repository" />
+    <!-- Map 'collections' (list of strings) to list of patterns: -->
+    <property name="uriPatterns" 
+              value="#{@'decorating.userDefinedComponentLibrary.collections'.![concat('[/]?.*')]}" />
+    <property name="targetObject" ref="decorating.userDefinedComponentResolver" />
+    <property name="method" value="refresh" />
+  </bean>
+
+  <bean name="decorating.userDefinedComponentLibrary.collections" class="vtk.context.JSONFactoryBean">
+    <constructor-arg value="${decorating.userDefinedComponentLibrary.collections}" />
+  </bean>
+
+  <bean id="decorating.userDefinedComponentLibrary.parser" class="vtk.web.decorating.DynamicComponentParser">
+    <constructor-arg ref="decorating.tlDirectives" />
+  </bean>
+
+</beans>

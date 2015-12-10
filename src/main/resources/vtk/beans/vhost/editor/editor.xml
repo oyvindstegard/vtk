@@ -140,6 +140,7 @@
       </list>
     </property>
     <property name="handler" ref="editor.loadImageHandler" />
+    <property name="handlerInterceptors" ref="noCacheHandlerInterceptor" />
   </bean>
 
   <bean id="editor.loadImageHandler" class="vtk.web.display.file.DisplayResourceController">
@@ -172,6 +173,15 @@
       </list>
     </property>
     <property name="handler" ref="editor.articleListingEditHandler" />
+  </bean>
+
+  <bean id="editor.folderListingEditService" parent="editor.abstractEditService">
+    <property name="assertions">
+      <list>
+        <ref bean="resourceIsFolderListing" />
+      </list>
+    </property>
+    <property name="handler" ref="editor.folderListingEditHandler" />
   </bean>
 
   <bean id="editor.blogListingEditService" parent="editor.abstractEditService">
@@ -229,10 +239,12 @@
     </property>
   </bean>
 
+  <!--
   <bean id="editor.getSourceStripHeadersInterceptor" class="vtk.web.interceptors.HeaderControlHandlerInterceptor">
     <property name="includeLastModifiedHeader" value="false" />
     <property name="includeEtagHeader" value="false" />
   </bean>
+  -->
 
   <bean id="editor.browseUriAssertion" class="vtk.web.service.RequestURIRegexpAssertion">
     <property name="pattern" value="${editor.fck.browseURL}" />
@@ -327,7 +339,7 @@
         <bean class="vtk.web.referencedata.provider.StaticModelDataProvider">
           <property name="modelDataMap">
             <map>
-              <entry key="cssURLs" value-ref="editor.editCSSURLs" />
+              <entry key="cssRegistry" value-ref="manage.cssRegistry" />
               <entry key="fckEditorAreaCSSURL" value-ref="editor.fckEditorAreaCSSURL" />
               <entry key="jsBaseURL" value="${jsBaseURL}" />
               <entry key="webResources" value="${webResources.baseURL}" />
@@ -376,12 +388,11 @@
     </property>
   </bean>
 
-  <bean id="editor.editCSSURLs" class="java.util.ArrayList">
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.cssRegistry" />
+    <constructor-arg value="editor:head" />
     <constructor-arg>
       <list>
-        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css
-        </value>
-        <value>${themeBaseURL}/default.css</value>
         <value>${themeBaseURL}/editor.css</value>
       </list>
     </constructor-arg>
@@ -478,6 +489,11 @@
     <property name="successView" value="redirectToPreviewCollection" />
   </bean>
 
+  <bean id="editor.folderListingEditHandler" parent="editor.editCollectionHandler">
+    <property name="resourceManager" ref="editor.folderListingResourceManager" />
+    <property name="successView" value="redirectToPreviewCollection" />
+  </bean>
+
   <bean id="editor.blogListingEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.blogListingResourceManager" />
     <property name="successView" value="redirectToPreviewCollection" />
@@ -530,7 +546,6 @@
         </property>
       </bean>
     </property>
-
   </bean>
 
   <bean id="editor.videoResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -544,6 +559,8 @@
             <ref bean="userTitlePropDef" />
             <ref bean="videoHtmlDescriptionPropDef" />
             <ref bean="posterImagePropDef" />
+            <ref bean="hideVideoDownloadLinkPropDef" />
+            <ref bean="hideVideoFallbackLinkPropDef" />
           </list>
         </property>
       </bean>
@@ -628,7 +645,6 @@
       </bean>
     </property>
   </bean>
-
 
   <bean id="editor.projectResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
@@ -770,6 +786,31 @@
             <ref bean="articleListing.hideIntroductionImagePropDef" />
             <ref bean="hideNumberOfCommentsPropDef" />
             <ref bean="additionalContentPropDef" />
+            <ref bean="linkOtherLanguagePropDef" />
+          </list>
+        </property>
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="editor.folderListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
+    <property name="htmlParser" ref="decorating.htmlParser" />
+    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
+    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="editPropertyProvider">
+      <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
+        <property name="preContentProperties">
+          <list>
+            <ref bean="userTitlePropDef" />
+            <ref bean="navigationTitlePropDef" />
+            <ref bean="introductionPropDef" />
+            <ref bean="introductionImagePropDef" />
+            <ref bean="introductionImageAltPropDef" />
+            <ref bean="introductionImageCaptionPropDef" />
+            <ref bean="importancePropDef" />
+            <ref bean="hiddenPropDef" />
+            <ref bean="pageLimitPropDef" />
+            <ref bean="collection.sortingPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
         </property>
@@ -1004,7 +1045,7 @@
               <value>align</value>
               <value>cellpadding</value>
               <value>cellspacing</value>
-              <value>summery</value>
+              <value>summary</value>
             </set>
           </property>
         </bean>

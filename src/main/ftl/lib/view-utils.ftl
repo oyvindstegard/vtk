@@ -228,8 +228,8 @@
   </#if>
 </#macro>
 
-<#macro displayDropdown type title titleLink='' displayDropdownTitleClose=true titleLinkTip=''>
-  <div class="vrtx-${type}-component vrtx-dropdown-component <#if !displayDropdownTitleClose>vrtx-dropdown-component-toggled<#else>vrtx-dropdown-component-not-toggled</#if>">
+<#macro displayDropdown type title titleLink='' displayDropdownTitleClose=true titleLinkTip='' toggle=false>
+  <div class="vrtx-${type}-component vrtx-dropdown-component <#if !displayDropdownTitleClose>vrtx-dropdown-component-toggled<#else>vrtx-dropdown-component-not-toggled</#if><#if toggle> vrtx-dropdown-component-toggle</#if>">
     <#if titleLink != ''>
       <a href="${titleLink?html}" class="vrtx-${type}-title-link vrtx-dropdown-title-link">${title?html}</a>
       <a href="javascript:void(0)" class="vrtx-${type}-link vrtx-dropdown-link"><span class="offscreen-screenreader">${titleLinkTip?html}</span></a>

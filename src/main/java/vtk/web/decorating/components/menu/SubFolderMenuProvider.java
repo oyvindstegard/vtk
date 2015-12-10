@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.InitializingBean;
 
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Namespace;
@@ -44,9 +45,11 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.QueryParser;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.query.AndQuery;
+import vtk.repository.search.query.Query;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.TypeTermQuery;
 import vtk.repository.search.query.UriDepthQuery;
@@ -54,12 +57,16 @@ import vtk.repository.search.query.UriPrefixQuery;
 import vtk.web.RequestContext;
 import vtk.web.view.components.menu.ListMenu;
 
-public class SubFolderMenuProvider {
+public class SubFolderMenuProvider implements InitializingBean {
 
     private MenuGenerator menuGenerator;
     private PropertyTypeDefinition sortPropDef;
     private ResourceTypeTree resourceTypeTree;
     private int collectionDisplayLimit = 1000;
+
+    private String queryFilterString;
+    private QueryParser queryParser;
+    private Query queryFilter;
 
     public Map<String, Object> getSubfolderMenuWithGeneratedResultSets(Resource collection, HttpServletRequest request) {
         RequestContext requestContext = RequestContext.getRequestContext();
@@ -94,7 +101,20 @@ public class SubFolderMenuProvider {
 
         return getSubfolderMenu(rs, collection, token, locale, 3, sortProperty);
     }
+    
+    public Map<String, Object> getSubfolderMenuWithOneGeneratedResultSet(Resource collection,
+            HttpServletRequest request) {
+        RequestContext requestContext = RequestContext.getRequestContext();
+        String token = requestContext.getSecurityToken();
+        ResultSet rs = listCollections(collection.getURI(), requestContext);
 
+        Locale locale = new org.springframework.web.servlet.support.RequestContext(request).getLocale();
+
+        PropertyTypeDefinition sortProperty = getSearchSorting(collection);
+
+        return getSubfolderMenu(rs, collection, token, locale, 1, sortProperty);
+    }
+    
     public Map<String, Object> getSubfolderMenu(ResultSet rs, Resource collection, String token, Locale locale,
             int resultSets, PropertyTypeDefinition sortProperty) {
         String title = null;
@@ -109,7 +129,7 @@ public class SubFolderMenuProvider {
         ArrayList<Path> includeURIs = new ArrayList<Path>();
         int searchLimit = Integer.MAX_VALUE;
 
-        if (sortProperty != null && "name".equals(sortProperty.getName().toString())) {
+        if (sortProperty != null && "name".equals(sortProperty.getName())) {
             sortByName = true;
         }
 
@@ -126,6 +146,10 @@ public class SubFolderMenuProvider {
         query.add(new UriPrefixQuery(uri.toString()));
         query.add(new UriDepthQuery(uri.getDepth() + 1));
         query.add(new TypeTermQuery("collection", TermOperator.IN));
+
+        if (queryFilter != null) {
+            query.add(queryFilter);
+        }
 
         Search search = new Search();
         if (RequestContext.getRequestContext().isPreviewUnpublished()) {
@@ -168,6 +192,21 @@ public class SubFolderMenuProvider {
 
     public void setCollectionDisplayLimit(int collectionDisplayLimit) {
         this.collectionDisplayLimit = collectionDisplayLimit;
+    }
+
+    public void setQueryFilterString(String queryFilterString) {
+        this.queryFilterString = queryFilterString;
+    }
+
+    public void setQueryParser(QueryParser queryParser) {
+        this.queryParser = queryParser;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        if (queryParser != null && queryFilterString != null) {
+            queryFilter = queryParser.parse(queryFilterString);
+        }
     }
 
 }

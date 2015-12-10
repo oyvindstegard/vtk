@@ -71,6 +71,10 @@
   display: inline;
 }
 
+.vrtx-radio-buttons .vrtx-radio-buttons-false {
+  margin-left: 5px;
+}
+
 .vrtx-grouped-horizontal .vrtx-string,
 .vrtx-grouped-horizontal .vrtx-radio,
 .vrtx-grouped-horizontal .vrtx-resource-ref,
@@ -186,22 +190,37 @@
   padding-top: 0;
 }
 
-.ui-accordion > div > .header.ui-accordion-header {
+.ui-accordion > div > .header.ui-accordion-header,
+.ui-accordion > div .ui-accordion > div .ui-accordion-header {
   padding: 15px 15px 14px 40px;
   border-radius: 0px;
+}
+
+.ui-accordion > div > .header.ui-accordion-header {
   margin-bottom: -3px;
   background: #f9f9f9;
   color: inherit;
   border-color: #d9d9d9;
 }
 
-.ui-accordion > div .ui-accordion > div > .header.ui-accordion-header {
-  padding: 15px 15px 14px 30px;
+.ui-accordion > div .ui-accordion > div .ui-accordion-header {
+  background: url(../images/line-dotted.gif) repeat-x top left;
+  padding-left: 30px;
   border-radius: 0px;
   margin: 0 0 -3px 20px;
-  background: url(../images/line-dotted.gif) repeat-x top left;
   color: inherit;
   border-width: 0;
+}
+
+.ui-accordion > div .ui-accordion > div .ui-accordion {
+  background: url(../images/line-dotted.gif) repeat-x bottom left;
+}
+
+.embedded .ui-accordion,
+.session .ui-accordion {
+  margin-top: 5px;
+  margin-bottom: 0px;
+  background: transparent !important;
 }
 
 .ui-accordion > div > .header.ui-accordion-header.ui-corner-top {
@@ -213,10 +232,6 @@
   left: 11px;
   height: 16px;
   width: 16px;
-}
-
-.ui-accordion > div .ui-accordion > div .header.ui-accordion-header .ui-icon {
-  left: -3px;
 }
 
 .ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
@@ -236,6 +251,10 @@
 
   top: 20px;
   left: 13px;
+}
+
+.ui-accordion > div .ui-accordion > div .header.ui-accordion-header .ui-icon {
+  left: -3px;
 }
 
 .ie8 .ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
@@ -271,8 +290,9 @@
   cursor: pointer;
 }
 
-.ui-accordion .header.ui-accordion-header.ui-state-hover {
-  background: #ecf3f9;
+.ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .header.ui-accordion-header.ui-state-focus {
+  background-color: #ecf3f9;
 }
 
 .ui-accordion > div > .header.ui-accordion-header.ui-corner-top,
@@ -280,8 +300,20 @@
   background: none;
 }
 
-.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover {
+/* Ensure dotted background on inner accordions */
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-corner-top,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover.ui-corner-top,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus.ui-corner-top {
   background: url(../images/line-dotted.gif) repeat-x top left !important;
+}
+
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover .session-date,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus .session-date {
+  text-decoration: underline !important;
 }
 
 .ui-accordion > div > .ui-accordion-content { 
@@ -293,13 +325,15 @@
   overflow: hidden;
 }
 
-.accordion-wrapper > div .ui-accordion > div > .ui-accordion-content {
+.embedded .ui-accordion .ui-accordion-content,
+.accordion-wrapper > div .ui-accordion > div .ui-accordion-content {
   padding-left: 50px !important;
   border: none !important;
 }
 
+.embedded .ui-accordion .ui-accordion-content,
 .accordion-wrapper.skip-tier > .ui-accordion-content,
-.accordion-wrapper > div .ui-accordion > div > .ui-accordion-content {
+.accordion-wrapper > div .ui-accordion > div .ui-accordion-content {
   padding-top: 10px !important;
 }
 
@@ -331,6 +365,11 @@
   color: #ed2023;
 }
 
+#editor.vrtx-course-schedule .admin-fixed-resources-iframe {
+  width: 100%;
+  height: 200px; /* default height */
+}
+
 /* ^ Accordion */
 
 /* Study enhancements */
@@ -358,27 +397,19 @@
 
 /* Selects - all is default */
 
-#editor.select-typeToDisplay-so .internasjonale-sokere-admin,
-#editor.select-typeToDisplay-so .nordiske-sokere,
-#editor.select-typeToDisplay-so .generelle-admin,
-#editor.select-typeToDisplay-so .pris,
+#editor.select-typeToDisplay-so .price-admin,
 #editor.select-typeToDisplay-so .regelverk,
 #editor.select-typeToDisplay-so .documentation-admin,
-#editor.select-typeToDisplay-nm .internasjonale-sokere-admin,
-#editor.select-typeToDisplay-nm .nordiske-sokere,
 #editor.select-typeToDisplay-nm .spesielle-admin,
-#editor.select-typeToDisplay-nm .opptakskrav-admin,
 #editor.select-typeToDisplay-nm .forstevitnemal-kvote,
 #editor.select-typeToDisplay-nm .ordinar-kvote-alle-kvalifiserte,
-#editor.select-typeToDisplay-nm .poenggrenser,
+#editor.select-typeToDisplay-nm .credit-limits,
 #editor.select-typeToDisplay-nm .studiekode,
 #editor.select-typeToDisplay-nm .quota,
-#editor.select-typeToDisplay-em .metode-admin,
 #editor.select-typeToDisplay-em .spesielle-admin,
-#editor.select-typeToDisplay-em .opptakskrav-admin,
 #editor.select-typeToDisplay-em .forstevitnemal-kvote,
 #editor.select-typeToDisplay-em .ordinar-kvote-alle-kvalifiserte,
-#editor.select-typeToDisplay-em .poenggrenser,
+#editor.select-typeToDisplay-em .credit-limits,
 #editor.select-typeToDisplay-em .quota,
 #editor.select-typeToDisplay-em .studiekode {
   display: none;
@@ -410,6 +441,14 @@
 #editor.select-teachingsemester-other .teachingsemester-other,
 #editor.select-examsemester-particular-semester .if-examsemester-particular,
 #editor.select-examsemester-every-other .examsemester-every-other-semester {
+  display: block;
+}
+
+#editor .phd-web-address {
+  display: none;
+}
+
+#editor.select-program-type-phd .phd-web-address {
   display: block;
 }
 

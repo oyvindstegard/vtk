@@ -48,7 +48,7 @@
         <ref bean="publishedPropDef" />
 
         <ref bean="resourceAspectsPropDef" />
-        <ref bean="linksPropDef" />
+        <ref bean="hrefsPropDef" />
         <ref bean="linkCheckPropDef" />
         <ref bean="brokenLinksCountPropDef" />
         <ref bean="linkStatusPropDef" />
@@ -311,22 +311,30 @@
     <property name="mandatory" value="false" />
   </bean>
 
-  <bean id="linksPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="name" value="links" />
-    <property name="type" value="BINARY" />
+  <bean id="hrefsPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="hrefs" />
+    <property name="type" value="JSON" />
+    <property name="multiple" value="false" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
     <property name="mandatory" value="false" />
-    <property name="propertyEvaluator" ref="resourceLinksEvaluator" />
+    <property name="propertyEvaluator" ref="resourceHrefsEvaluator" />
+    <property name="metadata">
+      <map>
+        <entry key="indexableJsonHint" value="true" />
+        <entry key="indexableJsonHint.FieldType.size" value="INT" />
+      </map>
+    </property>
   </bean>
 
-  <bean id="resourceLinksEvaluator" class="vtk.repository.resourcetype.property.LinksEvaluator">
-    <property name="resourceManager" ref="structuredResources.resourceManager" />
+  <bean id="resourceHrefsEvaluator" class="vtk.repository.resourcetype.property.HrefsEvaluator">
+    <constructor-arg name="resourceManager" ref="structuredResources.resourceManager" />
   </bean>
+
 
   <bean id="linkCheckPropDef" class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl"
     parent="abstractPropDef">
     <property name="name" value="link-check" />
-    <property name="type" value="BINARY" />
+    <property name="type" value="JSON" />
     <property name="multiple" value="false" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ROLE_ROOT" />
     <property name="mandatory" value="false" />
@@ -362,7 +370,7 @@
   </bean>
 
   <bean id="linkStatusEvaluator" class="vtk.repository.resourcetype.property.LinkStatusEvaluator">
-    <property name="linksPropDef" ref="linksPropDef" />
+    <property name="hrefsPropDef" ref="hrefsPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
   </bean>
 

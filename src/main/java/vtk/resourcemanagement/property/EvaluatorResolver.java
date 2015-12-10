@@ -36,9 +36,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
@@ -56,7 +55,8 @@ import vtk.resourcemanagement.service.ExternalServiceInvoker;
 import vtk.resourcemanagement.studies.SharedTextResolver;
 import vtk.text.html.HtmlDigester;
 import vtk.text.html.HtmlUtil;
-import vtk.util.text.JSON;
+import vtk.util.text.Json;
+import vtk.util.text.JsonStreamer;
 
 public class EvaluatorResolver {
 
@@ -81,12 +81,12 @@ public class EvaluatorResolver {
 
     private PropertyEvaluator createSimplePropertyEvaluator(final SimplePropertyDescription desc,
             final StructuredResourceDescription resourceDesc) {
-        return new JSONPropertyEvaluator(resourceDesc, desc);
+        return new FieldSelectPropertyEvaluator(resourceDesc, desc);
     }
 
     private PropertyEvaluator createJSONPropertyEvaluator(JSONPropertyDescription desc,
             StructuredResourceDescription resourceDesc) {
-        return new JSONPropertyEvaluator(resourceDesc, desc);
+        return new FieldSelectPropertyEvaluator(resourceDesc, desc);
     }
 
     private PropertyEvaluator createDerivedPropertyEvaluator(final DerivedPropertyDescription desc,
@@ -94,12 +94,12 @@ public class EvaluatorResolver {
         return new DerivedPropertyEvaluator(desc, resourceDesc);
     }
 
-    private class JSONPropertyEvaluator implements PropertyEvaluator {
+    private class FieldSelectPropertyEvaluator implements PropertyEvaluator {
 
         private final StructuredResourceDescription resourceDesc;
         private final PropertyDescription propertyDesc;
 
-        private JSONPropertyEvaluator(StructuredResourceDescription resourceDesc, PropertyDescription desc) {
+        private FieldSelectPropertyEvaluator(StructuredResourceDescription resourceDesc, PropertyDescription desc) {
             this.resourceDesc = resourceDesc;
             this.propertyDesc = desc;
         }
@@ -112,7 +112,6 @@ public class EvaluatorResolver {
         @SuppressWarnings("unchecked")
         @Override
         public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
-
             Object value = null;
             String affectingService = propertyDesc.getAffectingService();
             if (affectingService != null) {
@@ -130,14 +129,35 @@ public class EvaluatorResolver {
             if (!emptyValue(value)) {
                 setPropValue(property, value);
             } else {
-                JSONObject json;
+                Json.MapContainer json; 
                 try {
-                    json = ctx.getContent().getContentRepresentation(JSONObject.class);
+                    json = ctx.getContent().getContentRepresentation(Json.MapContainer.class);
                 } catch (Exception e) {
                     throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
                 }
                 String expression = "properties." + property.getDefinition().getName();
-                value = JSON.select(json, expression);
+                if (propertyDesc instanceof JSONPropertyDescription) {
+                    value = Json.select(json, expression);
+                    
+                    if (value != null) {
+                        if (propertyDesc.isMultiple()) {
+                            if (!(value instanceof List<?>)) {
+                                throw new PropertyEvaluationException(
+                                        "Value " + value + " is not a list");
+                            }
+                            List<Object> tmp = new ArrayList<>();
+                            for (Object o: (List<?>) value) {
+                                if (o != null) {
+                                    tmp.add(JsonStreamer.toJson(o));
+                                } else tmp.add(null);
+                            }
+                            value = tmp;
+                        }
+                        else value = JsonStreamer.toJson(value);
+                    }
+                } else {
+                    value = Json.select(json, expression);
+                }
                 if (emptyValue(value)) {
                     if (propertyDesc.isOverrides()) {
                         // XXX Consider the order of how this is done
@@ -211,6 +231,7 @@ public class EvaluatorResolver {
 
             try {
                 Object value = getEvaluatedValue(propertyDesc, property, ctx);
+                
                 if (emptyValue(value)) {
                     // Evaluated value returned empty, check any default
                     // value that might exist, than finally check for any
@@ -279,15 +300,15 @@ public class EvaluatorResolver {
             if (prop != null) {
                 return prop.getStringValue();
             }
-
-            JSONObject json;
+            Json.MapContainer json; 
             try {
-                json = ctx.getContent().getContentRepresentation(JSONObject.class);
+                json = ctx.getContent().getContentRepresentation(Json.MapContainer.class);
             } catch (Exception e) {
                 throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
             }
+
             String expression = "properties." + propName;
-            Object jsonObject = JSON.select(json, expression);
+            Object jsonObject = Json.select(json, expression);
             if (jsonObject != null) {
                 return jsonObject.toString();
             }
@@ -396,7 +417,6 @@ public class EvaluatorResolver {
     }
 
     private void setPropValue(Property property, Object value) {
-
         if (property.getType() == Type.BINARY) {
             // Store the value of the property
 

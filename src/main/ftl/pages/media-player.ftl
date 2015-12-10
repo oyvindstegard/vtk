@@ -21,13 +21,7 @@
       <script type="text/javascript" src="${jsURL}"></script>
     </#list>
   </#if>
-  <style type="text/css">
-    a.vrtx-media {
-      clear: left;
-      display: block;
-      margin: 10px 0px 0px;
-    }
-  </style>
+  <link rel="stylesheet" media="all" href="/vrtx/__vrtx/static-resources/themes/default/view-media-player.css" />
 </head>
 <body>
 

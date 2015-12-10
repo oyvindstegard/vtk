@@ -30,23 +30,12 @@
  */
 package vtk.repository.store;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.LinkedList;
-import java.util.List;
 
 import vtk.repository.content.AbstractInputStreamWrapper;
 import vtk.util.codec.MD5;
 
-import difflib.Delta;
-import difflib.DiffUtils;
-import difflib.Patch;
-
 public final class Revisions {
-    private static final int LINE = 80;
-    //private static final int MAX_DIFF_SIZE = 1000000;
 
     public static String checksum(byte[] buffer) {
         return MD5.md5sum(buffer);
@@ -68,49 +57,4 @@ public final class Revisions {
             return result;
         }
     }
-    
-    public static Integer changeAmount(InputStream stream1, InputStream stream2) {
-        try {
-            List<String> lines1 = getLines(stream1);
-            List<String> lines2 = getLines(stream2);
-            if (lines1.isEmpty()) {
-                return lines2.size();
-            }
-            if (lines2.isEmpty()) {
-                return lines1.size();
-            }
-            Patch diff = DiffUtils.diff(lines1, lines2);
-            List<Delta> deltas = diff.getDeltas();
-            int linesChanged = 0;
-            for (Delta d: deltas) {
-                // XXX: Review:
-                linesChanged += Math.max(
-                        d.getOriginal().size(), d.getRevised().size());
-            }
-            return linesChanged;
-        } catch (Throwable t) {
-            return null;
-        }
-    }
-    
-    private static List<String> getLines(InputStream stream) throws IOException {
-        String line = "";
-        List<String> result = new LinkedList<String>();
-        BufferedReader in = new BufferedReader(new InputStreamReader(stream));
-        while ((line = in.readLine()) != null) {
-            if (line.length() < LINE) {
-                result.add(line);
-                continue;
-            }
-            while (line.length() >= LINE) {
-                result.add(line.substring(0, LINE) + "\n");                
-                line = line.substring(LINE);
-            }
-            if (line.length() > 0) {
-                result.add(line);
-            }
-        }
-        return result;
-    }
-    
 }

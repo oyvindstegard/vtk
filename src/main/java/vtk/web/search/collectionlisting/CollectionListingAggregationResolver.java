@@ -40,6 +40,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -47,7 +48,6 @@ import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.repository.ResourceNotFoundException;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.search.ResultSet;
@@ -56,15 +56,11 @@ import vtk.repository.search.query.UriSetQuery;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
+import vtk.web.search.MultiHostUtil;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
 /**
- * 
- * XXX If you feel like making changes in this class, don't. Ask rezam first.
- * Don't ruin your day. If rezam should for some reason not be available in time
- * for your deadline, just delete this entire class and start over. Trust me,
- * you'll live longer.
  * 
  * Resolve nested aggregation and manually approved resources for a collection
  * listing.
@@ -76,13 +72,17 @@ import vtk.web.service.URL;
  * configured predefined limit for number of resources to aggregate from in each
  * step (20 in production as of June 2013).
  * 
- * 
- * XXX This class is in serious need of refactoring, to make it understandable
- * and testable. As it is it has no unit tests (!!!) and a real pain in the a$$
- * to figure out.
- * 
- * XXX Also needs proper logging.
- * 
+ * <p>
+ * TODO should put a hard limit on the total size of the aggregation sets, which
+ * will apply to both depth and breadth. If such a limit is hit, the user should
+ * receive a warning in editor, because the result in view will be incomplete.
+ * Also, such a limit may allow for a general increase in limit on depth and
+ * breadth, since it is more flexible. (Either you can have a deep aggregation
+ * structure with few sources on each level, or you may have many sources, but
+ * not much depth. Or something in between.) Similarly, a limit should be put
+ * on the total number of manually approved paths, which gives flexibility to
+ * increase sources if the number of actually approved docs still is low (compared
+ * number of available).
  */
 public class CollectionListingAggregationResolver implements AggregationResolver {
 
@@ -109,39 +109,6 @@ public class CollectionListingAggregationResolver implements AggregationResolver
      * has it's own defined aggregation
      */
     private int maxRecursiveDepth = DEFAULT_RECURSIVE_DEPTH;
-
-    @Override
-    public CollectionListingAggregatedResources getAggregatedResources(URL url) {
-
-        PropertySet collection = null;
-        String token = null;
-        if (RequestContext.exists()) {
-            token = RequestContext.getRequestContext().getSecurityToken();
-        }
-        try {
-
-            Path path = null;
-            if (getLocalHostUrl().getHost().equals(url.getHost())) {
-                path = url.getPath();
-            }
-            if (path != null) {
-                collection = repository.retrieve(token, path, false);
-            } else if (multiHostSearcher.isMultiHostSearchEnabled()) {
-                collection = multiHostSearcher.retrieve(token, url);
-            }
-        } catch (ResourceNotFoundException rnfe) {
-            // resource doesn'n exist, ignore
-        } catch (Exception e) {
-            // Ignore
-        }
-
-        // Resource not found
-        if (collection == null) {
-            return null;
-        }
-
-        return getAggregatedResources(collection);
-    }
 
     @Override
     public CollectionListingAggregatedResources getAggregatedResources(PropertySet collection) {
@@ -172,8 +139,8 @@ public class CollectionListingAggregationResolver implements AggregationResolver
     }
 
     private void resolveAggregatedResources(Map<URL, Set<Path>> aggregationSet,
-            Map<URL, Set<Path>> manuallyApprovedSet, PropertySet resource, URL currentHostURL, URL startCollectionURL,
-            int depth) {
+                Map<URL, Set<Path>> manuallyApprovedSet, PropertySet resource,
+                URL currentHostURL, URL startCollectionURL, int depth) {
 
         // Include manually approved resources if any
         if (isDisplayManuallyApproved(resource)) {
@@ -340,6 +307,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
 
             if (multiHostSearcher.isMultiHostSearchEnabled() && includesOtherHostRef(getLocalHostUrl(), urls)) {
                 Set<PropertySet> tmp = multiHostSearcher.retrieve(token, urls);
+                tmp = MultiHostUtil.resolveSetImageRefProperties(tmp);
                 if (tmp != null) {
                     result.addAll(tmp);
                 }
@@ -359,6 +327,8 @@ public class CollectionListingAggregationResolver implements AggregationResolver
                         search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
                     }
                     search.setQuery(uriSetQuery);
+                    search.setSorting(null);
+                    
                     ResultSet rs = repository.search(token, search);
                     result.addAll(rs.getAllResults());
 

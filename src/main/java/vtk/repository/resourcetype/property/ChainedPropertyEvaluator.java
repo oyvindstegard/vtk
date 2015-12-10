@@ -30,43 +30,23 @@
  */
 package vtk.repository.resourcetype.property;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.PropertyEvaluator;
 
 public class ChainedPropertyEvaluator implements PropertyEvaluator {
-
-    private Log logger = LogFactory.getLog(this.getClass());
-
     private List<PropertyEvaluator> propertyEvaluators = new ArrayList<PropertyEvaluator>();
     
-    public void setPropertyEvaluators(Object[] propertyEvaluators) {
-        if (propertyEvaluators == null || propertyEvaluators.length == 0) {
-            throw new IllegalArgumentException("No property evaluators specified");
-        }
-
-        for (Object o: propertyEvaluators) {
-            if (o instanceof PropertyEvaluator) {
-                this.propertyEvaluators.add((PropertyEvaluator) o);
-            }
-        }
+    public ChainedPropertyEvaluator(List<PropertyEvaluator> chain) {
+        for (PropertyEvaluator ev: chain) propertyEvaluators.add(ev);
     }
-
+    
     public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
         for (PropertyEvaluator evaluator: this.propertyEvaluators) {
-            if (evaluator.evaluate(property, ctx)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Found match for property evaluator '"
-                            + evaluator + "', property set: " + ctx.getNewResource());
-                }
-                return true;
-            }
+            if (evaluator.evaluate(property, ctx)) return true;
         }
         return false;
     }

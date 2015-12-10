@@ -41,12 +41,15 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
-import net.sf.json.JSONNull;
-
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.springframework.beans.factory.annotation.Required;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.Resource;
@@ -60,10 +63,6 @@ import vtk.resourcemanagement.StructuredResourceManager;
 import vtk.resourcemanagement.property.PropertyDescription;
 import vtk.text.html.TagsoupParserFactory;
 import vtk.util.web.LinkTypesPrefixes;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 public class MixedContentEvaluator implements LatePropertyEvaluator {
 
@@ -215,7 +214,7 @@ public class MixedContentEvaluator implements LatePropertyEvaluator {
                 Object o = map.get(k);
                 checkJSON(o, report);
             }
-        } else if (!(object instanceof JSONNull)) {
+        } else if (object != null) {
             InputStream is = new ByteArrayInputStream(object.toString().getBytes());
             checkHtml(is, report);
         }

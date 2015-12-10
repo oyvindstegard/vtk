@@ -31,11 +31,14 @@
 package vtk.web.display.listing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+
 import vtk.web.service.URL;
 
 public class ListingPager {
@@ -47,16 +50,92 @@ public class ListingPager {
     public static final String PREV_BASE_OFFSET_PARAM = "p-offset";
     public static final String USER_DISPLAY_PAGE = "u-page";
 
-    public static List<ListingPagingLink> generatePageThroughUrls(int hits, int pageLimit, URL baseURL, int currentPage) {
+    public static class Pagination {
+        private List<ListingPagingLink> urls;
+        private URL self = null, first = null, last = null;
+        private Optional<URL> next = Optional.empty(), previous = Optional.empty();
+        
+        // Legacy method:
+        public List<ListingPagingLink> pageThroughLinks() { return urls; }
+        
+        public URL self() { return self; }
+        public URL first() { return first; }
+        public URL last() { return last; }
+        
+        public Optional<URL> next() { return next; }
+        public Optional<URL> previous() { return previous; }
+        
+        private Pagination(URL base, List<ListingPagingLink> urls) {
+            if (urls == null) {
+                throw new NullPointerException("urls");
+            }
+            if (urls.isEmpty()) {
+                throw new IllegalArgumentException("urls is empty");
+            }
+            this.urls = Collections.unmodifiableList(urls);
+            self = new URL(base);
+
+            List<ListingPagingLink> numbered = new ArrayList<>();
+            for (ListingPagingLink url: urls) {
+                
+                if ("prev".equals(url.getTitle())) { 
+                    previous = Optional.of(url.getUrl());
+                }
+                else if ("next".equals(url.getTitle())) { 
+                    next = Optional.of(url.getUrl());
+                }
+                else {
+                    try {
+                        Integer.parseInt(url.getTitle());
+                        numbered.add(url);
+                    }
+                    catch (NumberFormatException e) { }
+                }
+            }
+            if (numbered.isEmpty()) {
+                throw new IllegalStateException("No numbered pages in result");
+            }
+            first = new URL(numbered.get(0).getUrl());
+            last = new URL(numbered.get(numbered.size() - 1).getUrl());
+        }
+        
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(" + self + "," + first + "," 
+                    + next + "," + previous + "," + last + ")";
+        }
+    }
+    
+    public static Optional<Pagination> pagination(int hits, int pageLimit, URL baseURL, int currentPage) {
+        List<ListingPagingLink> urls = generatePageThroughUrls(hits, pageLimit, baseURL, currentPage);
+        if (urls == null || urls.size() == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(new Pagination(baseURL, urls));
+    }
+    
+    public static Optional<Pagination> pagination(int hits, int pageLimit, int hitsInFirstSearch,
+            URL baseURL, boolean twoSearches, int currentPage) {
+        List<ListingPagingLink> urls = generatePageThroughUrls(hits, pageLimit, hitsInFirstSearch, 
+                baseURL, twoSearches, currentPage);
+        if (urls == null || urls.size() == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(new Pagination(baseURL, urls));
+    }
+    
+    
+    
+    private static List<ListingPagingLink> generatePageThroughUrls(int hits, int pageLimit, URL baseURL, int currentPage) {
         return generatePageThroughUrls(hits, pageLimit, 0, baseURL, false, currentPage);
     }
 
-    public static List<ListingPagingLink> generatePageThroughUrls(int hits, int pageLimit, int hitsInFirstSearch,
+    private static List<ListingPagingLink> generatePageThroughUrls(int hits, int pageLimit, int hitsInFirstSearch,
             URL baseURL, boolean twoSearches, int currentPage) {
-        if (pageLimit == 0) {
+        if (pageLimit == 0 || hits == 0) {
             return null;
         }
-        List<ListingPagingLink> urls = new ArrayList<ListingPagingLink>();
+        List<ListingPagingLink> urls = new ArrayList<>();
         baseURL = new URL(baseURL).removeParameter(PREVIOUS_PAGE_PARAM).removeParameter(PREV_BASE_OFFSET_PARAM)
                 .removeParameter(UPCOMING_PAGE_PARAM).removeParameter(USER_DISPLAY_PAGE).setCollection(true);
 

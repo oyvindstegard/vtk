@@ -32,20 +32,23 @@ package vtk.web.display.shell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.shell.AbstractConsole;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 
 
-public class CommandExecutorController extends SimpleFormController {
+public class CommandExecutorController extends SimpleFormController<ExecutorCommand> {
 
     private AbstractConsole console;
     
@@ -53,8 +56,9 @@ public class CommandExecutorController extends SimpleFormController {
     public void setConsole(AbstractConsole console) {
         this.console = console;
     }
-    
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+
+    @Override
+    protected ExecutorCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -69,15 +73,27 @@ public class CommandExecutorController extends SimpleFormController {
     }
 
     
-    protected ModelAndView onSubmit(Object commandObject, BindException errors)
-            throws Exception {
-        ExecutorCommand command = (ExecutorCommand) commandObject;
-
+    
+    @Override
+    protected ModelAndView onSubmit(HttpServletRequest request,
+            HttpServletResponse response, ExecutorCommand command,
+            BindException errors) throws Exception {
+        
+        if ("true".equals(request.getParameter("pipe-output"))) {
+            PrintStream out = new PrintStream(response.getOutputStream());
+            response.setContentType("text/plain;charset=utf-8");
+            console.eval(command.getCommand(), out);
+            out.flush();
+            out.close();
+            return null;
+        }
+        
+        Map<String, Object> model = errors.getModel();
         ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
         PrintStream resultStream = new PrintStream(bufferStream);
-        this.console.eval(command.getCommand(), resultStream);
+        console.eval(command.getCommand(), resultStream);
         command.setResult(new String(bufferStream.toByteArray()));
-        return super.onSubmit(command, errors);
+        return new ModelAndView(getFormView(), model);
     }
 
 

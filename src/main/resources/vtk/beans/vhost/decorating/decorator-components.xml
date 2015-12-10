@@ -357,9 +357,10 @@
     <property name="referenceDataProviders">
       <list>
         <bean class="vtk.web.referencedata.provider.TemplateLinksProvider">
+          <property name="onlyReadAll" value="true" />
           <property name="templates">
             <map>
-              <entry key="Facebook" value="http://www.facebook.com/share.php?u=%{url}" />
+              <entry key="Facebook" value="http://www.facebook.com/sharer.php?u=%{url}" />
               <entry key="FacebookAPI"
                 value="http://www.facebook.com/sharer/sharer.php?s=100&amp;amp;p%5Burl%5D=%{url}&amp;amp;p%5Btitle%5D=%{title}&amp;amp;p%5Bsummary%5D=%{introduction}&amp;amp;p%5Bimages%5D%5B0%5D=%{picture}" />
               <entry key="Twitter" value="http://twitter.com/intent/tweet?text=%{title}&amp;amp;url=%{url}" />
@@ -484,7 +485,7 @@
     <property name="name" value="events" />
     <property name="viewService" ref="viewService" />
     <property name="view" ref="decorating.eventComponent.view" />
-    <property name="description" value="Inserts a event list component on the page" />
+    <property name="description" value="Inserts an event listing component on the page" />
     <property name="search" ref="eventListing.upcomingEventsSearchComponent" />
     <property name="defaultElementOrder">
       <list>
@@ -529,26 +530,7 @@
 
   <bean id="decorating.collectionListingComponent.searchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="decorating.collectionListingComponent.searchComponent" />
-    <property name="searchSorting" ref="decorating.collectionListingComponent.searchSorting" />
-  </bean>
-
-  <bean id="decorating.collectionListingComponent.searchSorting" class="vtk.web.search.SearchSorting"
-    depends-on="resourceTypeTree">
-    <property name="sortPropDef" ref="collection.sortingPropDef" />
-    <property name="sortOrderPropDefPointers">
-      <list>
-        <value>lastModified</value>
-      </list>
-    </property>
-    <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="defaultSortOrder" ref="SORT_ORDER.ASC" />
-    <property name="sortOrderMapping">
-      <map>
-        <entry key="lastModified" value-ref="SORT_ORDER.DESC" />
-        <entry key="title" value-ref="SORT_ORDER.ASC" />
-        <entry key="name" value-ref="SORT_ORDER.ASC" />
-      </map>
-    </property>
+    <property name="searchSorting" ref="collectionListing.searchSorting" />
   </bean>
 
   <bean id="decorating.feedComponent" class="vtk.web.decorating.components.FeedComponent">
@@ -615,42 +597,25 @@
     <property name="feedBuilder" ref="decorating.feedComponent.feedBuilder" />
   </bean>
 
-  
-  <bean id="decorating.feedComponent.contentCache" class="vtk.util.cache.ContentCacheImpl">
-    <property name="name" value="${repositoryID}.decorating.feedCache" />
-    <property name="cacheLoader" ref="decorating.feedComponent.contentCache.loader" />
-    <property name="cacheSeconds" value="${decorating.feedComponent.cacheTimeoutSeconds}" />
-    <property name="asynchronousRefresh" value="true" />
-    <property name="refreshInterval" value="30" />
-    <property name="maxItems" value="${decorating.feedComponent.maxCachedItems}" />
-  </bean>
-  
-
-  <!-- Config for new Ehcache based content-cache for feeds (as a replacement for the above). -->  
-  <!-- 
   <bean id="decorating.feedComponent.contentCache" class="vtk.util.cache.EhContentCache">
-    <property name="cache" ref="decorating.feedComponent.contentCache.cache" />
-  </bean>
-  
-  <bean id="decorating.feedComponent.contentCache.cache"
-        class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-    <property name="cacheManager" ref="ehCacheManager" />
-    <property name="cacheName" value="vtk.FEED_COMPONENT_CACHE"/>
-    <property name="maxElementsInMemory" value="${decorating.feedComponent.maxCachedItems}" />
-    <property name="maxElementsOnDisk" value="2000" />
-    <property name="eternal" value="false"/>
-    <property name="overflowToDisk" value="true"/>
-    <property name="timeToIdle" value="0" />
-    <property name="timeToLive" value="${decorating.includeComponent.cacheTimeoutSeconds}" />
-    <property name="cacheEntryFactory">
-      <bean class="vtk.util.cache.ContentCacheLoaderEhcacheAdapter">
-        <constructor-arg>
-          <ref bean="decorating.feedComponent.contentCache.loader" />
-        </constructor-arg>
+    <constructor-arg name="cache">
+      <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="ehCacheManager" />
+        <property name="cacheName" value="${repositoryID}.decorating.feedCache"/>
+        <property name="maxElementsInMemory" value="${decorating.feedComponent.maxCachedItems}" />
+        <property name="maxElementsOnDisk" value="0" />
+        <property name="timeToIdle" value="0" />
+        <property name="timeToLive" value="${decorating.feedComponent.cacheTimeoutSeconds}" />
+        <property name="cacheEntryFactory">
+          <bean class="vtk.util.cache.ContentCacheLoaderEhcacheAdapter">
+            <constructor-arg ref="decorating.feedComponent.contentCache.loader" />
+          </bean>
+        </property>
       </bean>
-    </property>
+    </constructor-arg>
+    <constructor-arg name="refreshIntervalSeconds" value="60" />
+    <constructor-arg name="asynchronousRefresh" value="true" />
   </bean>
-  -->
 
   <bean id="decorating.feedComponent.contentCache.loader" class="vtk.web.decorating.components.SyndFeedLoader">
     <property name="connectTimeoutSeconds" value="${decorating.feedComponent.connectTimeoutSeconds}" />
@@ -762,40 +727,25 @@
     </property>
   </bean>
 
-  <bean id="decorating.includeComponent.httpIncludeCache" class="vtk.util.cache.ContentCacheImpl">
-    <property name="name" value="${repositoryID}.decorating.includeCache" />
-    <property name="cacheLoader" ref="decorating.includeComponent.httpIncludeCache.loader" />
-    <property name="cacheSeconds" value="${decorating.includeComponent.cacheTimeoutSeconds}" />
-    <property name="asynchronousRefresh" value="false" />
-    <property name="refreshInterval" value="30" />
-    <property name="maxItems" value="${decorating.includeComponent.maxCachedItems}" />
-  </bean>
-  
-  <!-- Config for new Ehcache based content-cache for http includes (as a replacement for the above). -->  
-  <!--
   <bean id="decorating.includeComponent.httpIncludeCache" class="vtk.util.cache.EhContentCache">
-    <property name="cache" ref="decorating.includeComponent.httpIncludeCache.cache"/>
-  </bean>
-  
-  <bean id="decorating.includeComponent.httpIncludeCache.cache"
-        class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-    <property name="cacheManager" ref="ehCacheManager" />
-    <property name="cacheName" value="vtk.HTTP_INCLUDE_CACHE"/>
-    <property name="maxElementsInMemory" value="${decorating.includeComponent.maxCachedItems}" />
-    <property name="maxElementsOnDisk" value="2000" />
-    <property name="eternal" value="false"/>
-    <property name="overflowToDisk" value="true"/>
-    <property name="timeToIdle" value="0" />
-    <property name="timeToLive" value="${decorating.includeComponent.cacheTimeoutSeconds}" />
-    <property name="cacheEntryFactory">
-      <bean class="vtk.util.cache.ContentCacheLoaderEhcacheAdapter">
-        <constructor-arg>
-          <ref bean="decorating.includeComponent.httpIncludeCache.loader" />
-        </constructor-arg>
+    <constructor-arg name="cache">
+      <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="ehCacheManager" />
+        <property name="cacheName" value="${repositoryID}.decorating.includeCache"/>
+        <property name="maxElementsInMemory" value="${decorating.includeComponent.maxCachedItems}" />
+        <property name="maxElementsOnDisk" value="0" />
+        <property name="timeToIdle" value="0" />
+        <property name="timeToLive" value="${decorating.includeComponent.cacheTimeoutSeconds}" />
+        <property name="cacheEntryFactory">
+          <bean class="vtk.util.cache.ContentCacheLoaderEhcacheAdapter">
+            <constructor-arg ref="decorating.includeComponent.httpIncludeCache.loader" />
+          </bean>
+        </property>
       </bean>
-    </property>
+    </constructor-arg>
+    <constructor-arg name="refreshIntervalSeconds" value="60" />
+    <constructor-arg name="asynchronousRefresh" value="false" />
   </bean>
-  -->
 
   <bean id="decorating.includeComponent.httpIncludeCache.loader" class="vtk.web.decorating.components.URLObjectLoader">
     <property name="connectTimeoutSeconds" value="${decorating.includeComponent.connectTimeoutSeconds}" />
@@ -835,7 +785,11 @@
     class="vtk.web.decorating.components.SearchFormComponent">
     <property name="namespace" ref="decorating.includeNamespace" />
     <property name="view" ref="decorating.searchForm.view" />
-    <property name="description" value="Inserts search-form that searches current directory. To override you can specify 'uri'." />
+    <property name="description">
+      <value>Inserts search-form that searches current directory.
+             To override you can specify 'uri' parameter.
+      </value>
+    </property>
   </bean>
 
   <bean name="decorating.searchForm.view" parent="freemarkerView">

@@ -39,12 +39,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
 import vtk.web.service.URL;
 
 public class LinkChecker {
@@ -55,6 +55,67 @@ public class LinkChecker {
     private int connectTimeout = 5000;
     private int readTimeout = 5000;
     private String userAgent = "Link checker";
+    
+    public static final class LinkCheckRequest {
+        private String href;
+        private URL base;
+        private boolean sendReferrer;
+        private boolean allowCached;
+        
+        private LinkCheckRequest(String href, URL base, boolean sendReferrer,
+                boolean allowCached) {
+            this.href = href;
+            this.base = base;
+            this.sendReferrer = sendReferrer;
+            this.allowCached = allowCached;
+        }
+        
+        public static Builder builder(String href, URL base) {
+            return new Builder(href, base);
+        }
+        
+        public String href() { return href; }
+
+        public URL base() { return base; }
+        
+        public boolean sendReferrer() { return sendReferrer; }
+        
+        public boolean allowCached() { return allowCached; }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "("
+                    + href + "," + base + "," + sendReferrer 
+                    + "," + allowCached + ")";
+        }
+        
+        public static final class Builder {
+            private String href;
+            private URL base;
+            private boolean sendReferrer = false, allowCached = true;
+            public Builder(String href, URL base) {
+                if (href == null || "".equals(href.trim()))
+                    throw new IllegalArgumentException("Empty href");
+                if (base == null)
+                    throw new NullPointerException("base");
+                this.href = href;
+                this.base = base;
+            }
+            public LinkCheckRequest build() {
+                return new LinkCheckRequest(href, base, sendReferrer, allowCached);
+            }
+            
+            public Builder sendReferrer(boolean sendReferrer) {
+                this.sendReferrer = sendReferrer;
+                return this;
+            }
+            public Builder allowCached(boolean allowCached) {
+                this.allowCached = allowCached;
+                return this;
+            }
+        }
+        
+    }
     
     public static final class LinkCheckResult implements Serializable {
         private static final long serialVersionUID = -7574234857037932804L;
@@ -70,24 +131,18 @@ public class LinkChecker {
             this.reason = reason;
         }
         public String getLink() {
-            return this.link;
+            return link;
         }
         public Status getStatus() {
-            return this.status;
+            return status;
         }
         public String getReason() {
-            return this.reason;
+            return reason;
         }
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append("link: ").append(link)
-            .append(", status: ").append(status);
-            if (reason != null) {
-                sb.append(", reason: ").append(reason);
-            }
-            sb.append("}");
-            return sb.toString();
+            return getClass().getSimpleName() + "("
+                    + link + "," + status + "," + reason + ")";
         }
     }
     
@@ -99,33 +154,9 @@ public class LinkChecker {
         ERROR;
     }
 
-    /**
-     * Request validation of reference with a base URL.
-     * 
-     * @param href Reference, may be absolute or relative to base.
-     * @param base Absolute base URL.
-     * 
-     * @return A <code>LinkCheckResult</code> with result of link check.
-     */
-    public LinkCheckResult validate(String href, URL base) {
-        return validate(href, base, false);
-    }
-    
-    /**
-     * Request validation of reference with a base URL, optionally sending
-     * base URL as an HTTP Referer(sic) header when doing the request.
-     * 
-     * @param href Reference, may be absolute or relative to base.
-     * @param base Absolute base URL.
-     * @param sendReferrer Set to <code>true</code> to add a Referer header
-     *                     to HTTP request when doing link validation. Base URL
-     *                     will be used as the value.
-     * 
-     * @return A {@link LinkCheckResult} with result of link check.
-     */
-    public LinkCheckResult validate(String href, URL base, boolean sendReferrer) {
-        LinkCheckResult result = validateInternal(href, base, sendReferrer);
-        logger.info("Validate: href='" + href + "', base='" + base + "': " + result);
+    public LinkCheckResult validate(LinkCheckRequest request) {
+        LinkCheckResult result = validateInternal(request);
+        logger.info("Validate: " + request + ": " + result);
         return result;
     }
     
@@ -150,12 +181,14 @@ public class LinkChecker {
         URI uri;
         try {
             uri = url.toURI(); // This validates URI syntax of URL
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             // Something is not proper, build new URI which does encoding of each component
             try {
                 uri = new URI(url.getProtocol(), null, url.getHost(), url.getPort(), 
                           url.getPath(), url.getQuery(), url.getRef());
-            } catch (URISyntaxException ue) {
+            }
+            catch (URISyntaxException ue) {
                 throw new MalformedURLException(ue.getMessage());
             }
         }
@@ -164,19 +197,17 @@ public class LinkChecker {
         return new java.net.URL(uri.toASCIIString());
     }
     
-    private LinkCheckResult validateInternal(final String href, URL base, boolean sendReferrer) {
-        if (href == null) {
-            throw new IllegalArgumentException("Link argument cannot be NULL");
-        }
-        if (base == null) {
-            throw new IllegalArgumentException("Base argument cannot be NULL");
-        }
+    private LinkCheckResult validateInternal(LinkCheckRequest request) {
+        
+        String href = request.href();
+        URL base = request.base();
         
         String absolute = href;
         if (URL.isRelativeURL(href)) {
             try {
                 absolute = base.relativeURL(href).toString();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 return new LinkCheckResult(href, Status.MALFORMED_URL, t.getMessage());
             }
         }
@@ -184,14 +215,20 @@ public class LinkChecker {
         java.net.URL urlToCheck = null;
         try {
             urlToCheck = escape(new java.net.URL(absolute));
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             return new LinkCheckResult(href, Status.MALFORMED_URL, e.getMessage());
         }
         
         final String cacheKey = urlToCheck.toString();
-        Element cached = this.cache.get(cacheKey);
+        
+        if (!request.allowCached()) {
+            cache.remove(cacheKey);
+        }
+        
+        Element cached = cache.get(cacheKey);
         if (cached != null) {
-            LinkCheckResult r = (LinkCheckResult) cached.getValue();
+            LinkCheckResult r = (LinkCheckResult) cached.getObjectValue();
             // Multiple input hrefs can map to the same URL:
             if (r.link.equals(href)) {
                 return r;
@@ -201,13 +238,14 @@ public class LinkChecker {
         Status status;
         String reason = null;
         try {
-            status = validateURL(urlToCheck, sendReferrer ? base : null, "HEAD");
+            status = validateURL(urlToCheck, request.sendReferrer() ? base : null, "HEAD");
             if (status == Status.NOT_FOUND) {
                 // Some broken servers return different result codes based on HEAD versus GET, so we retry...
                 logger.info("Validate (HEAD returned NOT_FOUND, retrying with GET): href='" + urlToCheck + "'");
-                status = validateURL(urlToCheck, sendReferrer ? base : null, "GET");
+                status = validateURL(urlToCheck, request.sendReferrer() ? base : null, "GET");
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             status = Status.ERROR;
             reason = t.getMessage();
         }
@@ -220,7 +258,7 @@ public class LinkChecker {
         }
         
         LinkCheckResult result = new LinkCheckResult(href, status, reason);
-        this.cache.put(new Element(cacheKey, result));
+        cache.put(new Element(cacheKey, result));
         return result;
     }
     
@@ -240,13 +278,17 @@ public class LinkChecker {
                 return Status.NOT_FOUND;
             }
             return Status.OK;
-        } catch (SocketTimeoutException e) {
+        }
+        catch (SocketTimeoutException e) {
             return Status.TIMEOUT;
-        } catch (UnknownHostException e) {
+        }
+        catch (UnknownHostException e) {
             return Status.NOT_FOUND;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return Status.ERROR;
-        } finally {
+        }
+        finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
@@ -274,9 +316,9 @@ public class LinkChecker {
     private HttpURLConnection createRequest(java.net.URL url, URL referrer, String method) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod(method);
-        urlConnection.setConnectTimeout(this.connectTimeout);
-        urlConnection.setReadTimeout(this.readTimeout);
-        urlConnection.setRequestProperty("User-Agent", this.userAgent);
+        urlConnection.setConnectTimeout(connectTimeout);
+        urlConnection.setReadTimeout(readTimeout);
+        urlConnection.setRequestProperty("User-Agent", userAgent);
         if (referrer != null) {
             urlConnection.setRequestProperty("Referer", referrer.toString());
         }

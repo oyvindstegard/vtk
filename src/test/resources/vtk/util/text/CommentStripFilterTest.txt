@@ -1,0 +1,216 @@
+// This file is named JSONTest.txt because some IDEs don't like comments in ".json" files.
+// It is a completely valid JSON array consisting of two objects if all comments are stripped properly.
+[
+{
+    "a": "b",
+    // some line comment which shall be ignored.
+    
+    "c":"d",
+    /*
+    Don't include this:
+    "x":"y"
+
+
+  */ 
+    // Comment markers inside strings shall remain untouched:
+    "abba /* ali baba */ \"bi //ng\"" :         1000,
+
+      "some-array": [1,2,3] ,
+  "\/foo":"/bar"
+
+  // just for kicks:  
+  /** /* } */
+    
+  /*
+      End.
+   \*/
+}
+,
+{
+  "900000":"http://www.uio.no", //Universitetet i Oslo
+  "en:900000":"http://www.uio.no/english", //Universitetet i Oslo
+
+  //Fakulteter og institutter 
+  "140000":"http://www.hf.uio.no", //Det humanistiske fakultet
+  "143100":"http://www.hf.uio.no/iakh", //Institutt for arkeologi, konservering og historie
+  "143200":"http://www.hf.uio.no/ikos", //Institutt for kulturstudier og orientalske språk
+  "143300":"http://www.hf.uio.no/ifikk", //Institutt for filosofi, ide- og kunsthistorie og klassiske språk
+  "143400":"http://www.hf.uio.no/ilos", //Institutt for litteratur, områdestudier og europeiske språk
+  "143500":"http://www.hf.uio.no/iln", //Institutt for lingvistiske og nordiske studier
+  "140900":"http://www.hf.uio.no/imk", //Institutt for medier og kommunikasjon
+  "143600":"http://www.hf.uio.no/imv", //Institutt for musikkvitenskap
+  "143570":"http://www.hf.uio.no/is", //Senter for Ibsen-studier
+  "140053":"http://www.st-petersburg.uio.no", //Det norske universitetssenter i St. Petersburg
+  "141300":"http://www.hf.uio.no/dnir", //Det norske institutt i Roma
+  "143370":"http://www.hf.uio.no/csmn", //Senter for studier av rasjonell, språklig og moralsk handling (CSMN)
+  "140054":"http://www.paris.uio.no", //Senter i Paris
+
+  "en:140000":"http://www.hf.uio.no/english", //Det humanistiske fakultet
+  "en:143100":"http://www.hf.uio.no/iakh/english", //Institutt for arkeologi, konservering og historie
+  "en:143200":"http://www.hf.uio.no/ikos/english", //Institutt for kulturstudier og orientalske språk
+  "en:143300":"http://www.hf.uio.no/ifikk/english", //Institutt for filosofi, ide- og kunsthistorie og klassiske språk
+  "en:143400":"http://www.hf.uio.no/ilos/english", //Institutt for litteratur, områdestudier og europeiske språk
+  "en:143500":"http://www.hf.uio.no/iln/english", //Institutt for lingvistiske og nordiske studier
+  "en:140900":"http://www.hf.uio.no/imk/english", //Institutt for medier og kommunikasjon
+  "en:143600":"http://www.hf.uio.no/imv/english", //Institutt for musikkvitenskap
+  "en:143570":"http://www.hf.uio.no/is/english", //Senter for Ibsen-studier
+  "en:140053":"http://www.st-petersburg.uio.no/index_en.php", //Det norske universitetssenter i St. Petersburg
+  "en:141300":"http://www.hf.uio.no/dnir/english", //Det norske institutt i Roma
+  "en:143370":"http://www.hf.uio.no/csmn/english", //Senter for studier av rasjonell, språklig og moralsk handling (CSMN)
+  "en:140054":"http://www.paris.uio.no/fr-web", //Senter i Paris
+
+
+  "120000":"http://www.jus.uio.no", //Det juridiske fakultet
+  "120100":"http://www.jus.uio.no/ikrs", //Institutt for kriminologi og rettssosiologi
+  "120500":"http://www.jus.uio.no/ior", //Institutt for offentlig rett
+  "120200":"http://www.jus.uio.no/ifp", //Institutt for privatrett
+  "120400":"http://www.jus.uio.no/nifs", //Nordisk institutt for sjørett
+  "120700":"http://www.jus.uio.no/smr", //Norsk senter for menneskerettigheter
+  "120410":"http://www.jus.uio.no/europarett", //Senter for europarett
+
+  "en:120000":"http://www.jus.uio.no/english", //Det juridiske fakultet
+  "en:120100":"http://www.jus.uio.no/ikrs/english", //Institutt for kriminologi og rettssosiologi
+  "en:120500":"http://www.jus.uio.no/ior/english", //Institutt for offentlig rett
+  "en:120200":"http://www.jus.uio.no/ifp/english", //Institutt for privatrett
+  "en:120400":"http://www.jus.uio.no/nifs/english", //Nordisk institutt for sjørett
+  "en:120700":"http://www.jus.uio.no/smr/english", //Norsk senter for menneskerettigheter
+  "en:120410":"http://www.jus.uio.no/europarett/english", //Senter for europarett
+
+
+  "150000":"http://www.mn.uio.no", //Det matematisk-naturvitenskapelige fakultet
+  "152100":"http://www.mn.uio.no/bio", //Biologisk institutt
+  "152300":"http://www.mn.uio.no/farmasi", //Farmasøytisk institutt
+  "150300":"http://www.mn.uio.no/astro", //Institutt for teoretisk astrofysikk
+  "150400":"http://www.mn.uio.no/fysikk", //Fysisk institutt
+  "150500":"http://www.mn.uio.no/ifi", //Institutt for informatikk
+  "152200":"http://www.mn.uio.no/geo", //Institutt for geofag
+  "152000":"http://www.mn.uio.no/imbv", //Institutt for molekylær biovitenskap
+  "151200":"http://www.mn.uio.no/kjemi", //Kjemisk institutt
+  "151300":"http://www.mn.uio.no/math", //Matematisk institutt
+  "152600":"http://www.cma.uio.no", //Centre of Mathematics for Applications
+  "152400":"http://www.mn.uio.no/sfe", //Senter for entreprenørskap
+  "151700":"http://www.mn.uio.no/smn", //Senter for materialvitenskap og nanoteknologi
+  "152190":"http://www.mn.uio.no/cees", //Senter for økologisk og evolusjonær syntese (CEES)
+  "151220":"http://www.mn.uio.no/ingap", //Senter for innovative naturgassprosesser og -produkter (INGAP) 
+  "152700":"http://www.naturfagsenteret.no", //Naturfagsenteret
+
+  "en:150000":"http://www.mn.uio.no/english", //Det matematisk-naturvitenskapelige fakultet
+  "en:152100":"http://www.mn.uio.no/bio/english", //Biologisk institutt
+  "en:152300":"http://www.mn.uio.no/farmasi/english", //Farmasøytisk institutt
+  "en:150300":"http://www.mn.uio.no/astro/english", //Institutt for teoretisk astrofysikk
+  "en:150400":"http://www.mn.uio.no/fysikk/english", //Fysisk institutt
+  "en:150500":"http://www.mn.uio.no/ifi/english", //Institutt for informatikk
+  "en:152200":"http://www.mn.uio.no/geo/english", //Institutt for geofag
+  "en:152000":"http://www.mn.uio.no/imbv/english", //Institutt for molekylær biovitenskap
+  "en:151200":"http://www.mn.uio.no/kjemi/english", //Kjemisk institutt
+  "en:151300":"http://www.mn.uio.no/math/english", //Matematisk institutt
+  "en:152600":"http://www.cma.uio.no", //Centre of Mathematics for Applications
+  "en:152400":"http://www.mn.uio.no/sfe/english", //Senter for entreprenørskap
+  "en:151700":"http://www.mn.uio.no/smn/english", //Senter for materialvitenskap og nanoteknologi
+  "en:152190":"http://www.mn.uio.no/cees/english", //Senter for økologisk og evolusjonær syntese (CEES)
+  "en:151220":"http://www.mn.uio.no/ingap/english", //Senter for innovative naturgassprosesser og -produkter (INGAP)
+  "en:152700":"http://www.naturfagsenteret.no/c1442967/artikkel/vis.html?tid=1442390", //Naturfagsenteret
+
+
+  "500000":"http://www.med.uio.no", //Det medisinske fakultet
+  "520000":"http://www.med.uio.no/helsam", //Institutt for helse og samfunn
+  "510000":"http://www.med.uio.no/imb", //Institutt for medisinske basalfag
+  "530000":"http://www.med.uio.no/klinmed", //Institutt for klinisk medisin
+  "530210":"http://www.med.uio.no/ccb", //Centre for Cancer Biomedicine (CCB)
+  "530211":"http://www.med.uio.no/cir", //Centre for Immune Regulation (CIR)
+  "511600":"http://www.cmbn.no", //Center for Molecular Biology and Neuroscience
+
+  "en:500000":"http://www.med.uio.no/english", //Det medisinske fakultet
+  "en:520000":"http://www.med.uio.no/helsam/english", //Institutt for helse og samfunn
+  "en:510000":"http://www.med.uio.no/imb/english", //Institutt for medisinske basalfag
+  "en:530000":"http://www.med.uio.no/klinmed/english", //Institutt for klinisk medisin
+  "en:530210":"http://www.med.uio.no/ccb/english", //Centre for Cancer Biomedicine (CCB)
+  "en:530211":"http://www.med.uio.no/cir/english", //Centre for Immune Regulation (CIR)
+  "en:511600":"http://www.cmbn.no", //Center for Molecular Biology and Neuroscience
+
+
+  "160000":"http://www.odont.uio.no", //Det odontologiske fakultet
+  "161500":"http://www.odont.uio.no/iob", //Institutt for oral biologi
+  "161700":"http://www.odont.uio.no/iko", //Institutt for klinisk odontologi
+
+  "en:160000":"http://www.odont.uio.no/english", //Det odontologiske fakultet
+  "en:161500":"http://www.odont.uio.no/iob/english", //Institutt for oral biologi
+  "en:161700":"http://www.odont.uio.no/iko/english", //Institutt for klinisk odontologi
+
+
+  "170000":"http://www.sv.uio.no", //Det samfunnsvitenskapelige fakultet
+  "170700":"http://www.sv.uio.no/iss", //Institutt for sosiologi og samfunnsgeografi
+  "170800":"http://www.sv.uio.no/isv", //Institutt for statsvitenskap
+  "170500":"http://www.sv.uio.no/psi", //Psykologisk institutt
+  "170900":"http://www.sv.uio.no/sai", //Sosialantropologisk institutt
+  "170600":"http://www.sv.uio.no/econ", //Økonomisk institutt
+  "170610":"http://www.sv.uio.no/esop", //Centre of Equality, Social Organization, and Performance (ESOP)
+  "170400":"http://www.sv.uio.no/arena", //ARENA – senter for europaforskning
+  "170100":"http://www.sv.uio.no/tik", //Senter for teknologi, innovasjon og kultur (TIK)
+  "170030":"http://www.childwatch.uio.no", //The Childwatch International Research Network
+
+  "en:170000":"http://www.sv.uio.no/english", //Det samfunnsvitenskapelige fakultet
+  "en:170700":"http://www.sv.uio.no/iss/english", //Institutt for sosiologi og samfunnsgeografi
+  "en:170800":"http://www.sv.uio.no/isv/english", //Institutt for statsvitenskap
+  "en:170500":"http://www.sv.uio.no/psi/english", //Psykologisk institutt
+  "en:170900":"http://www.sv.uio.no/sai/english", //Sosialantropologisk institutt
+  "en:170600":"http://www.sv.uio.no/econ/english", //Økonomisk institutt
+  "en:170610":"http://www.sv.uio.no/esop/english", //Centre of Equality, Social Organization, and Performance (ESOP)
+  "en:170400":"http://www.sv.uio.no/arena/english", //ARENA – senter for europaforskning
+  "en:170100":"http://www.sv.uio.no/tik/english", //Senter for teknologi, innovasjon og kultur (TIK)
+  "en:170030":"http://www.childwatch.uio.no", //The Childwatch International Research Network
+
+
+  "110000":"http://www.tf.uio.no", //Det teologiske fakultet
+  "en:110000":"http://www.tf.uio.no/english", //Det teologiske fakultet
+
+
+  "180000":"http://www.uv.uio.no", //Det utdanningsvitenskapelige fakultet
+  "180200":"http://www.uv.uio.no/ils", //Institutt for lærerutdanning og skoleforskning
+  "180300":"http://www.uv.uio.no/isp", //Institutt for spesialpedagogikk
+  "180100":"http://www.uv.uio.no/pfi", //Pedagogisk forskningsinstitutt
+  "180400":"http://www.uv.uio.no/intermedia", //InterMedia
+
+  "en:180000":"http://www.uv.uio.no/english", //Det utdanningsvitenskapelige fakultet
+  "en:180200":"http://www.uv.uio.no/ils/english", //Institutt for lærerutdanning og skoleforskning
+  "en:180300":"http://www.uv.uio.no/isp/english", //Institutt for spesialpedagogikk
+  "en:180100":"http://www.uv.uio.no/pfi/english", //Pedagogisk forskningsinstitutt
+  "en:180400":"http://www.uv.uio.no/intermedia/english", //InterMedia
+
+
+  // Museer og samlinger
+  "280000":"http://www.nhm.uio.no", //Naturhistorisk museum
+  "270000":"http://www.khm.uio.no", //Kulturhistorisk museum
+  "291700":"http://www.muv.uio.no", //Museum for universitets- og vitenskapshistorie (MUV)
+
+  "en:280000":"http://www.nhm.uio.no/english", //Naturhistorisk museum
+  "en:270000":"http://www.khm.uio.no/index_eng.html", //Kulturhistorisk museum
+  "en:291700":"http://www.muv.uio.no", //Museum for universitets- og vitenskapshistorie (MUV)
+
+
+  // Bibliotek
+  "340000":"http://www.ub.uio.no", //Universitetsbiblioteket
+  "en:340000":"http://www.ub.uio.no/english", //Universitetsbiblioteket
+
+
+  // Andre enheter under universitetsstyret
+  "291300":"http://www.med.uio.no/rmi", //Rettsmedisinsk institutt
+  "291200":"http://www.stk.uio.no", //Senter for tverrfaglig kjønnsforskning
+  "290100":"http://www.sum.uio.no", //Senter for utvikling og miljø (SUM)
+  "291600":"http://www.uio.no/forskning/tverrfak/mls", //Molecular life science (MLS)
+  "290800":"http://www.biotek.uio.no", //Bioteknologisenteret i Oslo
+  "311000":"http://www.apollon.uio.no", //Apollon
+  "310900":"http://www.uniforum.uio.no", //Uniforum
+  "350000":"http://www.usit.uio.no", //USIT
+
+  "en:291300":"http://www.med.uio.no/rmi", //Rettsmedisinsk institutt
+  "en:291200":"http://www.stk.uio.no/english", //Senter for tverrfaglig kjønnsforskning
+  "en:290100":"http://www.sum.uio.no", //Senter for utvikling og miljø (SUM)
+  "en:291600":"http://www.uio.no/english/research/interfaculty-research-areas/mls", //Molecular life science (MLS)
+  "en:290800":"http://www.biotek.uio.no", //Bioteknologisenteret i Oslo
+  "en:311000":"http://www.apollon.uio.no", //Apollon
+  "en:310900":"http://www.uniforum.uio.no", //Uniforum
+  "en:350000":"http://www.usit.uio.no/english" //USIT
+}
+
+]

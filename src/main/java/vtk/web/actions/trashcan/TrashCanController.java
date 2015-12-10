@@ -33,6 +33,7 @@ package vtk.web.actions.trashcan;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,7 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.SimpleFormController;
+
 import vtk.repository.Path;
 import vtk.repository.RecoverableResource;
 import vtk.repository.Repository;
@@ -48,13 +49,14 @@ import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.Message;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 import vtk.web.actions.trashcan.TrashCanObjectSorter.Order;
 import vtk.web.service.Service;
 
-public class TrashCanController extends SimpleFormController {
+public class TrashCanController extends SimpleFormController<TrashCanCommand> {
 
     @Override
-    protected Object formBackingObject(HttpServletRequest request) throws Exception {
+    protected TrashCanCommand formBackingObject(HttpServletRequest request) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -67,7 +69,8 @@ public class TrashCanController extends SimpleFormController {
         String submitURL = service.constructLink(resource, principal);
         TrashCanCommand command = new TrashCanCommand(submitURL, resource);
 
-        List<RecoverableResource> recoverableResources = repository.getRecoverableResources(token, uri);
+        List<RecoverableResource> recoverableResources = 
+                repository.getRecoverableResources(token, uri);
         List<TrashCanObject> trashCanObjects = new ArrayList<TrashCanObject>();
         for (RecoverableResource rr : recoverableResources) {
             TrashCanObject tco = new TrashCanObject();
@@ -75,33 +78,38 @@ public class TrashCanController extends SimpleFormController {
             trashCanObjects.add(tco);
         }
 
-        Order sortOrder = TrashCanObjectSorter.getSortOrder(request.getParameter(TrashCanObjectSorter.SORT_BY_PARAM));
+        Order sortOrder = TrashCanObjectSorter.getSortOrder(
+                request.getParameter(TrashCanObjectSorter.SORT_BY_PARAM));
         boolean invert = request.getParameter(TrashCanObjectSorter.INVERT_PARAM) != null;
         TrashCanObjectSorter.sort(trashCanObjects, sortOrder, invert);
         command.setTrashCanObjects(trashCanObjects);
-        command.setSortLinks(TrashCanObjectSorter.getSortLinks(service, resource, principal, request));
+        command.setSortLinks(TrashCanObjectSorter.getSortLinks(
+                service, resource, principal, request));
 
         return command;
     }
 
     @Override
-    protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response, Object command,
+    protected ModelAndView onSubmit(HttpServletRequest request, 
+            HttpServletResponse response, TrashCanCommand command,
             BindException errors) throws Exception {
-
-        TrashCanCommand trashCanCommand = (TrashCanCommand) command;
-        if (!trashCanCommand.hasSelectedObjectsForRecovery() || !trashCanCommand.isValidAction()) {
-            return this.showNewForm(request, response);
+        
+        Map<String, Object> model = errors.getModel();
+        
+        if (!command.hasSelectedObjectsForRecovery() || !command.isValidAction()) {
+            return new ModelAndView(getFormView(), model);
         }
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        Path parentURI = trashCanCommand.getParentResource().getURI();
-        List<RecoverableResource> selectedResources = trashCanCommand.getSelectedResources();
+        Path parentURI = command.getParentResource().getURI();
+        List<RecoverableResource> selectedResources = command.getSelectedResources();
 
-        if (trashCanCommand.getRecoverAction() != null) {
+        if (command.getRecoverAction() != null) {
 
-            RecoveryObject recoveryObject = getRecoverableResources(parentURI, selectedResources);
+            RecoveryObject recoveryObject = 
+                    getRecoverableResources(parentURI, selectedResources);
 
             // Recover what u can
             for (RecoverableResource rr : recoveryObject.getRecoverable()) {
@@ -119,24 +127,24 @@ public class TrashCanController extends SimpleFormController {
                     msg.addMessage(rr.getName());
                 }
                 RequestContext.getRequestContext().addErrorMessage(msg);
-                return this.showNewForm(request, response);
+                return new ModelAndView(getFormView(), model);
             }
 
-            return new ModelAndView(this.getSuccessView());
+            return new ModelAndView(getSuccessView(), model);
 
-        } else if (trashCanCommand.getDeletePermanentAction() != null) {
+        } 
+        else if (command.getDeletePermanentAction() != null) {
 
             for (RecoverableResource rr : selectedResources) {
                 repository.deleteRecoverable(token, parentURI, rr);
             }
-            if (selectedResources.size() == trashCanCommand.getTrashCanObjects().size()) {
-                return new ModelAndView(this.getSuccessView());
+            if (selectedResources.size() == command.getTrashCanObjects().size()) {
+                return new ModelAndView(this.getSuccessView(), model);
             }
-            return this.showNewForm(request, response);
+            return new ModelAndView(getFormView(), model);
 
-        } else {
-            throw new IllegalArgumentException("Invalid action, cannot process");
-        }
+        } 
+        throw new IllegalArgumentException("Invalid action, cannot process");
     }
 
     private RecoveryObject getRecoverableResources(Path parentURI, 
@@ -174,7 +182,8 @@ public class TrashCanController extends SimpleFormController {
         List<RecoverableResource> recoverable;
         List<RecoverableResource> conflicted;
 
-        protected RecoveryObject(List<RecoverableResource> recoverable, List<RecoverableResource> conflicted) {
+        protected RecoveryObject(List<RecoverableResource> recoverable, 
+                List<RecoverableResource> conflicted) {
             this.recoverable = recoverable;
             this.conflicted = conflicted;
         }

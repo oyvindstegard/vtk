@@ -9,14 +9,14 @@ var tocTargetId = ""; /* Possible to override with a target for toc defined typi
   var tocGenElem = null;
   try {                   
     document.addEventListener("DOMContentLoaded", function(event) {
-      if(tocGenElem == null) {
+      if(tocGenElem === null) {
         tocGenElem = new tocGen('toc');
         forceScrollToTocIdIfNotScrolled();
       }
     });
   } catch(e) {           
     window.onload = function () {
-      if(tocGenElem == null) {
+      if(tocGenElem === null) {
         tocGenElem = new tocGen('toc');
       }
     };
@@ -46,7 +46,7 @@ function tocGen(writeTo) {
       } else {
         headers = document.querySelectorAll('h2,h3');
       }
-    } else if (typeof (document.compareDocumentPosition) != 'undefined' || typeof (this.parentOb.sourceIndex) != 'undefined') {
+    } else if (typeof (document.compareDocumentPosition) !== 'undefined' || typeof (this.parentOb.sourceIndex) !== 'undefined') {
       headers = getElementsByTagNames('h2,h3');
     } else {
       headers = getElementsByTagNames('h2');
@@ -83,7 +83,7 @@ function tocGen(writeTo) {
 
 tocGen.prototype.addLink = function (ob) {
   var linkInside = ob.firstChild;
-  if(linkInside && linkInside.nodeName == "A") {
+  if(linkInside && linkInside.nodeName === "A") {
     ob = linkInside;
   }
   var id = this.getId(ob);
@@ -104,13 +104,14 @@ function forceScrollToTocIdIfNotScrolled() {
   try {
     var doc = document.documentElement;
     var top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
-    if(top == 0 && window.location.hash && /#toc[\d]{1}/.test(window.location.hash)) {
+    if(top === 0 && window.location.hash && /#toc[\d]{1}/.test(window.location.hash)) {
       // Force scroll after toc is generated if not already has scrolled
       var elm = document.getElementById(window.location.hash.split("#")[1]);
       if(typeof elm.scrollIntoView === "function") {
         elm.scrollIntoView();
       } else {
-        window.location.hash = window.location.hash;
+        var hash = window.location.hash;
+        window.location.hash = hash;
       }
     }
   } catch(e) {}

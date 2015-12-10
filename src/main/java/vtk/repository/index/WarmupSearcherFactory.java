@@ -44,7 +44,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TopFieldDocs;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.search.Parser;
@@ -134,7 +133,7 @@ public class WarmupSearcherFactory extends SearcherFactory implements Initializi
             if (logger.isDebugEnabled()) {
                 logger.debug("Search " + search + " matched " + docs.scoreDocs.length + " docs.");
             }
-            int max = Math.min(500, docs.scoreDocs.length);
+            int max = Math.min(250, docs.scoreDocs.length);
             for (int i = 0; i < max; i++) {
                 searcher.doc(docs.scoreDocs[i].doc);
             }

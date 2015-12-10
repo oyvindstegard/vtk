@@ -36,11 +36,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
@@ -57,7 +59,7 @@ import vtk.web.service.Service;
 import vtk.web.service.URL;
 import vtk.web.servlet.ResourceAwareLocaleResolver;
 
-public class CollectionListingController extends AbstractCollectionListingController {
+public class CollectionListingController extends BaseCollectionListingController {
 
     protected List<SearchComponent> searchComponents;
     protected PropertyTypeDefinition hideIcon;
@@ -110,7 +112,6 @@ public class CollectionListingController extends AbstractCollectionListingContro
             if (numberOfFiles > 0) {
                 limit -= listing.getEntries().size();
             }
-
         }
 
         if (resolvePrincipalLink && results.size() > 0 && helper != null) {
@@ -126,7 +127,7 @@ public class CollectionListingController extends AbstractCollectionListingContro
             model.put("principalDocuments", principalDocuments);
         }
 
-        URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
+        URL baseURL = URL.create(request);
 
         if (getHideIcon(collection)) {
             model.put("hideIcon", true);
@@ -136,8 +137,14 @@ public class CollectionListingController extends AbstractCollectionListingContro
             model.put("editCurrentResource", helper.checkResourceForEditLink(repository, collection, principal));
         }
 
-        List<ListingPagingLink> urls = ListingPager.generatePageThroughUrls(totalHits, pageLimit, baseURL, page);
-        model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+        Optional<ListingPager.Pagination> pagination = 
+                ListingPager.pagination(totalHits, pageLimit, baseURL, page);
+        if (pagination.isPresent()) {
+            List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
+            model.put(MODEL_KEY_PAGE_THROUGH_URLS, urls);
+            model.put(MODEL_KEY_PAGINATION, pagination.get());
+        }
+
         model.put(MODEL_KEY_SEARCH_COMPONENTS, results);
         model.put(MODEL_KEY_PAGE, page);
         if (results.size() > 0 && results.get(0) != null) {

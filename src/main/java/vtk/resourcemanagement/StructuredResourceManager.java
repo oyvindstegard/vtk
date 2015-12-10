@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009,2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.RepositoryAction;
 import vtk.repository.ResourceTypeTree;
@@ -64,6 +65,7 @@ import vtk.resourcemanagement.property.SimplePropertyDescription;
 import vtk.web.service.RepositoryAssertion;
 
 public class StructuredResourceManager {
+    private static final Log logger = LogFactory.getLog(StructuredResourceManager.class);
 
     private static final Map<String, PropertyType.Type> PROPTYPE_MAP = new HashMap<String, PropertyType.Type>();
     static {
@@ -84,7 +86,7 @@ public class StructuredResourceManager {
     private JSONObjectSelectAssertion assertion;
     private Namespace namespace = Namespace.STRUCTURED_RESOURCE_NAMESPACE;
 
-    private Map<String, StructuredResourceDescription> types = new HashMap<String, StructuredResourceDescription>();
+    private Map<String, StructuredResourceDescription> types = new HashMap<>();
     private ValueFactory valueFactory;
     private ValueFormatterRegistry valueFormatterRegistry;
     private EvaluatorResolver evaluatorResolver;
@@ -94,23 +96,112 @@ public class StructuredResourceManager {
         ResourceTypeDefinition existing = null;
         try {
             existing = resourceTypeTree.getResourceTypeDefinitionByName(name);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             // Ignore
         }
         if (existing != null) {
             throw new IllegalArgumentException("Resource type of name " + name + " already exists");
+        }
+        addNewTypeDefinition(description, name);
+    }
+
+    public void refresh(StructuredResourceDescription newDescription) throws Exception {
+        String name = newDescription.getName();
+        StructuredResourceDescription oldDescription = this.get(name);
+        if (oldDescription == null) {
+            throw new IllegalStateException("Resource type of name " + name + " do not exists");
+        }
+
+        if (oldDescription.getDisplayTemplate() == null
+                && newDescription.getDisplayTemplate() != null) {
+            logger.info("Adding display template: " + oldDescription.getName());
+            oldDescription.setDisplayTemplate(newDescription.getDisplayTemplate());
+        }
+        else if (newDescription.getDisplayTemplate() == null
+                && oldDescription.getDisplayTemplate() != null) {
+            logger.info("Removing display template: " + oldDescription.getName());
+            oldDescription.setDisplayTemplate(null);
+        }
+        else if ((
+                oldDescription.getDisplayTemplate() != null
+                        && !newDescription.getDisplayTemplate().equals(oldDescription.getDisplayTemplate())
+        )) {
+            logger.info("Updating display template: " + oldDescription.getName());
+            oldDescription.getDisplayTemplate().setContent(newDescription.getDisplayTemplate().getTemplate());
+        }
+        for (ComponentDefinition newCompDef : newDescription.getComponentDefinitions()) {
+            if (newCompDef.getName().equals("view")) continue;
+            for (ComponentDefinition oldCompDef : oldDescription.getComponentDefinitions()) {
+                if (newCompDef.getName().equals(oldCompDef.getName())) {
+                    if (!newCompDef.getDefinition().equals(oldCompDef.getDefinition())) {
+                        logger.info("Updating component " + oldDescription.getName()
+                                + ":" + oldCompDef);
+                        oldCompDef.setDefinition(newCompDef.getDefinition());
+                    }
+                }
+            }
+
+        }
+    }
+
+    public void registrationComplete() {
+        logger.info("Default resource type tree:");
+        logger.info(this.resourceTypeTree.getResourceTypeTreeAsString());
+    }
+
+    public StructuredResourceDescription get(String name) {
+        return this.types.get(name);
+    }
+
+    public List<StructuredResourceDescription> list() {
+        List<StructuredResourceDescription> result = new ArrayList<>();
+        result.addAll(this.types.values());
+        return result;
+    }
+
+    @Required
+    public void setResourceTypeTree(ResourceTypeTree resourceTypeTree) {
+        this.resourceTypeTree = resourceTypeTree;
+    }
+
+    @Required
+    public void setBaseType(PrimaryResourceTypeDefinition baseType) {
+        this.baseType = baseType;
+    }
+
+    @Required
+    public void setValueFactory(ValueFactory valueFactory) {
+        this.valueFactory = valueFactory;
+    }
+
+    @Required
+    public void setValueFormatterRegistry(ValueFormatterRegistry valueFormatterRegistry) {
+        this.valueFormatterRegistry = valueFormatterRegistry;
+    }
+
+    @Required
+    public void setAssertion(JSONObjectSelectAssertion assertion) {
+        this.assertion = assertion;
+    }
+
+    public void setNamespace(Namespace namespace) {
+        this.namespace = namespace;
+    }
+
+    @Required
+    public void setEvaluatorResolver(EvaluatorResolver evaluatorResolver) {
+        this.evaluatorResolver = evaluatorResolver;
+    }
+
+    private void addNewTypeDefinition(StructuredResourceDescription description, String name) throws Exception {
+        if (description.getInheritsFrom() !=  null) {
+            description.setParent(this.get(description.getInheritsFrom()));
         }
         description.validate();
         PrimaryResourceTypeDefinition def = createResourceType(description);
         this.resourceTypeTree.registerDynamicResourceType(def);
 
         this.types.put(name, description);
-    }
-
-    public void registrationComplete() {
-        Log logger = LogFactory.getLog(getClass());
-        logger.info("Resource type tree:");
-        logger.info(this.resourceTypeTree.getResourceTypeTreeAsString());
     }
 
     private PrimaryResourceTypeDefinition createResourceType(StructuredResourceDescription description)
@@ -209,7 +300,7 @@ public class StructuredResourceManager {
     }
 
     private OverridablePropertyTypeDefinitionImpl resolveOverride(PropertyDescription propDesc,
-            StructuredResourceDescription resourceDesc) {
+                                                                  StructuredResourceDescription resourceDesc) {
         String name = propDesc.getOverrides();
         // Allow overriding of only "internal" properties for now:
         Namespace defaultNamespace = Namespace.DEFAULT_NAMESPACE;
@@ -241,7 +332,7 @@ public class StructuredResourceManager {
     }
 
     private PropertyTypeDefinition createPropDef(PropertyDescription propertyDescription,
-            StructuredResourceDescription resourceDescription) throws Exception {
+                                                 StructuredResourceDescription resourceDescription) throws Exception {
         if (propertyDescription.isNoExtract()) {
             return null;
         }
@@ -252,7 +343,7 @@ public class StructuredResourceManager {
     }
 
     private PropertyTypeDefinition createOverridingPropDef(PropertyDescription propertyDescription,
-            StructuredResourceDescription resourceDescription) throws Exception {
+                                                           StructuredResourceDescription resourceDescription) throws Exception {
         OverridablePropertyTypeDefinitionImpl overridableDef = resolveOverride(propertyDescription, resourceDescription);
 
         OverridingPropertyTypeDefinitionImpl overridingDef = new OverridingPropertyTypeDefinitionImpl();
@@ -264,7 +355,7 @@ public class StructuredResourceManager {
     }
 
     private PropertyTypeDefinition createRegularPropDef(PropertyDescription propertyDescription,
-            StructuredResourceDescription resourceDescription) {
+                                                        StructuredResourceDescription resourceDescription) {
         OverridablePropertyTypeDefinitionImpl def = new OverridablePropertyTypeDefinitionImpl();
 
         def.setName(propertyDescription.getName());
@@ -273,7 +364,8 @@ public class StructuredResourceManager {
             def.setType(Type.STRING);
         } else if (propertyDescription instanceof JSONPropertyDescription) {
             def.setType(Type.JSON);
-            def.addMetadata(PropertyTypeDefinition.METADATA_INDEXABLE_JSON, true);
+            // No need to blindly index all JSON fields:
+            //def.addMetadata(PropertyTypeDefinition.METADATA_INDEXABLE_JSON, true);
         } else {
             def.setType(mapType(propertyDescription));
         }
@@ -324,26 +416,26 @@ public class StructuredResourceManager {
     private void setDefaultValue(OverridablePropertyTypeDefinitionImpl def, String defaultValue) {
         Type type = def.getType();
         switch (type) {
-        case STRING:
-            def.setDefaultValue(new Value(defaultValue, type));
-            return;
-        case BOOLEAN:
-            if ("true".equalsIgnoreCase(defaultValue) || "false".equalsIgnoreCase(defaultValue)) {
-                def.setDefaultValue(new Value(Boolean.valueOf(defaultValue)));
+            case STRING:
+                def.setDefaultValue(new Value(defaultValue, type));
                 return;
-            }
-            throw new IllegalArgumentException("Default value of a boolean property can only be 'true' or 'false'");
-        case INT:
-            Integer numb = null;
-            try {
-                numb = Integer.parseInt(defaultValue);
-            } catch (NumberFormatException nfe) {
-                throw new IllegalArgumentException("Default value of an int property can only be a valid number");
-            }
-            def.setDefaultValue(new Value(numb));
-            return;
-        default:
-            return;
+            case BOOLEAN:
+                if ("true".equalsIgnoreCase(defaultValue) || "false".equalsIgnoreCase(defaultValue)) {
+                    def.setDefaultValue(new Value(Boolean.valueOf(defaultValue)));
+                    return;
+                }
+                throw new IllegalArgumentException("Default value of a boolean property can only be 'true' or 'false'");
+            case INT:
+                Integer numb = null;
+                try {
+                    numb = Integer.parseInt(defaultValue);
+                } catch (NumberFormatException nfe) {
+                    throw new IllegalArgumentException("Default value of an int property can only be a valid number");
+                }
+                def.setDefaultValue(new Value(numb));
+                return;
+            default:
+                return;
         }
     }
 
@@ -354,51 +446,6 @@ public class StructuredResourceManager {
             throw new IllegalArgumentException("Unmapped property type: " + type);
         }
         return result;
-    }
-
-    public StructuredResourceDescription get(String name) {
-        StructuredResourceDescription description = this.types.get(name);
-        return description;
-    }
-
-    public List<StructuredResourceDescription> list() {
-        List<StructuredResourceDescription> result = new ArrayList<StructuredResourceDescription>();
-        result.addAll(this.types.values());
-        return result;
-    }
-
-    @Required
-    public void setResourceTypeTree(ResourceTypeTree resourceTypeTree) {
-        this.resourceTypeTree = resourceTypeTree;
-    }
-
-    @Required
-    public void setBaseType(PrimaryResourceTypeDefinition baseType) {
-        this.baseType = baseType;
-    }
-
-    @Required
-    public void setValueFactory(ValueFactory valueFactory) {
-        this.valueFactory = valueFactory;
-    }
-
-    @Required
-    public void setValueFormatterRegistry(ValueFormatterRegistry valueFormatterRegistry) {
-        this.valueFormatterRegistry = valueFormatterRegistry;
-    }
-
-    @Required
-    public void setAssertion(JSONObjectSelectAssertion assertion) {
-        this.assertion = assertion;
-    }
-
-    public void setNamespace(Namespace namespace) {
-        this.namespace = namespace;
-    }
-
-    @Required
-    public void setEvaluatorResolver(EvaluatorResolver evaluatorResolver) {
-        this.evaluatorResolver = evaluatorResolver;
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2008, University of Oslo, Norway
+/* Copyright (c) 2008,2014, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -388,12 +388,12 @@ public class DumpQueryTreeVisitor implements QueryTreeVisitor {
         buf.append(query.getClass().getName()).append("\n");
         
         String principalTerm = query.getQualifiedName()!= null ? query.getQualifiedName() : "*";
-        String privilegeTerm = query.getQualifiedName()!= null ? query.getPrivilege().getName() : "*";
+        String privilegeTerm = query.getPrivilege()!= null ? query.getPrivilege().getName() : "*";
         
-        buf.append(prefix).append(", Privilege = ").append(privilegeTerm);
-        buf.append("UID = ").append(principalTerm);
-        buf.append("inverted = ").append(query.isInverted());
-        buf.append(", includeSuperPrivileges = ").append(query.isIncludeSuperPrivileges()).append("\n");
+        buf.append(prefix).append("Privilege = ").append(privilegeTerm);
+        buf.append(", UID = ").append(principalTerm);
+        buf.append(", Inverted = ").append(query.isInverted());
+        buf.append(", IncludeSuperPrivileges = ").append(query.isIncludeSuperPrivileges()).append("\n");
         
         return buf.toString();
     }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, University of Oslo, Norway
+/* Copyright (c) 2006–2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,27 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 public interface PropertySelect {
 
     /**
-     * A selector which selects ALL properties available.
+     * A selector which selects all properties available for each result.
+     * 
+     * <p>This selector does not include ACLs.
+     */
+    public static final PropertySelect ALL_PROPERTIES = new PropertySelect() {
+        @Override
+        public boolean isIncludedProperty(PropertyTypeDefinition propertyDefinition) {
+            return true;
+        }
+        @Override
+        public String toString() {
+            return "ALL_PROPERTIES";
+        }
+        @Override
+        public boolean isIncludeAcl() {
+            return false;
+        }
+    };
+    
+    /**
+     * A selector which selects all properties available and ACL for each result.
      */
     public static final PropertySelect ALL = new PropertySelect() {
         @Override
@@ -50,7 +70,6 @@ public interface PropertySelect {
         public String toString() {
             return "ALL";
         }
-
         @Override
         public boolean isIncludeAcl() {
             return true;
@@ -58,7 +77,7 @@ public interface PropertySelect {
     };
     
     /**
-     * A selector which selects NO properties.
+     * A selector which selects NO properties or ACL.
      */
     public static final PropertySelect NONE = new PropertySelect() {
         @Override
@@ -69,7 +88,6 @@ public interface PropertySelect {
         public String toString() {
             return "NONE";
         }
-
         @Override
         public boolean isIncludeAcl() {
             return false;
@@ -77,7 +95,7 @@ public interface PropertySelect {
     };
     
     /**
-     * @param def
+     * @param def the property
      * @return <code>true</code> if the given property should be selected for
      * loading in search results.
      */

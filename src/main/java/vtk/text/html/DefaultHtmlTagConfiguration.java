@@ -71,6 +71,11 @@ public final class DefaultHtmlTagConfiguration {
         compositeTags.add("dd");
         compositeTags.add("dl");
         
+        compositeTags.add("figure");
+        compositeTags.add("figcaption");
+        compositeTags.add("audio");
+        compositeTags.add("video");
+        
         emptyTags.add("br");
         emptyTags.add("area");
         emptyTags.add("link");
@@ -81,6 +86,7 @@ public final class DefaultHtmlTagConfiguration {
         emptyTags.add("col");
         emptyTags.add("base");
         emptyTags.add("meta");
+        emptyTags.add("source");
         emptyTags.add("esi:include");
     }
 

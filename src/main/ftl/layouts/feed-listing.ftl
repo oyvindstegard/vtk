@@ -56,12 +56,12 @@
   </#if>
   
   <#if displayIfEmptyMessage?exists && feed.entries?size = 0>
-	<span class="vrtx-empty-message">
+	 <p class="vrtx-empty-message">
 	 	${displayIfEmptyMessage}
-	 </span>
+	 </p>
   </#if>
 
-  <#if conf.bottomLinkToAllMessages?exists && viewURL?exists>
+  <#if conf.linkToAllMessages?exists && viewURL?exists>
   <a class="all-messages" href="${viewURL}">
    <@vrtx.msg code="decorating.feedComponent.allMessages" default="More..." />
   </a>

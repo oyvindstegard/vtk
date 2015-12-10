@@ -38,8 +38,7 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatException;
 import vtk.security.Principal;
-
-import net.sf.json.JSONObject;
+import vtk.util.text.Json;
 
 /**
  * This interface represents meta information about resources. A resource
@@ -99,9 +98,9 @@ public interface Property extends Cloneable {
     
     public Principal getPrincipalValue() throws IllegalOperationException;
     
-    public JSONObject getJSONValue() throws IllegalOperationException;
+    public Json.MapContainer getJSONValue() throws IllegalOperationException;
     
-    public void setJSONValue(JSONObject value);
+    public void setJSONValue(Json.MapContainer value);
 
     public PropertyTypeDefinition getDefinition();
     

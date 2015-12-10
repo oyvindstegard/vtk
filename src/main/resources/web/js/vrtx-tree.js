@@ -5,15 +5,18 @@
  *  * Requires but Lazy-loads TreeView and ScrollTo libraries (if not defined) on open
  */
 
-var VrtxTreeInterface = dejavu.Interface.declare({
-  $name: "VrtxTreeInterface",
-  __opts: {},
-  __openLeaf: function() {}
-});
+/* Public
+ * ----------------------
+ * initialize(opts)
+ *
+ * Private
+ * ----------------------
+ * __openLeaf()     - Open leaf based on array
+ * __scrollToLeaf() - Scroll to leaf
+ */
 
 var VrtxTree = dejavu.Class.declare({
   $name: "VrtxTree",
-  $implements: [VrtxTreeInterface],
   $constants: {
     leafScrollDelay: 250,
     leafScrollTopAdjust: 145,
@@ -26,9 +29,8 @@ var VrtxTree = dejavu.Class.declare({
     tree.__opts = opts;
     tree.__opts.pathNum = 0;
     
-    // TODO: rootUrl and jQueryUiVersion should be retrieved from Vortex config/properties somehow
+    // TODO: rootUrl should be retrieved from Vortex config/properties somehow
     var rootUrl = "/vrtx/__vrtx/static-resources";
-    var jQueryUiVersion = "1.10.4";
     
     $.loadCSS(window.location.protocol + "//" + window.location.host + rootUrl + "/themes/default/report/jquery.treeview.css");
     var futureTree = $.Deferred();
@@ -74,7 +76,7 @@ var VrtxTree = dejavu.Class.declare({
         var closestLi = link.closest("li");
         var hit = closestLi.find(tree.$static.leafSelector);
         hit.click();
-        if (tree.__opts.scrollToContent && (tree.__opts.pathNum == (tree.__opts.trav.length - 1))) {
+        if (tree.__opts.scrollToContent && (tree.__opts.pathNum === (tree.__opts.trav.length - 1))) {
           tree.__opts.elem.css("background", "none").fadeIn(200, function () {  // Scroll to last node
             tree.__scrollToLeaf(link, true);
           });
@@ -100,7 +102,8 @@ var VrtxTree = dejavu.Class.declare({
       if(isLast) {
         scrollOpts.complete = tree.__opts.afterTrav(link);
       }
-      $(tree.__opts.scrollToContent).finish().scrollTo(Math.max(0, (link.position().top - tree.$static.leafScrollTopAdjust)), tree.$static.leafScrollDelay, scrollOpts);
+      var newTop = Math.max(0, (link.position().top - tree.$static.leafScrollTopAdjust));
+      $(tree.__opts.scrollToContent).finish().scrollTo(newTop, tree.$static.leafScrollDelay, scrollOpts);
     }
   }
 });

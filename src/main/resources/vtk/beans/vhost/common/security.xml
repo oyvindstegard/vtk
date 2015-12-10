@@ -96,6 +96,17 @@
     <property name="principalFactory" ref="principalFactory" />
   </bean>
 
+  <bean id="httpBasicProxyAuthenticationHandler"
+        class="vtk.security.web.basic.ProxyAuthenticationHandler" 
+        parent="httpBasicAuthenticationHandler">
+    <constructor-arg index="0" value="${proxyAuth.proxyUser}" />
+    <constructor-arg index="1" value="${proxyAuth.targetUserRegexp}" />
+    <constructor-arg index="2" value="${proxyAuth.requestParameter}" />
+    <property name="identifier" value="HTTP/Basic/Proxy/${proxyAuth.proxyUser}" />
+    <property name="targetPrincipalStore" value="#{${proxyAuth.principalStore}}" />
+    <property name="assertions" value="#{{${proxyAuth.assertions}}}" />
+  </bean>
+
   <bean id="httpDigestAuthenticationHandler" 
         class="vtk.security.web.digest.HttpDigestAuthenticationHandler">
     <description>
@@ -114,6 +125,8 @@
     <property name="principalStore" ref="localPrincipalStore" />
     <property name="principalFactory" ref="principalFactory" />
   </bean>
+
+  <bean id="principalMetadataDAO" class="vtk.repository.store.DefaultPrincipalMetadataDAO" />
 
   <bean id="principalManager"
         class="vtk.security.PrincipalManagerImpl">

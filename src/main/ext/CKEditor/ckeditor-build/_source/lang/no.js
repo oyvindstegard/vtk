@@ -252,7 +252,7 @@ CKEDITOR.lang['no'] =
 		deleteTable	: 'Slett tabell',
 		rows		: 'Rader',
 		columns		: 'Kolonner',
-		border		: 'Rammestørrelse',
+		border		: 'Rammer',
 		widthPx		: 'piksler',
 		widthPc		: 'prosent',
 		widthUnit	: 'Bredde-enhet',

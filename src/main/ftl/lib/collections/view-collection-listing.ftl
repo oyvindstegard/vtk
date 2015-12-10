@@ -54,7 +54,9 @@
             Use prop set path (uri) and NOT full entry url for link construction.
             See open-webdav.js
           -->
-          <#if entry.editAuthorized>
+          <#if entry.editLocked>
+            <span class="vrtx-resource-locked-webdav"><@vrtx.msg code="listing.edit.locked-by" /> ${entry.lockedByNameHref}</span>
+          <#elseif entry.editAuthorized>
             <a class="vrtx-resource-open-webdav" href="${vrtx.linkConstructor(entryPropSet.URI, 'webdavService')}"><@vrtx.msg code="collectionListing.editlink" /></a>
           </#if>
 		</div>

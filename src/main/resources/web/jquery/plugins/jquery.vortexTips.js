@@ -107,7 +107,8 @@
           }
         });
         if (opts.extra) {
-          tipExtra.css(ePos).fadeIn(opts.animInSpeed);
+          // TODO: The 15px comes from margin around tree elements (need to calculate when need to use tipExtra generally)
+          tipExtra.css(ePos).css("height", link.height() + 15).fadeIn(opts.animInSpeed);
         }
         if(opts.enterOpens && e.type == "keyup") {
           tip.on("focusout keyup", function (e) {

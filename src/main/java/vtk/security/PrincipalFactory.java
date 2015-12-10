@@ -52,7 +52,7 @@ public class PrincipalFactory {
 
     public static final String NAME_ALL = "pseudo:all";
 
-    public static Principal ALL = new PrincipalImpl(NAME_ALL);
+    public static final Principal ALL = new PrincipalImpl(NAME_ALL);
 
     // Will only be used if configured.
     private PrincipalMetadataDAO principalMetadataDao;
@@ -86,9 +86,7 @@ public class PrincipalFactory {
             throw new InvalidPrincipalException("Tried to get \"\" (empty string) principal");
 
         PrincipalImpl principal = new PrincipalImpl(id, type);
-        if (principal.getType() == Type.USER && includeMetadata && this.principalMetadataDao != null) {
-            // Set metadata for principal if requested and we are able to fetch
-            // it
+        if (includeMetadata && this.principalMetadataDao != null) {
             try {
                 PrincipalMetadata metadata = this.principalMetadataDao.getMetadata(principal, preferredLocale);
                 if (metadata != null) {

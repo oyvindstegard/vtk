@@ -12,8 +12,7 @@
   <script type="text/javascript" src="${webResources?html}/jquery/plugins/jquery.scrollTo.min.js"></script>
   <script type="text/javascript"><!--
   
-    var browseImagesPreview = '<@vrtx.msg code="editor.image.preview-title" />',
-        browseImagesNoPreview = '<@vrtx.msg code="editor.image.no-preview-text" />';
+    var browseImagesPreview = '<@vrtx.msg code="editor.image.preview-title" />';
         requestLang = '<@vrtx.requestLanguage />';
    
     var ACCORDION_MOVE_TO_AFTER_CHANGE = null;

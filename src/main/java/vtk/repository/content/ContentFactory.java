@@ -34,24 +34,22 @@ import java.io.InputStream;
 
 
 /**
- * Interface for a factory which can create one or more type representations
- * of content.
+ * Interface for a factory which can create a higher-level 
+ * type representation of raw (input stream) content.
  */
-public interface ContentFactory {
+public interface ContentFactory<T> {
 
     /**
      * @return an array of classes which this factory supports.
      */
-    public Class<?>[] getRepresentationClasses();
+    public Class<T> getRepresentationType();
 
     /**
      * Get content representation as the given class.
-     * @param <T> class type
-     * @param clazz the Class instance
      * @param content the input stream providing the content
      * @return an instance of type <code>T</code> representing the content.
      * @throws Exception
      */
-    public <T> T getContentRepresentation(Class<T> clazz,  InputStream content) throws Exception;
+    public T getContentRepresentation(InputStream content) throws Exception;
 
 }

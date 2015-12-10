@@ -8,23 +8,26 @@
  *  * Lazy-loads jQuery UI language file if language matches on open (and not empty string or 'en')
  */
 
-var VrtxDatepickerInterface = dejavu.Interface.declare({
-  $name: "VrtxDatepickerInterface",
-  initFields: function(dateFields) {},
-  __initField: function(name, selector) {},
-  __initDefaultEndDates: function() {},
-  __setDefaultEndDate: function(startDateElm, endDateElm) {},
-  __initTimeHelp: function() {},
-  __timeHelp: function(hh, mm) {},
-  __timeRangeHelp: function(val, max) {},
-  __extractHoursFromDate: function(datetime) {},
-  __extractMinutesFromDate: function(datetime) {},
-  prepareForSave: function() {}
-});
+/* Public
+ * ----------------------------------------------------------------------------------------
+ * initialize(opts)
+ * initFields(dateFields)                        - Initialize fields
+ * prepareForSave()                              - Combine dates into field for saving
+ *
+ * Private
+ * ----------------------------------------------------------------------------------------
+ * __initField(name, selector)                   - Initialize field
+ * __initDefaultEndDates()                       - Initialize default end dates
+ * __setDefaultEndDate(startDateElm, endDateElm) - Set default end date
+ * __initTimeHelp()                              - Initialize help for keeping time
+ * __timeHelp(hh, mm)                            - Keeps time in range
+ * __timeRangeHelp(val, max)                     - Helper for keeping time in range
+ * __extractHoursFromDate(datetime)              - Extracts HH from date
+ * __extractMinutesFromDate(datetime)            - Extracts MM from date
+ */
 
 var VrtxDatepicker = dejavu.Class.declare({
   $name: "VrtxDatepicker",
-  $implements: [VrtxDatepickerInterface],
   $constants: {
     contentsDefaultSelector: "#contents",
     timeDate: "date",
@@ -77,7 +80,8 @@ var VrtxDatepicker = dejavu.Class.declare({
   },
   initFields: function(dateFields) {
     for(var i = 0, len = dateFields.length; i < len; i++) {
-      this.__initField(dateFields[i].name, this.__opts.selector);
+      var dateField = dateFields[i];
+      this.__initField(typeof dateField === "string" ? dateField : dateField.name, this.__opts.selector);
     }
   },
   __initField: function(name, selector) {

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, 2009 University of Oslo, Norway
+/* Copyright (c) 2006, 2009, 2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -80,9 +80,24 @@ public class TextUtils {
     public static final int UNESCAPE_INVALID_ESCAPE = 0x10;
     
     /**
+     * Encode a single char in Unicde BMP as a Java Unicode escape sequence.
+     * @param c input char
+     * @return string on the form <code>"\\uXXXX"</code>, where XXXX are hexadecimal
+     * digits, always zero-padded.
+     */
+    public static String toUnicodeEscape(char c) {
+        char[] result = {'\\', 'u', 0, 0, 0, 0};
+        result[2] = HEX[(c >>> 12) & 0xF];
+        result[3] = HEX[(c >>> 8) & 0xF];
+        result[4] = HEX[(c >>> 4) & 0xF];
+        result[5] = HEX[c & 0xF];
+        return new String(result);
+    }
+    
+    /**
      * Render a byte array into a string of hexadecimal numbers.
      * @param buffer containing the bytes to convert
-     * @return a character array with hexadecimal digits representing the bytes.
+     * @return a character array of length 2 with hexadecimal digits representing the bytes.
      */
     public static char[] toHex(byte[] buffer) {
         char[] result = new char[buffer.length * 2];
@@ -563,5 +578,25 @@ public class TextUtils {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Only keep the safe to print characters and discard the rest.
+     * Specifically, unknown control characters are removed.
+     * @param content
+     * @return content with harmful characters removed.
+     */
+    public static String removeUnprintables(String content) {
+        if (content == null) return null;
+        
+        StringBuilder result = new StringBuilder(content.length());
+        int length = content.length();
+        for (int i = 0; i < length; i++) {
+            char ch = content.charAt(i);
+            if (ch >= 32 || ch == '\t' || ch == '\n' || ch == '\r') {
+                result.append(ch);
+            }
+        }
+        return result.toString();
     }
 }

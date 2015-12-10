@@ -31,16 +31,19 @@
 
 package vtk.web.view;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import net.sf.json.JSONObject;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import vtk.util.text.Json;
 
 /**
  *
@@ -67,7 +70,7 @@ public class JsonViewTest {
 
     @Test
     public void renderJsonObject() throws Exception {
-        JSONObject body = new JSONObject();
+        Json.MapContainer body = new Json.MapContainer();
         body.put("a", "b");
         body.put("n", 3);
         
@@ -76,7 +79,6 @@ public class JsonViewTest {
         
         String result = response.getContentAsString();
         assertEquals("{\"a\":\"b\",\"n\":3}", result);
-        
     }
 
     @Test
@@ -111,7 +113,7 @@ public class JsonViewTest {
     
     @Test
     public void httpStatus() throws Exception {
-        JSONObject body = new JSONObject();
+        Json.MapContainer body = new Json.MapContainer();
         body.put("error", "Not found");
         model.put("jsonObject", body);
         model.put("httpStatus", 404);

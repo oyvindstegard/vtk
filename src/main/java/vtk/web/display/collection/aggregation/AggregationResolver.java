@@ -34,7 +34,6 @@ import java.util.Set;
 
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
-import vtk.web.service.URL;
 
 public interface AggregationResolver {
 
@@ -44,16 +43,10 @@ public interface AggregationResolver {
      * approved aggregated resources. The sets may contain references to
      * locations/resources on local or other hosts.
      * 
-     * @return Collection of locations to aggregate from for a given resource,
-     *         or <code>null</code> if resource not found or conditions for
-     *         aggregation are not met.
+     * @return Collection of locations to aggregate from for a given resource.
+     * 
      */
     public CollectionListingAggregatedResources getAggregatedResources(PropertySet collection);
-
-    /**
-     * @see #getAggregatedResources(vtk.repository.PropertySet) 
-     */
-    public CollectionListingAggregatedResources getAggregatedResources(URL url);
 
     /**
      * Returns a list containing all local paths a given resource is set to

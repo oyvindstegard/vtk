@@ -117,7 +117,6 @@
         <bean class="vtk.web.referencedata.provider.StaticModelDataProvider">
           <property name="modelDataMap">
             <map>
-              <entry key="cssURLs" value-ref="plainEditCSSURLs" />
               <entry key="md5jsURL" value="${jsBaseURL}/md5/md5.js" />
             </map>
           </property>
@@ -126,24 +125,13 @@
     </property>
   </bean>
 
-  <bean id="plainEditCSSURLs" class="java.util.ArrayList">
-    <constructor-arg>
-      <list>
-        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
-        <value>${themeBaseURL}/default.css</value>
-      </list>
-    </constructor-arg>
-  </bean>
-
   <!-- Plaintext edit controller -->
   
   <bean id="plaintextEditHandler"
         class="vtk.edit.plaintext.PlaintextEditController">
     <property name="formView" value="plaintextEdit" />
-    <property name="successView" value="plaintextEdit" />
-    <property name="manageView" value="redirectToManage" />
+    <property name="successView" value="redirectToManage" />
     <property name="commandName" value="plaintextEditForm" />
-    <property name="commandClass" value="vtk.edit.plaintext.PlaintextEditCommand" />
     <property name="tooltipServices" ref="plaintextEditTooltipURLServicesFactory" />
     <property name="textResourceContentHelper" ref="textResourceContentHelper" />
   </bean>

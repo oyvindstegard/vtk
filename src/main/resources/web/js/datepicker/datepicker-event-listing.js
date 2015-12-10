@@ -4,17 +4,20 @@
  * TODO: Better interchange between format '2010-4-2' and '2010-04-02'
  * 
  */
+ 
+var activeDateForInit = null;
+var eventListingCalendarOpts = {};
 
 function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notClickableDayTitle, language) {
 
-  var activeDateForInit = makeActiveDateForInit(activeDate);
+  activeDateForInit = makeActiveDateForInit(activeDate);
 
   // i18n (default english)
-  if (language == 'no' || language == 'nn') {
+  if (language === 'no' || language === 'nn') {
     $.datepicker.setDefaults($.datepicker.regional[language]);
   }
-
-  $("#datepicker").datepicker({
+  
+  eventListingCalendarOpts = {
     dateFormat: 'yy-mm-dd',
     onSelect: function (dateText, inst) {
       window.location.href = window.location.href.split('?')[0] + "?date=" + dateText;
@@ -46,18 +49,37 @@ function eventListingCalendar(allowedDates, activeDate, clickableDayTitle, notCl
       var date = $.datepicker.formatDate("yy-mm", new Date(year, month - 1)).toString();
       window.location.href = "./?date=" + date;
     }
-  });
+  };
 
-  var interval = 25;
+  $("#datepicker").datepicker(eventListingCalendarOpts);
+
+  var interval = 15;
   var checkMonthYearHTMLLoaded = setInterval(function () {
-    if ($(".ui-datepicker-month").length && $(".ui-datepicker-year").length) {
+    var datepickerMonth = $(".ui-datepicker-month");
+    var datepickerYear = $(".ui-datepicker-year");
+    if (datepickerMonth.length && datepickerYear.length) {
       var date = $.datepicker.formatDate("yy-mm", activeDateForInit[0]).toString();
-
-      $(".ui-datepicker-month").html("<a href='./?date=" + date + "'>" + $(".ui-datepicker-month").text() + ' ' + $(".ui-datepicker-year").remove().text() + "</a>");
-
+      datepickerMonth.html("<a tabindex='0' href='./?date=" + date + "'>" + datepickerMonth.text() + ' ' + datepickerYear.remove().text() + "</a>");
+      var datepickerPrevNext = $(".ui-datepicker-prev, .ui-datepicker-next");
+      if(datepickerPrevNext.length) {
+        datepickerPrevNext.attr("tabindex", "0");
+        $(document).on("keydown", ".ui-datepicker-prev, .ui-datepicker-next", function(e) {
+          if((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
+            $(this).click();
+          }
+        });
+      }
       clearInterval(checkMonthYearHTMLLoaded);
     }
   }, interval);
+}
+
+function destroyEventListingDatepicker() {
+  $("#datepicker").datepicker("destroy");
+}
+
+function reviveEventListingDatepicker() {
+  $("#datepicker").datepicker(eventListingCalendarOpts);
 }
 
 // For init of datepicker()

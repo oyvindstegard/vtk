@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
-    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
-<sqlMapConfig>
-	
+<!DOCTYPE configuration  PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+         "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+  <settings>
+    <setting name="logImpl" value="LOG4J"/>
+    <setting name="callSettersOnNulls" value="true"/>
+    <setting name="jdbcTypeForNull" value="NULL" />
+    <!--setting name="cacheEnabled" value="false" /-->
+  </settings>
+
   <!-- Global type handler for Path -->    
-  <typeHandler
-    javaType="vtk.repository.Path"
-    callback="vtk.repository.store.db.ibatis.PathTypeHandlerCallback"/>
+  <typeHandlers>
+    <typeHandler handler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback"/>
+  </typeHandlers>
 
   <!-- PostgreSQL-specific SQL maps -->
-	<sqlMap resource="vtk/repository/store/db/ibatis/postgresql-functions.xml" />
-	<sqlMap resource="vtk/repository/store/db/ibatis/default-sql-maps.xml" />
-	
-</sqlMapConfig>
+  <mappers>
+    <mapper resource="vtk/repository/store/db/ibatis/postgresql-functions.xml" />
+    <mapper resource="vtk/repository/store/db/ibatis/default-sql-maps.xml" />
+  </mappers>
+
+</configuration>

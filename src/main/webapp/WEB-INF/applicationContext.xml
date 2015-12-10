@@ -3,7 +3,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <import resource="classpath:/vtk/beans/vhost/main.xml" />
-  
 
   <bean id="stdReqFilter" class="vtk.web.filter.StandardRequestFilter"
         parent="defaultRequestFilterCategoryBean">
@@ -22,6 +21,5 @@
       </map>
     </property>
   </bean>
-
 
 </beans>

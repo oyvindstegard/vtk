@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <groupId>vtk</groupId>
   <artifactId>vtk</artifactId>
-  <version>59-SNAPSHOT</version>
+  <version>65-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>The VTK Web Framework</name>
   <url>http://www.uio.no/tjenester/it/web/vortex/</url>
@@ -124,6 +124,8 @@
   <properties>
     <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     <checkstyle.config.location>src/main/checkstyle/checkstyle.xml</checkstyle.config.location>
+    <java.version>1.8</java.version>
+    <spring.version>4.2.2.RELEASE</spring.version>
   </properties>
 
   <build>
@@ -160,6 +162,11 @@
         <targetPath>vtk/util</targetPath>
         <filtering>true</filtering>
       </resource>
+      <resource>
+        <directory>src/conf/resin</directory>
+        <targetPath>${project.build.directory}</targetPath>
+        <filtering>true</filtering>
+      </resource>
     </resources>
     
     <testResources>
@@ -167,29 +174,18 @@
         <directory>src/test/resources</directory>
       </testResource>
     </testResources>
+
     <plugins>
       <plugin>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>maven-jetty-plugin</artifactId>
-        <version>6.1.26</version>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.2.10.v20150310</version>
         <configuration>
-          <contextPath>/</contextPath>
-          <connectors>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-              <port>9321</port>
-              <maxIdleTime>600000</maxIdleTime>
-            </connector>
-            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-              <port>9322</port>
-              <maxIdleTime>600000</maxIdleTime>
-            </connector>
-          </connectors>
-          <scanIntervalSeconds>0</scanIntervalSeconds>
+          <!-- Configures Jetty Server: -->
+          <jettyXml>src/conf/jetty/jetty.xml</jettyXml>
+          <!-- Configures web app context: -->
+          <contextXml>src/conf/jetty/jetty-context.xml</contextXml>
           <systemProperties>
-            <systemProperty>
-              <name>org.mortbay.jetty.Request.maxFormContentSize</name>
-              <value>-1</value>
-            </systemProperty>
             <systemProperty>
               <name>org.apache.commons.logging.Log</name>
               <value>org.apache.commons.logging.impl.Log4JLogger</value>
@@ -202,25 +198,15 @@
               <name>javax.xml.transform.TransformerFactory</name>
               <value>org.apache.xalan.processor.TransformerFactoryImpl</value>
             </systemProperty>
-            <!-- Might need to set these if Jetty fails with ClassNotFoundExceptions for XML parser impl:
-            <systemProperty>
-              <name>javax.xml.parsers.SAXParserFactory</name>
-              <value>org.apache.xerces.jaxp.SAXParserFactoryImpl</value>
-            </systemProperty>
-            <systemProperty>
-              <name>javax.xml.parsers.DocumentBuilderFactory</name>
-              <value>org.apache.xerces.jaxp.DocumentBuilderFactoryImpl</value>
-            </systemProperty>
-            -->
           </systemProperties>
         </configuration>
       </plugin>
 
       <!-- Build info: Provide local hostname as property ${hostname} using a Groovy script. -->
       <plugin>
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <version>1.5</version>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>1.3</version>
         <executions>
           <execution>
             <id>add-hostname-property</id>
@@ -229,12 +215,13 @@
               <goal>execute</goal>
             </goals>
             <configuration>
-              <source>
-                project.properties["hostname"] = java.net.InetAddress.getLocalHost().getHostName()
-              </source>
+              <scripts>
+                <script><![CDATA[
+                  project.properties['hostname'] = java.net.InetAddress.getLocalHost().getHostName()
+                ]]></script>
+              </scripts>
             </configuration>
           </execution>
-          <!-- Show summary of build info during when building: -->
           <execution>
             <id>show-build-info</id>
             <phase>generate-sources</phase>
@@ -242,16 +229,28 @@
               <goal>execute</goal>
             </goals>
             <configuration>
-              <source>
+              <scripts>
+                <script><![CDATA[
                 log.info("Build information - " + project.name)
+                log.info("Build host: " + project.properties['hostname'])
                 log.info("Version: " + project.version)
-                log.info("Revision: " + project.properties["buildNumber"])
-                log.info("Branch: " + project.properties["scmBranch"])
-              </source>
+                log.info("Revision: " + project.properties['buildNumber'])
+                log.info("Branch: " + project.properties['scmBranch'])
+                ]]></script>
+              </scripts>
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>2.3.7</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
       </plugin>
+
       <!-- Build info: provide various bits of build info as properties.  -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -294,6 +293,7 @@
         <version>3.4</version>
         <executions>
           <execution>
+            <phase>generate-sources</phase>
             <goals>
               <goal>antlr</goal>
             </goals>
@@ -304,14 +304,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.4</version>
-        <configuration>
-          <webResources>
-            <resource>
-              <directory>src/main/resources/war/resin</directory>
-              <filtering>true</filtering>
-            </resource>
-          </webResources>
-        </configuration>
       </plugin>
 
       <!-- Allow deploy with ssh/scp using wagon-ssh -->
@@ -338,9 +330,9 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-          <encoding>UTF-8</encoding>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
       </plugin>
       <plugin>
@@ -385,6 +377,27 @@
           </excludes>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.jasig.maven</groupId>
+        <artifactId>sass-maven-plugin</artifactId>
+        <version>1.1.1</version>
+        <executions>
+          <execution>
+            <id>compile-scss</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>update-stylesheets</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sassOptions>
+            <style>:compressed</style>
+          </sassOptions>
+          <sassSourceDirectory>src/main/resources/web/themes/default/scss</sassSourceDirectory>
+          <destination>${project.build.directory}/classes/web/themes/default</destination>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -392,15 +405,15 @@
     <!-- ehcache -->
     <dependency>
       <groupId>net.sf.ehcache</groupId>
-      <artifactId>ehcache-core</artifactId>
-      <version>2.4.8</version>
+      <artifactId>ehcache</artifactId>
+      <version>2.10.0</version>
     </dependency>
 
     <!-- Joda -->
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>1.6.2</version>
+      <version>2.9</version>
     </dependency>
 
     <dependency>
@@ -410,12 +423,6 @@
     </dependency>
 
     <!-- JSON -->
-    <dependency>
-      <groupId>net.sf.json-lib</groupId>
-      <artifactId>json-lib</artifactId>
-      <version>2.4</version>
-      <classifier>jdk15</classifier>
-    </dependency>
     <dependency>
       <groupId>com.googlecode.json-simple</groupId>
       <artifactId>json-simple</artifactId>
@@ -427,7 +434,7 @@
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml</artifactId>
       <!-- <version>2.3.2</version> -->
-      <version>2.5.3</version>
+      <version>2.6.5</version>
       <exclusions>
         <!-- Prefer to pull in XML parsing stuff from direct Xerces/Xalan dependencies,
              so exclude here: -->
@@ -477,11 +484,15 @@
     <dependency>
       <groupId>org.openxri</groupId>
       <artifactId>openxri-syntax</artifactId>
-      <version>1.0.1</version>
+      <version>1.2.1</version>
       <exclusions>
         <exclusion>
           <groupId>com.ibm.icu</groupId>
           <artifactId>icu4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-jcl</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -494,19 +505,31 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.12</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jmock</groupId>
       <artifactId>jmock-junit4</artifactId>
-      <version>2.6.0</version>
+      <version>2.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>2.0.31-beta</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.1.3</version>
+      <version>1.2</version>
       <exclusions>
         <exclusion>
           <groupId>logkit</groupId>
@@ -525,44 +548,49 @@
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jdom</groupId>
+      <groupId>org.jdom</groupId>
       <artifactId>jdom</artifactId>
-      <version>1.0</version>
+      <version>2.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>3.1.4.RELEASE</version>
+      <version>${spring.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
-      <version>3.1.4.RELEASE</version>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
+      <version>${spring.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>3.1.4.RELEASE</version>
+      <version>${spring.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
-      <version>3.1.4.RELEASE</version>
+      <version>${spring.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-orm</artifactId>
-      <version>3.1.4.RELEASE</version>
+      <version>${spring.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
-      <version>3.1.4.RELEASE</version>
+      <version>${spring.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -573,27 +601,27 @@
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
-      <version>4.10.1</version>
+      <version>4.10.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-common</artifactId>
-      <version>4.10.1</version>
+      <version>4.10.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-icu</artifactId>
-      <version>4.10.1</version>
+      <version>4.10.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-queries</artifactId>
-      <version>4.10.1</version>
+      <version>4.10.4</version>
     </dependency>
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
-      <version>2.3.19</version>
+      <version>2.3.23</version>
     </dependency>
     <dependency>
       <groupId>org.beanshell</groupId>
@@ -616,14 +644,19 @@
       <version>1.5.2</version>
     </dependency>
     <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.6</version>
+	  <groupId>commons-io</groupId>
+	  <artifactId>commons-io</artifactId>
+	  <version>2.4</version>
     </dependency>
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.10</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.1</version>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
@@ -633,17 +666,22 @@
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-module-xhtml</artifactId>
-      <version>1.3</version>
+      <version>1.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-module-apt</artifactId>
-      <version>1.3</version>
+      <version>1.6</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.ibatis</groupId>
-      <artifactId>ibatis-sqlmap</artifactId>
-      <version>2.3.4.726</version>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis</artifactId>
+      <version>3.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis-spring</artifactId>
+      <version>1.2.3</version>
     </dependency>
     <dependency>
       <groupId>org.htmlparser</groupId>
@@ -658,33 +696,28 @@
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <version>2.10.0</version>
+      <version>2.11.0.SP4</version>
     </dependency>
     <dependency>
       <groupId>xalan</groupId>
       <artifactId>xalan</artifactId>
-      <version>2.7.1</version>
+      <version>2.7.2</version>
     </dependency>
     <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
-      <version>1.2.2</version>
+      <version>1.3.1</version>
     </dependency>
     <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-      <version>3.2.1</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.java-diff-utils</groupId>
-      <artifactId>diffutils</artifactId>
-      <version>1.2.1</version>
-    </dependency>
-    <dependency>
-      <groupId>owasp-java-html-sanitizer</groupId>
+      <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
       <artifactId>owasp-java-html-sanitizer</artifactId>
-      <version>r106</version>
+      <version>20150501.1</version>
       <scope>compile</scope>
     </dependency>
 
@@ -702,19 +735,19 @@
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjweaver</artifactId>
-      <version>1.6.12</version>
+      <version>1.8.7</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>cglib</groupId>
       <artifactId>cglib-nodep</artifactId>
-      <version>2.2.2</version>
+      <version>3.2.0</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
-      <version>1.1.3</version>
+      <version>1.1.6</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -736,15 +769,15 @@
     </dependency>
     <!-- JDBC drivers and databases -->
     <dependency>
-      <groupId>postgresql</groupId>
+      <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.1-901.jdbc4</version>
+      <version>9.4-1201-jdbc41</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
-      <version>2.2.8</version>
+      <version>2.3.3</version>
       <scope>test</scope>
     </dependency>
 
@@ -752,7 +785,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>1.6.6</version>
+      <version>1.7.12</version>
       <scope>runtime</scope>
     </dependency>
 
@@ -766,18 +799,6 @@
       <groupId>org.outerj.daisy</groupId>
       <artifactId>daisydiff</artifactId>
       <version>1.2</version>
-    </dependency>
-
-    <!-- Jackson -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.4.3</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>2.4.3</version>
     </dependency>
 
   </dependencies>

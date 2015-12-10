@@ -21,6 +21,8 @@
     <@editor.addCkScripts />
 
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.hotkeys.js"></script>
+
+    <@vrtx.cssPlaceholder place="editor:head" />
     
     <#assign language = vrtx.getMsg("eventListing.calendar.lang", "en") />
     <#assign isCollection = resource.resource.collection />
@@ -98,10 +100,10 @@
             MULTIPLE_INPUT_FIELD_INITIALIZED = $.Deferred();
             
             // General/aggregation
-            enhanceMultipleInputFields("aggregation", false, false, aggregationLimit, null);
-            enhanceMultipleInputFields("manually-approve-from", false, false, aggregationLimit, null);
-            enhanceMultipleInputFields("featured-articles", true, true, 50, null); // Article listing
-            enhanceMultipleInputFields("tag-search-suggestions", false, false, 50, null); // Employee listing
+            enhanceMultipleInputFields("aggregation", false, false, aggregationLimit, null, false);
+            enhanceMultipleInputFields("manually-approve-from", false, false, aggregationLimit, null, false);
+            enhanceMultipleInputFields("featured-articles", true, true, 50, null, false); // Article listing
+            enhanceMultipleInputFields("tag-search-suggestions", false, false, 50, null, false); // Employee listing
             
             // var manuallyApproveButton = $("#manually-approve-container-title");
             // manuallyApproveButton.parent().find("> div:first-child").append(manuallyApproveButton.remove());
@@ -338,7 +340,7 @@
       
       <div id="vrtx-resource.${name}" class="${name} property-item">
       <#if displayLabel>
-        <div class="resource.${name} property-label">${localizedName}</div> 
+        <div class="resource.${name} property-label">${localizedName}<#if name == "fs-program-codes"><abbr tabindex="0" class="tooltips label-tooltips" title="${vrtx.getMsg('proptype.name.program.fs-program-codes.info')}"></abbr></#if></div>
       </#if>
       
       <#if type = 'HTML' && name != 'userTitle' && name != 'title' && name != 'caption'>
@@ -382,9 +384,8 @@
             <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url?html}', '${baseFolder}',
                                                                '${fckBrowse.url.pathRepresentation}');"><@vrtx.msg code="editor.browseImages"/></button>
           </div>
-          <div id="resource.${name}.preview"<#if !value?has_content> class="no-preview"</#if>>
+          <div id="resource.${name}.preview">
             <div class="resource.${name}.preview-inner property-label"><@vrtx.msg code="editor.image.preview-title"/></div>
-            <span><@vrtx.msg code="editor.image.no-preview-text"/></span>
             <div id="resource.${name}.preview-inner">
               <#local thumbnail = '' />
               <#if value?has_content>
@@ -397,7 +398,7 @@
               <#if thumbnail != ''>
                 <img src="${thumbnail?html}" alt="preview" />
               <#else>
-                <img src="/vrtx/__vrtx/static-resources/themes/default/images/no-preview-image.png" alt="no preview" />
+                <img src="" alt="preview" />
               </#if>
             </div>
           </div>
@@ -409,9 +410,8 @@
               <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url?html}', '${baseFolder}',
                                                                  '${fckBrowse.url.pathRepresentation}');"><@vrtx.msg code="editor.browseImages"/></button>
             </div>
-            <div id="resource.${name}.preview"<#if !value?has_content> class="no-preview"</#if>>
+            <div id="resource.${name}.preview">
               <div class="resource.${name}.preview-inner property-label"><@vrtx.msg code="editor.image.preview-title"/></div>
-              <span><@vrtx.msg code="editor.image.no-preview-text"/></span>
               <div id="resource.${name}.preview-inner">
                 <#local thumbnail = '' />
                 <#if value?exists && value != "">
@@ -424,7 +424,7 @@
                 <#if thumbnail != ''>
                   <img src="${thumbnail?html}" alt="preview" />
                 <#else>
-                  <img src="/vrtx/__vrtx/static-resources/themes/default/images/no-preview-image.png" alt="no preview" />
+                  <img src="" alt="preview" />
                 </#if>
               </div>
             </div>

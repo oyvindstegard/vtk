@@ -16,7 +16,6 @@
     <property name="mixinTypeDefinitions">
       <list>
         <ref bean="ssiMixinResourceTypeDef" />
-        <ref bean="visualProfileMixinResourceTypeDef" />
       </list>
     </property>    
     <property name="propertyTypeDefinitions">
@@ -79,20 +78,44 @@
     </property>
   </bean>
 
-
-  <bean id="htmlGuessedCharacterEncodingEvaluator" 
-        class="vtk.repository.resourcetype.property.ChainedPropertyEvaluator">
-    <property name="propertyEvaluators">
-      <list>
-        <bean class="vtk.repository.resourcetype.property.HtmlPropertyEvaluator">
-          <property name="field" value="encoding" />
-        </bean>
-        <bean class="vtk.repository.resourcetype.property.XMLCharacterEncodingEvaluator" />
-      </list>
-    </property>
+  <bean id="html.charsetEvaluatorMap" class="java.util.HashMap">
+    <constructor-arg>
+      <map>
+        <!-- Map 'macintosh' to 'MacRoman' -->
+        <entry>
+          <key>
+          <bean class="vtk.repository.resourcetype.Value">
+            <constructor-arg type="java.lang.String"
+                             value="macintosh" />
+            <constructor-arg ref="TYPE_STRING" />
+          </bean>
+          </key>
+            <bean class="vtk.repository.resourcetype.Value">
+              <constructor-arg type="java.lang.String"
+                               value="MacRoman" />
+              <constructor-arg ref="TYPE_STRING" />
+            </bean>
+        </entry>
+      </map>
+    </constructor-arg>
   </bean>
 
-
+  <bean id="htmlGuessedCharacterEncodingEvaluator" 
+        class="vtk.repository.resourcetype.property.TranslatingPropertyEvaluator">
+    <constructor-arg>
+      <bean class="vtk.repository.resourcetype.property.ChainedPropertyEvaluator">
+        <constructor-arg>
+          <list>
+            <bean class="vtk.repository.resourcetype.property.HtmlPropertyEvaluator">
+              <property name="field" value="encoding" />
+            </bean>
+            <bean class="vtk.repository.resourcetype.property.XMLCharacterEncodingEvaluator" />
+          </list>
+        </constructor-arg>
+      </bean>
+    </constructor-arg>
+    <constructor-arg ref="html.charsetEvaluatorMap" />
+  </bean>
 
   <!-- Overrides 'characterEncodingPropDef' in 'text' resource type -->
   <bean id="htmlOverriddenCharacterEncodingPropDef"

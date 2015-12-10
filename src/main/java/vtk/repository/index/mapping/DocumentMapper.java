@@ -32,7 +32,6 @@ package vtk.repository.index.mapping;
 
 import java.io.IOException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -45,7 +44,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Namespace;
 import vtk.repository.Property;
-import vtk.repository.PropertySet;
 import vtk.repository.PropertySetImpl;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
@@ -272,11 +270,6 @@ public class DocumentMapper implements InitializingBean {
                         } else {
                             return StoredFieldVisitor.Status.NO;
                         }
-                    }
-                    
-                    if (select.isIncludeAcl() &&
-                            AclFields.isAclField(fieldInfo.name)) {
-                        return StoredFieldVisitor.Status.YES;
                     }
                     
                     // Check for required reserved fields

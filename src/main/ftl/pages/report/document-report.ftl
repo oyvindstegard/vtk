@@ -23,11 +23,36 @@
     </div>
     <h2>
       <@vrtx.msg code="report.${report.reportname}" />
+
+      <#if (report.form)?exists>
+        <form action="${(report.form.action)?html}" method="get">
+          <#list report.form.inputs as input>
+            <input name="${(input.name)?default('')?html}" type="${(input.type)?default('')?html}"
+                   value="${(input.value)?default('')?html}" />
+          </#list>
+        </form>
+      </#if>
+
       <#if !report.specificCollectionReporter??>
         <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" />...</a>
       </#if>
     </h2>
-    
+  
+  <#if (report.subtype?exists && report.subtype?size > 0)>
+    <div id="vrtx-report-filters">
+      <ul class="vrtx-report-filter vrtx-report-filter-last" id="vrtx-report-filter-${report.reportname}">
+        <#list report.subtype as subtype>
+          <#assign subTitle = vrtx.getMsg("report.${report.reportname}.subtype.${subtype.name}", "Critera: ${subtype.name}") />
+          <#if subtype.active>
+            <li id="vrtx-report-filter-${report.reportname}" class="active-filter"><span>${subTitle}</span></li>
+          <#else>
+            <li id="vrtx-report-filter-${report.reportname}-${subtype.name}"><a href="${subtype.url}">${subTitle}</a></li>
+          </#if>
+        </#list>
+      </ul>
+    </div>  
+  </#if>
+  
   <#if (report.result?exists && report.result?size > 0)>
     <p id="vrtx-report-info-paging-top">
       <@vrtx.msg code="report.${report.reportname}.about"
@@ -108,11 +133,16 @@
                 ${modifiedByNameLink}
               </#if>
             </td>
-            <#if report.isReadRestricted[res_index] >
-              <td class="vrtx-report-permissions"><span class="restricted">${isReadRestricted?html}</span></td>
-            <#else>
-              <td class="vrtx-report-permissions"><span class="allowed-for-all">${isReadRestricted?html}</span></td>
-            </#if>
+            <td class="vrtx-report-permissions permissions">
+              <#assign hasTooltip = (report.permissionTooltips[res_index])?exists />
+              <#if report.isReadRestricted[res_index] >
+                <#assign permissionClass = "restricted" />
+              <#else>
+                <#assign permissionClass = "allowed-for-all" />
+              </#if>
+              <span class="${permissionClass}<#if hasTooltip> permission-tooltips</#if>"><#if hasTooltip><a href='javascript:void(0);' title='${report.permissionTooltips[res_index]}'></#if>${isReadRestricted?html}<#if hasTooltip></a></#if></span>
+              <#if !report.isInheritedAcl[res_index]><span class="own-permission">&bull;</span></#if>
+            </td>
             <#if report.reportname != "unpublished">
               <td class="vrtx-report-published">${publishedStatus?html}</td>
             </#if>

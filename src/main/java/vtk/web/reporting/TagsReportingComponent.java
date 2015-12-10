@@ -269,6 +269,8 @@ public class TagsReportingComponent {
 
         // Populate cache
         if (cache != null) {
+            // XXX why is the below statement commented out without any explanation ? The search
+            // to generate tags is rather on the heavy side..
             // cache.put(new Element(cacheKey, tagFreqs));
         }
 

@@ -4,6 +4,7 @@
 
   <bean id="ehCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
     <property name="configLocation" value="classpath:/vtk/ehcache/ehcache.xml" />
+    <property name="cacheManagerName" value="ehCacheManager.${repositoryID}" />
   </bean>
 
   <!-- Ehcache used by bean 'linkCheck.validator' defined in link-check.xml -->

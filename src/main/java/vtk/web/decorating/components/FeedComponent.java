@@ -134,7 +134,7 @@ public class FeedComponent extends AbstractFeedComponent {
         }
 
         if (!parameterHasValue(PARAMETER_ALL_MESSAGES_LINK, "false", request)) {
-            conf.put("bottomLinkToAllMessages", true);
+            conf.put("linkToAllMessages", true);
         }
 
         conf.put("includeIfEmpty", !parameterHasValue(PARAMETER_INCLUDE_IF_EMPTY, "false", request));
@@ -225,6 +225,7 @@ public class FeedComponent extends AbstractFeedComponent {
             throw new DecoratorComponentException(e.getMessage());
         }
 
+        
         conf.put("auth", auth);
         if (!auth) {
             model.put("conf", conf);
@@ -232,7 +233,11 @@ public class FeedComponent extends AbstractFeedComponent {
         }
 
         baseURL.clearParameters();
-        model.put("viewURL", feedURL.clearParameters());
+        String feedLink = feed.getLink();
+        if (feedLink != null) {
+            URL viewURL = baseURL.relativeURL(feedLink);
+            model.put("viewURL", viewURL);
+        }
 
         List<String> elementOrder = getElementOrder(PARAMETER_FEED_ELEMENT_ORDER, request);
         model.put("elementOrder", elementOrder);

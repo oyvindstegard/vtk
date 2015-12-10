@@ -14,7 +14,8 @@
     <property name="serviceNameProvider" ref="collectionListing.viewService.serviceNameProvider" />
   </bean>
 
-  <bean id="imageListing.handler" class="vtk.web.display.collection.ImageListingController" parent="collectionListing.abstract.handler">
+  <bean id="imageListing.handler" class="vtk.web.display.collection.ImageListingController" 
+        parent="collectionListing.abstract.handler">
     <property name="searchComponents">
       <list>
         <ref bean="imageListing.searchComponent" />
@@ -51,6 +52,14 @@
         <value>contentLength</value>
         <value>photographer</value>
       </list>
+    </property>
+  </bean>
+
+  <bean id="imageListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="imageListing.feedView" value-ref="imageListing.feedView" />
+      </map>
     </property>
   </bean>
 
@@ -110,23 +119,37 @@
   </bean>
 
   <bean id="imageListing.feedService" parent="collectionListing.feedService">
+    <property name="parent" ref="collectionListing.feedService" />
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
         <ref bean="resourceIsImageListing" />
-        <ref bean="feedParameterSetAssertion" />
+        <ref bean="vrtxParameterIsFeedAssertion" />
       </list>
     </property>
     <property name="handler" ref="imageListing.feedHandler" />
   </bean>
 
-  <bean id="imageListing.feedHandler" parent="collectionListing.feedHandler">
-    <property name="feedGenerator" ref="imageListing.atomFeedGenerator" />
+  <bean id="imageListing.feedHandler" parent="imageListing.handler">
+    <property name="viewName" value="imageListing.feedView" />
+    <property name="searchComponents">
+      <list>
+        <ref bean="imageListing.feedSearchComponent" />
+      </list>
+    </property>
+  </bean>
+  
+  <bean id="imageListing.feedSearchComponent" parent="imageListing.searchComponent">
+    <property name="listingUriQueryBuilder" ref="collectionListing.alwaysRecursiveUriQueryBuilder" />
   </bean>
 
-  <bean id="imageListing.atomFeedGenerator" class="vtk.web.display.collection.CollectionListingAtomFeedGenerator"
-    parent="atomFeedGenerator">
-    <property name="searchComponent" ref="imageListing.searchComponent" />
+  <bean id="imageListing.feedView" class="vtk.web.display.feed.ListingFeedView"
+    parent="atomFeedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="image-listing" />
+      </map>
+    </property>
   </bean>
 
 </beans>

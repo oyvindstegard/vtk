@@ -197,13 +197,13 @@
   </bean>
 
   <bean id="publishResourceHandler" class="vtk.web.actions.publish.PublishResourceController">
-    <property name="viewName" value="redirectToPublish" />
+    <property name="successView" value="redirectToPublish" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>
 
   <bean id="globalPublishResourceHandler" class="vtk.web.actions.publish.PublishResourceController">
-    <property name="viewName" value="redirectToManage" />
+    <property name="successView" value="redirectToManage" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>

@@ -32,6 +32,7 @@ package vtk.web.servlet;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -52,6 +53,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.util.WebUtils;
+
 import vtk.context.BaseContext;
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
@@ -132,6 +134,7 @@ public class VTKServlet extends DispatcherServlet {
     private static final String REPOSITORY_CONTEXT_INITIALIZER_BEAN_NAME = "repositoryContextInitializer";
     private static final String REQUEST_FILTERS_BEAN_NAME = "defaultRequestFilters";
     private static final String RESPONSE_FILTERS_BEAN_NAME = "defaultResponseFilters";
+    private static final String GLOBAL_HEADERS_BEAN_NAME = "globalHeaders";
     
     public static final String INDEX_FILE_REQUEST_ATTRIBUTE =
         VTKServlet.class.getName() + ".index_file_request";
@@ -140,9 +143,9 @@ public class VTKServlet extends DispatcherServlet {
         VTKServlet.class.getName() + ".servlet_name";
 
     
-    private Log logger = LogFactory.getLog(this.getClass().getName());
-    private Log requestLogger = LogFactory.getLog(this.getClass().getName() + ".Request");
-    private Log errorLogger = LogFactory.getLog(this.getClass().getName() + ".Error");
+    private final Log logger = LogFactory.getLog(this.getClass().getName());
+    private final Log requestLogger = LogFactory.getLog(this.getClass().getName() + ".Request");
+    private final Log errorLogger = LogFactory.getLog(this.getClass().getName() + ".Error");
 
     private RequestFilter[] requestFilters = new RequestFilter[0];
     private ResponseFilter[] responseFilters = new ResponseFilter[0];
@@ -150,7 +153,8 @@ public class VTKServlet extends DispatcherServlet {
     private RepositoryContextInitializer repositoryContextInitializer;
     private RequestContextInitializer requestContextInitializer;
     private ErrorHandler[] errorHandlers = new ErrorHandler[0];
-    private AtomicLong requests = new AtomicLong(0);
+    private Map<String,String> globalHeaders = null;
+    private final AtomicLong requests = new AtomicLong(0);
 
     @Override
     public String getServletInfo() {
@@ -189,6 +193,7 @@ public class VTKServlet extends DispatcherServlet {
         initRequestContextInitializer();
         initRepositoryContextInitializer();
         initErrorHandlers();
+        initGlobalHeaders();
     }
     
     private void initSecurityInitializer() {
@@ -253,7 +258,25 @@ public class VTKServlet extends DispatcherServlet {
         this.responseFilters = filterArray;
         this.logger.info("Response filters: " + filterArray + " set up successfully");
     }
-    
+
+    private void initGlobalHeaders() {
+        try { 
+            Map<?,?> headers = 
+                    getWebApplicationContext().getBean(GLOBAL_HEADERS_BEAN_NAME, Map.class);
+            this.globalHeaders = new LinkedHashMap<>();
+            for (Object key: headers.keySet()) {                
+                if (key != null && !"".equals(key.toString().trim())) {
+                    Object o = headers.get(key);
+                    if (o != null && !"".equals(o.toString().trim())) {
+                        String headerName = key.toString().trim();
+                        String headerValue = o.toString().trim();
+                        this.globalHeaders.put(headerName, headerValue);
+                        }
+                    }
+                    
+            }
+        } catch (NoSuchBeanDefinitionException e) { }
+    }
 
     @SuppressWarnings("rawtypes")
     private void initErrorHandlers() {
@@ -346,8 +369,14 @@ public class VTKServlet extends DispatcherServlet {
         boolean proceedService = true;
         HeaderAwareResponseWrapper responseWrapper = 
             new HeaderAwareResponseWrapper(servletResponse);
-
+        
         try {
+            
+            if (this.globalHeaders != null) {
+                for (String header: this.globalHeaders.keySet()) {
+                    responseWrapper.setHeader(header, this.globalHeaders.get(header));
+                }
+            }
 
             request.setAttribute(SERVLET_NAME_REQUEST_ATTRIBUTE, getServletName());
             BaseContext.pushContext();
@@ -359,7 +388,7 @@ public class VTKServlet extends DispatcherServlet {
                 this.repositoryContextInitializer.createContext(request);
             }
             
-            if (!this.securityInitializer.createContext(request, servletResponse)) {
+            if (!this.securityInitializer.createContext(request, responseWrapper)) {
                 if (this.logger.isDebugEnabled()) {
                     this.logger.debug("Request " + request + " handled by " + 
                             "security initializer (authentication challenge)");

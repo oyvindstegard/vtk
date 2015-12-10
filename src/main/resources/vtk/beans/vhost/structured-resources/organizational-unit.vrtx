@@ -34,8 +34,8 @@ resourcetype organizational-unit {
     selectedEmployees (size[8], class[vrtx-autocomplete-username]),
     group employees (displayEmployees, selectedEmployees, numberOfEmployeesToDisplay, urlToEmployeesList) (after responsibilities),
     numberOfEmployeesToDisplay (dropdown),
-    postalAddress tooltip (en : "(postbox / streetaddress, postnumber place)", no : "(postboks / gateadresse, postnummer sted)", nn : "(postboks / gateadresse, postnummer sted)"),
-    visitingAddress tooltip (en : "(building, streetaddress, postnumber place)", no : "(bygning, gateadresse, postnummer sted)", nn : "(bygning, gateadresse, postnummer sted)"),
+    postalAddress tooltip (en : "(postbox / street address, post number place)", no : "(postboks / gateadresse, postnummer sted)", nn : "(postboks / gateadresse, postnummer sted)"),
+    visitingAddress tooltip (en : "(building, street address, post number place)", no : "(bygning, gateadresse, postnummer sted)", nn : "(bygning, gateadresse, postnummer sted)"),
     getExternalUnitInfo tooltip (en : "(report <a class='contact-info' href='http://www.uio.no/english/about/contact/change-personal-information.html'>changes in information</a>.)",
                                  no : "(meld fra om <a class='contact-info' href='http://www.uio.no/om/kontaktinformasjon/endre-personppl.html'>feil eller mangler i opplysningene</a>.)",
                                  nn : "(meld frå om <a class='contact-info' href='http://www.uio.no/om/kontaktinformasjon/endre-personppl.html'>feil eller manglar i opplysningane</a>.)")
@@ -334,7 +334,7 @@ resourcetype organizational-unit {
     header : (en : "Edit organizational unit", no : "Rediger organisatorisk enhet", nn : "Rediger organisatorisk eining"),
     areacode : (en : "Org. Unit ID", no : "Stedkode", nn : "Stadkode"),
     getExternalUnitInfo : (
-      en : "Use information registrated in UiO's payroll- and personalsystem",
+      en : "Use information registered in UiO's payroll- and personalsystem",
       no : "Bruk opplysninger registrert i UiOs lønns- og personalsystem",
       nn : "Bruk opplysningar registrerte i lønns- og personalsystemet til UiO"),
     displayAcronym : (

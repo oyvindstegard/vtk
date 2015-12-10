@@ -10,16 +10,25 @@
     <property name="assertions">
       <list>
         <ref bean="resourceIsEventListing" />
-        <bean class="vtk.web.service.ResourcePropertyAssertion">
-          <property name="namespace" ref="EVENT_LISTING_NAMESPACE" />
-          <property name="name" value="display-type" />
-          <property name="value" value="calendar" />
-          <property name="checkExistenceOnly" value="false" />
-        </bean>
+        <ref bean="calendarEventListing.displayTypeIsCalendar" />
       </list>
     </property>
     <property name="handler" ref="eventListing.calendarHandler" />
     <property name="serviceNameProvider" ref="collectionListing.viewService.serviceNameProvider" />
+  </bean>
+
+  <bean id="calendarEventListing.feedService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="eventListing.feedService" />
+    <property name="handler" ref="eventListing.calendarFeedHandler" />
+    <property name="assertions" ref="calendarEventListing.displayTypeIsCalendar" />
+  </bean>
+
+  <bean id="calendarEventListing.displayTypeIsCalendar"
+        class="vtk.web.service.ResourcePropertyAssertion">
+    <property name="namespace" ref="EVENT_LISTING_NAMESPACE" />
+    <property name="name" value="display-type" />
+    <property name="value" value="calendar" />
+    <property name="checkExistenceOnly" value="false" />
   </bean>
 
   <bean id="eventListing.calendarHandler" class="vtk.web.display.collection.event.calendar.EventCalendarListingController"
@@ -32,6 +41,11 @@
     <property name="calendarSearchComponent" ref="eventListing.calendarCurrentMonthAndForwardSearchComponent" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />
   </bean>
+
+  <bean id="eventListing.calendarFeedHandler" parent="eventListing.calendarHandler">
+    <property name="viewName" value="eventListingCalendar.feedView" />
+  </bean>
+
 
   <bean id="eventListing.calendarCurrentMonthAndForwardSearchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="eventListing.calendarCurrentMonthAndForwardSearchComponent" />
@@ -59,13 +73,6 @@
     <property name="order" value="0" />
     <property name="assertions">
       <list>
-        <ref bean="resourceIsEventListing" />
-        <bean class="vtk.web.service.ResourcePropertyAssertion">
-          <property name="namespace" ref="EVENT_LISTING_NAMESPACE" />
-          <property name="name" value="display-type" />
-          <property name="value" value="calendar" />
-          <property name="checkExistenceOnly" value="false" />
-        </bean>
         <bean class="vtk.web.service.RequestParameterExistsAssertion">
           <property name="parameterName" value="date" />
         </bean>
@@ -75,11 +82,30 @@
     <property name="serviceNameProvider" ref="collectionListing.viewService.serviceNameProvider" />
   </bean>
 
-  <bean id="eventListing.calendarSpecificDateHandler" class="vtk.web.display.collection.event.calendar.EventCalendarSpecificDateListingController"
-    parent="eventListing.calendarHandler">
+  <bean id="calendarEventListing.viewSpecificDateFeedService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="calendarEventListing.feedService" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterExistsAssertion">
+          <property name="parameterName" value="date" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="calendarEventlisting.specificDateFeedHandler" />
+  </bean>
+
+  <bean id="eventListing.calendarSpecificDateHandler" 
+        class="vtk.web.display.collection.event.calendar.EventCalendarSpecificDateListingController"
+        parent="eventListing.calendarHandler">
     <property name="viewName" value="eventListingCalendarWithWidgetContextProvider.view" />
   </bean>
   
+  <bean id="calendarEventlisting.specificDateFeedHandler" parent="eventListing.calendarSpecificDateHandler">
+    <property name="viewName" value="calendarEventlisting.specificDateFeedView" />
+  </bean>
+  
+
+
   <!-- ### View all upcoming and all previous ### -->
 
   <bean id="calendarEventListing.viewAllUpcomingService" class="vtk.web.service.ServiceImpl">
@@ -87,13 +113,6 @@
     <property name="order" value="0" />
     <property name="assertions">
       <list>
-        <ref bean="resourceIsEventListing" />
-        <bean class="vtk.web.service.ResourcePropertyAssertion">
-          <property name="namespace" ref="EVENT_LISTING_NAMESPACE" />
-          <property name="name" value="display-type" />
-          <property name="value" value="calendar" />
-          <property name="checkExistenceOnly" value="false" />
-        </bean>
         <bean parent="viewParameterEquals">
           <property name="parameterValue" value="allupcoming" />
         </bean>
@@ -103,18 +122,17 @@
     <property name="serviceNameProvider" ref="collectionListing.viewService.serviceNameProvider" />
   </bean>
 
+  <bean id="calendarEventListing.viewAllUpcomingFeedService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="calendarEventListing.feedService" />
+    <property name="assertions" ref="vrtxParameterIsFeedAssertion" />
+    <property name="handler" ref="calendarEventListing.viewAllUpcomingFeedHandler" />
+  </bean>
+
   <bean id="calendarEventListing.viewAllPreviousService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="calendarEventListing.viewService" />
     <property name="order" value="0" />
     <property name="assertions">
       <list>
-        <ref bean="resourceIsEventListing" />
-        <bean class="vtk.web.service.ResourcePropertyAssertion">
-          <property name="namespace" ref="EVENT_LISTING_NAMESPACE" />
-          <property name="name" value="display-type" />
-          <property name="value" value="calendar" />
-          <property name="checkExistenceOnly" value="false" />
-        </bean>
         <bean parent="viewParameterEquals">
           <property name="parameterValue" value="allprevious" />
         </bean>
@@ -133,6 +151,10 @@
   <bean id="eventListing.calendarAllUpcomingHandler" class="vtk.web.display.collection.event.calendar.EventCalendarAllListingController"
     parent="eventListing.calendarHandler">
     <property name="viewName" value="eventListingCalendarWithWidgetContextProvider.view" />
+  </bean>
+
+  <bean id="calendarEventListing.viewAllUpcomingFeedHandler" parent="eventListing.calendarAllUpcomingHandler">
+    <property name="viewName" value="calendarEventListing.viewAllUpcomingFeedView" />
   </bean>
 
   <bean id="viewParameterEquals" class="vtk.web.service.RequestParameterAssertion" abstract="true">
@@ -160,6 +182,11 @@
     </property>
   </bean>
 
+  <bean id="eventListingFeed.specificDateEventSearchComponent" parent="eventListing.specificDateEventSearchComponent">
+    <property name="name" value="eventListingFeed.specificDateEventSearchComponent" />
+    <property name="resolveMultiHostResultSet" value="false" />
+  </bean>
+
   <bean id="eventListing.currentMonthSearchComponent" parent="eventListing.specificDateEventSearchComponent">
     <property name="name" value="eventListing.currentMonthSearchComponent" />
     <property name="queryBuilders">
@@ -175,6 +202,52 @@
             OR (start-date &lt;= [1] AND end-date &gt;= [2])" />
         </bean>
       </list>
+    </property>
+  </bean>
+
+  <bean id="eventListingCalendar.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="eventListingCalendar.feedView" 
+               value-ref="eventListingCalendar.feedView" />
+
+        <entry key="calendarEventlisting.specificDateFeedView" 
+               value-ref="eventListingCalendar.feedView" />
+
+        <entry key="calendarEventListing.viewAllUpcomingFeedView" 
+               value-ref="eventListingCalendar.feedView" />
+
+        <!--
+
+        <entry key="calendarEventlisting.specificDateFeedView" 
+               value-ref="calendarEventlisting.specificDateFeedView" />
+
+        <entry key="calendarEventListing.viewAllUpcomingFeedView" 
+               value-ref="calendarEventListing.viewAllUpcomingFeedView" />
+        -->
+      </map>
+    </property>
+  </bean>
+
+  <bean id="eventListingCalendar.viewResolver" parent="decoratorViewResolver">
+    <property name="views">
+      <map>
+        <entry key="eventListingCalendar.view" value-ref="eventListingCalendar.view" />
+        <entry key="eventListingCalendarWithWidgetContextProvider.view" value-ref="eventListingCalendarWithWidgetContextProvider.view" />
+      </map>
+    </property>
+  </bean>
+
+
+  <bean id="eventListingCalendar.feedView" class="vtk.web.display.collection.event.EventListingAtomFeedView"
+    parent="atomFeedView">
+    <property name="helper" ref="eventListingHelper" />
+    <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
+    <property name="overridePublishDatePropDefPointer" ref="${override.listing.prefix}overridePublishDatePropDefPointer" />
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="event-calendar-listing" />
+      </map>
     </property>
   </bean>
 

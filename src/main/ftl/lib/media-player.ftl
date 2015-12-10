@@ -21,62 +21,44 @@
  * @param showPlayButton (optional) do we want to show placeholder play button
  *
 -->
-<#macro genPlaceholder url dateStr isAudio=false showPlayButton=false>
+<#macro genPlaceholder url dateStr isAudio=false showPlayButton=false useVideoTag=false>
   <#if !isAudio>
-    <#local imgSrc = "video-noflash.png" />
-    <#local width = "500" />
-    <#local height = "279" />
+    <#if poster?? && (hideVideoFallbackLink?? == false || useVideoTag)>
+      <#local imgSrc = poster />
+    <#elseif mediaResource?? && mediaResource.resourceType == "videoref">
+      <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/video-streaming-only.png" />
+      <#local width = "500" />
+      <#local height = "279" />
+    <#else>
+      <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/video-noflash.png" />
+      <#local width = "500" />
+      <#local height = "279" />
+    </#if>
     <#local alt = vrtx.getMsg("article.media-file") />
   <#else>
-    <#local imgSrc = "audio-icon.png" />
+    <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/audio-icon.png" />
     <#local width = "151" />
     <#local height = "82" />
     <#local alt = vrtx.getMsg("article.audio-file") />
   </#if>
-  
-  <@genPlayButtonCSS showPlayButton />
-  
-  <div id="mediaspiller-${dateStr}-print" class="vrtx-media-player-print<#if showPlayButton> vrtx-media-player-no-flash</#if>">
-    <img src="<#if poster?exists>${poster?html}<#else>/vrtx/__vrtx/static-resources/themes/default/icons/${imgSrc}</#if>" width="${width}" height="${height}" alt="${alt}"/>
-    <#if showPlayButton><a class="playbutton" href="${url}"></a></#if>
-  </div>
-  <div id="mediaspiller-${dateStr}"<#if showPlayButton> class="vrtx-media-player-no-flash"</#if>>
-    <a class="vrtx-media" href="${url}">
-	  <img src="<#if poster?exists>${poster?html}<#else>/vrtx/__vrtx/static-resources/themes/default/icons/${imgSrc}</#if>" width="${width}" height="${height}" alt="${alt}"/>
-      <#if showPlayButton><span class="playbutton"></span></#if>
-    </a>
-  </div>
-</#macro>
 
-<#--
- * genPlayButtonCSS
- *
- * Generates CSS for play button
- *
- * @param showPlayButton (optional) do we want to show placeholder play button
- *
--->
-<#macro genPlayButtonCSS showPlayButton>
-  <style type="text/css">
-    .vrtx-media-player-print { display: none; }
-    <#if showPlayButton>
-    .vrtx-media-player-no-flash,
-    .vrtx-media-player-no-flash img { width: 507px; height: 282px; float: left; }
-    .vrtx-media-player-no-flash { background-color: #000000; position: relative; }
-    .vrtx-media-player-no-flash .playbutton { 
-      position: absolute; top: 90px; left: 195px; width: 115px; height: 106px; display: block;
-    }
-    .vrtx-media-player-no-flash .playbutton,
-    .vrtx-media-player-no-flash a.vrtx-media:visited .playbutton,
-    .vrtx-media-player-no-flash a.vrtx-media:active .playbutton,
-    .vrtx-media-player-no-flash .playbutton:visited,
-    .vrtx-media-player-no-flash .playbutton:active {
-      background: url('/vrtx/__vrtx/static-resources/themes/default/icons/video-playbutton.png') no-repeat center center;
-    }
-    .vrtx-media-player-no-flash a.vrtx-media:hover .playbutton,
-    .vrtx-media-player-no-flash .playbutton:hover { background-image: url('/vrtx/__vrtx/static-resources/themes/default/icons/video-playbutton-hover.png'); }
-    </#if>
-  </style>
+  <#if useVideoTag>
+    <div id="mediaspiller-${dateStr}" class="vrtx-media-player-no-flash">
+      <video src="${url}" controls<#if autoplay?? && autoplay == "true"> autoplay</#if> width="${width}" height="${height}" poster="${imgSrc?html}"></video>
+    </div>
+  <#else>
+    <div id="mediaspiller-${dateStr}-print" class="vrtx-media-player-print<#if showPlayButton> vrtx-media-player-no-flash</#if>">
+      <img src="${imgSrc?html}" width="${width}" height="${height}" alt="${alt}"/>
+      <#if showPlayButton><a class="playbutton" href="${url}"></a></#if>
+    </div>
+    <div id="mediaspiller-${dateStr}"<#if showPlayButton> class="vrtx-media-player-no-flash"</#if>>
+      <#if hideVideoFallbackLink?? == false><a class="vrtx-media" href="${url}"></#if>
+        <img src="${imgSrc?html}" width="${width}" height="${height}" alt="${alt}"/>
+        <#if showPlayButton><span class="playbutton"></span></#if>
+      <#if hideVideoFallbackLink?? == false></a></#if>
+    </div>
+  </#if>
+
 </#macro>
 
 <#--
@@ -92,6 +74,7 @@
  *
 -->
 <#macro initFlash url dateStr isStream=false isAudio=false isSWF=false>
+
   <#local flashUrl = strobe?html />
   
   <script type="text/javascript"><!--
@@ -115,7 +98,7 @@
         <#if isStream>
           flashvars.streamType = "live";
         </#if>
-        <#if poster?exists>
+        <#if poster??>
           flashvars.poster = "${poster?url("UTF-8")}";
         <#else>
           flashvars.poster = "/vrtx/__vrtx/static-resources/themes/default/icons/video-noflash.png";
@@ -160,7 +143,8 @@
  *
 -->
 <#macro genDownloadLink url type="media" bypass=false>
-  <#if bypass || (showDL?exists && showDL == "true")>
+  <#if bypass || (hideVideoDownloadLink?? == false && 
+      (showDL?? && showDL == "true"))>
     <a class="vrtx-media" href="${url}">
       <#if type = "video">
         <@vrtx.msg code="article.video-file" />

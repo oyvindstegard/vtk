@@ -30,17 +30,14 @@
  */
 package vtk.resourcemanagement.view.tl;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import net.sf.json.JSONObject;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
+import vtk.util.text.Json;
 import vtk.web.RequestContext;
 
 public class RetrieveJsonHandler extends Function {
@@ -66,20 +63,9 @@ public class RetrieveJsonHandler extends Function {
             }
             String token = requestContext.getSecurityToken();
             InputStream is = repository.getInputStream(token, uri, false);
-            InputStreamReader isr = new InputStreamReader(is,"UTF-8");
-            BufferedReader br = new BufferedReader(isr);
-
-            String line;
-            String result = "";
-            while ((line = br.readLine()) != null) {
-                result += line;
-            }
-            is.close();
-
-            return JSONObject.fromObject(result);
+            return Json.parseToContainer(is);
         } catch (Throwable t) {
+            return null;
         }
-        
-        return null;
     }
 }

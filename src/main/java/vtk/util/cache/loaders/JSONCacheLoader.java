@@ -33,23 +33,21 @@ package vtk.util.cache.loaders;
 import java.io.InputStream;
 import java.net.URLConnection;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONSerializer;
-
-import vtk.util.io.StreamUtil;
+import vtk.util.text.Json;
 
 /**
  * Cache loader that provides {@link JSON} objects
  */
-public class JSONCacheLoader extends URLConnectionCacheLoader<JSON> {
-    
+public class JSONCacheLoader extends URLConnectionCacheLoader<Json.Container> {
+
+    // XXX limit not enforced, could use BoundedInputStream to apply limit while still
+    // parsing by stream. 
     private int maxLength = 1000000;
 
     @Override
-    protected JSON handleConnection(URLConnection connection) throws Exception {
+    protected Json.Container handleConnection(URLConnection connection) throws Exception {
         InputStream stream = connection.getInputStream();
-        byte[] buffer = StreamUtil.readInputStream(stream, maxLength);
-        return JSONSerializer.toJSON(new String(buffer, "utf-8"));
+        return Json.parseToContainer(stream);
     }
     
 }

@@ -101,7 +101,7 @@
     if(window.location.hash.length === 1) {
       var hash = "";
       if(window.history && window.history.pushState) { 
-        window.history.pushState("", "", window.location.pathname + window.location.search) 
+        window.history.pushState("", "", window.location.pathname + window.location.search);
       }
     } else {
       var hash = window.location.hash;
@@ -204,7 +204,7 @@
 
         var waitForTheEnd = null;
         vrtxAdm.cachedContent.on("click", "#preview-mode-mobile-rotate-hv", function(e) {
-          if(waitForTheEnd != null) return;
+          if(waitForTheEnd !== null) return;
           
           $("#previewIframeInnerWrapper").stop().fadeTo((!animationOff ? 150 : 0), 0, "easeInCubic", function() {
             /* Make shadow "follow along" rotation */
@@ -271,7 +271,7 @@
             vrtxAdmin.runReadyLoad = true;
             $.bbq.removeState("fullscreen");
             $(this).text(fullscreenToggleOpen);
-            if(editorStickyBar != null) {
+            if(editorStickyBar !== null) {
               editorStickyBar.destroy();
             }
             $(window).trigger("resize");

@@ -10,7 +10,6 @@
     <property name="parentTypeDefinition" ref="xmlResource" />
     <property name="mixinTypeDefinitions">
       <list>
-        <ref bean="visualProfileMixinResourceTypeDef" />
         <ref bean="ssiMixinResourceTypeDef" />
       </list>
     </property>

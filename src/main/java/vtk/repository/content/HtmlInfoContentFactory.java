@@ -33,8 +33,6 @@ package vtk.repository.content;
 import java.io.InputStream;
 import java.util.Stack;
 
-import vtk.text.html.TagsoupParserFactory;
-import vtk.util.text.TextUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -42,20 +40,20 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
-public class HtmlInfoContentFactory implements ContentFactory {
+import vtk.text.html.TagsoupParserFactory;
+import vtk.util.text.TextUtils;
+
+public class HtmlInfoContentFactory implements ContentFactory<HtmlInfo> {
 
     @Override
-    public Class<?>[] getRepresentationClasses() {
-        return new Class[] { HtmlInfo.class };
+    public Class<HtmlInfo> getRepresentationType() {
+        return HtmlInfo.class;
     }
 
     @Override
-    public HtmlInfo getContentRepresentation(Class clazz, InputStream content) 
+    public HtmlInfo getContentRepresentation(InputStream content) 
             throws Exception {
         
-        if (clazz != HtmlInfo.class) {
-            throw new UnsupportedContentRepresentation("Unsupported representation: " + clazz);
-        }
         HtmlInfo map = new HtmlInfo();
         org.ccil.cowan.tagsoup.Parser parser = TagsoupParserFactory.newParser(true);
         Handler handler = new Handler(map);

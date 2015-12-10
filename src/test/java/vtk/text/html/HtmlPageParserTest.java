@@ -30,13 +30,14 @@
  */
 package vtk.text.html;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -393,6 +394,28 @@ public class HtmlPageParserTest {
         HtmlElement hr = body.getChildElements("hr")[0];
         assertNotNull(hr);
         assertEquals(hr.getEnclosedContent(), "<hr>");
+    }
+    
+    @Test
+    public void audioVideo() throws Exception {
+        String audio = 
+                "<audio>\n"
+                   + "<source src=\"sound1.ogg\" type=\"audio/ogg\"/>\n"
+                   + "<source src=\"sound2.ogg\" type=\"audio/ogg\"/>\n"
+                   + "Unsupported tag: 'audio'.\n"
+              + "</audio>";
+        
+        String video = 
+                "<video>\n"
+                   + "<source src=\"movie1.mp4\" type=\"video/mp4\"/>\n"
+              + "</video>";
+        HtmlPageParser parser = new HtmlPageParser();
+        
+        HtmlFragment fragment = parser.parseFragment(audio);
+        assertEquals(audio, fragment.getStringRepresentation());
+        
+        fragment = parser.parseFragment(video);
+        assertEquals(video, fragment.getStringRepresentation());
     }
 
     private HtmlPage parse(String content) throws Exception {

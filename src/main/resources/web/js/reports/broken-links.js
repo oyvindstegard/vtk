@@ -30,10 +30,10 @@ vrtxAdmin._$(document).ready(function() {
 
      _$.when(vrtxEditor.multipleFieldsBoxesDeferred).done(function() {
        if(_$(".report-filters-folders-exclude").length) {
-         enhanceMultipleInputFields("report-filters-folders-exclude", false, true, 999, null);
+         enhanceMultipleInputFields("report-filters-folders-exclude", false, true, 999, null, false);
        }   
        if(_$(".report-filters-folders-include").length) {     
-         enhanceMultipleInputFields("report-filters-folders-include", false, true, 999, null);
+         enhanceMultipleInputFields("report-filters-folders-include", false, true, 999, null, false);
        } 
      });
 
@@ -66,7 +66,7 @@ vrtxAdmin._$(document).ready(function() {
     _$("#include-folders").val(includedFolders.substring(0, includedFolders.lastIndexOf(",")));
     _$("#exclude-folders").val(excludedFolders.substring(0, excludedFolders.lastIndexOf(",")));
     
-    vrtxAdm.cachedAppContent.on("click", "#vrtx-report-filters #vrtx-report-filters-show-hide-advanced", function(e) { // Show / hide advanced settings
+    eventListen(vrtxAdm.cachedAppContent, "click", "#vrtx-report-filters #vrtx-report-filters-show-hide-advanced", function(ref) { // Show / hide advanced settings
       var container = _$("#vrtx-report-filters-folders-include-exclude");
       var brokenLinksAnimation = new VrtxAnimation({
         elem: container,
@@ -82,10 +82,8 @@ vrtxAdmin._$(document).ready(function() {
       } else {
         brokenLinksAnimation.topDown();
       }
-      e.stopPropagation();
-      e.preventDefault();
     });
-    vrtxAdm.cachedAppContent.on("click", "#vrtx-report-filters-folders-include-exclude a.vrtx-button", function(e) { // Filter exclude and include folders
+    eventListen(vrtxAdm.cachedAppContent, "click", "#vrtx-report-filters-folders-include-exclude a.vrtx-button", function(ref) { // Filter exclude and include folders
       saveMultipleInputFields(); // Multiple to comma-separated
       // Build query string
       var includeFolders = unique(_$("#include-folders").val().split(",")); // Get included folders and remove duplicates
@@ -116,8 +114,6 @@ vrtxAdmin._$(document).ready(function() {
       } else {
         window.location.href = thehref + includeQueryString + excludeQueryString;      
       }
-      e.stopPropagation();
-      e.preventDefault();
     });
   }
 });

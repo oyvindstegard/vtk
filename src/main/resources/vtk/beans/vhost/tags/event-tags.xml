@@ -92,11 +92,24 @@
   </bean>
 
   <bean id="tags.eventListing.feedHandler" parent="eventListing.feedHandler">
-    <property name="feedGenerator" ref="tags.eventListing.atomFeedGenerator" />
+    <property name="searcher" ref="tags.eventListing.eventListingSearcher" />
+    <property name="viewName" value="tags.eventListing.feedView" />
   </bean>
 
-  <bean id="tags.eventListing.atomFeedGenerator" parent="eventListing.atomFeedGenerator">
-    <property name="searcher" ref="tags.eventListing.eventListingSearcher" />
+  <bean id="tags.eventListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="tags.eventListing.feedView" value-ref="tags.eventListing.feedView" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="tags.eventListing.feedView" parent="eventListing.feedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="event-tags" />
+      </map>
+    </property>
   </bean>
 
 </beans>

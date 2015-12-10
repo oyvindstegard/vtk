@@ -129,14 +129,12 @@ public class FeedbackController implements Controller {
             return new ModelAndView(this.viewName, model);
         }
         
-        model.put("mailto", recipientsStr); 
-
+        model.put("mailto", recipientsStr);
         
         if (!method.equals("POST")) {
             return new ModelAndView(this.viewName, model);
         }    
 
-        // TODO: Captcha?
         if (StringUtils.isBlank(yourComment)) {
             model.put(MailHelper.RESPONSE_MODEL, MailHelper.RESPONSE_EMPTY_FIELDS);
             return new ModelAndView(this.viewName, model);

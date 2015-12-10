@@ -33,9 +33,11 @@ package vtk.repository.systemjob;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -76,14 +78,17 @@ public abstract class AbstractResourceJob extends RepositoryJob {
     private final Log logger = LogFactory.getLog(AbstractResourceJob.class);
     
     @Override
-    public final void executeWithRepository(final Repository repository, final SystemChangeContext context) throws Exception {
+    public final void executeWithRepository(final Repository repository, 
+            final SystemChangeContext context) throws Exception {
 
         if (repository.isReadOnly() && !isExecuteWhenReadOnly()) {
-            logger.warn("Job " + getId() + ": will not run as scheduled, repository is in read-only mode.");
+            logger.warn("Job " + getId() 
+                + ": will not run as scheduled, repository is in read-only mode.");
             return;
         }
         
-        final String token = SecurityContext.exists() ? SecurityContext.getSecurityContext().getToken() : null;
+        final String token = SecurityContext.exists() ? 
+                SecurityContext.getSecurityContext().getToken() : null;
 
         final ExecutionContext ctx = new ExecutionContext(repository, token, context);
         PathSelectCallback pathCallback = new PathSelectCallback() {
@@ -108,15 +113,18 @@ public abstract class AbstractResourceJob extends RepositoryJob {
                 try {
                     Resource resource = repository.retrieve(token, path, false);
                     if (resource.getLock() != null && isSkipLockedResources()) {
-                        logger.warn("Job " + getId() + ": resource is currently locked and will be skipped: " + path);
+                        logger.warn("Job " + getId() 
+                            + ": resource is currently locked and will be skipped: " + path);
                         return;
                     }
 
                     executeForResource(resource, ctx);
-                    
-                } catch (ResourceNotFoundException rnfe) {
-                    logger.warn("Job " + getId() + ": resource in selection not found in repository: " + path);
-                } catch (Exception e) {
+                }
+                catch (ResourceNotFoundException rnfe) {
+                    logger.warn("Job " + getId() 
+                        + ": resource in selection not found in repository: " + path);
+                }
+                catch (Exception e) {
                     logger.warn("Job " + getId() 
                             + ": exception during execution for resource " + path, e);
                     if (isAbortOnException()) {
@@ -177,7 +185,8 @@ public abstract class AbstractResourceJob extends RepositoryJob {
         
         /**
          * Get value of an attribute on the execution context.
-         * @param key the key used to store the value in {@link #setAttribute(java.lang.String, java.lang.Object) setAttribute}.
+         * @param key the key used to store the value in 
+         * {@link #setAttribute(java.lang.String, java.lang.Object) setAttribute}.
          * @return the value or <code>null</code> if no such value exists.
          */
         public Object getAttribute(String key) {

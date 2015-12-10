@@ -1,0 +1,254 @@
+/*
+ * Vortex - Directorylisting
+ *
+ * Folder content, trash content and reports
+ * 
+ */
+
+@import "base";
+
+#vrtx-manage-collectionlisting #contents,
+#vrtx-trash-can #contents,
+#vrtx-report-documents #contents .vrtx-report,
+#vrtx-report-broken-links #contents .vrtx-report {
+  padding: 5px 0 0 0;
+  border: 1px solid #d9d9d9;
+  clear: left;
+}
+
+#vrtx-report-documents #contents .vrtx-report {
+  margin-top: 15px;
+}
+
+#collectionListing\.checkUncheckAll {
+  padding-top: 11px;
+  margin-bottom: -27px;
+  font-weight: bold;
+}
+
+#directory-listing {
+  width: 100%;
+  table-layout: fixed;
+
+  td {
+    word-wrap: break-word;
+  
+    span.own-permission {
+      color: #999999;
+      display: inline-block;
+      font-size: 1.5em;
+      left: 0;
+      line-height: 1;
+      margin: -5px 0;
+      position: relative;
+      top: 2px;
+    }
+  }
+  tr {
+    &.first td {
+      border-top: none;
+      padding-top: 8px;
+    }
+    &.even td {
+      background-color: $contentTablesEvenBackgroundColor;
+    }
+    &.focus,
+    &:hover {
+      &.first td {
+        border-top: none;
+      }
+      &.last td {
+        border-bottom: none;
+      }
+      td {
+        background-color: $listingDropdownTipFocusBackgroundColor;
+        border-top: 1px solid #c7dadf;
+        border-bottom: 1px solid #c7dadf;
+       
+        &.permissions { 
+          a {
+            border-bottom: 1px dotted #888;
+          }
+          span a:hover {
+            text-decoration: none;
+          }
+        }
+      }
+    }
+    &.checked {
+      background-color: #eaeaea;
+
+      &.first td {
+        border-top: none;
+      }
+      &.last td {
+        border-bottom: none;
+      }
+      td {
+        background-color: #eaeaea;
+        border-top: 1px solid #d9d9d9;
+        border-bottom: 1px solid #d9d9d9;
+      }
+    }
+    &.unpublished td {
+      &.name a,
+      &.name .unauthorizedListedResource-wrapper,
+      &.name span.vrtx-trash-can-name-text,
+      &.vrtx-report-name a {
+        background: url(images/file-small-unpublished.png) no-repeat center left;
+      }
+    }
+    td {
+      font-size: 1.15em;
+      border-top: 1px solid #f0f0f0;
+      padding: 5px 0 4px 15px;
+      overflow: hidden;
+
+      &.permissions,
+      &.published,
+      &.resource-type,
+      &.last-modified,
+      &.vrtx-trash-can-deleted-by,
+      &.vrtx-trash-can-deleted-time,
+      &.vrtx-report-last-modified,
+      &.vrtx-report-last-modified-by,
+      &.vrtx-report-permission-set,
+      &.vrtx-report-permissions,
+      &.vrtx-report-published {
+        white-space: nowrap;
+      }
+
+      &.name a,
+      &.name .unauthorizedListedResource-wrapper,
+      &.name span.vrtx-trash-can-name-text,
+      &.vrtx-report-name a {
+        padding: 2px 0 2px 31px;
+        display: block;
+        background: url(images/file-small.gif) no-repeat center left;
+        overflow: hidden;
+      }
+    }
+    th {
+      background: url(images/line-dotted.gif) repeat-x bottom left;
+      padding: 0 0 8px 15px;
+      text-align: left;
+      white-space: nowrap;
+   
+      &.checkbox                                  { width: 4%;  }
+      &.permissions                               { width: 15%; }
+      &#vrtx-trash-can\.deletedBy                 { width: 19%; }
+      &#vrtx-report-permissions                   { width: 15%; }
+      &.resource-type                             { width: 15%; }
+      &.last-modified                             { width: 13%; }
+      &#vrtx-report-last-checked,
+      &#vrtx-report-last-modified                 { width: 19%; }
+      &#vrtx-report-modified-by                   { width: 22%; }
+      &.published,
+      &#vrtx-report-published                     { width: 9%; }
+      &#vrtx-report-broken-links-document-count,
+      &#vrtx-report-broken-links-count            { width: 6%; }
+      &#vrtx-report-broken-links-collection-document-count,
+      &#vrtx-report-broken-links-collection-count { width: 11%; }
+      &#vrtx-report-broken-links                  { width: 35%; }
+    }
+    @include listingIcon(folder);
+    @include listingIcon(text);
+    @include listingIcon(pdf);
+    @include listingIcon(doc);
+    @include listingIcon(xls);
+    @include listingIcon(ppt);
+    @include listingIcon(image);
+    @include listingIcon(audio, $firstIsPng: true);
+    @include listingIcon(video);
+    @include listingIcon(videoref);
+    @include listingIcon(binary);
+    @include listingIcon(dmg, $firstIsPng: true, $hasUnpublished: false);
+    @include listingIcon(zip, $firstIsPng: true, $hasUnpublished: false);
+    @include listingIcon(jar, $firstIsPng: true, $hasUnpublished: false);
+  }
+}
+
+#directory-listing th.name,
+#directory-listing td.name,
+#directory-listing th.action,
+#directory-listing td.action,
+#directory-listing th#vrtx-trash-can\.name,
+#directory-listing td.vrtx-trash-can-name,
+body#vrtx-report-documents #directory-listing th#vrtx-report-name,
+body#vrtx-report-documents #directory-listing td.vrtx-report-name,
+body#vrtx-report-broken-links #directory-listing th#vrtx-report-broken-links-web-page,
+body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links-web-page,
+body#vrtx-report-broken-links #directory-listing th#vrtx-report-broken-links-collection,
+body#vrtx-report-broken-links #directory-listing th.vrtx-report-broken-links-collection {
+  padding-left: 15px;
+  width: 30%;
+}
+
+#directory-listing td.vrtx-report-broken-links-web-page span,
+#directory-listing td.vrtx-report-broken-links-collection span {
+  display: block;
+  clear: left;
+  font-size: 0.867em;
+  color: #5e5e5e;
+}
+
+#directory-listing td.name span.name-split,
+#directory-listing td.vrtx-trash-can-name span.name-split,
+body#vrtx-report-documents #directory-listing td.vrtx-report-name span.name-split {
+  display: block;
+}
+
+#directory-listing th.last-modified,
+#directory-listing td.last-modified,
+#directory-listing th#vrtx-trash-can\.deletedTime,
+#directory-listing td.vrtx-trash-can\.deletedTime,
+#directory-listing th#vrtx-report-published,
+#directory-listing td.vrtx-report-published,
+body#vrtx-report-broken-links #directory-listing th#vrtx-report-broken-links,
+body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
+  padding-right: 15px;
+}
+
+/* Empty */
+
+#directory-listing #trash-can-empty,
+#directory-listing #collectionlisting-empty {
+  text-align: center;
+}
+
+#directory-listing #trash-can-empty td,
+#directory-listing #collectionlisting-empty td {
+  padding: 25px 0 30px 0;
+}
+
+/* Permissions / published */
+
+#directory-listing td span.allowed-for-all,
+#directory-listing td span.allowed-for-all a,
+#resourceMenuRight span.allowed-for-all,
+#resourceMenuRight span.published,
+#publishing-status span.published {
+  color: $publishedAllowedTextColor;
+}
+
+#directory-listing td span.restricted,
+#directory-listing td span.restricted a,
+#resourceMenuRight span.restricted {
+  color: $errorRestrictedTextColor;
+}
+
+#resourceMenuRight span.unpublished,
+#publishing-status span.unpublished {
+  color: #888;
+}
+
+.unpublished .published span,
+.unpublished .permissions span,
+.unpublished .permissions span a,
+.unpublished td.resource-type,
+.unpublished td.last-modified {
+  color: #9a9996 !important;
+  font-style: italic !important;
+}
+
+/* ^ Vortex - Directorylisting */

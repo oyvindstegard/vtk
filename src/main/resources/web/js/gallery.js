@@ -55,11 +55,11 @@
                                          parseInt(wrpContainer.css("borderLeftWidth"), 10) + parseInt(wrpContainer.css("borderRightWidth"), 10);
         
     var maxHeight = 4/3;
-    if(settings.maxHeight == "none") {
+    if(settings.maxHeight === "none") {
       maxHeight = 99999;
-    } else if(settings.maxHeight == "4-3") {
+    } else if(settings.maxHeight === "4-3") {
       maxHeight = 4/3; // 1.33:1
-    } else if(settings.maxHeight == "16-9") {
+    } else if(settings.maxHeight === "16-9") {
       maxHeight = 16/9; // 1.77:1
     }
     
@@ -80,8 +80,8 @@
     // Thumbs interaction
     wrp.on("mouseover mouseout click", "li a", function (e) {
       var elm = $(this);
-      if (e.type == "mouseover" || e.type == "mouseout") {
-        elm.filter(":not(.active)").find("img").stop().fadeTo(settings.fadeThumbsInOutTime, (e.type == "mouseover") ? 1 : settings.fadedThumbsOutOpacity);
+      if (e.type === "mouseover" || e.type === "mouseout") {
+        elm.filter(":not(.active)").find("img").stop().fadeTo(settings.fadeThumbsInOutTime, (e.type === "mouseover") ? 1 : settings.fadedThumbsOutOpacity);
       } else {
         navigate(elm);
         e.stopPropagation();
@@ -91,9 +91,9 @@
 
     // Navigation interaction
     $(document).keydown(function (e) {
-      if (e.keyCode == 39) {
+      if (e.keyCode === 39) {
         nextPrevNavigate(e, 1);
-      } else if (e.keyCode == 37) {
+      } else if (e.keyCode === 37) {
         nextPrevNavigate(e, -1);
       }
     });
@@ -183,11 +183,11 @@
     
     function nextPrevNavigate(e, dir) {
       var isNext = dir > 0;	
-      if (e.type == "mouseover") {
+      if (e.type === "mouseover") {
         wrpNavNext.stop().fadeTo(settings.fadeNavInOutTime, isNext ? 1 : settings.fadedInActiveNavOpacity);
         wrpNavPrev.stop().fadeTo(settings.fadeNavInOutTime, isNext ? settings.fadedInActiveNavOpacity : 1);
         wrpNavNextPrevSpans.stop().fadeTo(settings.fadeNavInOutTime, settings.fadedNavOpacity);   /* XXX: some filtering instead below */
-      } else if (e.type == "mouseout") {
+      } else if (e.type === "mouseout") {
         wrpNavNextPrevSpans.stop().fadeTo(settings.fadeNavInOutTime, 0);
         wrpNavNextPrev.stop().fadeTo(settings.fadeNavInOutTime, 0); 
       } else {
@@ -330,7 +330,7 @@
       }
       maxRegularWidth = wrpThumbs.is(":visible") ? Math.min(wrpThumbs.width(), wrp.parent().width()) : wrp.parent().width();
       maxRegularWidth -= wrpContainerBorderPaddingWidth;
-      maxRegularHeight = maxHeight == 99999 ? maxHeight : Math.round(maxRegularWidth/(maxHeight));
+      maxRegularHeight = maxHeight === 99999 ? maxHeight : Math.round(maxRegularWidth/(maxHeight));
       images[src].fullWidthOrig = parseInt(dims.fullWidth.replace(/[^\d]*/g, ""), 10);
       images[src].fullHeightOrig = parseInt(dims.fullHeight.replace(/[^\d]*/g, ""), 10);
       var regularDims = calculateImageDimensions(images[src].fullWidthOrig, images[src].fullHeightOrig, maxRegularWidth, maxRegularHeight);
@@ -340,8 +340,8 @@
       // HTML unescape and encode quotes in alt and title if not already encoded
       var alt = dims.alt;
       var title = dims.title;
-      images[src].alt = alt != "" ? $("<div/>").html(alt).text().replace(/\'/g, "&#39;") : null;
-      images[src].title = title != "" ? $("<div/>").html(title).text().replace(/\'/g, "&#39;") : null;
+      images[src].alt = alt !== "" ? $("<div/>").html(alt).text().replace(/\'/g, "&#39;") : null;
+      images[src].title = title !== "" ? $("<div/>").html(title).text().replace(/\'/g, "&#39;") : null;
       // Add description
       var desc = "";
       if (images[src].title) desc += "<p class='" + container.substring(1) + "-title'>" + images[src].title + "</p>";
@@ -366,7 +366,7 @@
           wrp.find("> .fullscreen-gallery-topline").prepend("<a style='display: none' href='javascript:void(0);' class='fullscreen-gallery-responsive-toggle-description'>" + settings.i18n.showImageDescription + "</a>");
           wrp.on("click", "a.fullscreen-gallery-responsive-toggle-description", function(e) {
             var link = $(this);
-            if(link.text() == settings.i18n.showImageDescription) {
+            if(link.text() == settings.i18n.showImageDescription) { // "true" = true
               link.text(settings.i18n.hideImageDescription);
               wrp.removeClass("hidden-descriptions");
             } else {
@@ -423,7 +423,7 @@
     function resizeFullscreen(forceResize) {
       var winWidth = $(window).width();
       var winHeight = $(window).height();
-      if(forceResize || (curWinWidth != winWidth && curWinHeight != winHeight)) { /* Only occur on init or window resize */
+      if(forceResize || (curWinWidth !== winWidth && curWinHeight !== winHeight)) { /* Only occur on init or window resize */
         var toplineHeight = wrp.find(".fullscreen-gallery-topline").outerHeight(true);
         var cacheCalculateImageDimensions = calculateImageDimensions;
         var cacheCalculateFullscreenImageDimensions = calculateFullscreenImageDimensions;
@@ -431,7 +431,7 @@
         descriptionContainers.addClass("active-description-recalc");
         maxRegularWidth = wrpThumbs.is(":visible") ? Math.min(wrpThumbs.width(), wrp.parent().width()) : wrp.parent().width();
         maxRegularWidth -= wrpContainerBorderPaddingWidth;
-        maxRegularHeight = maxHeight == 99999 ? maxHeight : Math.round(maxRegularWidth/(maxHeight));
+        maxRegularHeight = maxHeight === 99999 ? maxHeight : Math.round(maxRegularWidth/(maxHeight));
         for(var key in images) {
           var image = images[key];
           var dimsRegular = cacheCalculateImageDimensions(image.fullWidthOrig, image.fullHeightOrig, maxRegularWidth, maxRegularHeight);   

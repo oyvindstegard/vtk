@@ -18,5 +18,5 @@
 This message is sent on behalf of ${mailFrom}.
 Your email address will not be saved.
 You will not receive further messages of this kind
-unless someone tips you of other articles on ${site}.
+unless someone share other articles on ${site}.
 </p>

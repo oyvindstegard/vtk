@@ -30,7 +30,6 @@
  */
 package vtk.web.actions.versioning;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,13 +41,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Privilege;
 import vtk.repository.Repository;
 import vtk.repository.RepositoryAction;
 import vtk.repository.Resource;
 import vtk.repository.Revision;
-import vtk.repository.store.Revisions;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
@@ -112,7 +111,6 @@ public class DisplayRevisionsController implements Controller {
             rev.put("principal", this.principalFactory.getPrincipal(revision.getUid(), Type.USER));
             rev.put("acl", revision.getAcl());
             rev.put("checksum", revision.getChecksum());
-            rev.put("changeAmount", revision.getChangeAmount());
             allRevisions.add(rev);
 
             boolean haveDisplayURL = displayURL != null
@@ -180,15 +178,6 @@ public class DisplayRevisionsController implements Controller {
             }
         }
        
-        if (latest != null) {
-            try {
-                InputStream s1 = repository.getInputStream(token, uri, true, latest);
-                InputStream s2 = repository.getInputStream(token, uri, true);
-                Integer changeAmount = Revisions.changeAmount(s1, s2);
-                model.put("resourceChangeAmount", changeAmount);
-            } catch (Throwable t) { }
-        }
-
         model.put("resource", resource);
         model.put("displayURL", displayURL);
         if(firstRevision != null) {

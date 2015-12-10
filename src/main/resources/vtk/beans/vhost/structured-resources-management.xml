@@ -11,8 +11,8 @@
     <property name="evaluatorResolver" ref="evaluatorResolver" />
   </bean>
 
-  <bean id="structuredResource.parser" class="vtk.resourcemanagement.parser.StructuredResourceParser">
-    <property name="defaultResourceTypeDefinitions" value="${structuredResources.definitionsLocation}" />
+  <bean id="structuredResource.parser" class="vtk.resourcemanagement.parser.StructuredResourceSpringAdapter">
+    <property name="defaultTypeDefinitionFiles" value="${structuredResources.definitionLocations}" />
     <property name="structuredResourceManager" ref="structuredResources.resourceManager" />
   </bean>
 

@@ -52,6 +52,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.FixedBitSet;
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Acl;
 import vtk.repository.PropertySet;
@@ -68,15 +69,17 @@ import vtk.repository.search.query.Query;
  * Implementation of {@link vtk.repository.search.Searcher} based on
  * Lucene.
  */
-public class SearcherImpl implements Searcher {
+public class SearcherImpl implements Searcher, InitializingBean {
 
     private final Log logger = LogFactory.getLog(SearcherImpl.class);
 
     private IndexManager indexAccessor;
     private DocumentMapper documentMapper;
     private LuceneQueryBuilder queryBuilder;
+    
+    private int resultCacheSize = LuceneResultCache.DEFAULT_MAX_ITEMS;
+    private LuceneResultCache resultCache;
 
-    private int unauthenticatedQueryMaxDirtyAge = 0;
     private long totalQueryTimeWarnThreshold = 15000; // Warning threshold in milliseconds
 
     /**
@@ -89,11 +92,15 @@ public class SearcherImpl implements Searcher {
      * is <em>not</em> affected by this limit.
      */
     private int luceneSearchLimit = 60000;
-
+    
+    @Override
     public void afterPropertiesSet() throws BeanInitializationException {
-        if (this.luceneSearchLimit <= 0) {
+        if (luceneSearchLimit <= 0) {
             throw new BeanInitializationException(
-                    "Property 'luceneHitLimit' must be an integer greater than zero.");
+                    "Property 'luceneSearchLimit' must be an integer greater than zero.");
+        }
+        if (resultCacheSize > 0) {
+            resultCache = new LuceneResultCache(resultCacheSize);
         }
     }
 
@@ -107,13 +114,6 @@ public class SearcherImpl implements Searcher {
 
         IndexSearcher searcher = null;
         try {
-//            if (token == null && this.unauthenticatedQueryMaxDirtyAge > 0) {
-//                // Accept higher dirty age for speedier queries when token is null
-//                searcher = this.indexAccessor.getIndexSearcher(this.unauthenticatedQueryMaxDirtyAge);
-//            } else {
-//                // Authenticated query, no dirty age acceptable.
-//                searcher = this.indexAccessor.getIndexSearcher();
-//            }
 
             searcher = this.indexAccessor.getIndexSearcher();
 
@@ -141,21 +141,29 @@ public class SearcherImpl implements Searcher {
             }
 
             int need = clientCursor + clientLimit;
-            long totalTime = 0;
-
             int searchLimit = Math.min(this.luceneSearchLimit, need);
 
-            long startTime = System.currentTimeMillis();
-            TopDocs topDocs = doTopDocsQuery(searcher, luceneQuery,
-                    luceneFilter, luceneSort, searchLimit);
-            long endTime = System.currentTimeMillis();
-
+            long totalTime=0, startTime, endTime;
+            TopDocs topDocs;
+            startTime = System.currentTimeMillis();
+            // Use result caching only for anon searches for now.
+            // It will also work for authenticated queries, but a larger cache 
+            // size will then likely be necessary to counteract more varations in filters.
+            if (token == null && resultCache != null) {
+                topDocs = resultCache.doCachedTopDocsQuery(searcher, luceneQuery, luceneFilter, luceneSort, searchLimit);
+            } else {
+                topDocs = doTopDocsQuery(searcher, luceneQuery, luceneFilter, luceneSort, searchLimit);
+            }
+            endTime = System.currentTimeMillis();
             if (logger.isDebugEnabled()) {
                 logger.debug("Filtered lucene query took " + (endTime - startTime) + "ms");
+                if (resultCache != null) {
+                    logger.debug("Result cache hit ratio: " + resultCache.hitRatio());
+                }
             }
-
+            
             totalTime += (endTime - startTime);
-
+            
             ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 
             ResultSetWithAcls rs;
@@ -229,14 +237,6 @@ public class SearcherImpl implements Searcher {
 
         IndexSearcher searcher = null;
         try {
-//            if (token == null && this.unauthenticatedQueryMaxDirtyAge > 0) {
-//                // Accept higher dirty age for speedier queries when token is null
-//                searcher = this.indexAccessor.getIndexSearcher(this.unauthenticatedQueryMaxDirtyAge);
-//            } else {
-//                // Authenticated query, no dirty age acceptable.
-//                searcher = this.indexAccessor.getIndexSearcher();
-//            }
-
             searcher = this.indexAccessor.getIndexSearcher();
 
             // Build iteration filter (may be null)
@@ -510,7 +510,6 @@ public class SearcherImpl implements Searcher {
     }
 
     private static final class MatchingResultImpl implements MatchingResult {
-
         private PropertySet ps;
         private Acl acl;
 
@@ -548,6 +547,19 @@ public class SearcherImpl implements Searcher {
     public void setLuceneSearchLimit(int luceneSearchLimit) {
         this.luceneSearchLimit = luceneSearchLimit;
     }
+    
+    /**
+     * Set size of internal search result cache. Default value is
+     * {@link LuceneResultCache#DEFAULT_MAX_ITEMS}.
+     * 
+     * <p>The cache only applies to unauthenticated queries.
+      * 
+     * @param maxItems maximum number of cached results, or -1 to disable result
+     * caching.
+     */
+    public void setResultCacheSize(int maxItems) {
+        this.resultCacheSize = maxItems;
+    }
 
     public void setTotalQueryTimeWarnThreshold(long totalQueryTimeWarnThreshold) {
         if (totalQueryTimeWarnThreshold <= 0) {
@@ -555,17 +567,6 @@ public class SearcherImpl implements Searcher {
         }
 
         this.totalQueryTimeWarnThreshold = totalQueryTimeWarnThreshold;
-    }
-
-    /**
-     * Set maximum acceptable dirty age when acquiring index searcher for
-     * unauthenticated queries. Value is in seconds.
-     *
-     * To get any effect, it should be equal or higher than value set in
-     * {@link vtk.repository.index.LuceneIndexManager#setAgingReadOnlyReaderThreshold(int)}
-     */
-    public void setUnauthenticatedQueryMaxDirtyAge(int unauthenticatedQueryMaxDirtyAge) {
-        this.unauthenticatedQueryMaxDirtyAge = unauthenticatedQueryMaxDirtyAge;
     }
 
 }

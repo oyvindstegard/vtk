@@ -31,7 +31,6 @@
 
 package vtk.repository.systemjob;
 
-import vtk.repository.SystemChangeContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,9 +38,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.context.BaseContext;
 import vtk.repository.Repository;
 import vtk.repository.ResourceTypeTree;
+import vtk.repository.SystemChangeContext;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.scheduling.AbstractTask;
 import vtk.security.SecurityContext;
@@ -65,39 +66,41 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
     
     @Override
     public void run() {
-
         try {
             BaseContext.pushContext();
-            SecurityContext.setSecurityContext(this.securityContext);
+            SecurityContext.setSecurityContext(securityContext);
             
             SystemChangeContext systemChangeContext =
-                    new SystemChangeContext(getId(), this.affectedProperties, 
-                            this.systemJobStatusPropDef, this.ignoreLockingOnStore);
+                    new SystemChangeContext(getId(), affectedProperties, 
+                            systemJobStatusPropDef, ignoreLockingOnStore);
             
-            executeWithRepository(this.repository, systemChangeContext);
-        } catch (Throwable t) {
+            executeWithRepository(repository, systemChangeContext);
+        }
+        catch (Throwable t) {
             logger.error("Error executing repository job", t);
-        } finally {
+        }
+        finally {
             BaseContext.popContext();
         }
     }
     
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (this.affectedPropDefPointers != null) {
-            for (String pointer : this.affectedPropDefPointers) {
-                PropertyTypeDefinition prop = this.resourceTypeTree.getPropertyDefinitionByPointer(pointer);
-                if (this.affectedProperties == null) {
-                    this.affectedProperties = new ArrayList<PropertyTypeDefinition>();
+        if (affectedPropDefPointers != null) {
+            for (String pointer : affectedPropDefPointers) {
+                PropertyTypeDefinition prop = resourceTypeTree.getPropertyDefinitionByPointer(pointer);
+                if (affectedProperties == null) {
+                    affectedProperties = new ArrayList<PropertyTypeDefinition>();
                 }
                 if (prop != null) {
-                    this.affectedProperties.add(prop);
+                    affectedProperties.add(prop);
                 }
             }
         }
     }
     
-    public abstract void executeWithRepository(Repository repository, SystemChangeContext context) throws Exception;
+    public abstract void executeWithRepository(Repository repository, 
+            SystemChangeContext context) throws Exception;
 
     @Required
     public void setRepository(Repository repository) {
