@@ -35,7 +35,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +46,7 @@ import vtk.text.tl.DefineHandler;
 import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.IfHandler;
 import vtk.text.tl.ValHandler;
-import vtk.text.tl.expr.Function;
+import vtk.text.tl.expr.Expression.FunctionResolver;
 import vtk.util.io.InputSource;
 import vtk.web.decorating.components.MockDecoratorResponse;
 import vtk.web.decorating.components.MockStringDecoratorRequest;
@@ -60,24 +59,24 @@ public class DynamicComponentParserTest {
 
     @Test
     public void test() throws Exception {
-        
+
         List<DirectiveHandler> handlers = Arrays.asList(
                 new DirectiveHandler[] {
-                        new DefineHandler(Collections.<Function>emptySet()),
-                        new ValHandler(null, Collections.<Function>emptySet()),
-                        new IfHandler(Collections.<Function>emptySet())
+                        new DefineHandler(new FunctionResolver()),
+                        new ValHandler(null, new FunctionResolver()),
+                        new IfHandler(new FunctionResolver())
                 });
-        
-        final String template = 
-            "[component foo]" + 
+
+        final String template =
+            "[component foo]" +
             "[description]My description[/description]" +
             "[parameter param1 \"my first parameter\"]" +
             "[parameter param2 \"my second parameter\"]" +
             "[if request.parameters.param1][val request.parameters.param1]" +
-            "[elseif request.parameters.param2][val request.parameters.param2]" + 
+            "[elseif request.parameters.param2][val request.parameters.param2]" +
             "[else][error \"no parameters\"]content after error[endif]" +
             "[/component]";
-        
+
         InputSource inputSource = new InputSource() {
             @Override
             public InputStream getInputStream() throws IOException {

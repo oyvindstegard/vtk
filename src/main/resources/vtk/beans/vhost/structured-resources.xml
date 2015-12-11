@@ -217,11 +217,14 @@
     <constructor-arg ref="structuredResources.tlFunctions" />
   </bean>
 
-  <bean id="structuredResources.tlFunctions" class="vtk.context.UnionFactoryBean">
-    <property name="elements1" ref="structuredResources.builtinFunctions" />
-    <property name="elements2" ref="structuredResources.customFunctions" />
+  <bean id="structuredResources.tlFunctions" class="vtk.text.tl.expr.Expression.FunctionResolver" />
+
+  <bean class="org.springframework.beans.factory.config.MethodInvokingBean">
+    <property name="targetObject" ref="structuredResources.tlFunctions" />
+    <property name="targetMethod" value="addAll" />
+    <property name="arguments" ref="structuredResources.builtinFunctions" />
   </bean>
-  
+
   <bean id="structuredResources.builtinFunctions" class="org.springframework.beans.factory.config.SetFactoryBean">
     <property name="sourceSet">
       <set>
@@ -307,6 +310,7 @@
     <property name="readTimeoutSeconds" value="1" />
   </bean>
 
+  <!--
   <bean id="structuredResources.customFunctions" class="vtk.util.SortedCollection">
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
@@ -318,6 +322,7 @@
     <property name="targetObject" ref="structuredResources.customFunctions" />
     <property name="targetMethod" value="add" />
   </bean>
+  -->
 
   <bean id="structuredResources.resourceFunction" class="vtk.resourcemanagement.view.tl.RetrieveHandler">
     <constructor-arg>

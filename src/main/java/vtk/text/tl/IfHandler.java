@@ -32,27 +32,24 @@ package vtk.text.tl;
 
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import vtk.text.tl.Parser.Directive;
 import vtk.text.tl.expr.Expression;
-import vtk.text.tl.expr.Function;
+import vtk.text.tl.expr.Expression.FunctionResolver;
 
 public class IfHandler implements DirectiveHandler {
-    
-    private Set<Function> functions = new HashSet<Function>();
-    
-    public IfHandler(Set<Function> functions) {
-        this.functions = Collections.unmodifiableSet(functions);
+
+    private FunctionResolver functionResolver = null;
+
+    public IfHandler(FunctionResolver functionResolver) {
+        this.functionResolver = functionResolver;
     }
 
     public String[] tokens() {
         return new String[] { "if", "elseif", "else", "endif" };
     }
-    
+
     public void directive(Directive directive, TemplateContext context) {
         String name = directive.name();
         String prev = context.top() == null ? null
@@ -61,7 +58,7 @@ public class IfHandler implements DirectiveHandler {
             if (directive.args().isEmpty()) {
                 context.error("[if]: missing expression");
                 return;
-                
+
             }
             context.push(new DirectiveState(directive));
         }
@@ -69,7 +66,7 @@ public class IfHandler implements DirectiveHandler {
             if (directive.args().isEmpty()) {
                 context.error("[elseif]: missing expression");
                 return;
-                
+
             }
             if ("if".equals(prev) || "elseif".equals(prev))
                 context.push(new DirectiveState(directive));
@@ -102,16 +99,16 @@ public class IfHandler implements DirectiveHandler {
                 List<Token> args = new ArrayList<Token>(prevDir.args());
                 if (args.isEmpty()) args.add(new Literal("true"));
 
-                Expression expression = new Expression(functions, args);
+                Expression expression = new Expression(functionResolver, args);
                 Branch branch = new Branch(prevDir, expression, state.nodes());
                 branches.add(0, branch);
-                
+
                 if ("if".equals(prevDir.name())) break;
             }
             context.add(new IfNode(branches));
         }
     }
-    
+
     static class Branch {
         private Directive directive;
         private Expression expression;
@@ -126,7 +123,7 @@ public class IfHandler implements DirectiveHandler {
             return directive.toString();
         }
     }
-    
+
     static class IfNode extends Node {
         private List<Branch> branches;
 
@@ -134,6 +131,7 @@ public class IfHandler implements DirectiveHandler {
             this.branches = branches;
         }
 
+        @Override
         public boolean render(Context ctx, Writer out) throws Exception {
             NodeList target = null;
             for (Branch branch: this.branches) {
@@ -161,11 +159,12 @@ public class IfHandler implements DirectiveHandler {
                 return true;
             }
         }
-        
+
+        @Override
         public String toString() {
             return branches.toString();
         }
 
     }
-    
+
 }

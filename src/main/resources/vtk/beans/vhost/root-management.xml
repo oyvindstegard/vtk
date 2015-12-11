@@ -242,13 +242,6 @@
         </bean>
       </list>
     </property>
-    <!--
-    <property name="categories">
-      <set>
-        <value>rootMenu</value>
-      </set>
-    </property>
-    -->
     <property name="attributes">
       <map>
         <entry key="tabOrder"><value type="java.lang.Integer">-300</value></entry>
