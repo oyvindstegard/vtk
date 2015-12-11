@@ -75,7 +75,7 @@
     <property name="formService" ref="openid.authenticationFormService" />
   </bean>
 
-  <bean parent="spCookieAuthHandlersBuilder">
+  <bean parent="spCookieAuthHandlers.builder">
     <property name="arguments" ref="openid.authenticationHandler" />
   </bean>
 
