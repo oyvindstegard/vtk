@@ -428,7 +428,8 @@
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml</artifactId>
       <!-- <version>2.3.2</version> -->
-      <version>2.6.5</version>
+      <version>2.5.3</version>
+      <!--version>2.6.5</version-->
       <exclusions>
         <!-- Prefer to pull in XML parsing stuff from direct Xerces/Xalan dependencies,
              so exclude here: -->
