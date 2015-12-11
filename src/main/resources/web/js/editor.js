@@ -63,6 +63,9 @@ function VrtxEditor() {
 
   /** Check if this script is in admin or not */
   this.isInAdmin = typeof vrtxAdmin !== "undefined";
+
+  /** Set to true when the editor is ready for use. For the benefit of systest*/
+  this.isReady = false;
 }
 
 var vrtxEditor = new VrtxEditor();
@@ -122,37 +125,35 @@ $(document).ready(function () {
 
   vrtxEdit.initEnhancements();
   vrtxEdit.richtextEditorFacade.setupMultiple(true);
-});
 
+  /*-------------------------------------------------------------------*\
+      3. DOM is fully loaded
+  \*-------------------------------------------------------------------*/
 
-/*-------------------------------------------------------------------*\
-    3. DOM is fully loaded
-\*-------------------------------------------------------------------*/
+  $(window).load(function () {
+    if (!vrtxEditor.isInAdmin) return; /* Exit if not is in admin */
+    var vrtxAdm = vrtxAdmin,
+      _$ = vrtxAdm._$;
 
-$(window).load(function () {
-  if (!vrtxEditor.isInAdmin) return; /* Exit if not is in admin */
+    // Store initial counts and values when all is initialized in editor
+    var nullDeferred = _$.Deferred();
+    nullDeferred.resolve();
+    _$.when(((typeof MANUALLY_APPROVE_INITIALIZED === "object") ? MANUALLY_APPROVE_INITIALIZED : nullDeferred),
+            ((typeof MULTIPLE_INPUT_FIELD_INITIALIZED === "object") ? MULTIPLE_INPUT_FIELD_INITIALIZED : nullDeferred),
+            ((typeof JSON_ELEMENTS_INITIALIZED === "object") ? JSON_ELEMENTS_INITIALIZED : nullDeferred),
+            ((typeof DATE_PICKER_INITIALIZED === "object") ? DATE_PICKER_INITIALIZED : nullDeferred),
+            ((typeof IMAGE_EDITOR_INITIALIZED === "object") ? IMAGE_EDITOR_INITIALIZED : nullDeferred)).done(function () {
+      vrtxAdm.log({ msg: "Editor initialized." });
+      storeInitPropValues($("#app-content > form, #contents"));
+      vrtxEditor.isReady = true;
+    });
 
-  var vrtxAdm = vrtxAdmin,
-    _$ = vrtxAdm._$;
-
-  // Store initial counts and values when all is initialized in editor
-  var nullDeferred = _$.Deferred();
-  nullDeferred.resolve();
-  _$.when(((typeof MANUALLY_APPROVE_INITIALIZED === "object") ? MANUALLY_APPROVE_INITIALIZED : nullDeferred),
-          ((typeof MULTIPLE_INPUT_FIELD_INITIALIZED === "object") ? MULTIPLE_INPUT_FIELD_INITIALIZED : nullDeferred),
-          ((typeof JSON_ELEMENTS_INITIALIZED === "object") ? JSON_ELEMENTS_INITIALIZED : nullDeferred),
-          ((typeof DATE_PICKER_INITIALIZED === "object") ? DATE_PICKER_INITIALIZED : nullDeferred),
-          ((typeof IMAGE_EDITOR_INITIALIZED === "object") ? IMAGE_EDITOR_INITIALIZED : nullDeferred)).done(function () {
-    vrtxAdm.log({ msg: "Editor initialized." });
-    storeInitPropValues($("#app-content > form, #contents"));
+    // CTRL+S save inside editors
+    if (typeof CKEDITOR !== "undefined" && vrtxEditor.editorForm && vrtxEditor.editorForm.length) { // Don't add event if not regular editor
+      vrtxEditor.richtextEditorFacade.setupCTRLS();
+    }
   });
-
-  // CTRL+S save inside editors
-  if (typeof CKEDITOR !== "undefined" && vrtxEditor.editorForm && vrtxEditor.editorForm.length) { // Don't add event if not regular editor
-    vrtxEditor.richtextEditorFacade.setupCTRLS();
-  }
 });
-
 
 /*-------------------------------------------------------------------*\
     4. RichTextEditor (CKEditor)
