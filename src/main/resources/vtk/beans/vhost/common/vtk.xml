@@ -68,7 +68,6 @@
     </constructor-arg>
   </bean>
 
-
   <bean id="services" class="vtk.beans.factory.BeansListingFactoryBean">
     <property name="targetBeansClass" value="vtk.web.service.Service" />
   </bean>
@@ -77,6 +76,18 @@
     <property name="indexFilePropDef" ref="collection.indexFilePropDef" />
   </bean>
   
+  <bean id="spCookieAuthHandlers" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+  </bean>
+
+  <bean id="spCookieAuthHandlers.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="spCookieAuthHandlers" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
   <bean id="securityInitializer" class="vtk.security.web.SecurityInitializer">
     <description> This bean initializes the security context for each request.
       The security context contains the authenticated principal and the
@@ -90,6 +101,7 @@
     <property name="rememberAuthMethod" value="${security.rememberAuthMethod}" />
     <property name="spCookieDomain" value="${security.spCookieDomain}" />
     <property name="spCookieAssertion" ref="securityInitializer.spCookieAssertion" />
+    <property name="spCookieHandlers" ref="spCookieAuthHandlers" />
     <property name="vrtxAuthSP" value="${saml.vrtxAuthSP}" />
     <property name="uioAuthIDP" value="${saml.uioAuthIDP}" />
   </bean>
@@ -121,32 +133,31 @@
     <property name="timeoutSeconds" value="3600" />
   </bean>
   
-  <bean id="defaultRequestFilters" class="vtk.context.CategoryResolvingFactoryBean" parent="ordered">
-    <property name="category" value="defaultServletRequestFilter" />
+  <bean id="defaultRequestFilters" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
   </bean>
-  
-  <bean id="defaultRequestFilterCategoryBean" abstract="true">
-    <property name="order" value="0" />
-    <property name="categories">
-      <set>
-        <value>defaultServletRequestFilter</value>
-      </set>
-    </property>
+
+  <bean id="defaultRequestFilters.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="defaultRequestFilters" />
+    <property name="targetMethod" value="add" />
   </bean>
-  
-  <bean id="defaultResponseFilters" class="vtk.context.CategoryResolvingFactoryBean" parent="ordered">
-    <property name="category" value="defaultServletResponseFilter" />
+
+
+  <bean id="defaultResponseFilters" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
   </bean>
-  
-  <bean id="defaultResponseFilterCategoryBean" abstract="true">
-    <property name="order" value="0" />
-    <property name="categories">
-      <set>
-        <value>defaultServletResponseFilter</value>
-      </set>
-    </property>
+
+  <bean id="defaultResponseFilters.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="defaultResponseFilters" />
+    <property name="targetMethod" value="add" />
   </bean>
-  
+
   <bean id="repositoryContextInitializer" class="vtk.web.RepositoryContextInitializer" />
 
   <!-- HandlerMapping -->

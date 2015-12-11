@@ -35,14 +35,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.core.Ordered;
-import vtk.context.Categorizable;
 
 
 /**
  * Interface for filtering the response at request context
  * initialization time.
  */
-public interface ResponseFilter extends Categorizable, Ordered {
+public interface ResponseFilter extends Ordered {
 
     /**
      * Perform filtering on the request/response.

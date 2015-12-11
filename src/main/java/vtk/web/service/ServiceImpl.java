@@ -35,13 +35,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.web.servlet.HandlerInterceptor;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -68,8 +68,6 @@ import vtk.web.service.provider.ServiceNameProvider;
  *   <li><code>order</code> - integer specifying the order of this
  *   service (see {@link org.springframework.core.Ordered}). Default is
  *   <code>0</code>.
- *   <li><code>categories</code> - a {@link Set} of strings denoting
- *   the set of categories this service is a member of.
  * </ul>
  *
  */
@@ -89,7 +87,6 @@ public class ServiceImpl implements Service, BeanNameAware {
     private List<HandlerInterceptor> handlerInterceptors;
     private List<HandlerFilter> handlerFilters;
     private int order = 0;
-    private Set<String> categories = null;
     private List<URLPostProcessor> urlPostProcessors = new ArrayList<URLPostProcessor>();
     private List<URLPostProcessor> accumulatedUrlPostProcessors = null;
     private ServiceNameProvider serviceNameProvider;
@@ -371,11 +368,8 @@ public class ServiceImpl implements Service, BeanNameAware {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getName()).append(": ").append(this.name);;
-        return sb.toString();
+        return getClass().getSimpleName() + "(" + name + ")";
     }
-
 
     @Override
     public AuthenticationChallenge getAuthenticationChallenge() {
@@ -400,17 +394,6 @@ public class ServiceImpl implements Service, BeanNameAware {
     }
 
 
-    @Override
-    public Set<String> getCategories() {
-        return this.categories;
-    }
-
-
-    public void setCategories(Set<String> categories) {
-        this.categories = categories;
-    }
-  
-    
     private void postProcess(URL urlObject, Resource resource) {
         List<URLPostProcessor> urlPostProcessors = getAllURLPostProcessors();
 
@@ -470,18 +453,75 @@ public class ServiceImpl implements Service, BeanNameAware {
 
         return urlObject;
     }
-    
-    
+
+
     public void setServiceNameProvider(ServiceNameProvider serviceNameProvider) {
-    	this.serviceNameProvider = serviceNameProvider;
+        this.serviceNameProvider = serviceNameProvider;
     }
-    
+
     @Override
     public String getLocalizedName(Resource resource, HttpServletRequest request) {
-    	if (this.serviceNameProvider != null) {
-    		return this.serviceNameProvider.getLocalizedName(resource, request);
-    	}
-    	return null;
+        if (this.serviceNameProvider != null) {
+            return this.serviceNameProvider.getLocalizedName(resource, request);
+        }
+        return null;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((assertions == null) ? 0 : assertions.hashCode());
+        result = prime * result
+                + ((attributes == null) ? 0 : attributes.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + order;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ServiceImpl other = (ServiceImpl) obj;
+        if (assertions == null) {
+            if (other.assertions != null)
+                return false;
+        }
+        else if (!assertions.equals(other.assertions))
+            return false;
+        if (attributes == null) {
+            if (other.attributes != null)
+                return false;
+        }
+        else if (!attributes.equals(other.attributes))
+            return false;
+        if (authenticationChallenge == null) {
+            if (other.authenticationChallenge != null)
+                return false;
+        }
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        }
+        else if (!name.equals(other.name))
+            return false;
+        if (order != other.order)
+            return false;
+        if (parent == null) {
+            if (other.parent != null)
+                return false;
+        }
+        else if (!parent.equals(other.parent))
+            return false;
+        return true;
+    }
+
+
 
 }

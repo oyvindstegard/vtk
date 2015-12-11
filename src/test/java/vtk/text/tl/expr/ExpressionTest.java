@@ -30,15 +30,18 @@
  */
 package vtk.text.tl.expr;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,27 +49,28 @@ import vtk.text.tl.Context;
 import vtk.text.tl.Literal;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.Token;
+import vtk.text.tl.expr.Expression.FunctionResolver;
 
 public class ExpressionTest {
 
-    private Set<Function> functions = new HashSet<Function>();
+    private FunctionResolver functions = new FunctionResolver();
 
     @Before
     public void setUp() throws Exception {
 
-        this.functions.add(new Concat(new Symbol("concat")));
-        this.functions.add(new Length(new Symbol("length")));
-        this.functions.add(new Get(new Symbol("get")));
-        
+        this.functions.addFunction(new Concat(new Symbol("concat")));
+        this.functions.addFunction(new Length(new Symbol("length")));
+        this.functions.addFunction(new Get(new Symbol("get")));
+
         Symbol s = new Symbol("emptyfunc");
-        this.functions.add(new Function(s, 0) {
+        this.functions.addFunction(new Function(s, 0) {
             @Override
             public Object eval(Context ctx, Object... args) {
                 return "result";
             }
         });
         s = new Symbol("map");
-        this.functions.add(new Function(s) {
+        this.functions.addFunction(new Function(s) {
             @Override
             public Object eval(Context ctx, Object... args) {
                 if (args == null || args.length % 2 != 0) {

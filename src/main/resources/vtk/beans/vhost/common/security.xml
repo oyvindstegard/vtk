@@ -206,14 +206,17 @@
   <!-- Principal factory and related beans -->
   <bean id="principalFactory" class="vtk.security.PrincipalFactory" />
 
-  <bean id="vrtx.sessionValidationFilter" class="vtk.web.filter.SessionValidationRequestFilter"
-        parent="defaultRequestFilterCategoryBean">
+  <bean id="vrtx.sessionValidationFilter" class="vtk.web.filter.SessionValidationRequestFilter">
     <property name="order" value="1" />
     <property name="authorizedAddresses">
       <bean class="vtk.context.CSVSetFactoryBean">
         <property name="csvList" value="${sessionValidation.authorizedAddresses}" />
       </bean>
     </property>
+  </bean>
+
+  <bean parent="defaultRequestFilters.builder">
+    <property name="arguments" ref="vrtx.sessionValidationFilter" />
   </bean>
 
 </beans>

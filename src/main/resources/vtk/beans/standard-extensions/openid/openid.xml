@@ -73,9 +73,11 @@
     </property>
     <property name="openIDAuthenticationService" ref="webService" />
     <property name="formService" ref="openid.authenticationFormService" />
-    <property name="categories" value="spCookie" />
   </bean>
 
+  <bean parent="spCookieAuthHandlers.builder">
+    <property name="arguments" ref="openid.authenticationHandler" />
+  </bean>
 
   <bean id="openid.vrtxParameterEqualsOpenIDAuthForm"
         class="vtk.web.service.RequestParameterAssertion">

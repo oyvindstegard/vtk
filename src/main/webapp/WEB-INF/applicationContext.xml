@@ -4,8 +4,11 @@
 
   <import resource="classpath:/vtk/beans/vhost/main.xml" />
 
-  <bean id="stdReqFilter" class="vtk.web.filter.StandardRequestFilter"
-        parent="defaultRequestFilterCategoryBean">
+  <bean parent="defaultRequestFilters.builder">
+    <property name="arguments" ref="stdReqFilter" />
+  </bean>
+
+  <bean id="stdReqFilter" class="vtk.web.filter.StandardRequestFilter">
     <property name="urlReplacements" ref="stdReqFilter.urlReplacements" />
     <property name="xForwardedFor" value="${request.xForwardedFor}" />
     <property name="requestForwardFieldHeader" value="${request.forwardFieldHeader}" />

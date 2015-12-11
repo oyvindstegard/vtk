@@ -4,15 +4,23 @@
 
   <!-- Enable this extension to log protocol for all webdav service requests. -->
     
-  <bean id="davRequestLogger" parent="defaultRequestFilterCategoryBean" class="vtk.web.filter.CaptureInputRequestFilter" >
+  <bean id="davRequestLogger" class="vtk.web.filter.CaptureInputRequestFilter" >
     <property name="order" value="-1000" />
     <property name="maxCaptureBytes" value="${davlogger.maxLogBytesBody}"/>
   </bean>
   
-  <bean id="davResponseLogger" parent="defaultResponseFilterCategoryBean" class="vtk.web.filter.CaptureOutputLoggingResponseFilter" >
+  <bean parent="defaultRequestFiltersBuilder">
+    <property name="arguments" ref="davRequestLogger" />
+  </bean>
+
+  <bean id="davResponseLogger" class="vtk.web.filter.CaptureOutputLoggingResponseFilter" >
     <property name="order" value="-1000" />
     <property name="service" ref="webdavService" />
     <property name="maxLogBytesBody" value="${davlogger.maxLogBytesBody}" />
+  </bean>
+
+  <bean parent="defaultResponseFiltersBuilder">
+    <property name="arguments" ref="davRequestLogger" />
   </bean>
 
 </beans>
