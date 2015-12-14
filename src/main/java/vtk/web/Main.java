@@ -33,7 +33,9 @@ package vtk.web;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.Servlet;
 
@@ -76,7 +78,7 @@ public class Main extends SpringBootServletInitializer {
     @Bean
     public EmbeddedServletContainerFactory containerFactory() {
 
-        int[] ports = { 9321, 9322 };
+        HostPort[] listenAddrs = listenAddrs();
 
         final int maxThreads = 200;
         final int minThreads = 8;
@@ -93,10 +95,12 @@ public class Main extends SpringBootServletInitializer {
                 threadPool.setMinThreads(minThreads);
                 threadPool.setIdleTimeout(idleTimeout);
 
-                for (int port: ports) {
+                for (HostPort hp: listenAddrs) {
+
                     NetworkTrafficServerConnector connector =
                             new NetworkTrafficServerConnector(server);
-                    connector.setPort(port);
+                    connector.setHost(hp.addr);
+                    connector.setPort(hp.port);
                     server.addConnector(connector);
                 }
 
@@ -120,6 +124,51 @@ public class Main extends SpringBootServletInitializer {
         }
         params.add(Main.class);
         SpringApplication.run(params.toArray(new Object[params.size()]), args);
+    }
+
+    private static class HostPort {
+        private String addr;
+        private int port;
+
+        private HostPort(String addr, int port) {
+            this.addr = addr;
+            this.port = port;
+        }
+
+        public static HostPort forString(String str) {
+            try {
+                int idx = str.indexOf(':');
+                if (idx == -1)
+                    throw new IllegalArgumentException("Expected ':' in input string");
+                String host = str.substring(0, idx);
+                int port = Integer.parseInt(str.substring(idx));
+                return new HostPort(host, port);
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private HostPort[] listenAddrs() {
+        String prop = System.getProperty("listen");
+        try {
+            List<HostPort> result = Arrays.stream(prop.split(","))
+                .map(str -> HostPort.forString(str))
+                .collect(Collectors.toList());
+
+            return result.toArray(new HostPort[result.size()]);
+        }
+        catch (Throwable t) {
+            try {
+                return new HostPort[] {
+                        new HostPort("localhost", 9321),
+                        new HostPort("localhost", 9322)
+                };
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
 }
