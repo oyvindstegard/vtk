@@ -1,21 +1,21 @@
 /* Copyright (c) 2010, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -40,7 +40,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
-
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
@@ -59,11 +58,12 @@ public class EventListingAtomFeedView extends ListingFeedView {
     private String overridePublishDatePropDefPointer;
 
     @Override
-    protected String getFeedTitle(HttpServletRequest request, Resource feedScope) {
+    protected String getFeedTitle(HttpServletRequest request, Map<String, ?> model,
+            Resource feedScope) {
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         String feedTitle = service.getLocalizedName(feedScope, requestContext.getServletRequest());
-        feedTitle = feedTitle == null ? super.getFeedTitle(request, feedScope) : feedTitle;
+        feedTitle = feedTitle == null ? super.getFeedTitle(request, model, feedScope) : feedTitle;
 
         Property displayTypeProp = feedScope.getProperty(displayTypePropDef);
         if (displayTypeProp != null && "calendar".equals(displayTypeProp.getStringValue())) {
@@ -87,7 +87,7 @@ public class EventListingAtomFeedView extends ListingFeedView {
 
 
     @Override
-    protected void addExtensions(HttpServletRequest request, Map<String, ?> model, 
+    protected void addExtensions(HttpServletRequest request, Map<String, ?> model,
             Feed feed, Entry entry, PropertySet resource) {
         super.addExtensions(request, model, feed, entry, resource);
         DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_INSTANT;
@@ -103,7 +103,7 @@ public class EventListingAtomFeedView extends ListingFeedView {
             ZonedDateTime zdt = ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
             entry.addSimpleExtension("vrtx", "event-end", "v", dateFormatter.format(zdt));
         }
-        
+
         String location = null;
         String mapURL = null;
         for (Property property: resource) {
@@ -121,7 +121,7 @@ public class EventListingAtomFeedView extends ListingFeedView {
             entry.addSimpleExtension("vrtx", "event-map-url", "v", mapURL);
         }
     }
-    
+
     @Override
     protected boolean showFeedIntroduction(Resource feedScope) {
         Property displayTypeProp = feedScope.getProperty(displayTypePropDef);
