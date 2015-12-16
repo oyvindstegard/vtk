@@ -69,21 +69,36 @@
 </#if>
 
 <#macro displayEntry entry conf element>
- <#--local href="${entry.link?default(entry.uri?default(''))}" /-->
- <#local href="${entry.link?default('')}" />
- <#if element = "title" >
-   <#if href != ''>
-     <a class="item-title" href="${href?html}">${entry.title?trim?html}</a>
-   <#else>
-     ${entry.title?trim?html}
-   </#if>
- </#if>
- <#if element = "publishDate" >
-     <#if conf.publishedDate?exists && entry.publishedDate?exists>
-     <span class="published-date">
+  <#local href="${entry.link?default('')}" />
+  <#if element = "title" >
+    <#if href != ''>
+      <a class="item-title" href="${href?html}">${entry.title?trim?html}</a>
+    <#else>
+      ${entry.title?trim?html}
+    </#if>
+  </#if>
+
+  <#if element = "publishDate" >
+    <#-- Display start date instead of published date (for events): -->
+    <#assign eventDate = false />
+    <#if (entry.foreignMarkup??)>
+      <#list (entry.foreignMarkup) as el>
+        <#if el.qualifiedName == 'v:event-start'>
+          <#assign eventDate = true />
+          <#assign dateObj = el.text?datetime.iso />
+          <span class="published-date">
+          <@vrtx.date value=dateObj format="${conf.publishedDate}" />
+          </span>
+          <#break />
+        </#if>
+      </#list>
+    </#if>
+    <#-- Regular published date: -->
+    <#if !eventDate && conf.publishedDate?exists && entry.publishedDate?exists>
+    <span class="published-date">
        <@vrtx.date value=entry.publishedDate format="${conf.publishedDate}" />
-     </span>
-     </#if>
+    </span>
+    </#if>
   </#if>
 
   <#if element = "categories" >
@@ -107,6 +122,7 @@
        ${descriptionNoImage[entry]?string}
     </div>
   </#if>
+
   <#if element = "picture" && conf.itemPicture?exists && imageMap[entry]?exists && imageMap[entry]?has_content >
     <#if href != ''>
      <a class="vrtx-image" href="${href?html}">${imageMap[entry]?string}</a>
