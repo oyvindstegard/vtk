@@ -4,7 +4,7 @@
 <#if conf.auth && (feed.entries?size &gt; 0 || conf.includeIfEmpty)>
 <div class="vrtx-feed<#if conf.itemPicture?exists > with-images</#if>">
   <#if overrideFeedTitle?exists && viewURL?exists>
-  	<a class="feed-title" href="${viewURL}">${overrideFeedTitle}</a>
+    <a class="feed-title" href="${viewURL}">${overrideFeedTitle}</a>
   <#elseif conf.feedTitle?exists && viewURL?exists>
     <a class="feed-title" href="${viewURL}">${feed.title?html}</a> 
   <#elseif conf.feedTitleValue?exists>
@@ -18,13 +18,12 @@
   <#if feed.entries?size gt 0>
     <#assign entries = feed.entries />
       <#if conf.sortByTitle?exists>
-        <#assign entries =entries?sort_by("title") />
+        <#assign entries = entries?sort_by("title") />
         <#if !conf.sortAscending?exists>
           <#-- Reverse order, descending sort requested, and ascending is default -->
           <#assign entries = entries?reverse />
         </#if> 
       <#else>
-
         <#if (conf.sortDescending)?exists && conf.sortDescending>
           <#assign entries = entries?sort_by("publishedDate")?reverse />
 
@@ -44,10 +43,10 @@
          <#if counter == maxMsgs>
            <li class="item-${counter} item-last">
          <#else>
-		   <li class="item-${counter}">
-		 </#if>
-       	 <#list elementOrder as element >
-         	<@displayEntry entry conf element />
+           <li class="item-${counter}">
+         </#if>
+         <#list elementOrder as element >
+           <@displayEntry entry conf element />
          </#list>
          </li>
          <#assign counter = counter+1>
@@ -56,9 +55,9 @@
   </#if>
   
   <#if displayIfEmptyMessage?exists && feed.entries?size = 0>
-	 <p class="vrtx-empty-message">
-	 	${displayIfEmptyMessage}
-	 </p>
+   <p class="vrtx-empty-message">
+     ${displayIfEmptyMessage}
+   </p>
   </#if>
 
   <#if conf.linkToAllMessages?exists && viewURL?exists>
