@@ -55,7 +55,6 @@ public class EventListingAtomFeedView extends ListingFeedView {
 
     private EventListingHelper helper;
     private PropertyTypeDefinition displayTypePropDef;
-    private String overridePublishDatePropDefPointer;
 
     @Override
     protected String getFeedTitle(HttpServletRequest request, Map<String, ?> model,
@@ -131,26 +130,6 @@ public class EventListingAtomFeedView extends ListingFeedView {
         return true;
     }
 
-    @Override
-    protected Property getPublishDate(PropertySet resource) {
-        Property sortProp = helper.getStartDateProperty(resource);
-        if (sortProp == null) {
-            sortProp = helper.getEndDateProperty(resource);
-        }
-        return sortProp != null ? sortProp : getDefaultPublishDate(resource);
-    }
-
-    @Override
-    protected Date getLastModified(PropertySet resource) {
-        PropertyTypeDefinition overridePublishDatePropDef = resourceTypeTree
-                .getPropertyDefinitionByPointer(overridePublishDatePropDefPointer);
-        Property overridePublishDateProp = resource.getProperty(overridePublishDatePropDef);
-        if (overridePublishDateProp != null) {
-            return overridePublishDateProp.getDateValue();
-        }
-        return resource.getProperty(lastModifiedPropDef).getDateValue();
-    }
-
     @Required
     public void setHelper(EventListingHelper helper) {
         this.helper = helper;
@@ -160,10 +139,4 @@ public class EventListingAtomFeedView extends ListingFeedView {
     public void setDisplayTypePropDef(PropertyTypeDefinition displayTypePropDef) {
         this.displayTypePropDef = displayTypePropDef;
     }
-
-    @Required
-    public void setOverridePublishDatePropDefPointer(String overridePublishDatePropDefPointer) {
-        this.overridePublishDatePropDefPointer = overridePublishDatePropDefPointer;
-    }
-
 }
