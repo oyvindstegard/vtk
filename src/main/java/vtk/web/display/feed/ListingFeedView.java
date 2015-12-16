@@ -318,9 +318,7 @@ public class ListingFeedView implements View {
                             + t.getMessage());
                 }
             }
-            if (isExtendedFormat(request)) {
-                addExtensions(request, model, feed, entry, resource);
-            }
+            addExtensions(request, model, feed, entry, resource);
             feed.addEntry(entry);
 
         }
