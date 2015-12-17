@@ -72,6 +72,14 @@
            and r1.acl_inherited_from != #{inheritedFrom}
   </update>
 
+  <sql id="insertCommentContent">
+    #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler}
+  </sql>
+
+  <sql id="updateCommentContent">
+    content = #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler}
+  </sql>
+
   <sql id="listCommentsLimitPrepend">
     select * from (
   </sql>

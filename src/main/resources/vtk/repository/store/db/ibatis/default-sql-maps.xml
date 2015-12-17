@@ -834,8 +834,7 @@
     <result property="time" column="time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
     <result property="author" column="author" />
     <result property="title" column="title" />
-
-    <result property="content" column="content" jdbcType="CLOB" typeHandler="vtk.repository.store.db.ibatis.ClobTypeHandler" />
+    <result property="content" column="content" />
     <result property="approved" column="approved"
             typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback"/>
   </resultMap>
@@ -889,41 +888,22 @@
        (select resource_id from vortex_resource where uri = #{URI})
   </delete>
 
-  <!-- See: http://issues.apache.org/jira/browse/IBATIS-244 -->
-  <!--insert id="insertComment" parameterType="vtk.repository.Comment">
-    insert into vortex_comment 
-      (id, resource_id, author, time, title, content, approved)
-    select <include refid="nextVortexCommentId" />, r.resource_id, 
-           #{author}, #{time}, #{title},
-           #{content},
-           #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
-    from vortex_resource r where r.uri = #{URI, typeHandler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback}
-  </insert-->
   <insert id="insertComment" parameterType="vtk.repository.Comment">
     insert into vortex_comment 
       (id, resource_id, author, time, title, content, approved)
     select <include refid="nextVortexCommentId" />, r.resource_id, 
            #{author}, #{time}, #{title},
-           #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler},
+           <include refid="insertCommentContent" />,
            #{approved,typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
     from vortex_resource r where r.uri = #{URI}
   </insert>
 
-  <!--update id="updateComment" parameterType="vtk.repository.Comment">
-    update vortex_comment
-      set author = #{author, jdbcType=VARCHAR},
-          time = #{time},
-          title = #{title},
-          content = #{content},
-          approved = #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
-      where id = #{ID}
-  </update-->
   <update id="updateComment" parameterType="vtk.repository.Comment">
     update vortex_comment
       set author = #{author, jdbcType=VARCHAR},
           time = #{time},
           title = #{title},
-          content = #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler},
+          <include refid="updateCommentContent" />,
           approved = #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
       where id = #{ID}
   </update>
