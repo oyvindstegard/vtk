@@ -34,12 +34,12 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -58,6 +58,7 @@ import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
 import vtk.web.search.ListingUriQueryBuilder;
+import vtk.web.search.MultiHostUtil;
 import vtk.web.search.QueryPartsSearchComponent;
 import vtk.web.search.SearchComponentQueryBuilder;
 import vtk.web.search.VHostScopeQueryRestricter;
@@ -82,6 +83,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
     private MultiHostSearcher multiHostSearcher;
     private ListingUriQueryBuilder listingUriQueryBuilder;
     private Ehcache cache;
+    private boolean resolveMultiHostResultSet = true;
 
     @Override
     protected ResultSet getResultSet(HttpServletRequest request, Resource collection, String token, Sorting sorting,
@@ -138,10 +140,9 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
 
                 cache.put(new Element(cacheKey, clar));
             }
-            try {
-                result = multiHostSearcher.search(token, search);
-            } catch (Exception e) {
-                logger.error("An error occured while searching multiple hosts: " + e.getMessage());
+            result = multiHostSearcher.search(token, search);
+            if (resolveMultiHostResultSet) {
+                result = MultiHostUtil.resolveResultSetImageRefProperties(result);
             }
         } else {
             Repository repository = RequestContext.getRequestContext().getRepository();
@@ -290,6 +291,10 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
     @Required
     public void setCache(Ehcache cache) {
         this.cache = cache;
+    }
+
+    public void setResolveMultiHostResultSet(boolean resolveMultiHostResultSet) {
+        this.resolveMultiHostResultSet = resolveMultiHostResultSet;
     }
 
 }

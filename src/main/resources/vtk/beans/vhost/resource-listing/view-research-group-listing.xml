@@ -64,6 +64,7 @@
   </bean>
 
   <bean id="researchGroupListing.feedService" parent="collectionListing.feedService">
+    <property name="parent" ref="collectionListing.feedService" />
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
@@ -82,7 +83,7 @@
     parent="atomFeedView">
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="research-group-list" />
+        <entry key="feed-type" value="research-group-listing" />
       </map>
     </property>
   </bean>

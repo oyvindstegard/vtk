@@ -48,6 +48,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>${(title.title)?default(resourceContext.currentResource.name)}</title>
+    <@vrtx.javascriptPlaceholder place="preview:head" />
     <script type="text/javascript"><!--
       var previewLoadingMsg = "${vrtx.getMsg('preview.loadingMsg')}";
       var hasPreviewIframeCommunication = <#if hasNotPreviewIframeCommunication>false<#else>true</#if>;

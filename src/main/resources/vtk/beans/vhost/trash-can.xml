@@ -5,11 +5,6 @@
   <!-- ## Manage trash can ## -->
   <bean id="trashCanService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -28,6 +23,10 @@
       </list>
     </property>
     <property name="handler" ref="trashCanHandler" />
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="trashCanService" />
   </bean>
 
   <bean id="trashCan.displayPermissionAssertion" parent="abstractResourcePrincipalPermissionAssertion">

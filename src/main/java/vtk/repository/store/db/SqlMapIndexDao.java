@@ -42,7 +42,6 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.dao.DataAccessException;
 
 import vtk.repository.Acl;
-import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.ResourceTypeTree;
@@ -52,12 +51,10 @@ import vtk.repository.store.db.SqlMapDataAccessor.AclHolder;
 import vtk.security.PrincipalFactory;
 
 /**
- * Index data accessor based on iBatis.
+ * Index data accessor.
  * 
- * TODO possible workaround for trouble with binary prop refs going stale
- * (VTK-3887) is to immediately load all values into memory. But this will cause
- * higher memory usage for temporarily cached values, and some more thought
- * needs to be put into the idea.
+ * <p>Code is optimizied for batch-accessing many resources including all properties
+ * and ACLs.
  */
 public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexDao {
 
@@ -97,7 +94,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         PropertySetRowHandler rowHandler = new PropertySetRowHandler(handler,
                 this.resourceTypeTree, this.principalFactory, this, client);
 
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
 
         parameters.put("uri", startUri);
         parameters.put("uriWildcard", SqlDaoUtils.getUriSqlWildcard(startUri,
@@ -126,7 +123,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         
         int rowsUpdated = 0;
         int statementCount = 0;
-        Map<String, Object> params = new HashMap<String, Object>();
+        Map<String, Object> params = new HashMap<>();
         params.put("sessionId", sessionID);
         
         for (Path uri : uris) {
@@ -161,8 +158,8 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
     }
     
     List<Map<String,Object>> loadInheritablePropertyRows(List<Path> paths) {
-        String sqlMap = getSqlMap("loadInheritableProperties");
-        Map<String, Object> parameterMap = new HashMap<String, Object>();
+        String sqlMap = getSqlMap("loadInheritablePropertiesWithBinaryValue");
+        Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("uris", paths);
         
         return getSqlSession().selectList(sqlMap, parameterMap);
@@ -177,11 +174,10 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
      * resource did not exist, but never <code>null</code>.
      */
     Acl loadAcl(Integer resourceId, SqlSession sqlSession) {
-        List<Integer> resourceIds = new ArrayList<Integer>(1);
+        List<Integer> resourceIds = new ArrayList<>(1);
         resourceIds.add(resourceId);
         
-        Map<Integer, AclHolder> aclMap = 
-                new HashMap<Integer, AclHolder>(1);
+        Map<Integer, AclHolder> aclMap = new HashMap<>(1);
         
         this.sqlMapDataAccessor.loadAclBatch(resourceIds, aclMap, sqlSession);
         
@@ -201,10 +197,6 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         return this.sqlMapDataAccessor.createInheritedProperty(holder);
     }
     
-    Property createProperty(Namespace ns, String name, Object value) {
-        return this.sqlMapDataAccessor.createProperty(ns, name, value);
-    }
-
     @Required
     public void setSqlMapDataAccessor(SqlMapDataAccessor sqlMapDataAccessor){
         this.sqlMapDataAccessor = sqlMapDataAccessor;

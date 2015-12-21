@@ -70,11 +70,6 @@
 
   <bean id="versioning.displayRevisionsService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -95,6 +90,10 @@
     <property name="handler">
       <ref bean="versioning.displayRevisionsHandler" />
     </property>
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="versioning.displayRevisionsService" />
   </bean>
 
   <bean id="showVersioningForResourceAssertion" class="vtk.web.service.AndAssertion">

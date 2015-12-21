@@ -155,6 +155,7 @@
     <property name="changeLogDAO" ref="repository.changeLogDAO"/>
     <property name="loggerId" value="1"/>
     <property name="loggerType" value="3" />
+    <property name="maxChangesPerUpdate" value="${repository.indexUpdater.batchsize}" />
   </bean>
   <!-- Background thread for triggering incremental updates -->
   <bean id="repository.index.updateTrigger"

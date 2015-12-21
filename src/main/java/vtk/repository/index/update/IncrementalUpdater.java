@@ -70,11 +70,13 @@ public class IncrementalUpdater {
      * This method should be called periodically to poll database for resource
      * change events and apply the updates to the index.
      * 
-     * Handles any exceptions and takes care of all the necessary logging during
-     * the course of an update round.
+     * @throws java.lang.Exception for any kind of failure that occurs during update.
+     * In general, the database transaction should always be rolled back if updating
+     * index fails for some reason. Index updates are also idempotent, which
+     * works well with rollback.
      */
     @Transactional(readOnly=false)
-    public synchronized void update() {
+    public synchronized void update() throws Exception {
         
         try {
             List<ChangeLogEntry> changes = 
@@ -110,16 +112,11 @@ public class IncrementalUpdater {
             if (changes.size() > 0) {
                 if (isEnabled()) {
                     // Index changes
-                    try {
-                        logger.debug("--- update(): applying changes to index");
-                        applyChanges(changes);
-                        logger.debug("--- update(): finished applying changes to index.");
-                    } catch (Throwable t) {
-                        logger.error("Unexpected error while updating index, changelog will not be flushed.", t);
-                        return;
-                    }
+                    logger.debug("--- update(): applying changes to index");
+                    applyChanges(changes);
+                    logger.debug("--- update(): finished applying changes to index.");
                 } else {
-                    logger.info("Index updates disabled, discarding resource change events.");
+                    logger.warn("Index updates disabled, discarding resource change events.");
                 }
                 
                 // Remove changelog entries from DAO
@@ -133,6 +130,7 @@ public class IncrementalUpdater {
             }
         } catch (Throwable t) {
             logger.error("Unexpected exception during index update", t);
+            throw t; // Rethrow to roll back transaction
         }
     }
     
@@ -149,7 +147,7 @@ public class IncrementalUpdater {
             logger.debug("--- applyChanges(): Going to process change log window ---");
             
             // Map maintaining last change *per URI*
-            Map<Path, ChangeLogEntry> lastChanges = new HashMap<Path, ChangeLogEntry>();
+            Map<Path, ChangeLogEntry> lastChanges = new HashMap<>();
 
             for (ChangeLogEntry change: changes) {
                 // If delete, we do it immediately
@@ -167,7 +165,7 @@ public class IncrementalUpdater {
             
             // Updates/additions
             if (lastChanges.size() > 0) {
-                final List<Path> updateUris = new ArrayList<Path>(lastChanges.size());
+                final List<Path> updateUris = new ArrayList<>(lastChanges.size());
                 
                 // Remove updated property sets from index in one batch, first, 
                 // before re-adding them. This is very necessary to keep things
@@ -204,7 +202,7 @@ public class IncrementalUpdater {
                         // Add updated resource to index
                         index.addPropertySet(propertySet, acl);
                         
-                        if (++count % 10000 == 0) {
+                        if (++count % 2000 == 0) {
                             // Log some progress to update
                             logger.info("Incremental index update progress: "  + count + " resources indexed of "
                                     + updateUris.size() + " total in current update batch.");

@@ -11,6 +11,10 @@
     <property name="handler" ref="editor.blogListingEditHandler" />
   </bean>
 
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.blogListingEditService" />
+  </bean>
+
   <bean id="editor.blogListingEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.blogListingResourceManager" />
     <property name="successView" value="redirectToManage" />

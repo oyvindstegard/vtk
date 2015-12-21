@@ -283,8 +283,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         parameters.put("depth", r.getURI().getDepth());
 
         sqlMap = existed ? getSqlMap("updateResource") : getSqlMap("insertResource");
-        if (this.logger.isDebugEnabled()) {
-            this.logger.debug((existed ? "Updating" : "Storing") + " resource " + r + ", parameter map: " + parameters);
+        if (logger.isDebugEnabled()) {
+            logger.debug((existed ? "Updating" : "Storing") + " resource " + r + ", parameter map: " + parameters);
         }
         
         sqlSession.update(sqlMap, parameters);
@@ -494,8 +494,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                 if (property.getValue().getType() == PropertyType.Type.PRINCIPAL) {
                     value = ((Principal) value).getQualifiedName();
                 }
-                if (this.logger.isDebugEnabled()) {
-                    this.logger.debug("Copy: fixed property: " + property.getDefinition().getName() + ": " + value);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Copy: fixed property: " + property.getDefinition().getName() + ": " + value);
                 }
                 parameters.put(property.getDefinition().getName(), value);
             }
@@ -1051,10 +1051,18 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             Principal p = null;
 
             if (isGroup) {
-                p = principalFactory.getPrincipal(name, Type.GROUP);
+                /* We don't fetch metadata for groups here due to performance
+                   concerns. Metadata for GROUP principals must be retreived on demand
+                   by higher level code.
+                */
+                p = principalFactory.getPrincipal(name, Type.GROUP, false);
             } else if (name.startsWith("pseudo:")) {
                 p = principalFactory.getPrincipal(name, Type.PSEUDO);
             } else {
+                /* We really shouldn't fetch metadata for principals here, but do so
+                   due to compatibility concerns with higher level code expecting it
+                   to be present.
+                */
                 p = principalFactory.getPrincipal(name, Type.USER);
             }
             Privilege action = Privilege.forName(privilege);
@@ -1329,7 +1337,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             if (objectValue.getClass() == String.class) {
                 values[i] = this.valueFactory.createValue((String)objectValue, propDef.getType());
             } else if (objectValue.getClass() == Integer.class) {
-                // Value stored as binary (BLOB reference in property row)
+                // Binary value reference
                 BinaryValueReference binVal = new BinaryValueReference(this, (Integer)objectValue);
                 try {
                     values[i] = this.valueFactory.createValue(binVal, propDef.getType());
@@ -1340,6 +1348,9 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                             + holder.namespaceUri);
                     throw ia;
                 }
+            } else if (objectValue instanceof BinaryValue) {
+                // Already (buffered/loaded) binary value
+                values[i] = this.valueFactory.createValue((BinaryValue)objectValue, propDef.getType());
             } else {
                 throw new DataAccessException("Expected PropHolder value to be either string or integer reference for property " + prop);
             }
@@ -1406,7 +1417,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         Set<Principal> groups = new HashSet<Principal>();
         for (String groupName : groupNames) {
-            Principal group = principalFactory.getPrincipal(groupName, Principal.Type.GROUP);
+            Principal group = principalFactory.getPrincipal(groupName, Principal.Type.GROUP, false);
             groups.add(group);
         }
 
@@ -1416,7 +1427,12 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     byte[] getBinaryPropertyBytes(Integer reference) throws DataAccessException {
         String sqlMap = getSqlMap("selectBinaryPropertyEntry");
         Map<String, Object> map = getSqlSession().selectOne(sqlMap, reference);
-        return (byte[]) map.get("byteArray");
+        final byte[] result = (byte[])map.get("byteArray");
+        if (result == null) {
+            throw new DataAccessException("Binary value with reference " + reference + " does not exist.");
+        }
+        
+        return result;
     }
 
     String getBinaryPropertyContentType(Integer reference) throws DataAccessException {

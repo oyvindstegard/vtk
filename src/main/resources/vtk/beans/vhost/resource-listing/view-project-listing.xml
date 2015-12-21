@@ -111,6 +111,7 @@
   </bean>
 
   <bean id="projectListing.feedService" parent="collectionListing.feedService">
+    <property name="parent" ref="collectionListing.feedService" />
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
@@ -129,7 +130,7 @@
     parent="atomFeedView">
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="project-list" />
+        <entry key="feed-type" value="project-listing" />
       </map>
     </property>
   </bean>

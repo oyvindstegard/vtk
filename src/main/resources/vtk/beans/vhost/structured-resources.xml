@@ -65,11 +65,6 @@
         <ref bean="editableResourcesAssertion" />
       </list>
     </property>
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -84,6 +79,10 @@
         <ref bean="editor.urlPostProcessor" />
       </list>
     </property>
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="structuredResources.editService" />
   </bean>
 
   <bean id="editableResourcesAssertion" class="vtk.web.service.AndAssertion">
@@ -217,11 +216,14 @@
     <constructor-arg ref="structuredResources.tlFunctions" />
   </bean>
 
-  <bean id="structuredResources.tlFunctions" class="vtk.context.UnionFactoryBean">
-    <property name="elements1" ref="structuredResources.builtinFunctions" />
-    <property name="elements2" ref="structuredResources.customFunctions" />
+  <bean id="structuredResources.tlFunctions" class="vtk.text.tl.expr.Expression.FunctionResolver" />
+
+  <bean class="org.springframework.beans.factory.config.MethodInvokingBean">
+    <property name="targetObject" ref="structuredResources.tlFunctions" />
+    <property name="targetMethod" value="addAll" />
+    <property name="arguments" ref="structuredResources.builtinFunctions" />
   </bean>
-  
+
   <bean id="structuredResources.builtinFunctions" class="org.springframework.beans.factory.config.SetFactoryBean">
     <property name="sourceSet">
       <set>
@@ -307,10 +309,19 @@
     <property name="readTimeoutSeconds" value="1" />
   </bean>
 
-
-  <bean id="structuredResources.customFunctions" class="vtk.context.CategoryResolvingFactoryBean">
-    <property name="category" value="structuredResources.customFunction" />
+  <!--
+  <bean id="structuredResources.customFunctions" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
   </bean>
+
+  <bean id="structuredResources.customFunctionsBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="structuredResources.customFunctions" />
+    <property name="targetMethod" value="add" />
+  </bean>
+  -->
 
   <bean id="structuredResources.resourceFunction" class="vtk.resourcemanagement.view.tl.RetrieveHandler">
     <constructor-arg>
@@ -477,7 +488,7 @@
         <bean class="vtk.web.referencedata.provider.StaticModelDataProvider">
           <property name="modelDataMap">
             <map>
-              <entry key="cssURLs" value-ref="structuredResources.editCSSURLs" />
+              <entry key="cssRegistry" value-ref="manage.cssRegistry" />
               <entry key="jsBaseURL" value="${jsBaseURL}" />
               <entry key="webResources" value="${webResources.baseURL}" />
               <entry key="fckEditorAreaCSSURL" value-ref="editor.fckEditorAreaCSSURL" />
@@ -490,11 +501,11 @@
     </property>
   </bean>
 
-  <bean id="structuredResources.editCSSURLs" class="java.util.ArrayList">
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.cssRegistry" />
+    <constructor-arg value="structured-resources-editor:head" />
     <constructor-arg>
       <list>
-        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
-        <value>${themeBaseURL}/default.css</value>
         <value>${themeBaseURL}/structured-resources/editor.css</value>
       </list>
     </constructor-arg>

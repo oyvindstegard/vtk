@@ -170,10 +170,11 @@ public class ACLTooltipHelper {
                     i++;
                 }
                 for (Principal p : privilegedGroups) {
+                    // Avoid "description" for groups (not useful data), use unqualified name.
                     if (len == 1 || i == len - 1) {
-                        combined.append(p.getDescription());
+                        combined.append(p.getName());
                     } else {
-                        combined.append(p.getDescription() + ", ");
+                        combined.append(p.getName() + ", ");
                     }
                     i++;
                 }

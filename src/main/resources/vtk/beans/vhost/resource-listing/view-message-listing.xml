@@ -70,6 +70,7 @@
   </bean>
 
   <bean id="messageListing.feedService" parent="collectionListing.feedService">
+    <property name="parent" ref="collectionListing.feedService" />
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
@@ -96,7 +97,7 @@
     parent="atomFeedView">
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="message-list" />
+        <entry key="feed-type" value="message-listing" />
       </map>
     </property>
     <property name="authorPropDefPointer" value="createdBy" />

@@ -51,6 +51,7 @@ import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySetImpl;
 import vtk.repository.ResourceTypeTree;
+import vtk.repository.resourcetype.BufferedBinaryValue;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.store.PropertySetHandler;
@@ -60,7 +61,10 @@ import vtk.security.PrincipalFactory;
 
 
 /**
- *
+ * This code handles rows from queries issued by {@code SqlMapIndexDao}.
+ * 
+ * The rows are mapped to {@code PropertySet} instances, which are in turn
+ * provided to a callback.
  */
 class PropertySetRowHandler implements ResultHandler {
 
@@ -71,7 +75,7 @@ class PropertySetRowHandler implements ResultHandler {
     // can map to a single property set. The iteration from the database is 
     // ordered, so ID change signals a new PropertySet
     protected Integer currentId = null;
-    protected List<Map<String, Object>> rowValueBuffer = new ArrayList<Map<String, Object>>();
+    protected List<Map<String, Object>> rowValueBuffer = new ArrayList<>();
 
     private final ResourceTypeTree resourceTypeTree;
     private final ResourceTypeMapper resourceTypeMapper;
@@ -185,8 +189,6 @@ class PropertySetRowHandler implements ResultHandler {
         Map<String, Object> firstRow = rowBuffer.get(0);
         
         PropertySetImpl propertySet = new PropertySetImpl();
-        //String uri = (String)firstRow.get("uri");
-        //propertySet.setUri(Path.fromString(uri));
 
         Path uri = (Path) firstRow.get("uri");
         propertySet.setUri(uri);
@@ -206,14 +208,14 @@ class PropertySetRowHandler implements ResultHandler {
     protected void populateStandardProperties(Map<String, Object> row, PropertySetImpl propertySet) {
 
         // ID
-        propertySet.setID(((Integer)row.get("id")).intValue());
+        propertySet.setID(((Integer)row.get("id")));
         
         // isCollection
         boolean collection = "Y".equals(row.get("isCollection"));
         PropertyTypeDefinition propDef = 
             this.resourceTypeTree.getPropertyTypeDefinition(
                 Namespace.DEFAULT_NAMESPACE, PropertyType.COLLECTION_PROP_NAME);
-        Property prop = propDef.createProperty(Boolean.valueOf(collection));
+        Property prop = propDef.createProperty(collection);
         propertySet.addProperty(prop);
         
         // createdBy
@@ -333,26 +335,25 @@ class PropertySetRowHandler implements ResultHandler {
     private void populateExtraProperties(List<Map<String, Object>> rowBuffer, 
                                            PropertySetImpl propertySet) {
         
-        Map<PropHolder, List<Object>> propMap = 
-                            new HashMap<PropHolder, List<Object>>();
-        
+        Map<PropHolder, List<Object>> propMap = new HashMap<>();
+
+        // Expects mybatis result map "ResourceAndExtraProperties"
         for (Map<String, Object> row: rowBuffer) {
             PropHolder holder = new PropHolder();
             holder.namespaceUri = (String)row.get("namespace");
             holder.name = (String)row.get("name");
             holder.resourceId = (Integer)row.get("id");
             holder.inheritable = (Boolean)row.get("inheritable");
-            holder.binary = (Boolean)row.get("binary");
-            holder.propID = row.get("propId"); // See resultMap ResourceAndExtraProperties
+            byte[] binaryValue = (byte[])row.get("binaryValue");
+            String binaryMimetype = (String)row.get("binaryMimetype");
+            holder.propID = row.get("propId");
             
-            List<Object> values = propMap.get(holder);
-            if (values == null) {
-                values = new ArrayList<Object>(2);
-                holder.values = values;
-                propMap.put(holder, values);
-            }
-            if (holder.binary) {
-                values.add(holder.propID);
+            List<Object> values = propMap.computeIfAbsent(holder, 
+                    h -> { h.values = new ArrayList<>(2); return h.values; });
+            
+            if (binaryValue != null) {
+                holder.binary = true;
+                values.add(new BufferedBinaryValue(binaryValue, binaryMimetype));
             } else {
                 values.add(row.get("value"));
             }
@@ -373,7 +374,7 @@ class PropertySetRowHandler implements ResultHandler {
         final List<Path> paths = parent.getPaths();
         
         // Do we have all ancestor paths in cache ?
-        final List<Path> cacheMissPaths = new ArrayList<Path>(2);
+        final List<Path> cacheMissPaths = new ArrayList<>(2);
         Map<Path, List<Property>> loadedInheritablePropertiesMap = null;
         for (Path p: paths) {
             if (!inheritablePropertiesCache.containsKey(p)) {
@@ -388,7 +389,7 @@ class PropertySetRowHandler implements ResultHandler {
         }
 
         // Populate effective set of inherited properties
-        final Set<String> encountered = new HashSet<String>();
+        final Set<String> encountered = new HashSet<>();
         for (int i=paths.size()-1; i >= 0; i--) {
             Path p = paths.get(i);
             List<Property> inheritableProps = inheritablePropertiesCache.get(p);
@@ -429,7 +430,7 @@ class PropertySetRowHandler implements ResultHandler {
     private Map<Path, List<Property>> loadInheritablePropertiesMap(List<Path> paths) {
 
         // Initialize to empty list of inheritable props per selected path
-        final Map<Path, List<Property>> inheritablePropsMap = new HashMap<Path, List<Property>>();
+        final Map<Path, List<Property>> inheritablePropsMap = new HashMap<>();
         for (Path p : paths) {
             inheritablePropsMap.put(p, Collections.EMPTY_LIST);
         }
@@ -441,39 +442,41 @@ class PropertySetRowHandler implements ResultHandler {
         }
         
         // Aggretate property rows and set up sparse inheritable map for selected paths
-        final Map<Path, Set<PropHolder>> inheritableHolderMap = new HashMap<Path, Set<PropHolder>>();
-        final Map<PropHolder, List<Object>> propValuesMap = new HashMap<PropHolder, List<Object>>();
+        // Expects mybatis result map "UriAndPropertyWithBinaryValue"
+        final Map<Path, Set<PropHolder>> inheritableHolderMap = new HashMap<>();
+        final Map<PropHolder, List<Object>> propValuesMap = new HashMap<>();
         for (Map<String, Object> propEntry : rows) {
             
             final PropHolder holder = new PropHolder();
             holder.namespaceUri = (String) propEntry.get("namespaceUri");
             holder.name = (String) propEntry.get("name");
             holder.resourceId = (Integer) propEntry.get("resourceId");
-            holder.propID = propEntry.get("id"); // See resultMap "UriAndProperty"
-            holder.binary = (Boolean)propEntry.get("binary");
+            holder.propID = propEntry.get("id");
             holder.inheritable = true;
+            final byte[] binaryValue = (byte[])propEntry.get("binaryValue");
+            final String binaryMimetype = (String)propEntry.get("binaryMimetype");
             
             List<Object> values = propValuesMap.get(holder);
             if (values == null) {
                 // New property
-                values = new ArrayList<Object>(2);
+                values = new ArrayList<>(2);
                 holder.values = values;
                 propValuesMap.put(holder, values);
                 
                 // Link current canonical PropHolder instance to inheritable map
                 Path p = (Path) propEntry.get("uri");
-                //Path p = Path.fromString((String) propEntry.get("uri"));
                 Set<PropHolder> set = inheritableHolderMap.get(p);
                 if (set == null) {
-                    set = new HashSet<PropHolder>();
+                    set = new HashSet<>();
                     inheritableHolderMap.put(p, set);
                 }
                 set.add(holder);
             }
 
             // Aggregate current property's value
-            if (holder.binary) {
-                values.add(holder.propID);
+            if (binaryValue != null) {
+                holder.binary = true;
+                values.add(new BufferedBinaryValue(binaryValue, binaryMimetype));
             } else {
                 values.add(propEntry.get("value"));
             }
@@ -482,7 +485,7 @@ class PropertySetRowHandler implements ResultHandler {
         for (Map.Entry<Path, Set<PropHolder>> entry: inheritableHolderMap.entrySet()) {
             Path p = entry.getKey();
             Set<PropHolder> propHolders = entry.getValue();
-            List<Property> props = new ArrayList<Property>(propHolders.size());
+            List<Property> props = new ArrayList<>(propHolders.size());
             for (PropHolder holder : propHolders) {
                 Property prop = indexDao.createInheritedProperty(holder);
                 props.add(prop);

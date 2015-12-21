@@ -247,11 +247,6 @@
 
   <bean id="permissionsService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -268,6 +263,10 @@
     <property name="handler" ref="permissionsHandler" />
   </bean>
 
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="permissionsService" />
+  </bean>
+
   <bean id="manage.refreshLockService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="assertions">
@@ -282,11 +281,6 @@
 
   <bean id="aboutResourceService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -305,14 +299,13 @@
     <property name="handler" ref="aboutResourceHandler" />
   </bean>
 
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="aboutResourceService" />
+  </bean>
+
   <bean id="manageCollectionListingService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="1" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -326,13 +319,13 @@
     <property name="handler" ref="manageCollectionListingHandler" />
   </bean>
 
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="manageCollectionListingService" />
+  </bean>
+
+
   <bean id="manage.unlockFormService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
-    <property name="categories">
-      <set>
-        <value>resourceMenuRight</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.ResourceLockedAssertion">
@@ -354,6 +347,10 @@
     <property name="handler" ref="manage.unlockFormHandler" />
   </bean>
 
+  <bean parent="manage.resourceMenuRightBuilder">
+    <property name="arguments" ref="manage.unlockFormService" />
+  </bean>
+
   <bean id="manage.unlockResourceService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="assertions">
@@ -373,11 +370,6 @@
   <bean id="fileUploadService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageCollectionListingService" />
     <property name="order" value="-980" />
-    <property name="categories">
-      <set>
-        <value>collectionMenu</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <!-- <ref bean="manage.postRequestAssertion" /> <bean class="vtk.web.service.RequestContentTypeRegexpAssertion">
@@ -393,14 +385,13 @@
     <property name="handler" ref="fileUploadHandler" />
   </bean>
 
+  <bean parent="collectionMenuBuilder">
+    <property name="arguments" ref="fileUploadService" />
+  </bean>
+
   <bean id="createDocumentService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageCollectionListingService" />
     <property name="order" value="-970" />
-    <property name="categories">
-      <set>
-        <value>collectionMenu</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <ref bean="bindPermissionAssertion" />
@@ -414,14 +405,14 @@
     <property name="handler" ref="createDocumentHandler" />
   </bean>
 
+  <bean parent="collectionMenuBuilder">
+    <property name="arguments" ref="createDocumentService" />
+  </bean>
+
+
   <bean id="createCollectionService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageCollectionListingService" />
     <property name="order" value="-960" />
-    <property name="categories">
-      <set>
-        <value>collectionMenu</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <ref bean="bindPermissionAssertion" />
@@ -435,14 +426,13 @@
     <property name="handler" ref="createCollectionHandler" />
   </bean>
 
+  <bean parent="collectionMenuBuilder">
+    <property name="arguments" ref="createCollectionService" />
+  </bean>
+
   <bean id="renameService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-1000" />
-    <property name="categories">
-      <set>
-        <value>resourceMenuLeft</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="resourceMenuLeftOrder">
@@ -463,6 +453,10 @@
     <property name="handler" ref="renameHandler" />
   </bean>
 
+  <bean parent="manage.resourceMenuLeftBuilder">
+    <property name="arguments" ref="renameService" />
+  </bean>
+  
   <bean id="aclInheritanceService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="permissionsService" />
     <property name="assertions">
@@ -548,12 +542,6 @@
     </property>
     <property name="handler" ref="editReadWriteUnpublishedPermissionsHandler" />
   </bean>
-
-
-  <!-- <bean id="editBindPermissionsService" class="vtk.web.service.ServiceImpl"> <property name="parent" ref="permissionsService"
-    /> <property name="assertions"> <list> <ref local="writeACLPermissionAssertion" /> <bean class="vtk.web.service.RequestParameterAssertion">
-    <property name="parameterName" value="action" /> <property name="parameterValue" value="edit-bind-permissions" /> </bean>
-    </list> </property> <property name="handler" ref="editBindPermissionsHandler" /> </bean> -->
 
   <bean id="editReadProcessedPermissionsService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="permissionsService" />
@@ -656,10 +644,13 @@
   </bean>
 
   <!-- preview services -->
+
   <bean id="previewService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="1" />
+    <!--
     <property name="categories" value="tabMenu" />
+    -->
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -680,6 +671,10 @@
       </list>
     </property>
     <property name="handler" ref="previewFallbackHandler" />
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="previewService" />
   </bean>
 
   <bean id="preview.workingCopyTabTitle" class="vtk.web.view.components.menu.AssertionTitleResolver">
@@ -818,11 +813,6 @@
   <bean id="previewCollectionListingService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-1" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -841,6 +831,10 @@
     </property>
     <property name="handler" ref="previewAdminIframeHandler" />
     <property name="handlerInterceptors" ref="previewCollectionListingServiceInterceptor" />
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="previewCollectionListingService" />
   </bean>
 
   <bean id="previewCollectionListingServiceInterceptor" class="vtk.web.ReferenceDataProvidingHandlerInterceptor">
@@ -1171,6 +1165,34 @@
     <constructor-arg type="java.lang.String" value="manage" />
   </bean>
 
+  <bean id="manage.javascriptRegistry" class="vtk.web.MediaRegistry" />
+  <bean id="manage.cssRegistry" class="vtk.web.MediaRegistry" />
+
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.javascriptRegistry" />
+    <constructor-arg value="head" />
+    <constructor-arg>
+      <list>
+        <value>${jquery.baseURL}/jquery.min.js</value>
+        <value>${jsBaseURL}/frameworks/es5-shim-dejavu.js</value>
+        <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
+        <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
+        <value>${jsBaseURL}/admin-enhancements.js</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.cssRegistry" />
+    <constructor-arg value="head" />
+    <constructor-arg>
+      <list>
+        <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
+        <value>${themeBaseURL}/default.css</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
   <bean id="manage.lineTopComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
     <property name="namespace" ref="decorating.manageNamespace" />
     <property name="name" value="display-line-top" />
@@ -1215,18 +1237,18 @@
     <property name="description" value="Inserts the default admin CSS stylesheets" />
     <property name="view" ref="manage.cssView" />
     <property name="exposeMvcModel" value="true" />
+    <property name="parameterDescriptions">
+      <map>
+        <entry key="place" value="Defines the place to get CSS files from the registry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="manage.cssView" parent="freemarkerView">
-    <property name="url" value="system/css.ftl" />
+    <property name="url" value="system/css-registry.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="cssURLs">
-          <list>
-            <value>${jquery.baseURL}/plugins/ui/jquery-ui-${jquery.ui.version}.custom/css/smoothness/jquery-ui-${jquery.ui.version}.custom.min.css</value>
-            <value>${themeBaseURL}/default.css</value>
-          </list>
-        </entry>
+        <entry key="cssRegistry" value-ref="manage.cssRegistry" />
       </map>
     </property>
   </bean>
@@ -1234,24 +1256,21 @@
   <bean id="manage.javascriptComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
     <property name="namespace" ref="decorating.manageNamespace" />
     <property name="name" value="javascript" />
-    <property name="description" value="Inserts the default admin javascript references" />
+    <property name="description" value="Inserts the default admin Javascript references" />
     <property name="view" ref="manage.javascriptView" />
     <property name="exposeMvcModel" value="true" />
+    <property name="parameterDescriptions">
+      <map>
+        <entry key="place" value="Defines the place to get Javascript files from the registry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="manage.javascriptView" parent="freemarkerView">
-    <property name="url" value="system/javascript.ftl" />
+    <property name="url" value="system/javascript-registry.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="jsURLs">
-          <list>
-            <value>${jquery.baseURL}/jquery.min.js</value>
-            <value>${jsBaseURL}/frameworks/es5-shim-dejavu.js</value>
-            <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
-            <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
-            <value>${jsBaseURL}/admin-enhancements.js</value>
-          </list>
-        </entry>
+        <entry key="javascriptRegistry" value-ref="manage.javascriptRegistry" />
       </map>
     </property>
   </bean>
@@ -1395,8 +1414,8 @@
       <list>
         <ref bean="resourceContextProvider" />
         <ref bean="serverNowTimeProvider" />
-        <ref bean="resourceMenuLeftProvider" />
-        <ref bean="resourceMenuRightProvider" />
+        <ref bean="manage.resourceMenuLeftProvider" />
+        <ref bean="manage.resourceMenuRightProvider" />
         <ref bean="manage.refreshLockURLProvider" />
         <!-- Possible temporary assertion via service construct link to minimize concept impact -->
         <bean class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
@@ -1470,7 +1489,7 @@
     <property name="url" value="layouts/tabs.ftl" />
     <property name="referenceDataProviders">
       <list>
-        <ref bean="tabsProvider" />
+        <ref bean="manage.tabsProvider" />
       </list>
     </property>
   </bean>
@@ -1713,6 +1732,11 @@
         </bean>
       </list>
     </property>
+    <property name="attributesMap">
+      <map>
+        <entry key="javascriptRegistry" value-ref="manage.javascriptRegistry" />
+      </map>
+    </property>
   </bean>
 
   <bean id="permissionShortcuts" class="org.springframework.beans.factory.config.MapFactoryBean">
@@ -1776,13 +1800,10 @@
         <ref bean="resourceDetailProvider" />
       </list>
     </property>
-    <property name="elements2" ref="aboutView.additionalReferenceDataProviders" />
+    <property name="elements2" ref="manage.aboutView.additionalReferenceDataProviders" />
   </bean>
 
-  <bean id="aboutView.additionalReferenceDataProviders" class="vtk.context.CategoryResolvingFactoryBean">
-    <property name="category" value="aboutView.referenceDataProvider" />
-  </bean>
-
+  <bean id="manage.aboutView.additionalReferenceDataProviders" class="java.util.ArrayList" />
 
   <bean id="manageCollectionListingView" parent="freemarkerView">
     <property name="url" value="pages/manage-collectionlisting.ftl" />
@@ -1807,21 +1828,22 @@
     <property name="resourceLocation" value="${webResources.physicalLocation}" />
   </bean>
 
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="manage.javascriptRegistry" />
+    <constructor-arg value="preview:head" />
+    <constructor-arg>
+      <list>
+        <value>${jsBaseURL}/cross-doc-com-link.js</value>
+        <value>${jsBaseURL}/iframe-admin.js</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
   <!-- Manage specific providers -->
   <bean id="iframeJSProvider" class="vtk.web.referencedata.provider.StaticModelDataProvider">
     <property name="modelDataMap">
       <map>
-        <entry key="jsURLs">
-          <list>
-            <value>${jquery.baseURL}/jquery.min.js</value>
-            <value>${jsBaseURL}/frameworks/es5-shim-dejavu.js</value>
-            <value>${jsBaseURL}/cross-doc-com-link.js</value>
-            <value>${jsBaseURL}/iframe-admin.js</value>
-            <value>${jquery.baseURL}/plugins/jquery.vortexTips.js</value>
-            <value>${jsBaseURL}/vrtx-simple-dialogs.js</value>
-            <value>${jsBaseURL}/admin-enhancements.js</value>
-          </list>
-        </entry>
+        <entry key="javascriptRegistry" value-ref="manage.javascriptRegistry"/>
       </map>
     </property>
   </bean>
@@ -1842,6 +1864,7 @@
     <property name="permissionShortcutsConfig" ref="permissionShortcutsProvider.config" />
     <property name="localeResolver" ref="manageLocaleResolver" />
     <property name="documentPrincipalMetadataRetriever" ref="documentPrincipalMetadataRetriever" />
+    <property name="principalFactory" ref="principalFactory" />
   </bean>
 
   <bean id="manageCollectionlistingProvider" class="vtk.web.referencedata.provider.CollectionListingProvider">
@@ -1859,63 +1882,92 @@
     <property name="retrieveForProcessing" value="false" />
   </bean>
 
-  <bean id="collectionMenuProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider"
-    lazy-init="true">
+  <bean id="collectionMenuProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
     <constructor-arg value="tabMenuRight" />
     <constructor-arg ref="collectionActionServicesFactory" />
   </bean>
 
-  <bean id="collectionActionServicesFactory" class="vtk.context.CategoryResolvingFactoryBean" lazy-init="true"
-    parent="ordered">
-    <property name="category" value="collectionMenu" />
+  <bean id="collectionActionServicesFactory" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceMenuLeftProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
-    <constructor-arg value="resourceMenuLeft" />
-    <constructor-arg value="resourceMenuLeft" />
-    <constructor-arg value="true" />
-    <constructor-arg ref="resourceMenuLeftActionServicesFactory" />
-    <constructor-arg ref="resourceMenuLeft.referenceDataProviders" />
+  <bean id="collectionMenuBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="collectionActionServicesFactory" />
+    <property name="targetMethod" value="add" />
   </bean>
 
-  <bean id="resourceMenuLeftActionServicesFactory" class="vtk.context.CategoryResolvingFactoryBean"
-    parent="ordered">
-    <property name="category" value="resourceMenuLeft" />
-    <property name="comparator">
+  <bean id="manage.resourceMenuLeftServicesFactory" class="vtk.util.SortedCollection">
+    <constructor-arg>
       <bean class="vtk.web.service.ServiceAttributeComparator">
         <property name="attributeName" value="resourceMenuLeftOrder" />
       </bean>
-    </property>
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceMenuLeft.referenceDataProviders" class="vtk.context.CategoryResolvingFactoryBean">
-    <property name="category" value="resourceMenuLeft.referenceDataProvider" />
+  <bean id="manage.resourceMenuLeftBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="manage.resourceMenuLeftServicesFactory" />
+    <property name="targetMethod" value="add" />
   </bean>
 
-  <bean id="resourceMenuRightProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
+  <bean id="manage.resourceMenuLeftProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
+    <constructor-arg value="resourceMenuLeft" />
+    <constructor-arg value="resourceMenuLeft" />
+    <constructor-arg value="true" />
+    <constructor-arg ref="manage.resourceMenuLeftServicesFactory" />
+  </bean>
+
+  <bean id="resourceMenuLeft.referenceDataProviders" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+  </bean>
+
+  <bean id="resourceMenuLeft.referenceDataProvidersBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="resourceMenuLeft.referenceDataProviders" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+  <bean id="manage.resourceMenuRightProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
     <constructor-arg value="resourceMenuRight" />
     <constructor-arg value="resourceMenuRight" />
     <constructor-arg value="true" />
-    <constructor-arg ref="resourceMenuRightActionServicesFactory" />
+    <constructor-arg ref="manage.resourceMenuRightServicesFactory" />
     <constructor-arg ref="resourceMenuRight.referenceDataProviders" />
     <constructor-arg ref="sessionBeanProvider" />
   </bean>
 
-  <bean id="resourceMenuRightActionServicesFactory" class="vtk.context.CategoryResolvingFactoryBean">
-    <property name="category" value="resourceMenuRight" />
-    <property name="comparator">
+  <bean id="manage.resourceMenuRightServicesFactory" class="vtk.util.SortedCollection">
+    <constructor-arg>
       <bean class="vtk.web.service.ServiceAttributeComparator">
         <property name="attributeName" value="resourceMenuRightOrder" />
       </bean>
-    </property>
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceMenuRight.referenceDataProviders" class="vtk.context.CategoryResolvingFactoryBean">
-    <property name="category" value="resourceMenuRight.referenceDataProvider" />
+  <bean id="manage.resourceMenuRightBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="manage.resourceMenuRightServicesFactory" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+  <bean id="resourceMenuRight.referenceDataProviders" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+  </bean>
+
+  <bean id="resourceMenuRight.referenceDataProvidersBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="resourceMenuRight.referenceDataProviders" />
+    <property name="targetMethod" value="add" />
   </bean>
 
   <bean id="manageBreadCrumbProvider" class="vtk.web.referencedata.provider.BreadCrumbProvider">
-    <description> Breadcrumb provider that generates links to the manage service </description>
     <property name="breadcrumbName" value="manageBreadCrumb" />
     <property name="service" ref="manageService" />
   </bean>
@@ -2100,16 +2152,16 @@
         <ref bean="createFromDropDown.docService.urlProvider" />
         <ref bean="createFromDropDown.collService.urlProvider" />
         <ref bean="createFromDropDown.upService.urlProvider" />
-        <ref bean="tabsProvider" />
+        <ref bean="manage.tabsProvider" />
         <ref bean="resourceContextProvider" />
         <ref bean="versionProvider" />
         <ref bean="manageBreadCrumbProvider" />
-        <ref bean="lockUnlockActionsProvider" />
+        <!--ref bean="lockUnlockActionsProvider" /-->
         <ref bean="switchLocaleActionsProvider" />
-        <ref bean="resourceMenuLeftProvider" />
-        <ref bean="resourceMenuRightProvider" />
+        <ref bean="manage.resourceMenuLeftProvider" />
+        <ref bean="manage.resourceMenuRightProvider" />
         <ref bean="resourceDetailProvider" />
-        <ref bean="readPermissionsProvider" />
+        <!--ref bean="readPermissionsProvider" /-->
         <ref bean="publishProvider" />
         <ref bean="sessionBeanProvider" />
         <ref bean="browseUrlProvider" />

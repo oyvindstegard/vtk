@@ -32,10 +32,8 @@ package vtk.web.decorating;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -60,6 +58,7 @@ import vtk.text.tl.ListHandler;
 import vtk.text.tl.StripHandler;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.ValHandler;
+import vtk.text.tl.expr.Expression.FunctionResolver;
 import vtk.text.tl.expr.Function;
 import vtk.util.io.InputSource;
 import vtk.util.repository.PropertyAspectDescription;
@@ -73,9 +72,9 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
     private PropertyTypeDefinition aspectsPropdef;
     PropertyAspectDescription fieldConfig;
     private String token;
-    
+
     private List<DirectiveHandler> directiveHandlers;
-    private Set<Function> functions = new HashSet<Function>();
+    private FunctionResolver functionResolver = new FunctionResolver();
     private ComponentResolver componentResolver;
 
     public Template newTemplate(InputSource templateSource) throws InvalidTemplateException {
@@ -103,38 +102,34 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
     @Required public void setComponentResolver(ComponentResolver componentResolver) {
         this.componentResolver = componentResolver;
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        Set<Function> functions = new HashSet<Function>();
-        functions.addAll(this.functions);
+        //Set<Function> functions = new HashSet<>();
         //functions.add(new RequestURLFunction(new Symbol("request-url")));
-        functions.add(new RepositoryIDFunction(new Symbol("repo-id"), this.repository));
-        functions.add(new RequestParameterFunction(new Symbol("request-param")));
-        functions.add(new ResourceLocaleFunction(new Symbol("resource-locale")));
-        functions.add(new TemplateParameterFunction(new Symbol("template-param")));
-        functions.add(new ResourceUriAspectFunction(new Symbol("resource-uri-aspect"), this.aspectsPropdef, this.fieldConfig, this.token));
-        functions.add(new ResourceAspectFunction(new Symbol("resource-aspect"), this.aspectsPropdef, this.fieldConfig, this.token));
-        functions.add(new ResourcePropHandler(new Symbol("resource-prop")));
-        this.functions = functions;
+        functionResolver.addFunction(new RepositoryIDFunction(new Symbol("repo-id"), this.repository));
+        functionResolver.addFunction(new RequestParameterFunction(new Symbol("request-param")));
+        functionResolver.addFunction(new ResourceLocaleFunction(new Symbol("resource-locale")));
+        functionResolver.addFunction(new TemplateParameterFunction(new Symbol("template-param")));
+        functionResolver.addFunction(new ResourceUriAspectFunction(new Symbol("resource-uri-aspect"), this.aspectsPropdef, this.fieldConfig, this.token));
+        functionResolver.addFunction(new ResourceAspectFunction(new Symbol("resource-aspect"), this.aspectsPropdef, this.fieldConfig, this.token));
+        functionResolver.addFunction(new ResourcePropHandler(new Symbol("resource-prop")));
+
 
         this.directiveHandlers = Arrays.asList(new DirectiveHandler[] {
-                new IfHandler(functions),
+                new IfHandler(functionResolver),
                 new StripHandler(),
-                new ValHandler(null, functions),
-                new ListHandler(functions),
-                new DefineHandler(functions),
+                new ValHandler(null, functionResolver),
+                new ListHandler(functionResolver),
+                new DefineHandler(functionResolver),
                 new CaptureHandler(),
                 new ComponentInvokerNodeFactory("call",
-                        new DynamicDecoratorTemplate.ComponentSupport(), this.functions)
+                        new DynamicDecoratorTemplate.ComponentSupport(), functionResolver)
         });
     }
-    
-    public void setFunctions(Set<Function> functions) {
-        if (functions == null) {
-            throw new IllegalArgumentException("Argument is NULL");
-        }
-        this.functions = functions;
+
+    public void setFunctionResolver(FunctionResolver functionResolver) {
+        this.functionResolver = functionResolver;
     }
 
     private static class RepositoryIDFunction extends Function {

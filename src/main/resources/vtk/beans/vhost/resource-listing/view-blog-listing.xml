@@ -85,6 +85,7 @@
   </bean>
 
   <bean id="blogListing.feedService" parent="collectionListing.feedService">
+    <property name="parent" ref="collectionListing.feedService" />
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
@@ -92,7 +93,27 @@
         <ref bean="vrtxParameterIsFeedAssertion" />
       </list>
     </property>
-    <property name="handler" ref="articleListing.feedHandler" />
+    <property name="handler" ref="blogListing.feedHandler" />
+  </bean>
+
+  <bean id="blogListing.feedHandler" parent="articleListing.feedHandler">
+    <property name="viewName" value="blogListing.feedView" />
+  </bean>
+
+  <bean id="blogListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="blogListing.feedView" value-ref="blogListing.feedView" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="blogListing.feedView" parent="articleListing.feedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="blog-listing" />
+      </map>
+    </property>
   </bean>
 
 </beans>

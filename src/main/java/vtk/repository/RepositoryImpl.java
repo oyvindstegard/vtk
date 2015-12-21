@@ -206,7 +206,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 try {
                     return hooks.onRetrieve(toReturn);
                 } catch (Exception e){
-                    throw new TypeHandlerHookException("Failed in onRetrieve hook", e);
+                    throw new TypeHandlerHookException("Failed in onRetrieve hook: " + e.getMessage(), e);
                 }
             }
             
@@ -316,7 +316,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             try {
                 return hooks.getInputStream(r);
             } catch (Exception e) {
-                throw new TypeHandlerHookException("failed in onGetInputStream hook", e);
+                throw new TypeHandlerHookException("failed in onGetInputStream hook: " + e.getMessage(), e);
             }
         }
         
@@ -395,7 +395,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             try {
                 return hooks.onGetAlternativeContentStream(r, contentIdentifier);
             } catch (Exception e) {
-                throw new TypeHandlerHookException("failed in onGetInputStream hook", e);
+                throw new TypeHandlerHookException("failed in onGetAlternativeContentStream hook: " + e.getMessage(), e);
             }
         }
 
@@ -440,7 +440,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             try {
                 return hooks.onListChildren((ResourceImpl)collection.clone(), list);
             } catch (Exception e){
-                throw new TypeHandlerHookException("failed in onListChildren hook", e);
+                throw new TypeHandlerHookException("failed in onListChildren hook: " + e.getMessage(), e);
             }
         }
 
@@ -491,7 +491,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 try {
                     hooks.onCreateCollection(newResource);
                 } catch (Exception e) {
-                    throw new TypeHandlerHookException("failed in onCreateCollection hook", e);
+                    throw new TypeHandlerHookException("failed in onCreateCollection hook: " + e.getMessage(), e);
                 }
             }
             
@@ -561,7 +561,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 try {
                     hooks.onCopy(src, dest);
                 } catch (Exception e) {
-                    throw new TypeHandlerHookException("failed in onCopy hook", e);
+                    throw new TypeHandlerHookException("failed in onCopy hook: " + e.getMessage(), e);
                 }
             }
             
@@ -685,7 +685,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 try {
                     hooks.onMove(src, newResource);
                 } catch (Exception e) {
-                    throw new TypeHandlerHookException("failed in onMove hook", e);
+                    throw new TypeHandlerHookException("failed in onMove hook: " + e.getMessage(), e);
                 }
             }
             
@@ -746,7 +746,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             try {
                 hooks.onDelete(resourceToDelete, restorable);
             } catch (Exception e) {
-                throw new TypeHandlerHookException("failed in onDelete hook", e);
+                throw new TypeHandlerHookException("failed in onDelete hook: " + e.getMessage(), e);
             }
         }
         
@@ -994,7 +994,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 try {
                     suppliedResource = hooks.onStore(suppliedResource);
                 } catch (Exception e) {
-                    throw new TypeHandlerHookException("failed in onStore hook", e);
+                    throw new TypeHandlerHookException("failed in onStore hook: " + e.getMessage(), e);
                 }
             }
             
@@ -1035,7 +1035,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 try {
                     suppliedResource = hooks.onStoreSystemChange(suppliedResource, context);
                 } catch (Exception e) {
-                    throw new TypeHandlerHookException("failed in onStoreSystemChange hook", e);
+                    throw new TypeHandlerHookException("failed in onStoreSystemChange hook: " + e.getMessage(), e);
                 }
             }
             
@@ -1080,7 +1080,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 try {
                     suppliedResource = hooks.onStoreInheritableProps(suppliedResource, context);
                 } catch (Exception e) {
-                    throw new TypeHandlerHookException("failed in onStoreInheritableProps hook", e);
+                    throw new TypeHandlerHookException("failed in onStoreInheritableProps hook: " + e.getMessage(), e);
                 }
             }
             
@@ -1154,7 +1154,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                     newResource = this.resourceHelper.create(principal, newResource, false, getDefaultContent(newResource));
                     
                 } catch (Exception e) {
-                    throw new TypeHandlerHookException("failed in onCreateDocument hook", e);
+                    throw new TypeHandlerHookException("failed in onCreateDocument hook: " + e.getMessage(), e);
                 }
             } else {
                 this.contentStore.storeContent(uri, inStream);
@@ -1206,7 +1206,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 try {
                     r = hooks.storeContent(r, byteStream, MimeHelper.map(uri.getName()));
                 } catch (Exception e) {
-                    throw new TypeHandlerHookException("failed in onStoreContent hook", e);
+                    throw new TypeHandlerHookException("failed in onStoreContent hook: " + e.getMessage(), e);
                 }
             } else {
                 this.contentStore.storeContent(uri, byteStream);
@@ -2053,7 +2053,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             try {
                 return hooks.getContentForEvaluation(resource, getDefaultContent(resource));
             } catch (Exception e) {
-                throw new IOException("failed in getContentForEvaluation hook", e);
+                throw new IOException("failed in getContentForEvaluation hook: " + e.getMessage(), e);
             }
         }
 

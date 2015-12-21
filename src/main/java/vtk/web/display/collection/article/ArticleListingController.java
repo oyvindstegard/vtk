@@ -31,14 +31,17 @@
 package vtk.web.display.collection.article;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -140,6 +143,14 @@ public class ArticleListingController extends BaseCollectionListingController {
         model.put(MODEL_KEY_PAGE, userDisplayPage);
 
         model.put(MODEL_KEY_HIDE_NUMBER_OF_COMMENTS, getHideNumberOfComments(collection));
+        
+        Set<Path> featuredSet = new HashSet<>();
+        if (featuredArticles != null) {
+            featuredArticles.getEntries()
+                .stream().forEach(entry -> featuredSet.add(entry.getPropertySet().getURI()));
+        }
+        
+        model.put(MODEL_KEY_FEATURED_ARTICLES, featuredSet);
         model.put("listingView", getListingView(collection));
     }
     

@@ -9,7 +9,7 @@
     <property name="aspectsPropdef" ref="resourceAspectsPropDef" />
     <property name="fieldConfig" ref="visualProfileAspect.fieldConfig" />
     <property name="token" ref="trustedToken" />
-    <property name="functions" ref="decorating.tlFunctions" />
+    <property name="functionResolver" ref="decorating.tlFunctions" />
   </bean>
 
   <bean id="decorating.tlDirectives" class="org.springframework.beans.factory.config.ListFactoryBean">
@@ -79,7 +79,16 @@
   <bean id="decorating.captureDirective" class="vtk.text.tl.CaptureHandler" />
 
 
-  <bean id="decorating.tlFunctions"
+  <bean id="decorating.tlFunctions" class="vtk.text.tl.expr.Expression.FunctionResolver" />
+
+  <bean class="org.springframework.beans.factory.config.MethodInvokingBean">
+    <property name="targetObject" ref="decorating.tlFunctions" />
+    <property name="targetMethod" value="addAll" />
+    <property name="arguments" ref="decorating.tlFunctionSet" />
+  </bean>
+
+
+  <bean id="decorating.tlFunctionSet"
         class="org.springframework.beans.factory.config.SetFactoryBean">
     <property name="sourceSet">
       <set>

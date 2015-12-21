@@ -4,11 +4,6 @@
   
   <bean id="visualProfileAspect.editService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -29,6 +24,10 @@
       </list>
     </property>
     <property name="handler" ref="visualProfileAspect.editor" />
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="visualProfileAspect.editService" />
   </bean>
 
   <bean id="showVisualProfileForResourceAssertion" class="vtk.web.service.AndAssertion">

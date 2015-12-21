@@ -1,21 +1,21 @@
 /* Copyright (c) 2010, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -30,10 +30,16 @@
  */
 package vtk.web.display.collection.event;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
@@ -49,14 +55,14 @@ public class EventListingAtomFeedView extends ListingFeedView {
 
     private EventListingHelper helper;
     private PropertyTypeDefinition displayTypePropDef;
-    private String overridePublishDatePropDefPointer;
 
     @Override
-    protected String getFeedTitle(HttpServletRequest request, Resource feedScope) {
+    protected String getFeedTitle(HttpServletRequest request, Map<String, ?> model,
+            Resource feedScope) {
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         String feedTitle = service.getLocalizedName(feedScope, requestContext.getServletRequest());
-        feedTitle = feedTitle == null ? super.getFeedTitle(request, feedScope) : feedTitle;
+        feedTitle = feedTitle == null ? super.getFeedTitle(request, model, feedScope) : feedTitle;
 
         Property displayTypeProp = feedScope.getProperty(displayTypePropDef);
         if (displayTypeProp != null && "calendar".equals(displayTypeProp.getStringValue())) {
@@ -78,6 +84,43 @@ public class EventListingAtomFeedView extends ListingFeedView {
         return feedTitle;
     }
 
+
+    @Override
+    protected void addExtensions(HttpServletRequest request, Map<String, ?> model,
+            Feed feed, Entry entry, PropertySet resource) {
+        super.addExtensions(request, model, feed, entry, resource);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_INSTANT;
+        Property startDateProp = helper.getStartDateProperty(resource);
+        if (startDateProp != null) {
+            Date date = startDateProp.getDateValue();
+            ZonedDateTime zdt = ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+            entry.addSimpleExtension("vrtx", "event-start", "v", dateFormatter.format(zdt));
+        }
+        Property endDateProp = helper.getEndDateProperty(resource);
+        if (endDateProp != null) {
+            Date date = endDateProp.getDateValue();
+            ZonedDateTime zdt = ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+            entry.addSimpleExtension("vrtx", "event-end", "v", dateFormatter.format(zdt));
+        }
+
+        String location = null;
+        String mapURL = null;
+        for (Property property: resource) {
+            if ("location".equals(property.getDefinition().getName())) {
+                location = property.getStringValue();
+            }
+            else if ("mapurl".equals(property.getDefinition().getName())) {
+                mapURL = property.getStringValue();
+            }
+        }
+        if (location != null) {
+            entry.addSimpleExtension("vrtx", "event-location", "v", location);
+        }
+        if (mapURL != null) {
+            entry.addSimpleExtension("vrtx", "event-map-url", "v", mapURL);
+        }
+    }
+
     @Override
     protected boolean showFeedIntroduction(Resource feedScope) {
         Property displayTypeProp = feedScope.getProperty(displayTypePropDef);
@@ -85,26 +128,6 @@ public class EventListingAtomFeedView extends ListingFeedView {
             return false;
         }
         return true;
-    }
-
-    @Override
-    protected Property getPublishDate(PropertySet resource) {
-        Property sortProp = helper.getStartDateProperty(resource);
-        if (sortProp == null) {
-            sortProp = helper.getEndDateProperty(resource);
-        }
-        return sortProp != null ? sortProp : getDefaultPublishDate(resource);
-    }
-
-    @Override
-    protected Date getLastModified(PropertySet resource) {
-        PropertyTypeDefinition overridePublishDatePropDef = resourceTypeTree
-                .getPropertyDefinitionByPointer(overridePublishDatePropDefPointer);
-        Property overridePublishDateProp = resource.getProperty(overridePublishDatePropDef);
-        if (overridePublishDateProp != null) {
-            return overridePublishDateProp.getDateValue();
-        }
-        return resource.getProperty(lastModifiedPropDef).getDateValue();
     }
 
     @Required
@@ -116,10 +139,4 @@ public class EventListingAtomFeedView extends ListingFeedView {
     public void setDisplayTypePropDef(PropertyTypeDefinition displayTypePropDef) {
         this.displayTypePropDef = displayTypePropDef;
     }
-
-    @Required
-    public void setOverridePublishDatePropDefPointer(String overridePublishDatePropDefPointer) {
-        this.overridePublishDatePropDefPointer = overridePublishDatePropDefPointer;
-    }
-
 }

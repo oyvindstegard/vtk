@@ -299,8 +299,12 @@
   <bean id="hasIndexFileAssertion" class="vtk.web.service.IndexFileAssertion" />
 
 
-  <bean id="expiresCacheResponseFilter" class="vtk.web.filter.ExpiresCacheResponseFilter"
-        parent="defaultResponseFilterCategoryBean">
+  <bean parent="defaultResponseFilters.builder">
+    <property name="arguments" ref="expiresCacheResponseFilter" />
+  </bean>
+
+
+  <bean id="expiresCacheResponseFilter" class="vtk.web.filter.ExpiresCacheResponseFilter">
     <property name="expiresPropDef" ref="expiresSecPropDef" />
     <!--property name="rootService" ref="viewService" /-->
     <property name="globalMaxAge" value="${webCache.globalMaxAge}" />
