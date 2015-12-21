@@ -94,11 +94,6 @@ public class DecoratingServiceFilter implements ServiceFilter {
             }
 
             @Override
-            public Set<?> getCategories() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
             public int getOrder() {
                 throw new UnsupportedOperationException();
             }
