@@ -102,14 +102,6 @@
   </bean>
 
 
-  <bean id="personListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="personListing.feedView" value-ref="personListing.feedView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="personListing.feedView" parent="atomFeedView">
     <property name="feedMetadata">
       <map>
