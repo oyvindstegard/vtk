@@ -19,11 +19,9 @@
     <property name="handler" ref="deleteResourcesHandler" />
   </bean>
   
-  <!--
   <bean parent="collectionMenuBuilder">
     <property name="arguments" ref="deleteResourcesService" />
   </bean>
-  -->
 
   <bean id="deleteResourceService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />

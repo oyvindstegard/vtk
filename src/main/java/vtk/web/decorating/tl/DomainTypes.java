@@ -208,8 +208,8 @@ final class DomainTypes {
     }
 
     private static boolean isReadRestricted(Acl acl) {
-        return acl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL)
-                || acl.hasPrivilege(Privilege.READ_PROCESSED, PrincipalFactory.ALL);
+        return ! (acl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL)
+		  || acl.hasPrivilege(Privilege.READ_PROCESSED, PrincipalFactory.ALL));
     }
 
     private static Map<String, Object> aclToMap(Acl acl) {

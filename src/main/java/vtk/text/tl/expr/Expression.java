@@ -657,9 +657,9 @@ public class Expression {
             if (symbol == null) {
                 throw new IllegalArgumentException("Function's symbol is NULL");
             }
-            if (this.functions.containsKey(symbol)) {
-                throw new IllegalArgumentException("Cannot re-define " + symbol.getSymbol());
-            }
+            // if (this.functions.containsKey(symbol)) {
+            //     throw new IllegalArgumentException("Cannot re-define " + symbol.getSymbol());
+            // }
             this.functions.put(symbol, function);
         }
 

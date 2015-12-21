@@ -69,6 +69,14 @@
                  and r.prev_resource_id = vortex_resource.acl_inherited_from
   </update>
 
+  <sql id="insertCommentContent">
+    #{content}
+  </sql>
+
+  <sql id="updateCommentContent">
+    content = #{content}
+  </sql>
+
   <sql id="listCommentsLimitPrepend">
     <!-- By default, nothing is prepend to query for limiting. --> 
   </sql>
