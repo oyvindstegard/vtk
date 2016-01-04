@@ -32,6 +32,8 @@ package vtk.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,9 +78,13 @@ public class Main extends SpringBootServletInitializer {
     }
 
     @Bean
-    public EmbeddedServletContainerFactory containerFactory() {
+    public EmbeddedServletContainerFactory containerFactory() throws UnknownHostException {
 
         HostPort[] listenAddrs = listenAddrs();
+
+        if (listenAddrs.length == 0) {
+            throw new IllegalStateException("No listen address configured");
+        }
 
         final int maxThreads = 200;
         final int minThreads = 8;
@@ -86,6 +92,10 @@ public class Main extends SpringBootServletInitializer {
 
         JettyEmbeddedServletContainerFactory factory =
                 new JettyEmbeddedServletContainerFactory();
+
+
+        factory.setAddress(InetAddress.getByName(listenAddrs[0].addr));
+        factory.setPort(listenAddrs[0].port);
 
         factory.addServerCustomizers(new JettyServerCustomizer() {
             @Override
@@ -95,8 +105,8 @@ public class Main extends SpringBootServletInitializer {
                 threadPool.setMinThreads(minThreads);
                 threadPool.setIdleTimeout(idleTimeout);
 
-                for (HostPort hp: listenAddrs) {
-
+                for (int i = 1; i < listenAddrs.length; i++) {
+                    HostPort hp = listenAddrs[i];
                     NetworkTrafficServerConnector connector =
                             new NetworkTrafficServerConnector(server);
                     connector.setHost(hp.addr);
@@ -135,13 +145,18 @@ public class Main extends SpringBootServletInitializer {
             this.port = port;
         }
 
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(" + addr + ", " + port + ")";
+        }
+
         public static HostPort forString(String str) {
             try {
                 int idx = str.indexOf(':');
                 if (idx == -1)
                     throw new IllegalArgumentException("Expected ':' in input string");
                 String host = str.substring(0, idx);
-                int port = Integer.parseInt(str.substring(idx));
+                int port = Integer.parseInt(str.substring(idx + 1));
                 return new HostPort(host, port);
             }
             catch (Exception e) {
@@ -152,23 +167,12 @@ public class Main extends SpringBootServletInitializer {
 
     private HostPort[] listenAddrs() {
         String prop = System.getProperty("listen");
-        try {
-            List<HostPort> result = Arrays.stream(prop.split(","))
+        if (prop == null) return new HostPort[0];
+        List<HostPort> result = Arrays.stream(prop.split(","))
                 .map(str -> HostPort.forString(str))
                 .collect(Collectors.toList());
 
-            return result.toArray(new HostPort[result.size()]);
-        }
-        catch (Throwable t) {
-            try {
-                return new HostPort[] {
-                        new HostPort("localhost", 9321),
-                        new HostPort("localhost", 9322)
-                };
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
+        return result.toArray(new HostPort[result.size()]);
     }
 
 }
