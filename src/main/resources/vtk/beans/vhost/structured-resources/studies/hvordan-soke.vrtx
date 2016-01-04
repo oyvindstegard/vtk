@@ -7,7 +7,6 @@ resourcetype hvordan-soke {
     studiekode: string,
     studieplasser: string,
     pris: html noextract,
-    price-shared-text: string,
     opptakskrav-generelle-master: string,
     generelle-fri: html noextract,
     opptakskrav-politiattest: string,
@@ -41,10 +40,8 @@ resourcetype hvordan-soke {
     studiekode (after frist-frekvens-admin),
     studieplasser (class[vrtx-pseudo-grouped]),
     studieplasser (after studiekode),
-    group price-admin (price-shared-text, pris),
-    price-shared-text (class[vrtx-shared-text],
-                                attribute[vrtx-shared-text-path:/vrtx/fellestekst/hvordan-soke],
-                                attribute[vrtx-shared-text-file-name:pris]),
+    pris (class[vrtx-pseudo-grouped]),
+    pris (after studieplasser),
     group generelle-admin (opptakskrav-generelle-master, generelle-fri, opptakskrav-politiattest, politiattest-fri),
     opptakskrav-generelle-master (class[vrtx-shared-text],
                                 attribute[vrtx-shared-text-path:/vrtx/fellestekst/hvordan-soke],
@@ -116,12 +113,10 @@ resourcetype hvordan-soke {
     price {
       ##
       [def document structured-document()]
-      [def price-shared-text document.properties.price-shared-text]
       [def pris document.properties.pris]
 
-      [if (pris != null && pris != "") || (price-shared-text != null && price-shared-text != "")]
+      [if pris != null && pris != ""]
         <h3>[localized 'price-view']</h3>
-        [call "include:shared-text" {"propName":"price-shared-text"}]
         [if pris != null && pris != ""]
           <div class="pris">[val pris # unescaped]</div>
         [endif]
@@ -384,9 +379,7 @@ resourcetype hvordan-soke {
     studieplasser : (en : "Available places (All)", no : "Studieplasser (Alle)", nn : "Studieplassar (Alle)"),
     studieplasser-view : (en : "Available places", no : "Studieplasser", nn : "Studieplassar"),
 
-    price-admin : (en : "Price (English and Norwegian master)", no : "Pris (Engelsk og norsk master)", nn : "Pris (Engelsk og norsk master)"),
-    price-shared-text : (en : "Shared text", no : "Fellestekst", nn : "Fellestekst"),
-    pris : (en : "Optional text", no : "Valgfri tekst", nn : "Valfri tekst"),
+    pris : (en : "Price (English and Norwegian master)", no : "Pris (Engelsk og norsk master)", nn : "Pris (Engelsk og norsk master)"),
     price-view : (en : "Price", no : "Pris", nn : "Pris"),
 
     opptakskrav-view : (en : "Admission requirements", no : "Opptakskrav", nn : "Opptakskrav"),
