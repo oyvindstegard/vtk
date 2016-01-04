@@ -315,7 +315,7 @@ resourcetype hvordan-soke {
 
             [call "comp:frist-frekvens"]
 
-            [if selectedTypeToDisplay != "so"]
+            [if selectedTypeToDisplay != "nm" && selectedTypeToDisplay != "em"]
               [call "comp:studiekode"]
             [endif]
             [call "comp:studieplasser"]
