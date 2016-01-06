@@ -65,8 +65,20 @@
             typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback"/>
   </resultMap>
 
-
-
+  <!-- Used solely by SqlMapIndexDao -->
+  <resultMap id="UriAndPropertyWithBinaryValue" type="java.util.HashMap">
+    <result property="uri" column="uri" typeHandler="vtk.repository.store.db.ibatis.PathTypeHandlerCallback" />
+    <result property="id" column="extra_prop_entry_id" javaType="int" />
+    <result property="resourceId" column="resource_id" javaType="int" />
+    <result property="name" column="name" />
+    <result property="namespaceUri" column="name_space" />
+    <result property="value" column="value" />
+    <result property="binaryValue" column="binary_content" 
+            typeHandler="vtk.repository.store.db.ibatis.BlobTypeHandler" />
+    <result property="binaryMimetype" column="binary_mimetype" />
+    <result property="inheritable" column="is_inheritable"
+            typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback"/>
+  </resultMap>
 
   <resultMap id="AclEntry" type="java.util.HashMap">
     <result property="id" column="acl_entry_id" javaType="int" />
@@ -102,16 +114,15 @@
     <result property="timeout" column="timeout" javaType="date" />
   </resultMap>
 
-  <resultMap id="ResourceAndExtraProperties" type="java.util.HashMap"
-    extends="Resource">
-    
+  <!-- Used solely by SqlMapIndexDao -->
+  <resultMap id="ResourceAndExtraProperties" type="java.util.HashMap" extends="Resource">
     <!-- Some columns from 'extra_prop_entry' -->
     <result property="name" column="name" />
     <result property="namespace" column="name_space" />
     <result property="propId" column="extra_prop_entry_id" javaType="int" />
     <result property="value" column="value" />
-    <result property="binary" column="is_binary"
-            typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback"/>
+    <result property="binaryValue" column="binary_content" typeHandler="vtk.repository.store.db.ibatis.BlobTypeHandler" />
+    <result property="binaryMimetype" column="binary_mimetype" />
     <result property="inheritable" column="is_inheritable"
             typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback"/>
   </resultMap>
@@ -469,11 +480,29 @@
     order by p.resource_id, p.extra_prop_entry_id
   </select>
 
-  <!--
-  <resultMap id="ByteArray" type="java.util.HashMap">
-    <result property="byteArray" column="binary_content" javaType="byte[]" />
-  </resultMap>
-  -->
+  <!-- Used solely by SqlMapIndexDao -->
+  <!-- TODO Can we make this parameterizable so we don't have to duplicate? 
+       Result map varies as well ..-->
+  <select id="loadInheritablePropertiesWithBinaryValue" parameterType="java.util.Map"
+          resultMap="UriAndPropertyWithBinaryValue">
+    select
+      r.uri,
+      p.extra_prop_entry_id,
+      p.resource_id,
+      p.name,
+      p.name_space,
+      p.value,
+      p.is_inheritable,
+      p.binary_content,
+      p.binary_mimetype
+    from vortex_resource r inner join extra_prop_entry p on p.resource_id = r.resource_id
+    where p.is_inheritable = 'Y'
+          and r.uri in 
+          <foreach item="uri" collection="uris" open="(" close=")" separator=",">
+            #{uri, typeHandler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback}
+          </foreach>
+    order by p.resource_id, p.extra_prop_entry_id
+  </select>
 
   <resultMap id="binaryPropertyByteArray" type="java.util.HashMap">
     <result property="byteArray" column="binary_content"
@@ -805,8 +834,7 @@
     <result property="time" column="time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
     <result property="author" column="author" />
     <result property="title" column="title" />
-
-    <result property="content" column="content" jdbcType="CLOB" typeHandler="vtk.repository.store.db.ibatis.ClobTypeHandler" />
+    <result property="content" column="content" />
     <result property="approved" column="approved"
             typeHandler="vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback"/>
   </resultMap>
@@ -860,41 +888,22 @@
        (select resource_id from vortex_resource where uri = #{URI})
   </delete>
 
-  <!-- See: http://issues.apache.org/jira/browse/IBATIS-244 -->
-  <!--insert id="insertComment" parameterType="vtk.repository.Comment">
-    insert into vortex_comment 
-      (id, resource_id, author, time, title, content, approved)
-    select <include refid="nextVortexCommentId" />, r.resource_id, 
-           #{author}, #{time}, #{title},
-           #{content},
-           #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
-    from vortex_resource r where r.uri = #{URI, typeHandler=vtk.repository.store.db.ibatis.PathTypeHandlerCallback}
-  </insert-->
   <insert id="insertComment" parameterType="vtk.repository.Comment">
     insert into vortex_comment 
       (id, resource_id, author, time, title, content, approved)
     select <include refid="nextVortexCommentId" />, r.resource_id, 
            #{author}, #{time}, #{title},
-           #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler},
+           <include refid="insertCommentContent" />,
            #{approved,typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
     from vortex_resource r where r.uri = #{URI}
   </insert>
 
-  <!--update id="updateComment" parameterType="vtk.repository.Comment">
-    update vortex_comment
-      set author = #{author, jdbcType=VARCHAR},
-          time = #{time},
-          title = #{title},
-          content = #{content},
-          approved = #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
-      where id = #{ID}
-  </update-->
   <update id="updateComment" parameterType="vtk.repository.Comment">
     update vortex_comment
       set author = #{author, jdbcType=VARCHAR},
           time = #{time},
           title = #{title},
-          content = #{content, typeHandler=vtk.repository.store.db.ibatis.ClobTypeHandler},
+          <include refid="updateCommentContent" />,
           approved = #{approved, typeHandler=vtk.repository.store.db.ibatis.BooleanCharTypeHandlerCallback}
       where id = #{ID}
   </update>
@@ -996,20 +1005,23 @@
     delete from vortex_tmp where session_id = #{value}
   </delete>
   
+  <!-- No binary value lazy load, used solely by SqlMapIndexDao -->
   <select id="orderedPropertySetIteration" resultMap="ResourceAndExtraProperties">
-    select r.*, 
+    select r.*,
     p.name_space,
     p.name,
     p.extra_prop_entry_id,
     p.value,
     p.is_inheritable,
-    case when p.binary_content is null then 'N' else 'Y' end as is_binary
+    p.binary_content,
+    p.binary_mimetype
     from vortex_resource r
     left outer join extra_prop_entry p on r.resource_id = p.resource_id
     where r.uri like '/%'
     order by r.uri, p.extra_prop_entry_id
   </select>
   
+  <!-- No binary value lazy load, used solely by SqlMapIndexDao -->
   <select id="orderedPropertySetIterationWithStartUri" parameterType="java.util.Map"
                                                        resultMap="ResourceAndExtraProperties">
     select r.*,
@@ -1018,16 +1030,18 @@
            p.value,
            p.extra_prop_entry_id,
            p.is_inheritable,
-           case when p.binary_content is null then 'N' else 'Y' end as is_binary
+           p.binary_content,
+           p.binary_mimetype
            from vortex_resource r
     left outer join extra_prop_entry p  on r.resource_id = p.resource_id
-    where r.uri = #{uri} or r.uri like #{uriWildcard}
-    escape '@' order by r.uri, p.extra_prop_entry_id
+    where r.uri = #{uri} or r.uri like #{uriWildcard} escape '@'
+    order by r.uri, p.extra_prop_entry_id
   </select>
 
   <!-- FIXME This will fail when a resource has *NO* rows in extra_prop_entry, due to
-       mapping of 'inheritable' field (right side of join gets all null values, while not null expected for certain columns.
-       Same thing for other statements in this file.  -->
+  mapping of 'inheritable' field (right side of join gets all null values, while not null expected for certain columns.
+  Same thing for other statements in this file.  -->
+  <!-- No binary value lazy load, used solely by SqlMapIndexDao -->
   <select id="orderedPropertySetIterationForUris" parameterType="java.lang.Integer"
                                                   resultMap="ResourceAndExtraProperties">
     select r.*,
@@ -1036,7 +1050,8 @@
            p.value,
            p.extra_prop_entry_id,
            p.is_inheritable,
-           case when p.binary_content is null then 'N' else 'Y' end as is_binary
+           p.binary_content,
+           p.binary_mimetype
        from vortex_tmp t, vortex_resource r
        left outer join extra_prop_entry p on r.resource_id = p.resource_id
        where r.uri = t.uri AND t.session_id=#{value}

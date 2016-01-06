@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.HandlerInterceptor;
-import vtk.context.Categorizable;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -63,7 +63,7 @@ import vtk.web.filter.HandlerFilter;
  * @see vtk.web.service.ServiceHandlerMapping
  *  
  */
-public interface Service extends Ordered, Categorizable {
+public interface Service extends Ordered {
 
     /**
      * Gets this service's list of assertions.

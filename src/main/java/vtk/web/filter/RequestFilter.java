@@ -34,14 +34,13 @@ package vtk.web.filter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.Ordered;
-import vtk.context.Categorizable;
 
 
 /**
  * Interface for filtering the request at request context
  * initialization time. Utilized by the {@link vtk.web.servlet.VTKServlet}.
  */
-public interface RequestFilter extends Categorizable, Ordered {
+public interface RequestFilter extends Ordered {
 
     /**
      * Perform filtering on the request.

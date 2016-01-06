@@ -41,6 +41,7 @@ import vtk.security.Principal;
 import vtk.util.repository.LocaleHelper;
 
 import java.util.*;
+import vtk.web.RequestContext;
 
 /**
  *  Tries to locate a VTK Service with the given name and use that to construct
@@ -69,6 +70,26 @@ public class ServiceUrlProvider implements ApplicationContextAware {
      * @return the ServiceUrlBuilder
      */
     public ServiceUrlBuilder builder(String serviceName) {
+        /* XXX service URL construction requires a valid RequestContext on the current
+           thread, but this is not always the case (misc background threads not originating
+           from request layer, etc.)
+           And since this code can be inovked at a low level, due to being integrated
+           into principal metadata, we must take this into account. Otherwise, only
+           request threads will be able to load from repo without ugly errors (IllegalStateException)
+           occuring in PrincipalFactory.
+           This problem will likely go away to a great degree when Principal refactoring
+           removes metadata concept from repository/DAO level.
+         */
+        if (! RequestContext.exists()) {
+            // Cannot use Service URL construction facility, do best effort ..
+            String serviceUrl = defaultUrlMap.get(serviceName);
+            if (serviceUrl == null)
+                throw new RuntimeException("Service URL cannot be constructed without request context, and no default URL found: "  
+                        + serviceName);
+            
+            return new ServiceUrlBuilder(serviceUrl);
+        }
+
         try {
             return builder(context.getBean(serviceName, Service.class));
         } catch (NoSuchBeanDefinitionException e) {
@@ -80,7 +101,7 @@ public class ServiceUrlProvider implements ApplicationContextAware {
             throw new NoSuchServiceException(String.format(NO_SUCH_SERVICE_EXCEPTION_TEMPLATE, serviceName));
         }
     }
-
+    
     public ServiceUrlBuilder builder(Service service) {
         return new ServiceUrlBuilder(service);
     }

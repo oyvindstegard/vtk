@@ -50,6 +50,7 @@ import vtk.repository.Repository;
 import vtk.repository.RepositoryAction;
 import vtk.repository.Resource;
 import vtk.security.Principal;
+import vtk.security.PrincipalFactory;
 import vtk.security.PrincipalImpl;
 import vtk.util.repository.DocumentPrincipalMetadataRetriever;
 import vtk.web.RequestContext;
@@ -99,6 +100,7 @@ public class ACLProvider implements ReferenceDataProvider {
     private Map<String, List<String>> permissionShortcutsConfig;
     private LocaleResolver localeResolver;
     private DocumentPrincipalMetadataRetriever documentPrincipalMetadataRetriever;
+    private PrincipalFactory principalFactory;
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
@@ -114,6 +116,8 @@ public class ACLProvider implements ReferenceDataProvider {
         Acl acl = resource.getAcl();
         Map<String, String> editURLs = new HashMap<String, String>();
 
+        final Locale preferredLocale = this.localeResolver.resolveLocale(request);
+        
         if (!resource.isInheritedAcl()) {
             for (Privilege action : this.aclEditServices.keySet()) {
                 String privilegeName = action.getName();
@@ -146,7 +150,10 @@ public class ACLProvider implements ReferenceDataProvider {
         for (Privilege action : Privilege.values()) {
             String actionName = action.getName();
 
-            Principal[] groupPrincipals = acl.listPrivilegedGroups(action);
+            // Load group principals with metadata
+            Principal[] groupPrincipals = Arrays.stream(acl.listPrivilegedGroups(action))
+                    .map(p -> principalFactory.getPrincipal(p.getQualifiedName(), Principal.Type.GROUP, true, preferredLocale))
+                    .toArray(Principal[]::new);
             Principal[] userPrincipals = acl.listPrivilegedUsers(action);
             Principal[] pseudoUserPrincipals = acl.listPrivilegedPseudoPrincipals(action);
 
@@ -196,7 +203,6 @@ public class ACLProvider implements ReferenceDataProvider {
 
             // Add document urls to principals where available
             if (this.documentPrincipalMetadataRetriever.isDocumentSearchConfigured()) {
-                Locale preferredLocale = this.localeResolver.resolveLocale(request);
                 Set<Principal> principalDocuments = this.documentPrincipalMetadataRetriever.getPrincipalDocuments(
                         Arrays.asList(userPrincipals), preferredLocale);
                 if (principalDocuments != null) {
@@ -264,4 +270,9 @@ public class ACLProvider implements ReferenceDataProvider {
         this.documentPrincipalMetadataRetriever = documentPrincipalMetadataRetriever;
     }
 
+    @Required
+    public void setPrincipalFactory(PrincipalFactory principalFactory) {
+        this.principalFactory = principalFactory;
+    }
+    
 }

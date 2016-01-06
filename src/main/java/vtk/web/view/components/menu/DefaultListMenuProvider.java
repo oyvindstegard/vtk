@@ -1,21 +1,21 @@
 /* Copyright (c) 2005, 2007, 2008, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -30,6 +30,7 @@
  */
 package vtk.web.view.components.menu;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +46,7 @@ import vtk.web.service.URL;
 
 /**
  * A reference data provider that supplies a populated {@link ListMenu}.
- * 
+ *
  * <p>
  * Constructor arguments:
  * <ul>
@@ -61,7 +62,7 @@ import vtk.web.service.URL;
  * {@link Repository#retrieve retrieving} the resource from the repository
  * (default <code>false</code>).
  * </ul>
- * 
+ *
  * <p>
  * Configurable JavaBean properties:
  * <ul>
@@ -70,7 +71,7 @@ import vtk.web.service.URL;
  * selected (or "active"). The default is <code>false</code> (i.e. an exact
  * service match is required).
  * </ul>
- * 
+ *
  * Model data provided:
  * <ul>
  * <li><code>'modelName'</code> - a {@link ListMenu} object. A note about the <code>title</code>
@@ -90,33 +91,33 @@ import vtk.web.service.URL;
  * name as the default value.</li>
  * </ol>
  * </ul>
- * 
+ *
  */
 public class DefaultListMenuProvider implements ReferenceDataProvider {
 
     private String modelName;
     private String label;
-    private Service[] services;
-    private ReferenceDataProvider[] referenceDataProviders;
+    private Iterable<Service> services;
+    private Iterable<ReferenceDataProvider> referenceDataProviders;
     private ReferenceDataProvider referenceDataProvider;
     private boolean matchAncestorServices = false;
     private boolean matchAssertions;
     private boolean retrieveForProcessing = false;
 
-    public DefaultListMenuProvider(String label, Service[] services) {
+    public DefaultListMenuProvider(String label, Iterable<Service> services) {
         this(label, label, true, services);
     }
 
-    public DefaultListMenuProvider(String label, String modelName, Service[] services) {
+    public DefaultListMenuProvider(String label, String modelName, Iterable<Service> services) {
         this(label, modelName, true, services);
     }
 
-    public DefaultListMenuProvider(String label, String modelName, boolean matchAssertions, Service[] services) {
+    public DefaultListMenuProvider(String label, String modelName, boolean matchAssertions, Iterable<Service> services) {
         this(label, modelName, matchAssertions, services, null);
     }
 
-    public DefaultListMenuProvider(String label, String modelName, boolean matchAssertions, Service[] services,
-            ReferenceDataProvider[] referenceDataProviders) {
+    public DefaultListMenuProvider(String label, String modelName, boolean matchAssertions, Iterable<Service> services,
+            Iterable<ReferenceDataProvider> referenceDataProviders) {
         if (label == null)
             throw new IllegalArgumentException("Argument 'label' cannot be null");
         if (modelName == null)
@@ -131,8 +132,9 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
         this.referenceDataProviders = referenceDataProviders;
     }
 
-    public DefaultListMenuProvider(String label, String modelName, boolean matchAssertions, Service[] services,
-            ReferenceDataProvider[] referenceDataProviders, ReferenceDataProvider referenceDataProvider) {
+    public DefaultListMenuProvider(String label, String modelName, boolean matchAssertions,
+            Iterable<Service> services, Iterable<ReferenceDataProvider> referenceDataProviders,
+            ReferenceDataProvider referenceDataProvider) {
         if (label == null)
             throw new IllegalArgumentException("Argument 'label' cannot be null");
         if (modelName == null)
@@ -158,32 +160,32 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
 
     public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
 
-        ListMenu<String> menu = new ListMenu<String>();
-        menu.setLabel(this.label);
+        ListMenu<String> menu = new ListMenu<>();
+        menu.setLabel(label);
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
-        Resource resource = repository.retrieve(requestContext.getSecurityToken(), requestContext.getResourceURI(),
-                this.retrieveForProcessing);
+        Resource resource = repository.retrieve(requestContext.getSecurityToken(),
+                requestContext.getResourceURI(), retrieveForProcessing);
         Service currentService = requestContext.getService();
 
         MenuItem<String> activeItem = null;
-        
+
         int servicesLinkableCounts = 0;
 
-        for (Service service : this.services) {
+        for (Service service : services) {
             String label = service.getName();
             String title = getTitle(resource, service, request);
             URL url = null;
             try {
-                url = service.constructURL(resource, principal, this.matchAssertions);
+                url = service.constructURL(resource, principal, matchAssertions);
                 servicesLinkableCounts++;
             } catch (ServiceUnlinkableException ex) {
                 // ok
             }
 
-            MenuItem<String> item = new MenuItem<String>(title);
+            MenuItem<String> item = new MenuItem<>(title);
             item.setLabel(label);
             item.setTitle(title);
             item.setUrl(url);
@@ -195,26 +197,26 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
 
             menu.addItem(item);
         }
-        
-        menu.setActiveItem(activeItem);
-        model.put(this.modelName, menu);
-        model.put(this.modelName + "ServicesLinkable", servicesLinkableCounts);
 
-        if (this.referenceDataProviders != null) {
-            for (ReferenceDataProvider provider : this.referenceDataProviders) {
+        menu.setActiveItem(activeItem);
+        model.put(modelName, menu);
+        model.put(modelName + "ServicesLinkable", servicesLinkableCounts);
+
+        if (referenceDataProviders != null) {
+            for (ReferenceDataProvider provider : referenceDataProviders) {
                 provider.referenceData(model, request);
             }
         }
 
-        if (this.referenceDataProvider != null) {
-            this.referenceDataProvider.referenceData(model, request);
+        if (referenceDataProvider != null) {
+            referenceDataProvider.referenceData(model, request);
         }
     }
-    
-    
+
+
     private String getTitle(Resource resource, Service service, HttpServletRequest request) {
         String title;
-        
+
         Object attr = service.getAttribute("ListMenu.titleResolver");
         if (attr != null && (attr instanceof ListMenuTitleResolver)) {
             ListMenuTitleResolver resolver = (ListMenuTitleResolver) attr;
@@ -223,12 +225,12 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
                 return title;
             }
         }
-        
-        org.springframework.web.servlet.support.RequestContext springContext 
-            = new org.springframework.web.servlet.support.RequestContext(request);
+
+        org.springframework.web.servlet.support.RequestContext springContext =
+                new org.springframework.web.servlet.support.RequestContext(request);
         String name = service.getName();
 
-        String messageCode = this.label + "." + name;
+        String messageCode = label + "." + name;
         title = springContext.getMessage(messageCode, name);
 
         messageCode += "." + resource.getResourceType();
@@ -246,7 +248,7 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
      * Checks whether a service is "active" (that is, the current service of the
      * request is either the same as, or a descendant of this service),
      * depending on the value of <code>matchAncestorServices</code>.
-     * 
+     *
      * @param currentService
      *            the current service of the request
      * @param service
@@ -255,7 +257,7 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
      */
     private boolean isActiveService(Service currentService, Service service) {
 
-        if (this.matchAncestorServices) {
+        if (matchAncestorServices) {
             Service s = currentService;
             while (s != null) {
                 if (service == s) {
@@ -265,17 +267,13 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
             }
             return false;
         }
-
         return (service == currentService);
     }
 
+    @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
-        sb.append(" [ ");
-        sb.append("modelName = ").append(this.modelName);
-        sb.append(",services = ").append(java.util.Arrays.asList(this.services));
-        sb.append(" ]");
-        return sb.toString();
+        return getClass().getSimpleName()
+                + "(" + modelName + "," + Arrays.asList(services) + ")";
     }
 
 }

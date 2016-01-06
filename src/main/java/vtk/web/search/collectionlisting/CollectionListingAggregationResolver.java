@@ -56,6 +56,7 @@ import vtk.repository.search.query.UriSetQuery;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
+import vtk.web.search.MultiHostUtil;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -306,6 +307,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
 
             if (multiHostSearcher.isMultiHostSearchEnabled() && includesOtherHostRef(getLocalHostUrl(), urls)) {
                 Set<PropertySet> tmp = multiHostSearcher.retrieve(token, urls);
+                tmp = MultiHostUtil.resolveSetImageRefProperties(tmp);
                 if (tmp != null) {
                     result.addAll(tmp);
                 }

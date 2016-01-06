@@ -110,6 +110,13 @@ public class BaseCollectionListingController implements ListingController {
         model.put("collection", resourceManager.createResourceWrapper(collection));
 
         int pageLimit = getPageLimit(collection);
+        if (request.getParameter("page-size") != null) {
+            try {
+                int size = Integer.parseInt(request.getParameter("page-size").toString());
+                if (size > 0 && size <= 500) pageLimit = size;
+            }
+            catch (Throwable t) { }
+        }
         /* Run the actual search (done in subclasses) */
         runSearch(request, collection, model, pageLimit);
  
@@ -136,12 +143,11 @@ public class BaseCollectionListingController implements ListingController {
                         }
                     }
 
-                    String title = service.getName();
-
-                    org.springframework.web.servlet.support.RequestContext rc = 
+                    org.springframework.web.servlet.support.RequestContext rc =
                         new org.springframework.web.servlet.support.RequestContext(
                             request);
-                    title = rc.getMessage(service.getName(),
+
+                    String title = rc.getMessage(service.getName(),
                         new Object[] { collection.getTitle() }, service.getName());
 
                     m.put("title", title);

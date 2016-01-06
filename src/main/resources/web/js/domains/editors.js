@@ -23,7 +23,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         }
 
         // Save shortcut and AJAX
-        vrtxAdm.cachedDoc.bind('keydown', 'ctrl+s', $.debounce(150, true, function (e) {
+        vrtxAdm.cachedDoc.bind('keydown', 'ctrl+s meta+s', $.debounce(150, true, function (e) {
           ctrlSEventHandler(_$, e);
         }));
     

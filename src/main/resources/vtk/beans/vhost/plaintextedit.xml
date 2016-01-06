@@ -5,11 +5,6 @@
   
   <bean id="plaintextEditService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder"><value type="java.lang.Integer">160</value></entry>
@@ -29,6 +24,10 @@
     <property name="handler">
       <ref bean="plaintextEditHandler" />
     </property>
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="plaintextEditService" />
   </bean>
 
   <bean id="plaintextEdit.documentTooLargeService" class="vtk.web.service.ServiceImpl">
@@ -132,19 +131,24 @@
     <property name="formView" value="plaintextEdit" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="plaintextEditForm" />
-    <property name="tooltipServices" ref="plaintextEditTooltipURLServicesFactory" />
+    <property name="tooltipServices" ref="plaintextEdit.tooltipURLServicesFactory" />
     <property name="textResourceContentHelper" ref="textResourceContentHelper" />
   </bean>
 
+  <bean id="plaintextEdit.tooltipURLServicesFactory" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+  </bean>
 
-  <bean id="plaintextEditTooltipURLServicesFactory"
-    class="vtk.context.CategoryResolvingFactoryBean" parent="ordered">
-    <property name="category" value="plaintextEditTooltipService" />
+  <bean id="plaintextEdit.tooltipsBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="plaintextEdit.tooltipURLServicesFactory" />
+    <property name="targetMethod" value="add" />
   </bean>
 
   <bean id="textResourceContentHelper" class="vtk.util.repository.TextResourceContentHelper">
     <constructor-arg ref="repository" />
   </bean>
-
 
 </beans>

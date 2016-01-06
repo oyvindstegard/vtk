@@ -5,5 +5,5 @@
   <import resource="classpath:/vtk/beans/vhost/main.xml" />
 
   <import resource="request-filter.xml" />
-  
+
 </beans>

@@ -1,21 +1,21 @@
 /* Copyright (c) 2004, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -32,11 +32,9 @@ package vtk.security.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
@@ -69,7 +67,7 @@ import vtk.web.service.Service;
  * Initializer for the {@link SecurityContext security context}. A security context is created for every request. Also
  * detects authentication information in requests (using {@link AuthenticationHandler authentication handlers}) and
  * tries to process them.
- * 
+ *
  * <p>
  * Configurable JavaBean properties:
  * <ul>
@@ -89,7 +87,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
 
     private String uioAuthIDP;
 
-    private static final String AUTH_HANDLER_SP_COOKIE_CATEGORY = "spCookie";
+    //private static final String AUTH_HANDLER_SP_COOKIE_CATEGORY = "spCookie";
 
     private static Log logger = LogFactory.getLog(SecurityInitializer.class);
 
@@ -101,6 +99,8 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
     private PrincipalFactory principalFactory;
 
     private List<AuthenticationHandler> authenticationHandlers;
+
+    private List<AuthenticationHandler> spCookieHandlers;
 
     private Map<String, AuthenticationHandler> authHandlerMap;
 
@@ -129,7 +129,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
         for (AuthenticationHandler handler : this.authenticationHandlers) {
             if (authHandlerMap.containsKey(handler.getIdentifier()))
                 throw new IllegalStateException(
-                        "Multiple authentication handlers with identifier '" 
+                        "Multiple authentication handlers with identifier '"
                                 + handler.getIdentifier() + "'");
             authHandlerMap.put(handler.getIdentifier(), handler);
         }
@@ -137,13 +137,13 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
     }
 
     /**
-     * 
+     *
      * @param req
      * @param resp
      * @return <code>true</code> if request processing should continue after context has been created,
      *         <code>false</code> otherwise (which means that security context initialization handles a challenge or any
      *         authentication post-processing requests by itself).
-     * 
+     *
      * @throws AuthenticationProcessingException
      * @throws ServletException
      * @throws IOException
@@ -153,7 +153,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
 
         /**
          * HttpSession session = getSession(req); String token = null;
-         * 
+         *
          * if (session != null) { token = (String) session.getAttribute(SECURITY_TOKEN_SESSION_ATTR); }
          */
 
@@ -292,7 +292,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
      * Removes authentication state from the authentication system. The {@link SecurityContext} is cleared, the current
      * principal is removed from the {@link TokenManager}, but the {@link AuthenticationHandler#logout logout} process
      * is not initiated.
-     * 
+     *
      * @return <code>true</code> if any state was removed, <code>false</code> otherwise
      */
     public boolean removeAuthState(HttpServletRequest request, HttpServletResponse response) {
@@ -353,7 +353,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
      * Logs out the client from the authentication system. Clears the {@link SecurityContext} and removes the principal
      * from the {@link TokenManager}. Finally, calls the authentication handler's {@link AuthenticationHandler#logout
      * logout} method.
-     * 
+     *
      * @param request
      *            the request
      * @param response
@@ -548,10 +548,8 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
         if (!req.isSecure()) {
             return;
         }
-        Set<?> categories = handler.getCategories();
-        if (categories == null)
-            categories = Collections.EMPTY_SET;
-        if (this.rememberAuthMethod && categories.contains(AUTH_HANDLER_SP_COOKIE_CATEGORY)) {
+
+        if (this.rememberAuthMethod && this.spCookieHandlers.contains(handler)) {
             List<String> spCookies = new ArrayList<>();
             spCookies.add(vrtxAuthSP);
             spCookies.add(uioAuthIDP);
@@ -612,14 +610,9 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
             if (c != null) {
                 String id = c.getValue();
                 AuthenticationHandler handler = this.authHandlerMap.get(id);
-                if (handler != null) {
-                    Set<?> categories = handler.getCategories();
-                    if (categories == null) {
-                        categories = Collections.EMPTY_SET;
-                    }
-                    if (handler != null && categories.contains(AUTH_HANDLER_SP_COOKIE_CATEGORY)) {
-                        challenge = handler.getAuthenticationChallenge();
-                    }
+
+                if (handler != null && this.spCookieHandlers.contains(handler)) {
+                    challenge = handler.getAuthenticationChallenge();
                 }
             }
         }
@@ -666,6 +659,10 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
 
     public void setUioAuthIDP(String uioAuthIDP) {
         this.uioAuthIDP = uioAuthIDP;
+    }
+
+    public void setSpCookieHandlers(List<AuthenticationHandler> spCookieHandlers) {
+        this.spCookieHandlers = spCookieHandlers;
     }
 
 }

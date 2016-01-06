@@ -31,27 +31,24 @@
 package vtk.text.tl;
 
 import java.io.Writer;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import vtk.text.tl.Parser.Directive;
 import vtk.text.tl.expr.Expression;
-import vtk.text.tl.expr.Function;
+import vtk.text.tl.expr.Expression.FunctionResolver;
 
 public class DefineHandler implements DirectiveHandler {
 
-    private Set<Function> functions = new HashSet<Function>();
+    private FunctionResolver functionResolver;
 
-    public DefineHandler(Set<Function> functions) {
-        this.functions = Collections.unmodifiableSet(functions);
+    public DefineHandler(FunctionResolver functionResolver) {
+        this.functionResolver = functionResolver;
     }
 
     public String[] tokens() {
         return new String[] { "def" };
     }
-    
+
     @Override
     public void directive(Directive directive, TemplateContext context) {
         List<Token> args = directive.args();
@@ -64,7 +61,8 @@ public class DefineHandler implements DirectiveHandler {
         }
         final String variable = ((Symbol) arg1).getSymbol();
 
-        final Expression expression = new Expression(this.functions, args.subList(1, args.size()));
+        final Expression expression =
+                new Expression(this.functionResolver, args.subList(1, args.size()));
         context.add(new Node() {
             @Override
             public boolean render(Context ctx, Writer out) throws Exception {

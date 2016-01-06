@@ -42,20 +42,23 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import vtk.repository.Acl;
 import vtk.repository.Path;
+import vtk.repository.Privilege;
 import vtk.repository.store.PrincipalMetadata;
 import vtk.security.Principal;
+import vtk.security.PrincipalFactory;
 import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
 final class DomainTypes {
-    
+
     static abstract class Result<T> extends DomainMap {
         public Result(Object... mappings) {
             super(mappings);
         }
         public abstract boolean isSuccess();
-        public Success<T> asSuccess() { 
+        public Success<T> asSuccess() {
             if (isSuccess()) return (Success<T>) this;
             throw new IllegalStateException("Failure");
         }
@@ -108,6 +111,8 @@ final class DomainTypes {
                "current-collection",   requestContext.getCurrentCollection(),
                "index-file",           requestContext.isIndexFile(),
                "resource-uri",         requestContext.getResourceURI(),
+               "resource-acl",         aclToMap(requestContext.getResourceAcl()),
+               "read-restricted",      isReadRestricted(requestContext.getResourceAcl()),
                "collection",           requestContext.getCurrentCollection().equals(
                                            requestContext.getResourceURI()),
                "request-url",          new URLType(URL.create(requestContext.getServletRequest())),
@@ -120,15 +125,18 @@ final class DomainTypes {
         public Path currentCollection() { return (Path) get("current-collection"); }
         public Boolean indexFile()      { return (Boolean) get("index-file"); }
         public Path resourceURI()       { return (Path) get("resource-uri"); }
+        public Map<String,Object> resourceAcl()
+            { return (Map<String, Object>) get("resource-acl"); }
+        public Boolean readRestricted() { return (Boolean) get("read-restricted"); }
         public URLType requestURL()     { return (URLType) get("request-url"); }
         public Principal principal()    { return (Principal) get("principal"); }
-        public Boolean viewUnathenticated() 
+        public Boolean viewUnathenticated()
             { return (Boolean) get("view-unauthenticated"); }
-        public Map<String, Object> headers() 
+        public Map<String, Object> headers()
             { return (Map<String, Object>) get("headers"); }
     }
-    
-    
+
+
     public static final class URLType extends DomainMap {
         public URLType(URL url) {
             super(
@@ -198,5 +206,22 @@ final class DomainTypes {
         }
         return Collections.unmodifiableMap(result);
     }
-    
+
+    private static boolean isReadRestricted(Acl acl) {
+        return ! (acl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL)
+		  || acl.hasPrivilege(Privilege.READ_PROCESSED, PrincipalFactory.ALL));
+    }
+
+    private static Map<String, Object> aclToMap(Acl acl) {
+        Map<String, Object> result = new HashMap<>();
+        for (Privilege privilege: acl.getActions()) {
+            List<String> principals = new ArrayList<>();
+            for (Principal principal: acl.getPrincipalSet(privilege)) {
+                principals.add(principal.toString());
+            }
+            result.put(privilege.toString(), principals);
+        }
+        return result;
+    }
+
 }
