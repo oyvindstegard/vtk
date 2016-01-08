@@ -36,6 +36,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,7 +56,6 @@ import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import vtk.web.servlet.VTKServlet;
 
@@ -69,8 +69,6 @@ import vtk.web.servlet.VTKServlet;
 
 public class Main extends SpringBootServletInitializer {
 
-    public static class VTKConfiguration extends WebMvcConfigurationSupport { }
-
     @Bean
     public Servlet dispatcherServlet() {
         VTKServlet servlet = new VTKServlet();
@@ -83,7 +81,9 @@ public class Main extends SpringBootServletInitializer {
         HostPort[] listenAddrs = listenAddrs();
 
         if (listenAddrs.length == 0) {
-            throw new IllegalStateException("No listen address configured");
+            throw new IllegalStateException(
+                    "No listen address configured. "
+                    + " Please specify -Dvtk.listen=host1:port1,host2:port2:...");
         }
 
         final int maxThreads = 200;
@@ -123,6 +123,9 @@ public class Main extends SpringBootServletInitializer {
     public static void main(String[] args) throws IOException {
         List<Object> params = new ArrayList<>();
         params.add("classpath:/vtk/beans/vhost/main.xml");
+
+        System.out.println("__exts: " + extensions());
+        params.addAll(extensions());
 
         File home = new File(System.getProperty("user.home"));
 
@@ -166,13 +169,22 @@ public class Main extends SpringBootServletInitializer {
     }
 
     private HostPort[] listenAddrs() {
-        String prop = System.getProperty("listen");
+        String prop = System.getProperty("vtk.listen");
         if (prop == null) return new HostPort[0];
         List<HostPort> result = Arrays.stream(prop.split(","))
                 .map(str -> HostPort.forString(str))
                 .collect(Collectors.toList());
 
         return result.toArray(new HostPort[result.size()]);
+    }
+
+    private static List<String> extensions() {
+        String prop = System.getProperty("vtk.extensions");
+        if (prop == null) return Collections.emptyList();
+        List<String> result = Arrays.stream(prop.split(","))
+                .map(ext -> "classpath:/vtk/beans/standard-extensions/" + ext + "/" + ext + ".xml")
+                .collect(Collectors.toList());
+        return result;
     }
 
 }
