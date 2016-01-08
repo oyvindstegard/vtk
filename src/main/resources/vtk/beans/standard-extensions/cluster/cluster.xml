@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="cluster.components" class="java.util.ArrayList" />
+
+  <bean id="cluster.component" class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="cluster.components" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+  <bean parent="cluster.component">
+    <property name="arguments" ref="repository.index.incrementalUpdater" />
+  </bean>
+
+  <bean parent="cluster.component">
+    <property name="arguments" ref="systemIndex" />
+  </bean>
+
+  <!-- Makes the system index NOT initialize in master mode -->
+  <bean id="systemIndex.initialClusterState" class="org.springframework.beans.factory.config.MethodInvokingBean">
+    <property name="targetObject" ref="systemIndex" />
+    <property name="targetMethod" value="stateChange" />
+    <property name="arguments">
+      <bean class="vtk.cluster.ClusterState">
+        <constructor-arg name="role" value="SLAVE" />
+      </bean>
+    </property>
+  </bean>
+
+  <bean parent="cluster.component">
+    <property name="arguments" ref="secondarySystemIndex" />
+  </bean>
+
+  <bean parent="cluster.component">
+    <property name="arguments" ref="authorizationManager" />
+  </bean>
+
+  <bean parent="cluster.component">
+    <property name="arguments" ref="repository.lockingCacheControlWrapper" />
+  </bean>
+
+  <bean id="akka.clusterManager" class="vtk.cluster.AkkaClusterManager" destroy-method="destroy">
+    <constructor-arg name="port" value="${cluster.port}" />
+    <constructor-arg name="clusterComponents" ref="cluster.components" />
+  </bean>
+
+</beans>
+

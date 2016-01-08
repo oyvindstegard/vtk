@@ -35,12 +35,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+
+import vtk.cluster.ClusterAware;
+import vtk.cluster.ClusterContext;
+import vtk.cluster.ClusterState;
 import vtk.repository.search.QueryException;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
@@ -52,17 +58,20 @@ import vtk.util.io.StreamUtil;
 /**
  * Handles synchronization in URI namespace of repository read/write operations
  * and does some extra cache flushing after transactions have completed.
- * 
+ *
  * Repository service calls which entail writing use exclusive locks on the involved
  * <code>Path</code>s, while reading calls use shared locks.
  */
-public class LockingCacheControlRepositoryWrapper implements Repository {
+public class LockingCacheControlRepositoryWrapper implements Repository, ClusterAware {
 
     private Cache cache;
     private Repository wrappedRepository;
     private final Log logger = LogFactory.getLog(LockingCacheControlRepositoryWrapper.class);
     private final PathLockManager lockManager = new PathLockManager();
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));
+
+    private Optional<ClusterContext> clusterContext = Optional.empty();
+    private Optional<ClusterState> clusterState = Optional.empty();
 
     @Override
     public Comment addComment(String token, Resource resource, String title, String text) throws RepositoryException,
@@ -657,11 +666,20 @@ public class LockingCacheControlRepositoryWrapper implements Repository {
     private void flushFromCache(Path uri, boolean includeDescendants, String serviceMethodName) {
         this.cache.flushFromCache(uri, includeDescendants);
         if (logger.isDebugEnabled()) {
-            logger.debug(serviceMethodName + "() completed, purged from cache: " 
+            logger.debug(serviceMethodName + "() completed, purged from cache: "
                     + uri + (includeDescendants ? " (including descendants)" : ""));
         }
+        if (clusterContext.isPresent()) {
+            FlushMessage flushMessage = new FlushMessage();
+            flushMessage.path = uri;
+            if (logger.isDebugEnabled()) {
+                logger.debug(serviceMethodName
+                        + "() completed, sending cluster flush message: " + uri);
+            }
+            clusterContext.get().clusterMessage(flushMessage);
+        }
     }
-    
+
     private List<Path> getCachedDescendants(Path uri) {
         return this.cache.getCachedDescendantPaths(uri);
     }
@@ -729,6 +747,49 @@ public class LockingCacheControlRepositoryWrapper implements Repository {
     }
 
 
+    public static class FlushMessage implements Serializable {
+        private static final long serialVersionUID = 8288073797498465660L;
+        Path path;
+        @Override
+        public String toString() { return getClass().getSimpleName() + "(" + path + ")"; }
+    }
 
-    
+    @Override
+    public void clusterContext(ClusterContext context) {
+        this.clusterContext = Optional.of(context);
+        context.subscribe(FlushMessage.class);
+    }
+
+    @Override
+    public void stateChange(ClusterState state) {
+        this.clusterState = Optional.of(state);
+    }
+
+    @Override
+    public void clusterMessage(Object message) {
+        if (clusterState.isPresent() && clusterState.get().role() == ClusterState.Role.SLAVE) {
+            if (message instanceof FlushMessage) {
+                FlushMessage flushMessage = (FlushMessage) message;
+
+                Path uri = flushMessage.path;
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Received flush message from cluster: " + uri);
+                }
+
+                List<Path> lockUris = new ArrayList<>();
+                lockUris.add(uri);
+                lockUris.addAll(getCachedDescendants(uri));
+
+                final List<Path> locked = this.lockManager.lock(lockUris, true);
+
+                try {
+                    this.cache.flushFromCache(uri, true);
+                }
+                finally {
+                    this.lockManager.unlock(locked, true);
+                }
+            }
+        }
+    }
 }

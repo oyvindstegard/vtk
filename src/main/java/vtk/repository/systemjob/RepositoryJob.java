@@ -33,12 +33,16 @@ package vtk.repository.systemjob;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.cluster.ClusterAware;
+import vtk.cluster.ClusterContext;
+import vtk.cluster.ClusterState;
 import vtk.context.BaseContext;
 import vtk.repository.Repository;
 import vtk.repository.ResourceTypeTree;
@@ -51,7 +55,9 @@ import vtk.security.SecurityContext;
  * Sets up thread local security context, system change context and executes
  * repository job.
  */
-public abstract class RepositoryJob extends AbstractTask implements InitializingBean {
+public abstract class RepositoryJob extends AbstractTask implements InitializingBean, ClusterAware {
+
+    private Optional<ClusterState> clusterState = Optional.empty();
 
     private SecurityContext securityContext;
     private Repository repository;
@@ -61,19 +67,24 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
     private List<String> affectedPropDefPointers;
     private List<PropertyTypeDefinition> affectedProperties;
     private boolean ignoreLockingOnStore = false;
-    
+
     private final Log logger = LogFactory.getLog(getClass());
-    
+
     @Override
     public void run() {
+        if (clusterState.isPresent() && clusterState.get().role() == ClusterState.Role.SLAVE) {
+            logger.debug("Do not run repository job " + getId()
+                + ": cluster node in slave mode");
+            return;
+        }
         try {
             BaseContext.pushContext();
             SecurityContext.setSecurityContext(securityContext);
-            
+
             SystemChangeContext systemChangeContext =
-                    new SystemChangeContext(getId(), affectedProperties, 
+                    new SystemChangeContext(getId(), affectedProperties,
                             systemJobStatusPropDef, ignoreLockingOnStore);
-            
+
             executeWithRepository(repository, systemChangeContext);
         }
         catch (Throwable t) {
@@ -83,7 +94,7 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
             BaseContext.popContext();
         }
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception {
         if (affectedPropDefPointers != null) {
@@ -98,19 +109,19 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
             }
         }
     }
-    
-    public abstract void executeWithRepository(Repository repository, 
+
+    public abstract void executeWithRepository(Repository repository,
             SystemChangeContext context) throws Exception;
 
     @Required
     public void setRepository(Repository repository) {
         this.repository = repository;
     }
-    
+
     public void setSecurityContext(SecurityContext securityContext) {
         this.securityContext = securityContext;
     }
-    
+
     @Required
     public void setSystemJobStatusPropDef(PropertyTypeDefinition systemJobStatusPropDef) {
         this.systemJobStatusPropDef = systemJobStatusPropDef;
@@ -124,17 +135,28 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
     public void setAffectedPropDefPointers(List<String> affectedPropDefPointers) {
         this.affectedPropDefPointers = affectedPropDefPointers;
     }
-    
+
     /**
      * Set whether the provided {@link SystemChangeContext} should have the
      * {@link SystemChangeContext#ignoreLocking} flag set.
-     * 
+     *
      * Defaults to <code>false</code>.
-     * 
-     * @param ignoreLockingOnStore 
+     *
+     * @param ignoreLockingOnStore
      */
     public void setIgnoreLockingOnStore(boolean ignoreLockingOnStore) {
         this.ignoreLockingOnStore = ignoreLockingOnStore;
     }
+
+    @Override
+    public void clusterContext(ClusterContext context) { }
+
+    @Override
+    public void stateChange(ClusterState state) {
+        this.clusterState = Optional.of(state);
+    }
+
+    @Override
+    public void clusterMessage(Object message) { }
 
 }

@@ -703,6 +703,11 @@
       <version>2.6</version>
     </dependency>
     <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-cluster_2.11</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven.doxia</groupId>
       <artifactId>doxia-module-xhtml</artifactId>
       <version>1.6</version>

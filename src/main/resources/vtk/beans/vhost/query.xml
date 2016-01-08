@@ -89,6 +89,19 @@
     <property name="documentMapper" ref="documentMapper"/>
   </bean>
 
+  <!-- Makes the system index initialize in "master mode" when no cluster is specified
+       (this bean is overridden in  cluster.xml) -->
+  <bean id="systemIndex.initialClusterState" class="org.springframework.beans.factory.config.MethodInvokingBean">
+    <property name="targetObject" ref="systemIndex" />
+    <property name="targetMethod" value="stateChange" />
+    <property name="arguments">
+      <bean class="vtk.cluster.ClusterState">
+        <constructor-arg name="role" value="MASTER" />
+      </bean>
+    </property>
+  </bean>
+
+
   <!-- A Lucene index accessor (secondary instance, batch indexing tuned) -->
   <bean id="secondarySystemIndexAccessor" class="vtk.repository.index.IndexManager">
     <property name="storageRootPath" value="${indexStorageRootPath}"/>
@@ -103,6 +116,7 @@
   <bean id="secondarySystemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="secondarySystemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
+    <property name="standby" value="true" />
   </bean>
   
   <!-- Factory for building Lucene queries. -->
