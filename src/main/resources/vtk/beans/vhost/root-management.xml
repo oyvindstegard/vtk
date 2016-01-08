@@ -106,6 +106,7 @@
         <property name="attributeName" value="tabOrder" />
       </bean>
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="rootManage.tabsBuilder"

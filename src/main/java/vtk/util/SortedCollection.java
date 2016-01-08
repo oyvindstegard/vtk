@@ -39,9 +39,15 @@ import java.util.List;
 public class SortedCollection<T> extends AbstractCollection<T> {
     private List<T> elements = new ArrayList<>();
     private Comparator<T> comparator;
+    boolean unique = false;
 
     public SortedCollection(Comparator<T> comparator) {
+        this(comparator, false);
+    }
+
+    public SortedCollection(Comparator<T> comparator, boolean unique) {
         this.comparator = comparator;
+        this.unique = unique;
     }
 
     @Override
@@ -56,6 +62,9 @@ public class SortedCollection<T> extends AbstractCollection<T> {
 
     @Override
     public boolean add(T t) {
+        if (unique && elements.contains(t)) {
+            return false;
+        }
         boolean result = elements.add(t);
         elements.sort(comparator);
         return result;
