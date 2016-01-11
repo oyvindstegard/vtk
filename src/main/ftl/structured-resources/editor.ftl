@@ -9,6 +9,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>Edit structured resource</title>
+
+  <@vrtx.cssPlaceholder place="structured-resources-editor:head" />
   
   <#assign language = vrtx.getMsg("eventListing.calendar.lang", "en") />
   

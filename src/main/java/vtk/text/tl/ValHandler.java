@@ -33,19 +33,17 @@ package vtk.text.tl;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import vtk.text.tl.Parser.Directive;
 import vtk.text.tl.expr.Expression;
-import vtk.text.tl.expr.Function;
+import vtk.text.tl.expr.Expression.FunctionResolver;
 
 public class ValHandler implements DirectiveHandler {
-    private Map<Class<?>, ValueFormatHandler> valueFormatHandlers = 
+    private Map<Class<?>, ValueFormatHandler> valueFormatHandlers =
             new HashMap<Class<?>, ValueFormatHandler>();
-    private Set<Function> functions = new HashSet<Function>();
+    private FunctionResolver functions = new FunctionResolver();
 
     private static final Symbol FLAG_SEPARATOR = new Symbol("#");
     private static final Symbol UNESCAPED = new Symbol("unescaped");
@@ -53,8 +51,8 @@ public class ValHandler implements DirectiveHandler {
     public interface ValueFormatHandler {
         public Object handleValue(Object val, String format, Context ctx);
     }
-    
-    public ValHandler(Map<Class<?>, ValueFormatHandler> valueFormatHandlers, Set<Function> functions) {
+
+    public ValHandler(Map<Class<?>, ValueFormatHandler> valueFormatHandlers, FunctionResolver functions) {
         if (valueFormatHandlers != null) this.valueFormatHandlers = valueFormatHandlers;
         if (functions != null) this.functions = functions;
     }
@@ -82,12 +80,12 @@ public class ValHandler implements DirectiveHandler {
             }
             cur.add(arg);
         }
-        
+
         if (expression.isEmpty()) {
             context.error("Empty expression");
             return;
         }
-        
+
         boolean escape = true;
         if (!flags.isEmpty() && flags.get(0).equals(UNESCAPED)) {
            escape = false;
@@ -111,6 +109,7 @@ public class ValHandler implements DirectiveHandler {
             this.format = format;
         }
 
+        @Override
         public boolean render(Context ctx, Writer out) throws Exception {
             Object val = this.expression.evaluate(ctx);
             String format = null;
@@ -134,6 +133,7 @@ public class ValHandler implements DirectiveHandler {
             return true;
         }
 
+        @Override
         public String toString() {
             return "[val " + this.expression + "]";
         }

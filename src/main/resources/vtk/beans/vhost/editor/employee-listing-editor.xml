@@ -10,6 +10,9 @@
     </property>
     <property name="handler" ref="editor.employeeEditHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.employeeListingEditService" />
+  </bean>
 
   <bean id="editor.employeeEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.employeeResourceManager" />

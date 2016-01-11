@@ -21,6 +21,8 @@
     <@editor.addCkScripts />
 
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.hotkeys.js"></script>
+
+    <@vrtx.cssPlaceholder place="editor:head" />
     
     <#assign language = vrtx.getMsg("eventListing.calendar.lang", "en") />
     <#assign isCollection = resource.resource.collection />

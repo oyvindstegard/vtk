@@ -275,11 +275,6 @@
   <bean id="listDecoratorComponentsService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="webService" />
     <property name="order" value="-200" />
-    <property name="categories">
-      <set>
-        <value>plaintextEditTooltipService</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
@@ -298,14 +293,14 @@
     <property name="authenticationChallenge" ref="${webAuthenticationChallenge}" />
   </bean>
 
+  <bean parent="plaintextEdit.tooltipsBuilder">
+    <property name="arguments" ref="listDecoratorComponentsService" />
+  </bean>
+
+
   <bean id="listDocumentsComponentsService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="webService" />
     <property name="order" value="-200" />
-    <property name="categories">
-      <set>
-        <value>plaintextEditTooltipService</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
@@ -324,14 +319,14 @@
     <property name="handler" ref="listDocumentComponentsHandler" />
   </bean>
 
+  <bean parent="plaintextEdit.tooltipsBuilder">
+    <property name="arguments" ref="listDocumentsComponentsService" />
+  </bean>
+
+
   <bean id="jsonDocumentsComponentsService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="webService" />
     <property name="order" value="-200" />
-    <property name="categories">
-      <set>
-        <value>jsonEditTooltipService</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.ResourceTypeAssertion"
@@ -349,6 +344,10 @@
       </list>
     </property>
     <property name="handler" ref="listDocumentComponentsHandler" />
+  </bean>
+
+  <bean parent="plaintextEdit.tooltipsBuilder">
+    <property name="arguments" ref="jsonDocumentsComponentsService" />
   </bean>
 
   <bean name="listDecoratorComponentsHandler" class="vtk.web.display.MethodInvokingController">

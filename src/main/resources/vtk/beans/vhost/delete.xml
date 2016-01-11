@@ -5,11 +5,6 @@
   <bean id="deleteResourcesService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageCollectionListingService" />
     <property name="order" value="-1001" />
-    <property name="categories">
-      <set>
-        <value>collectionMenu</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <ref bean="manage.postRequestAssertion" />
@@ -24,14 +19,13 @@
     <property name="handler" ref="deleteResourcesHandler" />
   </bean>
   
+  <bean parent="collectionMenuBuilder">
+    <property name="arguments" ref="deleteResourcesService" />
+  </bean>
+
   <bean id="deleteResourceService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-997" />
-    <property name="categories">
-      <set>
-        <value>resourceMenuLeft</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="resourceMenuLeftOrder">
@@ -52,6 +46,10 @@
     <property name="handler" ref="deleteResourceHandler" />
   </bean>
   
+  <bean parent="manage.resourceMenuLeftBuilder">
+    <property name="arguments" ref="deleteResourceService" />
+  </bean>
+
   <bean id="deleteResourceHandler" class="vtk.web.actions.delete.DeleteResourceController">
     <property name="commandName" value="command" />
     <property name="formView" value="admin" />

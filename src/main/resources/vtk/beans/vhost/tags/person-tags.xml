@@ -41,6 +41,23 @@
 
   <bean id="tags.personFeedHandler" parent="tags.feedHandler">
     <property name="searchComponent" ref="tags.personSearchComponent" />
+    <property name="viewName" value="personTags.feedView" />
+  </bean>
+
+  <bean id="personTags.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="personTags.feedView" value-ref="personTags.feedView" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="personTags.feedView" parent="tags.feedView">
+    <property name="feedMetadata">
+      <map>
+        <entry key="feed-type" value="person-tags" />
+      </map>
+    </property>
   </bean>
 
   <bean id="tags.personSearchComponent" parent="tags.searchComponent">

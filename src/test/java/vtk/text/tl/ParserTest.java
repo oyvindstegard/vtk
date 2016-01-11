@@ -39,28 +39,27 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import vtk.text.tl.Parser.Directive;
 import vtk.text.tl.Parser.Handler;
 import vtk.text.tl.expr.Concat;
-import vtk.text.tl.expr.Function;
+import vtk.text.tl.expr.Expression.FunctionResolver;
 
 public class ParserTest {
 
     private List<DirectiveHandler> directiveHandlers;
-    
+
     @Before
     public void setUp() throws Exception {
-        Set<Function> functions = new HashSet<Function>();
-        functions.add(new Concat(new Symbol("concat")));
-        
+        FunctionResolver functions = new FunctionResolver();
+        functions.addFunction(new Concat(new Symbol("concat")));
+
         directiveHandlers = Arrays.asList(new DirectiveHandler[] {
                 new IfHandler(functions),
                 new ValHandler(null, functions),

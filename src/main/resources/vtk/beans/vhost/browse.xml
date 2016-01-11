@@ -26,13 +26,11 @@
   <bean id="createLinkToResourceService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="browseService" />
     <property name="order" value="-998" />
-    <property name="categories">
-      <set>
-        <value>browseMenu</value>
-      </set>
-    </property>
   </bean>
 
+  <bean parent="browse.actionServices.builder">
+    <property name="arguments" ref="createLinkToResourceService" />
+  </bean>
 
   <bean id="defaultBrowseHandler" 
     class="vtk.web.display.file.ResourceAwareParameterizableViewController">
@@ -66,6 +64,30 @@
     <constructor-arg type="java.lang.String" value="browse" />
   </bean>
 
+  <bean id="browse.javascriptRegistry" class="vtk.web.MediaRegistry" />
+  <bean id="browse.cssRegistry" class="vtk.web.MediaRegistry" />
+
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="browse.javascriptRegistry" />
+    <constructor-arg value="head" />
+    <constructor-arg>
+      <list>
+        <value>${jquery.baseURL}/jquery.min.js</value>
+        <value>${jsBaseURL}/browse.js</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
+  <bean class="vtk.web.AdminMedia">
+    <constructor-arg ref="browse.cssRegistry" />
+    <constructor-arg value="head" />
+    <constructor-arg>
+      <list>
+        <value>${themeBaseURL}/default.css</value>
+        <value>${themeBaseURL}/browse.css</value>
+      </list>
+    </constructor-arg>
+  </bean>
 
   <bean id="browse.titleComponent"
         class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
@@ -163,15 +185,10 @@
   </bean>
 
   <bean id="browse.cssView" parent="freemarkerView">
-    <property name="url" value="system/css.ftl" />
+    <property name="url" value="system/css-registry.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="cssURLs">
-          <list>
-            <value>${themeBaseURL}/default.css</value>
-            <value>${themeBaseURL}/browse.css</value>
-          </list>
-        </entry>
+        <entry key="cssRegistry" value-ref="browse.cssRegistry" />
       </map>
     </property>
   </bean>
@@ -186,15 +203,10 @@
   </bean>
 
   <bean id="browse.javascriptView" parent="freemarkerView">
-    <property name="url" value="system/javascript.ftl" />
+    <property name="url" value="system/javascript-registry.ftl" />
     <property name="attributesMap">
       <map>
-        <entry key="jsURLs">
-          <list>
-            <value>${jquery.baseURL}/jquery.min.js</value>
-            <value>${jsBaseURL}/browse.js</value>
-          </list>
-        </entry>
+        <entry key="javascriptRegistry" value-ref="browse.javascriptRegistry" />
       </map>
     </property>
   </bean>
@@ -234,14 +246,21 @@
 
   <bean id="browseMenuProvider" 
     class="vtk.web.view.components.menu.DefaultListMenuProvider">
-    <constructor-arg ref="browseActionServicesFactory" />
+    <constructor-arg ref="browse.actionServices" />
     <constructor-arg value="resourceMenuLeft" />
   </bean>
 
 
-  <bean id="browseActionServicesFactory"
-    class="vtk.context.CategoryResolvingFactoryBean" parent="ordered">
-    <property name="category" value="browseMenu" />
+  <bean id="browse.actionServices" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+  </bean>
+
+  <bean id="browse.actionServices.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="browse.actionServices" />
+    <property name="targetMethod" value="add" />
   </bean>
 
 </beans>

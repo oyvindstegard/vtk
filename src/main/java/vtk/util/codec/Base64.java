@@ -33,6 +33,7 @@ package vtk.util.codec;
 import java.io.InputStream;
 
 import org.apache.commons.ssl.Base64InputStream;
+
 import vtk.util.io.StreamUtil;
 
 /**
@@ -70,4 +71,7 @@ public class Base64 {
         return new Base64InputStream(is, true);
     }
     
+    public static InputStream encoderStream(InputStream is) {
+        return new Base64InputStream(is, false);
+    }
 }

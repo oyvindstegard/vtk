@@ -120,6 +120,7 @@
   </bean>
 
   <bean id="audioVideoListing.feedService" parent="collectionListing.feedService">
+    <property name="parent" ref="collectionListing.feedService" />
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
@@ -164,7 +165,7 @@
         parent="collectionListing.feedView">
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="audio-video-list" />
+        <entry key="feed-type" value="audio-video-listing" />
       </map>
     </property>
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />

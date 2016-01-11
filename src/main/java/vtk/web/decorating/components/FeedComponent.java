@@ -1,21 +1,21 @@
 /* Copyright (c) 2007, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import com.sun.syndication.feed.synd.SyndEntry;
+import com.sun.syndication.feed.synd.SyndFeed;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.ResourceNotFoundException;
 import vtk.security.AuthenticationException;
@@ -46,9 +49,6 @@ import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
 import vtk.web.service.URL;
-
-import com.sun.syndication.feed.synd.SyndEntry;
-import com.sun.syndication.feed.synd.SyndFeed;
 
 /**
  * XXX: this class currently depends on the thread safety of the SyndFeed
@@ -221,11 +221,8 @@ public class FeedComponent extends AbstractFeedComponent {
             auth = false;
         } catch (ResourceNotFoundException e) {
             throw new DecoratorComponentException(url + " does not exist");
-        } catch (Exception e) {
-            throw new DecoratorComponentException(e.getMessage());
         }
 
-        
         conf.put("auth", auth);
         if (!auth) {
             model.put("conf", conf);
@@ -246,7 +243,7 @@ public class FeedComponent extends AbstractFeedComponent {
         Map<String, String> imgMap = new HashMap<String, String>();
 
         @SuppressWarnings("unchecked")
-        List<SyndEntry> entries = (List<SyndEntry>) feed.getEntries();
+        List<SyndEntry> entries = feed.getEntries();
         boolean filter = !parameterHasValue(PARAMETER_ALLOW_MARKUP, "true", request);
         for (SyndEntry entry : entries) {
 
@@ -272,10 +269,12 @@ public class FeedComponent extends AbstractFeedComponent {
         model.put("conf", conf);
     }
 
+    @Override
     protected String getDescriptionInternal() {
         return "Inserts a feed (RSS, Atom) component on the page";
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
         Map<String, String> map = new LinkedHashMap<String, String>();
         map.put(PARAMETER_ITEM_PICTURE, PARAMETER_ITEM_PICTURE_DESC);

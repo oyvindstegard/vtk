@@ -92,6 +92,7 @@ public class RequestContext {
     private final Repository repository;
     private final Service service;
     private final Path resourceURI;
+    private final Acl resourceAcl;
     private final Path currentCollection;
     private final Path indexFileURI;
     private final boolean isIndexFile;
@@ -132,15 +133,17 @@ public class RequestContext {
         this.inRepository = inRepository;
         if (resource != null) {
             this.resourceURI = resource.getURI();
+            this.resourceAcl = resource.getAcl();
             if (resource.isCollection()) {
                 this.currentCollection = resource.getURI();
             }
             else {
                 this.currentCollection = resource.getURI().getParent();
             }
-        } 
+        }
         else {
             this.resourceURI = uri;
+            this.resourceAcl = null;
             this.currentCollection = null;
         }
         if (principalLookup == null) {
@@ -199,11 +202,20 @@ public class RequestContext {
     /**
      * Gets the {@link vtk.repository.Resource#getURI URI} that the
      * current request maps to.
-     * 
+     *
      * @return the URI of the requested resource.
      */
     public Path getResourceURI() {
         return this.resourceURI;
+    }
+
+    /**
+     * Gets the {@link Acl ACL} of the current resource.
+     *
+     * @return the ACL, or <code>null</code> if there is no current resource
+     */
+    public Acl getResourceAcl() {
+        return this.resourceAcl;
     }
 
     /**

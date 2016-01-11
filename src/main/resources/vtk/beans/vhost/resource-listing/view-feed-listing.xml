@@ -29,7 +29,8 @@
   </bean>
 
 
-  <bean id="atomFeedView" class="vtk.web.display.feed.ListingFeedView" abstract="true" depends-on="resourceTypetree">
+  <bean id="atomFeedView" class="vtk.web.display.feed.ListingFeedView" 
+        abstract="true" depends-on="resourceTypetree">
     <property name="viewService" ref="viewService" />
     <property name="abdera" ref="abdera" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
@@ -43,7 +44,7 @@
     <property name="picturePropDefPointer" value="resource:picture" />
     <property name="mediaPropDefPointer" value="resource:media" />
     <property name="useProtocolRelativeImages" value="${collectionListing.feed.protocolRelativeImages}" />
-
+    <property name="titleResolver" ref="decorating.titleResolver" />
     <property name="introductionAsXHTMLSummaryResourceTypes">
       <list>
         <value>article</value>

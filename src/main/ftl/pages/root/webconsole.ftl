@@ -40,6 +40,5 @@
       <textarea cols="80" rows="20">${commandForm.result?html}</textarea>
     </p>
   </#if>
-
 </body>
 </html>

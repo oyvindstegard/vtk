@@ -182,6 +182,11 @@
     </property>
   </bean>
 
+  <bean id="eventListingFeed.specificDateEventSearchComponent" parent="eventListing.specificDateEventSearchComponent">
+    <property name="name" value="eventListingFeed.specificDateEventSearchComponent" />
+    <property name="resolveMultiHostResultSet" value="false" />
+  </bean>
+
   <bean id="eventListing.currentMonthSearchComponent" parent="eventListing.specificDateEventSearchComponent">
     <property name="name" value="eventListing.currentMonthSearchComponent" />
     <property name="queryBuilders">
@@ -238,10 +243,9 @@
     parent="atomFeedView">
     <property name="helper" ref="eventListingHelper" />
     <property name="displayTypePropDef" ref="eventListing.displayTypePropDef" />
-    <property name="overridePublishDatePropDefPointer" ref="${override.listing.prefix}overridePublishDatePropDefPointer" />
     <property name="feedMetadata">
       <map>
-        <entry key="feed-type" value="event-calendar" />
+        <entry key="feed-type" value="event-calendar-listing" />
       </map>
     </property>
   </bean>

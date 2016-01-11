@@ -38,6 +38,7 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
       if (opts.width)      { dialogOpts.width = opts.width; }
       if (opts.height)     { dialogOpts.height = opts.height; }
       if (opts.unclosable) { dialogOpts.closeOnEscape = false; }
+      if (opts.noTitle)    { dialogOpts.dialogClass = "dialog-no-title"; }
       var dialog = this;
       dialogOpts.open = function(e, ui) {
         var ctx = $(this).parent();
@@ -107,7 +108,8 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
     if (this.__opts.title) {
       html += " title='" + this.__opts.title + "'";
     }
-    $("body").append(html + "><div id='" + this.__opts.selector.substring(1) + "-content'>" + (!this.__opts.hasHtml ? "<p>" + this.__opts.msg + "</p>" : this.__opts.msg) + "</div></div>");
+    $("body").append(html + "><div id='" + this.__opts.selector.substring(1) + "-content' class='vrtx-dialog-content'>"
+        + (!this.__opts.hasHtml ? "<p>" + this.__opts.msg + "</p>" : this.__opts.msg) + "</div></div>");
     $(".vrtx-dialog").hide();
   },
   open: function () {
@@ -222,6 +224,25 @@ var VrtxConfirmDialog = dejavu.Class.declare({
       onOkOpts: opts.onOkOpts,
       onCancel: opts.onCancel,
       extraBtns: opts.extraBtns
+    });
+  }
+});
+
+var VrtxIFrameDialog = dejavu.Class.declare({
+  $name: "VrtxIFrameDialog",
+  $extends: AbstractVrtxSimpleDialog,
+  initialize: function (opts) {
+    var html = '<iframe width="100%" height="100%" style="min-width: 95%;height:100%;"'
+        + ' frameborder="0" src="' + opts.url + '"></iframe>';
+    this.$super({
+      selector: "#dialog-iframe-" + opts.name,
+      msg: html,
+      noTitle: opts.noTitle,
+      hasHtml: true,
+      width: opts.width,
+      height: opts.height,
+      onOpen: opts.onOpen,
+      onClose: opts.onClose
     });
   }
 });

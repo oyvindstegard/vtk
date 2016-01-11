@@ -73,6 +73,7 @@ import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
+import vtk.web.search.MultiHostUtil;
 import vtk.web.search.VHostScopeQueryRestricter;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
@@ -198,6 +199,7 @@ public class ManuallyApproveResourcesSearcher {
             ResultSet searchResults = null;
             if (isMultiHostSearch) {
                 searchResults = multiHostSearcher.search(token, search);
+                searchResults = MultiHostUtil.resolveResultSetImageRefProperties(searchResults);
             } else {
                 searchResults = repository.search(token, search);
             }
@@ -333,7 +335,7 @@ public class ManuallyApproveResourcesSearcher {
             if (path != null) {
                 resource = repository.retrieve(token, path, true);
             } else if (this.multiHostSearcher.isMultiHostSearchEnabled()) {
-                resource = multiHostSearcher.retrieve(token, url);
+                resource = MultiHostUtil.resolveImageRefProperties(multiHostSearcher.retrieve(token, url));
             }
 
             if (resource == null) {
@@ -400,6 +402,7 @@ public class ManuallyApproveResourcesSearcher {
             if (!urls.isEmpty() && multiHostSearcher.isMultiHostSearchEnabled()) {
 
                 Set<PropertySet> rs = multiHostSearcher.retrieve(token, urls);
+                rs = MultiHostUtil.resolveSetImageRefProperties(rs);
                 if (rs != null && rs.size() > 0) {
                     alreadyApprovedResources.addAll(rs);
                 }

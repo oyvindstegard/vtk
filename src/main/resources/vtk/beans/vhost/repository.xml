@@ -203,8 +203,6 @@
 
   <bean id="jsonObjectContentFactory" class="vtk.repository.content.JSONObjectContentFactory" />
 
-  <bean id="pdfContentFactory" class="vtk.repository.content.PDFContentFactory" />
-
   <bean id="authorizationManager" class="vtk.repository.AuthorizationManager">
     <property name="principalManager" ref="principalManager" />
     <property name="roleManager" ref="roleManager" />

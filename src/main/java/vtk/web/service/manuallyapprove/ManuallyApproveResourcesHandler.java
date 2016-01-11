@@ -59,6 +59,7 @@ import vtk.security.SecurityContext;
 import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 import vtk.web.RequestContext;
+import vtk.web.search.MultiHostUtil;
 import vtk.web.service.URL;
 
 /**
@@ -229,7 +230,7 @@ public class ManuallyApproveResourcesHandler implements Controller {
         try {
             URL url = URL.parse(location);
             if (multiHostSearcher.isMultiHostSearchEnabled()) {
-                PropertySet ps = multiHostSearcher.retrieve(token, url);
+                PropertySet ps = MultiHostUtil.resolveImageRefProperties(multiHostSearcher.retrieve(token, url));
                 if (ps == null) {
                     return false;
                 }
