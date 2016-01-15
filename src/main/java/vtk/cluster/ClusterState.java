@@ -30,20 +30,33 @@
  */
 package vtk.cluster;
 
-public class ClusterState {
+import java.util.Collections;
+import java.util.List;
+
+public final class ClusterState {
     public static enum Role {
         SLAVE,
         MASTER
     }
 
     private Role role;
+    private List<String> members;
+    private String self;
 
-    public ClusterState(Role role) {
+    ClusterState(Role role, String self, List<String> members) {
         if (role == null) throw new NullPointerException("role");
+        if (self == null) throw new NullPointerException("self");
+        if (members == null) throw new NullPointerException("members");
         this.role = role;
+        this.self = self;
+        this.members = Collections.unmodifiableList(members);
     }
 
     public Role role() { return role; }
+
+    public List<String> members() { return members; }
+
+    public String self() { return self; }
 
     @Override
     public String toString() {

@@ -76,7 +76,6 @@ public class AkkaClusterManager {
         clusterListener = system.actorOf(
                 Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
                 "cluster-listener");
-
     }
 
     public void destroy() {
@@ -125,9 +124,9 @@ public class AkkaClusterManager {
         @SuppressWarnings("unused")
         public ClusterListener(ActorRef subscriptionActor, List<ClusterAware> clusterComponents) {
             this.subscriptionActor = subscriptionActor;
-            this.appClusterComponents = Collections.unmodifiableList(clusterComponents);
+            this.appClusterComponents = Collections.unmodifiableList(new ArrayList<>(clusterComponents));
 
-            for (ClusterAware clusterComponent: clusterComponents) {
+            for (ClusterAware clusterComponent: appClusterComponents) {
                 ClusterContext context = new ClusterContextImpl(
                         subscriptionActor, clusterComponent, getSelf());
                 clusterComponent.clusterContext(context);
@@ -177,11 +176,15 @@ public class AkkaClusterManager {
                 LeaderChanged lch = (LeaderChanged) message;
                 if (lch.getLeader().equals(cluster.selfAddress())) {
                     log.info("Change to master mode");
-                    switchState(new ClusterState(ClusterState.Role.MASTER));
+                    switchState(new ClusterState(
+                            ClusterState.Role.MASTER,
+                            cluster.selfAddress().toString(), members()));
                 }
                 else {
                     log.info("Change to slave mode");
-                    switchState(new ClusterState(ClusterState.Role.SLAVE));
+                    switchState(new ClusterState(
+                            ClusterState.Role.SLAVE,
+                            cluster.selfAddress().toString(), members()));
                 }
             }
             else if (message instanceof MemberEvent) {
@@ -210,6 +213,14 @@ public class AkkaClusterManager {
             else {
                 unhandled(message);
             }
+        }
+
+        private List<String> members() {
+            List<Member> members = JavaConversions.seqAsJavaList(cluster.state().members().toList());
+            List<String> memberAddrs = members.stream()
+                    .map(m -> m.address().toString())
+                    .collect(Collectors.toList());
+            return memberAddrs;
         }
     }
 
