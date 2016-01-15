@@ -76,16 +76,21 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     private DocumentMapper documentMapper;
     private Optional<ClusterState> clusterState = Optional.empty();
     private Optional<ClusterContext> clusterContext = Optional.empty();
+    private boolean openAsReadOnly = false;
     private boolean standby = false;
 
     public void setStandby(boolean standby) {
         this.standby = standby;
     }
 
+    public void setOpenAsReadOnly(boolean openAsReadOnly) {
+        this.openAsReadOnly = openAsReadOnly;
+    }
+
     @Override
     public void afterPropertiesSet() throws IOException {
-        boolean readOnly = true;
-        index.open(false, readOnly);
+
+        index.open(false, openAsReadOnly);
         if (standby) {
             index.close();
         }

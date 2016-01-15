@@ -18,15 +18,8 @@
     <property name="arguments" ref="systemIndex" />
   </bean>
 
-  <!-- Makes the system index NOT initialize in master mode -->
-  <bean id="systemIndex.initialClusterState" class="org.springframework.beans.factory.config.MethodInvokingBean">
-    <property name="targetObject" ref="systemIndex" />
-    <property name="targetMethod" value="stateChange" />
-    <property name="arguments">
-      <bean class="vtk.cluster.ClusterState">
-        <constructor-arg name="role" value="SLAVE" />
-      </bean>
-    </property>
+  <bean id="systemIndex.openAsReadOnly" class="java.lang.Boolean">
+    <constructor-arg type="boolean" value="true" />
   </bean>
 
   <bean parent="cluster.component">

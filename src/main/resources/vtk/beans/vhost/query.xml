@@ -83,22 +83,15 @@
     <property name="searcherFactory" ref="searcherFactory"/>
   </bean>
 
+  <bean id="systemIndex.openAsReadOnly" class="java.lang.Boolean">
+    <constructor-arg type="boolean" value="false" />
+  </bean>
+
   <!-- Property set index based on primary Lucene index accessor instance.  -->
   <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="systemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
-  </bean>
-
-  <!-- Makes the system index initialize in "master mode" when no cluster is specified
-       (this bean is overridden in  cluster.xml) -->
-  <bean id="systemIndex.initialClusterState" class="org.springframework.beans.factory.config.MethodInvokingBean">
-    <property name="targetObject" ref="systemIndex" />
-    <property name="targetMethod" value="stateChange" />
-    <property name="arguments">
-      <bean class="vtk.cluster.ClusterState">
-        <constructor-arg name="role" value="MASTER" />
-      </bean>
-    </property>
+    <property name="openAsReadOnly" ref="systemIndex.openAsReadOnly" />
   </bean>
 
 
@@ -116,6 +109,7 @@
   <bean id="secondarySystemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="secondarySystemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
+    <property name="openAsReadOnly" ref="systemIndex.openAsReadOnly" />
     <property name="standby" value="true" />
   </bean>
   
