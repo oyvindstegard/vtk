@@ -30,12 +30,15 @@
  */
 package vtk.resourcemanagement.property;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Namespace;
@@ -59,6 +62,7 @@ import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 
 public class EvaluatorResolver {
+    private static Log logger = LogFactory.getLog(EvaluatorResolver.class);
 
     // XXX Reconsider this whole setup. No good implementation.
     private ExternalServiceInvoker serviceInvoker;
@@ -421,7 +425,15 @@ public class EvaluatorResolver {
             // Store the value of the property
 
             // Does this make sense now that JSON_BINARY is gone: ?
-            property.setBinaryValue(value.toString().getBytes(), "application/json");
+            if (value instanceof Map<?,?>) {
+                try {
+                    value = JsonStreamer.toJson(value);
+                    property.setBinaryValue(value.toString().getBytes("utf-8"), "application/json");
+                }
+                catch (IOException e) {
+                    logger.warn("Failed to set value " + value + " of property " + property, e);
+                }
+            }
         } else if (!property.getDefinition().isMultiple()) {
             // If value is collection, pick first element
             if (value instanceof Collection<?>) {
