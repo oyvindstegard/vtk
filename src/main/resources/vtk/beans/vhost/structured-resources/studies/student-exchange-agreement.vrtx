@@ -1,8 +1,6 @@
 resourcetype student-exchange-agreement {
 
   properties {
-    ctx-patch : string,
-  
     owner-of-agreement : string,
     type-of-agreement : string,
     type-of-agreement-other-text-field : html noextract,
@@ -40,8 +38,6 @@ resourcetype student-exchange-agreement {
   }
 
   edit-rules {
-    ctx-patch (class[vrtx-info-msg]),
-  
     owner-of-agreement (class[vrtx-shared-text],
                         attribute[vrtx-shared-text-path:/vrtx/fellestekst/utvekslingsavtale],
                         attribute[vrtx-shared-text-file-name:avtaleeier]),
@@ -78,7 +74,7 @@ resourcetype student-exchange-agreement {
              attribute[vrtx-shared-text-file-name:kontakt]),
     contact (after how-to-apply),
     
-    group earlier-students-plus-info (ctx-patch, earlier-students) (after contact),
+    earlier-students (after contact),
 
     student-exchange-intro (class[vrtx-sea-accordion]),
     student-exchange-intro (class[vrtx-pseudo-grouped]),
@@ -99,7 +95,8 @@ resourcetype student-exchange-agreement {
     how-to-apply (class[vrtx-sea-accordion]),
     contact (class[vrtx-sea-accordion]),
     contact (class[vrtx-pseudo-grouped]),
-    earlier-students-plus-info (class[vrtx-sea-accordion])
+    earlier-students (class[vrtx-sea-accordion]),
+    earlier-students (class[vrtx-pseudo-grouped])
   }
 
   view {
@@ -268,7 +265,7 @@ resourcetype student-exchange-agreement {
             [endif]
             [if earlier-students-bool]
               <div id="vrtx-student-exchange-agreement-earlier-students" class="vrtx-frontpage-box">
-                <h2>[localized 'earlier-students-plus-info']</h2></p>
+                <h2>[localized 'earlier-students']</h2></p>
                 [val earlier-students # unescaped]
               </div>
             [endif]
@@ -288,10 +285,6 @@ resourcetype student-exchange-agreement {
   }
 
   localization {
-    ctx-patch : (en : "If the Erasmus code is registered on the university folder, an IRIS database reference will be displayed under this heading",
-                 no : "Hvis Erasmus-koden er skrevet inn i universitetsmappen, vil IRIS-databasen bli lenket opp på visning under denne overskriften",
-                 nn : "Om Erasmus-koden er skrevet inn i universitetsmappa, vil IRIS-databasen bli lenka opp på visinga under denne overskrifta"),
-  
     header : (en : "Edit student exchange agreement", no : "Rediger utvekslingsavtale", nn : "Rediger utvekslingsavtale"),
     student-exchange-agreement : (en : "Student exchange agreement", no : "Utvekslingsavtale", nn : "Utvekslingsavtale"),
     student-exchange-agreement-between : (en : "Exchange agreement between", no : "Utvekslingsavtale mellom", nn : "Utvekslingsavtale mellom"),
@@ -341,9 +334,7 @@ resourcetype student-exchange-agreement {
     study-level : (en : "Study level", no : "Studienivå", nn : "Studienivå"),
     and : (en : "and", no : "og", nn : "og"),
     contact : (en : "Contact", no : "Kontakt", nn : "Kontakt"),
-    earlier-students : (en : "Optional text", no : "Valgfri tekst", nn : "Valfri tekst"),
-    earlier-students-plus-info : (en : "Previous student experiences", no : "Studenter som har vært her tidligere", nn : "Studenter som har vore her tidlegare"),
-    iris-reports : (en : "IRIS - Student reports", no : "Studentrapporter i IRIS", nn : "Studentrapportar i IRIS")
+    earlier-students : (en : "Previous student experiences", no : "Studenter som har vært her tidligere", nn : "Studenter som har vore her tidlegare")
   }
 
 }
