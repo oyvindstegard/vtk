@@ -12,7 +12,7 @@ resourcetype research-group {
     tags : string multiple overrides tags,
     contactInfo : html noextract,
     participantsUsernames : string multiple,
-    participantsCachedFullNames : binary,
+    participantsCachedFullNames : json,
     participants : json (participantName:string, participantUrl:string) multiple,
     numberOfParticipantsToDisplay : string defaultvalue("50"),
     listRelatedProjects : boolean defaultvalue("true"),
