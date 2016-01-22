@@ -30,7 +30,6 @@
  */
 package vtk.resourcemanagement.property;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,7 +45,6 @@ import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyEvaluator;
-import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatter;
 import vtk.repository.resourcetype.property.PropertyEvaluationException;
@@ -421,20 +419,7 @@ public class EvaluatorResolver {
     }
 
     private void setPropValue(Property property, Object value) {
-        if (property.getType() == Type.BINARY) {
-            // Store the value of the property
-
-            // Does this make sense now that JSON_BINARY is gone: ?
-            if (value instanceof Map<?,?>) {
-                try {
-                    value = JsonStreamer.toJson(value);
-                    property.setBinaryValue(value.toString().getBytes("utf-8"), "application/json");
-                }
-                catch (IOException e) {
-                    logger.warn("Failed to set value " + value + " of property " + property, e);
-                }
-            }
-        } else if (!property.getDefinition().isMultiple()) {
+        if (!property.getDefinition().isMultiple()) {
             // If value is collection, pick first element
             if (value instanceof Collection<?>) {
                 Collection<?> c = (Collection<?>) value;
