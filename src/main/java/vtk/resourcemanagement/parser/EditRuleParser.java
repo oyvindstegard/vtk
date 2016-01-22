@@ -38,6 +38,7 @@ import java.util.Map;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.apache.commons.lang.LocaleUtils;
+
 import vtk.repository.resource.ResourcetreeLexer;
 import vtk.resourcemanagement.EditRule;
 import vtk.resourcemanagement.EditRule.EditRuleType;
@@ -66,6 +67,10 @@ public class EditRuleParser {
                             break;
                         case ResourcetreeLexer.EDITHINT:
                             srd.addEditRule(new EditRule(propName, EditRuleType.EDITHINT, editRule.getText()));
+                            break;
+                        case ResourcetreeLexer.NOEDIT:
+
+                            srd.addEditRule(new EditRule(propName, EditRuleType.NO_EDIT, null));
                             break;
                         case ResourcetreeLexer.TOOLTIP:
                             handleTooltip(srd, editRuleDescription, propName);

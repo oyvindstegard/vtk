@@ -56,6 +56,8 @@ import vtk.repository.Repository.Depth;
 import vtk.repository.Resource;
 import vtk.repository.Revision;
 import vtk.repository.store.Revisions;
+import vtk.resourcemanagement.EditRule;
+import vtk.resourcemanagement.EditRule.EditRuleType;
 import vtk.resourcemanagement.StructuredResource;
 import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
@@ -236,15 +238,18 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
             List<PropertyDescription> props = description.getAllPropertyDescriptions();
             FormSubmitCommand form = (FormSubmitCommand) getTarget();
             for (PropertyDescription desc : props) {
+
+                if (skipEdit(desc)) {
+                    continue;
+                }
+
                 if (desc instanceof EditablePropertyDescription) {
 
                     if ("simple_html".equals(desc.getType())) {
                         runSimpleHtmlFilter(request, form, desc);
-
                     }
                     else if (desc instanceof JSONPropertyDescription) {
                         buildJSONFromInput(request, form, desc);
-
                     }
                     else {
                         storePostedValue(request, form, desc);
@@ -252,6 +257,21 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
                 }
             }
             super.bind(request);
+        }
+
+        private boolean skipEdit(PropertyDescription pdesc) {
+            if (!(pdesc instanceof EditablePropertyDescription)) {
+                return true;
+            }
+            for (EditRule rule: description.getEditRules()) {
+                if (!rule.getName().equals(pdesc.getName())) {
+                    continue;
+                }
+                if (rule.getType() == EditRuleType.NO_EDIT) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void storePostedValue(ServletRequest request, FormSubmitCommand form, PropertyDescription desc) {

@@ -27,7 +27,8 @@ resourcetype research-group {
     numberOfParticipantsToDisplay (dropdown),
     group introImageAndCaption (picture, caption, hidePicture, pictureAlt) (after introduction),
     tags tooltip (en : "(Tag1, Tag2, ...)", no : "(Emneord1, Emneord2, ...)", nn : "(Emneord1, Emneord2, ...)"),
-    tags (class[vrtx-autocomplete-tag])
+    tags (class[vrtx-autocomplete-tag]),
+    participantsCachedFullNames (noedit)
   }
 
   scripts {
