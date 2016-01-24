@@ -361,6 +361,7 @@
          <entry key="VRTX_LINK_CONSTRUCTOR" value-ref="linkConstructor" />
        </map>
      </property>
+     <property name="preferFileSystemAccess" value="${freemarker.templateLoading.preferFileSystemAccess}"/>
    </bean>
      
    <bean id="dateValueFormatter" class="vtk.repository.resourcetype.DateValueFormatter" />
