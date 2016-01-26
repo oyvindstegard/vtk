@@ -263,7 +263,9 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
             if (!(pdesc instanceof EditablePropertyDescription)) {
                 return true;
             }
-            for (EditRule rule: description.getEditRules()) {
+            List<EditRule> editRules = description.getEditRules();
+            if (editRules == null) return false;
+            for (EditRule rule: editRules) {
                 if (!rule.getName().equals(pdesc.getName())) {
                     continue;
                 }
