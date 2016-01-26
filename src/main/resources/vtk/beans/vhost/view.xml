@@ -227,6 +227,7 @@
         <property name="attributeName" value="tabOrder" />
       </bean>
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="manage.tabsBuilder"
@@ -273,6 +274,7 @@
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="readPermissionFactory.builder"
@@ -292,6 +294,7 @@
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="publishFactory.builder"
