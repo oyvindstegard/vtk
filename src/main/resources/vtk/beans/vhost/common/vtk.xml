@@ -80,6 +80,7 @@
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="spCookieAuthHandlers.builder"
@@ -137,6 +138,7 @@
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="defaultRequestFilters.builder"
@@ -150,6 +152,7 @@
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="defaultResponseFilters.builder"
