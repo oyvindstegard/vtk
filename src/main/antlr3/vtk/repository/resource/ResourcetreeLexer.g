@@ -66,6 +66,7 @@ SCRIPTTRIGGER
 REQUIRES:	'requires';
 AFFECTS	:	'affects';
 REQUIRED:	'required';
+NOEDIT  :	'noedit';
 TOOLTIP:	'tooltip';
 NOEXTRACT
 	:	'noextract';

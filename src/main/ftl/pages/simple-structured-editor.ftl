@@ -10,7 +10,8 @@
     <#assign htmlTitle = vrtx.getMsg("message-listing.edit-message") />
   </#if>
   <title>${htmlTitle}</title>
-  <#include "/system/css.ftl" />
+  <@vrtx.cssPlaceholder place="head" />
+  <@vrtx.cssPlaceholder place="editor:head" />
   <style type="text/css">
     html {
       background: #999999;
