@@ -141,7 +141,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
                 cache.put(new Element(cacheKey, clar));
             }
             result = multiHostSearcher.search(token, search);
-            if (resolveMultiHostResultSet) {
+            if (resolveMultiHostResultSet && result != null) {
                 result = MultiHostUtil.resolveResultSetImageRefProperties(result);
             }
         } else {
