@@ -199,7 +199,9 @@ public class ManuallyApproveResourcesSearcher {
             ResultSet searchResults = null;
             if (isMultiHostSearch) {
                 searchResults = multiHostSearcher.search(token, search);
-                searchResults = MultiHostUtil.resolveResultSetImageRefProperties(searchResults);
+                if (searchResults != null) {
+                    searchResults = MultiHostUtil.resolveResultSetImageRefProperties(searchResults);
+                }
             } else {
                 searchResults = repository.search(token, search);
             }
@@ -335,7 +337,10 @@ public class ManuallyApproveResourcesSearcher {
             if (path != null) {
                 resource = repository.retrieve(token, path, true);
             } else if (this.multiHostSearcher.isMultiHostSearchEnabled()) {
-                resource = MultiHostUtil.resolveImageRefProperties(multiHostSearcher.retrieve(token, url));
+                resource = multiHostSearcher.retrieve(token, url);
+                if (resource != null) {
+                    resource = MultiHostUtil.resolveImageRefProperties(resource);
+                }
             }
 
             if (resource == null) {
@@ -402,8 +407,8 @@ public class ManuallyApproveResourcesSearcher {
             if (!urls.isEmpty() && multiHostSearcher.isMultiHostSearchEnabled()) {
 
                 Set<PropertySet> rs = multiHostSearcher.retrieve(token, urls);
-                rs = MultiHostUtil.resolveSetImageRefProperties(rs);
                 if (rs != null && rs.size() > 0) {
+                    rs = MultiHostUtil.resolveSetImageRefProperties(rs);
                     alreadyApprovedResources.addAll(rs);
                 }
             }
