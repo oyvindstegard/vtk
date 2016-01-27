@@ -529,7 +529,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
   var datepickerApsD;
   eventListen(vrtxAdm.cachedDoc, "click", "#advanced-publish-settings", function (link) {
     var id = link.id + "-content";
-    vrtxAdm.serverFacade.getHtml(link.href + "&" + (+new Date()), {
+    vrtxAdm.serverFacade.getHtml(link.href + "&4", {
       success: function (results, status, resp) {
         var dialogAPS = _$("#" + id);
         if(dialogAPS.length) {
