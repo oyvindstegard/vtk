@@ -98,13 +98,6 @@ public class IndexManager implements InitializingBean, DisposableBean {
     // Internal mutex lock backing the public locking functions of this class.
     private final Mutex lock = new Mutex();
 
-    /**
-     * Open the underlying index for writing and searching.
-     * @throws IOException in case of errors with index or storage.
-     */
-    public synchronized void open() throws IOException {
-        open(false);
-    }
 
     /**
      * Open the underlying index for writing and searching, optionally specify
@@ -115,7 +108,7 @@ public class IndexManager implements InitializingBean, DisposableBean {
      * with caution.
      * @throws IOException in case of errors with index or storage.
      */
-    public synchronized void open(boolean createNewIndex) throws IOException {
+    public synchronized void open(boolean createNewIndex, boolean readOnly) throws IOException {
         if (!isClosed()) {
             return;
         }
@@ -130,8 +123,9 @@ public class IndexManager implements InitializingBean, DisposableBean {
         
         initIndex(directory, createNewIndex);
 
-        writer = new IndexWriter(directory, newIndexWriterConfig());
-        
+        if (!readOnly) {
+            writer = new IndexWriter(directory, newIndexWriterConfig());
+        }
         // For Lucene NRT (Near Real Time) searching, the writer instance could be provided to
         // the searcher factory here. However, due to how we update documents, it is
         // undesirable to let searches see uncomitted index changes. So we simply
@@ -191,6 +185,10 @@ public class IndexManager implements InitializingBean, DisposableBean {
         }
         
         writer.commit();
+        searcherManager.maybeRefreshBlocking();
+    }
+
+    public synchronized void reload() throws IOException {
         searcherManager.maybeRefreshBlocking();
     }
 
@@ -424,10 +422,6 @@ public class IndexManager implements InitializingBean, DisposableBean {
     // Framework life-cycle
     @Override
     public void afterPropertiesSet() throws IOException {
-        open();
-        if (closeAfterInit) {
-            close();
-        }
     }
     
     // Framework life-cycle

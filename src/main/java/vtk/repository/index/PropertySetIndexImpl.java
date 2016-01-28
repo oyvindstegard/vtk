@@ -31,7 +31,9 @@
 package vtk.repository.index;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +41,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DocsEnum;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexableField;
@@ -50,7 +51,12 @@ import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
+import vtk.cluster.ClusterAware;
+import vtk.cluster.ClusterContext;
+import vtk.cluster.ClusterRole;
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
@@ -62,14 +68,34 @@ import vtk.repository.index.mapping.ResourceFields;
 /**
  * <code>PropertySet</code> index using Lucene.
  */
-public class PropertySetIndexImpl implements PropertySetIndex {
-   
+public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, InitializingBean {
+
     Log logger = LogFactory.getLog(PropertySetIndexImpl.class);
 
-    private IndexManager index; 
+    private IndexManager index;
     private DocumentMapper documentMapper;
+    private Optional<ClusterRole> clusterRole = Optional.empty();
+    private Optional<ClusterContext> clusterContext = Optional.empty();
+    private boolean openAsReadOnly = false;
+    private boolean standby = false;
 
-    @SuppressWarnings("unchecked")
+    public void setStandby(boolean standby) {
+        this.standby = standby;
+    }
+
+    public void setOpenAsReadOnly(boolean openAsReadOnly) {
+        this.openAsReadOnly = openAsReadOnly;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws IOException {
+
+        index.open(false, openAsReadOnly);
+        if (standby) {
+            index.close();
+        }
+    }
+
     @Override
     public void addPropertySet(PropertySet propertySet, Acl acl) throws IndexException {
 
@@ -218,7 +244,9 @@ public class PropertySetIndexImpl implements PropertySetIndex {
     public void clear() throws IndexException {
         try {
             this.index.close();
-            this.index.open(true);
+            boolean readOnly = !clusterRole.isPresent()
+                    || clusterRole.get() == ClusterRole.SLAVE;
+            this.index.open(true, readOnly);
         } catch (IOException io) {
             throw new IndexException(io);
         }
@@ -274,6 +302,10 @@ public class PropertySetIndexImpl implements PropertySetIndex {
         } catch (IOException io) {
             throw new IndexException(io);
         }
+        if (clusterContext.isPresent()) {
+            Reinitialize initMessage = new Reinitialize();
+            clusterContext.get().clusterMessage(initMessage);
+        }
     }
 
 
@@ -293,7 +325,9 @@ public class PropertySetIndexImpl implements PropertySetIndex {
         try {
             logger.info("Re-initializing index ..");
             this.index.close();
-            this.index.open();
+            boolean readOnly = !clusterRole.isPresent()
+                    || clusterRole.get() == ClusterRole.SLAVE;
+            this.index.open(false, readOnly);
         } catch (IOException io) {
             throw new IndexException(io);
         }
@@ -393,4 +427,50 @@ public class PropertySetIndexImpl implements PropertySetIndex {
         this.index = index;
     }
 
+    @Override
+    public void roleChange(ClusterRole role) {
+        try {
+            switch (role) {
+            case MASTER:
+                logger.info("Switch to master mode");
+                index.close();
+                index.open(false, false);
+                this.clusterRole = Optional.of(role);
+                break;
+            case SLAVE:
+                logger.info("Switch to slave mode");
+                index.close();
+                index.open(false, true);
+                this.clusterRole = Optional.of(role);
+                break;
+            }
+        }
+        catch (IOException e) {
+            logger.warn("Error handling cluster state change: " + role, e);
+        }
+    }
+
+    @Override
+    public void clusterContext(ClusterContext context) {
+        this.clusterContext = Optional.of(context);
+        context.subscribe(Reinitialize.class);
+    }
+
+    @Override
+    public void clusterMessage(Object message) {
+        if (message instanceof Reinitialize) {
+            //reinitialize();
+            try {
+                this.index.reload();
+            } catch (IOException io) {
+                throw new IndexException(io);
+            }
+
+        }
+    }
+
+    public static class Reinitialize implements Serializable {
+        private static final long serialVersionUID = -8599505901326886264L;
+
+    }
 }

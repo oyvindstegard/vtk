@@ -24,7 +24,7 @@
 
 
   <!-- Define AOP pointcut for the transactional methods as well: -->
-  <aop:config>
+  <aop:config proxy-target-class="true">
     <aop:pointcut id="transactionalAnnotationPointcut"
                   expression="@annotation(org.springframework.transaction.annotation.Transactional)"/>
 

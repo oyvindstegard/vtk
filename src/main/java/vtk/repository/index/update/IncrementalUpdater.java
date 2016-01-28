@@ -34,12 +34,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
+import vtk.cluster.ClusterAware;
+import vtk.cluster.ClusterContext;
+import vtk.cluster.ClusterRole;
 import vtk.repository.Acl;
 import vtk.repository.ChangeLogEntry;
 import vtk.repository.ChangeLogEntry.Operation;
@@ -53,7 +57,7 @@ import vtk.repository.store.PropertySetHandler;
 /**
  * Incremental index updates from database resource change log.
  */
-public class IncrementalUpdater {
+public class IncrementalUpdater implements ClusterAware {
 
     private final Log logger = LogFactory.getLog(IncrementalUpdater.class);
 
@@ -66,6 +70,8 @@ public class IncrementalUpdater {
     private int loggerId;
     private int maxChangesPerUpdate = 40000;
     
+    private Optional<ClusterRole> clusterRole = Optional.empty();
+
     /**
      * This method should be called periodically to poll database for resource
      * change events and apply the updates to the index.
@@ -78,9 +84,13 @@ public class IncrementalUpdater {
     @Transactional(readOnly=false)
     public synchronized void update() throws Exception {
         
+        if (clusterRole.isPresent() && clusterRole.get() == ClusterRole.SLAVE) {
+            logger.debug("update(): slave mode, returning");
+            return;
+        }
         try {
-            List<ChangeLogEntry> changes = 
-            	this.changeLogDAO.getChangeLogEntries(this.loggerType, 
+            List<ChangeLogEntry> changes =
+            	this.changeLogDAO.getChangeLogEntries(this.loggerType,
                                                       this.loggerId,
                                                       this.maxChangesPerUpdate);
             
@@ -167,7 +177,7 @@ public class IncrementalUpdater {
             if (lastChanges.size() > 0) {
                 final List<Path> updateUris = new ArrayList<>(lastChanges.size());
                 
-                // Remove updated property sets from index in one batch, first, 
+                // Remove updated property sets from index in one batch, first,
                 // before re-adding them. This is very necessary to keep things
                 // efficient.
                 logger.debug("--- applyChanges(): Update list:");
@@ -271,11 +281,21 @@ public class IncrementalUpdater {
         this.loggerId = loggerId;
     }
 
-	public void setMaxChangesPerUpdate(int maxChanges) {
-		if (maxChanges <= 0) {
-			throw new IllegalArgumentException("Number must be greater than zero");
-		}
-		this.maxChangesPerUpdate = maxChanges;
-	}
-    
+    public void setMaxChangesPerUpdate(int maxChanges) {
+        if (maxChanges <= 0) {
+            throw new IllegalArgumentException("Number must be greater than zero");
+        }
+        this.maxChangesPerUpdate = maxChanges;
+    }
+
+    @Override
+    public void clusterContext(ClusterContext context) { }
+
+    @Override
+    public void roleChange(ClusterRole role) {
+        this.clusterRole = Optional.of(role);
+    }
+
+    @Override
+    public void clusterMessage(Object message) { }
 }

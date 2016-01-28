@@ -83,11 +83,17 @@
     <property name="searcherFactory" ref="searcherFactory"/>
   </bean>
 
+  <bean id="systemIndex.openAsReadOnly" class="java.lang.Boolean">
+    <constructor-arg type="boolean" value="false" />
+  </bean>
+
   <!-- Property set index based on primary Lucene index accessor instance.  -->
   <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="systemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
+    <property name="openAsReadOnly" ref="systemIndex.openAsReadOnly" />
   </bean>
+
 
   <!-- A Lucene index accessor (secondary instance, batch indexing tuned) -->
   <bean id="secondarySystemIndexAccessor" class="vtk.repository.index.IndexManager">
@@ -103,6 +109,8 @@
   <bean id="secondarySystemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="secondarySystemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
+    <property name="openAsReadOnly" ref="systemIndex.openAsReadOnly" />
+    <property name="standby" value="true" />
   </bean>
   
   <!-- Factory for building Lucene queries. -->
