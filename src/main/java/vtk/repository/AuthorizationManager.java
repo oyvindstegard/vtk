@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
 
 import vtk.cluster.ClusterAware;
 import vtk.cluster.ClusterContext;
-import vtk.cluster.ClusterState;
+import vtk.cluster.ClusterRole;
 import vtk.repository.store.DataAccessor;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
@@ -64,7 +64,7 @@ public final class AuthorizationManager implements ClusterAware {
     private PrincipalManager principalManager;
     private DataAccessor dao;
 
-    private Optional<ClusterState> clusterState = Optional.empty();
+    private Optional<ClusterRole> clusterRole = Optional.empty();
 
     private List<Path> readOnlyRoots = Collections.EMPTY_LIST;
 
@@ -75,8 +75,8 @@ public final class AuthorizationManager implements ClusterAware {
 
 
     @Override
-    public void stateChange(ClusterState state) {
-        this.clusterState = Optional.of(state);
+    public void roleChange(ClusterRole role) {
+        this.clusterRole = Optional.of(role);
     }
 
     @Override
@@ -898,8 +898,8 @@ public final class AuthorizationManager implements ClusterAware {
         if (this.roleManager.hasRole(principal, RoleManager.Role.ROOT)) {
             return;
         }
-        if (clusterState.isPresent()) {
-            if (clusterState.get().role() == ClusterState.Role.SLAVE) {
+        if (clusterRole.isPresent()) {
+            if (clusterRole.get() == ClusterRole.SLAVE) {
                 throw new ReadOnlyException();
             }
         }

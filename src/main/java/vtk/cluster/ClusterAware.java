@@ -34,7 +34,7 @@ public interface ClusterAware {
 
     public void clusterContext(ClusterContext context);
 
-    public void stateChange(ClusterState state);
+    public void roleChange(ClusterRole role);
 
     public void clusterMessage(Object message);
 

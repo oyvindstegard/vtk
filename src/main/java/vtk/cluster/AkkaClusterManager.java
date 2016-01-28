@@ -55,7 +55,6 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import scala.collection.JavaConversions;
 
-
 public class AkkaClusterManager {
 
     private final static Object LEAVE = new Object();
@@ -135,7 +134,7 @@ public class AkkaClusterManager {
 
         private void switchState(ClusterState state) {
             for (ClusterAware aware: appClusterComponents) {
-                aware.stateChange(state);
+                aware.roleChange(state.role());
             }
         }
 
@@ -177,13 +176,13 @@ public class AkkaClusterManager {
                 if (lch.getLeader().equals(cluster.selfAddress())) {
                     log.info("Change to master mode");
                     switchState(new ClusterState(
-                            ClusterState.Role.MASTER,
+                            ClusterRole.MASTER,
                             cluster.selfAddress().toString(), members()));
                 }
                 else {
                     log.info("Change to slave mode");
                     switchState(new ClusterState(
-                            ClusterState.Role.SLAVE,
+                            ClusterRole.SLAVE,
                             cluster.selfAddress().toString(), members()));
                 }
             }
@@ -302,4 +301,31 @@ public class AkkaClusterManager {
             clusterListener.tell(clusterMessage, null);
         }
     }
+    
+    private static final class ClusterState {
+        private ClusterRole role;
+        private List<String> members;
+        private String self;
+
+        ClusterState(ClusterRole role, String self, List<String> members) {
+            if (role == null) throw new NullPointerException("role");
+            if (self == null) throw new NullPointerException("self");
+            if (members == null) throw new NullPointerException("members");
+            this.role = role;
+            this.self = self;
+            this.members = Collections.unmodifiableList(members);
+        }
+
+        public ClusterRole role() { return role; }
+
+        public List<String> members() { return members; }
+
+        public String self() { return self; }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(" + role + ")";
+        }
+    }
+    
 }

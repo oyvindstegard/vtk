@@ -124,7 +124,6 @@ public class Main extends SpringBootServletInitializer {
         List<Object> params = new ArrayList<>();
         params.add("classpath:/vtk/beans/vhost/main.xml");
 
-        System.out.println("__exts: " + extensions());
         params.addAll(extensions());
 
         File home = new File(System.getProperty("user.home"));

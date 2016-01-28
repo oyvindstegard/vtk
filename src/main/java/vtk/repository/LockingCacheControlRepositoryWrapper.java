@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.cluster.ClusterAware;
 import vtk.cluster.ClusterContext;
-import vtk.cluster.ClusterState;
+import vtk.cluster.ClusterRole;
 import vtk.repository.search.QueryException;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
@@ -71,7 +71,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));
 
     private Optional<ClusterContext> clusterContext = Optional.empty();
-    private Optional<ClusterState> clusterState = Optional.empty();
+    private Optional<ClusterRole> clusterRole = Optional.empty();
 
     @Override
     public Comment addComment(String token, Resource resource, String title, String text) throws RepositoryException,
@@ -761,13 +761,13 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public void stateChange(ClusterState state) {
-        this.clusterState = Optional.of(state);
+    public void roleChange(ClusterRole role) {
+        this.clusterRole = Optional.of(role);
     }
 
     @Override
     public void clusterMessage(Object message) {
-        if (clusterState.isPresent() && clusterState.get().role() == ClusterState.Role.SLAVE) {
+        if (clusterRole.isPresent() && clusterRole.get() == ClusterRole.SLAVE) {
             if (message instanceof FlushMessage) {
                 FlushMessage flushMessage = (FlushMessage) message;
 

@@ -43,7 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import vtk.cluster.ClusterAware;
 import vtk.cluster.ClusterContext;
-import vtk.cluster.ClusterState;
+import vtk.cluster.ClusterRole;
 import vtk.repository.Acl;
 import vtk.repository.ChangeLogEntry;
 import vtk.repository.ChangeLogEntry.Operation;
@@ -70,7 +70,7 @@ public class IncrementalUpdater implements ClusterAware {
     private int loggerId;
     private int maxChangesPerUpdate = 40000;
     
-    private Optional<ClusterState> clusterState = Optional.empty();
+    private Optional<ClusterRole> clusterRole = Optional.empty();
 
     /**
      * This method should be called periodically to poll database for resource
@@ -84,7 +84,7 @@ public class IncrementalUpdater implements ClusterAware {
     @Transactional(readOnly=false)
     public synchronized void update() throws Exception {
         
-        if (clusterState.isPresent() && clusterState.get().role() == ClusterState.Role.SLAVE) {
+        if (clusterRole.isPresent() && clusterRole.get() == ClusterRole.SLAVE) {
             logger.debug("update(): slave mode, returning");
             return;
         }
@@ -292,8 +292,8 @@ public class IncrementalUpdater implements ClusterAware {
     public void clusterContext(ClusterContext context) { }
 
     @Override
-    public void stateChange(ClusterState state) {
-        this.clusterState = Optional.of(state);
+    public void roleChange(ClusterRole role) {
+        this.clusterRole = Optional.of(role);
     }
 
     @Override

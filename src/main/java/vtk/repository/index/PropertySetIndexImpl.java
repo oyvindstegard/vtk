@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.cluster.ClusterAware;
 import vtk.cluster.ClusterContext;
-import vtk.cluster.ClusterState;
+import vtk.cluster.ClusterRole;
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
@@ -74,7 +74,7 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     private IndexManager index;
     private DocumentMapper documentMapper;
-    private Optional<ClusterState> clusterState = Optional.empty();
+    private Optional<ClusterRole> clusterRole = Optional.empty();
     private Optional<ClusterContext> clusterContext = Optional.empty();
     private boolean openAsReadOnly = false;
     private boolean standby = false;
@@ -244,8 +244,8 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     public void clear() throws IndexException {
         try {
             this.index.close();
-            boolean readOnly = !clusterState.isPresent()
-                    || clusterState.get().role() == ClusterState.Role.SLAVE;
+            boolean readOnly = !clusterRole.isPresent()
+                    || clusterRole.get() == ClusterRole.SLAVE;
             this.index.open(true, readOnly);
         } catch (IOException io) {
             throw new IndexException(io);
@@ -325,8 +325,8 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
         try {
             logger.info("Re-initializing index ..");
             this.index.close();
-            boolean readOnly = !clusterState.isPresent()
-                    || clusterState.get().role() == ClusterState.Role.SLAVE;
+            boolean readOnly = !clusterRole.isPresent()
+                    || clusterRole.get() == ClusterRole.SLAVE;
             this.index.open(false, readOnly);
         } catch (IOException io) {
             throw new IndexException(io);
@@ -428,25 +428,25 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     }
 
     @Override
-    public void stateChange(ClusterState state) {
+    public void roleChange(ClusterRole role) {
         try {
-            switch (state.role()) {
+            switch (role) {
             case MASTER:
                 logger.info("Switch to master mode");
                 index.close();
                 index.open(false, false);
-                this.clusterState = Optional.of(state);
+                this.clusterRole = Optional.of(role);
                 break;
             case SLAVE:
                 logger.info("Switch to slave mode");
                 index.close();
                 index.open(false, true);
-                this.clusterState = Optional.of(state);
+                this.clusterRole = Optional.of(role);
                 break;
             }
         }
         catch (IOException e) {
-            logger.warn("Error handling cluster state change: " + state, e);
+            logger.warn("Error handling cluster state change: " + role, e);
         }
     }
 

@@ -42,7 +42,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.cluster.ClusterAware;
 import vtk.cluster.ClusterContext;
-import vtk.cluster.ClusterState;
+import vtk.cluster.ClusterRole;
 import vtk.context.BaseContext;
 import vtk.repository.Repository;
 import vtk.repository.ResourceTypeTree;
@@ -57,7 +57,7 @@ import vtk.security.SecurityContext;
  */
 public abstract class RepositoryJob extends AbstractTask implements InitializingBean, ClusterAware {
 
-    private Optional<ClusterState> clusterState = Optional.empty();
+    private Optional<ClusterRole> clusterRole = Optional.empty();
 
     private SecurityContext securityContext;
     private Repository repository;
@@ -72,7 +72,7 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
 
     @Override
     public void run() {
-        if (clusterState.isPresent() && clusterState.get().role() == ClusterState.Role.SLAVE) {
+        if (clusterRole.isPresent() && clusterRole.get() == ClusterRole.SLAVE) {
             logger.debug("Do not run repository job " + getId()
                 + ": cluster node in slave mode");
             return;
@@ -152,8 +152,8 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
     public void clusterContext(ClusterContext context) { }
 
     @Override
-    public void stateChange(ClusterState state) {
-        this.clusterState = Optional.of(state);
+    public void roleChange(ClusterRole role) {
+        this.clusterRole = Optional.of(role);
     }
 
     @Override
