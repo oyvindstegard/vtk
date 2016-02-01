@@ -1799,18 +1799,26 @@
     <property name="referenceDataProviders" ref="aboutView.referenceDataProviders" />
   </bean>
 
-  <bean id="aboutView.referenceDataProviders" class="vtk.context.UnionFactoryBean">
-    <property name="elements1">
-      <list>
-        <ref bean="resourceContextProvider" />
-        <ref bean="aboutResourceHandler" />
-        <ref bean="resourceDetailProvider" />
-      </list>
-    </property>
-    <property name="elements2" ref="manage.aboutView.additionalReferenceDataProviders" />
+  <bean id="aboutView.referenceDataProviders" class="java.util.ArrayList" />
+  
+  <bean id="aboutView.referenceDataProvider" 
+        class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="aboutView.referenceDataProviders" />
+    <property name="targetMethod" value="add" />
   </bean>
 
-  <bean id="manage.aboutView.additionalReferenceDataProviders" class="java.util.ArrayList" />
+  <bean parent="aboutView.referenceDataProvider">
+    <property name="arguments" ref="resourceContextProvider" />
+  </bean>
+
+  <bean parent="aboutView.referenceDataProvider">
+    <property name="arguments" ref="aboutResourceHandler" />
+  </bean>
+
+  <bean parent="aboutView.referenceDataProvider">
+    <property name="arguments" ref="resourceDetailProvider" />
+  </bean>
 
   <bean id="manageCollectionListingView" parent="freemarkerView">
     <property name="url" value="pages/manage-collectionlisting.ftl" />
