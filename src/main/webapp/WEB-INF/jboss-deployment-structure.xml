@@ -4,7 +4,7 @@
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
     <exclusions>
-      <module name="org.apache.log4j"/>
+      <!-- module name="org.apache.log4j"/-->
       <module name="org.slf4j"/>
       <module name="org.apache.commons.logging"/>
       <module name="org.jboss.logging.jul-to-slf4j-stub"/>

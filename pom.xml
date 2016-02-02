@@ -130,7 +130,44 @@
     <checkstyle.config.location>src/main/checkstyle/checkstyle.xml</checkstyle.config.location>
     <java.version>1.8</java.version>
     <spring.version>4.2.2.RELEASE</spring.version>
+    <log4j.scope>compile</log4j.scope>
   </properties>
+
+  <profiles>
+    <profile>
+      <id>container-jboss</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+        <property>
+          <name>container</name>
+          <value>jboss</value>
+        </property>
+      </activation>
+      <properties>
+        <log4j.scope>provided</log4j.scope>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+              <archive>
+                 <!--
+                   Because JBoss EAP 6.4 (AS 7) uses OSGi we must specify modules.
+                   NB! This also pulls in a copy of log4j, don't know how to avoid it yet.
+                   Don't break the "Dependencies" line below.
+                   It does not respond well to spurious white space.
+                 -->
+                <manifestEntries>
+                  <Dependencies>org.jboss.msc,org.jboss.as.server,org.jboss.as.clustering.singleton</Dependencies>
+                </manifestEntries>
+              </archive>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
   <build>
     <defaultGoal>package</defaultGoal>
@@ -550,6 +587,7 @@
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.17</version>
+      <scope>${log4j.scope}</scope>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -790,6 +828,14 @@
       <artifactId>hsqldb</artifactId>
       <version>2.3.3</version>
       <scope>test</scope>
+    </dependency>
+
+    <!-- JBoss cluster singleton -->
+    <dependency>
+      <groupId>org.jboss.as</groupId>
+      <artifactId>jboss-as-clustering-singleton</artifactId>
+      <version>7.5.0.Final-redhat-21</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Provide slf4j code with log4j-output: -->

@@ -34,10 +34,5 @@
     <property name="arguments" ref="repository.lockingCacheControlWrapper" />
   </bean>
 
-  <bean id="akka.clusterManager" class="vtk.cluster.AkkaClusterManager" destroy-method="destroy">
-    <constructor-arg name="port" value="${cluster.port}" />
-    <constructor-arg name="clusterComponents" ref="cluster.components" />
-  </bean>
-
 </beans>
 

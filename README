@@ -37,3 +37,20 @@ are necessary:
 
 7. Custom bean definitions and overriding can be placed in the file
    ~/.vrtx-context.xml (loaded if it exists).
+
+
+JBOSS
+
+For determining the master node in a JBoss cluster a singleton service is used.
+This special service is started by the file:
+
+src/main/resources/META-INF/services/org.jboss.msc.service.ServiceActivator
+
+The JBoss management code for singleton requires OSGi, and this breaks normal
+jetty:run, so we have defined a special profile in pom.xml for it. Build with:
+
+mvn -Dcontainer=jboss clean compile war:war
+
+When running, include the following (e.g. as an import in ~/vrtx-context.xml)
+
+/vtk/beans/standard-extensions/cluster/cluster.jboss.xml
