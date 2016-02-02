@@ -307,8 +307,8 @@ public class CollectionListingAggregationResolver implements AggregationResolver
 
             if (multiHostSearcher.isMultiHostSearchEnabled() && includesOtherHostRef(getLocalHostUrl(), urls)) {
                 Set<PropertySet> tmp = multiHostSearcher.retrieve(token, urls);
-                tmp = MultiHostUtil.resolveSetImageRefProperties(tmp);
                 if (tmp != null) {
+                    tmp = MultiHostUtil.resolveSetImageRefProperties(tmp);
                     result.addAll(tmp);
                 }
             } else {

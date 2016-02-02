@@ -34,12 +34,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -90,7 +90,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
     private Map<String, String> staticHeaders = new HashMap<String, String>();
 
-    private Set<LoginListener> loginListeners;
+    private Collection<LoginListener> loginListeners;
 
     private PrincipalFactory principalFactory;
 
@@ -438,7 +438,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         this.postHandler = postHandler;
     }
 
-    public void setLoginListeners(Set<LoginListener> loginListeners) {
+    public void setLoginListeners(Collection<LoginListener> loginListeners) {
         this.loginListeners = loginListeners;
     }
 
@@ -450,6 +450,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         return this.identifier;
     }
 
+    @Override
     public String toString() {
         return this.getClass().getName() + ":" + this.identifier;
     }
