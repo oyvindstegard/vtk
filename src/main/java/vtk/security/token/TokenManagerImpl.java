@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -71,10 +72,10 @@ public class TokenManagerImpl implements TokenManager, InitializingBean {
      * we maintain a local map based on the handler id.
      * NB! This assumes the handler identifiers are unique.
      * This map should probably be injected by Spring so that all possible
-     * handlers are know early. Otherwise a different node in the cluster
+     * handlers are known early. Otherwise a different node in the cluster
      * may not have the handler mapping already.
      */
-    private Map<String, AuthenticationHandler> authHandlerMap = new HashMap<String, AuthenticationHandler>();
+    private Map<String, AuthenticationHandler> authHandlerMap = new ConcurrentHashMap<String, AuthenticationHandler>();
     private Map<String, Principal> registeredPrincipals = new HashMap<String, Principal>();
     private List<Principal> defaultPrincipals = null;
     
