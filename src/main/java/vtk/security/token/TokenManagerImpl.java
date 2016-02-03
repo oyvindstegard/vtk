@@ -1,4 +1,4 @@
-/* Copyright (c) 2004, University of Oslo, Norway
+/* Copyright (c) 2004, 2016 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@ import java.util.UUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.security.Principal;
 import vtk.security.web.AuthenticationHandler;
 import vtk.util.cache.SimpleCache;
@@ -65,6 +66,15 @@ public class TokenManagerImpl implements TokenManager, InitializingBean {
     private static Log logger = LogFactory.getLog(TokenManagerImpl.class);
 
     private SimpleCache<String, PrincipalItem> cache = null;
+    /**
+     * Since the handlers themselves are not serializable across a distributed cache,
+     * we maintain a local map based on the handler id.
+     * NB! This assumes the handler identifiers are unique.
+     * This map should probably be injected by Spring so that all possible
+     * handlers are know early. Otherwise a different node in the cluster
+     * may not have the handler mapping already.
+     */
+    private Map<String, AuthenticationHandler> authHandlerMap = new HashMap<String, AuthenticationHandler>();
     private Map<String, Principal> registeredPrincipals = new HashMap<String, Principal>();
     private List<Principal> defaultPrincipals = null;
     
@@ -78,7 +88,6 @@ public class TokenManagerImpl implements TokenManager, InitializingBean {
     }
     
     public void afterPropertiesSet() throws Exception {
-
         if (this.defaultPrincipals != null) {
             for (Principal principal: this.defaultPrincipals) {
                 String token = generateID();
@@ -112,15 +121,18 @@ public class TokenManagerImpl implements TokenManager, InitializingBean {
         if (item == null) {
             return null;
         }
-        return item.getAuthenticationHandler();
+        AuthenticationHandler handler = this.authHandlerMap.get(item.getAuthenticationHandlerId());
+        if (handler == null) {
+            throw new RuntimeException("No AuthenticationHandler found for Id: " + item.getAuthenticationHandlerId());
+        }
+        return handler;
     }
-    
-
 
     public String newToken(Principal principal,
                            AuthenticationHandler authenticationHandler) {
         String token = generateID();
-        PrincipalItem item = new PrincipalItem(principal, authenticationHandler);
+        PrincipalItem item = new PrincipalItem(principal, authenticationHandler.getIdentifier());
+        this.authHandlerMap.putIfAbsent(authenticationHandler.getIdentifier(), authenticationHandler);
         this.cache.put(token, item);
         return token;
     }
@@ -152,27 +164,28 @@ public class TokenManagerImpl implements TokenManager, InitializingBean {
     private String generateID() {
         return UUID.randomUUID().toString();
     }
- 
 
     /**
      * Class holding (Principal, AuthenticationHandler) pairs.
      */
-    private static class PrincipalItem {
+    private static class PrincipalItem implements java.io.Serializable {
+        private static final long serialVersionUID = 2690838387670375336L;
+
         private Principal principal = null;
-        private AuthenticationHandler authenticationHandler = null;
+        private String authenticationHandlerId = null;
 
         public PrincipalItem(Principal principal,
-                             AuthenticationHandler authenticationHandler) {
+                             String authenticationHandlerId) {
             this.principal = principal;
-            this.authenticationHandler = authenticationHandler;
+            this.authenticationHandlerId = authenticationHandlerId;
         }
 
         public Principal getPrincipal() {
             return this.principal;
         }
 
-        public AuthenticationHandler getAuthenticationHandler() {
-            return this.authenticationHandler;
+        public String getAuthenticationHandlerId() {
+            return this.authenticationHandlerId;
         }
     }
 
