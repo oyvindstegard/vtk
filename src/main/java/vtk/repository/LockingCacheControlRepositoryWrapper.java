@@ -670,8 +670,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
                     + uri + (includeDescendants ? " (including descendants)" : ""));
         }
         if (clusterContext.isPresent()) {
-            FlushMessage flushMessage = new FlushMessage();
-            flushMessage.path = uri;
+            FlushMessage flushMessage = new FlushMessage(uri);
             if (logger.isDebugEnabled()) {
                 logger.debug(serviceMethodName
                         + "() completed, sending cluster flush message: " + uri);
@@ -749,7 +748,12 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     public static class FlushMessage implements Serializable {
         private static final long serialVersionUID = 8288073797498465660L;
-        Path path;
+        public final Path path;
+        
+        public FlushMessage(Path path) {
+            this.path = path;
+        }
+        
         @Override
         public String toString() { return getClass().getSimpleName() + "(" + path + ")"; }
     }
