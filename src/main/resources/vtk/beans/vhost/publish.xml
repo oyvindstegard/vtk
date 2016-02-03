@@ -285,6 +285,7 @@
         <ref bean="resourceIsNotPublishedAssertion" />
         <ref bean="notViewUnpublishedAssertion" />
         <ref bean="notViewUnpublishedRefererAssertion" />
+        <ref bean="notViewUnpublishedMediaPlayerRefererAssertion" />
       </list>
     </property>
     <property name="handler" ref="displayUnpublishedPageHandler" />
@@ -346,6 +347,12 @@
   <bean id="notViewUnpublishedRefererAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
     <property name="header" value="Referer" />
     <property name="pattern" value=".*[\?&amp;]vrtxPreviewUnpublished=true.*" />
+    <property name="invert" value="true" />
+  </bean>
+
+  <bean id="notViewUnpublishedMediaPlayerRefererAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
+    <property name="header" value="Referer" />
+    <property name="pattern" value="^https?:\/\/.*\/vrtx\/__vrtx\/static-resources\/flash\/SMP_2.0.2494-patched\/10.2\/StrobeMediaPlayback.swf$" />
     <property name="invert" value="true" />
   </bean>
 
