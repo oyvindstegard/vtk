@@ -18,6 +18,7 @@
     <property name="arguments" ref="systemIndex" />
   </bean>
 
+  <!-- Override -->
   <bean id="systemIndex.openAsReadOnly" class="java.lang.Boolean">
     <constructor-arg type="boolean" value="true" />
   </bean>
@@ -37,6 +38,62 @@
   <bean id="akka.clusterManager" class="vtk.cluster.AkkaClusterManager" destroy-method="destroy">
     <constructor-arg name="port" value="${cluster.port}" />
     <constructor-arg name="clusterComponents" ref="cluster.components" />
+  </bean>
+
+  <bean id="redis.pool.config" class="redis.clients.jedis.JedisPoolConfig">
+    <property name="maxTotal" value="2000" />
+    <property name="maxIdle" value="100" />
+    <property name="minIdle" value="50" />
+    <property name="testWhileIdle" value="true" />
+  </bean>
+
+  <bean id="redis.pool" class="redis.clients.jedis.JedisPool">
+    <constructor-arg name="poolConfig" ref="redis.pool.config" />
+    <constructor-arg name="host" value="localhost" />
+  </bean>
+
+  <!-- Override -->
+  <bean id="saml.ieCookieStore.cache" class="vtk.util.cache.RedisSimpleCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="saml.ieCookieStore.cache." />
+    <constructor-arg name="timeoutSeconds" value="3600" />
+    <constructor-arg name="updateTimeouts" value="true" />
+  </bean>
+
+
+  <!-- Override -->
+  <bean id="saml.requestIdStore" class="vtk.util.cache.RedisSimpleCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="saml.requestIdStore." />
+    <constructor-arg name="timeoutSeconds" value="1800" />
+    <constructor-arg name="updateTimeouts" value="false" />
+  </bean>
+
+  <!-- Override -->
+  <!--
+  <bean id="feide.requestIdStore" class="vtk.util.cache.RedisSimpleCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="feide.requestIdStore." />
+    <constructor-arg name="timeoutSeconds" value="1800" />
+    <constructor-arg name="updateTimeouts" value="false" />
+  </bean>
+  -->
+
+  <!-- Override -->
+  <bean id="tokenManagerCache" class="vtk.util.cache.RedisSimpleCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="tokenManagerCache." />
+    <constructor-arg name="timeoutSeconds" value="1800" />
+    <constructor-arg name="updateTimeouts" value="true" />
+  </bean>
+
+
+  <!-- Override -->
+  <bean id="cookieLinkStore.cache" class="vtk.util.cache.RedisSimpleCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="cookieLinkStore.cache." />
+    <constructor-arg name="timeoutSeconds" value="3600" />
+    <constructor-arg name="updateTimeouts" value="true" />
   </bean>
 
 </beans>
