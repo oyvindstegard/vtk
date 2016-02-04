@@ -30,12 +30,28 @@
  */
 package vtk.cluster;
 
+/**
+ * Interface to be implemented by application components that 
+ * need to be aware of that they are part of a cluster.
+ */
 public interface ClusterAware {
 
-    public void clusterContext(ClusterContext context);
+    /**
+     * Called when a {@link ClusterContext} becomes available
+     * @param context the cluster context  
+     */
+    default void clusterContext(ClusterContext context) { }
 
-    public void roleChange(ClusterRole role);
+    /**
+     * Called when the {@link ClusterRole} of this node changes.
+     * @param role the cluster role  
+     */
+    default void roleChange(ClusterRole role) { }
 
-    public void clusterMessage(Object message);
+    /**
+     * Called when a message from another node in the cluster arrives
+     * @param message the cluster message
+     */
+    default void clusterMessage(Object message) { }
 
 }
