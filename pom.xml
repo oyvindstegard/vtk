@@ -581,26 +581,11 @@
       <artifactId>jetty-webapp</artifactId>
       <version>9.2.14.v20151106</version>
     </dependency>
-
-
-    <!--
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-      <version>${spring.boot.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-tomcat</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.springframework.session</groupId>
+      <artifactId>spring-session-data-redis</artifactId>
+      <version>1.0.2.RELEASE</version>
     </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jetty</artifactId>
-      <version>${spring.boot.version}</version>
-    </dependency>
-    -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
@@ -706,6 +691,11 @@
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-cluster_2.11</artifactId>
       <version>2.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>2.5.2</version><!-- (match version in spring-session-data-redis) -->
     </dependency>
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
