@@ -1,0 +1,15 @@
+(Work In Progress)
+
+To run in clustered mode (two nodes on localhost):
+
+1. Set up Redis to listen on localhost on the default port
+   
+   http://redis.io
+
+2. Start node 1:
+
+mvn -Dvtk.extensions=cluster -Dvtk.cluster.port=6263 -Dakka.cluster.seed-nodes.0=akka.tcp://ClusterSystem@127.0.0.1:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://ClusterSystem@127.0.0.1:6263 -Dakka.cluster.seed-nodes.1=akka.tcp://ClusterSystem@127.0.0.1:6264 -Dvtk.listen=localhost:9321,localhost:9322 -Dvtk.webdav.port=9321 -Dvtk.web.port=9322 -Dvshell.port=9991 -Dshell.port=9990 spring-boot:run
+
+3. Start node 2:
+
+mvn -Dvtk.extensions=cluster -Dvtk.cluster.port=6262 -Dakka.cluster.seed-nodes.0=akka.tcp://ClusterSystem@127.0.0.1:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://ClusterSystem@127.0.0.1:6263 -Dakka.cluster.seed-nodes.1=akka.tcp://ClusterSystem@127.0.0.1:6264 -Dvtk.listen=localhost:9323,localhost:9324 -Dvtk.webdav.port=9323 -Dvtk.web.port=9324 -Dvshell.port=9993 -Dshell.port=9994 spring-boot:run
