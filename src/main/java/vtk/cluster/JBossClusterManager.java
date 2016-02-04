@@ -35,7 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -56,7 +57,7 @@ public class JBossClusterManager implements Service<String> {
     /**
      * Logger is non-static on purpose in order to separate instances.
      */
-    private Logger log = Logger.getLogger(JBossClusterManager.class);
+    private Log log = LogFactory.getLog(JBossClusterManager.class);
     private static int createCount = 0;
 
     /**
@@ -75,7 +76,7 @@ public class JBossClusterManager implements Service<String> {
     private static JGroupsChannel channel = null;
 
     public JBossClusterManager() {
-        log = Logger.getLogger(JBossClusterManager.class.getName() + "-" + createCount);
+        log = LogFactory.getLog(JBossClusterManager.class.getName() + "-" + createCount);
         createCount++;
         log.info("CONSTRUCT: " + getValue());
     }

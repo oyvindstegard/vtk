@@ -30,7 +30,8 @@
  */
 package vtk.cluster;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jboss.as.clustering.singleton.SingletonService;
 import org.jboss.as.clustering.singleton.election.NamePreference;
 import org.jboss.as.clustering.singleton.election.PreferredSingletonElectionPolicy;
@@ -42,7 +43,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
 
 public class JBossClusterServiceActivator implements ServiceActivator {
-    private final Logger log = Logger.getLogger(this.getClass());
+    private final Log log = LogFactory.getLog(this.getClass());
     private String preferredMaster = null;
 
     @Override

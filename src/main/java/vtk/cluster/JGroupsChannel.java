@@ -37,7 +37,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -47,7 +48,7 @@ import org.jgroups.ReceiverAdapter;
  * Message system based on JGroups.
  */
 public class JGroupsChannel {
-    private static Logger log = Logger.getLogger(JGroupsChannel.class);
+    private static Log log = LogFactory.getLog(JGroupsChannel.class);
     private static final String channelName = "VtkCluster";
 
     /**
