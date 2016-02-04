@@ -46,7 +46,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import vtk.cluster.ClusterAware;
-import vtk.cluster.ClusterContext;
 import vtk.cluster.ClusterRole;
 import vtk.repository.store.DataAccessor;
 import vtk.security.AuthenticationException;
@@ -78,12 +77,6 @@ public final class AuthorizationManager implements ClusterAware {
     public void roleChange(ClusterRole role) {
         this.clusterRole = Optional.of(role);
     }
-
-    @Override
-    public void clusterContext(ClusterContext context) { }
-
-    @Override
-    public void clusterMessage(Object message) { }
 
     /**
      * Map of a single privilege P to the set of super privileges A{P,..} in which

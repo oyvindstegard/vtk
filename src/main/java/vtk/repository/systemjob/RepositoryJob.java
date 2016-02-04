@@ -41,7 +41,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.cluster.ClusterAware;
-import vtk.cluster.ClusterContext;
 import vtk.cluster.ClusterRole;
 import vtk.context.BaseContext;
 import vtk.repository.Repository;
@@ -149,14 +148,8 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
     }
 
     @Override
-    public void clusterContext(ClusterContext context) { }
-
-    @Override
     public void roleChange(ClusterRole role) {
         this.clusterRole = Optional.of(role);
     }
-
-    @Override
-    public void clusterMessage(Object message) { }
 
 }

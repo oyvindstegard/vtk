@@ -42,7 +42,6 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
 import vtk.cluster.ClusterAware;
-import vtk.cluster.ClusterContext;
 import vtk.cluster.ClusterRole;
 import vtk.repository.Acl;
 import vtk.repository.ChangeLogEntry;
@@ -289,13 +288,8 @@ public class IncrementalUpdater implements ClusterAware {
     }
 
     @Override
-    public void clusterContext(ClusterContext context) { }
-
-    @Override
     public void roleChange(ClusterRole role) {
         this.clusterRole = Optional.of(role);
     }
 
-    @Override
-    public void clusterMessage(Object message) { }
 }
