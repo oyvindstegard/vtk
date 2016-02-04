@@ -39,6 +39,7 @@ import org.jboss.msc.service.DelegatingServiceContainer;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistryException;
 
 public class JBossClusterServiceActivator implements ServiceActivator {
     private final Logger log = Logger.getLogger(this.getClass());
@@ -48,31 +49,35 @@ public class JBossClusterServiceActivator implements ServiceActivator {
     public void activate(ServiceActivatorContext context) {
         log.info("JBossClusterManager will be installed!");
 
-        JBossClusterManager service = new JBossClusterManager();
-        SingletonService<String> singleton = new SingletonService<String>(service, JBossClusterManager.SINGLETON_SERVICE_NAME);
-        /*
-         * The NamePreference is a combination of the node name (-Djboss.node.name) and the name of
-         * the configured cache "singleton". If there is more than 1 node, it is possible to add more than
-         * one name and the election will use the first available node in that list.
-         *   -  To pass a chain of election policies to the singleton and tell JGroups to run the
-         * singleton on a node with a particular name, uncomment the first line  and
-         * comment the second line below.
-         *   - To pass a list of more than one node, comment the first line and uncomment the
-         * second line below.
-         */
-        if (preferredMaster != null) {
-            singleton.setElectionPolicy(
-                new PreferredSingletonElectionPolicy(
-                    new SimpleSingletonElectionPolicy(), 
-                    new NamePreference(preferredMaster + "/singleton")));
-        }
+        try {
+            JBossClusterManager service = new JBossClusterManager();
+            SingletonService<String> singleton = new SingletonService<String>(service, JBossClusterManager.SINGLETON_SERVICE_NAME);
+            /*
+             * The NamePreference is a combination of the node name (-Djboss.node.name) and the name of
+             * the configured cache "singleton". If there is more than 1 node, it is possible to add more than
+             * one name and the election will use the first available node in that list.
+             *   -  To pass a chain of election policies to the singleton and tell JGroups to run the
+             * singleton on a node with a particular name, uncomment the first line  and
+             * comment the second line below.
+             *   - To pass a list of more than one node, comment the first line and uncomment the
+             * second line below.
+             */
+            if (preferredMaster != null) {
+                singleton.setElectionPolicy(
+                    new PreferredSingletonElectionPolicy(
+                        new SimpleSingletonElectionPolicy(),
+                        new NamePreference(preferredMaster + "/singleton")));
+            }
 
-        singleton.build(new DelegatingServiceContainer(context.getServiceTarget(), context.getServiceRegistry()))
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .install()
-        ;
+            singleton.build(new DelegatingServiceContainer(context.getServiceTarget(), context.getServiceRegistry()))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install()
+            ;
+        } catch (Exception e) {
+            throw new ServiceRegistryException("Unable to activate JBossClusterManager", e);
+        }
     }
-    
+
     public String getPreferredMaster() {
         return this.preferredMaster;
     }

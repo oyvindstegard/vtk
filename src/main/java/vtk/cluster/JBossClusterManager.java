@@ -45,38 +45,58 @@ import org.jboss.msc.service.StopContext;
 /**
  * Implemented using a cluster wide singleton pattern.
  * Only one cluster manager is active at any one point.
- * 
+ *
  * NB! Internal state is kept in static variables because Spring will
  * create a new instance of the manager on the local server in addition
  * to the instance created by JBossClusterServiceActivator.
- *   
- * @author gyrdtl
  */
 public class JBossClusterManager implements Service<String> {
-    private static final Logger log = Logger.getLogger(JBossClusterManager.class);    
     public static final ServiceName SINGLETON_SERVICE_NAME = ServiceName.JBOSS.append("vtk", "cluster", "JBossClusterManager");
+
+    /**
+     * Logger is non-static on purpose in order to separate instances.
+     */
+    private Logger log = Logger.getLogger(JBossClusterManager.class);
+    private static int createCount = 0;
+
     /**
      * A flag whether the service is started.
      */
     private static final AtomicBoolean started = new AtomicBoolean(false);
-    
+
     /**
      * List of components to notify of state change.
      */
     private static List<ClusterAware> clusterComponents = null;
-    
+
+    /**
+     * Message system.
+     */
+    private static JGroupsChannel channel = null;
+
     public JBossClusterManager() {
+        log = Logger.getLogger(JBossClusterManager.class.getName() + "-" + createCount);
+        createCount++;
         log.info("CONSTRUCT: " + getValue());
     }
-    
+
+    @Override
+    protected void finalize() {
+        if (channel != null) {
+            channel.close();
+            channel = null;
+        }
+        log.info("FINALIZE: " + getValue());
+    }
+
     /**
      * @return the name of the server node
      */
     public String getValue() throws IllegalStateException, IllegalArgumentException {
         return String.format(
-            "%s is %s at %s with %d components", 
-            JBossClusterManager.class.getSimpleName(), 
-            (started.get() ? "started" : "not started"), 
+            "%s is %s at %s with %d components",
+            JBossClusterManager.class.getSimpleName(),
+            (started.get() ? "started" : "not started"),
             System.getProperty("jboss.node.name"),
             (clusterComponents == null) ? -1 : clusterComponents.size());
     }
@@ -97,13 +117,16 @@ public class JBossClusterManager implements Service<String> {
         }
         notifyRole();
     }
-    
-    public void setClusterComponents(List<ClusterAware> clusterComponents) {
+
+    public void setClusterComponents(List<ClusterAware> clusterComponents) throws Exception {
         log.info(String.format("CONFIG: Setting %d cluster components", clusterComponents.size()));
         JBossClusterManager.clusterComponents = Collections.unmodifiableList(new ArrayList<>(clusterComponents));
+        if (channel == null) {
+            channel = new JGroupsChannel(JBossClusterManager.clusterComponents);
+        }
         notifyRole();
     }
-    
+
     /*
      * Notify the role to the cluster aware components.
      */

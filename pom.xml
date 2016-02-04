@@ -159,7 +159,7 @@
                    It does not respond well to spurious white space.
                  -->
                 <manifestEntries>
-                  <Dependencies>org.jboss.msc,org.jboss.as.server,org.jboss.as.clustering.singleton</Dependencies>
+                  <Dependencies>org.jboss.msc,org.jboss.as.server,org.jboss.as.clustering.singleton,org.infinispan,org.jgroups</Dependencies>
                 </manifestEntries>
               </archive>
             </configuration>

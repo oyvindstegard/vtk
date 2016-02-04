@@ -8,4 +8,37 @@
     <property name="clusterComponents" ref="cluster.components"/>
   </bean>
 
+  <bean id="cookieLinkStore.cache" class="vtk.cluster.InfinispanCache">
+    <constructor-arg name="name" value="cookieLinkStore.cache" />
+    <constructor-arg name="timeoutSeconds" value="3600" />
+  </bean>
+
+  <bean id="feide.requestIdStore" class="vtk.cluster.InfinispanCache">
+    <constructor-arg name="name" value="feide.requestIdStore" />
+    <!-- Should be same timeout as sessions in general. -->
+    <constructor-arg name="timeoutSeconds" value="1800" />
+    <!-- TODO
+    property name="refreshTimestampOnGet" value="false" />
+    -->
+  </bean>
+
+  <bean id="saml.ieCookieStore.cache" class="vtk.cluster.InfinispanCache">
+    <constructor-arg name="name" value="saml.ieCookieStore.cache" />
+    <constructor-arg name="timeoutSeconds" value="3600" />
+  </bean>
+
+  <bean id="saml.requestIdStore" class="vtk.cluster.InfinispanCache">
+    <constructor-arg name="name" value="saml.requestIdStore" />
+    <!-- Should be same timeout as sessions in general. -->
+    <constructor-arg name="timeoutSeconds" value="1800" />
+    <!-- TODO
+    property name="refreshTimestampOnGet" value="false" />
+    -->
+  </bean>
+
+  <bean id="tokenManagerCache" class="vtk.cluster.InfinispanCache">
+    <constructor-arg name="name" value="tokenManagerCache" />
+    <constructor-arg name="timeoutSeconds" value="1800" />
+  </bean>
+
 </beans>

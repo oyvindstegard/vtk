@@ -36,6 +36,6 @@ public interface ClusterAware {
 
     public void roleChange(ClusterRole role);
 
-    public void clusterMessage(Object message);
+    public void clusterMessage(Object message) throws Exception;
 
 }
