@@ -77,17 +77,26 @@ public class InfinispanCache<K, V> implements SimpleCache<K, V> {
     
     @Override
     public void put(K key, V value) {
+        if (key == null) {
+            return;
+        }
         cache.put(key, value);
         log.debug(String.format("PUT: key=%s, value=%s, count=%d", key, value, getSize()));
     }
 
     @Override
     public V get(K key) {
+        if (key == null) {
+            return null;
+        }
         return cache.get(key);
     }
 
     @Override
     public V remove(K key) {
+        if (key == null) {
+            return null;
+        }
         return cache.remove(key);
     }
 
