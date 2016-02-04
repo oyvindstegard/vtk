@@ -32,6 +32,7 @@ package vtk.web.view.freemarker;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -40,13 +41,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerView;
-import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.SimpleHash;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import vtk.web.referencedata.ReferenceDataProvider;
+import vtk.web.referencedata.ReferenceDataProviding;
 
 
 /**
@@ -63,7 +64,7 @@ import freemarker.template.TemplateException;
 public class FreeMarkerViewRenderer extends FreeMarkerView implements ReferenceDataProviding {
 
     private boolean debug = false;
-    private ReferenceDataProvider[] referenceDataProviders;
+    private Collection<ReferenceDataProvider> referenceDataProviders;
     private LocaleResolver resourceLocaleResolver;
     private String repositoryID;
     private Integer status = null;
@@ -109,12 +110,15 @@ public class FreeMarkerViewRenderer extends FreeMarkerView implements ReferenceD
         // This causes leaking of state between view invocations.
     }
 
+    private static final ReferenceDataProvider[] EMPTY = new ReferenceDataProvider[0];
+    
     @Override
     public ReferenceDataProvider[] getReferenceDataProviders() {
-        return this.referenceDataProviders;
+        if (referenceDataProviders == null) return EMPTY;
+        return referenceDataProviders.toArray(new ReferenceDataProvider[referenceDataProviders.size()]);
     }
 
-    public void setReferenceDataProviders(ReferenceDataProvider[] referenceDataProviders) {
+    public void setReferenceDataProviders(Collection<ReferenceDataProvider> referenceDataProviders) {
         this.referenceDataProviders = referenceDataProviders;
     }
 
@@ -126,7 +130,7 @@ public class FreeMarkerViewRenderer extends FreeMarkerView implements ReferenceD
         List<ReferenceDataProvider> result = new ArrayList<ReferenceDataProvider>();
         addReferenceDataProviders(l, result);
         if (result.size() > 0) {
-            this.referenceDataProviders = result.toArray(new ReferenceDataProvider[result.size()]);
+            this.referenceDataProviders = result;
         }
     }
 
