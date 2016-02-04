@@ -96,5 +96,20 @@
     <constructor-arg name="updateTimeouts" value="true" />
   </bean>
 
+  <!-- Override -->
+  <bean id="springSessionRepositoryFilter" 
+        class="org.springframework.session.web.http.SessionRepositoryFilter">
+    <constructor-arg name="sessionRepository" ref="spring.sessionRepository" />
+  </bean>
+
+  <bean id="spring.sessionRepository" 
+        class="org.springframework.session.data.redis.RedisOperationsSessionRepository">
+    <constructor-arg name="redisConnectionFactory">
+      <bean class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+        <constructor-arg name="poolConfig" ref="redis.pool.config" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
 </beans>
 

@@ -134,6 +134,9 @@
     <property name="timeoutSeconds" value="3600" />
   </bean>
   
+  <!-- Default spring session filter (no filter) -->
+  <bean id="springSessionRepositoryFilter" class="vtk.web.servlet.NullFilter" />
+
   <bean id="defaultRequestFilters" class="vtk.util.SortedCollection">
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
