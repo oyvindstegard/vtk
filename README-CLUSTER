@@ -1,6 +1,6 @@
 (Work In Progress)
 
-Example setup with two nodes
+Example setup with two nodes and Redis as shared cache and session store
 
 1. Set up Redis to listen on localhost on the default port
    
