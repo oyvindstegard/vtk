@@ -57,6 +57,11 @@ public class JBossClusterServiceActivator implements ServiceActivator {
      * point in the application when running on JBoss.
      * Also, this setup is required because when JBoss is in charge of log
      * configuration the property is ignored.
+     *
+     * TODO: A better location for this code? (Make it more reusable.)
+     * (Can entire function be obsoleted? Perhaps by using standard "log4j.xml"
+     * for filename? JBoss somehow triggered on this name, but ended up with
+     * no logging at all.)
      */
     private void readLogConfiguration() {
         String logConfigLocation = System.getProperty("log4j.configuration");
