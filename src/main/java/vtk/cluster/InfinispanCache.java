@@ -52,30 +52,32 @@ import vtk.util.cache.SimpleCache;
 public class InfinispanCache<K, V> implements SimpleCache<K, V> {
     private static final Log log = LogFactory.getLog(InfinispanCache.class);
     private static final EmbeddedCacheManager manager =
-            new DefaultCacheManager(GlobalConfigurationBuilder
-                    .defaultClusteredBuilder()
-                    .globalJmxStatistics().allowDuplicateDomains(true).enable()
-                    .build());
+        new DefaultCacheManager(GlobalConfigurationBuilder
+            .defaultClusteredBuilder()
+            .globalJmxStatistics().allowDuplicateDomains(true).enable()
+            .build());
     private Cache<K, V> cache = null;
 
     /**
      * Setup and connect to shared cache.
      * @param name Unique identifier of shared cache within the cluster.
      */
-    public InfinispanCache(String name, int timeoutSeconds) {
+    public InfinispanCache(String name, int timeoutSeconds, boolean updateTimeouts) {
+        long timeoutMillis = timeoutSeconds * 1000;
         Configuration config = new ConfigurationBuilder()
-                // Replicate all entries to all nodes
-                .clustering().cacheMode(CacheMode.REPL_SYNC)
-                // Set expiration - cache entries expire after some time (given by
-                // the lifespan parameter) and are removed from the cache (cluster-wide).
-                .expiration().lifespan(timeoutSeconds * 1000) 
-                .build();
+            // Replicate all entries to all nodes
+            .clustering().cacheMode(CacheMode.REPL_SYNC)
+            .expiration()
+                .lifespan(updateTimeouts ? -1L : timeoutMillis)
+                .maxIdle(updateTimeouts ? timeoutMillis : -1L)
+                .enableReaper()
+            .build();
 
         // Set configuration overrides for this cache name
         manager.defineConfiguration(name, config);
         cache = manager.getCache(name);
     }
-    
+
     @Override
     public void put(K key, V value) {
         if (key == null) {
