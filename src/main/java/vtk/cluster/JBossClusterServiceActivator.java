@@ -30,8 +30,12 @@
  */
 package vtk.cluster;
 
+import java.io.InputStream;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.jboss.as.clustering.singleton.SingletonService;
 import org.jboss.as.clustering.singleton.election.NamePreference;
 import org.jboss.as.clustering.singleton.election.PreferredSingletonElectionPolicy;
@@ -46,10 +50,37 @@ public class JBossClusterServiceActivator implements ServiceActivator {
     private final Log log = LogFactory.getLog(this.getClass());
     private String preferredMaster = null;
 
+    /**
+     * Try to merge in additional configurations.
+     *
+     * Setup is done in this class because it is the earliest accessible
+     * point in the application when running on JBoss.
+     * Also, this setup is required because when JBoss is in charge of log
+     * configuration the property is ignored.
+     */
+    private void readLogConfiguration() {
+        String logConfigLocation = System.getProperty("log4j.configuration");
+        if (logConfigLocation != null) {
+            try {
+                String resourceName = "/" + logConfigLocation;
+                log.info("Appending application specific log configuration from " + resourceName);
+                InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourceName);
+                if (is == null) {
+                    log.warn("InputStream is null: " + resourceName);
+                } else {
+                    new DOMConfigurator().doConfigure(is, LogManager.getLoggerRepository());
+                }
+            } catch (Exception e) {
+                log.error("Failed to configure from: " + logConfigLocation, e);
+            }
+        }
+    }
+
     @Override
     public void activate(ServiceActivatorContext context) {
-        log.info("JBossClusterManager will be installed!");
+        readLogConfiguration();
 
+        log.info("JBossClusterManager will be installed!");
         try {
             JBossClusterManager service = new JBossClusterManager();
             SingletonService<String> singleton = new SingletonService<String>(service, JBossClusterManager.SINGLETON_SERVICE_NAME);
