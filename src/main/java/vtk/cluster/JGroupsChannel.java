@@ -104,8 +104,12 @@ public class JGroupsChannel {
             public void receive(Message msg) {
                 try {
                     log.debug("Received msg from " + msg.getSrc() + ": " + msg.getObject());
-                    for (ClusterContextImpl context : clusterContexts) {
-                        context.receive(msg);
+                    if (!msg.getSrc().equals(channel.getAddress())) {
+                        for (ClusterContextImpl context : clusterContexts) {
+                            context.receive(msg);
+                        }
+                    } else {
+                        log.debug(String.format("Ignored msg '%s' sent from self node", msg));
                     }
                 } catch (Exception e) {
                     log.error(String.format("Receive msg '%s' from cluster", msg), e);
