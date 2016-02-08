@@ -80,6 +80,7 @@
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="spCookieAuthHandlers.builder"
@@ -133,10 +134,14 @@
     <property name="timeoutSeconds" value="3600" />
   </bean>
   
+  <!-- Default spring session filter (no filter) -->
+  <bean id="springSessionRepositoryFilter" class="vtk.web.servlet.NullFilter" />
+
   <bean id="defaultRequestFilters" class="vtk.util.SortedCollection">
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="defaultRequestFilters.builder"
@@ -150,6 +155,7 @@
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="defaultResponseFilters.builder"

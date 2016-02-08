@@ -115,14 +115,5 @@ public class InfinispanCache<K, V> implements SimpleCache<K, V> {
     public Set<K> getKeys() {
         return Collections.unmodifiableSet(cache.keySet());
     }
-
-    /**
-     * Ignored.
-     * Consider activating background eviction instead.
-     */
-    @Override
-    public void cleanupExpiredItems() {
-        log.info("IGNORED: cleanupExpiredItems");
-    }
 }
 

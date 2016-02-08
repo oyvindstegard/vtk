@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <groupId>vtk</groupId>
   <artifactId>vtk</artifactId>
   <version>66-SNAPSHOT</version>
@@ -9,7 +9,7 @@
   <url>http://www.uio.no/tjenester/it/web/vortex/</url>
   <modelVersion>4.0.0</modelVersion>
   <prerequisites>
-    <maven>3.0.4</maven>
+    <maven>3.3.1</maven>
   </prerequisites>
   <description>
     The VTK Web Framework is an open source web publishing solution. It
@@ -129,8 +129,9 @@
     <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     <checkstyle.config.location>src/main/checkstyle/checkstyle.xml</checkstyle.config.location>
     <java.version>1.8</java.version>
-    <spring.version>4.2.2.RELEASE</spring.version>
     <log4j.scope>compile</log4j.scope>
+    <spring.version>4.2.3.RELEASE</spring.version>
+    <spring.boot.version>1.3.0.RELEASE</spring.boot.version>
   </properties>
 
   <profiles>
@@ -217,6 +218,13 @@
     </testResources>
 
     <plugins>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring.boot.version}</version>
+      </plugin>
+
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
@@ -258,7 +266,7 @@
             <configuration>
               <scripts>
                 <script><![CDATA[
-                  project.properties['hostname'] = java.net.InetAddress.getLocalHost().getHostName()
+                project.properties['hostname'] = java.net.InetAddress.getLocalHost().getHostName()
                 ]]></script>
               </scripts>
             </configuration>
@@ -592,13 +600,39 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.0.1</version>
+      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jdom</groupId>
       <artifactId>jdom</artifactId>
       <version>2.0.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot</artifactId>
+      <version>${spring.boot.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-autoconfigure</artifactId>
+      <version>${spring.boot.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlets</artifactId>
+      <version>9.2.14.v20151106</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
+      <version>9.2.14.v20151106</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.session</groupId>
+      <artifactId>spring-session-data-redis</artifactId>
+      <version>1.0.2.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -682,9 +716,9 @@
       <version>1.5.2</version>
     </dependency>
     <dependency>
-	  <groupId>commons-io</groupId>
-	  <artifactId>commons-io</artifactId>
-	  <version>2.4</version>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -711,6 +745,11 @@
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-cluster_2.11</artifactId>
       <version>2.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>2.5.2</version><!-- (match version in spring-session-data-redis) -->
     </dependency>
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
@@ -766,7 +805,7 @@
     <dependency>
       <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
       <artifactId>owasp-java-html-sanitizer</artifactId>
-      <version>20150501.1</version>
+      <version>20151202.2</version>
       <scope>compile</scope>
     </dependency>
 
@@ -779,7 +818,7 @@
     </dependency>
     
     <!--
-      Requirements for Spring's tx:advice:
+        Requirements for Spring's tx:advice:
     -->
     <dependency>
       <groupId>org.aspectj</groupId>

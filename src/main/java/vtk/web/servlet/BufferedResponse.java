@@ -191,13 +191,18 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
         }
         processContentTypeHeader(contentType);
     }
-
+    
     @Override
-    public void setContentLength(int contentLength) {
-        if (contentLength < 0) {
+    public void setContentLengthLong(long contentLength) {
+        if (contentLength < 0L) {
             return;
         }
         this.contentLength = contentLength;
+    }
+
+    @Override
+    public void setContentLength(int contentLength) {
+        setContentLengthLong(contentLength);
     }
 
     @Override
@@ -534,4 +539,5 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
         }
         return value.toString();
     }
+
 }

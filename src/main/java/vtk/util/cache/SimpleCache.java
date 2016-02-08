@@ -49,5 +49,4 @@ public interface SimpleCache<K, V> {
     
     public Set<K> getKeys();
     
-    public void cleanupExpiredItems();
 }

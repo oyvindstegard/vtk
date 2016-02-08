@@ -62,7 +62,7 @@
 
   <#if conf.linkToAllMessages?exists && viewURL?exists>
   <a class="all-messages" href="${viewURL}">
-   <@vrtx.msg code="decorating.feedComponent.allMessages" default="More..." />
+   <@vrtx.msg code="decorating.feedComponent.allMessages" default="More ..." />
   </a>
   </#if>
 </div>
@@ -78,7 +78,7 @@
     </#if>
   </#if>
 
-  <#if element = "publishDate" >
+  <#if element = "publishDate" && conf.publishedDate?exists>
     <#-- Display start date instead of published date (for events): -->
     <#assign eventDate = false />
     <#if (entry.foreignMarkup??)>
@@ -94,7 +94,7 @@
       </#list>
     </#if>
     <#-- Regular published date: -->
-    <#if !eventDate && conf.publishedDate?exists && entry.publishedDate?exists>
+    <#if !eventDate && entry.publishedDate?exists>
     <span class="published-date">
        <@vrtx.date value=entry.publishedDate format="${conf.publishedDate}" />
     </span>

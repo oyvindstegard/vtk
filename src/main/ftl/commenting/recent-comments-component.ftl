@@ -59,7 +59,7 @@
     </ul>
   </#if>
   
-  <a class="all-comments" href="${recentCommentsURL?html}"><@vrtx.msg code="commenting.comments.more" default="More..." /></a>
+  <a class="all-comments" href="${recentCommentsURL?html}"><@vrtx.msg code="commenting.comments.more" default="More ..." /></a>
   
 </div>
 </#if>

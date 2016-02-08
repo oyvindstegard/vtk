@@ -230,7 +230,8 @@ public class ManuallyApproveResourcesHandler implements Controller {
         try {
             URL url = URL.parse(location);
             if (multiHostSearcher.isMultiHostSearchEnabled()) {
-                PropertySet ps = MultiHostUtil.resolveImageRefProperties(multiHostSearcher.retrieve(token, url));
+                PropertySet ps = multiHostSearcher.retrieve(token, url);
+                // Use MultiHostUtil to resolve properties if ps is to be used for more than null check
                 if (ps == null) {
                     return false;
                 }

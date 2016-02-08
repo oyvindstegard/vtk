@@ -1,0 +1,9 @@
+To build an executable jar:
+
+$ mvn package spring-boot:repackage
+
+(Results in a file target/vtk-<version>.jar)
+
+To run (minimal setup):
+
+java -Dvtk.listen=localhost:9321,localhost:9322 -Dvtk.webdav.port=9321 -Dvtk.web.port=9322 -jar target/vtk-<version>.jar

@@ -4,25 +4,6 @@
 
   <import resource="classpath:/vtk/beans/vhost/main.xml" />
 
-  <bean parent="defaultRequestFilters.builder">
-    <property name="arguments" ref="stdReqFilter" />
-  </bean>
-
-  <bean id="stdReqFilter" class="vtk.web.filter.StandardRequestFilter">
-    <property name="urlReplacements" ref="stdReqFilter.urlReplacements" />
-    <property name="xForwardedFor" value="${request.xForwardedFor}" />
-    <property name="requestForwardFieldHeader" value="${request.forwardFieldHeader}" />
-  </bean>
-
-  <bean id="stdReqFilter.urlReplacements"
-        class="org.springframework.beans.factory.config.MapFactoryBean">
-    <property name="sourceMap">
-      <map>
-        <!--
-            <entry key="\+" value="%2B" />
-        -->
-      </map>
-    </property>
-  </bean>
+  <import resource="request-filter.xml" />
 
 </beans>

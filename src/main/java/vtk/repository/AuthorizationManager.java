@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, 2007, University of Oslo, Norway
+/* Copyright (c) 2006, 2007, 2016, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import vtk.cluster.ClusterAware;
-import vtk.cluster.ClusterContext;
 import vtk.cluster.ClusterRole;
 import vtk.repository.store.DataAccessor;
 import vtk.security.AuthenticationException;
@@ -78,12 +77,6 @@ public final class AuthorizationManager implements ClusterAware {
     public void roleChange(ClusterRole role) {
         this.clusterRole = Optional.of(role);
     }
-
-    @Override
-    public void clusterContext(ClusterContext context) { }
-
-    @Override
-    public void clusterMessage(Object message) { }
 
     /**
      * Map of a single privilege P to the set of super privileges A{P,..} in which

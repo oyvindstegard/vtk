@@ -33,7 +33,7 @@ package vtk.resourcemanagement;
 public class EditRule {
 
     public enum EditRuleType {
-        POSITION_BEFORE, POSITION_AFTER, GROUP, EDITHINT;
+        POSITION_BEFORE, POSITION_AFTER, GROUP, EDITHINT, NO_EDIT;
     }
 
     private static final String LB = "[";

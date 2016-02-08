@@ -159,8 +159,7 @@ public class SimpleCacheImpl<K, V> implements SimpleCache<K, V>, BeanNameAware,
      * Cleans up expired cached information periodically.
      * 
      */
-    @Override
-    public void cleanupExpiredItems() {
+    private void cleanupExpiredItems() {
 
         if (this.timeoutSeconds < 1) return;
     

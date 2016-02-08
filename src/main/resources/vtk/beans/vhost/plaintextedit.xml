@@ -139,6 +139,7 @@
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
     </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="plaintextEdit.tooltipsBuilder"

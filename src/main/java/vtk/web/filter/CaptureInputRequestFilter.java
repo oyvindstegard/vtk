@@ -33,6 +33,7 @@ package vtk.web.filter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -134,6 +135,21 @@ public class CaptureInputRequestFilter extends AbstractRequestFilter {
         
         int getStreamBytesRead() {
             return streamBytesRead;
+        }
+
+        @Override
+        public boolean isFinished() {
+            return wrappedStream.isFinished();
+        }
+
+        @Override
+        public boolean isReady() {
+            return wrappedStream.isReady();
+        }
+
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            wrappedStream.setReadListener(readListener);
         }
 
     }

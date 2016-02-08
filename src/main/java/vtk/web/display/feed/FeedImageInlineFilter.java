@@ -40,6 +40,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -253,6 +254,16 @@ public class FeedImageInlineFilter extends AbstractResponseFilter {
                     }
                 }
             }
+        }
+
+        @Override
+        public boolean isReady() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setWriteListener(WriteListener writeListener) {
+            throw new UnsupportedOperationException();
         }
     }
     

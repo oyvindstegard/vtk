@@ -1,21 +1,21 @@
 /* Copyright (c) 2008, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -42,6 +42,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -272,6 +273,14 @@ public class ResourceArchiver {
         String path = this.getRequiredCommentAttribute(entryLinePrefix + "parent", commentContent);
         String author = this.getRequiredCommentAttribute(entryLinePrefix + "author", commentContent);
         String time = this.getRequiredCommentAttribute(entryLinePrefix + "time", commentContent);
+        Date timestamp = null;
+        try {
+            timestamp = new SimpleDateFormat(dateFormat).parse(time);
+        }
+        catch (Throwable t) {
+            // Try java.util.Date's default format before giving up:
+            timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(time);
+        }
         String title = null;
         if (commentContent.containsKey(entryLinePrefix + "title")) {
             title = commentContent.get(entryLinePrefix + "title").toString();
@@ -282,7 +291,7 @@ public class ResourceArchiver {
         comment.setURI(Path.fromString(getExpandedEntryUri(base, path)));
         comment.setAuthor(this.principalFactory.getPrincipal(author, Type.USER));
         comment.setTitle(title);
-        comment.setTime(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(time));
+        comment.setTime(timestamp);
         comment.setContent(content);
 
         return comment;
@@ -374,7 +383,7 @@ public class ResourceArchiver {
                 // Skip inherited properties
                 continue;
             }
-            
+
             PropertyTypeDefinition propDef = property.getDefinition();
             Namespace namespace = propDef.getNamespace();
 
@@ -548,6 +557,9 @@ public class ResourceArchiver {
             Path archivedResourcePath = r.getURI();
             int subStringIndex = baseResourceToArchivePath.isRoot() ? baseResourceToArchivePath.toString().length()
                     : baseResourceToArchivePath.toString().length() + 1;
+
+            String timestamp = new SimpleDateFormat(dateFormat).format(comment.getTime());
+
             String archivedCommentParentPath = archivedResourcePath.toString().substring(subStringIndex);
             sb.append("X-vrtx-comment-parent: ").append(archivedCommentParentPath).append("\n");
             sb.append("X-vrtx-comment-author: ").append(comment.getAuthor()).append("\n");
@@ -555,7 +567,7 @@ public class ResourceArchiver {
             if (title != null && !"".equals(title.trim())) {
                 sb.append("X-vrtx-comment-title: ").append(comment.getTitle()).append("\n");
             }
-            sb.append("X-vrtx-comment-time: ").append(comment.getTime()).append("\n");
+            sb.append("X-vrtx-comment-time: ").append(timestamp).append("\n");
             sb.append("X-vrtx-comment-content: ").append(comment.getContent());
             jo.write(sb.toString().getBytes());
         }
@@ -576,7 +588,7 @@ public class ResourceArchiver {
         boolean aclModified = false;
 
         InheritablePropertiesStoreContext sc = new InheritablePropertiesStoreContext();
-        
+
         for (Object key : attributes.keySet()) {
 
             String name = key.toString();
@@ -642,12 +654,12 @@ public class ResourceArchiver {
         } else {
             prop.setValue(valueFormatter.stringToValue(rawValue.trim(), format, null));
         }
-        
+
         if (propDef.isInheritable()) {
             // Make sure inheritable props are re-created as well
             sc.addAffectedProperty(propDef);
         }
-        
+
         return true;
     }
 

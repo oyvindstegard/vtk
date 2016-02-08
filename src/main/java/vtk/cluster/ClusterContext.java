@@ -32,11 +32,30 @@ package vtk.cluster;
 
 import java.io.Serializable;
 
+/**
+ * Handle for application components that wish to subscribe to
+ * or send cluster messages.
+  */
 public interface ClusterContext {
 
-    public void subscribe(Class<? extends Serializable> msgClass);
+    /**
+     * Signals that an application component wants to subscribe to
+     * cluster messages of a given class
+     *
+     * @param msgClass the class of messages
+     */
+    default void subscribe(Class<? extends Serializable> msgClass) { }
 
-    public void unsubscribe();
+    /**
+     * Causes the application component to unsubscribe from all
+     * cluster messages
+     */
+    default void unsubscribe() { }
 
-    public void clusterMessage(Object msg);
+    /**
+     * Sends a cluster message.
+     *
+     * @param msg the message
+     */
+    default void clusterMessage(Object msg) { }
 }
