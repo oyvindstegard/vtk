@@ -65,6 +65,9 @@ public class MessageComponent extends ViewRenderingDecoratorComponent {
     private static final String PARAMETER_COMPACT_VIEW = "compact-view";
     private final static String PARAMETER_COMPACT_VIEW_DESCRIPTION = "Set to 'true' to show compact view. Default is false";
 
+    private static final String PARAMETER_INCLUDE_IF_EMPTY = "include-if-empty";
+    private static final String PARAMETER_INCLUDE_IF_EMPTY_DESC = "Set to 'false' if you don't want to display empty message listings. Default is 'true'.";
+
     private SearchComponent searchComponent;
     private CollectionListingHelper helper;
     private PropertyTypeDefinition pageLimitPropDef;
@@ -79,7 +82,7 @@ public class MessageComponent extends ViewRenderingDecoratorComponent {
             return;
         }
 
-        Path path = null;
+        Path path;
         try {
             path = Path.fromStringWithTrailingSlash(pathUriParameter);
         } catch (IllegalArgumentException iae) {
@@ -126,8 +129,11 @@ public class MessageComponent extends ViewRenderingDecoratorComponent {
 
         Listing result = searchComponent.execute(request.getServletRequest(), requestedMessageFolder, 1, pageLimit, 0);
         Locale preferredLocale = localeResolver.resolveResourceLocale(requestedMessageFolder);
-        Map<String, Principal> principalDocuments = helper.getPrincipalDocumentLinks(new HashSet<PropertySet>(
+        Map<String, Principal> principalDocuments = helper.getPrincipalDocumentLinks(new HashSet<>(
                 result.getPropertySets()), preferredLocale, null);
+
+        String includeIfEmpty = request.getStringParameter(PARAMETER_INCLUDE_IF_EMPTY);
+        model.put("includeIfEmpty", includeIfEmpty == null || !includeIfEmpty.equalsIgnoreCase("false"));
 
         model.put("principalDocuments", principalDocuments);
         model.put("messageListingResult", result);
@@ -144,11 +150,12 @@ public class MessageComponent extends ViewRenderingDecoratorComponent {
 
     @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_URI, PARAMETER_URI_DESC);
         map.put(PARAMETER_MAX_NUMBER_OF_MESSAGES, PARAMETER_MAX_NUMBER_OF_MESSAGES_DESC);
         map.put(PARAMETER_TITLE, PARAMETER_TITLE_DESC);
         map.put(PARAMETER_COMPACT_VIEW, PARAMETER_COMPACT_VIEW_DESCRIPTION);
+        map.put(PARAMETER_INCLUDE_IF_EMPTY, PARAMETER_INCLUDE_IF_EMPTY_DESC);
         return map;
     }
 

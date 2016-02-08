@@ -12,6 +12,7 @@ resourcetype program-frontpage : program-document {
     faculty : string multiple,
     keywords : string,
     picture : image_ref,
+    max-number-of-messages : string defaultvalue("3"),
     resource-links : json (linkHeader:string, linkTitle:string, linkUrl:string, linkDescription:string) multiple,
     title : derived (name,program-type) eval (name + " (" + program-type?localized +")") overrides title
   }
@@ -28,6 +29,9 @@ resourcetype program-frontpage : program-document {
     study-points (size[4]),
     group samlet (name-no, name-nn, name-en) (after name) horizontal,
     group facts (program-type, phd-web-address, theme, duration, study-points, full-time, faculty, keywords, picture) (after samlet),
+    max-number-of-messages (after facts),
+    max-number-of-messages (dropdown),
+    max-number-of-messages tooltip (en : "Number of messages", no : "Antall beskjeder", nn : "Talet på beskjedar"),
     group interview-box (interviewTitle, interviewContent, interviewLinkText, interviewUrl) (before additional-content),
     resource-links tooltip (en : "Tooltip for links", no : "Tips for lenker", nn : "Tips for lenkjer"),
     keywords tooltip (en : "Comma separated list", no : "Kommaseparert liste", nn : "Kommaseparert liste"),
@@ -150,16 +154,39 @@ resourcetype program-frontpage : program-document {
         <div class="vrtx-frontpage-box vrtx-distach-bottom">
           [call "comp:contact-box"]
         </div>
+
         [def thispath resource-prop("./", "uri")]
+
+        [def studystart-path ""]
         [if locale != 'en']
-          [def thispath thispath + '/studiestart']
+          [def studystart-path thispath + '/studiestart']
         [else]
-          [def thispath thispath + '/start-of-studies']
+          [def studystart-path thispath + '/start-of-studies']
         [endif]
-        [def studiestart-folder resource(thispath)]
+        [def studiestart-folder resource(studystart-path)]
         [if studiestart-folder]
-          [call "include:events"  {"uri":thispath, "all-events-link":true, "feed-title":true, "max-events":2, "events-title": true, "include-if-empty":false}]
+          [call "include:events"  {"uri":studystart-path, "all-events-link":true, "feed-title":true, "max-events":2, "events-title": true, "include-if-empty":false}]
         [endif]
+
+        [def messages-path ""]
+        [if locale = 'en']
+          [def messages-path thispath + '/messages']
+        [else]
+          [def messages-path thispath + '/beskjeder']
+        [endif]
+        [def message-folder resource(messages-path)]
+        [if message-folder]
+          [def messages-path messages-path + '/']
+          [def max-number-of-messages document.properties.max-number-of-messages]
+          <div class="vrtx-frontpage-box">
+            [if max-number-of-messages != null && max-number-of-messages != ""]
+              [call "include:messages" {"uri":messages-path, "compact-view":true, "max-number-of-messages":max-number-of-messages, "include-if-empty":false}]
+            [else]
+              [call "include:messages" {"uri":messages-path, "compact-view":true, "max-number-of-messages":3, "include-if-empty":false}]
+            [endif]
+          </div>
+        [endif]
+
         [call "comp:additional-content" {"document":document, "main-content": "false"}]
       </div>
       ##
@@ -221,7 +248,7 @@ resourcetype program-frontpage : program-document {
     </html>
     ##
   }
-  
+
   vocabulary {
 
     faculty {
@@ -246,6 +273,12 @@ resourcetype program-frontpage : program-document {
       en : ("true" = "Full time study", "false" = "Part time study"),
       no : ("true" = "Fulltidsstudium", "false" = "Deltidsstudium"),
       nn : ("true" = "Fulltidsstudium", "false" = "Deltidsstudium")
+    },
+
+    max-number-of-messages {
+      en : (range = "1..20"),
+      no : (range = "1..20"),
+      nn : (range = "1..20")
     }
 
   }
@@ -280,6 +313,8 @@ resourcetype program-frontpage : program-document {
     linkUrl : (en : "Webaddress", no : "Webadresse", nn : "Webadress"),
     linkHeader : (en : "Header", no : "Overskrift", nn : "Overskrift"),
     linkDescription : (en : "Description", no : "Beskrivelse", nn : "Beskrivelse"),
+
+    max-number-of-messages : (en : "Messages", no : "Beskjeder", nn : "Beskjedar"),
 
     under-arbeid : (en : "In progress", no : "Under arbeid" ,nn : "Under arbeid"),
     aktivt : (en: "Active", no : "Aktiv", nn : "Aktiv"),
