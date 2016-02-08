@@ -745,7 +745,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         this.tempDir = tmp;
     }
 
-
+    // XXX Consider including information about whether descendants actually
+    //     need to be flushed or not, since this is readily available at the source
     public static class FlushMessage implements Serializable {
         private static final long serialVersionUID = 8288073797498465660L;
         public final Path path;
