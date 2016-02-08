@@ -81,6 +81,8 @@
     <property name="forceUnlock" value="true"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
     <property name="searcherFactory" ref="searcherFactory"/>
+    <property name="keepOldCommits" value="5" />
+    <property name="useSimpleLockFactory" value="true" />
   </bean>
 
   <bean id="systemIndex.openAsReadOnly" class="java.lang.Boolean">
@@ -91,26 +93,25 @@
   <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="systemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
-    <property name="openAsReadOnly" ref="systemIndex.openAsReadOnly" />
+    <property name="initReadOnly" ref="systemIndex.openAsReadOnly" />
   </bean>
-
 
   <!-- A Lucene index accessor (secondary instance, batch indexing tuned) -->
   <bean id="secondarySystemIndexAccessor" class="vtk.repository.index.IndexManager">
-    <property name="storageRootPath" value="${indexStorageRootPath}"/>
+    <property name="storageRootPath" value="${repository.tempDir}"/>
     <property name="storageId" value="property_index.secondary"/>
     <property name="batchIndexingMode" value="true"/>
     <property name="forceUnlock" value="true"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
-    <property name="closeAfterInit" value="true"/>
   </bean>
 
   <!-- Secondary property set index instance -->
+  <!-- XXX this index is not shared between JVMs and should ignore clustering altogether. -->
   <bean id="secondarySystemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="secondarySystemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
-    <property name="openAsReadOnly" ref="systemIndex.openAsReadOnly" />
-    <property name="standby" value="true" />
+    <property name="initReadOnly" ref="systemIndex.openAsReadOnly" />
+    <property name="closeAfterInit" value="true"/>
   </bean>
   
   <!-- Factory for building Lucene queries. -->
