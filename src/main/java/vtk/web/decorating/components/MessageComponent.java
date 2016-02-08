@@ -39,7 +39,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
 import vtk.repository.Property;
-import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
