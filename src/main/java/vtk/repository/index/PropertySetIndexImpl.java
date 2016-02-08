@@ -76,29 +76,31 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     private DocumentMapper documentMapper;
     private Optional<ClusterRole> clusterRole = Optional.empty();
     private Optional<ClusterContext> clusterContext = Optional.empty();
-    private boolean openAsReadOnly = false;
-    private boolean standby = false;
-
-    public void setStandby(boolean standby) {
-        this.standby = standby;
-    }
-
-    public void setOpenAsReadOnly(boolean openAsReadOnly) {
-        this.openAsReadOnly = openAsReadOnly;
-    }
+    private boolean closeAfterInit = false;
+    private boolean initReadOnly = false;
 
     @Override
     public void afterPropertiesSet() throws IOException {
-
-        index.open(false, openAsReadOnly);
-        if (standby) {
+        index.open(false, initReadOnly);
+        if (closeAfterInit) {
             index.close();
+        }
+    }
+
+    private boolean readOnly() {
+        return !clusterRole.isPresent() || clusterRole.get() == ClusterRole.SLAVE;
+    }
+    
+    private void checkWriteAccess() {
+        if (readOnly()) {
+            throw new IndexException("Cannot write to index when cluster role is unknown or SLAVE");
         }
     }
 
     @Override
     public void addPropertySet(PropertySet propertySet, Acl acl) throws IndexException {
-
+        checkWriteAccess();
+        
         // NOTE: Write-locking should be done above this level.
         // This is needed to ensure the possibility of efficiently batching
         // together operations without interruption.
@@ -123,6 +125,10 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     
     @Override
     public void updatePropertySet(PropertySet propertySet, Acl acl) throws IndexException {
+        checkWriteAccess();
+        if (readOnly()) {
+            throw new IndexException("Cannot write to index when cluster role is unknown or SLAVE");
+        }
         
         try {
             Term uriTerm = new Term(ResourceFields.URI_FIELD_NAME, 
@@ -140,7 +146,8 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     @Override
     public void deletePropertySetTree(Path rootUri) throws IndexException {
-
+        checkWriteAccess();
+        
         try {
             IndexWriter writer = this.index.getIndexWriter();
             writer.deleteDocuments(new Term(ResourceFields.URI_FIELD_NAME, rootUri.toString()), 
@@ -153,6 +160,8 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     @Override
     public void deletePropertySet(Path uri) throws IndexException {
+        checkWriteAccess();
+        
         try {
             Term uriTerm = new Term(ResourceFields.URI_FIELD_NAME, uri.toString());
             this.index.getIndexWriter().deleteDocuments(uriTerm);
@@ -242,11 +251,10 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     @Override
     public void clear() throws IndexException {
+        checkWriteAccess();
+        
         try {
-            this.index.close();
-            boolean readOnly = !clusterRole.isPresent()
-                    || clusterRole.get() == ClusterRole.SLAVE;
-            this.index.open(true, readOnly);
+            this.index.open(true, false);
         } catch (IOException io) {
             throw new IndexException(io);
         }
@@ -297,6 +305,8 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     @Override
     public void commit() throws IndexException {
+        checkWriteAccess();
+
         try {
             this.index.commit();
         } catch (IOException io) {
@@ -324,10 +334,7 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     public void reinitialize() throws IndexException {
         try {
             logger.info("Re-initializing index ..");
-            this.index.close();
-            boolean readOnly = !clusterRole.isPresent()
-                    || clusterRole.get() == ClusterRole.SLAVE;
-            this.index.open(false, readOnly);
+            this.index.reopen(readOnly());
         } catch (IOException io) {
             throw new IndexException(io);
         }
@@ -336,6 +343,8 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     @Override
     public void addIndexContents(PropertySetIndex propSetIndex) throws IndexException {
+        checkWriteAccess();
+
         if (!(propSetIndex instanceof PropertySetIndexImpl)) {
             throw new IllegalArgumentException(
                     "Only 'vtk.repository.query.PropertySetIndexImpl' instances are supported.");
@@ -387,6 +396,8 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
      */
     @Override
     public void optimize() throws IndexException {
+        checkWriteAccess();
+        
         try {
             this.index.getIndexWriter().forceMerge(1, true);
             this.index.getIndexWriter().commit();
@@ -427,6 +438,25 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
         this.index = index;
     }
 
+    /**
+     * Set whether underlying index should be closed after first initialization.
+     * 
+     * <p>This can free resources for index instances which are only for
+     * temporary use.
+     * @param closeAfterInit 
+     */
+    public void setCloseAfterInit(boolean closeAfterInit) {
+        this.closeAfterInit = closeAfterInit;
+    }
+
+    /**
+     * Set whether index should be opened in read-only mode or not, initially.
+     * @param initReadOnly 
+     */
+    public void setInitReadOnly(boolean initReadOnly) {
+        this.initReadOnly = initReadOnly;
+    }
+    
     @Override
     public void roleChange(ClusterRole role) {
         try {
@@ -458,10 +488,12 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     @Override
     public void clusterMessage(Object message) {
+        // XXX We shouldn't do unnecessary reinit here if we are the "source" of
+        //     thismessage (e.g MASTER node). Assuming that cluster messages
+        //     in general are not received by "self" node in the clustering framework.
         if (message instanceof Reinitialize) {
-            //reinitialize();
             try {
-                this.index.reload();
+                this.index.reopen(readOnly());
             } catch (IOException io) {
                 throw new IndexException(io);
             }
@@ -471,6 +503,6 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     public static class Reinitialize implements Serializable {
         private static final long serialVersionUID = -8599505901326886264L;
-
+        
     }
 }
