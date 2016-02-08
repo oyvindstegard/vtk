@@ -62,7 +62,7 @@
 
   <#if conf.linkToAllMessages?exists && viewURL?exists>
   <a class="all-messages" href="${viewURL}">
-   <@vrtx.msg code="decorating.feedComponent.allMessages" default="More..." />
+   <@vrtx.msg code="decorating.feedComponent.allMessages" default="More ..." />
   </a>
   </#if>
 </div>

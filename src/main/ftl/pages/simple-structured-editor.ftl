@@ -136,7 +136,7 @@
       </div>
       
       <input class="vrtx-focus-button" type="submit" id="save" name="save" 
-             value="<#if isCollection>${vrtx.getMsg("editor.saveAndPublish")}...<#else>${vrtx.getMsg("editor.saveAndView")}</#if>" />
+             value="<#if isCollection>${vrtx.getMsg("editor.saveAndPublish")}<#else>${vrtx.getMsg("editor.saveAndView")}</#if>" />
     </form>
     <form action="" method="post" id="vrtx-message-cancel">
       <@vrtx.csrfPreventionToken url />

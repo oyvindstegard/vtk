@@ -81,7 +81,7 @@
             <div class="vrtx-image-info">
               <div class="vrtx-image-title">
                 <#if (title?string?length > 20) >
-                  <a href="${imageEntry.url?html}?vrtx=view-as-webpage">${title?substring(0, 20)}...</a>
+                  <a href="${imageEntry.url?html}?vrtx=view-as-webpage">${title?substring(0, 20)} ...</a>
                 <#else>
                   <a href="${imageEntry.url?html}?vrtx=view-as-webpage">${title}</a>
                 </#if>

@@ -52,7 +52,7 @@
 	  </div>
 	</div> 
 	<h2><@vrtx.msg code="report.list-resources" />
-	<a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" />...</a></h2>
+	<a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" /> ...</a></h2>
 	<p>
 	  <@vrtx.msg code="report.list-resources.about" />
 	</p>
