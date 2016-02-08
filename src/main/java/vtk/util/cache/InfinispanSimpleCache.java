@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.cluster;
+package vtk.util.cache;
 
 import java.util.Collections;
 import java.util.Set;
@@ -43,14 +43,12 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
-import vtk.util.cache.SimpleCache;
-
 /**
  * Infinispan based implementation of Vortex SimpleCache.
  * Infinispan uses JGroups as underlying message protocol, same as JBoss.
  */
-public class InfinispanCache<K, V> implements SimpleCache<K, V> {
-    private static final Log log = LogFactory.getLog(InfinispanCache.class);
+public class InfinispanSimpleCache<K, V> implements SimpleCache<K, V> {
+    private static final Log log = LogFactory.getLog(InfinispanSimpleCache.class);
     private static final EmbeddedCacheManager manager =
         new DefaultCacheManager(GlobalConfigurationBuilder
             .defaultClusteredBuilder()
@@ -62,7 +60,7 @@ public class InfinispanCache<K, V> implements SimpleCache<K, V> {
      * Setup and connect to shared cache.
      * @param name Unique identifier of shared cache within the cluster.
      */
-    public InfinispanCache(String name, int timeoutSeconds, boolean updateTimeouts) {
+    public InfinispanSimpleCache(String name, int timeoutSeconds, boolean updateTimeouts) {
         long timeoutMillis = timeoutSeconds * 1000;
         Configuration config = new ConfigurationBuilder()
             // Replicate all entries to all nodes
