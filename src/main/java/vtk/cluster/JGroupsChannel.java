@@ -30,6 +30,11 @@
  */
 package vtk.cluster;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,11 +48,13 @@ import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
+import org.jgroups.util.ExposedByteArrayInputStream;
+import org.jgroups.util.Util;
 
 /**
  * Message system based on JGroups.
  */
-public class JGroupsChannel {
+public class JGroupsChannel extends ReceiverAdapter {
     private static Log log = LogFactory.getLog(JGroupsChannel.class);
     private static final String channelName = "VtkCluster";
 
@@ -100,24 +107,66 @@ public class JGroupsChannel {
      */
     private void connect() throws Exception {
         channel = new JChannel();
-        channel.setReceiver(new ReceiverAdapter() {
-            public void receive(Message msg) {
-                try {
-                    log.debug("Received msg from " + msg.getSrc() + ": " + msg.getObject());
-                    if (!msg.getSrc().equals(channel.getAddress())) {
-                        for (ClusterContextImpl context : clusterContexts) {
-                            context.receive(msg);
-                        }
-                    } else {
-                        log.debug(String.format("Ignored msg '%s' sent from self node", msg));
-                    }
-                } catch (Exception e) {
-                    log.error(String.format("Receive msg '%s' from cluster", msg), e);
-                }
-            }
-        });
+        channel.setReceiver(this);
         channel.connect(channelName);
         log.info("CHANNEL: connected to " + channelName);
+    }
+
+    /**
+     * Extract object within the message.
+     * @param msg
+     * @return
+     * @throws Exception
+     */
+    private Object getMessageObject(Message msg) throws Exception {
+        Object obj = null;
+        try {
+            obj = msg.getObject();
+        } catch (IllegalArgumentException e) {
+            /**
+             * Assume deserialization failed because it could not find the class
+             * because of wrong class loader.
+             * Try again with the application class loader.
+             * NB! This hack is only needed on receive, because sending is
+             * already done in the context of the application.
+             */
+            byte[] buffer = msg.getRawBuffer();
+            int offset = msg.getOffset();
+            int length = msg.getLength();
+            // Skip type field at first position
+            ByteArrayInputStream in_stream=new ExposedByteArrayInputStream(buffer, offset+1, length-1);
+            ClassLoader loader = this.getClass().getClassLoader();
+            InputStream in=new ObjectInputStream(in_stream) {
+                protected Class<?> resolveClass(ObjectStreamClass desc)
+                        throws IOException, ClassNotFoundException {
+                    return Class.forName(desc.getName(), false, loader);
+                }
+            };
+            try {
+                obj=((ObjectInputStream)in).readObject();
+            }
+            finally {
+                Util.close(in);
+            }
+        }
+        return obj;
+    }
+
+    @Override
+    public void receive(Message msg) {
+        try {
+            Object obj = getMessageObject(msg);
+            log.debug("Received msg from " + msg.getSrc() + ": " + obj);
+            if (!msg.getSrc().equals(channel.getAddress())) {
+                for (ClusterContextImpl context : clusterContexts) {
+                    context.receive(msg.getSrc(), obj);
+                }
+            } else {
+                log.debug(String.format("Ignored msg '%s' sent from self node", msg));
+            }
+        } catch (Exception e) {
+            log.error(String.format("Receive msg '%s' from cluster", msg), e);
+        }
     }
 
     private static class ClusterContextImpl implements ClusterContext {
@@ -134,11 +183,10 @@ public class JGroupsChannel {
             return clusterComponent;
         }
 
-        private void receive(Message msg) throws Exception {
-            Object obj = msg.getObject();
+        private void receive(Address src, Object obj) throws Exception {
             for (Class<? extends Serializable> msgClass : msgClasses) {
                 if (obj.getClass().isAssignableFrom(msgClass)) {
-                    log.debug(String.format("Forward cluster message %s to %s", msg, msg.getSrc()));
+                    log.debug(String.format("Forward cluster message %s to %s", obj, clusterComponent.getClass().getName()));
                     clusterComponent.clusterMessage(obj);
                 }
             }
