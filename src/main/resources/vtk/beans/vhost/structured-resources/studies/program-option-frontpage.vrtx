@@ -135,9 +135,9 @@ resourcetype program-option-frontpage : program-document {
 
   vocabulary {
     max-number-of-messages {
-      en : (range = "1..20"),
-      no : (range = "1..20"),
-      nn : (range = "1..20")
+      en : (range = "1..5"),
+      no : (range = "1..5"),
+      nn : (range = "1..5")
     }
   }
 

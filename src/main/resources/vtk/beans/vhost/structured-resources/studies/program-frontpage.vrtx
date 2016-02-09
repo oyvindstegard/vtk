@@ -281,9 +281,9 @@ resourcetype program-frontpage : program-document {
     },
 
     max-number-of-messages {
-      en : (range = "1..20"),
-      no : (range = "1..20"),
-      nn : (range = "1..20")
+      en : (range = "1..5"),
+      no : (range = "1..5"),
+      nn : (range = "1..5")
     }
 
   }
