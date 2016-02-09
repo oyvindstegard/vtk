@@ -463,14 +463,12 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
             switch (role) {
             case MASTER:
                 logger.info("Switch to master mode");
-                index.close();
-                index.open(false, false);
+                index.reopen(false);
                 this.clusterRole = Optional.of(role);
                 break;
             case SLAVE:
                 logger.info("Switch to slave mode");
-                index.close();
-                index.open(false, true);
+                index.reopen(true);
                 this.clusterRole = Optional.of(role);
                 break;
             }
