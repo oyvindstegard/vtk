@@ -23,6 +23,7 @@
   <import resource="resource-listing/main.xml" />
 
   <import resource="repository.xml" />
+  <import resource="cluster.xml" />
   <import resource="query.xml" />
   <import resource="schema-registry.xml" />
   <import resource="template-lang.xml" />
