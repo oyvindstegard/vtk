@@ -46,7 +46,7 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
 
-public class JBossClusterServiceActivator implements ServiceActivator {
+public class JBossSingletonNotificationServiceActivator implements ServiceActivator {
     private final Log log = LogFactory.getLog(this.getClass());
     private String preferredMaster = null;
 
@@ -87,8 +87,9 @@ public class JBossClusterServiceActivator implements ServiceActivator {
 
         log.info("JBossClusterManager will be installed!");
         try {
-            JBossClusterManager service = new JBossClusterManager();
-            SingletonService<String> singleton = new SingletonService<String>(service, JBossClusterManager.SINGLETON_SERVICE_NAME);
+            JBossSingletonNotificationService service = new JBossSingletonNotificationService();
+            SingletonService<String> singleton = new SingletonService<>(service, 
+                                   JBossSingletonNotificationService.SINGLETON_SERVICE_NAME);
             /*
              * The NamePreference is a combination of the node name (-Djboss.node.name) and the name of
              * the configured cache "singleton". If there is more than 1 node, it is possible to add more than
@@ -114,7 +115,7 @@ public class JBossClusterServiceActivator implements ServiceActivator {
             throw new ServiceRegistryException("Unable to activate JBossClusterManager", e);
         }
     }
-
+    
     public String getPreferredMaster() {
         return this.preferredMaster;
     }

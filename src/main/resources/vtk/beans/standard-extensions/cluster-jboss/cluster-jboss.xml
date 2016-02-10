@@ -4,7 +4,9 @@
 
   <!-- Override bean "cluster.manager" defined in vtk/beans/vhost/cluster.xml -->
   <bean id="cluster.manager" class="vtk.cluster.JBossClusterManager">
-    <property name="clusterComponents" ref="cluster.components"/>
+    <constructor-arg>
+      <ref bean="cluster.components"/>
+    </constructor-arg>
   </bean>
 
   <bean id="cookieLinkStore.cache" class="vtk.util.cache.InfinispanSimpleCache">

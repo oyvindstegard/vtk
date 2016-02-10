@@ -30,18 +30,10 @@
  */
 package vtk.cluster;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
@@ -53,34 +45,27 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * create a new instance of the manager on the local server in addition
  * to the instance created by JBossClusterServiceActivator.
  */
-public class JBossClusterManager implements Service<String>, ApplicationListener<ContextRefreshedEvent> {
-    public static final ServiceName SINGLETON_SERVICE_NAME = ServiceName.JBOSS.append("vtk", "cluster", "JBossClusterManager");
+public class JBossClusterManager implements ApplicationListener<ContextRefreshedEvent> {
 
     /**
      * Logger is non-static on purpose in order to separate instances.
      */
-    private Log log = LogFactory.getLog(JBossClusterManager.class);
-    private static int createCount = 0;
-
-    /**
-     * A flag whether the service is started.
-     */
-    private static final AtomicBoolean started = new AtomicBoolean(false);
+    private final Log log = LogFactory.getLog(JBossClusterManager.class);
 
     /**
      * List of components to notify of state change.
      */
-    private static List<ClusterAware> clusterComponents = null;
+    private final List<ClusterAware> clusterComponents;
+    
+    private ClusterRole currentRole = ClusterRole.SLAVE;
 
     /**
      * Message system.
      */
-    private static JGroupsChannel channel = null;
+    private JGroupsChannel channel = null;
 
-    public JBossClusterManager() {
-        log = LogFactory.getLog(JBossClusterManager.class.getName() + "-" + createCount);
-        createCount++;
-        log.info("CONSTRUCT: " + getValue());
+    public JBossClusterManager(List<ClusterAware> clusterComponents) {
+        this.clusterComponents = clusterComponents;
     }
 
     @Override
@@ -99,60 +84,54 @@ public class JBossClusterManager implements Service<String>, ApplicationListener
         return String.format(
             "%s is %s at %s with %d components",
             JBossClusterManager.class.getSimpleName(),
-            (started.get() ? "started" : "not started"),
+            (currentRole == ClusterRole.MASTER ? "MASTER" : "SLAVE"),
             System.getProperty("jboss.node.name"),
             (clusterComponents == null) ? -1 : clusterComponents.size());
     }
-
-    public void start(StartContext startContext) throws StartException {
-        if (!started.compareAndSet(false, true)) {
-            throw new StartException("The service is still started!");
-        }
-        log.info("Start HASingleton service '" + this.getClass().getName() + "', become MASTER.");
-        notifyRole();
-    }
-
-    public void stop(StopContext stopContext) {
-        if (!started.compareAndSet(true, false)) {
-            log.warn("The service '" + this.getClass().getName() + "' is not active!");
-        } else {
-            log.info("Stop HASingleton service '" + this.getClass().getName() + "', become SLAVE.");
-        }
-        notifyRole();
-    }
-
+    
     /**
-     * Set cluster aware components.
-     * Set up messaging.
-     * Delay role notification until Spring has completed setup.
-     * (NB! Assumes this class will be used in a Spring environment.)
+     * Notify the role to the cluster aware components.
      */
-    public void setClusterComponents(List<ClusterAware> clusterComponents) throws Exception {
-        log.info(String.format("CONFIG: Setting %d cluster components", clusterComponents.size()));
-        JBossClusterManager.clusterComponents = Collections.unmodifiableList(new ArrayList<>(clusterComponents));
-        if (channel == null) {
-            channel = new JGroupsChannel(JBossClusterManager.clusterComponents);
+    private void notifyRole() {
+        if (clusterComponents == null) {
+            log.warn(String.format("NOTIFY ROLE: %s. The service has no components yet!", currentRole));
+        } else {
+            log.info(String.format("NOTIFY ROLE: %s to %d components.", currentRole, 
+                    clusterComponents.size()));
+            for (ClusterAware clusterAware : clusterComponents) {
+                // NB! Must not block!
+                // TODO Maybe catch Throwable here, so failure in one component will
+                // not cause message loss for later ones in list
+                clusterAware.roleChange(currentRole);
+            }
         }
+    }
+
+    // Callback from singleton notification service
+    void singletonServiceStarted() {
+        currentRole = ClusterRole.MASTER;
+        notifyRole();
+    }
+    
+    // Callback from singleton notification service
+    void singletonServiceStopped() {
+        currentRole = ClusterRole.SLAVE;
+        notifyRole();
     }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        notifyRole();
-    }
-
-    /*
-     * Notify the role to the cluster aware components.
-     */
-    private void notifyRole() {
-        ClusterRole role = started.get() ? ClusterRole.MASTER : ClusterRole.SLAVE;
-        if (clusterComponents == null) {
-            log.warn(String.format("NOTIFY ROLE: %s. The service has no components yet!", role));
-        } else {
-            log.info(String.format("NOTIFY ROLE: %s to %d components.", role, clusterComponents.size()));
-            for (ClusterAware clusterAware : clusterComponents) {
-                // NB! Must not block!
-                clusterAware.roleChange(role);
+        log.info(String.format("CONFIG: %d cluster components registered", clusterComponents.size()));
+        if (channel == null) {
+            try {
+                channel = new JGroupsChannel(clusterComponents);
+            } catch (Exception e) {
+                log.warn("Failed to create JGroups channel", e);
             }
         }
+        
+        // Register with singleton notification service. This will provide
+        // callbacks with current status
+        JBossSingletonNotificationService.setJBossClusterManager(this);
     }
 }

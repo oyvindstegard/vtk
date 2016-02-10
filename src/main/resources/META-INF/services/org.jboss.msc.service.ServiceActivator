@@ -1,1 +1,1 @@
-vtk.cluster.JBossClusterServiceActivator
+vtk.cluster.JBossSingletonNotificationServiceActivator
