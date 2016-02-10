@@ -42,6 +42,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * Implemented using a cluster wide singleton pattern.
@@ -51,7 +53,7 @@ import org.jboss.msc.service.StopContext;
  * create a new instance of the manager on the local server in addition
  * to the instance created by JBossClusterServiceActivator.
  */
-public class JBossClusterManager implements Service<String> {
+public class JBossClusterManager implements Service<String>, ApplicationListener<ContextRefreshedEvent> {
     public static final ServiceName SINGLETON_SERVICE_NAME = ServiceName.JBOSS.append("vtk", "cluster", "JBossClusterManager");
 
     /**
@@ -106,7 +108,7 @@ public class JBossClusterManager implements Service<String> {
         if (!started.compareAndSet(false, true)) {
             throw new StartException("The service is still started!");
         }
-        log.info("Start HASingleton service '" + this.getClass().getName() + "' (MASTER)");
+        log.info("Start HASingleton service '" + this.getClass().getName() + "', become MASTER.");
         notifyRole();
     }
 
@@ -114,17 +116,27 @@ public class JBossClusterManager implements Service<String> {
         if (!started.compareAndSet(true, false)) {
             log.warn("The service '" + this.getClass().getName() + "' is not active!");
         } else {
-            log.info("Stop HASingleton service '" + this.getClass().getName() + "'");
+            log.info("Stop HASingleton service '" + this.getClass().getName() + "', become SLAVE.");
         }
         notifyRole();
     }
 
+    /**
+     * Set cluster aware components.
+     * Set up messaging.
+     * Delay role notification until Spring has completed setup.
+     * (NB! Assumes this class will be used in a Spring environment.)
+     */
     public void setClusterComponents(List<ClusterAware> clusterComponents) throws Exception {
         log.info(String.format("CONFIG: Setting %d cluster components", clusterComponents.size()));
         JBossClusterManager.clusterComponents = Collections.unmodifiableList(new ArrayList<>(clusterComponents));
         if (channel == null) {
             channel = new JGroupsChannel(JBossClusterManager.clusterComponents);
         }
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         notifyRole();
     }
 
