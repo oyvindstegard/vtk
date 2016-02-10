@@ -182,6 +182,10 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
+        <configuration>
+          <mainClass>vtk.web.Main</mainClass>
+          <layout>ZIP</layout>
+        </configuration>
       </plugin>
 
       <plugin>
@@ -311,7 +315,14 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.4</version>
+        <version>2.6</version>
+        <configuration>
+          <!-- Exclude spring-boot (prevent annotation-based 
+               automatic loading of classes) -->
+          <packagingExcludes>
+            WEB-INF/lib/spring-boot-*.jar
+          </packagingExcludes>
+        </configuration>
       </plugin>
 
       <!-- Allow deploy with ssh/scp using wagon-ssh -->

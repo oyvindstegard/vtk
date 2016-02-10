@@ -49,7 +49,8 @@ public interface ClusterAware {
     default void roleChange(ClusterRole role) { }
 
     /**
-     * Called when a message from another node in the cluster arrives
+     * Called when a message from another node in the cluster arrives. 
+     * Messages sent from one node will not be received by that node.
      * @param message the cluster message
      */
     default void clusterMessage(Object message) { }

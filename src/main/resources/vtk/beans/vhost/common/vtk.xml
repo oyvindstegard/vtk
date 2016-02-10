@@ -5,32 +5,14 @@
   <!-- @Required annotations -->
   <bean class="org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor" />
   
-
-    <!-- Location of property config files -->
-    <bean id="vrtx.configLocations"
-        class="org.springframework.beans.factory.config.ListFactoryBean">
-    <property name="sourceList">
-      <list>
-        <value>classpath:/vtk/beans/vtk.properties</value>
-        <value>classpath:vtk-custom.properties</value>
-        <value>classpath:/vtk/util/vtk_version.properties</value>
-        <value>file://${user.home}/*vtk.properties</value>
-        <value>file://${user.dir}/*vtk.properties</value>
-        <value>file://${user.home}/*vrtx.properties</value>
-        <value>file://${user.dir}/*vrtx.properties</value>
-        <!-- Uncomment for in-memory repo testing: -->
-        <!--<value>classpath:/vtk/beans/in-memory-vtk.properties</value>-->
-      </list>
-    </property>
-  </bean>
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
     <property name="ignoreResourceNotFound" value="true" />
-    <property name="locations" ref="vrtx.configLocations" />
+    <property name="locations" ref="vtk.configLocations" />
     <!--property name="nullValue" value="[[null]]" /-->
   </bean>
  
   <bean id="vrtx" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-    <property name="locations" ref="vrtx.configLocations" />
+    <property name="locations" ref="vtk.configLocations" />
     <property name="ignoreResourceNotFound" value="true" />
   </bean>
 
@@ -134,8 +116,19 @@
     <property name="timeoutSeconds" value="3600" />
   </bean>
   
-  <!-- Default spring session filter (no filter) -->
-  <bean id="springSessionRepositoryFilter" class="vtk.web.servlet.NullFilter" />
+  <!-- Spring session filter (works only with spring boot) -->
+  <!--bean id="springSessionRepositoryFilter" class="vtk.web.servlet.NullFilter" /-->
+  <bean id="springSessionRepositoryFilter" 
+        class="org.springframework.session.web.http.SessionRepositoryFilter">
+    <constructor-arg name="sessionRepository" ref="spring.sessionRepository" />
+  </bean>
+
+  <bean id="spring.sessionRepository" 
+        class="org.springframework.session.MapSessionRepository">
+    <constructor-arg name="sessions" ref="spring.sessionRepository.sessionMap" />
+    <property name="defaultMaxInactiveInterval" value="1800" />
+  </bean>
+  <bean id="spring.sessionRepository.sessionMap" class="java.util.concurrent.ConcurrentHashMap" />
 
   <bean id="defaultRequestFilters" class="vtk.util.SortedCollection">
     <constructor-arg>
@@ -149,7 +142,6 @@
     <property name="targetObject" ref="defaultRequestFilters" />
     <property name="targetMethod" value="add" />
   </bean>
-
 
   <bean id="defaultResponseFilters" class="vtk.util.SortedCollection">
     <constructor-arg>
