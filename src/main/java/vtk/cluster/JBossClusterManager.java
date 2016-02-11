@@ -30,6 +30,7 @@
  */
 package vtk.cluster;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -53,10 +54,18 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
     private final Log log = LogFactory.getLog(JBossClusterManager.class);
 
     /**
-     * List of components to notify of state change.
+     * The underlying components that receive synchronous notification.
+     * Calling them directly is a bad idea as they may block the manager.
      */
-    private final List<ClusterAware> clusterComponents;
-    
+    private final List<ClusterAware> underlyingClusterComponents;
+
+    /**
+     * List of components to notify of state change.
+     * List cannot be filled on construction, because the
+     * underlying list may not be fully populated yet.
+     */
+    private final List<ClusterAware> clusterComponents = new ArrayList<ClusterAware>();
+
     private ClusterRole currentRole = ClusterRole.SLAVE;
 
     /**
@@ -65,7 +74,7 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
     private JGroupsChannel channel = null;
 
     public JBossClusterManager(List<ClusterAware> clusterComponents) {
-        this.clusterComponents = clusterComponents;
+        this.underlyingClusterComponents = clusterComponents;
     }
 
     @Override
@@ -88,7 +97,7 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
             System.getProperty("jboss.node.name"),
             (clusterComponents == null) ? -1 : clusterComponents.size());
     }
-    
+
     /**
      * Notify the role to the cluster aware components.
      */
@@ -96,7 +105,7 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
         if (clusterComponents == null) {
             log.warn(String.format("NOTIFY ROLE: %s. The service has no components yet!", currentRole));
         } else {
-            log.info(String.format("NOTIFY ROLE: %s to %d components.", currentRole, 
+            log.info(String.format("NOTIFY ROLE: %s to %d components.", currentRole,
                     clusterComponents.size()));
             for (ClusterAware clusterAware : clusterComponents) {
                 // NB! Must not block!
@@ -112,7 +121,7 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
         currentRole = ClusterRole.MASTER;
         notifyRole();
     }
-    
+
     // Callback from singleton notification service
     void singletonServiceStopped() {
         currentRole = ClusterRole.SLAVE;
@@ -121,6 +130,10 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
+        for (ClusterAware clusterAware : underlyingClusterComponents) {
+            clusterComponents.add(new AsyncClusterAware(clusterAware));
+        }
+
         log.info(String.format("CONFIG: %d cluster components registered", clusterComponents.size()));
         if (channel == null) {
             try {
@@ -129,7 +142,7 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
                 log.warn("Failed to create JGroups channel", e);
             }
         }
-        
+
         // Register with singleton notification service. This will provide
         // callbacks with current status
         JBossSingletonNotificationService.setJBossClusterManager(this);
