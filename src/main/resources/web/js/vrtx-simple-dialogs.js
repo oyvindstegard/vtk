@@ -232,8 +232,11 @@ var VrtxIFrameDialog = dejavu.Class.declare({
   $name: "VrtxIFrameDialog",
   $extends: AbstractVrtxSimpleDialog,
   initialize: function (opts) {
-    var html = '<iframe width="100%" height="100%" style="min-width: 95%;height:100%;"'
-        + ' frameborder="0" src="' + opts.url + '"></iframe>';
+    opts.loadingMessage = opts.loadingMessage || "Loading dialog";
+    var html = '<div class="dialog-iframe-loading">'
+        + '<span class="dialog-iframe-loading-inner">' + opts.loadingMessage + '</span>'
+        + '<iframe class="dialog-iframe" width="100%" height="100%"'
+        + ' frameborder="0" src="' + opts.url + '"></iframe></div>';
     this.$super({
       selector: "#dialog-iframe-" + opts.name,
       msg: html,

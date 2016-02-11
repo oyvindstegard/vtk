@@ -1537,6 +1537,26 @@ tr.expandedForm td .vrtx-button-small {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)" !important;
 }
 
+.dialog-iframe {
+    min-width: 95%;
+    height:100%;
+    position: relative;
+}
+.dialog-iframe-loading {
+    height: 100%;
+    position: relative;
+}
+.dialog-iframe-loading-inner {
+    background: transparent url(images/ajax-loader.gif) no-repeat center left;
+    position: absolute;
+    display: block;
+    padding: 10px 5px 10px 42px;
+    min-height: 1.308em;
+    font-size: 1.308em;
+    color: #5e5e5e;
+    @include posAbs(45%, 41%);
+}
+
 /* Fix rendering bug in Firefox for hover in table (VTK-2562)
  * TODO: the problems lays though with 'overflow:hidden' on table cells and resource link
  */
