@@ -67,24 +67,19 @@
       <div class="vrtx-daily-events-date">
         <#local todayDay = vrtx.calcDate(today, 'dd') />
         <#local todayMonth = vrtx.calcDate(today, 'MM') />
-        <#local tomorrowDay = vrtx.calcDate(tomorrow, 'dd') />
-        <#local tomorrowMonth = vrtx.calcDate(tomorrow, 'MM') />
         <#local currentDay = vrtx.calcDate(startdate, 'dd') />
         <#local currentMonth = vrtx.calcDate(startdate, 'MM') />
         <#local todayLocalized = vrtx.getMsg("eventListing.calendar.today", "today") />
-        <#local tomorrowLocalized = vrtx.getMsg("eventListing.calendar.tomorrow", "tomorrow") />
 
         <#if (vrtx.parseInt(currentDay) == vrtx.parseInt(todayDay)) && (vrtx.parseInt(currentMonth) == vrtx.parseInt(todayMonth)) >
           <span class="vrtx-daily-events-date-day vrtx-daily-events-date-today">${todayLocalized}</span>
-        <#elseif (vrtx.parseInt(currentDay) == vrtx.parseInt(tomorrowDay)) && (vrtx.parseInt(currentMonth) == vrtx.parseInt(tomorrowMonth)) > 
-          <span class="vrtx-daily-events-date-day vrtx-daily-events-date-tomorrow">${tomorrowLocalized}</span>
         <#else>
           <span class="vrtx-daily-events-date-day">${currentDay}</span>
         </#if>
-        <span class="vrtx-daily-events-date-month"><@vrtx.date value=startdate format='MMM' /></span>
+        <span class="vrtx-daily-events-date-month"><@vrtx.date value=startdate format='MMM' />.</span>
       </div>
     </#if>
-    
+
     <div class="vrtx-event-component-main">
       <#if conf.showPicture && introImg?has_content>
         <div class="vrtx-event-component-picture">
@@ -112,9 +107,9 @@
           </span>
         <#elseif showTime && conf.showDate>
           <span class="vrtx-event-component-start-time">
-            <@vrtx.date value=startdate format='dd' />. 
-            <@vrtx.date value=startdate format='MMM' />. 
-            <@vrtx.date value=startdate format='yyyy' /> 
+            <@vrtx.date value=startdate format='dd' />.
+            <@vrtx.date value=startdate format='MMM' />.
+            <@vrtx.date value=startdate format='yyyy' />
             <@vrtx.date value=startdate format='HH:mm' /><#if conf.showLocation && (location != "")>,</#if>
           </span>
         </#if>
@@ -129,7 +124,7 @@
               <a class="vrtx-ical" href="${uri?html}?vrtx=ical"><@vrtx.msg code="event.add-to-calendar" /></a>
               <a class="vrtx-ical-help" href="${vrtx.getMsg("event.add-to-calendar.help-url")?html}" title="${vrtx.getMsg("event.add-to-calendar.help")?html}"></a>
             </span>
-          </div> 
+          </div>
         </#if>
       </div>
 
@@ -162,7 +157,7 @@
     <#local intro = vrtx.propValue(event, 'introduction')  />
     <#local introImg = vrtx.prop(event, 'picture')  />
     <#local caption = vrtx.propValue(event, 'caption')  />
-    
+
     <#if conf.showPicture && introImg?has_content>
       <div class="vrtx-event-component-picture">
       <#local introImgURI = vrtx.propValue(event, 'picture') />
