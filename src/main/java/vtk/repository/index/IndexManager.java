@@ -404,25 +404,28 @@ public class IndexManager implements DisposableBean {
         cfg.setCodec(new Lucene410CodecWithNoFieldCompression());
         
         cfg.setWriteLockTimeout(writeLockTimeoutSeconds*1000);
-        
-        cfg.setIndexDeletionPolicy(new IndexDeletionPolicy() {
-            @Override
-            public void onInit(List<? extends IndexCommit> commits) throws IOException {
-                onCommit(commits);
-            }
-            @Override
-            public void onCommit(List<? extends IndexCommit> commits) throws IOException {
-                final int toDelete = Math.max(commits.size() - keepOldCommits - 1, 0);
-                int deleteCount = 0;
-                for (IndexCommit commit: commits) {
-                    if (deleteCount++ < toDelete) {
-                        commit.delete();
-                    } else {
-                        return;
+
+        if (keepOldCommits > 0) {
+            cfg.setIndexDeletionPolicy(new IndexDeletionPolicy() {
+                @Override
+                public void onInit(List<? extends IndexCommit> commits) throws IOException {
+                    onCommit(commits);
+                }
+
+                @Override
+                public void onCommit(List<? extends IndexCommit> commits) throws IOException {
+                    final int toDelete = Math.max(commits.size() - keepOldCommits - 1, 0);
+                    int deleteCount = 0;
+                    for (IndexCommit commit : commits) {
+                        if (deleteCount++ < toDelete) {
+                            commit.delete();
+                        } else {
+                            return;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
         
         // XXX switch to LogByteSizeMergePolicy if problems with (default) TieredMergePolicy arise.
 //        LogByteSizeMergePolicy mp = new LogByteSizeMergePolicy();
