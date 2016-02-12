@@ -213,38 +213,6 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
                 }
             }
         }
-        
-// Old Lucene3-code:        
-//        TermEnum termEnum = null;
-//        TermDocs termDocs = null;
-//        int count = 0;
-//
-//        try {
-//            IndexReader reader = this.indexAccessor.getIndexReader();
-//            Term start = new Term(FieldNames.URI_FIELD_NAME, "");
-//            String enumField = start.field();
-//            termEnum = reader.terms(start);
-//            termDocs = reader.termDocs(start);
-//
-//            while (termEnum.term() != null
-//                    && termEnum.term().field() == enumField) { // Interned String comparison
-//                termDocs.seek(termEnum);
-//                while (termDocs.next()) {
-//                    ++count;
-//                }
-//                termEnum.next();
-//            }
-//        } catch (IOException io) {
-//            throw new IndexException(io);
-//        } finally {
-//            try {
-//                termEnum.close();
-//                termDocs.close();
-//            } catch (IOException io) {
-//            }
-//        }
-//
-//        return count;
     }
 
     @Override
