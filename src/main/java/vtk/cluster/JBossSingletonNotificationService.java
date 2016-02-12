@@ -39,19 +39,19 @@ import org.jboss.msc.service.StopContext;
 
 /**
  * JBoss service for notifying master role to {@link JBossClusterManager}.
- * 
+ *
  * This class is not instantiated by Spring, but through JBoss Modular Service Container framework.
- * 
+ *
  * It is connected to {@link JBossClusterManager} through static fields.
  */
 public class JBossSingletonNotificationService implements Service<String> {
 
-    public static final ServiceName SINGLETON_SERVICE_NAME = 
+    public static final ServiceName SINGLETON_SERVICE_NAME =
             ServiceName.JBOSS.append("vtk", "cluster", "JBossSingletonNotificationService");
-    
+
     private static JBossClusterManager clusterManagerInstance;
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
-    
+
     @Override
     public void start(StartContext sc) throws StartException {
         if (!STARTED.compareAndSet(false, true)) {
@@ -65,16 +65,16 @@ public class JBossSingletonNotificationService implements Service<String> {
         if (!STARTED.compareAndSet(true, false)) {
             // TODO log warn ? or why bother
         }
-        
+
         notify(STARTED);
     }
-    
+
     // Called by whatever thread that is doing the Spring context init (from JBossClusterManager)
     static void setJBossClusterManager(JBossClusterManager instance) {
         clusterManagerInstance = instance;
-        notify(STARTED); 
+        notify(STARTED);
     }
-    
+
     private static void notify(AtomicBoolean serviceStarted) {
         if (clusterManagerInstance != null) {
             if (serviceStarted.get()) {
@@ -88,9 +88,9 @@ public class JBossSingletonNotificationService implements Service<String> {
     @Override
     public String getValue() throws IllegalStateException, IllegalArgumentException {
         if (clusterManagerInstance != null) {
-            return clusterManagerInstance.getValue();
+            return clusterManagerInstance.toString();
         }
         throw new IllegalStateException("No JBossClusterManager registered yet");
     }
-    
+
 }
