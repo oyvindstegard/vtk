@@ -2,10 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <bean id="cluster.manager" class="vtk.cluster.AkkaClusterManager" destroy-method="destroy">
-    <constructor-arg name="port" value="${cluster.port}" />
-    <constructor-arg name="clusterComponents" ref="cluster.components" />
-  </bean>
+  <!-- Redis versions of shared caches and session store -->
 
   <bean id="redis.pool.config" class="redis.clients.jedis.JedisPoolConfig">
     <property name="maxTotal" value="2000" />
@@ -16,8 +13,10 @@
 
   <bean id="redis.pool" class="redis.clients.jedis.JedisPool">
     <constructor-arg name="poolConfig" ref="redis.pool.config" />
-    <constructor-arg name="host" value="localhost" />
+    <constructor-arg name="host" value="${redis.host}" />
+    <constructor-arg name="port" value="${redis.port}" />
   </bean>
+
 
   <!-- Override -->
   <bean id="saml.ieCookieStore.cache" class="vtk.util.cache.RedisSimpleCache">
@@ -63,12 +62,8 @@
     <constructor-arg name="updateTimeouts" value="true" />
   </bean>
 
-  <!-- Override -->
-  <bean id="springSessionRepositoryFilter" 
-        class="org.springframework.session.web.http.SessionRepositoryFilter">
-    <constructor-arg name="sessionRepository" ref="spring.sessionRepository" />
-  </bean>
 
+  <!-- Override -->
   <bean id="spring.sessionRepository" 
         class="org.springframework.session.data.redis.RedisOperationsSessionRepository">
     <constructor-arg name="redisConnectionFactory">
@@ -79,4 +74,3 @@
   </bean>
 
 </beans>
-

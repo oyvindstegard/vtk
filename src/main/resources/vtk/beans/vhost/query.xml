@@ -86,18 +86,15 @@
     <property name="useSimpleLockFactory" value="true" />
   </bean>
 
-  <bean id="systemIndex.openAsReadOnly" class="java.lang.Boolean">
-    <constructor-arg type="boolean" value="false" />
-  </bean>
-
   <!-- Property set index based on primary Lucene index accessor instance.  -->
   <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="systemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
-    <property name="initReadOnly" ref="systemIndex.openAsReadOnly" />
+    <property name="initClusterRole" value="MASTER" />
   </bean>
 
-  <!-- A Lucene index accessor (secondary instance, batch indexing tuned) -->
+  <!-- A Lucene index accessor (secondary instance, batch indexing tuned,
+       never shared storage) -->
   <bean id="secondarySystemIndexAccessor" class="vtk.repository.index.IndexManager">
     <property name="storageRootPath" value="${repository.tempDir}"/>
     <property name="storageId" value="property_index.secondary"/>
@@ -106,13 +103,12 @@
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
   </bean>
 
-  <!-- Secondary property set index instance -->
-  <!-- XXX this index is not shared between JVMs and should ignore clustering altogether. -->
+  <!-- Secondary property set index instance. Not part of clustering. -->
   <bean id="secondarySystemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="secondarySystemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
-    <property name="initReadOnly" ref="systemIndex.openAsReadOnly" />
     <property name="closeAfterInit" value="true"/>
+    <property name="initClusterRole" value="MASTER" />
   </bean>
   
   <!-- Factory for building Lucene queries. -->

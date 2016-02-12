@@ -401,9 +401,10 @@ public class EhContentCacheTest {
             }
         });
         assertEquals("b", cache.get("a"));
-        sleep(1500);
+        sleep(250);
         assertEquals("b", cache.get("a"));
-        sleep(1500);
+        sleep(2250);
+        assertEquals("c", cache.get("a"));
         cache.refreshAllExecutor.shutdown();
         boolean terminated = cache.refreshAllExecutor.awaitTermination(1, TimeUnit.SECONDS);
         assertTrue("asyncRefreshExecutor did not terminate before timeout", terminated);

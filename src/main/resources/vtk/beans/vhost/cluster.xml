@@ -21,14 +21,6 @@
     <property name="arguments" ref="systemIndex" />
   </bean>
 
-  <bean id="systemIndex.openAsReadOnly" class="java.lang.Boolean">
-    <constructor-arg type="boolean" value="true" />
-  </bean>
-
-  <bean parent="cluster.component">
-    <property name="arguments" ref="secondarySystemIndex" />
-  </bean>
-
   <bean parent="cluster.component">
     <property name="arguments" ref="authorizationManager" />
   </bean>

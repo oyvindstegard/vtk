@@ -32,6 +32,7 @@ package vtk.cluster;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,25 +59,32 @@ import scala.collection.JavaConversions;
 public class AkkaClusterManager {
 
     private final static Object LEAVE = new Object();
-
+    
+    private int port;
+    Collection<ClusterAware> clusterComponents;
+    
     private ActorSystem system;
     private ActorRef clusterListener;
 
-    public AkkaClusterManager(int port, List<ClusterAware> clusterComponents) {
-
-        Config config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port)
-            .withFallback(ConfigFactory.load());
-
-        system = ActorSystem.create("ClusterSystem", config);
-
-        ActorRef subscriptionActor = system.actorOf(
-                Props.create(SubscriptionActor.class), "subscription-actor");
-
-        clusterListener = system.actorOf(
-                Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
-                "cluster-listener");
+    public AkkaClusterManager(int port, Collection<ClusterAware> clusterComponents) {
+        this.port = port;
+        this.clusterComponents = clusterComponents;
     }
 
+    public void init() {
+        Config config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port)
+                .withFallback(ConfigFactory.load());
+
+            system = ActorSystem.create("ClusterSystem", config);
+
+            ActorRef subscriptionActor = system.actorOf(
+                    Props.create(SubscriptionActor.class), "subscription-actor");
+
+            clusterListener = system.actorOf(
+                    Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
+                    "cluster-listener");
+    }
+    
     public void destroy() {
         clusterListener.tell(LEAVE, null);
         system.terminate();
@@ -152,7 +160,7 @@ public class AkkaClusterManager {
 
         @Override
         public void onReceive(Object message) {
-            log.info("Recv: {}", message);
+            log.debug("Recv: {}", message);
             if (message == LEAVE) {
                 cluster.leave(cluster.selfAddress());
             }
@@ -327,5 +335,5 @@ public class AkkaClusterManager {
             return getClass().getSimpleName() + "(" + role + ")";
         }
     }
-    
+
 }

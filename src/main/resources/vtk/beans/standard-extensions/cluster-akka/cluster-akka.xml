@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <!-- Override bean "systemIndexAccessor" in vtk/beans/query.xml -->
+  <bean id="systemIndexAccessor" class="vtk.repository.index.IndexManager">
+    <property name="storageRootPath" value="${indexStorageRootPath}"/>
+    <property name="storageId" value="property_index"/>
+    <property name="forceUnlock" value="true"/>
+    <property name="maxLockAcquireTimeOnShutdown" value="20"/>
+    <property name="searcherFactory" ref="searcherFactory"/>
+    <property name="keepOldCommits" value="5" />
+    <property name="useSimpleLockFactory" value="true" />
+    <property name="writeLockTimeoutSeconds" value="30" />
+  </bean>
+  
+  <!-- Override bean "systemIndex" in vtk/beans/query.xml -->
+  <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
+    <property name="indexAccessor" ref="systemIndexAccessor"/>
+    <property name="documentMapper" ref="documentMapper"/>
+    <property name="initClusterRole" value="SLAVE" />
+  </bean>
+
+  <bean id="akka.clusterManager" class="vtk.cluster.AkkaClusterManager" 
+        init-method="init" destroy-method="destroy">
+    <constructor-arg name="port" value="${cluster.port}" />
+    <constructor-arg name="clusterComponents" ref="cluster.components" />
+  </bean>
+
+</beans>
+

@@ -94,24 +94,17 @@
             <div class="vrtx-daily-events-date">
               <#local todayDay = vrtx.calcDate(today, 'dd') />
               <#local todayMonth = vrtx.calcDate(today, 'MM') />
-              <#local tomorrowDay = vrtx.calcDate(tomorrow, 'dd') />
-              <#local tomorrowMonth = vrtx.calcDate(tomorrow, 'MM') />
               <#local currentDay = vrtx.calcDate(groupedEvents.day, 'dd') />
               <#local currentMonth = vrtx.calcDate(groupedEvents.day, 'MM') />
-            
               <#local todayLocalized = vrtx.getMsg("eventListing.calendar.today", "today") />
-              <#local tomorrowLocalized = vrtx.getMsg("eventListing.calendar.tomorrow", "tomorrow") />
-            
-              <#if (vrtx.parseInt(currentDay) == vrtx.parseInt(todayDay)) 
+
+              <#if (vrtx.parseInt(currentDay) == vrtx.parseInt(todayDay))
                 && (vrtx.parseInt(currentMonth) == vrtx.parseInt(todayMonth)) >
                 <span class="vrtx-daily-events-date-day vrtx-daily-events-date-today">${todayLocalized}</span>
-              <#elseif (vrtx.parseInt(currentDay) == vrtx.parseInt(tomorrowDay)) 
-                    && (vrtx.parseInt(currentMonth) == vrtx.parseInt(tomorrowMonth)) >
-                <span class="vrtx-daily-events-date-day vrtx-daily-events-date-tomorrow">${tomorrowLocalized}</span>
               <#else>
                 <span class="vrtx-daily-events-date-day">${currentDay}</span>
               </#if>
-              <span class="vrtx-daily-events-date-month"><@vrtx.date value=groupedEvents.day format='MMM' /></span>
+              <span class="vrtx-daily-events-date-month"><@vrtx.date value=groupedEvents.day format='MMM' />.</span>
             </div>
             <div class="vrtx-daily-event">
               <#local eventListing = groupedEvents.events />
@@ -132,14 +125,14 @@
 	    </#list>
 	  </div>
     </#if>
-    
+
     <#if furtherUpcoming?has_content && furtherUpcoming.entries?size &gt; 0>
       <div class="vrtx-events-further-upcoming">
         <h2 class="vrtx-events-further-upcoming">${furtherUpcomingTitle?html}</h2>
         <@displayStandard furtherUpcoming hideNumberOfComments displayMoreURLs=false />
       </div>
     </#if>
-    
+
     <#if furtherUpcoming?has_content && furtherUpcoming.entries?size &gt; 0>
       <div id="vrtx-events-nav">
     <#else>
@@ -187,7 +180,7 @@
 
   <#local event = eventEntry.propertySet />
   <#local locale = springMacroRequestContext.getLocale() />
-  
+
   <#local title = vrtx.propValue(event, 'title') />
   <#local introImg = vrtx.prop(event, 'picture')  />
   <#local intro = vrtx.prop(event, 'introduction')  />
