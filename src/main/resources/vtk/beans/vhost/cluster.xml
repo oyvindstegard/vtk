@@ -22,10 +22,6 @@
   </bean>
 
   <bean parent="cluster.component">
-    <property name="arguments" ref="secondarySystemIndex" />
-  </bean>
-
-  <bean parent="cluster.component">
     <property name="arguments" ref="authorizationManager" />
   </bean>
 

@@ -230,7 +230,7 @@ public class IndexManager implements DisposableBean {
                 // We may need to wait a certain grace period, before we try claim index write lock,
                 // if a lock was detected. Force unlocking is not safe in a clustered scenario.
                 writer = new IndexWriter(directory, newIndexWriterConfig());
-            } 
+            }
         }
     }
 
@@ -525,21 +525,21 @@ public class IndexManager implements DisposableBean {
     // Framework life-cycle
     @Override
     public void destroy() throws Exception {
-       logger.info("Index shutdown, waiting for write lock on index '"
-               + this.storageId + "' ..");
-       if (lockAttempt(this.maxLockAcquireTimeOnShutdown * 1000)) {
-           logger.info("Got write lock on index '" + this.storageId
-                   + "', closing down.");
-           
-           close();
-       } else {
-           logger.warn("Failed to acquire the write lock on index '"
-              + this.storageId + "' within "
-              + " the time limit of " + this.maxLockAcquireTimeOnShutdown 
-              + " seconds, index might be corrupted.");
-       }
+        logger.info("Index shutdown, waiting for write lock on index '"
+                + this.storageId + "' ..");
+        if (lockAttempt(this.maxLockAcquireTimeOnShutdown * 1000)) {
+            logger.info("Got write lock on index '" + this.storageId
+                    + "', closing down.");
+
+            close();
+        } else {
+            logger.warn("Failed to acquire the write lock on index '"
+                    + this.storageId + "' within "
+                    + " the time limit of " + this.maxLockAcquireTimeOnShutdown
+                    + " seconds, index might be corrupted.");
+        }
     }
-    
+
     /**
      * Set the {@link SearcherFactory} to be used for creating new {@link IndexSearcher}
      * instances. (Provide a factory that does warmup for better performance

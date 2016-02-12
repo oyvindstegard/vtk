@@ -74,26 +74,27 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     private IndexManager index;
     private DocumentMapper documentMapper;
-    private Optional<ClusterRole> clusterRole = Optional.empty();
-    private Optional<ClusterContext> clusterContext = Optional.empty();
     private boolean closeAfterInit = false;
-    private boolean initReadOnly = false;
 
+    private Optional<ClusterContext> clusterContext = Optional.empty();
+    private Optional<ClusterRole> clusterRole = Optional.empty();
+    private ClusterRole initClusterRole = ClusterRole.MASTER;
+    
     @Override
     public void afterPropertiesSet() throws IOException {
-        index.open(false, initReadOnly);
+        index.open(false, readOnly());
         if (closeAfterInit) {
             index.close();
         }
     }
 
     private boolean readOnly() {
-        return !clusterRole.isPresent() || clusterRole.get() == ClusterRole.SLAVE;
+        return clusterRole.orElse(initClusterRole) == ClusterRole.SLAVE;
     }
     
     private void checkWriteAccess() {
         if (readOnly()) {
-            throw new IndexException("Cannot write to index when cluster role is unknown or SLAVE");
+            throw new IndexException("Cannot write to index when cluster role is SLAVE");
         }
     }
 
@@ -126,9 +127,6 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     @Override
     public void updatePropertySet(PropertySet propertySet, Acl acl) throws IndexException {
         checkWriteAccess();
-        if (readOnly()) {
-            throw new IndexException("Cannot write to index when cluster role is unknown or SLAVE");
-        }
         
         try {
             Term uriTerm = new Term(ResourceFields.URI_FIELD_NAME, 
@@ -450,30 +448,33 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     }
 
     /**
-     * Set whether index should be opened in read-only mode or not, initially.
-     * @param initReadOnly 
+     * Set assumed initial cluster role upon index initialization. The initial
+     * role is assumed as long as no other role as been communicated by clustering
+     * framework.
      */
-    public void setInitReadOnly(boolean initReadOnly) {
-        this.initReadOnly = initReadOnly;
+    public void setInitClusterRole(ClusterRole initClusterRole) {
+        if (initClusterRole == null) {
+            throw new IllegalArgumentException("Cluster role at init cannot be null");
+        }
+        this.initClusterRole = initClusterRole;
     }
     
     @Override
     public void roleChange(ClusterRole role) {
         try {
             switch (role) {
-            case MASTER:
-                logger.info("Switch to master mode");
-                index.reopen(false);
-                this.clusterRole = Optional.of(role);
-                break;
-            case SLAVE:
-                logger.info("Switch to slave mode");
-                index.reopen(true);
-                this.clusterRole = Optional.of(role);
-                break;
+                case MASTER:
+                    this.clusterRole = Optional.of(role);
+                    logger.info("Switch to master mode");
+                    index.reopen(false);
+                    break;
+                case SLAVE:
+                    this.clusterRole = Optional.of(role);
+                    logger.info("Switch to slave mode");
+                    index.reopen(true);
+                    break;
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.warn("Error handling cluster state change: " + role, e);
         }
     }
