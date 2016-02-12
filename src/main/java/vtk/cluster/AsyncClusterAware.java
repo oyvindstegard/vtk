@@ -79,7 +79,7 @@ public class AsyncClusterAware implements ClusterAware {
         });
     }
 
-    public void clusterMessage(Object message) throws Exception {
+    public void clusterMessage(Object message) {
         executorService.submit(() -> {
             try {
                 underlyingClusterAware.clusterMessage(message);

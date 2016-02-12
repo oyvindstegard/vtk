@@ -39,18 +39,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
- * Implemented using a cluster wide singleton pattern.
- * Only one cluster manager is active at any one point.
- *
- * NB! Internal state is kept in static variables because Spring will
- * create a new instance of the manager on the local server in addition
- * to the instance created by JBossClusterServiceActivator.
+ * JBoss cluster manager using a JBoss singleton service to detect the
+ * MASTER/SLAVE role. A started service is equated with MASTER.
  */
 public class JBossClusterManager implements ApplicationListener<ContextRefreshedEvent> {
-
-    /**
-     * Logger is non-static on purpose in order to separate instances.
-     */
     private final Log log = LogFactory.getLog(JBossClusterManager.class);
 
     /**
@@ -71,30 +63,33 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
     /**
      * Message system.
      */
-    private JGroupsChannel channel = null;
+    private final JGroupsChannel channel;
 
-    public JBossClusterManager(List<ClusterAware> clusterComponents) {
+    private final String nodeName = System.getProperty("jboss.node.name");
+
+    public JBossClusterManager(List<ClusterAware> clusterComponents) throws Exception {
         this.underlyingClusterComponents = clusterComponents;
-    }
-
-    @Override
-    protected void finalize() {
-        if (channel != null) {
-            channel.close();
-            channel = null;
-        }
-        log.info("FINALIZE: " + getValue());
+        channel = new JGroupsChannel(nodeName);
     }
 
     /**
-     * @return the name of the server node
+     * Called by Spring on tear down.
      */
-    public String getValue() throws IllegalStateException, IllegalArgumentException {
+    public void destroy() {
+        channel.close();
+        log.info("DESTROY: " + this);
+    }
+
+    /**
+     * Short status.
+     */
+    @Override
+    public String toString() {
         return String.format(
             "%s is %s at %s with %d components",
-            JBossClusterManager.class.getSimpleName(),
-            (currentRole == ClusterRole.MASTER ? "MASTER" : "SLAVE"),
-            System.getProperty("jboss.node.name"),
+            getClass().getSimpleName(),
+            currentRole,
+            nodeName,
             (clusterComponents == null) ? -1 : clusterComponents.size());
     }
 
@@ -135,12 +130,11 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
         }
 
         log.info(String.format("CONFIG: %d cluster components registered", clusterComponents.size()));
-        if (channel == null) {
-            try {
-                channel = new JGroupsChannel(clusterComponents);
-            } catch (Exception e) {
-                log.warn("Failed to create JGroups channel", e);
-            }
+        try {
+            channel.setComponents(clusterComponents);
+        } catch (Exception e) {
+            // TODO: throw exception instead of just logging it?
+            log.error("Failed to set components for JGroups channel", e);
         }
 
         // Register with singleton notification service. This will provide
