@@ -30,7 +30,6 @@
  */
 package vtk.cluster;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -46,17 +45,11 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
     private final Log log = LogFactory.getLog(JBossClusterManager.class);
 
     /**
-     * The underlying components that receive synchronous notification.
-     * Calling them directly is a bad idea as they may block the manager.
-     */
-    private final List<ClusterAware> underlyingClusterComponents;
-
-    /**
      * List of components to notify of state change.
-     * List cannot be filled on construction, because the
-     * underlying list may not be fully populated yet.
+     * May not be fully populated on startup.
+     * Wait for the Spring ContextRefreshedEvent before use.
      */
-    private final List<ClusterAware> clusterComponents = new ArrayList<ClusterAware>();
+    private final List<ClusterAware> clusterComponents;
 
     private ClusterRole currentRole = ClusterRole.SLAVE;
 
@@ -67,9 +60,11 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
 
     private final String nodeName = System.getProperty("jboss.node.name");
 
-    public JBossClusterManager(List<ClusterAware> clusterComponents) throws Exception {
-        this.underlyingClusterComponents = clusterComponents;
-        channel = new JGroupsChannel(nodeName);
+    public JBossClusterManager(
+            List<ClusterAware> clusterComponents, String clusterId) throws Exception {
+        final String channelName = "vtk.channel." + clusterId;
+        this.clusterComponents = clusterComponents;
+        this.channel = new JGroupsChannel(channelName, nodeName);
     }
 
     /**
@@ -103,10 +98,11 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
             log.info(String.format("NOTIFY ROLE: %s to %d components.", currentRole,
                     clusterComponents.size()));
             for (ClusterAware clusterAware : clusterComponents) {
-                // NB! Must not block!
-                // TODO Maybe catch Throwable here, so failure in one component will
-                // not cause message loss for later ones in list
-                clusterAware.roleChange(currentRole);
+                try {
+                    clusterAware.roleChange(currentRole);
+                } catch (Exception e) {
+                    log.error("NOTIFY ROLE: " + currentRole, e);
+                }
             }
         }
     }
@@ -125,10 +121,6 @@ public class JBossClusterManager implements ApplicationListener<ContextRefreshed
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        for (ClusterAware clusterAware : underlyingClusterComponents) {
-            clusterComponents.add(new AsyncClusterAware(clusterAware));
-        }
-
         log.info(String.format("CONFIG: %d cluster components registered", clusterComponents.size()));
         try {
             channel.setComponents(clusterComponents);

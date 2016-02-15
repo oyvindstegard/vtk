@@ -54,7 +54,6 @@ import org.jgroups.util.Util;
  */
 public class JGroupsChannel extends ReceiverAdapter {
     private static final Log log = LogFactory.getLog(JGroupsChannel.class);
-    private static final String channelName = "VtkCluster";
 
     /**
      * List of contexts for messaging.
@@ -62,9 +61,11 @@ public class JGroupsChannel extends ReceiverAdapter {
     private final List<ClusterContextImpl> clusterContexts =
          new ArrayList<ClusterContextImpl>();
 
+    private final String channelName;
     private final JChannel channel;
 
-    public JGroupsChannel(String nodeName) throws Exception {
+    public JGroupsChannel(String channelName, String nodeName) throws Exception {
+        this.channelName = channelName;
         channel = new JChannel();
         channel.setReceiver(this);
         // Does not work with multiple servers on a single machine. Discards too much.

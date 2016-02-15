@@ -4,11 +4,10 @@
 
   <!-- Override bean "cluster.manager" defined in vtk/beans/vhost/cluster.xml -->
   <bean id="cluster.manager" class="vtk.cluster.JBossClusterManager" destroy-method="destroy">
-    <constructor-arg>
-      <ref bean="cluster.components"/>
-    </constructor-arg>
+    <constructor-arg name="clusterComponents" ref="cluster.components"/>
+    <constructor-arg name="clusterId" value="${repositoryID}"/>
   </bean>
-  
+
   <!-- Override bean "systemIndexAccessor" in vtk/beans/vhost/query.xml -->
   <bean id="systemIndexAccessor" class="vtk.repository.index.IndexManager">
     <property name="storageRootPath" value="${indexStorageRootPath}"/>
@@ -20,7 +19,7 @@
     <property name="useSimpleLockFactory" value="true" />
     <property name="writeLockTimeoutSeconds" value="30" />
   </bean>
-  
+
   <!-- Override bean "systemIndex" in vtk/beans/vhost/query.xml -->
   <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="systemIndexAccessor"/>
@@ -28,12 +27,14 @@
     <property name="initClusterRole" value="SLAVE" />
   </bean>
 
+  <!-- Override and replace bean -->
   <bean id="cookieLinkStore.cache" class="vtk.util.cache.InfinispanSimpleCache">
     <constructor-arg name="name" value="cookieLinkStore.cache" />
     <constructor-arg name="timeoutSeconds" value="3600" />
     <constructor-arg name="updateTimeouts" value="true" />
   </bean>
 
+  <!-- Override and replace bean -->
   <bean id="feide.requestIdStore" class="vtk.util.cache.InfinispanSimpleCache">
     <constructor-arg name="name" value="feide.requestIdStore" />
     <!-- Should be same timeout as sessions in general. -->
@@ -41,12 +42,14 @@
     <constructor-arg name="updateTimeouts" value="false" />
   </bean>
 
+  <!-- Override and replace bean -->
   <bean id="saml.ieCookieStore.cache" class="vtk.util.cache.InfinispanSimpleCache">
     <constructor-arg name="name" value="saml.ieCookieStore.cache" />
     <constructor-arg name="timeoutSeconds" value="3600" />
     <constructor-arg name="updateTimeouts" value="true" />
   </bean>
 
+  <!-- Override and replace bean -->
   <bean id="saml.requestIdStore" class="vtk.util.cache.InfinispanSimpleCache">
     <constructor-arg name="name" value="saml.requestIdStore" />
     <!-- Should be same timeout as sessions in general. -->
@@ -54,6 +57,7 @@
     <constructor-arg name="updateTimeouts" value="false" />
   </bean>
 
+  <!-- Override and replace bean -->
   <bean id="tokenManagerCache" class="vtk.util.cache.InfinispanSimpleCache">
     <constructor-arg name="name" value="tokenManagerCache" />
     <constructor-arg name="timeoutSeconds" value="1800" />
