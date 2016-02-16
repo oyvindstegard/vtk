@@ -2272,6 +2272,7 @@
   <bean id="email.executor" class="vtk.util.mail.MailExecutor">
     <constructor-arg ref="email.taskExecutor" />
     <constructor-arg ref="email.javaMailSender" />
+    <constructor-arg value="${email.recipients.alwaysAcceptDomains}" />
   </bean>
 
   <bean id="email.javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
