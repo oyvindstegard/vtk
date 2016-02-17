@@ -115,9 +115,14 @@ public final class MailExecutor {
         return true;
     }
 
-    private boolean alwaysAccept(String recipient) {
+    protected boolean alwaysAccept(String recipient) {
         for (String domain : alwaysAcceptDomains) {
-            if (recipient.toLowerCase().endsWith(domain)) {
+            String lcRecipient = recipient.toLowerCase();
+            int lastPartIndex = lcRecipient.length() - domain.length();
+            if (lastPartIndex <= 0) continue;
+            String domainPart = lcRecipient.substring(lastPartIndex);
+            char prevChar = lcRecipient.charAt(lastPartIndex - 1);
+            if (domainPart.equals(domain) && (prevChar == '@' || prevChar == '.')) {
                 return true;
             }
         }
