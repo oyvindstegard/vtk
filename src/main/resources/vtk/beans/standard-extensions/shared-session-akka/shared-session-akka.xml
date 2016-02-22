@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <!-- Akka versions of shared caches and session store -->
+
+  <!-- Override -->
+  <bean id="saml.ieCookieStore.cache"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="system" ref="akka.actorSystem" />
+    <constructor-arg name="maxAge" value="3600" />
+  </bean>
+
+
+  <!-- Override -->
+  <bean id="saml.requestIdStore"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="system" ref="akka.actorSystem" />
+    <constructor-arg name="maxAge" value="1800" />
+    <constructor-arg name="refresh" value="false" />
+  </bean>
+
+  <!-- Override -->
+  <!--
+  <bean id="feide.requestIdStore"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="system" ref="akka.actorSystem" />
+    <constructor-arg name="maxAge" value="1800" />
+  </bean>
+  -->
+
+  <!-- Override -->
+  <bean id="tokenManagerCache"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="system" ref="akka.actorSystem" />
+    <constructor-arg name="maxAge" value="3600" />
+  </bean>
+
+  <!-- Override -->
+  <bean id="cookieLinkStore.cache"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="system" ref="akka.actorSystem" />
+    <constructor-arg name="maxAge" value="3600" />
+  </bean>
+
+  <!-- Override -->
+  <bean id="spring.sessionRepository" class="vtk.util.web.SimpleCacheSessionRepository">
+    <constructor-arg name="cache">
+      <bean class="vtk.util.cache.AkkaReplicatedCache">
+        <constructor-arg name="system" ref="akka.actorSystem" />
+        <constructor-arg name="maxAge" value="3600" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+</beans>
+
