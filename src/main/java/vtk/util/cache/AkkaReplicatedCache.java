@@ -327,7 +327,11 @@ public class AkkaReplicatedCache<K, V> implements SimpleCache<K, V> {
         /**
          * Receive "not found" response from replicator
          */
-        private void receiveGetNotFound(NotFound<LWWMap<Object>> n) {
+        // Get around weird compilation error:
+        //private void receiveGetNotFound(NotFound<LWWMap<Object>> n) {
+        private void receiveGetNotFound(Object o) {
+            NotFound<LWWMap<Object>> n = (NotFound<LWWMap<Object>>) o;
+
             DefaultContextObject req = (DefaultContextObject) n.getRequest().get();
             req.replyTo.tell(new GetReply(req.key, Optional.empty()), self());
         }
