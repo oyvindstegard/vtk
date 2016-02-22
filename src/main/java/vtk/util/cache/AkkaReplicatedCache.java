@@ -89,6 +89,7 @@ public class AkkaReplicatedCache<K, V> implements SimpleCache<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public V get(K key) {
+        if (key == null) return null;
         try {
             Future<Object> future = Patterns.ask(
                     actor, new CacheActor.GetRequest(key.toString()), timeout);
