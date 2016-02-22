@@ -62,12 +62,12 @@
             </#if>
                 <#if item_index != 0 && item_index != menu.items?size>${between}</#if>
                   <#attempt>
-                    <#include "/actions/list-menu.${item.label}.ftl" />
+                    <#include "/actions/list-menu.${item.label}.ftl" ignore_missing=true />
                   <#recover>
 
                   ${prepend}<a id="${item.label}" href="${item.url?html}">${item.title}</a>${append}
           
-                  </#recover>
+                  </#attempt>
               </li>
               <#assign count = count+1 />
           </#if>
