@@ -429,16 +429,17 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     
     @Override
     public void roleChange(ClusterRole role) {
+        Optional<ClusterRole> prev = clusterRole;
         try {
             switch (role) {
                 case MASTER:
                     this.clusterRole = Optional.of(role);
-                    logger.info("Switch to master mode");
+                    logger.info("Switch to master mode, previous=" + prev);
                     index.reopen(false);
                     break;
                 case SLAVE:
                     this.clusterRole = Optional.of(role);
-                    logger.info("Switch to slave mode");
+                    logger.info("Switch to slave mode, previous=" + prev);
                     index.reopen(true);
                     break;
             }

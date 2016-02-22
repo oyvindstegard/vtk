@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -54,6 +55,7 @@ import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.Version;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.util.threads.Mutex;
 
 /**
@@ -627,4 +629,8 @@ public class IndexManager implements DisposableBean {
         this.keepOldCommits = keepOldCommits >= 0 ? keepOldCommits : 0;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + storageId + ")";
+    }
 }
