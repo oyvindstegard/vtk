@@ -2127,7 +2127,7 @@ VrtxEditor.prototype.htmlFacade = {
           val = (desc.multiple && typeof val === "object" && val.length != undefined) ? val.join(",") : val;
           if(desc.multiple) {
             multiples.push({
-              name: name,
+              name: name + "ID" + id + "SID" + sessionId,
               json: descProps ? descProps : null, 
               movable: desc.multiple.movable,
               resettable: desc.multiple.resettable,
