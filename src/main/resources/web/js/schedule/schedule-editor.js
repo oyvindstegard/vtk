@@ -636,7 +636,35 @@ function courseSchedule() {
   contents.on("click", ".vrtx-reset-json", function(e) {
     var m = $(this).closest(".vrtx-multipleinputfields");
     m.find(".vrtx-multipleinputfield").remove();
-    m.find("> input[type='text']").addClass("reset-null");
+    m.find(".vrtx-button.add").remove();
+
+    var text = m.find("> input[type='text']");
+
+    // Lookup session
+    if(onlySessionId) {
+      var session = cs.sessionsLookup["single"]["one"];
+    } else {
+      var sessionId = this.id.replace(/vrtx\-reset\-json\-[^\-]+\-/, "");
+      var id = sessionId.replace(/^([^\-]+).*$/, "$1");
+      var session = cs.sessionsLookup[id][sessionId];
+    }
+
+    console.log(session);
+
+    // Reset to TP value
+    var staffTP = session.rawOrigTP["vrtxStaff"];
+    text.value(staffTp);
+
+    // Re-enhance
+    var multiples = session.multiples;
+    var enhanceMultipleInputFieldsFunc = enhanceMultipleInputFields;
+    for(var i = multiples.length; i--;) {
+      var m = multiples[i];
+      if(m.name === "vrtxStaff") {
+        enhanceMultipleInputFieldsFunc(m.name + "-" + sessionId, m.movable, m.browsable, 50, m.json, m.readOnly, m.resettable);
+      }
+    }
+
     e.stopPropagation();
     e.preventDefault();  
   });

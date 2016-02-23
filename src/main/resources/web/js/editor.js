@@ -2278,7 +2278,7 @@ VrtxEditor.prototype.htmlFacade = {
         }
       } else { // Empty
         // Is "vrtxStaff" and has "staff" set to []
-        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()] && !elm.hasClass("reset-null")) {
+        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) {
 	  if(rawPtr[name] == undefined || rawPtr[name].length > 0) {
             vrtxAdmin.log({msg: "DEL EMPTY " + name});
             rawPtr[name] = [];
