@@ -1488,7 +1488,7 @@ var userEnrichmentSeperators = {
   text: "%%TEXT%%"
 };
 
-function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, isReadOnly) {
+function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, isReadOnly, isResettable) {
   // Field with data
   var inputField = $("." + name + " input[type='text']");
   if (!inputField.length || vrtxAdmin.isIE7 || vrtxAdmin.isIETridentInComp) return;
@@ -1515,7 +1515,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
                                        : inputFieldVal.split(",");
   
   // Render add button after field with data
-  $($.parseHTML(vrtxEditor.htmlFacade.getMultipleInputFieldsAddButton(name, size, isBrowsable, isMovable, isDropdown, JSON.stringify(json, null, 2)), document, true)).insertAfter(inputField);
+  $($.parseHTML(vrtxEditor.htmlFacade.getMultipleInputFieldsAddButton(name, size, isBrowsable, isMovable, isDropdown, JSON.stringify(json, null, 2), isResettable), document, true)).insertAfter(inputField);
 
   // Render the multiple entries after add button
   var addFormFieldFunc = addFormField, html = "", isEnriched = false;
@@ -1533,8 +1533,8 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
   if(isLimitReached || isReadOnly) {
     var moreBtn = $("#vrtx-" + name + "-add");
     if(isLimitReached) {
-   	  $("<p class='vrtx-" + name + "-limit-reached'>" + vrtxAdmin.multipleFormGroupingMessages.limitReached + "</p>").insertBefore(moreBtn);
-	}
+      $("<p class='vrtx-" + name + "-limit-reached'>" + vrtxAdmin.multipleFormGroupingMessages.limitReached + "</p>").insertBefore(moreBtn);
+    }
     moreBtn.hide();
   }
   
@@ -2130,6 +2130,7 @@ VrtxEditor.prototype.htmlFacade = {
               name: name,
               json: descProps ? descProps : null, 
               movable: desc.multiple.movable,
+              resettable: desc.multiple.resettable,
               browsable: browsable,
               readOnly: readOnly
             });
@@ -2277,19 +2278,23 @@ VrtxEditor.prototype.htmlFacade = {
         }
       } else { // Empty
         // Is "vrtxStaff" and has "staff" set to []
-        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) {
-	      if(rawPtr[name] == undefined || rawPtr[name].length > 0) {
+        if(elm.hasClass("reset-null")) {         
+          vrtxAdmin.log({msg: "RESET NULL " + name});
+          rawPtr[name] = null;
+          hasChanges = true;
+        } else if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) {
+	  if(rawPtr[name] == undefined || rawPtr[name].length > 0) {
             vrtxAdmin.log({msg: "DEL EMPTY " + name});
             rawPtr[name] = [];
             hasChanges = true;
-	      }
+	  }
         } else { // Otherwise Delete
-	      if(rawOrig[name] != undefined) { // If exists
+	  if(rawOrig[name] != undefined) { // If exists
             vrtxAdmin.log({msg: "DEL " + name});
             delete rawPtr[name];
             hasChanges = true;
-	      }
-	    }
+	  }
+	}
       }
     }
     return hasChanges;
@@ -2306,7 +2311,7 @@ VrtxEditor.prototype.htmlFacade = {
       buttonText: text
     });
   },
-  getMultipleInputFieldsAddButton: function (name, size, isBrowsable, isMovable, isDropdown, json) {
+  getMultipleInputFieldsAddButton: function (name, size, isBrowsable, isMovable, isDropdown, json, isResettable) {
     return vrtxAdmin.templateEngineFacade.render(vrtxEditor.multipleFieldsBoxesTemplates["add-button"], {
       name: name,
       size: size,
@@ -2315,7 +2320,9 @@ VrtxEditor.prototype.htmlFacade = {
       isDropdown: isDropdown,
       title: vrtxAdmin.multipleFormGroupingMessages.add,
       buttonText: "<span class='add-arrow'></span>",
-      json: json
+      json: json,
+      isResettable: (typeof isResettable === "boolean" ? isResettable : false),
+      resettableLinkText: (vrtxAdmin.lang !== "en" ? "Tilbakestill forelesere fra TP" : "Reset staff from TP")
     });
   },
   getJsonBoxesInteractionsButton: function (clazz, title, text) {

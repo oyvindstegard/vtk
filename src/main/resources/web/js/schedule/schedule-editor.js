@@ -404,7 +404,7 @@ function courseSchedule() {
       var enhanceMultipleInputFieldsFunc = enhanceMultipleInputFields;
       for(var i = multiples.length; i--;) {
         var m = multiples[i];
-        enhanceMultipleInputFieldsFunc(m.name + "-" + sessionId, m.movable, m.browsable, 50, m.json, m.readOnly);
+        enhanceMultipleInputFieldsFunc(m.name + "-" + sessionId, m.movable, m.browsable, 50, m.json, m.readOnly, m.resettable);
       }
       /* CKEditors */
       var rtEditors = session.rtEditors;
@@ -633,6 +633,13 @@ function courseSchedule() {
   contents.on("keyup", "input[name='vrtxTitle']", $.debounce(50, true, function () { // Change Title
     changeStatusTitle(cs, this, false);
   }));
+  contents.on("click", ".vrtx-reset-json", function(e) {
+    var m = $(this).closest(".vrtx-multipleinputfields");
+    m.find(".vrtx-multipleinputfield").remove();
+    m.find("> input[type='text']").addClass("reset-null");
+    e.stopPropagation();
+    e.preventDefault();  
+  });
   
   var editorProperties = vrtxEditor.editorForm.find(".properties");
   editorProperties.hide();

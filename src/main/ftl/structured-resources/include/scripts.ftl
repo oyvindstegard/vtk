@@ -22,7 +22,7 @@
         $.when(vrtxEditor.multipleFieldsBoxesDeferred).done(function() {
           <#list scripts as script>
             <#if script.type == 'MULTIPLEINPUTFIELDS' >
-              enhanceMultipleInputFields('${script.name}', true, false, 999, null, false);
+              enhanceMultipleInputFields('${script.name}', true, false, 999, null, false, false);
             </#if>
           </#list>
           MULTIPLE_INPUT_FIELD_INITIALIZED.resolve();

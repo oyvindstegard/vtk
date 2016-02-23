@@ -101,9 +101,13 @@
 
 ### {{! ADD BUTTON }}
 
-<button id="vrtx-{{ name }}-add" title="{{ title }}" class="vrtx-button add" onclick="addFormField('{{ name }}', 1, null, '{{ size }}', {{ isBrowsable }}, {{ isMovable }}, {{ isDropdown }}, false, {{ json }}); return false;">
+<button id="vrtx-{{ name }}-add" title="{{ title }}" class="vrtx-button add" onclick="addFormField('{{ name }}', 1, null, '{{ size }}', {{ isBrowsable }}, {{ isMovable }}, {{ isDropdown }}, false, {{ json }}, {{ isResettable }}); return false;">
   {{{ buttonText }}}
 </button>
+
+{{#isResettable}}
+  &nbsp;&nbsp;<a href="javascript:void(0);" class="vrtx-reset-json" id="vrtx-reset-json-{{ name }}">{{ resettableLinkText }}</a>
+{{/isResettable}}
 
 ### {{! MULTIPLE INPUTFIELD AND DROPDOWN }}
 
