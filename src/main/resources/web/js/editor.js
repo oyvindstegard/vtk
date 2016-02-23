@@ -2278,11 +2278,7 @@ VrtxEditor.prototype.htmlFacade = {
         }
       } else { // Empty
         // Is "vrtxStaff" and has "staff" set to []
-        if(elm.hasClass("reset-null")) {         
-          vrtxAdmin.log({msg: "RESET NULL " + name});
-          rawPtr[name] = null;
-          hasChanges = true;
-        } else if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()]) {
+        if(name === "vrtxStaff" && rawOrigTP[name.split("vrtx")[1].toLowerCase()] && !elm.hasClass("reset-null")) {
 	  if(rawPtr[name] == undefined || rawPtr[name].length > 0) {
             vrtxAdmin.log({msg: "DEL EMPTY " + name});
             rawPtr[name] = [];
