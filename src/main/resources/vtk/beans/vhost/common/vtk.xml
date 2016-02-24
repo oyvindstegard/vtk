@@ -8,6 +8,8 @@
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
     <property name="ignoreResourceNotFound" value="true" />
     <property name="locations" ref="vtk.configLocations" />
+    <!-- System properties may override placeholders: -->
+    <property name="systemPropertiesMode" value="2" />
     <!--property name="nullValue" value="[[null]]" /-->
   </bean>
  
