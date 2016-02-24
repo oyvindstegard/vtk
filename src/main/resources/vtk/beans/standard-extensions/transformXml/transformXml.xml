@@ -232,9 +232,6 @@
     </constructor-arg>
   </bean>
 
-
-
-
    <bean id="xsltCompilationFileURIResolver" class="vtk.xml.FileURIResolver">
      <description>
        This URI resolver gets stylesheets from 'file://' type URLs.
@@ -260,22 +257,14 @@
      <property name="prefix" value="${xslRepositoryPath}" />
    </bean>
 
-  <bean id="standardXslCompilationResolvers" class="java.util.ArrayList">
-    <constructor-arg>
-      <list>
-         <ref bean="xsltCompilationFilePathURIResolver" />
-         <ref bean="xsltCompilationFileURIResolver" />
-      </list>
-    </constructor-arg>
-  </bean>
-
-
    <bean id="transformerManager" class="vtk.xml.TransformerManager">
      <description>
        XSLT Transformer manager
      </description>
      <property name="stylesheetReferenceResolvers" ref="standardXslStylesheetResolvers" />
-     <property name="compilationURIResolvers" ref="standardXslCompilationResolvers" />
+
+    <property name="compilationURIResolvers" value="#{{${xsltCompilationURIResolvers}}}" />
+     <!--property name="compilationURIResolvers" ref="standardXslCompilationResolvers" /-->
      <property name="transformationURIResolvers">
        <description>
          This is the list of URI resolvers used to obtain the XML
