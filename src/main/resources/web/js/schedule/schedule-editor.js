@@ -655,13 +655,11 @@ function courseSchedule() {
       var session = cs.sessionsLookup[id][sessionId];
     }
 
-    console.log(session);
-
     // Reset to TP value
       var val = session.rawOrigTP["staff"] || "";
       if(val.length) {
         var propsVal = "";
-        var desc = sessionLookup.descsPtr;
+        var desc = session.descsPtr;
         var sep = userEnrichmentSeperators;
         var descProps = desc.props;
             for(var j = 0, propsLen = val.length; j < propsLen; j++) {
