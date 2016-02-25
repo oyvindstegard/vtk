@@ -663,7 +663,7 @@ function courseSchedule() {
     var enhanceMultipleInputFieldsFunc = enhanceMultipleInputFields;
     for(var i = multiples.length; i--;) {
       var m = multiples[i];
-      if(m.name === "vrtxStaff") {
+      if(m.resettable) {
         enhanceMultipleInputFieldsFunc(m.name + "-" + sessionId, m.movable, m.browsable, 50, m.json, m.readOnly, m.resettable);
       }
     }
