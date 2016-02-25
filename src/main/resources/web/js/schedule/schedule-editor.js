@@ -661,22 +661,7 @@ function courseSchedule() {
       var val = session.rawOrigTP["staff"] || "";
       if(val.length) {
         var propsVal = "";
-        var desc = {
-        "props":[
-         {
-            "name":"id",
-            "type":"string"
-         },
-         {
-            "name":"url",
-            "type":"enrichedUrl"
-         },
-         {
-            "name":"name",
-            "type":"enrichedText"
-         }
-        ]
-      };
+        var desc = sessionLookup.descsPtr;
         var sep = userEnrichmentSeperators;
         var descProps = desc.props;
             for(var j = 0, propsLen = val.length; j < propsLen; j++) {
