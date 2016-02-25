@@ -659,8 +659,9 @@ function courseSchedule() {
       var val = session.rawOrigTP["staff"] || "";
       if(val.length) {
         var propsVal = "";
-        var desc = session.descsPtr;
+        var desc = session.descsPtr["vrtxStaff"];
         var sep = userEnrichmentSeperators;
+        
         var descProps = desc.props;
             for(var j = 0, propsLen = val.length; j < propsLen; j++) {
               for(i = 0; i < descProps.length; i++) {
