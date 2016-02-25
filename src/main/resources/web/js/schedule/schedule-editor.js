@@ -658,8 +658,44 @@ function courseSchedule() {
     console.log(session);
 
     // Reset to TP value
-    var staffTP = session.rawOrigTP["vrtxStaff"];
-    text.value(staffTp);
+      var val = session.rawOrigTP["staff"] || "";
+      if(val.length) {
+        var propsVal = "";
+        var desc = {
+        "props":[
+         {
+            "name":"id",
+            "type":"string"
+         },
+         {
+            "name":"url",
+            "type":"enrichedUrl"
+         },
+         {
+            "name":"name",
+            "type":"enrichedText"
+         }
+        ]
+      };
+        var sep = userEnrichmentSeperators;
+        var descProps = desc.props;
+            for(var j = 0, propsLen = val.length; j < propsLen; j++) {
+              for(i = 0; i < descProps.length; i++) {
+                if(desc.props[i].type === "enrichedUrl") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.url;
+                } else if(desc.props[i].type === "enrichedText") {
+                  propsVal += (val[j][descProps[i].name] || "") + sep.text;
+                } else {
+                  propsVal += (val[j][descProps[i].name] || "") + "###";
+                }
+              }
+              if(j < (propsLen - 1)) propsVal += "$$$";
+            }
+            val = propsVal.length ? propsVal : val;
+            val = (typeof val === "object" && val.length != undefined) ? val.join(",") : val;
+    }
+    
+    text.val(val);
 
     // Re-enhance
     var multiples = session.multiples;
