@@ -2127,7 +2127,7 @@ VrtxEditor.prototype.htmlFacade = {
           val = (desc.multiple && typeof val === "object" && val.length != undefined) ? val.join(",") : val;
           if(desc.multiple) {
             multiples.push({
-              name: name + "ID" + id + "SID" + sessionId,
+              name: name,
               json: descProps ? descProps : null, 
               movable: desc.multiple.movable,
               resettable: desc.multiple.resettable,
@@ -2136,6 +2136,7 @@ VrtxEditor.prototype.htmlFacade = {
             });
           }
           var nameI18n = isMedisin && name === "vrtxResources" ? name + "NotFixed" : name;
+          
           html += vrtxEdit.htmlFacade.getStringField({ title: i18n[nameI18n],
                                                        name: (desc.autocomplete ? "vrtx-autocomplete-" + desc.autocomplete + " " : "") + name + " " + name + "-" + sessionId,
                                                        id: name + "-" + sessionId,

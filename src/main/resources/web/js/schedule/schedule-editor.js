@@ -404,7 +404,9 @@ function courseSchedule() {
       var enhanceMultipleInputFieldsFunc = enhanceMultipleInputFields;
       for(var i = multiples.length; i--;) {
         var m = multiples[i];
-        enhanceMultipleInputFieldsFunc(m.name, m.movable, m.browsable, 50, m.json, m.readOnly, m.resettable);
+        enhanceMultipleInputFieldsFunc(m.name + "-" + sessionId, m.movable, m.browsable, 50, m.json, m.readOnly, m.resettable);
+        
+        contentElm.find("> input[type='text']").addClass("RID" + id).addClass("SID" + sessionId);
       }
       /* CKEditors */
       var rtEditors = session.rtEditors;
@@ -644,9 +646,9 @@ function courseSchedule() {
     if(onlySessionId) {
       var session = cs.sessionsLookup["single"]["one"];
     } else {
-      var idStr = m.attr("id");
-      var sessionId = idStr.replace(/^.*SID/, "");
-      var id = idStr.replace(/^.*ID/, "").replace(/SID.*$/, "");
+      var clz = text.attr("class");
+      var sessionId = clz.replace(/^.*SID([\S]+).*$/, "$1");
+      var id = clz.replace(/^.*RID([\S]+).*$/, "$1");
       var session = cs.sessionsLookup[id][sessionId];
     }
 
@@ -662,7 +664,7 @@ function courseSchedule() {
     for(var i = multiples.length; i--;) {
       var m = multiples[i];
       if(m.name === "vrtxStaff") {
-        enhanceMultipleInputFieldsFunc(m.name, m.movable, m.browsable, 50, m.json, m.readOnly, m.resettable);
+        enhanceMultipleInputFieldsFunc(m.name + "-" + sessionId, m.movable, m.browsable, 50, m.json, m.readOnly, m.resettable);
       }
     }
 
