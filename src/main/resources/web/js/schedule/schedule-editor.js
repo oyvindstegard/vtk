@@ -406,7 +406,9 @@ function courseSchedule() {
         var m = multiples[i];
         enhanceMultipleInputFieldsFunc(m.name + "-" + sessionId, m.movable, m.browsable, 50, m.json, m.readOnly, m.resettable);
         
-        contentElm.find("> input[type='text']").addClass("RID" + id).addClass("SID" + sessionId);
+        var inputField = contentElm.find("> .vrtxStaff > input[type='text']");
+        inputField.addClass("RID" + id);
+        inputField.addClass("SID" + sessionId);
       }
       /* CKEditors */
       var rtEditors = session.rtEditors;
@@ -639,7 +641,8 @@ function courseSchedule() {
     var m = $(this).closest(".vrtx-multipleinputfields");
     m.find(".vrtx-multipleinputfield").remove();
     m.find(".vrtx-button.add").remove();
-
+    m.find(".vrtx-reset-json").remove();
+    
     var text = m.find("> input[type='text']");
 
     // Lookup session

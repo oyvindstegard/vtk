@@ -1514,7 +1514,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
   var formFields = json && json.length ? inputFieldVal.split("$$$")
                                        : inputFieldVal.split(",");
   
-  // Render add button after field with data
+  // Render add button after field
   $($.parseHTML(vrtxEditor.htmlFacade.getMultipleInputFieldsAddButton(name, size, isBrowsable, isMovable, isDropdown, JSON.stringify(json, null, 2), isResettable), document, true)).insertAfter(inputField);
 
   // Render the multiple entries after add button
