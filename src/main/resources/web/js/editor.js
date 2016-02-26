@@ -1742,7 +1742,7 @@ function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, ha
         break;
     }
     i++;
-  };
+  }
   if(!hasEnrichedText && !hasEnrichedUrl && enrichedTextProp != null && val != "") {
     json[enrichedTextProp].enrichedTextVal = val;
     hasEnrichedText = true;
