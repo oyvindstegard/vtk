@@ -1581,6 +1581,7 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
       value = value.split("###");
     }
     jsonProcessed = jQuery.extend(true, [], json);
+    
     var enriched = addFormFieldUserEnrichment(value, jsonProcessed, isEnriched, hasEnrichedText, hasEnrichedUrl);
     isEnriched = enriched.isEnriched;
     hasEnrichedText = enriched.hasEnrichedText;
@@ -1741,7 +1742,7 @@ function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, ha
         break;
     }
     i++;
-  }
+  };
   if(!hasEnrichedText && !hasEnrichedUrl && enrichedTextProp != null && val != "") {
     json[enrichedTextProp].enrichedTextVal = val;
     hasEnrichedText = true;

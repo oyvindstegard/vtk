@@ -404,6 +404,7 @@ function courseSchedule() {
       var enhanceMultipleInputFieldsFunc = enhanceMultipleInputFields;
       for(var i = multiples.length; i--;) {
         var m = multiples[i];
+        
         enhanceMultipleInputFieldsFunc(m.name + "-" + sessionId, m.movable, m.browsable, 50, m.json, m.readOnly, m.resettable);
         
         var inputField = contentElm.find("> .vrtxStaff > input[type='text']");
@@ -656,27 +657,28 @@ function courseSchedule() {
     }
 
     // Reset to TP value
-      var val = session.rawOrigTP["staff"] || "";
-      if(val.length) {
-        var propsVal = "";
-        var desc = session.descsPtr["vrtxStaff"];
-        var sep = userEnrichmentSeperators;
-        
-        var descProps = desc.props;
-            for(var j = 0, propsLen = val.length; j < propsLen; j++) {
-              for(i = 0; i < descProps.length; i++) {
-                if(desc.props[i].type === "enrichedUrl") {
-                  propsVal += (val[j][descProps[i].name] || "") + sep.url;
-                } else if(desc.props[i].type === "enrichedText") {
-                  propsVal += (val[j][descProps[i].name] || "") + sep.text;
-                } else {
-                  propsVal += (val[j][descProps[i].name] || "") + "###";
-                }
-              }
-              if(j < (propsLen - 1)) propsVal += "$$$";
-            }
-            val = propsVal.length ? propsVal : val;
-            val = (typeof val === "object" && val.length != undefined) ? val.join(",") : val;
+    
+    var val = session.rawOrigTP["staff"] || "";
+    if (val.length) {
+      var propsVal = "";
+      var desc = session.descsPtr["vrtxStaff"];
+      var sep = userEnrichmentSeperators;
+
+      var descProps = desc.props;
+      for (var j = 0, propsLen = val.length; j < propsLen; j++) {
+        for (i = 0; i < descProps.length; i++) {
+          if (desc.props[i].type === "enrichedUrl") {
+            propsVal += (val[j][descProps[i].name] || "") + sep.url;
+          } else if (desc.props[i].type === "enrichedText") {
+            propsVal += (val[j][descProps[i].name] || "") + sep.text;
+          } else {
+            propsVal += (val[j][descProps[i].name] || "") + "###";
+          }
+        }
+        if (j < (propsLen - 1)) propsVal += "$$$";
+      }
+      val = propsVal.length ? propsVal : val;
+      val = (typeof val === "object" && val.length != undefined) ? val.join(",") : val;
     }
     
     text.val(val);
