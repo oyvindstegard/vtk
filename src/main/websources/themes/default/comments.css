@@ -1,0 +1,44 @@
+/* CSS for resource-comments.ftl */
+
+ul.comments h2 {
+  display:inline;
+  font-size: 130%;
+}
+
+ul.comments {
+  list-style-type: none; 
+  margin-left: 0pt; 
+  padding-left: 0pt; 
+}
+
+ul.comments li.comment {
+  margin-bottom: 1.5em; 
+}
+
+ul.comments li div {
+  margin-top: -0.25em;
+  margin-bottom: -0.25em;
+}
+
+ul.comments li div p, ul.comments li div ul, ul.comments li div ol {
+  margin-top: 0.75em; 
+  margin-bottom: 0.75em; 
+}
+
+ul.comments li span.pubdate {
+  font-size: 0.9em;
+}
+
+/* RSS - stuff */
+div.vrtx-feed-link {
+	clear: both;
+	background: url(icons/rss-icon.jpg) no-repeat top left;
+	font-size: .9em;
+	height: 24px;
+	line-height: 20px;
+}
+
+div.vrtx-feed-link a {
+	padding-left: 27px;
+}
+

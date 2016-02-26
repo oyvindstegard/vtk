@@ -1,0 +1,24 @@
+/*
+ *
+ *  Vortex IE 8 (remove soon..)
+ *
+ */
+
+.treeview li {
+  float: left;
+  clear: left;
+  padding-bottom: 0px;
+}
+
+.treeview:after {
+  content: "";
+  display: block;
+  height: 0;
+  clear: both;
+}
+
+.tip {
+  border: 1px solid #a0a0a0;
+}
+
+/* ^ Vortex IE 8 */

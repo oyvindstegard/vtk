@@ -1,0 +1,29 @@
+/* CSS for tags.ftl */
+
+div.tagged-resources {
+  width: 100%;
+  float: left;
+  padding: 0;
+  margin: 0 0 1.25em 0;
+}
+div.tagged-resources div.result {clear:left; padding: 0px 0px 20px 0px;}
+div.tagged-resources div.result a img {float:left; border: 0px; padding:0.25em 0.75em 0.5em 0; max-width: 300px;}
+div.tagged-resources div.result h2 {display: inline; font-size: 120%; font-weight: 900;} 
+div.tagged-resources div.result div.introduction p {padding:0; margin:0; padding-top:10px; padding-bottom: 10px;}
+
+div.tagged-resources div.result h2 a {
+  text-decoration: none;
+  color: black;
+}
+
+div.tagged-resources div.result h2 a:hover {
+  color: #999;
+}
+
+div.tagged-resources div.result div.lastModified {
+  padding-top: 0.5em;
+}
+
+div.vrtx-tags-scope-up {
+  padding-bottom: 1.5em;
+}

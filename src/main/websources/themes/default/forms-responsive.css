@@ -1,0 +1,338 @@
+/* 
+ * Forms responsive
+ *
+ */
+
+a {
+  text-decoration: none;
+  color: #0B5A9D;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.forms-new .vrtx-close-dialog {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.forms-new {
+  margin: 15px;
+}
+
+.forms-new .submitButtons,
+.forms-new #submitButtons {
+  padding-bottom: 15px;
+}
+
+.forms-new input,
+.forms-new .vrtx-button,
+.forms-new .vrtx-focus-button,
+#uiodoc-wrapper #uiodoc #vrtx-comments-delete-all,
+#uiodoc-wrapper #uiodoc .comment-delete-button,
+#uiodoc-wrapper #uiodoc #comment-form .submit,
+#uiodoc-wrapper #uiodoc a.button,
+#uiodoc-wrapper #uiodoc a.button-large,
+#uiodoc-wrapper #uiodoc a.button-large-blue,
+#uiodoc-wrapper #uiodoc form.vrtx-big-search input,
+#uiodoc-wrapper #uiodoc form.vrtx-big-search button,
+#uiodoc-wrapper #uiodoc form#fronter button,
+#uiodoc-wrapper #uiodoc form.vrtx-button button,
+#uiodoc-wrapper #uiodoc form.vrtx-search-form input,
+#uiodoc-wrapper #uiodoc form.vrtx-search-form button,
+#uiodoc-wrapper #uiodoc form#personer input,
+#uiodoc-wrapper #uiodoc form#personer button,
+#uiodoc-wrapper #uiodoc form#enheter input,
+#uiodoc-wrapper #uiodoc form#enheter button,
+#uiodoc-wrapper #uiodoc form#emner input,
+#uiodoc-wrapper #uiodoc form#emner button,
+body .ui-dialog input,
+body .ui-dialog .ui-button,
+#menu-search form input,
+#menu-search form button {
+  display: inline-block !important;
+  padding: 8px 12px !important;
+  outline: none !important;
+  border: 1px solid #939393 !important;
+  -webkit-border-radius: 5px !important;
+  -moz-border-radius: 5px !important;
+  border-radius: 5px !important;
+  white-space: normal !important;
+  font-size: 100% !important;
+}
+
+.forms-new .vrtx-textfield input,
+#uiodoc-wrapper #uiodoc input {
+  background: #fff;
+}
+
+.forms-new .vrtx-textfield {
+  padding: 0;
+  border: none;
+}
+
+.forms-new .vrtx-textfield,
+.forms-new .vrtx-textfield input {
+  background: none;
+  height: auto;
+  display: block;
+}
+
+.forms-new form,
+.forms-new .vrtx-textfield input,
+.forms-new textarea {
+  width: 100% !important;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+#uiodoc-wrapper #uiodoc a.button-large,
+#uiodoc-wrapper #uiodoc a.button-large-blue {
+  padding: 10px 16px !important;
+}
+
+.forms-new .vrtx-button,
+.forms-new .vrtx-focus-button,
+#uiodoc-wrapper #uiodoc #vrtx-comments-delete-all,
+#uiodoc-wrapper #uiodoc .comment-delete-button,
+#uiodoc-wrapper #uiodoc #comment-form .submit,
+#uiodoc-wrapper #uiodoc #comment-form .submit input,
+#uiodoc-wrapper #uiodoc a.button,
+#uiodoc-wrapper #uiodoc a.button-large,
+#uiodoc-wrapper #uiodoc a.button-large-blue,
+#uiodoc-wrapper #uiodoc form.vrtx-big-search button,
+#uiodoc-wrapper #uiodoc form#fronter button,
+#uiodoc-wrapper #uiodoc form.vrtx-button button,
+#uiodoc-wrapper #uiodoc form.vrtx-search-form button,
+#uiodoc-wrapper #uiodoc form#personer button,
+#uiodoc-wrapper #uiodoc form#enheter button,
+#uiodoc-wrapper #uiodoc form#emner button,
+body .ui-dialog .ui-button,
+#menu-search form button {
+  background: rgb(235,235,235) !important;
+  background: -moz-linear-gradient(top, rgba(235,235,235,1) 0%, rgba(218,218,218,1) 51%, rgba(235,235,235,1) 100%) !important;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(235,235,235,1)), 
+                                                              color-stop(51%,rgba(218,218,218,1)),
+                                                              color-stop(100%,rgba(235,235,235,1))) !important;
+  background: -webkit-linear-gradient(top, rgba(235,235,235,1) 0%,rgba(218,218,218,1) 51%,rgba(235,235,235,1) 100%) !important;
+  background: -o-linear-gradient(top, rgba(235,235,235,1) 0%,rgba(218,218,218,1) 51%,rgba(235,235,235,1) 100%) !important;
+  background: -ms-linear-gradient(top, rgba(235,235,235,1) 0%,rgba(218,218,218,1) 51%,rgba(235,235,235,1) 100%) !important;
+  background: linear-gradient(to bottom, rgba(235,235,235,1) 0%,rgba(218,218,218,1) 51%,rgba(235,235,235,1) 100%) !important;
+  max-width: 100%;
+  height: auto !important;
+}
+
+.forms-new .vrtx-focus-button,
+.ui-dialog .ui-dialog-buttonpane button:first-child,
+#uiodoc-wrapper #uiodoc a.button-large-blue {
+  border-color: #407bc2 !important;
+  background: rgb(140,209,238) !important;
+  background: -moz-linear-gradient(top, rgba(140,209,238,1) 0%, rgba(124,197,232,1) 2%, rgba(113,186,229,1) 4%,
+                                        rgba(98,173,223,1) 8%, rgba(94,171,222,1) 10%, rgba(74,154,209,1) 56%,
+                                        rgba(58,132,198,1) 100%) !important;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(140,209,238,1)),
+                                                              color-stop(2%,rgba(124,197,232,1)),
+                                                              color-stop(4%,rgba(113,186,229,1)),
+                                                              color-stop(8%,rgba(98,173,223,1)),
+                                                              color-stop(10%,rgba(94,171,222,1)),
+                                                              color-stop(56%,rgba(74,154,209,1)),
+                                                              color-stop(100%,rgba(58,132,198,1))) !important;
+  background: -webkit-linear-gradient(top, rgba(140,209,238,1) 0%,rgba(124,197,232,1) 2%,rgba(113,186,229,1) 4%,
+                                           rgba(98,173,223,1) 8%,rgba(94,171,222,1) 10%,rgba(74,154,209,1) 56%,
+                                           rgba(58,132,198,1) 100%) !important;
+  background: -o-linear-gradient(top, rgba(140,209,238,1) 0%,rgba(124,197,232,1) 2%,rgba(113,186,229,1) 4%,
+                                      rgba(98,173,223,1) 8%,rgba(94,171,222,1) 10%,rgba(74,154,209,1) 56%,
+                                      rgba(58,132,198,1) 100%) !important;
+  background: -ms-linear-gradient(top, rgba(140,209,238,1) 0%,rgba(124,197,232,1) 2%,rgba(113,186,229,1) 4%,
+                                       rgba(98,173,223,1) 8%,rgba(94,171,222,1) 10%,rgba(74,154,209,1) 56%,
+                                       rgba(58,132,198,1) 100%) !important;
+  background: linear-gradient(to bottom, rgba(140,209,238,1) 0%,rgba(124,197,232,1) 2%,rgba(113,186,229,1) 4%,
+                                         rgba(98,173,223,1) 8%,rgba(94,171,222,1) 10%,rgba(74,154,209,1) 56%,
+                                         rgba(58,132,198,1) 100%) !important;
+}
+
+.forms-new .vrtx-button span,
+.forms-new .vrtx-button:hover span,
+.forms-new .vrtx-button:active span,
+.forms-new .vrtx-button input,
+.forms-new .vrtx-button:hover input,
+.forms-new .vrtx-button:active input,
+.forms-new .vrtx-focus-button span,
+.forms-new .vrtx-focus-button:hover span,
+.forms-new .vrtx-focus-button:active span,
+.forms-new .vrtx-focus-button input,
+.forms-new .vrtx-focus-button:hover input,
+.forms-new .vrtx-focus-button:active input,
+#uiodoc-wrapper #uiodoc #vrtx-comments-delete-all span,
+#uiodoc-wrapper #uiodoc #vrtx-comments-delete-all:hover span,
+#uiodoc-wrapper #uiodoc #vrtx-comments-delete-all:active span,
+#uiodoc-wrapper #uiodoc .comment-delete-button span,
+#uiodoc-wrapper #uiodoc .comment-delete-button:hover span,
+#uiodoc-wrapper #uiodoc .comment-delete-button:active span,
+#uiodoc-wrapper #uiodoc #comment-form .submit span,
+#uiodoc-wrapper #uiodoc #comment-form .submit:hover span,
+#uiodoc-wrapper #uiodoc #comment-form .submit:active span,
+#uiodoc-wrapper #uiodoc a.button span,
+#uiodoc-wrapper #uiodoc a.button:hover span,
+#uiodoc-wrapper #uiodoc a.button:active span,
+#uiodoc-wrapper #uiodoc a.button-large span,
+#uiodoc-wrapper #uiodoc a.button-large:hover span,
+#uiodoc-wrapper #uiodoc a.button-large:active span,
+#uiodoc-wrapper #uiodoc a.button-large-blue span,
+#uiodoc-wrapper #uiodoc a.button-large-blue:hover span,
+#uiodoc-wrapper #uiodoc a.button-large-blue:active span,
+#uiodoc-wrapper #uiodoc form.vrtx-big-search button span,
+#uiodoc-wrapper #uiodoc form.vrtx-big-search button:hover span,
+#uiodoc-wrapper #uiodoc form.vrtx-big-search button:active span,
+form#fronter button span,
+form#fronter button:hover span,
+form#fronter button:active span,
+form.vrtx-button button span,
+form.vrtx-button button:hover span,
+form.vrtx-button button:active span,
+body .ui-dialog .ui-button span,
+body .ui-dialog .ui-button.ui-state-hover span,
+#uiodoc-wrapper #uiodoc form.vrtx-search-form button span,
+#uiodoc-wrapper #uiodoc form.vrtx-search-form button:hover span,
+#uiodoc-wrapper #uiodoc form.vrtx-search-form button:active span,
+#uiodoc-wrapper #uiodoc form#personer button span,
+#uiodoc-wrapper #uiodoc form#personer button:hover span,
+#uiodoc-wrapper #uiodoc form#personer button:active span,
+#uiodoc-wrapper #uiodoc form#enheter button span,
+#uiodoc-wrapper #uiodoc form#enheter button:hover span,
+#uiodoc-wrapper #uiodoc form#enheter button:active span,
+#uiodoc-wrapper #uiodoc form#emner button span,
+#uiodoc-wrapper #uiodoc form#emner button:hover span,
+#uiodoc-wrapper #uiodoc form#emner button:active span {
+  display: inline !important;
+  padding: 0 !important;
+  height: auto !important;
+  background: none !important;
+  font-weight: normal !important;
+}
+
+.forms-new .vrtx-button span,
+.forms-new .vrtx-button input,
+.forms-new .vrtx-focus-button span,
+.forms-new .vrtx-focus-button input,
+body .ui-dialog .ui-dialog-buttonpane .ui-button span {
+  margin: 0;
+}
+
+.forms-new .vrtx-button span,
+.forms-new .vrtx-button input,
+.forms-new .vrtx-button:active span,
+.forms-new .vrtx-button:active input,
+.forms-new .vrtx-button:hover span,
+.forms-new .vrtx-button:hover input,
+body .ui-dialog .ui-dialog-buttonpane .ui-button span {
+  color: #2b2b2b;
+}
+
+.forms-new .vrtx-focus-button span,
+.forms-new .vrtx-focus-button input,
+.forms-new .vrtx-focus-button:active span,
+.forms-new .vrtx-focus-button:active input,
+.forms-new .vrtx-focus-button:hover span,
+.forms-new .vrtx-focus-button:hover input {
+  color: #fff;
+}
+
+.forms-new .vrtx-button:hover,
+.forms-new .vrtx-button:active,
+#uiodoc-wrapper #uiodoc #vrtx-comments-delete-all:hover,
+#uiodoc-wrapper #uiodoc #vrtx-comments-delete-all:active,
+#uiodoc-wrapper #uiodoc .comment-delete-button:hover,
+#uiodoc-wrapper #uiodoc .comment-delete-button:active,
+#uiodoc-wrapper #uiodoc #comment-form .submit:hover,
+#uiodoc-wrapper #uiodoc #comment-form .submit:active,
+#uiodoc-wrapper #uiodoc #comment-form .submit input:hover,
+#uiodoc-wrapper #uiodoc #comment-form .submit input:active,
+#uiodoc-wrapper #uiodoc a.button:hover,
+#uiodoc-wrapper #uiodoc a.button:active,
+#uiodoc-wrapper #uiodoc a.button-large:hover,
+#uiodoc-wrapper #uiodoc a.button-large:active,
+#uiodoc-wrapper #uiodoc form.vrtx-big-search button:hover,
+#uiodoc-wrapper #uiodoc form.vrtx-big-search button:active,
+#uiodoc-wrapper #uiodoc form#fronter button:hover,
+#uiodoc-wrapper #uiodoc form#fronter button:active,
+#uiodoc-wrapper #uiodoc form.vrtx-button button:hover,
+#uiodoc-wrapper #uiodoc form.vrtx-button button:active,
+#uiodoc-wrapper #uiodoc form.vrtx-search-form button:hover,
+#uiodoc-wrapper #uiodoc form.vrtx-search-form button:active,
+#uiodoc-wrapper #uiodoc form#personer button:hover,
+#uiodoc-wrapper #uiodoc form#personer button:active,
+#uiodoc-wrapper #uiodoc form#enheter button:hover,
+#uiodoc-wrapper #uiodoc form#enheter button:active,
+#uiodoc-wrapper #uiodoc form#emner button:hover,
+#uiodoc-wrapper #uiodoc form#emner button:active,
+body .ui-dialog .ui-button.ui-state-hover,
+#menu-search form button:hover,
+#menu-search form button:active {
+  background: rgb(235,235,235) !important;
+  background: -moz-linear-gradient(top, rgba(218,218,218,1) 0%, rgba(201,201,201,1) 51%, rgba(218,218,218,1) 100%) !important;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(218,218,218,1)),
+                                                              color-stop(51%,rgba(201,201,201,1)),
+                                                              color-stop(100%,rgba(218,218,218,1))) !important;
+  background: -webkit-linear-gradient(top, rgba(218,218,218,1) 0%,rgba(201,201,201,1) 51%,rgba(218,218,218,1) 100%) !important;
+  background: -o-linear-gradient(top, rgba(218,218,218,1) 0%,rgba(201,201,201,1) 51%,rgba(218,218,218,1) 100%) !important;
+  background: -ms-linear-gradient(top, rgba(218,218,218,1) 0%,rgba(201,201,201,1) 51%,rgba(218,218,218,1) 100%) !important;
+  background: linear-gradient(to bottom, rgba(218,218,218,1) 0%,rgba(201,201,201,1) 51%,rgba(218,218,218,1) 100%) !important;
+  cursor: pointer;
+}
+
+.forms-new .vrtx-focus-button:hover,
+.forms-new .vrtx-focus-button:active,
+.ui-dialog .ui-dialog-buttonpane button:first-child.ui-state-hover,
+#uiodoc-wrapper #uiodoc a.button-large-blue:hover,
+#uiodoc-wrapper #uiodoc a.button-large-blue:active {
+  background: rgb(117,197,233) !important;
+  background: -moz-linear-gradient(top, rgba(117,197,233,1) 0%, rgba(103,182,227,1) 2%, rgba(94,169,222,1) 4%,
+                                        rgba(81,153,215,1) 8%, rgba(78,150,214,1) 10%, rgba(54,117,189,1) 80%,
+                                        rgba(48,110,184,1) 100%) !important;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(117,197,233,1)),
+                                                              color-stop(2%,rgba(103,182,227,1)),
+                                                              color-stop(4%,rgba(94,169,222,1)),
+                                                              color-stop(8%,rgba(81,153,215,1)),
+                                                              color-stop(10%,rgba(78,150,214,1)),
+                                                              color-stop(80%,rgba(54,117,189,1)),
+                                                              color-stop(100%,rgba(48,110,184,1))) !important;
+  background: -webkit-linear-gradient(top, rgba(117,197,233,1) 0%,rgba(103,182,227,1) 2%,rgba(94,169,222,1) 4%,
+                                           rgba(81,153,215,1) 8%,rgba(78,150,214,1) 10%,rgba(54,117,189,1) 80%,
+                                           rgba(48,110,184,1) 100%) !important;
+  background: -o-linear-gradient(top, rgba(117,197,233,1) 0%,rgba(103,182,227,1) 2%,rgba(94,169,222,1) 4%,
+                                      rgba(81,153,215,1) 8%,rgba(78,150,214,1) 10%,rgba(54,117,189,1) 80%,
+                                      rgba(48,110,184,1) 100%) !important;
+  background: -ms-linear-gradient(top, rgba(117,197,233,1) 0%,rgba(103,182,227,1) 2%,rgba(94,169,222,1) 4%,
+                                       rgba(81,153,215,1) 8%,rgba(78,150,214,1) 10%,rgba(54,117,189,1) 80%,
+                                       rgba(48,110,184,1) 100%) !important;
+  background: linear-gradient(to bottom, rgba(117,197,233,1) 0%,rgba(103,182,227,1) 2%,rgba(94,169,222,1) 4%,
+                                         rgba(81,153,215,1) 8%,rgba(78,150,214,1) 10%,rgba(54,117,189,1) 80%,
+                                         rgba(48,110,184,1) 100%) !important;
+              
+  cursor: pointer;
+}
+
+#uiodoc-wrapper #uiodoc a.button-large:hover span,
+#uiodoc-wrapper #uiodoc a.button-large-blue:hover span,
+#uiodoc-wrapper #uiodoc a.button-large span,
+#uiodoc-wrapper #uiodoc a.button-large-blue span {
+  float: left;
+  padding-right: 4em !important;
+  height: 100%;
+  font-weight: bold !important;
+}
+
+.forms-new a.button-large span,
+#uiodoc-wrapper #uiodoc #main a.button-large span {
+  background: url(../images/mobile/black-arrow-forward-btn.png) no-repeat 100% 50% !important;
+}
+
+.forms-new a.button-large-blue span,
+#uiodoc-wrapper #uiodoc #main a.button-large-blue span {
+  background: url(../images/mobile/grey-arrow-forward.png) no-repeat 100% 50% !important;
+}
+
+/* ^ Forms responsive */

@@ -1,0 +1,285 @@
+/* Introduction */
+div.vrtx-introduction {
+	margin: 0;
+	padding: 0 0 0.5em 0;
+}
+
+/* Picture without picture text */
+img.vrtx-introduction-image {
+	float: right;
+	margin: 0 0 0.5em 0.75em;
+	border: 1px solid #ddd;
+}
+
+/* Picture with picture text */
+div.vrtx-introduction-image {
+	border: 1px solid #ddd;
+	float: right;
+	margin: 0em 0em 0.5em 0.75em;
+}
+
+div.vrtx-introduction-image img {
+}
+
+div.vrtx-introduction-image div.vrtx-imagetext {
+	overflow: hidden;
+	padding: 0.5em;
+	background-color: #eee;
+}
+
+* html div.vrtx-introduction-image div.vrtx-imagetext {
+	margin-top: -0.3em;
+	margin-right: -0.3em;
+}
+
+div.vrtx-introduction-image div.vrtx-imagetext span.vrtx-imagetitle {
+	font-weight: bold;
+}
+
+/* collections */
+div.vrtx-collections {
+	clear: right;
+	border: 1px solid #ccc;
+	padding: 1em;
+	height: 1%; /* Triggers hasLayout in IE browser */
+	margin: 0 0 1.5em 0;
+}
+
+div.vrtx-collections:after {
+  content: "."; 
+  display: block; 
+  height: 0; 
+  clear: both; 
+  visibility: hidden;
+}
+
+div.vrtx-collections table {
+	width: 100%;
+}
+
+div.vrtx-collections table tr {
+	vertical-align: top;
+}
+
+div.vrtx-collections h2 {
+	margin: 0 0 .5em 0;
+	font-size: 1.2em;
+}
+
+div.vrtx-collections ul {
+	list-style-type: square;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+  
+  div.vrtx-collections div.vrtx-subfolder-menu {
+    border: none;
+    padding: 0px;
+    height: 1%; /* Triggers hasLayout in IE browser */
+  }
+
+  div.vrtx-collections div.menu-title {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin: 0px 0px 0.5em;
+  }
+
+  div.vrtx-collections ul {
+    list-style-type: square;
+    margin-bottom: 0px;
+    margin-top: 0px;
+    margin-left: 0px;
+    padding-left: 1em;
+    padding-right: 2em;
+    float: left;
+  }
+  
+  div.vrtx-collections ul li {
+    /*list-style-position: inside;*/
+  }
+
+/* START vrtx-resource (standard, article, events) */
+div.vrtx-resource {
+	width: 100%;
+	float: left;
+	padding: 0;
+	margin: 0 0 1.25em 0;
+}
+
+div.eventListing\.upcomingEventsSearchComponent h2,div.eventListing\.previousEventsSearchComponent h2
+	{
+	float: left;
+	padding: 0;
+}
+
+div.eventListing\.upcomingEventsSearchComponent h2 {
+	margin: 0em 0 .5em 0;
+}
+
+div.eventListing\.previousEventsSearchComponent h2 {
+	margin: .5em 0 .5em 0;
+}
+	
+div.articleListing\.searchComponent div.vrtx-title{
+	padding: 0 0 .5em 0;
+}
+
+div.vrtx-resource a.vrtx-title {
+	font-size: 1.2em;
+	font-weight: 900;
+}
+
+div.articleListing\.searchComponent a.vrtx-title,div.eventListing\.upcomingEventsSearchComponent a.vrtx-title,div.eventListing\.previousEventsSearchComponent a.vrtx-title
+{
+	text-decoration: none;
+	color: black;
+}
+
+div.articleListing\.searchComponent a.vrtx-title:hover,div.eventListing\.upcomingEventsSearchComponent a.vrtx-title:hover,div.eventListing\.previousEventsSearchComponent a.vrtx-title:hover
+{
+	color: #999;
+}
+
+div.articleListing\.searchComponent  a.vrtx-title{
+	padding-bottom:.5em;
+}
+
+div.tagged-resources  a.vrtx-title {
+    text-decoration: none;
+    color: black;
+}
+
+div.tagged-resources a.vrtx-title:hover {
+    color: #999;
+}
+
+div.tagged-resources div.lastModified {
+  padding-top: 0.5em !important;
+}
+
+div.vrtx-resource a.vrtx-image {
+	float: left;
+	padding:0 0.75em 0.5em 0;
+	border: none;
+	display: block;
+}
+
+div.vrtx-resource a.vrtx-image img {
+  border: none;	
+}
+
+div.vrtx-resource div.lastModified,div.vrtx-resource div.published-date,div.vrtx-resource div.time-and-place
+	{
+	padding: 0;
+
+}
+
+div.vrtx-resource div.introduction {
+	padding: 0;
+	margin: 0;
+}
+
+div.vrtx-resource div.introduction p {
+	margin: .5em 0 0 0;
+	padding: 0;
+}
+
+div.vrtx-resource div.vrtx-read-more {
+	margin: .5em 0 0 0;
+	white-space: nowrap;
+}
+
+/* events */
+abbr {
+	text-decoration: none;
+	border-bottom: 0 !important;
+}
+
+span.time-and-place {
+        font-weight: bold;
+}
+
+span.vrtx-add-event {
+       font-size: 11px;
+       white-space: nowrap;
+       vertical-align: 15%;
+}
+
+span.vrtx-add-event a.vrtx-ical {
+       color: #555;
+       position: relative; 
+}
+
+span.vrtx-add-event a.vrtx-ical-help {
+       background: url(icons/icon-info.gif) no-repeat;
+       background-position: 87% 50%;
+       padding: 0px 10px 0px 10px;
+}
+
+.vrtx-paging-wrapper {
+	margin: 0 0 1em 0;
+	display:block;
+	clear:left;
+}
+
+/* RSS - stuff */
+div.vrtx-feed-link {
+	clear: both;
+	background: url(icons/rss-icon.jpg) no-repeat top left;
+	font-size: .9em;
+	height: 24px;
+	line-height: 20px;
+}
+
+div.vrtx-feed-link a {
+	padding-left: 27px;
+}
+
+.clear {
+	display: block;
+	content: ".";
+	height: 0;
+	visibility: hidden;
+	clear: both;
+}
+
+.vrtx-number-of-comments {
+	display:inline;
+	font-size:11px;
+	padding-right:.6em;
+	white-space:nowrap;
+	vertical-align:15%;
+}
+
+.published-date-container{
+		margin:0.5em 0 0;
+}
+.published-date {
+/*	padding-right:.2em; 
+	margin-right:.5em;*/
+	display:inline;
+
+}
+
+.start-and-end-container {
+	display:inline;
+	padding-right:.2em;
+	margin-right:0;
+}
+
+.time-and-place{
+	margin:0.5em 0 0;
+}
+
+.vrtx-number-of-comments-add-event-container{
+	margin:0 0 0 0;
+	display:inline;
+	border-left:1px solid #AAAAAA;
+	padding-left:.5em;
+	overflow:hidden;
+	height: .8em;
+	margin:.1em 0 .1em .3em;
+}
+.vrtx-number-of-comments-add-event-container a {
+   color: #555;
+}

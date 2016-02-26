@@ -1,0 +1,61 @@
+/*
+ *
+ *  Vortex - XML - Browser
+ *
+ */
+
+.browse-actions {
+  display: inline;
+}
+
+body,
+#app-content,
+#app-head {
+  width: 884px;
+  max-width: none !important;
+  min-width: 0 !important;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+}
+
+#app-head-wrapper {
+  margin-left: 15px;
+  border-right: 1px solid #DAD9D9;
+  border-left: 1px solid #DAD9D9;
+}
+
+#app-head #global-menu-top {
+  right: 30px;
+}
+
+#vrtx-webdavmessage {
+  margin-left: 15px;
+}
+
+#vrtx-breadcrumb-wrapper {
+  padding-left: 20px !important;
+}
+
+#app-head #app-name {
+  top: 10px !important;
+}
+
+#app-head {
+  height: 55px !important;
+}
+
+#app-content #main {
+  padding: 5px 0 0 0;
+  margin: 0 0 0 15px;
+}
+
+div#resource-title {
+  margin: -8px 20px 0 20px !important;
+}
+
+#resourceMenuLeft {
+  margin: 0 0 0 20px !important;
+  clear: none !important;
+}
+
+/* ^ Vortex - XML - Browser */

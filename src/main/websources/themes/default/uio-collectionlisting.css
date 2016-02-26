@@ -1,0 +1,30 @@
+div.breadcrumb {
+  font-size: .8em;
+} 
+
+a.vrtx-manage-url {
+  display: inline;  
+  font-size: .8em;
+  float:right;
+  clear:both; 
+  margin: 0 20px 0px 0;
+  padding-bottom:12px;
+} 
+
+div.navmarginbrod { 
+   margin-top: 0px; 
+   margin-left: 20px;
+}
+
+div.body { 
+  padding: 0 20px 0 29px; 
+  margin-top: 12px; 
+}
+ 
+span.signatur {  
+  margin-left: 29px;
+}
+
+hr { 
+  margin-left: 29px;
+} 

@@ -1,0 +1,18 @@
+--- OSMF.orig/framework/OSMF/org/osmf/net/NetStreamPlayTrait.as	2012-03-21 10:45:04.000000000 +0100
++++ OSMF/framework/OSMF/org/osmf/net/NetStreamPlayTrait.as	2014-06-19 17:37:56.194167473 +0200
+@@ -92,6 +92,15 @@
+ 			{
+ 				var playArgs:Object;
+ 				
++				// Patch from https://forums.adobe.com/message/5126767
++				var streamingResourceForPause:StreamingURLResource = urlResource as StreamingURLResource;
++				if ((streamingResourceForPause.streamType == StreamType.LIVE) && streamStarted)
++				{
++					netStream.pause();
++					netStream.close();
++					streamStarted = false;
++				}
++				
+ 				if (streamStarted)
+ 				{
+ 					if (multicastResource != null)
