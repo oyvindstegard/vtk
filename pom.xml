@@ -256,7 +256,7 @@
             </goals>
             <phase>process-resources</phase>
             <configuration>
-              <arguments>default</arguments>
+              <arguments>--production default</arguments>
             </configuration>
           </execution>
         </executions>
