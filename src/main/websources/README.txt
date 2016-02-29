@@ -1,125 +1,24 @@
-Readme for web-resources
-========================
+Readme for websources
+=====================
 
-Flash
------
+Uses Javascript tools to proccess web resources. It is run by Maven using Frontend Maven Plugin_,
+which takes care of downloading, installing and running the Javascript tools.
 
-├── flash
-│   ├── audioplayer.swf (http://wpaudioplayer.com/)
-│   ├── SMP_2.0.2494-patched (http://www.osmf.org/strobe_mediaplayback.html)
-│   │   ├── 10.2
-│   ├── StrobeMediaPlayback_1.5.1-patched [OLD version] (http://www.osmf.org/strobe_mediaplayback.html)
-│   │   ├── 10.1
-│   ├── OSMF_2.0-patches
-│   └── SMP-BUILD-README.txt
-..
+The tooling is based on Node_ as a runtime. NPM_ takes care of managing the dependencies for the
+tools we use. Bower_ is for managing front-end dependencies. Gulp_ is the build tool which will
+proccess the web resources and copy them to the bulid target directory.
 
-
-jQuery library and jQuery plugins
----------------------------------
-
-├── jquery
-│   ├── include-jquery.js
-│   ├── jquery.min.js
-│   └── plugins
-│       ├── jquery.autocomplete.css
-│       ├── jquery.autocomplete.js
-│       ├── jquery.form.js
-│       ├── jquery.hotkeys.js
-│       ├── jquery.scrollTo.min.js
-│       ├── jquery.treeview.async.js
-│       ├── jquery.treeview.js
-│       ├── jquery.treeview.min.js
-│       ├── jquery.vortexTips.js
-│       ├── license.txt
-│       ├── README.txt
-│       └── ui
-│           ├── jquery-ui-*.custom
-│           │   ├── css
-│           │   │   └── smoothness
-│           │   │       └── jquery-ui-*.custom.css
-│           │   ├── development-bundle
-│           │   └── js
-│           │       ├── jquery-ui-*.custom.min.js
-│           │       ├── jquery.ui.datepicker-nn.js
-│           │       └── jquery.ui.datepicker-no.js
-..
+During development you might want to run npm, bower or gulp directly. For this I have added the
+the three shell scripts npm.sh, bower.sh and gulp.sh. You should change the
+webResources.physicalLocation property to point to the location of the processed resources
+(e.g: ``webResources.physicalLocation = file:///path/to/vtk/target/classes/web/``).
+This can be done in the ``.vtk.properties`` or ``.vrtx.properties`` files.
+You can then run ``./gulp.sh watch`` in this directory, which will proccess the files as you
+change them.
 
 
-
-JavaScript and plain JS plugins
--------------------------------
-
-├── js
-│   ├── admin-enhancements.js
-│   ├── audio-player.js
-│   ├── autocomplete
-│   │   ├── autocomplete.js
-│   │   └── autocomplete-permissions.js
-│   ├── browse.js
-│   ├── collectionlisting
-│   │   └── manually-approve.js
-│   ├── cross-doc-com-link.js
-│   ├── domains
-│   │   ├── about.js
-│   │   ├── editors.js
-│   │   ├── listing.js
-│   │   └── permissions.js
-│   ├── datepicker
-│   │   ├── datepicker-admin-old.js
-│   │   ├── datepicker-event-listing.js
-│   │   └── vrtx-datepicker.js
-│   ├── editor.js
-│   ├── frameworks
-│   │   └── es5-shim-dejavu.js
-│   ├── gallery.js
-│   ├── iframe-admin.js
-│   ├── iframe-view.js
-│   ├── iframe-view-media.js
-│   ├── image-editor
-│   │   ├── editor.js
-│   │   └── excanvas.compiled.js
-│   ├── md5
-│   │   └── md5.js
-│   ├── open-webdav.js
-│   ├── plugins
-│   │   ├── mustache.js
-│   │   ├── tablesort-1.5.min.js
-│   │   └── tablesort-customsort.js
-│   ├── reports
-│   │   └── brokern-links.js
-│   ├── schedule
-│   ├── templates
-│   │   ├── manually-approve.mustache
-│   │   ├── multiple-fields-boxes.mustache
-│   │   └── README.txt
-│   ├── toc.js
-│   ├── toggle.js
-│   ├── view-dropdown.js
-│   ├── visualize-broken-links.js
-│   ├── vrtx-accordions.js
-│   ├── vrtx-animations.js
-│   ├── vrtx-simple-dialogs.js
-│   ├── vrtx-sticky-bar.js
-│   └── vrtx-tree.js
-..
-
-
-CSS and icons
--------------
-
-└── themes
-    └── default
-        ├── default.css
-        ├── default-ie7.css
-        ├── default-ie8.css
-        ├── editor-common.css
-        ├── editor.css
-        ├── icons (TODO: this should be combined with images/)
-        ├── images
-        ├── report
-        │   ├── images
-        │   └── report.css
-        ├── structured-resources
-        │   └── editor.css
-        ..
+.. _Node: https://nodejs.org/
+.. _NPM: https://www.npmjs.com/
+.. _Bower: http://bower.io/
+.. _Gulp: http://gulpjs.com/
+.. _Frontend Maven Plugin: https://github.com/eirslett/frontend-maven-plugin
