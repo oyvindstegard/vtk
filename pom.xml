@@ -136,8 +136,6 @@
         <directory>src/main/resources</directory>
         <excludes>
           <exclude>war/</exclude>
-          <!-- Exclude any CK-editor-symlink for runtime editing of web resources: -->
-          <exclude>web/ckeditor-build</exclude>
         </excludes>
       </resource>
       <resource>
@@ -153,10 +151,6 @@
           <include>*-schema.sql</include>
         </includes>
         <targetPath>vtk/sql/</targetPath>
-      </resource>
-      <resource>
-        <directory>src/main/ext/CKEditor/ckeditor-build</directory>
-        <targetPath>web/ckeditor-build</targetPath>
       </resource>
       <resource>
         <directory>src/main/version</directory>

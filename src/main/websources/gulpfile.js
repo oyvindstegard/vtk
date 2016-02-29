@@ -49,6 +49,11 @@ gulp.task('copy-js', function () {
         .pipe(gulp.dest(config.target + "/js"));
 });
 
+gulp.task('ckeditor-copy', function () {
+    return gulp.src('CKEditor/ckeditor-build/**')
+        .pipe(gulp.dest(config.target + '/ckeditor-build'));
+});
+
 gulp.task('watch', function () {
     gulp.watch('themes/default/scss/*.scss', ['compile-sass']);
     gulp.watch(['themes/**', '!themes/**/scss/*.scss'], ['copy-themes']);
@@ -56,6 +61,14 @@ gulp.task('watch', function () {
 });
 
 gulp.task('default', function () {
-    gulp.start('compile-sass', 'copy-themes', 'compile-lib', 'copy-js', 'copy-jquery', 'copy-flash');
+    gulp.start(
+        'compile-sass',
+        'copy-themes',
+        'compile-lib',
+        'copy-js',
+        'copy-jquery',
+        'ckeditor-copy',
+        'copy-flash'
+    );
 });
 

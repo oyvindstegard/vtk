@@ -28,7 +28,7 @@ and add the modifications to the new version after, or it will be out-of-sync.
 
 Upgrading to a new version:
 
-cd src/main/ext/CKeditor
+cd src/main/websources/CKeditor
 wget http://.../CKeditor_<version>.zip
 unzip CKeditor_<version>.zip
 mv ckeditor ckeditor-org/ckeditor-<version>
