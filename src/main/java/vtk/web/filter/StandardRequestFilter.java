@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import vtk.util.web.HttpUtil;
 import vtk.web.service.URL;
 
@@ -56,6 +57,7 @@ import vtk.web.service.URL;
  * <li>Also supports translating forwarded requests using a header with optional 
  *    fields <code>{host, port, protocol, client}</code>
  *    Example: <code>X-My-Forward-Header: host=example.com,port=443,protocol=https</code>
+ *    (TODO: change to support <code>Forwarded</code> header, RFC7239).
  * </ol>
  */
 public class StandardRequestFilter extends AbstractRequestFilter {
@@ -64,6 +66,8 @@ public class StandardRequestFilter extends AbstractRequestFilter {
 
     private Map<Pattern, String> urlReplacements;
     private Pattern xForwardedFor = null;
+    private String xForwardedProto = null;
+    private String xForwardedPort = null;
     private String requestForwardFieldHeader = null;
 
     public void setUrlReplacements(Map<String, String> urlReplacements) {
@@ -81,6 +85,18 @@ public class StandardRequestFilter extends AbstractRequestFilter {
         }
     }
     
+    public void setxForwardedProto(String xForwardedProto) {
+        if (xForwardedProto != null && !"".equals(xForwardedProto.trim())) {
+            this.xForwardedProto = xForwardedProto;
+        }
+    }
+
+    public void setxForwardedPort(String xForwardedPort) {
+        if (xForwardedPort != null && !"".equals(xForwardedPort.trim())) {
+            this.xForwardedPort = xForwardedPort;
+        }
+    }
+
     public void setRequestForwardFieldHeader(String forwardHeader) {
         this.requestForwardFieldHeader = forwardHeader;
     }
@@ -117,6 +133,21 @@ public class StandardRequestFilter extends AbstractRequestFilter {
                 }
             }
             
+            if (xForwardedProto != null) {
+                String hdr = request.getHeader(xForwardedProto);
+                if ("http".equals(hdr) || "https".equals(hdr)) {
+                    this.requestURL.setProtocol(hdr);
+                }
+            }
+
+            if (xForwardedPort != null) {
+                try {
+                    int port = request.getIntHeader(xForwardedPort);
+                    this.requestURL.setPort(port);
+                }
+                catch (Throwable t) {}
+            }
+
             if (requestForwardFieldHeader == null || requestForwardFieldHeader.trim().equals("")) {
                 return;
             }
