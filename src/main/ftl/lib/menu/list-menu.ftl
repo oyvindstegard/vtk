@@ -62,7 +62,7 @@
             </#if>
                 <#if item_index != 0 && item_index != menu.items?size>${between}</#if>
                   <#attempt>
-                    <#include "/actions/list-menu.${item.label}.ftl" ignore_missing=true />
+                    <#include "/actions/list-menu.${item.label}.ftl" />
                   <#recover>
 
                   ${prepend}<a id="${item.label}" href="${item.url?html}">${item.title}</a>${append}
