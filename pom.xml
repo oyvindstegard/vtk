@@ -177,8 +177,6 @@
         <directory>src/main/resources</directory>
         <excludes>
           <exclude>war/</exclude>
-          <!-- Exclude any CK-editor-symlink for runtime editing of web resources: -->
-          <exclude>web/ckeditor-build</exclude>
         </excludes>
       </resource>
       <resource>
@@ -194,10 +192,6 @@
           <include>*-schema.sql</include>
         </includes>
         <targetPath>vtk/sql/</targetPath>
-      </resource>
-      <resource>
-        <directory>src/main/ext/CKEditor/ckeditor-build</directory>
-        <targetPath>web/ckeditor-build</targetPath>
       </resource>
       <resource>
         <directory>src/main/version</directory>
@@ -253,6 +247,60 @@
             </systemProperty>
           </systemProperties>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>0.0.28</version>
+        <configuration>
+          <workingDirectory>src/main/websources</workingDirectory>
+          <installDirectory>src/main/websources</installDirectory>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>install node and npm</id>
+            <goals>
+              <goal>install-node-and-npm</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <nodeVersion>v5.7.0</nodeVersion>
+              <npmVersion>3.7.3</npmVersion>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm install</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <arguments>install</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>bower install</id>
+            <goals>
+              <goal>bower</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <arguments>install</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>gulp build</id>
+            <goals>
+              <goal>gulp</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+              <arguments>--production default</arguments>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- Build info: Provide local hostname as property ${hostname} using a Groovy script. -->
@@ -435,27 +483,6 @@
           <excludes>
             <exclude>**/Abstract*.java</exclude>
           </excludes>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.jasig.maven</groupId>
-        <artifactId>sass-maven-plugin</artifactId>
-        <version>1.1.1</version>
-        <executions>
-          <execution>
-            <id>compile-scss</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>update-stylesheets</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <sassOptions>
-            <style>:compressed</style>
-          </sassOptions>
-          <sassSourceDirectory>src/main/resources/web/themes/default/scss</sassSourceDirectory>
-          <destination>${project.build.directory}/classes/web/themes/default</destination>
         </configuration>
       </plugin>
       <!-- JBoss -->
@@ -755,6 +782,11 @@
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-cluster_2.11</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-distributed-data-experimental_2.11</artifactId>
       <version>2.4.1</version>
     </dependency>
     <dependency>

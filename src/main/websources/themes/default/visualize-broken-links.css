@@ -1,0 +1,76 @@
+/*
+ *
+ *  Vortex - Visualize broken links
+ *
+ */
+
+#vrtx-link-check-spinner {
+  background: #efefef url(images/spinner.gif) no-repeat 10px 50%;
+  display: block;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 10px 10px 10px 34px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75em; 
+}
+
+html#vrtx-preview-popup #vrtx-preview-popup-iframe-wrapper {
+  position: relative;
+}
+
+html#vrtx-preview-popup #vrtx-link-check-spinner {
+  top: 0px;
+  right: -2px;
+  font-size: 0.923em;
+}
+
+.vrtx-broken-links {
+  background-image: none !important;
+  padding-left: 10px !important;
+  color: #ed1c24 !important;
+}
+
+#previewViewIframe.mobile {
+  overflow: hidden !important;
+}
+
+#previewViewIframe.mobile::-webkit-scrollbar {  
+  display: none !important;
+}
+
+/* Scale to fit 1024px into "viewport" of iframe if not responsive design */
+
+#previewViewIframeWrapper.mobile-none-responsive,
+#previewViewIframeWrapper.mobile-none-responsive-horizontal {
+  width: 1020px !important;
+  overflow: scroll;
+}
+
+#previewViewIframeWrapper.mobile-none-responsive {
+  -ms-transform: scale(0.32156862745);
+  -ms-transform-origin: 0 0;
+  -moz-transform: scale(0.32156862745);
+  -moz-transform-origin: 0px 0;
+  -o-transform: scale(0.32156862745);
+  -o-transform-origin: 0 0;
+  -webkit-transform: scale(0.32156862745);
+  -webkit-transform-origin: 0 0;
+  transform: scale(0.32156862745);
+  transform-origin: 0 0;
+}
+
+#previewViewIframeWrapper.mobile-none-responsive-horizontal {
+  -ms-transform: scale(0.48431372549);
+  -ms-transform-origin: 0px 0;
+  -moz-transform: scale(0.48431372549);
+  -moz-transform-origin: 0px 0;
+  -o-transform: scale(0.48431372549);
+  -o-transform-origin: 0 0;
+  -webkit-transform: scale(0.48431372549);
+  -webkit-transform-origin: 0 0;
+  transform: scale(0.48431372549);
+  transform-origin: 0 0;
+}
+
+/* ^ Vortex - Visualize broken links */

@@ -157,7 +157,8 @@
   <bean id="editTransformerManager" class="vtk.xml.TransformerManager">
     <property name="alwaysCompile" value="true" />
     <property name="stylesheetReferenceResolvers" ref="editXslStylesheetResolvers" />
-     <property name="compilationURIResolvers" ref="standardXslCompilationResolvers" />
+    <property name="compilationURIResolvers" value="#{{${xsltCompilationURIResolvers}}}" />
+     <!--property name="compilationURIResolvers" ref="standardXslCompilationResolvers" /-->
      <property name="transformationURIResolvers">
        <list>
          <ref bean="xsltTransformationRepositoryURIResolver" />

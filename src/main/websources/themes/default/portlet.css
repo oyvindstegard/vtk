@@ -1,0 +1,53 @@
+/* TODO: what is this? it seem to be commented out in portal.xml */
+
+body, div, td, th, h1, h2, h3, h4 { /* redundant rules for bad browsers  */  
+        font-family: Arial, Helvetica, sans-serif;
+	color: black;
+}  
+
+div.portlet {
+        padding: 0px;
+        margin: 10px;
+        border: 1px solid #999;
+        font-size: 70%;
+}
+
+div.portletHeader {
+        padding-top: 5px;
+        background: #efefef;
+        width: 100%;
+        height: 20px;
+        border-bottom: 1px solid #999;
+        text-align: justify;
+}
+
+div.portletTitle {
+        display: inline;
+        padding-left: 20px;
+        font-weight: bold;
+        font-size: 110%;
+        float: left;
+}
+
+div.portletHeader div.portletNavigation { 
+        display: inline;
+        float: right;
+}
+
+div.portletHeader div.portletNavigation ul {
+        display: inline;
+        list-style-type: none;
+        padding-right: 20px;
+}
+
+div.portletHeader div.portletNavigation ul li {
+        display: inline;
+}
+
+div.portletContent {
+        padding: 15px;
+}
+
+div.portletContent ul {
+        padding: 2em;
+}

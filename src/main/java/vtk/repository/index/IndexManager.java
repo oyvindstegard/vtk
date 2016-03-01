@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -54,6 +55,7 @@ import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.Version;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.util.threads.Mutex;
 
 /**
@@ -404,25 +406,28 @@ public class IndexManager implements DisposableBean {
         cfg.setCodec(new Lucene410CodecWithNoFieldCompression());
         
         cfg.setWriteLockTimeout(writeLockTimeoutSeconds*1000);
-        
-        cfg.setIndexDeletionPolicy(new IndexDeletionPolicy() {
-            @Override
-            public void onInit(List<? extends IndexCommit> commits) throws IOException {
-                onCommit(commits);
-            }
-            @Override
-            public void onCommit(List<? extends IndexCommit> commits) throws IOException {
-                final int toDelete = Math.max(commits.size() - keepOldCommits - 1, 0);
-                int deleteCount = 0;
-                for (IndexCommit commit: commits) {
-                    if (deleteCount++ < toDelete) {
-                        commit.delete();
-                    } else {
-                        return;
+
+        if (keepOldCommits > 0) {
+            cfg.setIndexDeletionPolicy(new IndexDeletionPolicy() {
+                @Override
+                public void onInit(List<? extends IndexCommit> commits) throws IOException {
+                    onCommit(commits);
+                }
+
+                @Override
+                public void onCommit(List<? extends IndexCommit> commits) throws IOException {
+                    final int toDelete = Math.max(commits.size() - keepOldCommits - 1, 0);
+                    int deleteCount = 0;
+                    for (IndexCommit commit : commits) {
+                        if (deleteCount++ < toDelete) {
+                            commit.delete();
+                        } else {
+                            return;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
         
         // XXX switch to LogByteSizeMergePolicy if problems with (default) TieredMergePolicy arise.
 //        LogByteSizeMergePolicy mp = new LogByteSizeMergePolicy();
@@ -624,4 +629,8 @@ public class IndexManager implements DisposableBean {
         this.keepOldCommits = keepOldCommits >= 0 ? keepOldCommits : 0;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + storageId + ")";
+    }
 }

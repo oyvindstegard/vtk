@@ -345,41 +345,6 @@ public class SearcherImpl implements Searcher, InitializingBean {
                 }
             }
         }
-
-// Old Lucene3-code:
-//        if (iterationFilter == null) {
-//            // Iteration without filter
-//            final int maxDoc = reader.maxDoc();
-//            for (int docID = 0; docID < maxDoc; docID++) {
-//                if (!reader.isDeleted(docID)) {
-//                    if (matchDocCounter++ < cursor) {
-//                        continue;
-//                    }
-//                    Document doc = reader.document(docID, luceneSelector);
-//                    PropertySet ps = this.documentMapper.getPropertySet(doc);
-//                    boolean continueIteration = callback.matching(ps);
-//                    if (++callbackCounter == limit || !continueIteration) {
-//                        break;
-//                    }
-//                }
-//            }
-//            return;
-//        }
-//        
-//        // Iteration with filter
-//        DocIdSet allowedDocs = iterationFilter.getDocIdSet(reader);
-//        if (allowedDocs == null || allowedDocs == DocIdSet.EMPTY_DOCIDSET || limit <= 0) return;
-//        
-//        DocIdSetIterator iterator = allowedDocs.iterator();
-//        int docID;
-//        while ((docID = iterator.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-//            if (matchDocCounter++ < cursor) continue;
-//
-//            Document doc = reader.document(docID, luceneSelector);
-//            PropertySet ps = this.documentMapper.getPropertySet(doc);
-//            boolean continueIteration = callback.matching(ps);
-//            if (++callbackCounter == limit || !continueIteration) break;
-//        }
     }
 
     /**
@@ -431,55 +396,6 @@ public class SearcherImpl implements Searcher, InitializingBean {
                 }
             }
         }
-
-// Old Lucene3-code:        
-//        OpenBitSet obs = null;
-//        if (iterationFilter != null) {
-//            DocIdSet allowedDocs = iterationFilter.getDocIdSet(reader);
-//            if (allowedDocs == null || allowedDocs == DocIdSet.EMPTY_DOCIDSET) return;
-//            
-//            if (allowedDocs instanceof OpenBitSet) {
-//                obs = (OpenBitSet) allowedDocs;
-//            } else {
-//                DocIdSetIterator iterator = allowedDocs.iterator();
-//                obs = new OpenBitSetDISI(iterator, reader.maxDoc());
-//            }
-//        }
-//        
-//        TermEnum te = null;
-//        TermDocs td = null;
-//        int matchDocCounter = 0;
-//        int callbackCounter = 0;
-//        try {
-//            te = reader.terms(new Term(luceneField, ""));
-//            if (! (te.term() != null && te.term().field() == luceneField)) { // Interned string comparison OK
-//                return;
-//            }
-//            
-//            td = reader.termDocs(new Term(luceneField, ""));
-//            do {
-//                td.seek(te);
-//                while (td.next()) {
-//                    int docID = td.doc();
-//                    if (obs != null && !obs.fastGet(docID)) continue;
-//                    
-//                    if (matchDocCounter++ < cursor) continue;
-//
-//                    Document doc = reader.document(docID, luceneSelector);
-//                    PropertySet ps = this.documentMapper.getPropertySet(doc);
-//                    boolean continueIteration = callback.matching(ps);
-//
-//                    if (++callbackCounter == limit || !continueIteration) return;
-//                }
-//            } while (te.next() && te.term().field() == luceneField); // Interned string comparison OK
-//        } finally {
-//            if (te != null) {
-//                te.close();
-//            }
-//            if (td != null) {
-//                td.close();
-//            }
-//        }
     }
 
     // Get all docs matched by the filter (deleted docs are taken into account).

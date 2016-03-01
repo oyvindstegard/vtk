@@ -223,6 +223,7 @@ public class Application extends SpringBootServletInitializer {
         List<String> result = new ArrayList<>();
         result.add("classpath:/vtk/beans/vtk.properties");
         result.add("classpath:/vtk/util/vtk_version.properties");
+        result.add("classpath:/vtk/conf/*.properties");
         return result;
     }
 

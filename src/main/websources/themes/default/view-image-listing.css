@@ -1,0 +1,117 @@
+@import url('view-collectionlisting.css');
+
+img {
+  border-style: none;
+}
+
+.vrtx-image-listing-container {
+  padding-bottom: 8px;
+  float: left;
+  width: 100%;
+}
+
+ul.vrtx-image-listing {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  float: left;
+  width: 100%;
+}
+
+.vrtx-image-entry {
+  background: none;
+  clear:none;
+  float:left;
+  margin:0 15px 0 0;
+  padding:0 0 15px;
+}
+
+.vrtx-image-container {
+  margin-bottom:15px;
+  width: 250px;
+  overflow: hidden;
+}
+
+/* IE 7 better downscaling */
+*:first-child+html .vrtx-image-container img {
+  -ms-interpolation-mode : bicubic;
+}
+
+.vrtx-image-info {
+  width: 250px;
+  margin-top: 10px;
+}
+
+.vrtx-image-title {
+  font-size: 20px;
+}
+
+.vrtx-image-title a {
+  text-decoration: none;
+}
+
+.vrtx-image-creation-time {
+  padding-top: 2px;  	
+}
+
+.vrtx-image-description {
+  padding-top: 10px;
+}
+
+.vrtx-image-dimension {
+  padding-top: 10px;
+}
+
+.vrtx-paging-feed-wrapper {
+  clear: both;
+  padding-top: 10px;
+}
+
+.vrtx-image-table {
+  padding-bottom: 15px;	
+}
+
+.vrtx-image-table table {
+  border-collapse: collapse;
+  border-color: #ccc;
+  border-spacing: 0;
+}
+
+.vrtx-image-table table th {
+  text-align:left;
+  background-color: #eee;
+  border: 1px solid #dbd8d6;
+}
+
+.vrtx-image-table table tr td {
+  border: 1px solid #dbd8d6;
+  background-color: #fff;
+  vertical-align: top;
+}
+
+.vrtx-image-table table img {
+  width: 50px;
+}
+
+.vrtx-image-listing-include {
+  width: 100%;
+  border: none !important;
+}
+
+.vrtx-image-listing-include ul.vrtx-image-listing-include-thumbs-pure-css li a span img {
+  max-width: 430px;
+}
+
+.vrtx-image-listing-include ul.vrtx-image-listing-include-thumbs {
+  margin: 0 auto !important;
+  width: 100% !important;
+}
+
+.vrtx-image-listing-include ul li {
+  background-image: none;
+}
+
+.vrtx-image-listing-include-container-description {
+  margin-left: auto;
+  margin-right: auto;	
+}

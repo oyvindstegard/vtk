@@ -1,0 +1,619 @@
+@import url(../editor-common.css);
+
+/*
+ *
+ *  Vortex - Editor - New documenttypes
+ *
+ */
+
+.vrtx-json {
+  clear: both;
+}
+
+.vrtx-json .vrtx-json-element {
+  margin-bottom: 20px;
+  position: relative;
+  clear: both;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-string,
+.vrtx-json .vrtx-json-element .vrtx-resource-ref,
+.vrtx-json .vrtx-json-element .vrtx-button {
+  margin: 0 20px 0 0;
+  clear: none;
+  float: left;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-string.id {
+  float: none;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-remove-button,
+.vrtx-json .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json .vrtx-json-element .vrtx-move-down-button {
+  margin-top: 26px;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-image-ref {
+  clear: left;
+  /* Fix a clearing problem */
+  margin-top: 0px;
+  padding-top: 20px;
+  overflow: hidden; /* IE collision fix */
+}
+
+.vrtx-image-ref .vrtx-image-ref-preview {
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-resource-ref-browse .vrtx-button,
+.vrtx-json .vrtx-json-element .vrtx-image-ref-browse .vrtx-button,
+.vrtx-json .vrtx-json-element .vrtx-image-ref .vrtx-button {
+  float: none;
+  margin: 0 0 0 20px;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-html {
+  margin-bottom: 20px;
+}
+
+.vrtx-json .cke_chrome {
+  border: none !important;
+}
+
+.vrtx-json .cke_chrome  .cke_inner {
+  padding: 0px !important;
+}
+
+.vrtx-radio-buttons label {
+  margin-bottom: 0px;
+  display: inline;
+}
+
+.vrtx-radio-buttons .vrtx-radio-buttons-false {
+  margin-left: 5px;
+}
+
+.vrtx-grouped-horizontal .vrtx-string,
+.vrtx-grouped-horizontal .vrtx-radio,
+.vrtx-grouped-horizontal .vrtx-resource-ref,
+.vrtx-grouped-horizontal .vrtx-image-ref,
+.vrtx-grouped-horizontal .vrtx-media-ref {
+  float: left;
+  margin-right: 20px;
+  margin-top: 0px;
+}
+
+.vrtx-grouped-horizontal .vrtx-string label,
+.vrtx-grouped-horizontal .vrtx-radio label,
+.vrtx-grouped-horizontal .vrtx-resource-ref label,
+.vrtx-grouped-horizontal .vrtx-image-ref label,
+.vrtx-grouped-horizontal .vrtx-media-ref label {
+  margin-bottom: 0px;
+  padding-bottom: 10px;
+}
+
+.vrtx-grouped .vrtx-string,
+.vrtx-grouped .vrtx-radio,
+.vrtx-grouped .vrtx-resource-ref,
+.vrtx-grouped .vrtx-image-ref,
+.vrtx-grouped .vrtx-media-ref {
+  margin-top: 15px;
+}
+
+.vrtx-add-button,
+.vrtx-grouped-horizontal,
+.vrtx-string.author {
+  clear: left;
+}
+
+.vrtx-grouped .related-content label {
+  display: none;
+}
+
+.getExternalPersonInfo label,
+.getExternalUnitInfo label {
+  display: inline;
+}
+
+.getExternalPersonInfo .vrtx-radio-buttons,
+.getExternalUnitInfo .vrtx-radio-buttons {
+  margin-top: 10px;
+}
+
+.getExternalPersonInfo .tooltip,
+.getExternalUnitInfo .tooltip {
+  padding-left: 5px;
+}
+
+.vrtx-info-msg {
+  margin-bottom: -15px;
+  font-size: 0.867em;
+}
+
+.vrtx-grouped .vrtx-info-msg {
+  font-size: 1em;
+}
+
+.vrtx-info-msg .inputfield {
+  display: none;
+}
+
+.vrtx-info-msg label {
+  background: url(../images/info-small.gif) no-repeat 0 0;
+  padding: 0 0 10px 25px;
+  margin-bottom: 0px;
+}
+
+/* Accordion */
+
+.ui-accordion > div {
+  margin-left: -20px;
+  margin-right: -20px;
+}
+
+.ui-accordion > .header,
+.ui-accordion > .vrtx-add-button {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+.ui-accordion > .vrtx-grouped {
+  margin-top: 0px;
+}
+
+.ui-accordion > div > .header.ui-accordion-header label,
+.ui-accordion > .vrtx-json-element {
+  margin-bottom: 0px;
+}
+
+#accordion-grouped {
+  margin: 20px 0;
+}
+
+.ui-accordion > .vrtx-json-element.last {
+  margin-bottom: 20px;
+}
+
+.accordion-title {
+  padding: 15px 15px 14px 18px;
+  margin-top: 2px;
+  margin-bottom: -3px;
+  background: transparent;
+  border: 1px solid #d9d9d9;
+  font-size: 1.15em;
+}
+
+.accordion-title:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.ui-accordion > div > .header.ui-accordion-header,
+.ui-accordion > div .ui-accordion > div .ui-accordion-header {
+  padding: 15px 15px 14px 40px;
+  border-radius: 0px;
+}
+
+.ui-accordion > div > .header.ui-accordion-header {
+  margin-bottom: -3px;
+  background: #f9f9f9;
+  color: inherit;
+  border-color: #d9d9d9;
+}
+
+.ui-accordion > div .ui-accordion > div .ui-accordion-header {
+  background: url(../images/line-dotted.gif) repeat-x top left;
+  padding-left: 30px;
+  border-radius: 0px;
+  margin: 0 0 -3px 20px;
+  color: inherit;
+  border-width: 0;
+}
+
+.ui-accordion > div .ui-accordion > div .ui-accordion {
+  background: url(../images/line-dotted.gif) repeat-x bottom left;
+}
+
+.embedded .ui-accordion,
+.session .ui-accordion {
+  margin-top: 5px;
+  margin-bottom: 0px;
+  background: transparent !important;
+}
+
+.ui-accordion > div > .header.ui-accordion-header.ui-corner-top {
+  border-bottom: none;
+}
+
+.ui-accordion > div > .header.ui-accordion-header .ui-icon {
+  top: 25px;
+  left: 11px;
+  height: 16px;
+  width: 16px;
+}
+
+.ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
+  background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
+
+  transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+
+  transition: all 600ms ease-in-out;
+  -webkit-transition: all 600ms ease-in-out;
+  -moz-transition: all 600ms ease-in-out;
+  -o-transition: all 600ms ease-in-out;
+  -ms-transition: all 600ms ease-in-out;
+
+  top: 20px;
+  left: 13px;
+}
+
+.ui-accordion > div .ui-accordion > div .header.ui-accordion-header .ui-icon {
+  left: -3px;
+}
+
+.ie8 .ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
+  background: url(../images/arrow-expanded-big.gif) no-repeat center left;
+}
+
+.ui-accordion.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s {
+  transition: all 200ms ease-in-out;
+  -webkit-transition: all 200ms ease-in-out;
+  -moz-transition: all 200ms ease-in-out;
+  -o-transition: all 200ms ease-in-out;
+  -ms-transition: all 200ms ease-in-out;
+}
+
+.ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-e { /* Collapsed */
+  background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
+  transition: all 600ms ease-in-out;
+  -webkit-transition: all 600ms ease-in-out;
+  -moz-transition: all 600ms ease-in-out;
+  -o-transition: all 600ms ease-in-out;
+  -ms-transition: all 600ms ease-in-out;
+}
+
+.ui-accordion.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-e {
+  transition: all 200ms ease-in-out;
+  -webkit-transition: all 200ms ease-in-out;
+  -moz-transition: all 200ms ease-in-out;
+  -o-transition: all 200ms ease-in-out;
+  -ms-transition: all 200ms ease-in-out;
+}
+
+.ui-accordion .vrtx-grouped .header.ui-accordion-header.ui-state-hover label {
+  cursor: pointer;
+}
+
+.ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .header.ui-accordion-header.ui-state-focus {
+  background-color: #ecf3f9;
+}
+
+.ui-accordion > div > .header.ui-accordion-header.ui-corner-top,
+.ui-accordion > div > .header.ui-accordion-header.ui-state-hover.ui-corner-top {
+  background: none;
+}
+
+/* Ensure dotted background on inner accordions */
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-corner-top,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover.ui-corner-top,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus.ui-corner-top {
+  background: url(../images/line-dotted.gif) repeat-x top left !important;
+}
+
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover .session-date,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus .session-date {
+  text-decoration: underline !important;
+}
+
+.ui-accordion > div > .ui-accordion-content { 
+  padding-left: 40px !important;
+  padding-top: 0px !important;
+  border: 1px solid #d9d9d9 !important;
+  border-bottom: none !important;
+  border-top: none !important;
+  overflow: hidden;
+}
+
+.embedded .ui-accordion .ui-accordion-content,
+.accordion-wrapper > div .ui-accordion > div .ui-accordion-content {
+  padding-left: 50px !important;
+  border: none !important;
+}
+
+.embedded .ui-accordion .ui-accordion-content,
+.accordion-wrapper.skip-tier > .ui-accordion-content,
+.accordion-wrapper > div .ui-accordion > div .ui-accordion-content {
+  padding-top: 10px !important;
+}
+
+.accordion-wrapper .accordion-content-title {
+  font-size: 1.15em;
+  margin-bottom: 10px;
+  display: block;
+}
+
+#editor.vrtx-course-schedule .properties .tooltips.cancelled-tp {
+  margin-top: 15px;
+}
+ 
+#editor.vrtx-course-schedule .properties .vrtx-checkbox { 
+  margin-top: 30px;
+}
+
+#editor.vrtx-course-schedule .properties .property-label {
+  font-weight: normal;
+  margin: 0 0 25px 0;
+}
+
+#editor.vrtx-course-schedule .properties .session-date {
+  display: inline-block;
+  width: 15em;
+}
+
+#editor.vrtx-course-schedule .properties .header-status {
+  color: #ed2023;
+}
+
+#editor.vrtx-course-schedule .admin-fixed-resources-iframe {
+  width: 100%;
+  height: 200px; /* default height */
+}
+
+/* ^ Accordion */
+
+/* Study enhancements */
+
+.preview-html,
+.vrtx-shared-text .shared-text-description {
+  background-color: #fafafa;
+  border: 1px dashed #d5d5d5;
+  margin: 15px 0;
+  padding: 6px 15px;
+}
+
+.preview-html a,
+.vrtx-shared-text .shared-text-description a {
+  color: #005aab;
+  text-decoration: underline;
+}
+
+.vrtx-shared-text .shared-text-description.unavailable {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  color: #ed1c24;
+}
+
+/* Selects - all is default */
+
+#editor.select-typeToDisplay-so .pris,
+#editor.select-typeToDisplay-so .regelverk,
+#editor.select-typeToDisplay-so .documentation-admin,
+#editor.select-typeToDisplay-nm .spesielle-admin,
+#editor.select-typeToDisplay-nm .forstevitnemal-kvote,
+#editor.select-typeToDisplay-nm .ordinar-kvote-alle-kvalifiserte,
+#editor.select-typeToDisplay-nm .credit-limits,
+#editor.select-typeToDisplay-nm .studiekode,
+#editor.select-typeToDisplay-nm .quota,
+#editor.select-typeToDisplay-em .spesielle-admin,
+#editor.select-typeToDisplay-em .forstevitnemal-kvote,
+#editor.select-typeToDisplay-em .ordinar-kvote-alle-kvalifiserte,
+#editor.select-typeToDisplay-em .credit-limits,
+#editor.select-typeToDisplay-em .quota,
+#editor.select-typeToDisplay-em .studiekode {
+  display: none;
+}
+
+/* Selects - otherwise (reversed logic) */
+
+/* Hide only if JS is turned on */
+#editor.select-type-of-agreement .if-type-of-agreement-other,
+#editor.select-teachingsemester .if-teachingsemester-particular,
+#editor.select-teachingsemester .teachingsemester-every-other-semester,
+#editor.select-examsemester .if-examsemester-particular,
+#editor.select-examsemester .examsemester-every-other-semester {
+  display: none;
+}
+
+#editor.select-type-of-agreement .if-type-of-agreement-other label,
+#editor.select-type-of-agreement .if-type-of-agreement-other .header,
+#editor.select-teachingsemester-particular-semester .if-teachingsemester-particular label,
+#editor.select-teachingsemester-every-other .teachingsemester-every-other-semester .header,
+#editor.select-examsemester-particular-semester .if-examsemester-particular label,
+#editor.select-examsemester-every-other .examsemester-every-other-semester .header {
+  display: none;
+}
+
+#editor.select-type-of-agreement-other .if-type-of-agreement-other,
+#editor.select-teachingsemester-particular-semester .if-teachingsemester-particular,
+#editor.select-teachingsemester-every-other .teachingsemester-every-other-semester,
+#editor.select-teachingsemester-other .teachingsemester-other,
+#editor.select-examsemester-particular-semester .if-examsemester-particular,
+#editor.select-examsemester-every-other .examsemester-every-other-semester {
+  display: block;
+}
+
+#editor .phd-web-address {
+  display: none;
+}
+
+#editor.select-program-type-phd .phd-web-address {
+  display: block;
+}
+
+/* Radios */
+
+#vrtx-resource\.courseContext\.course-continued-as.hidden {
+  display: none;
+}
+
+/* TODO: generalize JSON-element-accordion */
+#items .vrtx-json-element > div > div,
+#items .vrtx-json-element .left > div,
+#items .vrtx-json-element .right > div {
+  clear: left;
+  float: left;
+  margin-top: 20px;
+}
+
+#items .vrtx-json-element .left,
+#items .vrtx-json-element .right,
+#items .vrtx-json-element .left > div:first-child,
+#items .vrtx-json-element .right > div:first-child,
+#items .vrtx-json-element > div > div:first-child,
+.vrtx-grouped .ui-accordion-content > div:first-child {
+  margin-top: 0px;
+}
+
+#items .vrtx-json-element .right {
+  clear: none;
+}
+
+/* ^ Study enhancements */
+
+/* JSON-boxes - explicit settings */
+
+.vrtx-json #main-content .vrtx-json-element,
+.vrtx-json #contact-supervisor-box .vrtx-json-element,
+.vrtx-json #additional-content .vrtx-json-element,
+.vrtx-json #featured-items .vrtx-json-element {
+  padding: 10px;
+  border: 1px solid #D8D8D8;
+  background-color: #eee;
+}
+
+.vrtx-json #main-content .vrtx-json-element .vrtx-button,
+.vrtx-json #contact-supervisor-box .vrtx-json-element .vrtx-button,
+.vrtx-json #additional-content .vrtx-json-element .vrtx-button,
+.vrtx-json #featured-items .vrtx-json-element .vrtx-button {
+  background: #F7F7F7;
+}
+
+.forms-new .vrtx-json #main-content .vrtx-json-element .vrtx-button:hover,
+.forms-new .vrtx-json #main-content .vrtx-json-element .vrtx-button.hover,
+.forms-new .vrtx-json #main-content .vrtx-json-element .vrtx-button:focus,
+.forms-new .vrtx-json #contact-supervisor-box .vrtx-json-element .vrtx-button:hover,
+.forms-new .vrtx-json #contact-supervisor-box .vrtx-json-element .vrtx-button.hover,
+.forms-new .vrtx-json #contact-supervisor-box .vrtx-json-element .vrtx-button:focus,
+.forms-new .vrtx-json #additional-content .vrtx-json-element .vrtx-button:hover,
+.forms-new .vrtx-json #additional-content .vrtx-json-element .vrtx-button.hover,
+.forms-new .vrtx-json #additional-content .vrtx-json-element .vrtx-button:focus,
+.forms-new .vrtx-json #featured-items .vrtx-json-element .vrtx-button:hover,
+.forms-new .vrtx-json #featured-items .vrtx-json-element .vrtx-button.hover,
+.forms-new .vrtx-json #featured-items .vrtx-json-element .vrtx-button:focus {
+  background: #4195db;
+}
+
+.vrtx-json.vrtx-json-accordion .vrtx-json-element .vrtx-remove-button,
+.vrtx-json #main-content .vrtx-json-element .vrtx-remove-button,
+.vrtx-json #contact-supervisor-box .vrtx-json-element .vrtx-remove-button,
+.vrtx-json #additional-content .vrtx-json-element .vrtx-remove-button,
+.vrtx-json #featured-items .vrtx-json-element .vrtx-remove-button {
+  position: absolute;
+  margin-top: 0;
+  right: 0px;
+  top: 50%;
+  float: none;
+}
+
+.vrtx-json.vrtx-json-accordion .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json #main-content .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json #contact-supervisor-box .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json #additional-content .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json #featured-items .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json.vrtx-json-accordion .vrtx-json-element .vrtx-move-down-button,
+.vrtx-json #main-content .vrtx-json-element .vrtx-move-down-button,
+.vrtx-json #contact-supervisor-box .vrtx-json-element .vrtx-move-down-button,
+.vrtx-json #additional-content .vrtx-json-element .vrtx-move-down-button,
+.vrtx-json #featured-items .vrtx-json-element .vrtx-move-down-button {
+  position: absolute;
+  right: 0px;
+  margin-top: 0 !important;
+}
+
+.vrtx-json.vrtx-json-accordion .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json #main-content .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json #contact-supervisor-box .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json #additional-content .vrtx-json-element .vrtx-move-up-button,
+.vrtx-json #featured-items .vrtx-json-element .vrtx-move-up-button {
+  top: 10px;
+}
+
+.vrtx-json.vrtx-json-accordion .vrtx-json-element .vrtx-move-down-button,
+.vrtx-json #main-content .vrtx-json-element .vrtx-move-down-button,
+.vrtx-json #contact-supervisor-box .vrtx-json-element .vrtx-move-down-button,
+.vrtx-json #additional-content .vrtx-json-element .vrtx-move-down-button,
+.vrtx-json #featured-items .vrtx-json-element .vrtx-move-down-button {
+  bottom: 10px;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-html {
+  width: 600px;
+}
+
+.vrtx-json .vrtx-json-element .boxPictureAlt,
+.vrtx-json .vrtx-json-element .featuredPictureAlt {
+  margin-top: 20px;
+  float: none;
+}
+
+.vrtx-json .vrtx-json-element .boxPictureAlt input,
+.vrtx-json .vrtx-json-element .featuredPictureAlt input {
+  width: 230px;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-image-ref-alt-text .vrtx-image-ref-preview-inner,
+.vrtx-json .vrtx-json-element .vrtx-image-ref-alt-text .boxPictureAlt,
+.vrtx-json .vrtx-json-element .vrtx-image-ref-alt-text .featuredPictureAlt {
+  float: left;
+  margin-top: 0;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-image-ref-alt-text .boxPictureAlt,
+.vrtx-json .vrtx-json-element .vrtx-image-ref-alt-text .featuredPictureAlt {
+  margin-left: 20px;
+  margin-top: -27px;
+}
+
+.vrtx-json .vrtx-json-element .vrtx-html iframe {
+  width: 576px;
+}
+
+.contactInformation .visitingAddress {
+  display: none !important;
+}
+
+#resource-links .vrtx-textfield {
+  width: 160px;
+}
+
+/* ^ JSON-boxes - explicit settings */
+
+.vrtx-grouped-horizontal:after,
+.vrtx-grouped-vertical:after,
+.vrtx-grouped:after,
+.vrtx-json:after,
+.vrtx-json .vrtx-json-element:after {
+  clear: both;
+  content: ".";
+  display: block;
+  height: 0;
+  visibility: hidden;
+}
+
+.vrtx-grouped .vrtx-json:after {
+  content: "";
+}
+
+/* ^ Vortex - Editor - New documenttypes */

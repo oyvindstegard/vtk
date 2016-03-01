@@ -1,0 +1,105 @@
+span.diff-html-removed {
+  text-decoration: line-through !important;
+  color: green !important;
+}
+span.diff-html-added {
+  color: green !important;
+}
+
+iframe#original {
+  position: fixed;
+  bottom: 0px;
+  right: 0px;
+  border: 1px solid red;
+}
+
+#vrtx-sticky-header {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100% !important;
+  background-color: #fff;
+  color: #2b2b2b;
+  font: normal 13px/1.3 Arial, sans-serif;
+}
+
+#vrtx-sticky-header.vrtx-sticky-header-shadow {
+  z-index: 9999;
+  -webkit-box-shadow:  0px 7px 14px -8px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow:  0px 7px 14px -8px rgba(0, 0, 0, 0.5);
+  box-shadow:  0px 7px 14px -8px rgba(0, 0, 0, 0.5); 
+}
+
+#vrtx-sticky-header #vrtx-sticky-header-inner {
+  margin: 0 auto;
+  width: 970px;
+  padding: 25px 20px;
+}
+  
+#vrtx-sticky-header.vrtx-sticky-header-shadow .sticky-bg-ie8-below {
+  height: 13px;
+  position: absolute;
+  bottom: -13px;
+  left: 0px;
+  width: 100%;
+  background: transparent url(images/sticky-bar-fade-to-grey-ie8-bg.png) repeat-x bottom left;
+  display: block;
+}
+  
+#diff-header {
+  font-size: 23px;
+  font-weight: normal;
+  float: left;
+  margin: -0.3ex 0 0 0;
+}
+  
+#diff-show-changes-info-nav {
+  text-align: center;
+  display: block;
+}
+#diff-show-changes-info {
+  font-size: 1.15em;
+}
+#diff-show-changes-form {
+  display: inline;
+  margin: 0 0 0 35px;
+  padding: 0;
+}
+#diff-show-changes-form > *:hover {
+  cursor: pointer;
+}
+#diff-show-changes-form #diff-show-changes {
+  margin: 0 3px 0 0;
+  padding: 0;
+}
+#diff-show-changes-form label {
+  margin: 0;
+}
+#diff-info {
+  color: #888;
+}
+#diff-info-modified-by {
+  color: #000;
+}
+#diff-nav {
+  float: right;
+  margin: .5ex 0 0;
+}
+  
+#vrtx-sticky-header #diff-nav a {
+  text-decoration: none;
+}
+#vrtx-sticky-header #diff-nav a:hover {
+  text-decoration: underline;
+}
+#vrtx-sticky-header #diff-nav a#diff-nav-prev {
+  background: url(images/arrow-grey-prev.gif) no-repeat center left;
+  padding: 0 0 0 12px;
+}
+#vrtx-sticky-header #diff-nav a#diff-nav-next {
+  background: url(images/arrow-grey-next.gif) no-repeat center right;
+  padding: 0 12px 0 0;
+}
+#vrtx-sticky-header #diff-nav a#diff-nav-prev + a#diff-nav-next {
+  margin-left: 15px;
+}

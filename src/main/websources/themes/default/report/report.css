@@ -1,0 +1,413 @@
+
+/*
+ * Vortex - Reports
+ *
+ */
+
+h2 {
+  background: url(../images/line-dotted.gif) repeat-x bottom left;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+#vrtx-report h2 {
+  background: none;
+  padding-bottom: 0px;
+  margin-bottom: 8px;
+}
+
+/* Fix h2 for broken links */
+#vrtx-report-broken-links h2 {
+  margin-bottom: 0;
+}
+
+#vrtx-report-view-other {
+  float: right;
+  display: block;
+  font-size: 0.652em;
+  margin-top: 0.55em;
+}
+
+#vrtx-report-resources #contents {
+  position: relative;
+}
+
+body#vrtx-report-diagram div.vrtx-report-diagram h3,
+body#vrtx-report-diagram div.vrtx-report-diagram caption {
+  margin-top: 0px;
+}
+
+.vrtx-report-nav .back {
+  margin-bottom: 15px;
+  padding-left: 13px;
+  background: url(../images/back-link-grey.png) no-repeat left center;
+}
+
+ul.vrtx-reporters {
+  list-style-type: none;
+  padding-left: 2px;
+  margin-left: 0px;
+}
+
+h3.vrtx-reporters-title {
+  margin: 25px 0 0 0;
+}
+
+h3.vrtx-reporters-title,
+ul.vrtx-primary-reporters,
+ul.vrtx-reporters {
+  clear: both;
+  width: 100%;
+  float: left;
+}
+
+ul.vrtx-primary-reporters {
+  list-style: none;
+  margin: 30px 0 0 0;
+  padding: 0;
+}
+
+ul.vrtx-primary-reporters.first {
+  margin: 0;
+}
+
+ul.vrtx-primary-reporters li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul.vrtx-primary-reporters li {
+  float: left;
+}
+
+ul.vrtx-primary-reporters li a {
+  width: 200px;
+  padding: 15px;
+  margin: 0 30px 0 0;
+  border: 1px solid #d9d9d9;
+  background: #f9f9f9;
+  float: left;
+  display: block;
+  min-height: 100px;
+}
+
+ul.vrtx-primary-reporters li a:hover {
+  background-color: #ecf3f9; 
+  text-decoration: none;
+}
+
+ul.vrtx-primary-reporters li span.vrtx-primary-reporters-title {
+  font-size: 1.077em;
+  display: block;
+  margin: 0 0 12px 0;
+}
+
+ul.vrtx-primary-reporters img.vrtx-primary-reporters-image {
+  clear: left;
+  float: left;
+  margin: 0 15px 0 0;
+}
+
+ul.vrtx-primary-reporters li span.vrtx-primary-reporters-info {
+  color: #363534;
+}
+
+div.vrtx-report div.vrtx-subfolder-menu {
+  border: none;
+}
+
+div.vrtx-permission-tree {
+  position: relative;
+  min-height: 219px;
+  padding: 0 0 90px 0;
+}
+
+div.vrtx-permission-tree span.file a,
+div.vrtx-permission-tree span.folder a {
+  text-decoration: none !important;
+  color: #363534 !important;
+}
+
+.vrtx-report-paging {
+  float: left;
+}
+
+#vrtx-report-paging-bottom {
+  margin-top: 10px;
+}
+
+#vrtx-report-broken-links-tsv {
+  display: inline-block;
+  float: right;
+  padding-left: 22px;
+  background: url(../images/report-broken-links-tsv-export.png) no-repeat center left;
+}
+
+div.vrtx-report-diagram {
+  clear: left;
+  background: url(../images/line-dotted.gif) repeat-x bottom left;
+  padding-bottom: 25px;
+  margin-bottom: 15px;
+  float: left;
+  width: 100%;
+}
+
+div.vrtx-report-diagram.vrtx-report-diagram-last {
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+  background: none;
+}
+
+div.vrtx-report-diagram-table {
+  clear: left;
+  float: left;
+  width: 214px;
+}
+
+div.vrtx-report-diagram-img {
+  float: left;
+  margin: -14px 0 20px 0;
+}
+
+tr.vrtx-report-diagram-total td,
+tr.vrtx-report-diagram-total th {
+  padding-top: 10px;
+}
+
+th.vrtx-report-diagram-text {
+  font-size: 1.154em;
+  font-weight: normal;
+  width: 115px;
+}
+
+td.vrtx-report-diagram-count {
+  font-size: 1.154em;
+  text-align: right;
+  padding-left: 20px;
+}
+
+.report-urchin,
+.report-urchin table {
+  width: 275px;
+}
+
+.report-urchin {
+  float: left;
+  margin: 0 20px 15px 0;
+}
+
+.report-urchin.last {
+  margin-right: 0px;
+}
+
+.report-urchin table {
+  table-layout: fixed;
+  padding: 5px 0 0 0;
+}
+
+.report-urchin table td {
+  word-wrap: break-word;
+  border-top: 1px solid #f0f0f0;
+  padding: 5px 15px 4px 0;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.report-urchin table th {
+  background: url(../images/line-dotted.gif) repeat-x bottom left;
+  padding: 0 15px 8px 0;
+  text-align: left;
+  white-space: nowrap;  
+}
+
+.report-urchin table th.report-urchin-table-data-title {
+  width: 58%;
+}
+
+.report-urchin table th.report-urchin-table-data-count {
+  width: 24px;
+}
+
+.report-urchin table td.report-urchin-table-data-count {
+  white-space: nowrap;
+}
+
+.report-urchin table th.report-urchin-table-data-number {
+  width: 30%;
+}
+
+/* Broken links */
+
+table.report-broken-links td {
+  vertical-align: top;
+}
+
+td.vrtx-report-broken-links li {
+  background: url(../images/list-bullet-dark-grey.png) no-repeat 0 8px;
+  padding: 0 0 0 10px !important;
+  margin: 0 0 2px 0 !important;
+}
+
+#vrtx-report-broken-links #vrtx-report-info-paging-top {
+  float: left;
+  margin-bottom: 15px;
+}
+
+#vrtx-report-broken-links .vrtx-report-alternative-view-switch {
+  float: right;
+}
+
+#vrtx-report-broken-links .vrtx-report-alternative-view-switch *:hover {
+  cursor: pointer;
+}
+
+/* Filters */
+
+#vrtx-report-filters {
+  width: 100%;
+  float: left;
+  clear: both;
+}
+
+#vrtx-report-filters ul {
+  margin-right: 15px;
+  padding: 7px 10px 7px 0px;
+  background: url(../images/seperator-grey-gradient.png) no-repeat center right;
+  float: left;
+}
+
+#vrtx-report-filters ul#vrtx-report-filter-visit-type,
+#vrtx-report-filters ul#vrtx-report-filter-my-documents {
+  background: none;
+  margin-top: -12px;
+}
+
+#vrtx-report-filters ul#vrtx-report-filter-visit-type {
+  margin-bottom: 0;
+}
+
+/* Remove "Other:" */
+#vrtx-report-filters ul li#vrtx-report-filter-link-type-other {
+  display: none;
+}
+
+/* ^ Filters */
+
+/* Advanced */
+
+#vrtx-report-filters-folders-include-exclude {
+  clear: both;
+  float: left;
+  width: 100%;
+  margin-top: 0 !important;
+  margin-bottom: 20px !important;
+  display: none;
+}
+
+#vrtx-report-filters-folders-include-exclude > div,
+#vrtx-report-filters-folders-include-exclude h4 {
+  float: left;
+  margin-right: 30px;
+}
+
+#vrtx-report-filters-folders-include-add,
+#vrtx-report-filters-folders-exclude-add {
+  clear: left;
+}
+
+#vrtx-report-filters-folders-include-exclude > div {
+  margin-bottom: 20px;
+}
+
+#vrtx-report-filters-folders-include-exclude h3 {
+  margin-top: -1px;
+}
+
+#vrtx-report-filters-folders-include-exclude > .vrtx-button {
+  clear: left;
+  float: left;
+}
+
+#vrtx-report-filters #vrtx-report-filters-show-hide-advanced {
+  margin: 18px 0 15px 0;
+  display: block;
+  float: right;
+}
+
+.vrtx-multipleinputfield {
+  margin-bottom: 10px;
+  clear: left;
+}
+
+.vrtx-multipleinputfield .vrtx-dropdown {
+  display: inline-block;
+}
+
+.vrtx-multipleinputfield .vrtx-textfield,
+.vrtx-multipleinputfield .vrtx-dropdown,
+.vrtx-multipleinputfield .vrtx-button {
+  margin-right: 20px;
+}
+
+/* ^ Advanced */
+
+/* ^ Broken links */
+
+/* Help */
+
+div.vrtx-report #vrtx-report-help {
+  background: #fff;
+  position: absolute;
+  top: 20px;
+  left: 400px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 160px;
+}
+
+#vrtx-report-help-restricted,
+#vrtx-report-help-allowed-for-all {
+  padding-left: 27px;
+}
+
+.vrtx-report-help-allowed-for-all-inherited-folder,
+.vrtx-report-help-allowed-for-all-not-inherited-folder {
+  width: 21px;
+  height: 19px;
+}
+
+.vrtx-report-help-restricted-inherited-file,
+.vrtx-report-help-allowed-for-all-inherited-file,
+.vrtx-report-help-allowed-for-all-not-inherited-file {
+  width: 16px;
+  height: 20px;
+}
+
+.vrtx-report-help-allowed-for-all-inherited-folder,
+.vrtx-report-help-allowed-for-all-not-inherited-folder,
+.vrtx-report-help-restricted-inherited-file,
+.vrtx-report-help-allowed-for-all-inherited-file,
+.vrtx-report-help-allowed-for-all-not-inherited-file {
+  display: block;
+  float: left;
+  margin-right: 6px;
+}
+
+
+#vrtx-report-help-restricted,
+#vrtx-report-help-allowed-for-all {
+  height: 19px;
+}
+
+#vrtx-report-help-restricted                           { background: url(../images/folder-small-restricted.gif)      no-repeat 0 0; }
+#vrtx-report-help-allowed-for-all                      { background: url(../images/folder-small.gif)                 no-repeat 0 0; }
+.vrtx-report-help-allowed-for-all-inherited-folder     { background: url(../images/folder-small.gif)                 no-repeat 0 0; }
+.vrtx-report-help-allowed-for-all-not-inherited-folder { background: url(../images/folder-small-own-permissions.gif) no-repeat 0 0; }
+.vrtx-report-help-restricted-inherited-file            { background: url(../images/file-small-restricted.gif)        no-repeat 0 0; }
+.vrtx-report-help-allowed-for-all-inherited-file       { background: url(../images/file-small.gif)                   no-repeat 0 0; }
+.vrtx-report-help-allowed-for-all-not-inherited-file   { background: url(../images/file-small-own-permissions.gif)   no-repeat 0 0; }
+
+/* ^ Help */
+
+/* ^ Vortex - Reports */

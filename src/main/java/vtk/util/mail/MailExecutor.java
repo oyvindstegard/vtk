@@ -30,6 +30,9 @@
  */
 package vtk.util.mail;
 
+import javax.mail.Address;
+import javax.mail.AuthenticationFailedException;
+import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -40,18 +43,40 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
+import java.util.Arrays;
+import java.util.List;
+
 public final class MailExecutor {
     private static final Log logger = LogFactory.getLog(MailExecutor.class);
 
-    private JavaMailSender mailSender;
-    private TaskExecutor taskExecutor;
+    private final JavaMailSender mailSender;
+    private final TaskExecutor taskExecutor;
+    private final String[] alwaysAcceptDomains;
 
-    public MailExecutor(TaskExecutor taskExecutor, JavaMailSender mailSender) {
+    public MailExecutor(
+            TaskExecutor taskExecutor,
+            JavaMailSender mailSender,
+            String[] alwaysAcceptDomains
+    ) {
         this.taskExecutor = taskExecutor;
         this.mailSender = mailSender;
+        this.alwaysAcceptDomains = alwaysAcceptDomains;
+    }
+
+    public void enqueue(MimeMessage msg) throws MessagingException {
+        this.enqueue(msg, false);
     }
     
-    public void enqueue(MimeMessage msg) throws Exception {
+    public void enqueue(MimeMessage msg, boolean captchaValidated) throws MessagingException {
+        if (!captchaValidated) {
+            for (Address address : msg.getAllRecipients()) {
+                if (!alwaysAccept(address.toString())) {
+                    throw new AuthenticationFailedException(
+                            String.format("Not authorized to send e-mail to %s", address)
+                    );
+                }
+            }
+        }
         taskExecutor.execute(new SendMailTask(this.mailSender, msg));
     }
     
@@ -87,19 +112,23 @@ public final class MailExecutor {
             return false;
         }
 
-        // VTK-4124 hack fix: white list of allowed email recipient domains.
-        // TODO This should be considered a temporary place to fix the security issues
-        // outlined in VTK-4124. Should be removed from here and made configurable.
-        return addr.matches("(?i).*[@.]("
-                + "samordnaopptak|"
-                + "norgeshistorie|"
-                + "musikkarven|"
-                + "cristin|"
-                + "hlsenteret|"
-                + "uio)\\.no$|"
-                + ".*[@.]nordlys\\.info$");
+        return true;
     }
-    
+
+    protected boolean alwaysAccept(String recipient) {
+        for (String domain : alwaysAcceptDomains) {
+            String lcRecipient = recipient.toLowerCase();
+            int lastPartIndex = lcRecipient.length() - domain.length();
+            if (lastPartIndex <= 0) continue;
+            String domainPart = lcRecipient.substring(lastPartIndex);
+            char prevChar = lcRecipient.charAt(lastPartIndex - 1);
+            if (domainPart.equals(domain) && (prevChar == '@' || prevChar == '.')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static class SendMailTask implements Runnable {
 
         private MimeMessage msg;

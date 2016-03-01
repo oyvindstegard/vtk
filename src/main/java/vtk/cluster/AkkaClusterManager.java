@@ -37,9 +37,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -60,29 +57,24 @@ public class AkkaClusterManager {
 
     private final static Object LEAVE = new Object();
     
-    private int port;
     Collection<ClusterAware> clusterComponents;
     
     private ActorSystem system;
     private ActorRef clusterListener;
 
-    public AkkaClusterManager(int port, Collection<ClusterAware> clusterComponents) {
-        this.port = port;
+    public AkkaClusterManager(ActorSystem system, Collection<ClusterAware> clusterComponents) {
+        this.system = system;
         this.clusterComponents = clusterComponents;
     }
 
     public void init() {
-        Config config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port)
-                .withFallback(ConfigFactory.load());
+        
+        ActorRef subscriptionActor = system.actorOf(
+                Props.create(SubscriptionActor.class), "subscription-actor");
 
-            system = ActorSystem.create("ClusterSystem", config);
-
-            ActorRef subscriptionActor = system.actorOf(
-                    Props.create(SubscriptionActor.class), "subscription-actor");
-
-            clusterListener = system.actorOf(
-                    Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
-                    "cluster-listener");
+        clusterListener = system.actorOf(
+                Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
+                "cluster-listener");
     }
     
     public void destroy() {

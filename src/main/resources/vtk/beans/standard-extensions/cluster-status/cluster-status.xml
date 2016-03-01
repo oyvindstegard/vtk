@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <!-- 
+       Cluster Status service:
+       
+       GET ${cluster.statusURL}/master => if (master) 200 OK else 404 Not Found
+
+       GET ${cluster.statusURL}/node => if (draining) 404 Not Found else 200 OK
+
+  -->
+
+  <bean id="cluster.statusService" class="vtk.web.service.ServiceImpl">
+    <property name="order" value="-96000" />
+    <property name="assertions">
+      <bean class="vtk.web.service.RequestURIRegexpAssertion">
+        <property name="pattern" value="${cluster.statusURL}" />
+      </bean>
+    </property>
+    <property name="handler" ref="cluster.statusController" />
+  </bean>
+
+  <bean id="cluster.statusController" class="vtk.web.ClusterStatus" />
+  
+  <bean parent="cluster.component">
+    <property name="arguments" ref="cluster.statusController" />
+  </bean>
+
+
+</beans>

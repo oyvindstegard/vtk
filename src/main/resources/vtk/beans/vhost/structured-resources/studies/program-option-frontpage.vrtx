@@ -4,6 +4,7 @@ resourcetype program-option-frontpage : program-document {
     ctx-patch : string,
   
     picture : image_ref,
+    max-number-of-messages : string defaultvalue("3"),
     resource-links : json (linkHeader:string, linkTitle:string, linkUrl:string, linkDescription:string) multiple,
     title : derived (name) eval (name + " (" + "program-option"?localized +")") overrides title
   }
@@ -15,7 +16,10 @@ resourcetype program-option-frontpage : program-document {
     name (size[large]),
     group samlet (name-no, name-nn, name-en) (after name) horizontal,
     picture (after samlet),
-    group interview-box (interviewTitle, interviewContent, interviewLinkText, interviewUrl) (after picture),
+    max-number-of-messages (after picture),
+    max-number-of-messages (dropdown),
+    max-number-of-messages tooltip (en : "Number of messages", no : "Antall beskjeder", nn : "Talet på beskjedar"),
+    group interview-box (interviewTitle, interviewContent, interviewLinkText, interviewUrl) (after max-number-of-messages),
     group contact-box (contactTitle, contactContent, contactLinkText, contactUrl) (after interview-box),
     resource-links tooltip (en : "Tooltip for links", no : "Tips for lenker", nn : "Tips for lenker"),
     resource-links (after contact-box),
@@ -53,9 +57,9 @@ resourcetype program-option-frontpage : program-document {
         <div class="vrtx-frontpage-box vrtx-distach-bottom">
           [call "comp:contact-box"]
         </div>
-        
+
         [def thispath resource-prop("./", "uri")]
-        
+
         [def studystart-path ""]
         [if locale != 'en']
           [def studystart-path thispath + '/studiestart']
@@ -66,7 +70,7 @@ resourcetype program-option-frontpage : program-document {
         [if studiestart-folder]
           [call "include:events"  {"uri":studystart-path, "all-events-link":true, "feed-title":true, "max-events":2, "events-title": true, "include-if-empty":false}]
         [endif]
-        
+
         [def messages-path ""]
         [if locale = 'en']
           [def messages-path thispath + '/messages']
@@ -75,12 +79,17 @@ resourcetype program-option-frontpage : program-document {
         [endif]
         [def message-folder resource(messages-path)]
         [if message-folder]
-          [def thisfeed messages-path + '/?vrtx=feed']
+          [def messages-path messages-path + '/']
+          [def max-number-of-messages document.properties.max-number-of-messages]
           <div class="vrtx-frontpage-box">
-            [call "include:feed" {"url":thisfeed, "feed-title":true, "max-messages":3, "include-if-empty":false}]
+            [if max-number-of-messages != null && max-number-of-messages != ""]
+              [call "include:messages" {"uri":messages-path, "compact-view":true, "max-number-of-messages":max-number-of-messages, "include-if-empty":false}]
+            [else]
+              [call "include:messages" {"uri":messages-path, "compact-view":true, "max-number-of-messages":3, "include-if-empty":false}]
+            [endif]
           </div>
         [endif]
-        
+
         [call "comp:additional-content" {"document":document, "main-content": "false"}]
       </div>
       ##
@@ -124,6 +133,14 @@ resourcetype program-option-frontpage : program-document {
     ##
   }
 
+  vocabulary {
+    max-number-of-messages {
+      en : (range = "1..5"),
+      no : (range = "1..5"),
+      nn : (range = "1..5")
+    }
+  }
+
   localization {
     ctx-patch : (en : "You can edit the FS programme option code and status on the program option folder", no : "FS-studieretningskode og status redigerer du på studeretningsmappen", nn : "FS-studieretningskode og status redigerer du på studeretningsmappa"),
   
@@ -143,6 +160,8 @@ resourcetype program-option-frontpage : program-document {
     linkUrl : (en : "Webaddress", no : "Webadresse", nn : "Webadresse"),
     linkHeader : (en : "Header", no : "Overskrift", nn : "Overskrift"),
     linkDescription : (en : "Description", no : "Beskrivelse", nn : "Beskriving"),
+
+    max-number-of-messages : (en : "Messages", no : "Beskjeder", nn : "Beskjedar"),
 
     under-arbeid : (en : "In progress", no : "Under arbeid" ,nn : "Under arbeid"),
     aktivt : (en: "Active", no : "Aktiv", nn : "Aktiv"),
