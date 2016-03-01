@@ -1,0 +1,60 @@
+body, html {
+   overflow: visible;
+}
+
+/* Introduction */
+div.vrtx-introduction {
+   overflow: visible;
+}
+
+.vrtx-resource a.vrtx-image, .vrtx-introduction-image {
+   overflow: visible;
+}
+
+/* Fix new page bug */
+* html h1, h2 {
+    display: inline;
+    page-break-after: avoid;
+    overflow: hidden;
+}
+
+/* START vrtx-resource (standard, article, events) */
+
+.vrtx-resources {
+    overflow: visible;
+    float: none;
+    clear: left;
+}
+
+div.vrtx-resource {
+    overflow: visible;
+    width: 100%;
+}
+
+* html div.vrtx-resource {
+    float: none;
+    clear: left;        
+}
+
+*:first-child+html div.vrtx-resource {
+    float: none;
+    clear: left;
+}
+
+div.vrtx-resource div.vrtx-read-more {
+}
+
+.vrtx-number-of-comments-add-event-container {
+  display: none;
+}
+
+/* END vrtx-resource (standard, article, events) */
+        /* next / previous links */
+.vrtx-next,.vrtx-previous {
+        display: none
+}
+
+/* RSS - stuff */
+.vrtx-feed-link {
+        display: none;
+}

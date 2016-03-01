@@ -1,0 +1,96 @@
+/* Introduction */
+div.vrtx-introduction {
+	margin: 0;
+	padding: 0 0 0.5em 0;
+}
+
+/* Picture without picture text */
+img.vrtx-introduction-image {
+	float: right;
+	margin: 0 0 0.5em 0.75em;
+	border: 1px solid #ddd;
+}
+
+/* Picture with picture text */
+div.vrtx-introduction-image {
+	border: 1px solid #ddd;
+	float: right;
+	margin: 0em 0em 0.5em 0.75em;
+}
+
+div.vrtx-introduction-image img {
+}
+
+div.vrtx-introduction-image div.vrtx-imagetext {
+	overflow: hidden;
+	padding: 0.5em;
+	background-color: #eee;
+}
+
+* html div.vrtx-introduction-image div.vrtx-imagetext {
+	margin-top: -0.3em;
+	margin-right: -0.3em;
+}
+
+div.vrtx-introduction-image div.vrtx-imagetext span.vrtx-imagetitle {
+	font-weight: bold;
+}
+
+/* START vrtx-project (standard, article, events) */
+div.vrtx-project {
+	width: 100%;
+	float: left;
+	padding: 0;
+	margin: 0 0 1.25em 0;
+}
+
+div.vrtx-project a.vrtx-title {
+	font-size: 1.2em;
+	font-weight: 900;
+}
+
+
+div.vrtx-project a.vrtx-image {
+	float: left;
+	padding:0 0.75em 0.5em 0;
+	border: none;
+	display: block;
+}
+
+div.vrtx-project a.vrtx-image img {
+  border: none;	
+}
+
+div.vrtx-project div.introduction {
+	padding: 0;
+	margin: 0;
+}
+
+div.vrtx-project div.introduction p {
+	margin: .5em 0 0 0;
+	padding: 0;
+}
+
+div.vrtx-project div.vrtx-read-more {
+	margin: .5em 0 0 0;
+	white-space: nowrap;
+}
+
+a.vrtx-next,a.vrtx-previous {
+	float: left;
+	margin: 0 .5em 1em 0;
+}
+
+/* RSS - stuff */
+div.vrtx-feed-link {
+	clear: both;
+	background: url(icons/rss-icon.jpg) no-repeat top left;
+	font-size: .9em;
+	height: 24px;
+	line-height: 20px;
+}
+
+div.vrtx-feed-link a {
+	padding-left: 27px;
+}
+

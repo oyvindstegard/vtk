@@ -1,0 +1,183 @@
+/* Event listing grid */
+
+#vrtx-main-content {
+  width: 70%;
+  float: left;
+}
+
+#vrtx-additional-content {
+  float: left;
+  margin-left: 20px;
+}
+
+/* ^ Event listing grid */
+
+.vrtx-calendar-listing .eventListing\.upcomingEventsSearchComponent, 
+.vrtx-calendar-listing .eventListing\.previousEventsSearchComponent, 
+.vrtx-calendar-listing .structured\.eventListing\.upcomingEventsSearchComponent, 
+.vrtx-calendar-listing .structured\.eventListing\.previousEventsSearchComponent {
+  width: 100%;
+}
+
+#vrtx-event-calendar {
+  padding-bottom: 65px !important;
+}
+
+#vrtx-event-calendar .ui-datepicker {
+  padding: 0px;
+  background-color: #ccc;
+  border: 1px solid #ccc;
+  margin-top: 5px;
+  width: 200px;
+}
+
+#vrtx-event-calendar .ui-datepicker .ui-datepicker-header {
+  background-color: #555;
+  color: #fff;
+  -moz-border-radius: 0px; 
+  -webkit-border-radius: 0px;
+}
+
+#vrtx-event-calendar .ui-datepicker .ui-datepicker-header a {
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#vrtx-event-calendar .ui-datepicker .ui-datepicker-prev span, 
+#vrtx-event-calendar .ui-datepicker .ui-datepicker-next span {
+  background-position: 0 0;
+  width: 19px;
+  height: 18px;
+}
+
+.ui-datepicker .ui-datepicker-next {
+  right: 4px;
+}
+
+.ui-datepicker .ui-datepicker-prev-hover, 
+.ui-datepicker .ui-datepicker-next-hover {
+	top: 2px;
+	/* TODO: add hover variant of left.png and right. */
+	background: none !important;
+}
+
+.ui-datepicker .ui-datepicker-prev-hover { left:2px; }
+.ui-datepicker .ui-datepicker-next-hover { right:4px; }
+
+#vrtx-event-calendar .ui-datepicker .ui-datepicker-prev span {
+  background-image: url(images/calendar-prev-month.png);
+}
+
+#vrtx-event-calendar .ui-datepicker .ui-datepicker-next span {
+  background-image: url(images/calendar-next-month.png);
+}
+
+#vrtx-event-calendar .ui-datepicker .ui-datepicker-header a:hover {
+  background-image: none !important;	
+}
+
+#vrtx-event-calendar .ui-widget-header {
+  color: #2b2b2b;	
+}
+
+#vrtx-event-calendar .ui-datepicker table {
+  margin-bottom: 0;
+}
+
+#vrtx-event-calendar .ui-datepicker table td {
+  padding: 0;	
+}	
+
+#vrtx-event-calendar .ui-datepicker table th {
+  background-color: #fff;	
+  padding-top: 0.3em;
+  padding-bottom: 0.1em;
+}
+
+#vrtx-event-calendar .ui-widget-content table .ui-datepicker-unselectable span {
+  border-width: 1px 1px 0 0;
+  text-align: center;
+  background-image: none !important;
+  background-color: #fff !important;
+  border-color: #d9d9d9 !important;
+  color: #a9a9a9 !important;	
+}
+
+/* Don't use .ui-state-hover */
+#vrtx-event-calendar .ui-widget-content table a,
+#vrtx-event-calendar .ui-widget-content table .ui-state-hover {
+  border-width: 1px 1px 0 0 !important;
+  text-align: center;
+  background-image: none !important;
+  background-color: #fff !important;
+  border-color: #ccc !important;	
+  color: #005a9f !important;
+}
+
+#vrtx-event-calendar .ui-widget-content table td.ui-datepicker-other-month {
+  text-align: center;
+  padding-top: 0.2em;
+  font-weight: 700;
+  color: #fff;
+  background-color: #d9d9d9;
+}
+
+#vrtx-event-calendar .ui-widget-content table td.ui-datepicker-other-month span {
+  border: none;
+  background-color: #d9d9d9 !important;
+  color: #fff !important;
+  padding: 0 !important;
+}
+
+#vrtx-event-calendar .ui-widget-content table .ui-datepicker-today a {
+  /* background-color: #3a94e0 !important; */
+  background-color: #d6e8f8 !important;
+}
+
+#vrtx-event-calendar .ui-widget-content table .ui-datepicker-today span {
+  /* background-color: #3a94e0 !important; */
+  background-color: #d6e8f8 !important;
+}
+
+/* active color */
+#vrtx-event-calendar .ui-widget-content table .state-active a {
+  background-color: #005aab !important;	
+  color: #fff !important;
+}
+
+/* hover color */
+#vrtx-event-calendar .ui-widget-content table a:hover {
+  background-color: #005aab !important;	
+  color: #fff !important;	
+}
+
+#vrtx-events-nav {
+  padding: 10px 0;
+  float: left;
+  clear: left;
+}
+
+#vrtx-events-nav a {
+  float: left;
+  clear: left;
+  margin-bottom: 0.5em;
+}
+
+.vrtx-daily-event {
+  padding-left: 58px;
+}
+
+.vrtx-events-further-upcoming .description,
+.vrtx-events-further-upcoming a.vrtx-image {
+  display: none !important;
+}
+
+.vrtx-paging-feed-wrapper {
+  clear: both;
+}
+
+#vrtx-daily-events .vrtx-last-daily-event .vevent {
+  background-image: none !important;
+  margin-bottom: 0px !important;	
+}

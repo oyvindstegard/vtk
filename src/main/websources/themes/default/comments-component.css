@@ -1,0 +1,179 @@
+/*
+ * Vortex comments component
+ *
+ */
+
+div.vrtx-comments {
+  margin-top: 0.5em;
+  background-color: #fff;  
+  padding: 1em 0 0 0;
+  height: 1%;
+  clear: both;
+  border-radius: .75em;
+  -moz-border-radius: .75em;
+  -webkit-border-radius: .75em;
+}
+
+div.vrtx-comments  div.comments-header {
+  margin: 0 1em 1em 0;
+}
+
+div.vrtx-comments  div.comments-header a.header-href {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #000;
+  text-decoration: none;
+}
+
+div.vrtx-comments div#comments-header-left {
+  float: left;	
+  position: relative;	
+  margin-bottom: 1em;
+}
+
+div.vrtx-comments div#comments-header-left form.vrtx-comments-delete-all {
+  display: inline;
+}
+
+div.vrtx-comments form.vrtx-comments-delete { 
+  display: inline;
+}
+
+div.vrtx-comments div#comments-header-feedHref {
+  background: url(icons/rss-icon-no-shadow.png) left no-repeat;
+  float: right;	
+  position: relative;	
+}
+
+div.vrtx-comments div#comments-header-feedHref a {
+  padding-left: 1.5em;	
+}
+
+div.vrtx-comments div.vrtx-comment {
+  margin: 0 1em .5em 0;
+}
+
+
+div.vrtx-comments div.comment-body {
+  border: 1px solid #ccc;
+  padding: 0 1em 0 1em;
+  height: 1%;
+  background-color: #fff;
+  border-radius: .75em;
+  -moz-border-radius: .75em;
+  -webkit-border-radius: .75em; 
+} 
+
+* html div.vrtx-comments div.comment-body {
+  padding: 1em;
+} 
+
+div.vrtx-comments div.even {
+  clear: left;
+}
+
+div.vrtx-comments div.odd {
+  clear: left;
+}
+
+div.vrtx-comments div.comment-info {
+  margin-top: -1px;
+  background: transparent url(icons/speech-bubble-tip.gif) 2em 0px no-repeat;
+  font-size: .9em;
+  padding: 1em 1.1em 1em 0;
+}
+
+/* Add comments */
+
+div.vrtx-comments  div.add-comment {
+  background-color: #fff;
+  padding: 1em 1em 1em 0;
+  height: 1%; 
+  margin: 0;
+  clear: left;
+  border-radius: .75em;
+  -moz-border-radius: .75em;
+  -webkit-border-radius: .75em; 
+}
+
+div.vrtx-comments div.comment-body p {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+div.vrtx-comments div.add-comment-header {
+  margin-bottom: .9em;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+
+div.vrtx-comments div.comment-syntax-desc {
+  font-size: .9em;
+ /*  border: 1px solid blue; */
+  width: 13em;
+  float: right;
+}
+
+div.vrtx-comments div.comment-syntax-desc div.syntax-head {
+  font-weight: bold;
+}
+
+div.vrtx-comments div.comment-syntax-desc a.javascript-editor {
+  white-space: nowrap;
+}
+
+
+
+div.vrtx-comments div.comments-text {
+  padding: 1em;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  height: 1%; 
+  margin-right: 13em;
+  border-radius: .75em;
+  -moz-border-radius: .75em;
+  -webkit-border-radius: .75em;
+}
+
+div.vrtx-comments div.comments-text textarea {
+  width: 100%; 
+}
+
+#comments-text___Frame { /* FCK input area */
+  border: 1px solid #999;
+}
+
+/* IE6 hacks */
+
+* html div.vrtx-comments div.comments-text {
+  margin: 0;
+  float: left;
+  /* border: 1px solid red; */
+}
+
+* html div.vrtx-comments div.comments-text textarea {
+  width:99%; 
+  font-size: 1em;
+}
+
+/* IE hack: */
+* html div.vrtx-comments div.add-comment div.submit{
+  clear:both;
+  margin-top: -21px; 
+}
+
+div.vrtx-comments div.add-comment div.submit {
+  margin-top: -2px;
+  background: transparent url(icons/speech-bubble-tip.gif) 2em 0px no-repeat;
+  padding: 1em 1em 0 0;
+}
+
+div.vrtx-comments .error {
+  color: red;
+}
+
+div.vrtx-comments div.comments-text div.error {
+  margin-top: 1em;
+}
+/* ^ Vortex comments component */

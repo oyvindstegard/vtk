@@ -1,0 +1,179 @@
+{{! STRING }}
+
+<div class="{{ classes }}{{#elemDivide}} divide-{{elemDivide}}{{/elemDivide}}">
+  <label for="{{ elemId  }}">{{ elemTitle }}</label>
+  <input class="vrtx-textfield inputfield" size="{{ elemSize }}" type="text" name="{{ inputFieldName }}" value="{{ elemVal }}"{{#elemReadOnly}} readonly="readonly"{{/elemReadOnly}}{{#elemPlaceholder}} placeholder="{{ elemPlaceholder }}"{{/elemPlaceholder}} id="{{ elemId }}" />
+</div>
+
+### {{! HTML }}
+
+<div class="{{ classes }}{{#elemDivide}} divide-{{elemDivide}}{{/elemDivide}}">
+  <label for="{{ elemId  }}">{{ elemTitle }}</label>
+  <textarea name="{{ inputFieldName }}" id="{{ elemId }}" rows="7" cols="60" >{{ elemVal }}</textarea>
+</div>
+
+### {{! RADIO }}
+
+<div class="vrtx-radio">
+  <div>
+    <label>{{ elemTitle }}</label>
+  </div>
+  <input name="{{ inputFieldName }}" id="{{ inputFieldName }}-true" type="radio" value="true" />
+  <label for="{{ inputFieldName }}-true">True</label>
+  <input name="{{ inputFieldName }}" id="{{ inputFieldName }}-false" type="radio" value="false" />
+  <label for="{{ inputFieldName }}-false">False</label>
+</div>
+
+### {{! CHECKBOX }}
+
+<div class="vrtx-checkbox{{#elemDivide}} divide-{{elemDivide}}{{/elemDivide}}">
+  <input name="{{ inputFieldName }}" id="{{ elemId }}" type="checkbox" {{#elemChecked}}checked="checked"{{/elemChecked}} />
+  <label for="{{ elemId }}">{{ elemTitle }}</label>
+  {{#elemTooltip}}<abbr tabindex="0" class="tooltips" title="{{ elemTooltip }}"></abbr>{{/elemTooltip}} 
+</div>
+
+### {{! DROPDOWN }}
+
+<div class="{{ classes }}">
+  <label for="{{ inputFieldName }}">{{ elemTitle }}</label>
+  <div class="inputfield">
+    <select id="{{ inputFieldName }}" name="{{ inputFieldName }}">
+      {{#options}}
+         <option value="{{ key }}">{{ value }}</option>
+      {{/options}} 
+    </select>
+  </div>
+</div>
+
+### {{! DATE }}
+
+<div class="vrtx-string">
+  <label for="{{ inputFieldName }}">{{ elemTitle }}</label>
+  <input class="vrtx-textfield inputfield date" size="20" type="text" name="{{ inputFieldName }}" id="{{ inputFieldName }}" value="" />
+</div>
+
+### {{! BROWSE }}
+
+<div class="{{ clazz }}">
+  <div class="{{ clazz }}-label">
+    <label for="{{ inputFieldName }}">{{ elemTitle }}</label>
+  </div>
+  <div class="{{ clazz }}-browse">
+    <input class="vrtx-textfield" type="text" name="{{ inputFieldName }}" id="{{ inputFieldName }}" value="" size="{{ size }}" />
+    <button class="vrtx-button" type="button" onclick="browseServer('{{ inputFieldName }}', '{{ baseCKURL }}', '{{ baseFolderURL }}', '{{ basePath }}', '{{ type }}');">
+      {{ browseButtonText }}
+    </button>
+  </div>
+  {{{ preview }}}
+</div>
+
+### {{! BROWSE IMAGES }}
+
+<div class="{{ clazz }}">
+  <div class="{{ clazz }}-label">
+    <label for="{{ inputFieldName }}">{{ elemTitle }}</label>
+  </div>
+  <div class="{{ clazz }}-browse">
+    <input class="vrtx-textfield preview-image-inputfield" type="text" name="{{ inputFieldName }}" id="{{ inputFieldName }}" value="" size="{{ size }}" />
+    <button class="vrtx-button" type="button" onclick="browseServer('{{ inputFieldName }}', '{{ baseCKURL }}', '{{ baseFolderURL }}', '{{ basePath }}', '{{ type }}');">
+      {{ browseButtonText }}
+    </button>
+  </div>
+  <div id="{{ inputFieldName }}.preview" class="vrtx-image-ref-preview" style="display: none">
+    <label for="{{ inputFieldName }}.preview">{{ previewTitle }}</label>
+    <div id="{{ inputFieldName }}.preview-inner" class="vrtx-image-ref-preview-inner">
+      <img src="" alt="preview" />
+    </div>
+  </div>
+</div>
+
+### {{! ADD, REMOVE, MOVE UP, MOVE DOWN }}
+
+<button class="vrtx-button vrtx-{{ clazz }}-button" title="{{ title }}">
+  {{{ buttonText }}}
+</button>
+
+### {{! BUTTON }}
+
+<button class="vrtx-button {{ type }}{{ name }}" title="{{ title }}" id="{{ idstr }}{{ type }}">
+  {{{ buttonText }}}
+</button>
+
+### {{! ADD BUTTON }}
+
+<button id="vrtx-{{ name }}-add" title="{{ title }}" class="vrtx-button add" onclick="addFormField('{{ name }}', 1, null, '{{ size }}', {{ isBrowsable }}, {{ isMovable }}, {{ isDropdown }}, false, {{ json }}); return false;">
+  {{{ buttonText }}}
+</button>
+
+{{#isResettable}}
+  &nbsp;&nbsp;<a href="javascript:void(0);" class="vrtx-reset-json">{{ resettableLinkText }}</a>
+{{/isResettable}}
+
+### {{! MULTIPLE INPUTFIELD AND DROPDOWN }}
+
+<div class="vrtx-multipleinputfield{{#json}}{{./}}{{#title}} vrtx-multipleinputfield-json-has-title{{/title}}{{./}}{{/json}}" id="{{ idstr }}row-{{ i }}">
+
+  {{#isDropdown}}
+    <div class="vrtx-dropdown">
+      <select class="vrtx-multipleinputfield-field" id="{{ idstr }}select-{{ i }}"> </select>
+      
+      {{! POPULATE DROPDOWN WITH PROP-VALUEMAP JS-ARRAY }}
+      <script type="text/javascript"><!--
+        $(function() {
+          var {{ dropdownArray }}Html = "";
+          for(var i = 0, {{ dropdownArray }}Len = {{ dropdownArray }}.length; i < {{ dropdownArray }}Len; i++) {
+            if({{ dropdownArray }}[i].key === "{{ value }}") {
+              {{ dropdownArray }}Html += "<option value='" + {{ dropdownArray }}[i].key + "' selected='selected'>" + {{ dropdownArray }}[i].value + "</option>";
+            } else {
+              {{ dropdownArray }}Html += "<option value='" + {{ dropdownArray }}[i].key + "'>" + {{ dropdownArray }}[i].value + "</option>";
+            }
+          }
+          $("select[id='{{ idstr }}select-{{ i }}']").append({{ dropdownArray }}Html);
+        });
+      // -->
+      </script>
+    </div>
+  {{/isDropdown}}
+
+  {{^isDropdown}}
+    {{#json}}
+      {{./}}
+        {{#hasEnrichedUrl}}
+          {{#enrichedUrlVal}}<a target="_blank" class="vrtx-multiple-inputfield-enrichment" href="{{ enrichedUrlVal }}">{{/enrichedUrlVal}}
+          {{#enrichedTextVal}}{{ enrichedTextVal }}</a>{{/enrichedTextVal}}
+        {{/hasEnrichedUrl}}
+        {{^hasEnrichedUrl}}
+        {{#hasEnrichedText}}
+          {{#enrichedTextVal}}<span class="vrtx-multiple-inputfield-enrichment">{{ enrichedTextVal }}</span>{{/enrichedTextVal}}
+        {{/hasEnrichedText}}
+        {{/hasEnrichedUrl}}
+        
+        {{^enrichedText}}
+        {{^enrichedUrl}}
+          <div class="vrtx-multipleinputfield-json-wrapper">
+            <input class="vrtx-textfield vrtx-multipleinputfield-field {{#hasEnrichedText}}vrtx-multipleinputfield-field-enriched{{/hasEnrichedText}} {{ type }}" value="{{ val }}" {{#title}}placeholder="{{ title }}"{{/title}} type="text" size="{{ size }}" id="{{ idstr }}{{name}}-{{ i }}"{{#isReadOnly}} readonly="readonly"{{/isReadOnly}} />
+          </div>
+        {{/enrichedUrl}}
+        {{/enrichedText}}
+      {{./}}
+    {{/json}}
+    {{^json}}
+      <input class="vrtx-textfield vrtx-multipleinputfield-field {{ idstr }}{{ i }}" value="{{ value }}" type="text" size="{{ size }}" id="{{ idstr }}{{ i }}"{{#isReadOnly}} readonly="readonly"{{/isReadOnly}} />
+    {{/json}}
+  {{/isDropdown}}
+  
+  {{^isReadOnly}}
+    {{{ browseButton }}}
+    {{{ removeButton }}}
+  {{/isReadOnly}}
+  
+  {{{ moveUpButton }}}
+  {{{ moveDownButton }}}
+</div>
+
+### {{! ACCORDION }}
+
+<div class="accordion-wrapper {{clazz}}">
+  <h{{level}} class="header" id="{{id}}">{{{title}}}</h{{level}}>
+  <div class="accordion-content">{{{content}}}</div>
+</div>

@@ -11,6 +11,10 @@
 /nb-configuration.xml
 /nbactions.xml
 
+/src/main/websources/node
+bower_components/
+node_modules/
+
 # /src/main/antlr3/org/vortikal/repository/resource/
 /src/main/antlr3/org/vortikal/repository/resource/output
 
