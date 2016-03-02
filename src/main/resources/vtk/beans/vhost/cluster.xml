@@ -31,7 +31,7 @@
 
   <!-- Default no-op cluster manager bean. -->  
   <bean id="cluster.manager" class="vtk.cluster.DefaultClusterManager">
-    <constructor-arg name="clusterComponents">
+    <constructor-arg>
       <ref bean="cluster.components"/>
     </constructor-arg>
   </bean>
