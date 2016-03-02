@@ -30,6 +30,7 @@
  */
 package vtk.web.actions.permissions;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,8 +39,9 @@ import vtk.repository.Privilege;
 import vtk.security.Principal;
 import vtk.web.actions.UpdateCancelCommand;
 
-public class ACLEditCommand extends UpdateCancelCommand {
+public class ACLEditCommand extends UpdateCancelCommand implements Serializable {
 
+    private static final long serialVersionUID = 8536210088233742679L;
     private Acl acl;
     private Privilege privilege;
 
@@ -160,9 +162,10 @@ public class ACLEditCommand extends UpdateCancelCommand {
                 noBlanks.add(value);
             }
         }
-        return (String[]) noBlanks.toArray(new String[noBlanks.size()]);
+        return noBlanks.toArray(new String[noBlanks.size()]);
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(this.getClass().getName());
         sb.append("[acl=").append(this.acl);
