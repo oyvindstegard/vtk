@@ -37,6 +37,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -53,7 +56,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import scala.collection.JavaConversions;
 
-public class AkkaClusterManager {
+public class AkkaClusterManager implements ApplicationListener<ContextRefreshedEvent> {
 
     private final static Object LEAVE = new Object();
     
@@ -66,12 +69,16 @@ public class AkkaClusterManager {
         this.system = system;
         this.clusterComponents = clusterComponents;
     }
-
+    
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        init();
+    }
+    
     public void init() {
         
         ActorRef subscriptionActor = system.actorOf(
                 Props.create(SubscriptionActor.class), "subscription-actor");
-
         clusterListener = system.actorOf(
                 Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
                 "cluster-listener");
@@ -123,8 +130,8 @@ public class AkkaClusterManager {
         @SuppressWarnings("unused")
         public ClusterListener(ActorRef subscriptionActor, List<ClusterAware> clusterComponents) {
             this.subscriptionActor = subscriptionActor;
-            this.appClusterComponents = Collections.unmodifiableList(new ArrayList<>(clusterComponents));
-
+            this.appClusterComponents = clusterComponents;
+            log.info("Create cluster listener: components=" + clusterComponents);
             for (ClusterAware clusterComponent: appClusterComponents) {
                 ClusterContext context = new ClusterContextImpl(
                         subscriptionActor, clusterComponent, getSelf());
@@ -134,6 +141,7 @@ public class AkkaClusterManager {
 
         private void switchState(ClusterState state) {
             for (ClusterAware aware: appClusterComponents) {
+                log.debug("Notify: " + aware + ": " + state);
                 aware.roleChange(state.role());
             }
         }
