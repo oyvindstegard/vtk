@@ -481,12 +481,6 @@
   <#local locale = springMacroRequestContext.getLocale() />
   <#if def = ''><#return '' /></#if>
   <#if !resource.getProperty(def)?exists>
-    <#local formatter = def.getValueFormatter() />
-    <#attempt>
-    <#if formatter?exists && !def.mandatory>
-      <#return formatter.valueToString(nullArg, format, locale) />
-    </#if>
-    <#recover></#recover>
     <#return '' />
   </#if>
   <#local prop= resource.getProperty(def) />
