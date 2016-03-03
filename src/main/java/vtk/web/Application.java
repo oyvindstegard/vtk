@@ -150,6 +150,7 @@ public class Application extends SpringBootServletInitializer {
                     gracePeriodSeconds = Integer.parseInt(parts[1]);
                 }
                 springArgs = (String[])ArrayUtils.remove(args, i);
+                break;
             }
         }
 
