@@ -43,6 +43,9 @@ import java.util.stream.Collectors;
 
 import javax.servlet.Servlet;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.NetworkTrafficServerConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -59,9 +62,11 @@ import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletConta
 import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
@@ -77,6 +82,9 @@ import vtk.web.servlet.VTKServlet;
 })
 
 public class Application extends SpringBootServletInitializer {
+    private static final String GRACEFUL_ARG = "--graceful";
+    private static final int DEFAULT_GRACE_PERIOD = 15;
+    private final Log logger = LogFactory.getLog(getClass());
 
     @Bean
     public Servlet dispatcherServlet() {
@@ -130,6 +138,20 @@ public class Application extends SpringBootServletInitializer {
     }
 
     protected final void run(String[] args) throws Exception {
+        String[] springArgs = args;
+        boolean gracefulRestart = false;
+        int gracePeriodSeconds = DEFAULT_GRACE_PERIOD;
+
+        for (int i=0; i < args.length; i++) {
+            if (args[i].equals(GRACEFUL_ARG) || args[i].startsWith(GRACEFUL_ARG + "=")) {
+                gracefulRestart = true;
+                String[] parts = args[i].split("=");
+                if (parts.length > 1) {
+                    gracePeriodSeconds = Integer.parseInt(parts[1]);
+                }
+                springArgs = (String[])ArrayUtils.remove(args, i);
+            }
+        }
 
         List<Object> params = new ArrayList<>();
         params.addAll(mainXml());
@@ -139,7 +161,6 @@ public class Application extends SpringBootServletInitializer {
         params.add(Application.class);
 
         SpringApplication app = new SpringApplication(params.toArray(new Object[params.size()]));
-
         app.addInitializers(new ApplicationContextInitializer<ConfigurableApplicationContext>() {
 
             @Override
@@ -152,7 +173,7 @@ public class Application extends SpringBootServletInitializer {
                     public void postProcessBeanFactory(
                             ConfigurableListableBeanFactory beanFactory)
                                     throws BeansException {
-                        beanFactory.registerSingleton("vtk.configLocations", propertiesFiles());                        
+                        beanFactory.registerSingleton("vtk.configLocations", propertiesFiles());
                     }
                 });
             }
@@ -160,7 +181,11 @@ public class Application extends SpringBootServletInitializer {
 
         app.setBanner(banner());
         app.setHeadless(true);
-        app.run(args);
+        if (gracefulRestart) {
+            app.setRegisterShutdownHook(true);
+            app.addListeners(new GracefulShutdown(gracePeriodSeconds));
+        }
+        app.run(springArgs);
     }
 
 
@@ -288,4 +313,26 @@ public class Application extends SpringBootServletInitializer {
         }
     }
 
+    private class GracefulShutdown implements ApplicationListener<ContextClosedEvent> {
+        private final int gracePeriodSeconds;
+
+        public GracefulShutdown(int gracePeriodSeconds) {
+            this.gracePeriodSeconds = gracePeriodSeconds;
+        }
+
+        @Override
+        public void onApplicationEvent(ContextClosedEvent event) {
+            logger.info(String.format(
+                    "Graceful shutdown initiated - waiting for %d seconds.",
+                    gracePeriodSeconds
+            ));
+            ClusterStatus status = event.getApplicationContext().getBean(ClusterStatus.class);
+            status.setDraining(true);
+            try {
+                Thread.sleep(gracePeriodSeconds * 1000);
+            } catch (InterruptedException e) {
+                logger.warn("Graceful shutdown interupted");
+            }
+        }
+    }
 }

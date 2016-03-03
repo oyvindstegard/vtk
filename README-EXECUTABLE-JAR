@@ -18,4 +18,10 @@ To run (minimal setup):
 
 2. Run the application:
 
-java -Dvtk.listen=localhost:9321,localhost:9322 -Dvtk.webdav.port=9321 -Dvtk.web.port=9322 -jar -Dvtk.configLocations=$HOME/vtk.properties target/vtk-<version>.jar
+./jar-start-debug.sh target/vtk-<version>.jar
+
+If you want give a load balancer a chance to finish the requests it has queued for the app.
+
+./jar-start-debug.sh target/vtk-<version>.jar --graceful[=n]
+
+n is the time to wait in seconds.
