@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
@@ -55,8 +54,9 @@ import akka.cluster.Member;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import scala.collection.JavaConversions;
+import vtk.context.ApplicationInitializedEvent;
 
-public class AkkaClusterManager implements ApplicationListener<ContextRefreshedEvent> {
+public class AkkaClusterManager implements ApplicationListener<ApplicationInitializedEvent> {
 
     private final static Object LEAVE = new Object();
     
@@ -71,15 +71,10 @@ public class AkkaClusterManager implements ApplicationListener<ContextRefreshedE
     }
     
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        init();
-    }
-    
-    public void init() {
-        
+    public void onApplicationEvent(ApplicationInitializedEvent event) {
         ActorRef subscriptionActor = system.actorOf(
                 Props.create(SubscriptionActor.class), "subscription-actor");
-        clusterListener = system.actorOf(
+        this.clusterListener = system.actorOf(
                 Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
                 "cluster-listener");
     }
@@ -88,7 +83,7 @@ public class AkkaClusterManager implements ApplicationListener<ContextRefreshedE
         clusterListener.tell(LEAVE, null);
         system.terminate();
     }
-
+    
     private static class SubscriptionActor extends UntypedActor {
         LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
@@ -165,23 +160,23 @@ public class AkkaClusterManager implements ApplicationListener<ContextRefreshedE
                 cluster.leave(cluster.selfAddress());
             }
             else if (message instanceof MemberUp) {
-                MemberUp mUp = (MemberUp) message;
+                MemberUp up = (MemberUp) message;
 
-                log.info("Member is Up: {}", mUp.member());
+                log.info("Member is Up: {}", up.member());
             }
             else if (message instanceof UnreachableMember) {
-                UnreachableMember mUnreachable = (UnreachableMember) message;
-                log.info("Member detected as unreachable: {}", mUnreachable.member());
+                UnreachableMember unreachable = (UnreachableMember) message;
+                log.info("Member detected as unreachable: {}", unreachable.member());
 
             }
             else if (message instanceof MemberRemoved) {
-                MemberRemoved mRemoved = (MemberRemoved) message;
-                log.info("Member is Removed: {}", mRemoved.member());
+                MemberRemoved removed = (MemberRemoved) message;
+                log.info("Member is Removed: {}", removed.member());
 
             }
             else if (message instanceof LeaderChanged) {
-                LeaderChanged lch = (LeaderChanged) message;
-                if (lch.getLeader().equals(cluster.selfAddress())) {
+                LeaderChanged changed = (LeaderChanged) message;
+                if (changed.getLeader().equals(cluster.selfAddress())) {
                     log.info("Change to master mode");
                     switchState(new ClusterState(
                             ClusterRole.MASTER,
@@ -194,13 +189,11 @@ public class AkkaClusterManager implements ApplicationListener<ContextRefreshedE
                             cluster.selfAddress().toString(), members()));
                 }
             }
-            else if (message instanceof MemberEvent) {
-
-            }
             else if (message instanceof AppToClusterMessage) {
                 AppToClusterMessage msg = (AppToClusterMessage) message;
 
-                List<Member> members = JavaConversions.seqAsJavaList(cluster.state().members().toList());
+                List<Member> members = JavaConversions
+                        .seqAsJavaList(cluster.state().members().toList());
                 for (Member member: members) {
 
                     if (!member.address().equals(cluster.selfAddress())) {
