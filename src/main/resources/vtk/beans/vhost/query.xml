@@ -81,9 +81,6 @@
     <property name="forceUnlock" value="true"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
     <property name="searcherFactory" ref="searcherFactory"/>
-    <!-- TODO: make these two configurable: -->
-    <property name="keepOldCommits" value="5" />
-    <property name="useSimpleLockFactory" value="true" />
   </bean>
 
   <!-- Property set index based on primary Lucene index accessor instance.  -->
