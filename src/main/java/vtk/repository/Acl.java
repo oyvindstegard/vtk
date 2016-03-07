@@ -30,6 +30,7 @@
  */
 package vtk.repository;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -49,8 +50,10 @@ import vtk.security.PrincipalFactory;
  * 
  * Objects of this class are immutable.
  */
-public final class Acl {
+public final class Acl implements Serializable {
     
+    private static final long serialVersionUID = -6996873030892397695L;
+
     public static final Acl EMPTY_ACL = new Acl(Collections.<Privilege, Set<Principal>>emptyMap());
 
     /**

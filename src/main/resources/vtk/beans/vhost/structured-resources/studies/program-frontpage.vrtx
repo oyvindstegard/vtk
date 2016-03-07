@@ -219,11 +219,6 @@ resourcetype program-frontpage : program-document {
       <head>
         [call "resource:comments-feed-link"]
         <title>[call "comp:title"]</title>
-        <style type="text/css">
-          #vrtx-additional-content .vrtx-messagebox {
-            display: none
-          }
-        </style>
       </head>
       <body id="vrtx-program-frontpage">
         <div id="vrtx-content">

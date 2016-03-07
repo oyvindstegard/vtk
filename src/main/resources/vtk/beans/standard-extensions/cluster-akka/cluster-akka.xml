@@ -29,7 +29,10 @@
         <property name="targetMethod" value="parseString" />
         <property name="arguments">
           <list>
-            <value type="java.lang.String">akka.remote.netty.tcp.port=${cluster.port}</value>
+            <value type="java.lang.String">
+            akka.remote.netty.tcp.hostname=${cluster.hostname}
+            akka.remote.netty.tcp.port=${cluster.port}
+            </value>
           </list>
         </property>
       </bean>
@@ -55,13 +58,20 @@
     </property>
   </bean>
 
-  <bean id="cluster.manager" class="vtk.cluster.AkkaClusterManager" 
+  <bean id="cluster.manager" class="vtk.cluster.AkkaClusterManager">
+        <!--
+        XXX: implements ApplicationListener instead, to make sure 
+        'cluster.components' is fully initialized during init():
         init-method="init" destroy-method="destroy">
-    <!--constructor-arg name="port" value="${cluster.port}" /-->
+        -->
     <constructor-arg name="system" ref="akka.actorSystem" />
+    <constructor-arg name="clusterComponents">
+      <ref bean="cluster.components"/>
+    </constructor-arg>
+  <!--
     <constructor-arg name="clusterComponents" ref="cluster.components" />
+  -->
   </bean>
-
 
 </beans>
 

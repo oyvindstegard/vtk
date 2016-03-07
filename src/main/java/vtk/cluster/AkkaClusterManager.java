@@ -37,6 +37,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationListener;
+
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -52,8 +54,9 @@ import akka.cluster.Member;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import scala.collection.JavaConversions;
+import vtk.context.ApplicationInitializedEvent;
 
-public class AkkaClusterManager {
+public class AkkaClusterManager implements ApplicationListener<ApplicationInitializedEvent> {
 
     private final static Object LEAVE = new Object();
     
@@ -66,13 +69,12 @@ public class AkkaClusterManager {
         this.system = system;
         this.clusterComponents = clusterComponents;
     }
-
-    public void init() {
-        
+    
+    @Override
+    public void onApplicationEvent(ApplicationInitializedEvent event) {
         ActorRef subscriptionActor = system.actorOf(
                 Props.create(SubscriptionActor.class), "subscription-actor");
-
-        clusterListener = system.actorOf(
+        this.clusterListener = system.actorOf(
                 Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
                 "cluster-listener");
     }
@@ -81,7 +83,7 @@ public class AkkaClusterManager {
         clusterListener.tell(LEAVE, null);
         system.terminate();
     }
-
+    
     private static class SubscriptionActor extends UntypedActor {
         LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
@@ -123,8 +125,8 @@ public class AkkaClusterManager {
         @SuppressWarnings("unused")
         public ClusterListener(ActorRef subscriptionActor, List<ClusterAware> clusterComponents) {
             this.subscriptionActor = subscriptionActor;
-            this.appClusterComponents = Collections.unmodifiableList(new ArrayList<>(clusterComponents));
-
+            this.appClusterComponents = clusterComponents;
+            log.info("Create cluster listener: components=" + clusterComponents);
             for (ClusterAware clusterComponent: appClusterComponents) {
                 ClusterContext context = new ClusterContextImpl(
                         subscriptionActor, clusterComponent, getSelf());
@@ -134,6 +136,7 @@ public class AkkaClusterManager {
 
         private void switchState(ClusterState state) {
             for (ClusterAware aware: appClusterComponents) {
+                log.debug("Notify: " + aware + ": " + state);
                 aware.roleChange(state.role());
             }
         }
@@ -157,23 +160,23 @@ public class AkkaClusterManager {
                 cluster.leave(cluster.selfAddress());
             }
             else if (message instanceof MemberUp) {
-                MemberUp mUp = (MemberUp) message;
+                MemberUp up = (MemberUp) message;
 
-                log.info("Member is Up: {}", mUp.member());
+                log.info("Member is Up: {}", up.member());
             }
             else if (message instanceof UnreachableMember) {
-                UnreachableMember mUnreachable = (UnreachableMember) message;
-                log.info("Member detected as unreachable: {}", mUnreachable.member());
+                UnreachableMember unreachable = (UnreachableMember) message;
+                log.info("Member detected as unreachable: {}", unreachable.member());
 
             }
             else if (message instanceof MemberRemoved) {
-                MemberRemoved mRemoved = (MemberRemoved) message;
-                log.info("Member is Removed: {}", mRemoved.member());
+                MemberRemoved removed = (MemberRemoved) message;
+                log.info("Member is Removed: {}", removed.member());
 
             }
             else if (message instanceof LeaderChanged) {
-                LeaderChanged lch = (LeaderChanged) message;
-                if (lch.getLeader().equals(cluster.selfAddress())) {
+                LeaderChanged changed = (LeaderChanged) message;
+                if (changed.getLeader().equals(cluster.selfAddress())) {
                     log.info("Change to master mode");
                     switchState(new ClusterState(
                             ClusterRole.MASTER,
@@ -186,13 +189,11 @@ public class AkkaClusterManager {
                             cluster.selfAddress().toString(), members()));
                 }
             }
-            else if (message instanceof MemberEvent) {
-
-            }
             else if (message instanceof AppToClusterMessage) {
                 AppToClusterMessage msg = (AppToClusterMessage) message;
 
-                List<Member> members = JavaConversions.seqAsJavaList(cluster.state().members().toList());
+                List<Member> members = JavaConversions
+                        .seqAsJavaList(cluster.state().members().toList());
                 for (Member member: members) {
 
                     if (!member.address().equals(cluster.selfAddress())) {
