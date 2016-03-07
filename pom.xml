@@ -106,10 +106,6 @@
         <enabled>true</enabled>
       </snapshots>
     </pluginRepository>
-    <pluginRepository>
-      <id>JBoss repository</id>
-      <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
-    </pluginRepository>
   </pluginRepositories>
   
   <repositories>
@@ -160,6 +156,12 @@
           <scope>provided</scope>
         </dependency>
       </dependencies>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>JBoss repository</id>
+          <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+        </pluginRepository>
+      </pluginRepositories>
       <build>
         <plugins>
           <plugin>
@@ -182,6 +184,12 @@
                 </resource>
               </webResources>
             </configuration>
+          </plugin>
+          <!-- JBoss-maven-plugin (provides support for direct deploy to Jboss) -->
+          <plugin>
+            <groupId>org.jboss.as.plugins</groupId>
+            <artifactId>jboss-as-maven-plugin</artifactId>
+            <version>7.7.Final</version>
           </plugin>
           <!-- Add JBoss specific source code: -->
           <plugin>
@@ -541,12 +549,6 @@
             <exclude>**/Abstract*.java</exclude>
           </excludes>
         </configuration>
-      </plugin>
-      <!-- JBoss -->
-      <plugin>
-        <groupId>org.jboss.as.plugins</groupId>
-        <artifactId>jboss-as-maven-plugin</artifactId>
-        <version>7.7.Final</version>
       </plugin>
     </plugins>
   </build>
