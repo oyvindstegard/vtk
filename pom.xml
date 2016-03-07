@@ -129,12 +129,12 @@
     <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     <checkstyle.config.location>src/main/checkstyle/checkstyle.xml</checkstyle.config.location>
     <java.version>1.8</java.version>
-    <log4j.scope>compile</log4j.scope>
     <spring.version>4.2.4.RELEASE</spring.version>
     <spring.boot.version>1.3.2.RELEASE</spring.boot.version>
   </properties>
 
   <profiles>
+    <!-- This profile is required to build artifact for JBoss application container -->
     <profile>
       <id>container-jboss</id>
       <activation>
@@ -144,9 +144,22 @@
           <value>jboss</value>
         </property>
       </activation>
-      <properties>
-        <log4j.scope>provided</log4j.scope>
-      </properties>
+      <dependencies>
+        <!-- Override scope for log4j, which is provided by JBoss -->
+        <dependency>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+          <version>1.2.17</version>
+          <scope>provided</scope>
+        </dependency>
+        <!-- JBoss dependencies -->
+        <dependency>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-clustering-singleton</artifactId>
+          <version>7.2.0.Final</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
           <plugin>
@@ -163,9 +176,53 @@
                   <Dependencies>org.jboss.msc,org.jboss.as.server,org.jboss.as.clustering.singleton,org.infinispan,org.jgroups</Dependencies>
                 </manifestEntries>
               </archive>
+              <webResources>
+                <resource>
+                  <directory>src/jboss/main/webapp</directory>
+                </resource>
+              </webResources>
             </configuration>
           </plugin>
+          <!-- Add JBoss specific source code: -->
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.10</version>
+            <executions>
+              <execution>
+                <id>add-jboss-sources</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>add-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>src/jboss/main/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>add-jboss-test-sources</id>
+                <phase>generate-test-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>src/jboss/test/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
+        <!-- Add JBoss specific resources: -->
+        <resources>
+          <resource><directory>src/jboss/main/resources</directory></resource>
+        </resources>
+        <testResources>
+          <testResource><directory>src/jboss/test/resources</directory></testResource>
+        </testResources>
       </build>
     </profile>
   </profiles>
@@ -633,7 +690,7 @@
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.17</version>
-      <scope>${log4j.scope}</scope>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -910,14 +967,6 @@
       <artifactId>hsqldb</artifactId>
       <version>2.3.3</version>
       <scope>test</scope>
-    </dependency>
-
-    <!-- JBoss cluster singleton -->
-    <dependency>
-      <groupId>org.jboss.as</groupId>
-      <artifactId>jboss-as-clustering-singleton</artifactId>
-      <version>7.2.0.Final</version>
-      <scope>provided</scope>
     </dependency>
 
     <!-- Provide slf4j code with log4j-output: -->

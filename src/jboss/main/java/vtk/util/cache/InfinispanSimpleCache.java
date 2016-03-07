@@ -55,7 +55,7 @@ public class InfinispanSimpleCache<K, V> implements SimpleCache<K, V> {
             .globalJmxStatistics().allowDuplicateDomains(true).enable()
             .build());
     private Cache<K, V> cache = null;
-
+    
     /**
      * Setup and connect to shared cache.
      * @param name Unique identifier of shared cache within the cluster.

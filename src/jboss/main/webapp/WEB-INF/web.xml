@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="VTK" version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         metadata-complete="true">
+
+  <!-- web.xml for JBoss container -->
+  
+  <servlet id="vtkServlet"> 
+    <servlet-name>vtk</servlet-name>
+    <servlet-class>vtk.web.servlet.VTKServlet</servlet-class>
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>/WEB-INF/applicationContext.xml,file://${user.home}/*vtk.xml,file://${user.home}/*vrtx-context.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>  
+  
+  <servlet-mapping>
+    <servlet-name>vtk</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping> 
+
+  <distributable/>
+  
+</web-app>
