@@ -694,8 +694,12 @@ VrtxEditor.prototype.classifyEditorInstance = function classifyEditorInstance(op
                                         name === "adgang-text-field" ||
                                         name === "assessment-and-grading" ||
                                         name === "hjelpemidler-text-field" ||
+                                        name === "eksamensspraak-text-field" ||
+                                        name === "sensur-text-field" ||
                                         name === "klage-text-field" ||
                                         name === "ny-utsatt-eksamen-text-field" ||
+                                        name === "antall-forsok-trekk-text-field" ||
+                                        name === "tilrettelagt-eksamen-text-field" ||
                                         name === "evaluering-av-emnet-text-field" ||
                                         name === "other-text-field";
   classification.isCourseGroup = name === "course-group-about" ||
