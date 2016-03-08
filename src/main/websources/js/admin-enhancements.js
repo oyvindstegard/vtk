@@ -177,20 +177,20 @@ var VrtxAnimation = function(opts) {
     });
   }
 
-  var futureAppliedFn = function(calleeStr, args) {
-    var fn = calleeStr.match(/function\s+([^\s\(]+)/); if(fn.length > 1) { objApplied.push({fn: fn[1], args: args}); }
+  var futureAppliedFn = function(methodName, args) {
+    if(methodName !== null) { objApplied.push({fn: methodName, args: args}); }
   };
   
   /* Add applied functions for future running.
    * TODO: general object prop access handling possible? http://blog.calyptus.eu/seb/2010/11/javascript-proxies-leaky-this/?
    * TODO: Firefox can use Proxy and get() for adding future applied functions(?) http://wiki.ecmascript.org/doku.php?id=harmony%3adirect_proxies
    */
-  obj.update = function update(opts)         { futureAppliedFn(arguments.callee.toString(), opts); };
-  obj.updateElem = function updateElem(elem) { futureAppliedFn(arguments.callee.toString(), elem); };
-  obj.rightIn = function rightIn()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.leftOut = function leftOut()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.topDown = function topDown()           { futureAppliedFn(arguments.callee.toString(), null); };
-  obj.bottomUp = function bottomUp()         { futureAppliedFn(arguments.callee.toString(), null); };
+  obj.update = function (opts) { futureAppliedFn("update", opts); };
+  obj.updateElem = function (elem) { futureAppliedFn("updateElem", elem); };
+  obj.rightIn = function () { futureAppliedFn("rightIn", null); };
+  obj.leftOut = function () { futureAppliedFn("leftOut", null); };
+  obj.topDown = function () { futureAppliedFn("topDown", null); };
+  obj.bottomUp = function () { futureAppliedFn("bottomUp", null); };
 };
 
 

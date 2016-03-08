@@ -56,7 +56,7 @@ gulp.task('flash-copy', function () {
 
 gulp.task('js-copy', function () {
     return gulp.src('js/**/*.js')
-        .pipe((config.production) ? minifyJs() : util.noop())
+        .pipe((config.production) ? minifyJs({keep_fnames: true}) : util.noop())
         .pipe(gulp.dest(config.target + "/js"));
 });
 
