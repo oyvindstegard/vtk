@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Namespace;
@@ -43,7 +45,6 @@ import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyEvaluator;
-import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatter;
 import vtk.repository.resourcetype.property.PropertyEvaluationException;
@@ -59,6 +60,7 @@ import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 
 public class EvaluatorResolver {
+    private static Log logger = LogFactory.getLog(EvaluatorResolver.class);
 
     // XXX Reconsider this whole setup. No good implementation.
     private ExternalServiceInvoker serviceInvoker;
@@ -417,12 +419,7 @@ public class EvaluatorResolver {
     }
 
     private void setPropValue(Property property, Object value) {
-        if (property.getType() == Type.BINARY) {
-            // Store the value of the property
-
-            // Does this make sense now that JSON_BINARY is gone: ?
-            property.setBinaryValue(value.toString().getBytes(), "application/json");
-        } else if (!property.getDefinition().isMultiple()) {
+        if (!property.getDefinition().isMultiple()) {
             // If value is collection, pick first element
             if (value instanceof Collection<?>) {
                 Collection<?> c = (Collection<?>) value;

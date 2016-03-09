@@ -35,38 +35,37 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import vtk.text.tl.Parser.Directive;
 import vtk.text.tl.expr.Expression;
-import vtk.text.tl.expr.Function;
+import vtk.text.tl.expr.Expression.FunctionResolver;
 
 public class ListHandler implements DirectiveHandler {
 
-    private Set<Function> functions = null;
-    
-    public ListHandler(Set<Function> functions) {
-        this.functions = functions;
+    private FunctionResolver functionResolver = null;
+
+    public ListHandler(FunctionResolver functionResolver) {
+        this.functionResolver = functionResolver;
     }
 
     public String[] tokens() {
         return new String[] { "list", "endlist" };
     }
-    
+
     /**
-     * [list x varname] 
-     *    .. do stuff with varname: [val varname] 
+     * [list x varname]
+     *    .. do stuff with varname: [val varname]
      *    [if _first] first element [endif]
      *    [if _last] last element [endif]
      *    index: [val _index]
      *    size: [val _size]
      * [endlist]
-     * 
+     *
      */
     @Override
     public void directive(Directive directive, TemplateContext context) {
         String name = directive.name();
-        
+
         if ("list".equals(name)) {
             context.push(new DirectiveState(directive));
             return;
@@ -79,7 +78,7 @@ public class ListHandler implements DirectiveHandler {
             }
             List<Token> args = state.directive().args();
             if (args.size() < 2) {
-                context.error("List directive: too few arguments"); 
+                context.error("List directive: too few arguments");
                 return;
             }
             Token last = args.get(args.size() - 1);
@@ -88,7 +87,7 @@ public class ListHandler implements DirectiveHandler {
                 return;
             }
 
-            Expression expression = new Expression(this.functions, args.subList(0, args.size() - 1));
+            Expression expression = new Expression(functionResolver, args.subList(0, args.size() - 1));
             context.add(new ListNode(expression, (Symbol) last, state.nodes()));
         }
     }
@@ -104,6 +103,7 @@ public class ListHandler implements DirectiveHandler {
             this.nodeList = nodeList;
         }
 
+        @Override
         public boolean render(Context ctx, Writer out) throws Exception {
             Object evaluated = this.expression.evaluate(ctx);
             List<Object> elements = new ArrayList<Object>();
@@ -128,8 +128,8 @@ public class ListHandler implements DirectiveHandler {
                 }
             } else {
                 throw new RuntimeException(
-                        "List: Cannot iterate expression: " 
-                                + this.expression + ": result is not a list: " 
+                        "List: Cannot iterate expression: "
+                                + this.expression + ": result is not a list: "
                                 + evaluated);
             }
             execute(elements, ctx, out);

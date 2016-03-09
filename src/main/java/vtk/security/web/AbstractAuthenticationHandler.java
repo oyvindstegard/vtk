@@ -30,7 +30,6 @@
  */
 package vtk.security.web;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +39,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.Ordered;
+
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.InvalidPrincipalException;
@@ -84,8 +84,6 @@ public abstract class AbstractAuthenticationHandler implements
 
     private int order = Integer.MAX_VALUE;
     
-    private Set<?> categories = Collections.EMPTY_SET;
-
     public void setCache(SimpleCache<String, AuthResult> cache) {
         this.cache = cache;
     }
@@ -100,15 +98,6 @@ public abstract class AbstractAuthenticationHandler implements
 
     public int getOrder() {
         return this.order;
-    }
-
-    public void setCategories(Set<?> categories) {
-        this.categories = categories;
-    }
-    
-    @Override
-    public Set<?> getCategories() {
-        return this.categories;
     }
 
     public boolean isRecognizedAuthenticationRequest(HttpServletRequest req)

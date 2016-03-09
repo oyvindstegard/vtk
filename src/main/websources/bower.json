@@ -1,0 +1,9 @@
+{
+  "name": "vtk",
+  "version":  "0.0.1",
+  "private": true,
+  "dependencies": {
+    "webcomponentsjs": "^0.7.21",
+    "polymer": "Polymer/polymer#^1.3.0"
+  }
+}

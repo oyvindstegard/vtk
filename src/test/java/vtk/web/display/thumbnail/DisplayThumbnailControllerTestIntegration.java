@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 
 import org.jmock.Expectations;
 import org.junit.Before;
@@ -172,6 +173,16 @@ public class DisplayThumbnailControllerTestIntegration extends AbstractControlle
 
         @Override
         public void write(int b) throws IOException {
+        }
+
+        @Override
+        public boolean isReady() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setWriteListener(WriteListener writeListener) {
+            throw new UnsupportedOperationException();
         }
 
     }

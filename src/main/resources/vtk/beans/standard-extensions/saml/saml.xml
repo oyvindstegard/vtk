@@ -22,7 +22,6 @@
     saml.privateKeyPassword = <password of private key entry>
   -->
 
-
   <bean id="saml.authenticationHandler"
     class="vtk.security.web.saml.SamlAuthenticationHandler">
     <property name="identifier" value="saml:${saml.authenticationURL}"/>
@@ -60,8 +59,12 @@
         <entry key="Pragma" value="no-cache" />
       </map>
     </property>
-    <property name="categories" value="spCookie" />
   </bean>
+
+  <bean parent="spCookieAuthHandlers.builder">
+    <property name="arguments" ref="saml.authenticationHandler" />
+  </bean>
+
 
   <bean id="saml.abstractHandler" abstract="true">
     <property name="certificateManager" ref="saml.certificateManager"/>
@@ -83,8 +86,17 @@
     <property name="replayMinutes" value="60"/>
   </bean>
 
-  <bean id="saml.loginListeners" class="vtk.context.CategoryResolvingFactoryBean">
-    <property name="category" value="saml.loginListener" />
+  <bean id="saml.loginListeners" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+    <constructor-arg name="unique" value="true" />
+  </bean>
+
+  <bean id="saml.loginListenersBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="saml.loginListeners" />
+    <property name="targetMethod" value="add" />
   </bean>
 
 

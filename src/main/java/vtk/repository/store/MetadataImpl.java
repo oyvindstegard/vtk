@@ -30,6 +30,7 @@
  */
 package vtk.repository.store;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,8 +41,9 @@ import java.util.Set;
 /*
  * Default implementation of container for metadata
  */
-public class MetadataImpl implements Metadata {
+public class MetadataImpl implements Metadata, Serializable {
 
+    private static final long serialVersionUID = -8461011811966268434L;
     private Map<String, List<Object>> attributes = new HashMap<String, List<Object>>();
 
     public void addAttributeValue(String attribute, Object value) {

@@ -67,7 +67,7 @@
 
                   ${prepend}<a id="${item.label}" href="${item.url?html}">${item.title}</a>${append}
           
-                  </#recover>
+                  </#attempt>
               </li>
               <#assign count = count+1 />
           </#if>

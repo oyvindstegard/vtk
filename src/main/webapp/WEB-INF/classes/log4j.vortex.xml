@@ -51,7 +51,12 @@
   <logger name="org.springframework"><level value="warn" /></logger>
   <logger name="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"><level value="info" /></logger>
 
+  <logger name="org.springframework.boot"><level value="info" /></logger>
+
+  <logger name="org.springframework.transaction"><level value="info" /></logger>
   <logger name="org.springframework.transaction.support"><level value="info" /></logger>
+  <logger name="org.springframework.jdbc.datasource"><level value="info" /></logger>
+  <logger name="org.springframework.transaction.interceptor"><level value="info" /></logger>
   <logger name="java.sql"><level value="info" /></logger>
   <logger name="org.apache.commons.dbcp"><level value="info" /></logger>
   <logger name="vtk.repository.store.db"><level value="info" /></logger>

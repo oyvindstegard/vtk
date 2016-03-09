@@ -33,12 +33,16 @@ package vtk.repository.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.CheckIndex;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexCommit;
+import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.IndexSearcher;
@@ -47,10 +51,11 @@ import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.Version;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.util.threads.Mutex;
 
 /**
@@ -72,16 +77,19 @@ import vtk.util.threads.Mutex;
  *   <li>TODO complete me.
  * </ul>
  */
-public class IndexManager implements InitializingBean, DisposableBean {
+public class IndexManager implements DisposableBean {
     
     private final Log logger = LogFactory.getLog(IndexManager.class.getName());
     
     private File storageRootPath;
     private String storageId;
     private boolean batchIndexingMode = false;
+
     private int maxLockAcquireTimeOnShutdown = 30; // 30 seconds max to wait for mutex lock when shutting down
     private boolean forceUnlock = true;
-    private boolean closeAfterInit = false;
+    private int writeLockTimeoutSeconds = 30;
+    private int keepOldCommits = 0;
+    private boolean useSimpleLockFactory = false;
 
     // Lucene directory abstraction
     private volatile Directory directory;
@@ -98,26 +106,32 @@ public class IndexManager implements InitializingBean, DisposableBean {
     // Internal mutex lock backing the public locking functions of this class.
     private final Mutex lock = new Mutex();
 
-    /**
-     * Open the underlying index for writing and searching.
-     * @throws IOException in case of errors with index or storage.
-     */
-    public synchronized void open() throws IOException {
-        open(false);
-    }
 
     /**
      * Open the underlying index for writing and searching, optionally specify
      * if a new index should be created at the time of opening.
      * 
+     * <p>If index is already open when this method is called, a full close + open
+     * initialization will be performed, and this may interreupt ongoing searches.
+     * Use {@link #reopen(boolean) } instead in such cases, to avoid disrupting
+     * ongoing searches.
+     * 
      * @param createNewIndex if <code>true</code>, then any existing index at the
      * storage location is cleared and a new and empty index is created. Use
      * with caution.
+     * @param readOnly if <code>true></code>, then index is opened in read-only
+     * mode, and you will not be able to obtain an <code>IndexWriter</code> instance.
+     * If <code>createNewIndex</code> is <code>true</code> at the same time, an exception will be thrown.
+     * 
      * @throws IOException in case of errors with index or storage.
      */
-    public synchronized void open(boolean createNewIndex) throws IOException {
+    public synchronized void open(boolean createNewIndex, boolean readOnly) throws IOException {
         if (!isClosed()) {
-            return;
+            close();
+        }
+        
+        if (createNewIndex && readOnly) {
+            throw new IllegalArgumentException("Cannot create new index when opening read-only");
         }
         
         if (storageRootPath != null && storageId != null) {
@@ -126,12 +140,15 @@ public class IndexManager implements InitializingBean, DisposableBean {
             directory = makeDirectory(null);
         }
         
-        checkIndexLock(directory);
+        if (!readOnly) {
+            checkIndexLock(directory);
+        }
         
         initIndex(directory, createNewIndex);
 
-        writer = new IndexWriter(directory, newIndexWriterConfig());
-        
+        if (!readOnly) {
+            writer = new IndexWriter(directory, newIndexWriterConfig());
+        }
         // For Lucene NRT (Near Real Time) searching, the writer instance could be provided to
         // the searcher factory here. However, due to how we update documents, it is
         // undesirable to let searches see uncomitted index changes. So we simply
@@ -167,6 +184,57 @@ public class IndexManager implements InitializingBean, DisposableBean {
         // concurrent searching while this close method runs.
         searcherManager = null;
     }
+    
+    /**
+     * Reopen index, possibly with a change in read-only state.
+     * 
+     * <p>Note that this method never force-unlocks the index if <code>readOnly == false</code>.
+     * 
+     * <p>
+     * In all cases, reopening index will cause any existing writer to be
+     * committed and closed, and the latest changes will become visible by index
+     * searchers/readers obtained through this class.
+       * 
+     * <p>
+     * If index was closed, then this method will simply open the index like {@link #open(boolean, boolean)}
+     * , either in read-only or read-write mode.
+     * 
+     * <p>If index was open in read-write mode and is
+     * reopened in read-only mode, then the writer will be committed+closed and the existing
+     * index reader refreshed to reflect the latest state of the underlying index.
+     * 
+     * <p>If index was open in read-only mode, and is reopened in read-write mode, then
+     * an <code>IndexWriter</code> is instantiated.
+     * 
+     * 
+     * <p>If index is closed when this is called
+     * @param readOnly if <code>true</code>, reopen index read-only mode, otherwise reopen in normal mode.
+     * @throws IOException if an IO error occurs
+     */
+    public synchronized void reopen(boolean readOnly) throws IOException {
+        if (isClosed()) {
+            open(false, readOnly);
+        } else {
+            // Index is open, which means directory is not null.
+            if (writer != null) {
+                writer.close();
+                writer = null;
+            }
+            
+            if (searcherManager == null) {
+                searcherManager = new SearcherManager(directory, searcherFactory);
+            } else {
+                searcherManager.maybeRefreshBlocking();
+            }
+            
+            if (!readOnly) {
+                // Possible need more advanced lock handling here in clustered scenario
+                // We may need to wait a certain grace period, before we try claim index write lock,
+                // if a lock was detected. Force unlocking is not safe in a clustered scenario.
+                writer = new IndexWriter(directory, newIndexWriterConfig());
+            }
+        }
+    }
 
     /**
      * Check whether the index is currently closed.
@@ -174,6 +242,16 @@ public class IndexManager implements InitializingBean, DisposableBean {
      */
     public boolean isClosed() {
         return directory == null;
+    }
+
+    /**
+     * Check if the index is currently open and in read-only mode.
+     * 
+     * @return <code>true</code> if index is open and in read-only mode, <code>false</code>
+     * in all other cases.
+     */
+    public boolean isReadOnly() {
+        return ! isClosed() && writer == null;
     }
     
     /**
@@ -203,6 +281,9 @@ public class IndexManager implements InitializingBean, DisposableBean {
     public synchronized IndexWriter getIndexWriter() throws IOException {
         if (isClosed()) {
             throw new IOException("Index is closed");
+        }
+        if (isReadOnly()) {
+            throw new IOException("Index is opened in read-only-mode and no writer instance can be provided");
         }
         
         return writer;
@@ -260,7 +341,7 @@ public class IndexManager implements InitializingBean, DisposableBean {
         if (IndexWriter.isLocked(directory)) {
             // See if we should try to force-unlock it
             if (forceUnlock) {
-                logger.warn("Index directory is locked, forcing unlock.");
+                logger.warn("Index directory is locked, forcing unlock");
                 IndexWriter.unlock(directory);
             } else {
                 throw new IOException("Index directory " + directory
@@ -307,7 +388,7 @@ public class IndexManager implements InitializingBean, DisposableBean {
     
     private Directory makeDirectory(File path) throws IOException {
         if (path != null) {
-            return FSDirectory.open(path);
+            return FSDirectory.open(path, useSimpleLockFactory ? new SimpleFSLockFactory() : null);
         } else {
             logger.warn("No storage path provided, using volatile memory index.");
             return new RAMDirectory();
@@ -318,11 +399,35 @@ public class IndexManager implements InitializingBean, DisposableBean {
     private IndexWriterConfig newIndexWriterConfig() {
         IndexWriterConfig cfg = new IndexWriterConfig(Version.LATEST, new KeywordAnalyzer());
         
-        cfg.setMaxThreadStates(1); // We have at most one writing thread.
+        cfg.setMaxThreadStates(1); // We have at most one writing thread
         
         // Disable stored field compression, because it hurts performance
         // badly for our usage patterns:
         cfg.setCodec(new Lucene410CodecWithNoFieldCompression());
+        
+        cfg.setWriteLockTimeout(writeLockTimeoutSeconds*1000);
+
+        if (keepOldCommits > 0) {
+            cfg.setIndexDeletionPolicy(new IndexDeletionPolicy() {
+                @Override
+                public void onInit(List<? extends IndexCommit> commits) throws IOException {
+                    onCommit(commits);
+                }
+
+                @Override
+                public void onCommit(List<? extends IndexCommit> commits) throws IOException {
+                    final int toDelete = Math.max(commits.size() - keepOldCommits - 1, 0);
+                    int deleteCount = 0;
+                    for (IndexCommit commit : commits) {
+                        if (deleteCount++ < toDelete) {
+                            commit.delete();
+                        } else {
+                            return;
+                        }
+                    }
+                }
+            });
+        }
         
         // XXX switch to LogByteSizeMergePolicy if problems with (default) TieredMergePolicy arise.
 //        LogByteSizeMergePolicy mp = new LogByteSizeMergePolicy();
@@ -357,9 +462,10 @@ public class IndexManager implements InitializingBean, DisposableBean {
     
     
     /**
-     * Explicit locking. Should be acquired before doing any write or life cycle
-     * operations on index. This locking records no thread ownership and is
-     * present merely as a tool for the caller to ensure exclusive index access.
+     * Explicit usage mutex locking inside a single JVM. Should be acquired
+     * before doing any write or life cycle operations on index. This locking
+     * records no thread ownership and is present merely as a tool for the
+     * caller to ensure low level exclusive index access.
      */
     public boolean lockAcquire() {
         if (this.lock.lock()) {
@@ -423,44 +529,22 @@ public class IndexManager implements InitializingBean, DisposableBean {
     
     // Framework life-cycle
     @Override
-    public void afterPropertiesSet() throws IOException {
-        open();
-        if (closeAfterInit) {
+    public void destroy() throws Exception {
+        logger.info("Index shutdown, waiting for write lock on index '"
+                + this.storageId + "' ..");
+        if (lockAttempt(this.maxLockAcquireTimeOnShutdown * 1000)) {
+            logger.info("Got write lock on index '" + this.storageId
+                    + "', closing down.");
+
             close();
+        } else {
+            logger.warn("Failed to acquire the write lock on index '"
+                    + this.storageId + "' within "
+                    + " the time limit of " + this.maxLockAcquireTimeOnShutdown
+                    + " seconds, index might be corrupted.");
         }
     }
-    
-    // Framework life-cycle
-    @Override
-    public void destroy() throws Exception {
-       logger.info("Index shutdown, waiting for write lock on index '"
-               + this.storageId + "' ..");
-       if (lockAttempt(this.maxLockAcquireTimeOnShutdown * 1000)) {
-           logger.info("Got write lock on index '" + this.storageId
-                   + "', closing down.");
-           
-           close();
-       } else {
-           logger.warn("Failed to acquire the write lock on index '"
-              + this.storageId + "' within "
-              + " the time limit of " + this.maxLockAcquireTimeOnShutdown 
-              + " seconds, index might be corrupted.");
-       }
-    }
-    
-    /**
-     * Set whether the underlying index should be explicitly closed
-     * after the <em>first</em> initialization is complete. Can be used for
-     * index instances you don't want to have open before it is  needed.
-     * Such an instance must be initialized again before it can be used
-     * (by calling {@link #open() }). 
-     * @param closeAfterInit <code>true</code> if index should be closed after
-     * initialization is complete.
-     */
-    public void setCloseAfterInit(boolean closeAfterInit) {
-        this.closeAfterInit = closeAfterInit;
-    }
-    
+
     /**
      * Set the {@link SearcherFactory} to be used for creating new {@link IndexSearcher}
      * instances. (Provide a factory that does warmup for better performance
@@ -504,10 +588,49 @@ public class IndexManager implements InitializingBean, DisposableBean {
     }
 
     /**
+     * Force unlock cannot be safely used in a clustered environment.
      * @param forceUnlock the forceUnlock to set
      */
     public void setForceUnlock(boolean forceUnlock) {
         this.forceUnlock = forceUnlock;
     }
     
+    /**
+     * Set limit for how long we wait to obtain Lucene write lock when opening
+     * in read-write mode.
+     * @param writeLockTimeoutSeconds 
+     */
+    public void setWriteLockTimeoutSeconds(int writeLockTimeoutSeconds) {
+        this.writeLockTimeoutSeconds = writeLockTimeoutSeconds;
+    }
+    
+    /**
+     * Needs to be set to <code>true</code> if on NFS.
+     * @param useSimpleLockFactory 
+     */
+    public void setUseSimpleLockFactory(boolean useSimpleLockFactory) {
+        this.useSimpleLockFactory = useSimpleLockFactory;
+    }
+    
+    /**
+     * Set how many old commits should be kept in index. The latest commit is
+     * never affected and comes in addtition to the number of old commits specified
+     * here.
+     *
+     * <p>
+     * The default value is 0, which means that only the most recent commit is
+     * kept. However, on shared file systems like NFS, it is necessary to
+     * additionally keep some old commits around, so that searchers reading
+     * index from older points in time will not fail.
+     *
+     * @param keepOldCommits the number of commits to keep. 
+     */
+    public void setKeepOldCommits(int keepOldCommits) {
+        this.keepOldCommits = keepOldCommits >= 0 ? keepOldCommits : 0;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + storageId + ")";
+    }
 }

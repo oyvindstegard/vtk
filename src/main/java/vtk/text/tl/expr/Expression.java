@@ -31,12 +31,12 @@
 package vtk.text.tl.expr;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import vtk.text.tl.Context;
 import vtk.text.tl.Literal;
@@ -44,68 +44,68 @@ import vtk.text.tl.Symbol;
 import vtk.text.tl.Token;
 
 /**
- * Expression parser and evaluator. 
- * 
- * Takes a list of {@link Token tokens} as constructor argument and 
- * returns a "compiled" expression that can be later evaluated 
+ * Expression parser and evaluator.
+ *
+ * Takes a list of {@link Token tokens} as constructor argument and
+ * returns a "compiled" expression that can be later evaluated
  * against a given {@link Context context}.
- * 
+ *
  * The expression grammar is defined as follows:
  * <pre>
  * expression ::= logical-expression ;
- * 
+ *
  * logical-expression ::= relational-expression { logical-operator relational-expression } ;
- *     
- * relational-expression ::= 
- *    inv-expression 
+ *
+ * relational-expression ::=
+ *    inv-expression
  *    | simple-expression { relational-operator simple-expression } ;
- * 
+ *
  * inv-expression ::= "!" relational-expression ;
- * 
+ *
  * simple-expression ::= operand { additive-operator operand } ;
- * 
+ *
  * operand ::= term { accessor }  ;
- * 
+ *
  * accessor ::=
  *    "." function-call
  *    | "." field-accessor ;
- * 
+ *
  * field-accessor = symbol | literal ;
- * 
+ *
  * term ::= factor { multiplicative-operator factor } ;
- * 
- * factor ::= 
+ *
+ * factor ::=
  *    "(" logical-expression ")"
  *    | list
- *    | function-call 
+ *    | function-call
  *    | map
  *    | variable
  *    | literal ;
- * 
+ *
  * list ::= "#" "(" [ list-body ] ")" ;
- * 
+ *
  * list-body ::= logical-expression { "," logical-expression } ;
- * 
+ *
  * function-call ::=  symbol "(" [ arg-list ] ")" ;
- * 
+ *
  * method-call ::= symbol "." symbol "(" [ arg-list ] ")" ;
- * 
+ *
  * arg-list ::= logical-expression { "," logical-expression } ;
- * 
+ *
  * accessor ::= symbol "." ;
- * 
- * map ::= 
+ *
+ * map ::=
  *    "{" ":" "}"
  *    | "{" map-entry { "," map-entry } "}";
- *  
+ *
  * map-entry ::= logical-expression ":" logical-expression ;
- *  
+ *
  * logical-operator ::= "&&" | "||" ;
- * 
+ *
  * relational-operator ::=  "=" | "!=" | "<" | ">" | "<=" | ">=" "~" ;
- * 
+ *
  * additive-operator ::=  "+" | "-" ;
- * 
+ *
  * multiplicative-operator ::=  "*" | "/" ;
  * </pre>
  */
@@ -132,16 +132,16 @@ public class Expression {
     private static final Symbol MATCH = new Symbol("~");
     private static final Symbol ACCESSOR = new Symbol(".");
 
-    private static final Symbol[] LOGICAL_OPERATORS = 
+    private static final Symbol[] LOGICAL_OPERATORS =
         new Symbol[] { AND, OR };
-    
-    private static final Symbol[] RELATIONAL_OPERATORS = 
+
+    private static final Symbol[] RELATIONAL_OPERATORS =
         new Symbol[] { EQ, NEQ, LT, GT, MATCH  };
 
-    private static final Symbol[] ADDITIVE_OPERATORS = 
+    private static final Symbol[] ADDITIVE_OPERATORS =
         new Symbol[] { PLUS, MINUS };
 
-    private static final Symbol[] MULTIPLICATIVE_OPERATORS = 
+    private static final Symbol[] MULTIPLICATIVE_OPERATORS =
         new Symbol[] { MULTIPLY, DIVIDE };
 
     private enum Wildcard {
@@ -166,36 +166,32 @@ public class Expression {
         ops.put(OR, new Or(OR));
         OPERATORS = Collections.unmodifiableMap(new HashMap<Symbol, Operator>(ops));
     }
-    
+
     private FunctionResolver functionResolver;
     private List<Token> tokens;
     private int pos = 0;
     private ExpressionNode exp;
 
     public Expression(List<Token> tokens) {
-        this(null, tokens);
+        this(new FunctionResolver(), tokens);
     }
 
-    public Expression(Set<Function> functions, List<Token> tokens) {        
-       this.tokens = tokens;
-       this.functionResolver = new FunctionResolver();
-       if (functions != null) {
-           for (Operator f : functions) {
-               this.functionResolver.addFunction(f);
-           }
-       }
-       this.exp = logicalExpression();
-       if (cur() != null) {
-           throw new IllegalArgumentException("Extra tokens at position " 
-                   + pos + " in expression: " + this.tokens + ": " + cur());
-       }
+    public Expression(FunctionResolver functionResolver, List<Token> tokens) {
+        this.functionResolver = functionResolver;
+        this.tokens = tokens;
+        this.exp = logicalExpression();
+        if (cur() != null) {
+            throw new IllegalArgumentException("Extra tokens at position "
+                    + pos + " in expression: " + this.tokens + ": " + cur());
+        }
+
     }
 
     public Object evaluate(Context ctx) {
         return this.exp.eval(ctx);
     }
-    
-    
+
+
     private ExpressionNode logicalExpression() {
         ExpressionNode node = relationalExpression();
         while (lookingAt(LOGICAL_OPERATORS)) {
@@ -432,7 +428,7 @@ public class Expression {
         this.pos++;
         return (Symbol) cur;
     }
-    
+
     private Literal readLiteral() {
         Token cur = cur();
         if (cur == null) {
@@ -469,14 +465,14 @@ public class Expression {
         }
         return false;
     }
-    
+
     private Token lookahead(int offset) {
         int idx = this.pos + offset;
         if (idx >= this.tokens.size()) {
             return null;
         }
         return this.tokens.get(idx);
-    }    
+    }
 
     private static class InfixOperation implements ExpressionNode {
         private ExpressionNode left;
@@ -600,17 +596,17 @@ public class Expression {
         public Object eval(Context ctx) {
             return this.accessor.eval(ctx, this.object);
         }
-        
+
         @Override
         public String toString() {
             return this.object + "." + this.field;
         }
     }
 
-    private static class FunctionResolver {
+    public static class FunctionResolver {
         private static Symbol TYPEOF = new Symbol("typeof");
         private Map<Symbol, Operator> functions = new HashMap<Symbol, Operator>();
-        
+
         public FunctionResolver() {
             functions.put(TYPEOF,  new Operator(TYPEOF) {
                 @Override
@@ -619,7 +615,7 @@ public class Expression {
                         throw new IllegalStateException(TYPEOF + ": takes 1 argument");
                     }
                     ExpressionNode arg = args[0];
-                    
+
                     if (arg instanceof VariableNode) {
                         VariableNode node = (VariableNode) arg;
                         if (functions.containsKey(node.symbol)) {
@@ -661,18 +657,29 @@ public class Expression {
             if (symbol == null) {
                 throw new IllegalArgumentException("Function's symbol is NULL");
             }
-            if (this.functions.containsKey(symbol)) {
-                throw new IllegalArgumentException("Cannot re-define " + symbol.getSymbol());
-            }
+            // if (this.functions.containsKey(symbol)) {
+            //     throw new IllegalArgumentException("Cannot re-define " + symbol.getSymbol());
+            // }
             this.functions.put(symbol, function);
         }
+
+        public void addAll(Collection<Function> functions) {
+            for (Function f: functions) {
+                addFunction(f);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(" + functions + ")";
+        }
     }
-    
+
     private static class FunctionCall implements ExpressionNode {
         private Symbol name;
         private List<ExpressionNode> args = null;
         private FunctionResolver resolver;
-        
+
         public FunctionCall(Symbol name, FunctionResolver resolver) {
             this.name = name;
             this.resolver = resolver;

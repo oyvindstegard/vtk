@@ -7,11 +7,6 @@
   <bean id="editService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-9800" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="disable-csrf-checking"><value type="java.lang.Boolean">true</value></entry>
@@ -37,6 +32,10 @@
       </list>
     </property>
     <property name="handler" ref="xmlEditHandler" />
+  </bean>
+
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editService" />
   </bean>
 
   <bean id="editTabHelpURLServiceInterceptor"
@@ -158,7 +157,8 @@
   <bean id="editTransformerManager" class="vtk.xml.TransformerManager">
     <property name="alwaysCompile" value="true" />
     <property name="stylesheetReferenceResolvers" ref="editXslStylesheetResolvers" />
-     <property name="compilationURIResolvers" ref="standardXslCompilationResolvers" />
+    <property name="compilationURIResolvers" value="#{{${xsltCompilationURIResolvers}}}" />
+     <!--property name="compilationURIResolvers" ref="standardXslCompilationResolvers" /-->
      <property name="transformationURIResolvers">
        <list>
          <ref bean="xsltTransformationRepositoryURIResolver" />

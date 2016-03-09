@@ -1,0 +1,51 @@
+Integration of CKEditor in VTK
+
+----------------------------------------------
+
+http://www.ckeditor.com/
+
+For the CKEditor license, see
+
+ckeditor-org/ckeditor-<version>/license.txt
+
+----------------------------------------------
+
+
+This directory contains three sub-directories:
+
+  o ckeditor-org: the original distribution(s) of FCKEditor
+  o ckeditor-modifications: the local source modifications
+  o ckeditor-build: the resulting "merge" between
+    ckeditor-org/<ck-version> and ckeditor-modifications.
+
+All local modifications should be made in ckeditor-modifications and
+then copied to ckeditor-build (or the other way around :)
+
+No modifications should be made in ckeditor-org.
+
+Check that /plugins/table/dialogs/table.js is not updated or you have to delete it from modifications,
+and add the modifications to the new version after, or it will be out-of-sync.
+
+Upgrading to a new version:
+
+cd src/main/websources/CKeditor
+wget http://.../CKeditor_<version>.zip
+unzip CKeditor_<version>.zip
+mv ckeditor ckeditor-org/ckeditor-<version>
+rsync -r --delete -ptv ckeditor-org/ckeditor-<version>/ ckeditor-build
+rsync -r -ptv ckeditor-modifications/ ckeditor-build
+
+
+Obs: New image2-plugin requires that this is exact code is inserted into ckeditor.js in ckeditor-build/
+CKEDITOR.plugins.div.getSurroundDiv(a).$.className.indexOf("vrtx-img-container ")!==-1||CKEDITOR.plugins.div.getSurroundDiv(a).$.className.indexOf("vrtx-container ")!==-1?{removediv:CKEDITOR.TRISTATE_OFF}:
+
+Directly after this code-snippet (copy/paste the line above directly after "?"):
+b.isReadOnly()?null:CKEDITOR.plugins.div.getSurroundDiv(a)?
+
+(otherwise need to build plugins/div/plugin.js into ckeditor.js)
+
+If it doesn't work (which can mean the language-files have been updated in new version)
+you have to copy mediaembed{} from the language-files en.js and no.js: 
+
+  o ckeditor-org/<ck-version>/lang/ => ckeditor-modifications/lang/
+  o ckeditor-org/<ck-version>/_source/lang/ => ckeditor-modifications/_source/lang/

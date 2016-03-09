@@ -24,7 +24,7 @@
 
 
   <!-- Define AOP pointcut for the transactional methods as well: -->
-  <aop:config>
+  <aop:config proxy-target-class="true">
     <aop:pointcut id="transactionalAnnotationPointcut"
                   expression="@annotation(org.springframework.transaction.annotation.Transactional)"/>
 
@@ -202,8 +202,6 @@
   <bean id="htmlInfoContentFactory" class="vtk.repository.content.HtmlInfoContentFactory" />
 
   <bean id="jsonObjectContentFactory" class="vtk.repository.content.JSONObjectContentFactory" />
-
-  <bean id="pdfContentFactory" class="vtk.repository.content.PDFContentFactory" />
 
   <bean id="authorizationManager" class="vtk.repository.AuthorizationManager">
     <property name="principalManager" ref="principalManager" />

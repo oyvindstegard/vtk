@@ -36,7 +36,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import vtk.context.Categorizable;
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.Principal;
@@ -52,7 +51,7 @@ import vtk.security.Principal;
  * Implementors of this interface must supply an authentication challenge that is used when authentication is required.
  * In addition, they should provide a way of logging out authenticated users, if possible.
  */
-public interface AuthenticationHandler extends Categorizable {
+public interface AuthenticationHandler {
 
     public String getIdentifier();
     

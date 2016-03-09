@@ -111,33 +111,5 @@ public class WildcardTermFilter extends Filter {
         
         return null;
     }
-        
-
-// Old Lucene3-impl:
-//    public DocIdSet getDocIdSet(IndexReader reader) throws IOException {
-//        OpenBitSet docIdSet = new OpenBitSet(reader.maxDoc());
-//        String fieldName = this.wildcardTerm.field();
-//        WildcardTermEnum tenum = new WildcardTermEnum(reader, this.wildcardTerm);
-//        TermDocs tdocs = reader.termDocs();
-//        try {
-//            do {
-//                Term term = tenum.term();
-//                if (term != null && term.field() == fieldName) { // interned string comparison
-//                    tdocs.seek(tenum);
-//
-//                    while (tdocs.next()) {
-//                        docIdSet.fastSet(tdocs.doc());
-//                    }
-//                } else {
-//                    break;
-//                }
-//            } while (tenum.next());
-//        } finally {
-//            tenum.close();
-//            tdocs.close();
-//        }
-//
-//        return docIdSet;
-//    }
     
 }

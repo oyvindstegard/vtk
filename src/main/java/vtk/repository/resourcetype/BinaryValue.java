@@ -31,8 +31,6 @@
 
 package vtk.repository.resourcetype;
 
-import java.io.Serializable;
-
 import vtk.repository.ContentStream;
 import vtk.repository.store.DataAccessException;
 
@@ -40,7 +38,7 @@ import vtk.repository.store.DataAccessException;
  * Represents a binary value.
  * 
  */
-public interface BinaryValue extends Serializable {
+public interface BinaryValue {
 
     /**
      * Get binary value content type.

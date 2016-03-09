@@ -54,6 +54,7 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.util.WebUtils;
 
+import vtk.context.ApplicationInitializedEvent;
 import vtk.context.BaseContext;
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
@@ -194,18 +195,22 @@ public class VTKServlet extends DispatcherServlet {
         initRepositoryContextInitializer();
         initErrorHandlers();
         initGlobalHeaders();
+        getWebApplicationContext()
+            .publishEvent(new ApplicationInitializedEvent(this));
     }
     
     private void initSecurityInitializer() {
-        this.securityInitializer = (SecurityInitializer)
-            getWebApplicationContext().getBean(SECURITY_INITIALIZER_BEAN_NAME, SecurityInitializer.class);
+        this.securityInitializer = getWebApplicationContext()
+            .getBean(SECURITY_INITIALIZER_BEAN_NAME, SecurityInitializer.class);
 
-        this.logger.info("Security initializer set up successfully: " + this.securityInitializer);
+        this.logger.info("Security initializer set up successfully: " 
+                + this.securityInitializer);
     }
 
     private void initRequestContextInitializer() {
-        this.requestContextInitializer = (RequestContextInitializer) 
-            getWebApplicationContext().getBean(REQUEST_CONTEXT_INITIALIZER_BEAN_NAME, RequestContextInitializer.class);
+        this.requestContextInitializer = getWebApplicationContext()
+                .getBean(REQUEST_CONTEXT_INITIALIZER_BEAN_NAME, 
+                        RequestContextInitializer.class);
         
         this.logger.info("Request context initializer " + 
                 this.requestContextInitializer + " set up successfully");
@@ -213,12 +218,13 @@ public class VTKServlet extends DispatcherServlet {
     
     private void initRepositoryContextInitializer() {
         try {
-            this.repositoryContextInitializer = (RepositoryContextInitializer) 
-                getWebApplicationContext().getBean(REPOSITORY_CONTEXT_INITIALIZER_BEAN_NAME, 
-                        RepositoryContextInitializer.class);
+            this.repositoryContextInitializer = getWebApplicationContext()
+                .getBean(REPOSITORY_CONTEXT_INITIALIZER_BEAN_NAME, 
+                         RepositoryContextInitializer.class);
             this.logger.info("Repository context initializer " + 
                     this.repositoryContextInitializer + " set up successfully");
-        } catch (NoSuchBeanDefinitionException e) {
+        }
+        catch (NoSuchBeanDefinitionException e) {
             // Ok
         }
     }
@@ -226,9 +232,8 @@ public class VTKServlet extends DispatcherServlet {
     private void initRequestFilters() {
         RequestFilter[] filterArray = null;
         try {
-            filterArray = (RequestFilter[]) 
-            getWebApplicationContext().getBean(
-                    REQUEST_FILTERS_BEAN_NAME, RequestFilter[].class);
+            filterArray = getWebApplicationContext()
+                .getBean(REQUEST_FILTERS_BEAN_NAME, RequestFilter[].class);
         } catch (NoSuchBeanDefinitionException e) { }
         
         if (filterArray == null || filterArray.length == 0) {
@@ -244,9 +249,8 @@ public class VTKServlet extends DispatcherServlet {
     private void initResponseFilters() {
         ResponseFilter[] filterArray = null;
         try {
-            filterArray =
-                (ResponseFilter[]) getWebApplicationContext().getBean(
-                        RESPONSE_FILTERS_BEAN_NAME, ResponseFilter[].class);
+            filterArray = getWebApplicationContext()
+                .getBean(RESPONSE_FILTERS_BEAN_NAME, ResponseFilter[].class);
         } catch (NoSuchBeanDefinitionException e) { }
         
         if (filterArray == null || filterArray.length == 0) {

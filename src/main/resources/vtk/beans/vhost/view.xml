@@ -214,21 +214,26 @@
     <property name="matchAssertions" value="true" />
   </bean>
 
-  <bean id="tabsProvider" 
+  <bean id="manage.tabsProvider"
     class="vtk.web.view.components.menu.DefaultListMenuProvider">
-    <constructor-arg ref="tabServicesFactory" />
+    <constructor-arg ref="manage.tabServicesFactory" />
     <constructor-arg value="tabs"/>
     <property name="matchAncestorServices" value="true" />
   </bean>
 
-  <bean id="tabServicesFactory"
-    class="vtk.context.CategoryResolvingFactoryBean">
-    <property name="category" value="tabMenu" />
-    <property name="comparator">
+  <bean id="manage.tabServicesFactory" class="vtk.util.SortedCollection">
+    <constructor-arg>
       <bean class="vtk.web.service.ServiceAttributeComparator">
         <property name="attributeName" value="tabOrder" />
       </bean>
-    </property>
+    </constructor-arg>
+    <constructor-arg name="unique" value="true" />
+  </bean>
+
+  <bean id="manage.tabsBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="manage.tabServicesFactory" />
+    <property name="targetMethod" value="add" />
   </bean>
 
   <bean id="resourceContextProvider" 
@@ -258,27 +263,26 @@
     </property>
   </bean>
 
-  <bean id="lockUnlockActionsProvider" 
-    class="vtk.web.view.components.menu.DefaultListMenuProvider">
-    <constructor-arg ref="lockActionServicesFactory" />
-    <constructor-arg value="lockUnlockActions" />
-  </bean>
-
-  <bean id="lockActionServicesFactory"
-    class="vtk.context.CategoryResolvingFactoryBean" parent="ordered">
-    <property name="category" value="lockUnlockAction" />
-  </bean>
-  
+  <!--
   <bean id="readPermissionsProvider" 
     class="vtk.web.view.components.menu.DefaultListMenuProvider">
     <constructor-arg ref="readPermissionFactory" />
     <constructor-arg value="readPermissions" />
   </bean>
-  
-  <bean id="readPermissionFactory"
-    class="vtk.context.CategoryResolvingFactoryBean" parent="ordered">
-    <property name="category" value="readPermission" />
+
+  <bean id="readPermissionFactory" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
+
+  <bean id="readPermissionFactory.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="readPermissionFactory" />
+    <property name="targetMethod" value="add" />
+  </bean>
+  -->
   
   <bean id="publishProvider" 
     class="vtk.web.view.components.menu.DefaultListMenuProvider">
@@ -286,9 +290,17 @@
     <constructor-arg value="publish" />
   </bean>
   
-  <bean id="publishFactory"
-    class="vtk.context.CategoryResolvingFactoryBean" parent="ordered">
-    <property name="category" value="publish" />
+  <bean id="publishFactory" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+    <constructor-arg name="unique" value="true" />
+  </bean>
+
+  <bean id="publishFactory.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="publishFactory" />
+    <property name="targetMethod" value="add" />
   </bean>
 
   <bean id="viewBreadCrumbProvider"
@@ -352,6 +364,7 @@
          <entry key="VRTX_LINK_CONSTRUCTOR" value-ref="linkConstructor" />
        </map>
      </property>
+     <property name="preferFileSystemAccess" value="${freemarker.templateLoading.preferFileSystemAccess}"/>
    </bean>
      
    <bean id="dateValueFormatter" class="vtk.repository.resourcetype.DateValueFormatter" />

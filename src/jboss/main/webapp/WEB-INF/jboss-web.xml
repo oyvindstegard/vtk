@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Vortex instances generally have '/' root context on a virtualhost. -->
+<jboss-web>
+  <context-root>/</context-root>
+</jboss-web>

@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, 2007, University of Oslo, Norway
+/* Copyright (c) 2006, 2007, 2016, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import vtk.cluster.ClusterAware;
+import vtk.cluster.ClusterRole;
 import vtk.repository.store.DataAccessor;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
@@ -54,30 +57,38 @@ import vtk.security.roles.RoleManager;
 /**
  * Manager for authorizing principals at specific authorization level.
  */
-public final class AuthorizationManager {
+public final class AuthorizationManager implements ClusterAware {
 
     private RoleManager roleManager;
     private PrincipalManager principalManager;
     private DataAccessor dao;
-    
+
+    private Optional<ClusterRole> clusterRole = Optional.empty();
+
     private List<Path> readOnlyRoots = Collections.EMPTY_LIST;
 
-    private Map<Privilege, List<Pattern>> usersBlacklist = 
+    private Map<Privilege, List<Pattern>> usersBlacklist =
             new EnumMap<Privilege, List<Pattern>>(Privilege.class);
     private Map<Privilege, List<Pattern>> groupsBlacklist =
             new EnumMap<Privilege, List<Pattern>>(Privilege.class);
+
+
+    @Override
+    public void roleChange(ClusterRole role) {
+        this.clusterRole = Optional.of(role);
+    }
 
     /**
      * Map of a single privilege P to the set of super privileges A{P,..} in which
      * all privileges shall imply permissions equal to or broader than P. The
      * set A always includes the privilege P itself.
      */
-    private static final Map<Privilege, Privilege[]> PRIVILEGE_HIERARCHY; 
-                           
+    private static final Map<Privilege, Privilege[]> PRIVILEGE_HIERARCHY;
+
     static {
-        PRIVILEGE_HIERARCHY = 
+        PRIVILEGE_HIERARCHY =
                 new EnumMap<Privilege, Privilege[]>(Privilege.class);
-        
+
         PRIVILEGE_HIERARCHY.put(Privilege.READ_PROCESSED, new Privilege[] {
                 Privilege.READ_PROCESSED,
                 Privilege.READ,
@@ -880,6 +891,11 @@ public final class AuthorizationManager {
         if (this.roleManager.hasRole(principal, RoleManager.Role.ROOT)) {
             return;
         }
+        if (clusterRole.isPresent()) {
+            if (clusterRole.get() == ClusterRole.SLAVE) {
+                throw new ReadOnlyException();
+            }
+        }
         if (isReadOnly(path, forDelete)) {
             throw new ReadOnlyException();
         }
@@ -1023,4 +1039,5 @@ public final class AuthorizationManager {
     public void setDao(DataAccessor dao) {
         this.dao = dao;
     }
+
 }

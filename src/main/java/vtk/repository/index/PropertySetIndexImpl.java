@@ -31,7 +31,9 @@
 package vtk.repository.index;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +41,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DocsEnum;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexableField;
@@ -50,7 +51,12 @@ import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
+import vtk.cluster.ClusterAware;
+import vtk.cluster.ClusterContext;
+import vtk.cluster.ClusterRole;
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
@@ -62,17 +68,40 @@ import vtk.repository.index.mapping.ResourceFields;
 /**
  * <code>PropertySet</code> index using Lucene.
  */
-public class PropertySetIndexImpl implements PropertySetIndex {
-   
+public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, InitializingBean {
+
     Log logger = LogFactory.getLog(PropertySetIndexImpl.class);
 
-    private IndexManager index; 
+    private IndexManager index;
     private DocumentMapper documentMapper;
+    private boolean closeAfterInit = false;
 
-    @SuppressWarnings("unchecked")
+    private Optional<ClusterContext> clusterContext = Optional.empty();
+    private Optional<ClusterRole> clusterRole = Optional.empty();
+    private ClusterRole initClusterRole = ClusterRole.MASTER;
+    
+    @Override
+    public void afterPropertiesSet() throws IOException {
+        index.open(false, readOnly());
+        if (closeAfterInit) {
+            index.close();
+        }
+    }
+
+    private boolean readOnly() {
+        return clusterRole.orElse(initClusterRole) == ClusterRole.SLAVE;
+    }
+    
+    private void checkWriteAccess() {
+        if (readOnly()) {
+            throw new IndexException("Cannot write to index when cluster role is SLAVE");
+        }
+    }
+
     @Override
     public void addPropertySet(PropertySet propertySet, Acl acl) throws IndexException {
-
+        checkWriteAccess();
+        
         // NOTE: Write-locking should be done above this level.
         // This is needed to ensure the possibility of efficiently batching
         // together operations without interruption.
@@ -97,6 +126,7 @@ public class PropertySetIndexImpl implements PropertySetIndex {
     
     @Override
     public void updatePropertySet(PropertySet propertySet, Acl acl) throws IndexException {
+        checkWriteAccess();
         
         try {
             Term uriTerm = new Term(ResourceFields.URI_FIELD_NAME, 
@@ -114,7 +144,8 @@ public class PropertySetIndexImpl implements PropertySetIndex {
 
     @Override
     public void deletePropertySetTree(Path rootUri) throws IndexException {
-
+        checkWriteAccess();
+        
         try {
             IndexWriter writer = this.index.getIndexWriter();
             writer.deleteDocuments(new Term(ResourceFields.URI_FIELD_NAME, rootUri.toString()), 
@@ -127,6 +158,8 @@ public class PropertySetIndexImpl implements PropertySetIndex {
 
     @Override
     public void deletePropertySet(Path uri) throws IndexException {
+        checkWriteAccess();
+        
         try {
             Term uriTerm = new Term(ResourceFields.URI_FIELD_NAME, uri.toString());
             this.index.getIndexWriter().deleteDocuments(uriTerm);
@@ -180,45 +213,14 @@ public class PropertySetIndexImpl implements PropertySetIndex {
                 }
             }
         }
-        
-// Old Lucene3-code:        
-//        TermEnum termEnum = null;
-//        TermDocs termDocs = null;
-//        int count = 0;
-//
-//        try {
-//            IndexReader reader = this.indexAccessor.getIndexReader();
-//            Term start = new Term(FieldNames.URI_FIELD_NAME, "");
-//            String enumField = start.field();
-//            termEnum = reader.terms(start);
-//            termDocs = reader.termDocs(start);
-//
-//            while (termEnum.term() != null
-//                    && termEnum.term().field() == enumField) { // Interned String comparison
-//                termDocs.seek(termEnum);
-//                while (termDocs.next()) {
-//                    ++count;
-//                }
-//                termEnum.next();
-//            }
-//        } catch (IOException io) {
-//            throw new IndexException(io);
-//        } finally {
-//            try {
-//                termEnum.close();
-//                termDocs.close();
-//            } catch (IOException io) {
-//            }
-//        }
-//
-//        return count;
     }
 
     @Override
     public void clear() throws IndexException {
+        checkWriteAccess();
+        
         try {
-            this.index.close();
-            this.index.open(true);
+            this.index.open(true, false);
         } catch (IOException io) {
             throw new IndexException(io);
         }
@@ -269,10 +271,16 @@ public class PropertySetIndexImpl implements PropertySetIndex {
 
     @Override
     public void commit() throws IndexException {
+        checkWriteAccess();
+
         try {
             this.index.commit();
         } catch (IOException io) {
             throw new IndexException(io);
+        }
+        if (clusterContext.isPresent()) {
+            Reinitialize initMessage = new Reinitialize();
+            clusterContext.get().clusterMessage(initMessage);
         }
     }
 
@@ -292,8 +300,7 @@ public class PropertySetIndexImpl implements PropertySetIndex {
     public void reinitialize() throws IndexException {
         try {
             logger.info("Re-initializing index ..");
-            this.index.close();
-            this.index.open();
+            this.index.reopen(readOnly());
         } catch (IOException io) {
             throw new IndexException(io);
         }
@@ -302,6 +309,8 @@ public class PropertySetIndexImpl implements PropertySetIndex {
 
     @Override
     public void addIndexContents(PropertySetIndex propSetIndex) throws IndexException {
+        checkWriteAccess();
+
         if (!(propSetIndex instanceof PropertySetIndexImpl)) {
             throw new IllegalArgumentException(
                     "Only 'vtk.repository.query.PropertySetIndexImpl' instances are supported.");
@@ -353,6 +362,8 @@ public class PropertySetIndexImpl implements PropertySetIndex {
      */
     @Override
     public void optimize() throws IndexException {
+        checkWriteAccess();
+        
         try {
             this.index.getIndexWriter().forceMerge(1, true);
             this.index.getIndexWriter().commit();
@@ -393,4 +404,73 @@ public class PropertySetIndexImpl implements PropertySetIndex {
         this.index = index;
     }
 
+    /**
+     * Set whether underlying index should be closed after first initialization.
+     * 
+     * <p>This can free resources for index instances which are only for
+     * temporary use.
+     * @param closeAfterInit 
+     */
+    public void setCloseAfterInit(boolean closeAfterInit) {
+        this.closeAfterInit = closeAfterInit;
+    }
+
+    /**
+     * Set assumed initial cluster role upon index initialization. The initial
+     * role is assumed as long as no other role as been communicated by clustering
+     * framework.
+     */
+    public void setInitClusterRole(ClusterRole initClusterRole) {
+        if (initClusterRole == null) {
+            throw new IllegalArgumentException("Cluster role at init cannot be null");
+        }
+        this.initClusterRole = initClusterRole;
+    }
+    
+    @Override
+    public void roleChange(ClusterRole role) {
+        Optional<ClusterRole> prev = clusterRole;
+        try {
+            switch (role) {
+                case MASTER:
+                    this.clusterRole = Optional.of(role);
+                    logger.info("Switch to master mode, previous=" + prev);
+                    index.reopen(false);
+                    break;
+                case SLAVE:
+                    this.clusterRole = Optional.of(role);
+                    logger.info("Switch to slave mode, previous=" + prev);
+                    index.reopen(true);
+                    break;
+            }
+        } catch (IOException e) {
+            logger.warn("Error handling cluster state change: " + role, e);
+        }
+    }
+
+    @Override
+    public void clusterContext(ClusterContext context) {
+        this.clusterContext = Optional.of(context);
+        context.subscribe(Reinitialize.class);
+    }
+
+    @Override
+    public void clusterMessage(Object message) {
+        // XXX We shouldn't do unnecessary reinit here if we are the "source" of
+        //     thismessage (e.g MASTER node). Assuming that cluster messages
+        //     in general are not received by "self" node in the clustering framework.
+        if (message instanceof Reinitialize) {
+            try {
+                this.index.reopen(readOnly());
+            } catch (IOException io) {
+                throw new IndexException(io);
+            }
+
+        }
+    }
+
+    public static class Reinitialize implements Serializable {
+        private static final long serialVersionUID = -8599505901326886264L;
+        
+    }
 }

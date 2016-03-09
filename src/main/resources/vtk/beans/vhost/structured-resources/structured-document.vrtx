@@ -150,7 +150,7 @@ resourcetype structured-document {
     caption : (en : "Image caption", no : "Bildetekst", nn : "Bilettekst"),
     preview : (en : "Preview", no : "Forhåndsvisning", nn : "Førehandsvisning"),
     content : (en : "Content", no : "Innhold", nn : "Innhald"),
-    share-link : (en : "Share at...", no : "Del på...", nn : "Del på..."),
+    share-link : (en : "Share at ...", no : "Del på ...", nn : "Del på ..."),
     share-close : (en : "Close", no : "Lukk", nn : "Lukk"),
     publishedDate : (en : "Published", no :"Publisert", nn:"Publisert"),
     lastModifiedDate : (en : "Last modified", no : "Sist endret", nn : "Sist endra"),

@@ -34,13 +34,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -52,6 +51,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
@@ -90,11 +90,9 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
     private Map<String, String> staticHeaders = new HashMap<String, String>();
 
-    private Set<LoginListener> loginListeners;
+    private Collection<LoginListener> loginListeners;
 
     private PrincipalFactory principalFactory;
-
-    private Set<?> categories = Collections.EMPTY_SET;
 
     private static Log logger = LogFactory.getLog(SamlAuthenticationHandler.class);
 
@@ -440,7 +438,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         this.postHandler = postHandler;
     }
 
-    public void setLoginListeners(Set<LoginListener> loginListeners) {
+    public void setLoginListeners(Collection<LoginListener> loginListeners) {
         this.loginListeners = loginListeners;
     }
 
@@ -452,6 +450,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         return this.identifier;
     }
 
+    @Override
     public String toString() {
         return this.getClass().getName() + ":" + this.identifier;
     }
@@ -460,15 +459,6 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         for (String header : this.staticHeaders.keySet()) {
             response.setHeader(header, this.staticHeaders.get(header));
         }
-    }
-
-    public void setCategories(Set<?> categories) {
-        this.categories = categories;
-    }
-
-    @Override
-    public Set<?> getCategories() {
-        return this.categories;
     }
 
     public void setiECookieStore(IECookieStore iECookieStore) {

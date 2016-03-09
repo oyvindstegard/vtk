@@ -18,7 +18,7 @@
       </div>
     </div>
     <h2><@vrtx.msg code="report.${report.reportname}" />
-    <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" />...</a></h2>
+    <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" /> ...</a></h2>
   <#if (report.thirdtotal?exists && report.thirdtotal > 0)>
     <div class="vrtx-report-diagram">
       <div class="vrtx-report-diagram-table">

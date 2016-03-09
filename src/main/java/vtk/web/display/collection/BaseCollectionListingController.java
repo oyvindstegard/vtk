@@ -143,12 +143,11 @@ public class BaseCollectionListingController implements ListingController {
                         }
                     }
 
-                    String title = service.getName();
-
-                    org.springframework.web.servlet.support.RequestContext rc = 
+                    org.springframework.web.servlet.support.RequestContext rc =
                         new org.springframework.web.servlet.support.RequestContext(
                             request);
-                    title = rc.getMessage(service.getName(),
+
+                    String title = rc.getMessage(service.getName(),
                         new Object[] { collection.getTitle() }, service.getName());
 
                     m.put("title", title);

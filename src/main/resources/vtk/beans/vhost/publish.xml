@@ -14,11 +14,6 @@
       </list>
     </property>
     <property name="handler" ref="publish.globalConfirmPublishHandler" />
-    <property name="categories">
-      <set>
-        <value>resourceMenuRight</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="resourceMenuRightOrder">
@@ -26,6 +21,10 @@
         </entry>
       </map>
     </property>
+  </bean>
+
+  <bean parent="manage.resourceMenuRightBuilder">
+    <property name="arguments" ref="publish.globalPublishService" />
   </bean>
 
   <bean id="publish.globalUnpublishService" class="vtk.web.service.ServiceImpl">
@@ -40,11 +39,6 @@
       </list>
     </property>
     <property name="handler" ref="publish.globalConfirmUnpublishHandler" />
-    <property name="categories">
-      <set>
-        <value>resourceMenuRight</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="resourceMenuRightOrder">
@@ -52,6 +46,10 @@
         </entry>
       </map>
     </property>
+  </bean>
+
+  <bean parent="manage.resourceMenuRightBuilder">
+    <property name="arguments" ref="publish.globalUnpublishService" />
   </bean>
 
   <bean id="publish.globalConfirmPublishHandler" class="vtk.web.actions.publish.ConfirmPublishController">
@@ -213,11 +211,6 @@
   <bean id="unpublishResourcesService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageCollectionListingService" />
     <property name="order" value="-955" />
-    <property name="categories">
-      <set>
-        <value>collectionMenu</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <ref bean="manage.postRequestAssertion" />
@@ -232,14 +225,13 @@
     <property name="handler" ref="publishResourcesHandler" />
   </bean>
 
+  <bean parent="collectionMenuBuilder">
+    <property name="arguments" ref="unpublishResourcesService" />
+  </bean>
+
   <bean id="publishResourcesService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageCollectionListingService" />
     <property name="order" value="-950" />
-    <property name="categories">
-      <set>
-        <value>collectionMenu</value>
-      </set>
-    </property>
     <property name="assertions">
       <list>
         <ref bean="manage.postRequestAssertion" />
@@ -252,6 +244,10 @@
       </list>
     </property>
     <property name="handler" ref="publishResourcesHandler" />
+  </bean>
+
+  <bean parent="collectionMenuBuilder">
+    <property name="arguments" ref="publishResourcesService" />
   </bean>
 
   <bean id="publishResourcesHandler" class="vtk.web.actions.publish.PublishResourcesController">
@@ -289,6 +285,7 @@
         <ref bean="resourceIsNotPublishedAssertion" />
         <ref bean="notViewUnpublishedAssertion" />
         <ref bean="notViewUnpublishedRefererAssertion" />
+        <ref bean="notViewUnpublishedMediaPlayerRefererAssertion" />
       </list>
     </property>
     <property name="handler" ref="displayUnpublishedPageHandler" />
@@ -350,6 +347,12 @@
   <bean id="notViewUnpublishedRefererAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
     <property name="header" value="Referer" />
     <property name="pattern" value=".*[\?&amp;]vrtxPreviewUnpublished=true.*" />
+    <property name="invert" value="true" />
+  </bean>
+
+  <bean id="notViewUnpublishedMediaPlayerRefererAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
+    <property name="header" value="Referer" />
+    <property name="pattern" value="^https?://[^/]+/vrtx/__vrtx/static-resources/flash/SMP_[0-9.]+-patched/[0-9.]+/StrobeMediaPlayback\.swf$" />
     <property name="invert" value="true" />
   </bean>
 

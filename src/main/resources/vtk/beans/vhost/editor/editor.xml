@@ -15,16 +15,18 @@
         <ref bean="editor.parameterEqualsEdit" />
       </list>
     </property>
+    <property name="attributes">
+      <map>
+        <entry key="tabOrder">
+          <value type="java.lang.Integer">152</value>
+        </entry>
+      </map>
+    </property>
   </bean>
 
   <bean id="editor.abstractEditService" class="vtk.web.service.ServiceImpl" abstract="true">
     <property name="parent" ref="editor.service" />
     <property name="order" value="-9800" />
-    <property name="categories">
-      <set>
-        <value>tabMenu</value>
-      </set>
-    </property>
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -33,14 +35,14 @@
       </map>
     </property>
     <property name="urlPostProcessors">
-        <list>
-            <ref bean="editor.urlPostProcessor"/>
-        </list>
+      <list>
+        <ref bean="editor.urlPostProcessor"/>
+      </list>
     </property>
   </bean>
   
   <bean id="editor.urlPostProcessor" class="vtk.web.service.PreviewUnpublishedURLPostProcessor">
-        <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
+    <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>
 
   <bean id="editor.unstructuredXhtmlEditService" parent="editor.abstractEditService">
@@ -53,6 +55,9 @@
     </property>
     <property name="handler" ref="editor.unstructuredXhtmlEditHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.unstructuredXhtmlEditService" />
+  </bean>
 
   <bean id="editor.ooXmlEditService" parent="editor.abstractEditService">
     <property name="assertions">
@@ -61,6 +66,9 @@
       </list>
     </property>
     <property name="handler" ref="editor.ooXmlEditHandler" />
+  </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.ooXmlEditService" />
   </bean>
 
   <bean id="editor.collectionEditService" parent="editor.abstractEditService">
@@ -71,6 +79,9 @@
     </property>
     <property name="handler" ref="editor.editCollectionHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.collectionEditService" />
+  </bean>
 
   <bean id="editor.personListingEditService" parent="editor.abstractEditService">
     <property name="assertions">
@@ -79,6 +90,9 @@
       </list>
     </property>
     <property name="handler" ref="editor.personEditHandler" />
+  </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.personListingEditService" />
   </bean>
 
 
@@ -90,6 +104,9 @@
     </property>
     <property name="handler" ref="editor.projectEditHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.projectListingEditService" />
+  </bean>
 
   <bean id="editor.researchGroupListingEditService" parent="editor.abstractEditService">
     <property name="assertions">
@@ -98,6 +115,9 @@
       </list>
     </property>
     <property name="handler" ref="editor.researchGroupEditHandler" />
+  </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.researchGroupListingEditService" />
   </bean>
 
 
@@ -109,6 +129,9 @@
     </property>
     <property name="handler" ref="editor.imageListingEditHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.imageListingEditService" />
+  </bean>
 
   <bean id="editor.messageListingEditService" parent="editor.abstractEditService">
     <property name="assertions">
@@ -118,6 +141,9 @@
     </property>
     <property name="handler" ref="editor.messageListingEditHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.messageListingEditService" />
+  </bean>
 
   <bean id="editor.imageEditService" parent="editor.abstractEditService">
     <property name="assertions">
@@ -126,6 +152,9 @@
       </list>
     </property>
     <property name="handler" ref="editor.imageEditHandler" />
+  </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.imageEditService" />
   </bean>
 
   <bean id="editor.loadImageService" class="vtk.web.service.ServiceImpl">
@@ -156,6 +185,9 @@
     </property>
     <property name="handler" ref="editor.videoEditHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.videoEditService" />
+  </bean>
 
   <bean id="editor.audioEditService" parent="editor.abstractEditService">
     <property name="assertions">
@@ -164,6 +196,9 @@
       </list>
     </property>
     <property name="handler" ref="editor.audioEditHandler" />
+  </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.audioEditService" />
   </bean>
 
   <bean id="editor.articleListingEditService" parent="editor.abstractEditService">
@@ -174,6 +209,9 @@
     </property>
     <property name="handler" ref="editor.articleListingEditHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.articleListingEditService" />
+  </bean>
 
   <bean id="editor.folderListingEditService" parent="editor.abstractEditService">
     <property name="assertions">
@@ -183,14 +221,8 @@
     </property>
     <property name="handler" ref="editor.folderListingEditHandler" />
   </bean>
-
-  <bean id="editor.blogListingEditService" parent="editor.abstractEditService">
-    <property name="assertions">
-      <list>
-        <ref bean="resourceIsBlogListing" />
-      </list>
-    </property>
-    <property name="handler" ref="editor.blogListingEditHandler" />
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.folderListingEditService" />
   </bean>
 
   <bean id="editor.audioVideoListingEditService" parent="editor.abstractEditService">
@@ -201,6 +233,9 @@
     </property>
     <property name="handler" ref="editor.audioVideoListingEditHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.audioVideoListingEditService" />
+  </bean>
 
   <bean id="editor.eventListingEditService" parent="editor.abstractEditService">
     <property name="assertions">
@@ -210,6 +245,9 @@
     </property>
     <property name="handler" ref="editor.eventListingEditHandler" />
   </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.eventListingEditService" />
+  </bean>
 
   <bean id="editor.documentEditService" parent="editor.abstractEditService">
     <property name="assertions">
@@ -218,6 +256,9 @@
       </list>
     </property>
     <property name="handler" ref="editor.editHandler" />
+  </bean>
+  <bean parent="manage.tabsBuilder">
+    <property name="arguments" ref="editor.documentEditService" />
   </bean>
 
   <bean id="editor.browseService" class="vtk.web.service.ServiceImpl">

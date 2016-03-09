@@ -550,47 +550,4 @@ public final class DefaultStructuredText implements StructuredText {
         }
     }
 
-    public static void main(String[] args) {
-
-        try {
-
-            DefaultStructuredText parser = new DefaultStructuredText();
-
-            if (args.length < 1) {
-
-                System.out.println("Usage: " + parser.getClass().getName()
-                        + " <textfile>");
-                return;
-            }
-
-            File textFile = new File(args[0]);
-
-            if (!textFile.exists()) {
-
-                System.out.println("No such file: " + textFile.getName());
-                return;
-            }
-
-            parser.setIncludeNewlines(true);
-
-            char[] buffer = new char[(int) textFile.length()];
-            FileReader reader = new FileReader(textFile);
-            reader.read(buffer);
-
-            String text = new String(buffer);
-            Element root = parser.parseStructuredText(text);
-            Document doc = new Document(root);
-
-            DefaultStructuredText.dumpXML(doc, System.out);
-
-            String txt = parser.parseElement(root);
-            System.out.println("Converted back: ");
-            System.out.println(txt);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-    }
-
 }

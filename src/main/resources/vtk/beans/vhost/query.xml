@@ -87,22 +87,25 @@
   <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="systemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
+    <property name="initClusterRole" value="MASTER" />
   </bean>
 
-  <!-- A Lucene index accessor (secondary instance, batch indexing tuned) -->
+  <!-- A Lucene index accessor (secondary instance, batch indexing tuned,
+       never shared storage) -->
   <bean id="secondarySystemIndexAccessor" class="vtk.repository.index.IndexManager">
-    <property name="storageRootPath" value="${indexStorageRootPath}"/>
+    <property name="storageRootPath" value="${repository.tempDir}"/>
     <property name="storageId" value="property_index.secondary"/>
     <property name="batchIndexingMode" value="true"/>
     <property name="forceUnlock" value="true"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
-    <property name="closeAfterInit" value="true"/>
   </bean>
 
-  <!-- Secondary property set index instance -->
+  <!-- Secondary property set index instance. Not part of clustering. -->
   <bean id="secondarySystemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="secondarySystemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
+    <property name="closeAfterInit" value="true"/>
+    <property name="initClusterRole" value="MASTER" />
   </bean>
   
   <!-- Factory for building Lucene queries. -->
@@ -155,6 +158,7 @@
     <property name="changeLogDAO" ref="repository.changeLogDAO"/>
     <property name="loggerId" value="1"/>
     <property name="loggerType" value="3" />
+    <property name="maxChangesPerUpdate" value="${repository.indexUpdater.batchsize}" />
   </bean>
   <!-- Background thread for triggering incremental updates -->
   <bean id="repository.index.updateTrigger"

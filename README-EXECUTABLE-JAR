@@ -1,0 +1,27 @@
+To build an executable jar:
+
+$ mvn package spring-boot:repackage
+
+(Results in a file target/vtk-<version>.jar)
+
+To run (minimal setup):
+
+1. Create a minimal config file, for example ~/vtk.properties:
+
+   indexStorageRootPath = [an empty directory for storing indices]
+   jdbcUsername = [your JDBC user]
+   jdbcPassword = [your JDBC password]
+   repositoryDataDirectory = [an empty directory for storing files]
+   repositoryTrashCanDirectory = [an empty directory for storing "deleted" files]
+   repositoryRevisionDirectory = [an empty directory for storing file revisions]
+   databaseURL = [your JDBC URL, e.g. jdbc:postgresql:my-user>]
+
+2. Run the application:
+
+./jar-start-debug.sh target/vtk-<version>.jar
+
+If you want give a load balancer a chance to finish the requests it has queued for the app.
+
+./jar-start-debug.sh target/vtk-<version>.jar --graceful[=n]
+
+n is the time to wait in seconds.
