@@ -30,15 +30,15 @@
  */
 package vtk.repository;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.context.ApplicationListener;
 
@@ -47,7 +47,8 @@ import vtk.repository.resourcetype.BinaryValue;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.security.Principal;
-import vtk.util.io.StreamUtil;
+import vtk.util.text.Json;
+import vtk.util.text.JsonStreamer;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -61,58 +62,37 @@ public class AMQPEventDumper extends AbstractRepositoryEventDumper
     private Service urlGenerator;
     private Map<String, PropertySerializer> serializers = null;
     
-    public final class SerializationContext {
-        private JSONObject json;
-        private Resource resource;
-        private URL url;
-        public SerializationContext(JSONObject json, Resource resource, URL url) 
-            { this.json = json; this.resource = resource; this.url = url; }
-        public Resource resource() { return resource; }
-        public URL url() { return url; }
-        public void field(String name, Object value) {
-            json.put(name, value);
-        }
-    }
-    
     public interface PropertySerializer {
         /**
          * Serializes a single property
          * @param property the property to serialize
          * @param dest the JSON object containing the properties
          */
-        public void serialize(Property property, SerializationContext context) throws Exception;
+        public void serialize(Property property, JsonStreamer streamer) throws Exception;
     }
 
     public static class SimplifiedLinksSerializer implements PropertySerializer {
         
         @Override
-        public void serialize(Property property, SerializationContext context) throws Exception {
+        public void serialize(Property property, JsonStreamer streamer) throws Exception {
             
             PropertyTypeDefinition def = property.getDefinition();
-            if (!"links".equals(def.getName())) return;
-            JSONArray valueArray = new JSONArray();
+            if (!"hrefs".equals(def.getName())) return;
 
-            BinaryValue binVal = property.getValue().getBinaryValue();
-            String str = StreamUtil.streamToString(binVal.getContentStream().getStream(), "utf-8");
-            
-            Object data = JSONValue.parse(str);
-            
-            if (!(data instanceof JSONArray)) {
-                return;
-            }
-            
-            JSONArray elements = (JSONArray) data;
+            Json.MapContainer data = property.getValue().getJSONValue();
+            List<?> elements = (List<?>) data.get("links");
+            streamer.key("links");
+            streamer.beginArray();
             for (Object o: elements) {
-                if (!(o instanceof JSONObject)) continue;
-                JSONObject record = (JSONObject) o;
+                if (!(o instanceof Map<?, ?>)) continue;
+                Map<?, ?> record = (Map<?, ?>) o;
                 if (!record.containsKey("url")) continue;
                 Object urlObj = record.get("url");
                 if (urlObj == null) continue;
                 String url = urlObj.toString();
-                valueArray.add(url);
+                streamer.value(url);
             }
-            if (valueArray.size() > 0)
-                context.field(def.getName(), valueArray);
+            streamer.endArray();
         }
     }
     
@@ -122,24 +102,24 @@ public class AMQPEventDumper extends AbstractRepositoryEventDumper
     public static PropertySerializer DEFAULT_PROPERTY_SERIALIZER = new PropertySerializer() {
 
         @Override
-        public void serialize(Property property, SerializationContext context) {
+        public void serialize(Property property, JsonStreamer streamer) throws IOException {
             final PropertyTypeDefinition def = property.getDefinition();
+            streamer.key(def.getName());
             if (def.isMultiple()) {
-                JSONArray valueArray = new JSONArray();
+                streamer.beginArray();
                 for (Value val: property.getValues()) {
                     Object mapped = mapToBasicValue(val);
-                    if (mapped != null)
-                        valueArray.add(mapped);
+                    streamer.value(mapped);
                 }
-                context.field(def.getName(), valueArray);
-            } else {
+                streamer.endArray();
+            }
+            else {
                 Object mapped = mapToBasicValue(property.getValue());
-                if (mapped != null)
-                    context.field(def.getName(), mapped);
+                streamer.value(mapped);
             }
         }
         
-        private Object mapToBasicValue(Value value) {
+        private Object mapToBasicValue(Value value) throws IOException {
             switch (value.getType()) {
             case BOOLEAN:
                 return value.getBooleanValue();
@@ -161,9 +141,9 @@ public class AMQPEventDumper extends AbstractRepositoryEventDumper
             }
         }
         
-        private Object mapBinaryValue(BinaryValue value) {
+        private Object mapBinaryValue(BinaryValue value) throws IOException {
             if ("application/json".equals(value.getContentType())) {
-                return JSONValue.parse(new InputStreamReader(value.getContentStream().getStream()));
+                return Json.parse(new InputStreamReader(value.getContentStream().getStream()));
             }
            return null;
         }
@@ -182,111 +162,155 @@ public class AMQPEventDumper extends AbstractRepositoryEventDumper
     
     @Override
     public void created(Resource resource) {
-        template.convertAndSend(updateMsg(resource, "created"));
+        try {
+            template.convertAndSend(updateMsg(resource, "created"));
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void deleted(Resource resource) {
-        template.convertAndSend(deletedMsg(resource.getURI()));
+        try {
+            template.convertAndSend(deletedMsg(resource.getURI()));
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void moved(Resource resource, Resource from) {
-        template.convertAndSend(movedMsg(from.getURI(), resource.getURI()));
+        try {
+            template.convertAndSend(movedMsg(from.getURI(), resource.getURI()));
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     @Override
     public void modified(Resource resource, Resource originalResource) {
-        template.convertAndSend(updateMsg(resource, "props_modified"));
+        try {
+            template.convertAndSend(updateMsg(resource, "props_modified"));
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void modifiedInheritableProperties(Resource resource,
             Resource originalResource) {
-        template.convertAndSend(updateMsg(resource, "props_modified"));
+        try {
+            template.convertAndSend(updateMsg(resource, "props_modified"));
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void contentModified(Resource resource, Resource original) {
-        template.convertAndSend(updateMsg(resource, "content_modified"));
+        try {
+            template.convertAndSend(updateMsg(resource, "content_modified"));
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void aclModified(Resource resource, Resource originalResource) {
-        template.convertAndSend(updateMsg(resource, "acl_modified"));
+        try {
+            template.convertAndSend(updateMsg(resource, "acl_modified"));
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     private static final String VERSION = "0.1";
+    
 
-    private String updateMsg(Resource resource, String type) {
-        JSONObject msg = new JSONObject();
+    private String updateMsg(Resource resource, String type) throws IOException {
+        StringWriter writer = new StringWriter();
+        JsonStreamer streamer = new JsonStreamer(writer);
         URL url = urlGenerator.constructURL(resource, 
                 new vtk.security.PrincipalImpl("root@localhost", Principal.Type.USER));
-        msg.put("version", VERSION);
-        msg.put("uri", url.toString());
-        msg.put("type", type);
-
-        JSONObject properties = new JSONObject();
-        SerializationContext context = new SerializationContext(properties, resource, url);
-        properties(context);
+        streamer.beginObject()
+                .key("version").value(VERSION)
+                .key("uri").value(url.toString())
+                .key("type").value(type)
+                .key("data").beginObject();
         
-        JSONObject acl = new JSONObject();
-        context = new SerializationContext(acl, resource, url);
-        acl(context);
+        streamer.key("properties").beginObject();
+        properties(resource, streamer);
+        streamer.endObject();
         
-        JSONObject resourceObject = new JSONObject();
-        resourceObject.put("properties", properties);
-        resourceObject.put("acl", acl);
+        streamer.key("acl").beginObject();
+        acl(resource, streamer);
+        streamer.endObject();
         
-        msg.put("data", resourceObject);
-        return msg.toString();
+        streamer.endObject().endJson();
+        return writer.toString();
     }
     
-    private String deletedMsg(Path uri) {
-        JSONObject msg = new JSONObject();
+    private String deletedMsg(Path uri) throws IOException {
+        StringWriter writer = new StringWriter();
+        JsonStreamer streamer = new JsonStreamer(writer);
         URL url = urlGenerator.constructURL(uri);
-        msg.put("version", VERSION);
-        msg.put("type", "deleted");
-        msg.put("uri", url.toString());
-        return msg.toString();
+        
+        streamer.beginObject()
+                .key("version").value(VERSION)
+                .key("uri").value(url.toString())
+                .key("type").value("deleted")
+                .endObject()
+                .endJson();
+        return writer.toString();
     }
 
-    private String movedMsg(Path from, Path to) {
-        JSONObject msg = new JSONObject();
-        msg.put("version", VERSION);
-        msg.put("type", "moved");
-        msg.put("from", urlGenerator.constructURL(from).toString());
-        msg.put("to", urlGenerator.constructURL(to).toString());
-        return msg.toString();
+    private String movedMsg(Path from, Path to) throws IOException {
+        StringWriter writer = new StringWriter();
+        JsonStreamer streamer = new JsonStreamer(writer);
+        streamer.beginObject()
+                .key("version").value(VERSION)
+                .key("type").value("moved")
+                .key("from").value(urlGenerator.constructURL(from).toString())
+                .key("to").value(urlGenerator.constructURL(to).toString())
+                .endObject()
+                .endJson();
+        return writer.toString();
     }
 
     
-    private void properties(SerializationContext context) {
+    private void properties(Resource resource, JsonStreamer streamer) {
         
-        for (Property prop: context.resource()) {
+        for (Property prop: resource) {
             PropertyTypeDefinition def = prop.getDefinition();
             PropertySerializer serializer = serializers == null ? 
                     DEFAULT_PROPERTY_SERIALIZER : serializers.get(def.getName());
             if (serializer == null) continue;
             try {
-                serializer.serialize(prop, context);
-            } catch (Exception e) {
+                serializer.serialize(prop, streamer);
+            }
+            catch (Exception e) {
                 logger.error("Failed to serialize property " + 
-                        prop + " of resource " + context.resource(), e);
+                        prop + " of resource " + resource, e);
             }
         }
     }
 
-    private void acl(SerializationContext context) {
-        Acl acl = context.resource().getAcl();
+    private void acl(Resource resource, JsonStreamer streamer) throws IOException {
+        Acl acl = resource.getAcl();
         Set<Privilege> actions = acl.getActions();
-
         for (Privilege action: actions) {
-            JSONArray array = new JSONArray();
+            streamer.key(action.getName()).beginArray();
             for (Principal p: acl.getPrincipalSet(action)) {
-                array.add(p.getQualifiedName());
+                streamer.value(p.getQualifiedName());
             }
-            context.field(action.getName(), array);
+            streamer.endArray();
         }
     }
     
