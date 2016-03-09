@@ -14,19 +14,35 @@
   </bean>
 
   <bean parent="cluster.component">
-    <property name="arguments" ref="repository.index.incrementalUpdater" />
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="repository.index.incrementalUpdater"/>
+      </bean>
+    </property>
   </bean>
 
   <bean parent="cluster.component">
-    <property name="arguments" ref="systemIndex" />
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="systemIndex"/>
+      </bean>
+    </property>
   </bean>
 
   <bean parent="cluster.component">
-    <property name="arguments" ref="authorizationManager" />
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="authorizationManager"/>
+      </bean>
+    </property>
   </bean>
 
   <bean parent="cluster.component">
-    <property name="arguments" ref="repository.lockingCacheControlWrapper" />
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="repository.lockingCacheControlWrapper"/>
+      </bean>
+    </property>
   </bean>
 
   <!-- Default no-op cluster manager bean. -->  

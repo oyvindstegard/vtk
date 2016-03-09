@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, University of Oslo, Norway
+/* Copyright (c) 2012, 2016, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -151,5 +151,4 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
     public void roleChange(ClusterRole role) {
         this.clusterRole = Optional.of(role);
     }
-
 }

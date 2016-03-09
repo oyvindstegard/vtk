@@ -5,10 +5,10 @@ A. Akka cluster manager, Redis shared session/cache store
 -------------------------------------------------------------------------------------------
 
 1. Set up Redis to listen on localhost on the default port
-   
+
    http://redis.io
 
-2. Start node 1: 
+2. Start node 1:
 
 mvn -Dvtk.extensions=cluster-akka,redis -Dvtk.cluster.port=6263 -Dakka.cluster.seed-nodes.0=akka.tcp://vtk-cluster@127.0.0.1:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://vtk-cluster@127.0.0.1:6263 -Dvtk.listen=localhost:9321,localhost:9322 -Dvtk.webdav.port=9321 -Dvtk.web.port=9322 spring-boot:run
 
