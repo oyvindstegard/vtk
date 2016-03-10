@@ -27,6 +27,7 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
   $name: "AbstractVrtxSimpleDialog",        // Meta-attribute useful for debugging
   __opts: {},
   __dialogOpts: {},
+  __state: {opening: false, opened: false},
   initialize: function(opts) {              // Constructor
       this.__opts = opts;
       this.__addDOM();
@@ -114,7 +115,8 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
   },
   open: function () {
     var dialog = this;
-    
+    dialog.__state.opening = true;
+
     // TODO: rootUrl and jQueryUiVersion should be retrieved from Vortex config/properties somehow
     var rootUrl = "/vrtx/__vrtx/static-resources";
     var jQueryUiVersion = "1.10.4";
@@ -129,19 +131,31 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
       futureUi.resolve();
     }
     $.when(futureUi).done(function() {
-      dialog.__opts.elm = $(dialog.__opts.selector);
-      if(!dialog.__opts.elm.filter(":visible").length) {
-        dialog.__opts.elm.dialog(dialog.__dialogOpts);
-        dialog.__opts.elm.dialog("open");
+      if (dialog.__state.opening) {
+        dialog.__state.opening = false;
+        dialog.__state.opened = true;
+        dialog.__opts.elm = $(dialog.__opts.selector);
+        if(!dialog.__opts.elm.filter(":visible").length) {
+          dialog.__opts.elm.dialog(dialog.__dialogOpts);
+          dialog.__opts.elm.dialog("open");
+        }
       }
     });
   },
   close: function () {
-    $(".ui-dialog-content").filter(":visible").dialog("close");
+    this.__state.opening = false;
+    if (this.__state.opened) {
+      $(".ui-dialog-content").filter(":visible").dialog("close");
+      this.__state.opened = false;
+    }
   },
   destroy: function () {
-    $(".ui-dialog-content").filter(":visible").dialog("destroy");
-    this.__opts.elm.remove();
+    this.__state.opening = false;
+    if (this.__state.opened) {
+      $(".ui-dialog-content").filter(":visible").dialog("destroy");
+      this.__state.opened = false;
+      this.__opts.elm.remove();
+    }
   }        
 });
 
