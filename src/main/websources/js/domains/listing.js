@@ -490,9 +490,12 @@ function ajaxUploadPerform(opts/*, size*/) {
   dialogUploadingD.attr("aria-valuemin", "0");
   dialogUploadingD.attr("aria-valuemax", "100");
   dialogUploadingD.attr("aria-valuenow", "0");
-  dialogUploadingD.append("<div id='dialog-uploading-bar' /><div id='dialog-uploading-percent'>&nbsp;</div><a id='dialog-uploading-focus' style='outline: none;' tabindex='-1' /><a id='dialog-uploading-abort' href='javascript:void(0);'>Avbryt</a>");
+  dialogUploadingD.append(
+      "<div id='dialog-uploading-bar' /><div id='dialog-uploading-percent'>&nbsp;</div>"
+    + "<a id='dialog-uploading-focus' style='outline: none;' tabindex='-1' />"
+    + "<a id='dialog-uploading-abort' href='javascript:void(0);'>Avbryt</a>"
+  );
   var dialogUploadingBar = dialogUploadingD.find("#dialog-uploading-bar");
-  
   // Set focus on element before cancel link
   var focusElm = dialogUploadingD.find("#dialog-uploading-focus");
   if(focusElm.length) focusElm.focus();
@@ -505,7 +508,7 @@ function ajaxUploadPerform(opts/*, size*/) {
 
   var uploadXhr = null;
   var processesD = null;
-  var stillProcesses = false;
+  var processingAfterUpload = false;
   
   // Set form to overwrite-mode
   opts.form.append("<input type='hidden' name='overwrite' value='overwrite' />");
@@ -515,10 +518,10 @@ function ajaxUploadPerform(opts/*, size*/) {
       _$("#dialog-uploading-percent").text(percent + "%");
       dialogUploadingBar.css("width", percent + "%");
       dialogUploadingD.attr("aria-valuenow", percent);
-      if(percent >= 100) {
-        stillProcesses = true;
+      if(percent >= 100 && !processingAfterUpload) {
+        processingAfterUpload = true;
         var waitAndProcess = setTimeout(function() {
-          if(stillProcesses) {
+          if(processingAfterUpload) {
             uploadingD.close();
             processesD = new VrtxLoadingDialog({title: vrtxAdm.messages.upload.processes});
             processesD.open();
@@ -563,14 +566,15 @@ function ajaxUploadPerform(opts/*, size*/) {
     },
     error: function (xhr, textStatus, errMsg) {
       if(uploadXhr === null) {
-        var uploadingFailedD = new VrtxMsgDialog({ title: xhr.status + " " + vrtxAdm.serverFacade.errorMessages.uploadingFilesFailedTitle,
-                                                   msg: vrtxAdm.serverFacade.errorMessages.uploadingFilesFailed
-                                                 });
+        var uploadingFailedD = new VrtxMsgDialog({
+          title: xhr.status + " " + vrtxAdm.serverFacade.errorMessages.uploadingFilesFailedTitle,
+          msg: vrtxAdm.serverFacade.errorMessages.uploadingFilesFailed
+        });
         uploadingFailedD.open();
       }
     },
     complete: function (xhr, textStatus) {
-      stillProcesses = false;
+      processingAfterUpload = false;
       if(processesD !== null) {
         processesD.close();
       } else {
