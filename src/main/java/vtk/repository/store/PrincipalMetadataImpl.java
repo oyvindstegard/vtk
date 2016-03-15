@@ -39,6 +39,7 @@ import java.util.Map;
  */
 public class PrincipalMetadataImpl extends MetadataImpl implements PrincipalMetadata {
 
+    private static final long serialVersionUID = 6211472492266973845L;
     public static final String DESCRIPTION_ATTRIBUTE = "description";
     public static final String UID_ATTRIBUTE = "uid";
     public static final String QNAME_ATTRIBUTE = "qname";

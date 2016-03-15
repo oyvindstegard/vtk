@@ -30,6 +30,7 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.Serializable;
 
 /**
  * Instances of this class stores information about which field in the
@@ -40,26 +41,25 @@ package vtk.web.referencedata.provider;
  * @version $Id: BrowseSessionBean.java,v 1.4 2004/02/26 10:33:51 gormap Exp $
  *
  */
+public class BrowseSessionBean implements Serializable {
 
-public class BrowseSessionBean {
+    private static final long serialVersionUID = -4399598427779759390L;
+    private String editField = "";
+    private String startUrl = "";
 
-   private String editField = "";
-   private String startUrl = "";
+    public String getEditField() {
+        return this.editField;
+    }
 
+    public void setEditField(String editField) {
+        this.editField= editField;
+    }
 
-   public String getEditField() {
-      return this.editField;
-   }
-    
-   public void setEditField(String editField) {
-      this.editField= editField;
-   }
+    public String getStartUrl() {
+        return this.startUrl;
+    }
 
-   public String getStartUrl() {
-      return this.startUrl;
-   }
-    
-   public void setStartUrl(String startUrl) {
-      this.startUrl= startUrl;
-   }
+    public void setStartUrl(String startUrl) {
+        this.startUrl= startUrl;
+    }
 }

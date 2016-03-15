@@ -31,6 +31,7 @@
 
 package vtk.web.actions.copymove;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,26 +43,26 @@ import java.util.List;
  * @author Tomm Eriksen
  *
  */
+public class CopyMoveSessionBean implements Serializable {
 
-public class CopyMoveSessionBean {
-	
-	String action = "";
-	List<String> filesToBeCopied = new ArrayList<String>();
-	
-	public List<String> getFilesToBeCopied() {
-		return this.filesToBeCopied;
-	}
-   
-	public void setFilesToBeCopied(List<String> filesToBeCopied) {
-		this.filesToBeCopied = filesToBeCopied;
-	}
+    private static final long serialVersionUID = -5825472640041042602L;
+    String action = "";
+    List<String> filesToBeCopied = new ArrayList<String>();
 
-	public String getAction() {
-		return this.action;
-	}
+    public List<String> getFilesToBeCopied() {
+        return this.filesToBeCopied;
+    }
 
-	public void setAction(String action) {
-		this.action = action;
-	}
+    public void setFilesToBeCopied(List<String> filesToBeCopied) {
+        this.filesToBeCopied = filesToBeCopied;
+    }
+
+    public String getAction() {
+        return this.action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
 
 }
