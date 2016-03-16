@@ -78,6 +78,7 @@
       The security context contains the authenticated principal and the
       repository token. </description>
     <property name="tokenManager" ref="tokenManager" />
+    <property name="authenticationHandlerRegistry" ref="vtk.authenticationHandlerRegistry" />
     <property name="principalFactory" ref="principalFactory" />
     <property name="cookieLinkStore" ref="cookieLinkStore" />
     <property name="cookieLinksEnabled" value="${security.sessionCookieLinksEnabled}" />

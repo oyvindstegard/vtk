@@ -424,6 +424,11 @@ public class SecurityInitializer {
     public void setPrincipalFactory(PrincipalFactory principalFactory) {
         this.principalFactory = principalFactory;
     }
+    
+    @Required
+    public void setAuthenticationHandlerRegistry(AuthenticationHandlerRegistry registry) {
+        this.authHandlerRegistry = registry;
+    }
 
     public void setCookieLinkStore(CookieLinkStore cookieLinkStore) {
         this.cookieLinkStore = cookieLinkStore;
