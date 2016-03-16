@@ -39,6 +39,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class PropertyEditCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = 7966396227515770572L;
     private PropertyTypeDefinition definition;
     private List<String> possibleValues;
     private String value;
@@ -89,6 +90,7 @@ public class PropertyEditCommand extends UpdateCancelCommand {
         this.possibleValues = null;
     }
 
+    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append("PropertyEditCommand[");

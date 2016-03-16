@@ -32,6 +32,7 @@ package vtk.web.actions.convert;
 
 public class ArchiveCommand extends CopyCommand {
 
+    private static final long serialVersionUID = 2613184668029121583L;
     private String ignorableResources;
 
     public ArchiveCommand(String name, String submitURL) {

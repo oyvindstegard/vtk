@@ -34,6 +34,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class CreateCollectionCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = -5532332357648843823L;
     private String name = null;
     private String title = null;
     private String sourceURI = null;

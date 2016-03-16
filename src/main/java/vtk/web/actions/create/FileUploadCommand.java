@@ -31,12 +31,12 @@
 package vtk.web.actions.create;
 
 import java.util.ArrayList;
-import vtk.repository.Path;
+
 import vtk.web.actions.UpdateCancelCommand;
 
 
 public class FileUploadCommand extends UpdateCancelCommand {
-
+    private static final long serialVersionUID = 3005405717768991421L;
     private String file;
     private ArrayList<String> existingFilenames;
     private ArrayList<String> existingFilenamesFixed;

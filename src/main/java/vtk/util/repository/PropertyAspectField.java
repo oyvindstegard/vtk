@@ -30,11 +30,13 @@
  */
 package vtk.util.repository;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class PropertyAspectField {
+public class PropertyAspectField implements Serializable {
+    private static final long serialVersionUID = 1675394681041209153L;
     String identifier;
     String type;
     private boolean inherited;

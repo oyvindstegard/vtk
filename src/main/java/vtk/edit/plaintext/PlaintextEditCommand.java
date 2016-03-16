@@ -40,13 +40,13 @@ import vtk.web.actions.UpdateCancelCommand;
  * Command object containing the plain text edit form elements.
  */
 public class PlaintextEditCommand extends UpdateCancelCommand {
-
-	private String saveAction = null;
-	private String saveViewAction = null;
+    private static final long serialVersionUID = 7992695329574049701L;
+    private String saveAction = null;
+    private String saveViewAction = null;
     private String content;
     private List<Map<String, String>> tooltips;
-    
-    
+
+
     public PlaintextEditCommand(String content, String submitURL, List<Map<String, String>> tooltips) {
         super(submitURL);
         this.content = content;
@@ -65,21 +65,21 @@ public class PlaintextEditCommand extends UpdateCancelCommand {
         return this.tooltips;
     }
 
-	public String getSaveAction() {
-		return saveAction;
-	}
+    public String getSaveAction() {
+        return saveAction;
+    }
 
-	public void setSaveAction(String saveAction) {
-		this.saveAction = saveAction;
-	}
+    public void setSaveAction(String saveAction) {
+        this.saveAction = saveAction;
+    }
 
-	public String getSaveViewAction() {
-		return saveViewAction;
-	}
+    public String getSaveViewAction() {
+        return saveViewAction;
+    }
 
-	public void setSaveViewAction(String saveViewAction) {
-		this.saveViewAction = saveViewAction;
-	}
+    public void setSaveViewAction(String saveViewAction) {
+        this.saveViewAction = saveViewAction;
+    }
 
 }
 

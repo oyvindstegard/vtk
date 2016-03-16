@@ -38,19 +38,19 @@ import java.util.Locale;
 
 import vtk.resourcemanagement.EditRule;
 import vtk.resourcemanagement.EditRule.EditRuleType;
+import vtk.resourcemanagement.StructuredResource;
+import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.property.EditablePropertyDescription;
 import vtk.resourcemanagement.property.JSONPropertyAttributeDescription;
 import vtk.resourcemanagement.property.JSONPropertyDescription;
 import vtk.resourcemanagement.property.PropertyDescription;
 import vtk.resourcemanagement.property.SimplePropertyDescription;
-import vtk.resourcemanagement.StructuredResource;
-import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.web.actions.UpdateCancelCommand;
 import vtk.web.service.URL;
 
 @SuppressWarnings("unchecked")
 public class FormSubmitCommand extends UpdateCancelCommand {
-
+    private static final long serialVersionUID = 6909451395734129506L;
     private String saveWorkingCopyAction;
     private String makePublicVersionAction;
     private String deleteWorkingCopyAction;

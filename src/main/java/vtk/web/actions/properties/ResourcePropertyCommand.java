@@ -34,6 +34,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class ResourcePropertyCommand extends UpdateCancelCommand {
     
+    private static final long serialVersionUID = -9031231358523068439L;
     private String namespace;
     private String name;
     private String value;

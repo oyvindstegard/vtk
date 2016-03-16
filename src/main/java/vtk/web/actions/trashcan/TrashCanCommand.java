@@ -41,6 +41,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class TrashCanCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = 5317220025031262419L;
     private String recoverAction;
     private String deletePermanentAction;
 

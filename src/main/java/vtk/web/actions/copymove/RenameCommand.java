@@ -36,6 +36,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class RenameCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = -157365031607598497L;
     private String name;
     private String cancel;
     private String overwrite;

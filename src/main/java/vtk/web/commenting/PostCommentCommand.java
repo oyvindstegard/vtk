@@ -35,6 +35,7 @@ import vtk.web.service.URL;
 
 public class PostCommentCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = -1572284614615948736L;
     private String title;
     private String text;
     private String parsedText;

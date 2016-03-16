@@ -33,7 +33,7 @@ package vtk.web.actions.publish;
 import vtk.web.actions.UpdateCancelCommand;
 
 public class PublishResourceCommand extends UpdateCancelCommand {
-    
+    private static final long serialVersionUID = 1210349686193265322L;
     private String publishResourceAction = null;
     private String publishResourceCancelAction = null;
 

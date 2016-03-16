@@ -34,6 +34,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class CopyCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = 8483646084680609828L;
     private String name;
 
     public CopyCommand(String name, String submitURL) {

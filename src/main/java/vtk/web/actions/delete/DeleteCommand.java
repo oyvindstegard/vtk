@@ -34,6 +34,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class DeleteCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = 6866742726365640645L;
     private String name;
 
     public DeleteCommand(String name, String submitURL) {

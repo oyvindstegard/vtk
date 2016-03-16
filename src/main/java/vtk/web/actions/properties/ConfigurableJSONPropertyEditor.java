@@ -30,6 +30,7 @@
  */
 package vtk.web.actions.properties;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +68,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
     private String token;
     
     public static class Form extends UpdateCancelCommand {
+        private static final long serialVersionUID = 6148763849709518901L;
         private String configError = null;
         private List<FormElement> elements;
         
@@ -96,7 +98,8 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
         }
     }
     
-    public static class FormElement {
+    public static class FormElement implements Serializable {
+        private static final long serialVersionUID = -1398837744975182431L;
         private PropertyAspectField desc;
         private Locale locale;
         private Object value;
@@ -246,7 +249,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
             }
             elements.add(element);
         }
-        ((Form) object).setElements(elements);
+        object.setElements(elements);
     }
 
     @Override

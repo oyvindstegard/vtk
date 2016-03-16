@@ -35,6 +35,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class CreateDocumentCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = 2915071990084672433L;
     private String name = null;
     private String title = null;
     private String sourceURI = null;

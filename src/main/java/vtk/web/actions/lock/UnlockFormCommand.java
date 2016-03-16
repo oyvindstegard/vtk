@@ -33,7 +33,7 @@ package vtk.web.actions.lock;
 import vtk.web.actions.UpdateCancelCommand;
 
 public class UnlockFormCommand extends UpdateCancelCommand {
-
+    private static final long serialVersionUID = 5450005124298551737L;
     private String cancel;
 
     public UnlockFormCommand(String submitURL) {

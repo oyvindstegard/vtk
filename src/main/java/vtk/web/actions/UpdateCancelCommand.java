@@ -30,14 +30,15 @@
  */
 package vtk.web.actions;
 
-
+import java.io.Serializable;
 
 /**
  * Utility base class for form command objects that have 'Update' and
  * 'Cancel' actions.
  */
-public class UpdateCancelCommand {
+public class UpdateCancelCommand implements Serializable {
 
+    private static final long serialVersionUID = -889547323626097995L;
     private String updateAction = null;
     private String cancelAction = null;
     private String updateViewAction = null;

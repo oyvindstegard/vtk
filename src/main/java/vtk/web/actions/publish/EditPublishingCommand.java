@@ -36,6 +36,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class EditPublishingCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = 8082334289379754247L;
     private Resource resource;
     private String publishStatus;
     private String publishDate;

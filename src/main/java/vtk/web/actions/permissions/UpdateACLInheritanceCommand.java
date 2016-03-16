@@ -34,6 +34,7 @@ import vtk.web.actions.UpdateCancelCommand;
 
 public class UpdateACLInheritanceCommand extends UpdateCancelCommand {
 
+    private static final long serialVersionUID = -4046568386083025667L;
     private boolean inherited = false;
 
     public UpdateACLInheritanceCommand(boolean inherited, String submitURL) {
