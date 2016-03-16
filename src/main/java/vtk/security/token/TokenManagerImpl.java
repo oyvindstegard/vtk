@@ -33,18 +33,11 @@ package vtk.security.token;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 import vtk.security.Principal;
 import vtk.security.web.AuthenticationHandler;
 import vtk.util.cache.SimpleCache;
-import vtk.util.cache.SimpleCacheImpl;
 
 /**
  * Default implementation of the {@link TokenManager} interface. Keeps
@@ -62,46 +55,23 @@ import vtk.util.cache.SimpleCacheImpl;
  *   users).
  * </ul>
  */
-public class TokenManagerImpl implements TokenManager, InitializingBean {
-
-    private static Log logger = LogFactory.getLog(TokenManagerImpl.class);
+public class TokenManagerImpl implements TokenManager {
 
     private SimpleCache<String, PrincipalItem> cache = null;
-    /**
-     * Since the handlers themselves are not serializable across a distributed cache,
-     * we maintain a local map based on the handler id.
-     * NB! This assumes the handler identifiers are unique.
-     * This map should probably be injected by Spring so that all possible
-     * handlers are known early. Otherwise a different node in the cluster
-     * may not have the handler mapping already.
-     */
-    private Map<String, AuthenticationHandler> authHandlerMap = new ConcurrentHashMap<String, AuthenticationHandler>();
     private Map<String, Principal> registeredPrincipals = new HashMap<String, Principal>();
-    private List<Principal> defaultPrincipals = null;
     
-
-    public void setCache(SimpleCache<String, PrincipalItem> cache) {
+    public TokenManagerImpl(SimpleCache<String, PrincipalItem> cache) {
         this.cache = cache;
     }
 
     public void setDefaultPrincipals(List<Principal> defaultPrincipals) {
-        this.defaultPrincipals = defaultPrincipals;
+        for (Principal principal: defaultPrincipals) {
+            String token = generateID();
+            registeredPrincipals.put(token, principal);
+        }
     }
     
-    public void afterPropertiesSet() throws Exception {
-        if (this.defaultPrincipals != null) {
-            for (Principal principal: this.defaultPrincipals) {
-                String token = generateID();
-                this.registeredPrincipals.put(token, principal);
-            }
-        }
-        
-        if (this.cache == null) {
-            logger.info("No SimpleCache supplied, instantiating default");
-            this.cache = new SimpleCacheImpl<String, PrincipalItem>();    
-        }
-    }
-
+    @Override
     public Principal getPrincipal(String token) {
 
         if (this.registeredPrincipals.containsKey(token))
@@ -114,7 +84,8 @@ public class TokenManagerImpl implements TokenManager, InitializingBean {
         return item.getPrincipal();
     }
 
-    public AuthenticationHandler getAuthenticationHandler(String token) {
+    @Override
+    public String getAuthenticationHandlerID(String token) {
         if (this.registeredPrincipals.containsKey(token))
             return null;
         
@@ -122,22 +93,19 @@ public class TokenManagerImpl implements TokenManager, InitializingBean {
         if (item == null) {
             return null;
         }
-        AuthenticationHandler handler = this.authHandlerMap.get(item.getAuthenticationHandlerId());
-        if (handler == null) {
-            throw new RuntimeException("No AuthenticationHandler found for Id: " + item.getAuthenticationHandlerId());
-        }
-        return handler;
+        return item.getAuthenticationHandlerId();
     }
 
+    @Override
     public String newToken(Principal principal,
                            AuthenticationHandler authenticationHandler) {
         String token = generateID();
         PrincipalItem item = new PrincipalItem(principal, authenticationHandler.getIdentifier());
-        this.authHandlerMap.putIfAbsent(authenticationHandler.getIdentifier(), authenticationHandler);
         this.cache.put(token, item);
         return token;
     }
 
+    @Override
     public void removeToken(String token) {
 
         PrincipalItem item = this.cache.get(token);
@@ -148,6 +116,7 @@ public class TokenManagerImpl implements TokenManager, InitializingBean {
         this.cache.remove(token);
     }
 
+    @Override
     public String getRegisteredToken(Principal principal) {
         if (this.registeredPrincipals.containsValue(principal)) {
             for (String token: this.registeredPrincipals.keySet()) {
@@ -158,9 +127,10 @@ public class TokenManagerImpl implements TokenManager, InitializingBean {
         return null;
     }
 
-    public Set<String> getTokens() {
-        return this.cache.getKeys();
-    }
+//    
+//    public Set<String> getTokens() {
+//        return this.cache.getKeys();
+//    }
     
     private String generateID() {
         return UUID.randomUUID().toString();

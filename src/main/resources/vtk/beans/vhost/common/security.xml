@@ -51,7 +51,7 @@
       mapping them to user names, and making sure they expire after
       periods of inactivity.
     </description>
-    <property name="cache" ref="tokenManagerCache" />
+    <constructor-arg name="cache" ref="tokenManagerCache" />
     <property name="defaultPrincipals">
       <list>
         <ref bean="trustedPrincipal" />
@@ -63,6 +63,10 @@
   <bean id="tokenManagerCache"
         class="vtk.util.cache.SimpleCacheImpl">
     <property name="timeoutSeconds" value="1800" />
+  </bean>
+
+  <bean id="vtk.authenticationHandlerRegistry" class="vtk.security.web.AuthenticationHandlerRegistry">
+    <constructor-arg name="handlers" value="#{{${authenticationHandlers}}}" />
   </bean>
 
   <!-- Authentication challenges -->

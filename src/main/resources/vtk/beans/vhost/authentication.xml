@@ -451,7 +451,8 @@
 
   <bean id="logoutIsSupported"
         class="vtk.web.service.LogoutSupportedAssertion">
-    <property name="tokenManager" ref="tokenManager" />
+    <constructor-arg name="tokenManager" ref="tokenManager" />
+    <constructor-arg name="authHandlerRegistry" ref="vtk.authenticationHandlerRegistry" />
   </bean>
 
 </beans>

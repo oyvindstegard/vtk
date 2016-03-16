@@ -75,15 +75,15 @@ public interface TokenManager {
     public void removeToken(String token);
 
     /**
-     * Gets the authentication handler that authenticated the
+     * Gets the authentication handler ID that authenticated the
      * principal identified by this token.
      *
      * @param token a the security token
-     * @return an authentication handler, or <code>null</code> if the
+     * @return an authentication handler ID, or <code>null</code> if the
      * token does not map to an authenticated principal, or the
      * principal was authenticated using a different method.
      */
-    public AuthenticationHandler getAuthenticationHandler(String token);
+    public String getAuthenticationHandlerID(String token);
     
     public String getRegisteredToken(Principal principal);
 }

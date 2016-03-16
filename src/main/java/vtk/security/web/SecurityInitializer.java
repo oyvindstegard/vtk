@@ -32,9 +32,8 @@ package vtk.security.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
@@ -45,17 +44,13 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.CookieLinkStore;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
-import vtk.security.PrincipalManager;
 import vtk.security.SecurityContext;
 import vtk.security.token.TokenManager;
 import vtk.security.web.AuthenticationHandler.AuthResult;
@@ -64,22 +59,28 @@ import vtk.web.service.Assertion;
 import vtk.web.service.Service;
 
 /**
- * Initializer for the {@link SecurityContext security context}. A security context is created for every request. Also
- * detects authentication information in requests (using {@link AuthenticationHandler authentication handlers}) and
+ * Initializer for the {@link SecurityContext security context}. 
+ * A security context is created for every request. Also
+ * detects authentication information in requests 
+ * (using {@link AuthenticationHandler authentication handlers}) and
  * tries to process them.
  *
  * <p>
  * Configurable JavaBean properties:
  * <ul>
- * <li><code>authenticationHandlers</code> the list of {@link AuthenticationHandler authentication handlers} to use.
- * These handlers are invoked in the same order they are provided. If unspecified, the application context is searched
+ * <li><code>authenticationHandlers</code> the list of 
+ * {@link AuthenticationHandler authentication handlers} to use.
+ * These handlers are invoked in the same order they are provided. 
+ * If unspecified, the application context is searched
  * for authentication handlers.
- * <li><code>tokenManager</code> the {@link TokenManager} which stores repository tokens for authenticated principals
+ * <li><code>tokenManager</code> the {@link TokenManager} which stores 
+ * repository tokens for authenticated principals
  * </ul>
  */
-public class SecurityInitializer implements InitializingBean, ApplicationContextAware {
+public class SecurityInitializer {
 
-    private static final String SECURITY_TOKEN_SESSION_ATTR = SecurityInitializer.class.getName() + ".SECURITY_TOKEN";
+    private static final String SECURITY_TOKEN_SESSION_ATTR = 
+            SecurityInitializer.class.getName() + ".SECURITY_TOKEN";
 
     public static final String VRTXLINK_COOKIE = "VRTXLINK";
 
@@ -87,25 +88,18 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
 
     private String uioAuthIDP;
 
-    //private static final String AUTH_HANDLER_SP_COOKIE_CATEGORY = "spCookie";
-
     private static Log logger = LogFactory.getLog(SecurityInitializer.class);
 
     private static Log authLogger = LogFactory.getLog("vtk.security.web.AuthLog");
 
     private TokenManager tokenManager;
 
-    private PrincipalManager principalManager;
     private PrincipalFactory principalFactory;
-
-    private List<AuthenticationHandler> authenticationHandlers;
 
     private List<AuthenticationHandler> spCookieHandlers;
 
-    private Map<String, AuthenticationHandler> authHandlerMap;
-
-    private ApplicationContext applicationContext;
-
+    private AuthenticationHandlerRegistry authHandlerRegistry;
+    
     private CookieLinkStore cookieLinkStore;
 
     private String spCookieDomain = null;
@@ -119,22 +113,6 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
 
     // Assertion that must match in order to use authentication challenge from cookie:
     private Assertion spCookieAssertion;
-
-    @Override
-    public void afterPropertiesSet() {
-        if (this.authenticationHandlers == null) {
-            throw new IllegalStateException("No authentication handlers specified");
-        }
-        authHandlerMap = new HashMap<>();
-        for (AuthenticationHandler handler : this.authenticationHandlers) {
-            if (authHandlerMap.containsKey(handler.getIdentifier()))
-                throw new IllegalStateException(
-                        "Multiple authentication handlers with identifier '"
-                                + handler.getIdentifier() + "'");
-            authHandlerMap.put(handler.getIdentifier(), handler);
-        }
-        logger.info("Using authentication handlers: " + this.authenticationHandlers);
-    }
 
     /**
      *
@@ -159,16 +137,14 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
 
         String token = getToken(req, resp);
         if (token != null) {
-            Principal principal = this.tokenManager.getPrincipal(token);
+            Principal principal = tokenManager.getPrincipal(token);
             if (principal != null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Found valid token '" + token + "', principal " + principal
-                            + " in request session, setting security context");
-                }
+                logger.debug("Found valid token '" + token + "', principal " + principal
+                        + " in request session, setting security context");
                 SecurityContext.setSecurityContext(new SecurityContext(token, principal));
 
-                if (getCookie(req, VRTXLINK_COOKIE) == null && this.cookieLinksEnabled) {
-                    UUID cookieLinkID = this.cookieLinkStore.addToken(req, token);
+                if (getCookie(req, VRTXLINK_COOKIE) == null && cookieLinksEnabled) {
+                    UUID cookieLinkID = cookieLinkStore.addToken(req, token);
                     Cookie c = new Cookie(VRTXLINK_COOKIE, cookieLinkID.toString());
                     c.setPath("/");
                     resp.addCookie(c);
@@ -178,13 +154,11 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
                 }
                 return true;
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Invalid token '" + token + "' in request session, "
-                        + "will proceed to check authentication");
-            }
+            logger.debug("Invalid token '" + token + "' in request session, "
+                    + "will proceed to check authentication");
         }
 
-        for (AuthenticationHandler handler : this.authenticationHandlers) {
+        for (AuthenticationHandler handler: authHandlerRegistry.orderedList()) {
             if (handler.isRecognizedAuthenticationRequest(req)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Request " + req + " is recognized as an authentication attempt by handler " + handler
@@ -197,7 +171,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
                         throw new IllegalStateException("Principal handler returned NULL AuthResult: " + handler
                                 + " for request " + req);
                     }
-                    Principal principal = this.principalFactory.getPrincipal(result.getUID(), Principal.Type.USER);
+                    Principal principal = principalFactory.getPrincipal(result.getUID(), Principal.Type.USER);
                     // boolean valid = this.principalManager.validatePrincipal(principal);
                     // if (!valid) {
                     // logger.warn("Unknown principal: " + principal + " returned by authentication handler "
@@ -332,8 +306,8 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
                         c.setSecure(true);
                     }
                     c.setPath("/");
-                    if (this.spCookieDomain != null && !cookie.equals(VRTXLINK_COOKIE)) {
-                        c.setDomain(this.spCookieDomain);
+                    if (spCookieDomain != null && !cookie.equals(VRTXLINK_COOKIE)) {
+                        c.setDomain(spCookieDomain);
                     }
                     c.setMaxAge(0);
                     response.addCookie(c);
@@ -376,25 +350,31 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
         if (principal == null) {
             return false;
         }
-        AuthenticationHandler handler = this.tokenManager.getAuthenticationHandler(securityContext.getToken());
-
+        
+        String handlerID  = tokenManager.getAuthenticationHandlerID(securityContext.getToken());
+        Optional<AuthenticationHandler> handler = authHandlerRegistry.lookup(handlerID);
+        
+        if (!handler.isPresent()) {
+            return false;
+        }
+        
         // FIXME: what if handler.isLogoutSupported() == false?
-        boolean result = handler.logout(principal, request, response);
+        boolean result = handler.get().logout(principal, request, response);
         String status = result ? "OK" : "FAIL";
         if (authLogger.isDebugEnabled()) {
             authLogger.debug(request.getRemoteAddr() + " - request-URI: " + request.getRequestURI() + " - "
                     + "logout_method: Logout: principal: '" + principal + "' - method: '"
-                    + handler.getIdentifier() + "' - status: " + status);
+                    + handlerID + "' - status: " + status);
         }
 
-        this.tokenManager.removeToken(securityContext.getToken());
+        tokenManager.removeToken(securityContext.getToken());
         SecurityContext.setSecurityContext(null);
 
-        if (this.rememberAuthMethod) {
+        if (rememberAuthMethod) {
             List<String> spCookies = new ArrayList<>();
             spCookies.add(vrtxAuthSP);
             spCookies.add(uioAuthIDP);
-            if (this.cookieLinksEnabled) {
+            if (cookieLinksEnabled) {
                 spCookies.add(VRTXLINK_COOKIE);
             }
 
@@ -409,7 +389,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
                         c.setSecure(true);
                     }
                     c.setPath("/");
-                    if (this.spCookieDomain != null && !cookie.equals(VRTXLINK_COOKIE)) {
+                    if (spCookieDomain != null && !cookie.equals(VRTXLINK_COOKIE)) {
                         c.setDomain(this.spCookieDomain);
                     }
                     c.setMaxAge(0);
@@ -432,13 +412,7 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getName());
-        sb.append(": ").append(System.identityHashCode(this));
-        sb.append(", authenticationHandlers: [");
-        sb.append(this.authenticationHandlers);
-        sb.append("]");
-        return sb.toString();
+        return getClass().getSimpleName();
     }
 
     @Required
@@ -447,22 +421,8 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
     }
 
     @Required
-    public void setPrincipalManager(PrincipalManager principalManager) {
-        this.principalManager = principalManager;
-    }
-
-    @Required
     public void setPrincipalFactory(PrincipalFactory principalFactory) {
         this.principalFactory = principalFactory;
-    }
-
-    public void setAuthenticationHandlers(List<AuthenticationHandler> authenticationHandlers) {
-        this.authenticationHandlers = authenticationHandlers;
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
     }
 
     public void setCookieLinkStore(CookieLinkStore cookieLinkStore) {
@@ -506,32 +466,26 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
         }
         if (request.getCookies() != null && !request.isSecure()) {
             Cookie c = getCookie(request, VRTXLINK_COOKIE);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Cookie: " + VRTXLINK_COOKIE + ": " + c);
-            }
+            logger.debug("Cookie: " + VRTXLINK_COOKIE + ": " + c);
             if (c != null) {
                 UUID id;
                 try {
                     id = UUID.fromString(c.getValue());
-                } catch (Throwable t) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Invalid UUID cookie value: " + c.getValue(), t);
-                    }
+                }
+                catch (Throwable t) {
+                    logger.debug("Invalid UUID cookie value: " + c.getValue(), t);
                     return null;
                 }
                 String token = this.cookieLinkStore.getToken(request, id);
                 if (token == null) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("No token found from cookie " + VRTXLINK_COOKIE + ", deleting cookie");
-                    }
+                    logger.debug("No token found from cookie " + VRTXLINK_COOKIE + ", deleting cookie");
                     c = new Cookie(VRTXLINK_COOKIE, c.getValue());
                     c.setPath("/");
                     c.setMaxAge(0);
                     response.addCookie(c);
-                } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Found token " + token + " from cookie " + VRTXLINK_COOKIE);
-                    }
+                }
+                else {
+                    logger.debug("Found token " + token + " from cookie " + VRTXLINK_COOKIE);
                     session = request.getSession(true);
                     session.setAttribute(SECURITY_TOKEN_SESSION_ATTR, token);
                     return token;
@@ -609,10 +563,10 @@ public class SecurityInitializer implements InitializingBean, ApplicationContext
             Cookie c = getCookie(request, vrtxAuthSP);
             if (c != null) {
                 String id = c.getValue();
-                AuthenticationHandler handler = this.authHandlerMap.get(id);
-
-                if (handler != null && this.spCookieHandlers.contains(handler)) {
-                    challenge = handler.getAuthenticationChallenge();
+                
+                Optional<AuthenticationHandler> handler = authHandlerRegistry.lookup(id);
+                if (handler.isPresent() && spCookieHandlers.contains(handler.get())) {
+                    challenge = handler.get().getAuthenticationChallenge();
                 }
             }
         }
