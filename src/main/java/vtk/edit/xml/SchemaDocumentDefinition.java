@@ -32,6 +32,7 @@ package vtk.edit.xml;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -68,7 +69,9 @@ import vtk.util.web.LinkTypesPrefixes;
  * @version $Id$
  */
 @SuppressWarnings("unchecked")
-public class SchemaDocumentDefinition {
+public class SchemaDocumentDefinition implements Serializable {
+
+    private static final long serialVersionUID = -4330910522619544861L;
 
     private static Map<String, Class<? extends StructuredText>> structuredTextImplementations = 
             new HashMap<String, Class<? extends StructuredText>>();
