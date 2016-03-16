@@ -141,7 +141,7 @@ public class SecurityInitializer {
             if (principal != null) {
                 logger.debug("Found valid token '" + token + "', principal " + principal
                         + " in request session, setting security context");
-                SecurityContext.setSecurityContext(new SecurityContext(token, principal));
+                SecurityContext.setSecurityContext(new SecurityContext(token, principal, this));
 
                 if (getCookie(req, VRTXLINK_COOKIE) == null && cookieLinksEnabled) {
                     UUID cookieLinkID = cookieLinkStore.addToken(req, token);
@@ -191,7 +191,7 @@ public class SecurityInitializer {
                     }
 
                     token = this.tokenManager.newToken(principal, handler);
-                    SecurityContext securityContext = new SecurityContext(token, this.tokenManager.getPrincipal(token));
+                    SecurityContext securityContext = new SecurityContext(token, this.tokenManager.getPrincipal(token), this);
 
                     SecurityContext.setSecurityContext(securityContext);
                     HttpSession session = req.getSession(true);
@@ -242,7 +242,7 @@ public class SecurityInitializer {
                     + "attempt by any authentication handler. Creating default " + "security context.");
         }
 
-        SecurityContext.setSecurityContext(new SecurityContext(null, null));
+        SecurityContext.setSecurityContext(new SecurityContext(null, null, this));
         return true;
     }
 

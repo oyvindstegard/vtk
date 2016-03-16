@@ -61,6 +61,7 @@
     </property>
   </bean>
 
+
   <bean parent="spCookieAuthHandlers.builder">
     <property name="arguments" ref="saml.authenticationHandler" />
   </bean>
@@ -101,7 +102,6 @@
 
 
   <bean id="saml.logout" class="vtk.security.web.saml.Logout" parent="saml.abstractHandler">
-    <property name="securityInitializer" ref="securityInitializer"/>
     <property name="redirectService" ref="viewService"/>
     <property name="ieCookieLogoutTicket" value="${saml.ieCookieLogoutTicket}" />    
     <property name="iECookieStore" ref="saml.ieCookieStore" />

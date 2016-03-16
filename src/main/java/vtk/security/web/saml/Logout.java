@@ -51,8 +51,9 @@ import org.opensaml.ws.message.encoder.MessageEncodingException;
 import org.opensaml.ws.transport.http.HttpServletRequestAdapter;
 import org.opensaml.xml.security.credential.Credential;
 import org.opensaml.xml.util.Pair;
-import org.springframework.beans.factory.annotation.Required;
+
 import vtk.security.AuthenticationProcessingException;
+import vtk.security.SecurityContext;
 import vtk.security.web.SecurityInitializer;
 import vtk.web.InvalidRequestException;
 import vtk.web.service.Assertion;
@@ -62,7 +63,6 @@ import vtk.web.service.URL;
 public class Logout extends SamlService {
 
     private Service redirectService;
-    private SecurityInitializer securityInitializer;
 
     private String ieCookieLogoutTicket;
     private IECookieStore iECookieStore;
@@ -127,7 +127,10 @@ public class Logout extends SamlService {
         String redirectURL = buildRedirectURL(logoutResponse, relayState, signingCredential);
 
         // Remove authentication state
-        this.securityInitializer.removeAuthState(request, response);
+        SecurityContext securityContext = SecurityContext.getSecurityContext();
+        SecurityInitializer initializer = securityContext.securityInitializer();
+        if (initializer != null) initializer.removeAuthState(request, response);
+        //this.securityInitializer.removeAuthState(request, response);
 
         // Handle the response ourselves.
         response.setStatus(HttpServletResponse.SC_FOUND);
@@ -178,7 +181,9 @@ public class Logout extends SamlService {
         LogoutResponse logoutResponse = getLogoutResponse(request);
         logoutResponse.validate(true);
 
-        this.securityInitializer.removeAuthState(request, response);
+        SecurityContext securityContext = SecurityContext.getSecurityContext();
+        SecurityInitializer initializer = securityContext.securityInitializer();
+        if (initializer != null) initializer.removeAuthState(request, response);
 
         response.setStatus(HttpServletResponse.SC_FOUND);
         response.setHeader("Location", url.toString());
@@ -231,11 +236,6 @@ public class Logout extends SamlService {
             }
         }
         return urlBuilder.buildURL();
-    }
-
-    @Required
-    public void setSecurityInitializer(SecurityInitializer securityInitializer) {
-        this.securityInitializer = securityInitializer;
     }
 
     public void setRedirectService(Service redirectService) {

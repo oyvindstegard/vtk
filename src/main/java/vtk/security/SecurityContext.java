@@ -31,15 +31,22 @@
 package vtk.security;
 
 import vtk.context.BaseContext;
+import vtk.security.web.SecurityInitializer;
 
 public class SecurityContext {
 
     private String token;
     private Principal principal;
+    private SecurityInitializer securityInitializer;
     
     public SecurityContext(String token, Principal principal) {
+        this(token, principal, null);
+    }
+    
+    public SecurityContext(String token, Principal principal, SecurityInitializer securityInitializer) {
         this.token = token;
         this.principal = principal;
+        this.securityInitializer = securityInitializer;
     }
 
     public static void setSecurityContext(SecurityContext securityContext) {
@@ -74,6 +81,10 @@ public class SecurityContext {
      */
     public String getToken() {
         return getSecurityContext().token;
+    }
+    
+    public SecurityInitializer securityInitializer() {
+        return getSecurityContext().securityInitializer;
     }
 
     @Override
