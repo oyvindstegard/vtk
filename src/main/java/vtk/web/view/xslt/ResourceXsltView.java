@@ -52,6 +52,7 @@ import org.jdom.transform.JDOMSource;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.view.AbstractView;
+
 import vtk.repository.Resource;
 import vtk.util.repository.LocaleHelper;
 import vtk.web.InvalidModelException;
@@ -150,6 +151,7 @@ public class ResourceXsltView extends AbstractView
     }
 
 
+    @Override
     @SuppressWarnings("rawtypes")
     protected void renderMergedOutputModel(Map model, HttpServletRequest request,
                                            HttpServletResponse response)
@@ -193,7 +195,7 @@ public class ResourceXsltView extends AbstractView
         ErrorListener err = new ErrorListener();
         Transformer transformer = null;
 
-        transformer = getTransformer(resource, document);
+        transformer = transformerManager.getTransformer(document);
         transformer.setErrorListener(err);
         setParameters(model, transformer);
         transformer.setParameter(
@@ -304,9 +306,9 @@ public class ResourceXsltView extends AbstractView
     }
 
 
-    protected Transformer getTransformer(Resource resource, Document document)
+    protected Transformer getTransformer(Document document)
         throws Exception {
-        return this.transformerManager.getTransformer(resource, document);
+        return this.transformerManager.getTransformer(document);
     }
 
     @SuppressWarnings("rawtypes")

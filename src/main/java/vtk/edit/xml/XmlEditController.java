@@ -49,6 +49,7 @@ import org.jdom.JDOMException;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Lock;
 import vtk.repository.Path;
@@ -386,7 +387,7 @@ public class XmlEditController implements Controller {
         
         
         try {
-            this.transformerManager.getTransformer(resource, document);
+            this.transformerManager.getTransformer(document);
         } catch (IOException e) {
             // FIXME: error handling
             throw new XMLEditException("Unable to compile edit stylesheets for document '" + uri + "'", e);

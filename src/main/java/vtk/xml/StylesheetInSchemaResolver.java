@@ -38,7 +38,6 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.xpath.XPath;
 import org.springframework.beans.factory.annotation.Required;
-import vtk.repository.PropertySet;
 
 
 /**
@@ -79,8 +78,9 @@ public class StylesheetInSchemaResolver implements StylesheetReferenceResolver {
     public void setSchemaRegistry(XmlSchemaRegistry schemaRegistry) {
         this.schemaRegistry = schemaRegistry;
     }
-    
-    public String getStylesheetIdentifier(PropertySet resource, Document document) {
+
+    @Override
+    public String getStylesheetIdentifier(Document document) {
 
         String docType = document.getRootElement().getAttributeValue(
             "noNamespaceSchemaLocation", this.XSI_NAMESPACE);
@@ -96,17 +96,18 @@ public class StylesheetInSchemaResolver implements StylesheetReferenceResolver {
             Element e = (Element) xPath.selectSingleNode(schemaDoc);
             if (e == null) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Cannot find stylesheet reference for document " +
-                                 resource + " in schema '" + docType + "'");
+                    logger.debug("Cannot find stylesheet reference for document " + 
+                                 document + " in schema '" + docType + "'");
                 }
                 return null;
             }
             return e.getTextNormalize();
             
-        } catch (Exception e) {            
+        }
+        catch (Exception e) {            
             if (logger.isDebugEnabled()) {
                 logger.debug("Failed to find stylesheet reference for document " +
-                             resource + " in schema '" + docType + "'", e);
+                             document + " in schema '" + docType + "'", e);
             }
             return null;
         }

@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertySet;
@@ -114,7 +115,7 @@ public class XMLStylesheetEvaluator
     private String resolveTemplateReference(PropertySet resource, Document document) {
         for (int i = 0; i < this.stylesheetReferenceResolvers.length; i++) {
             StylesheetReferenceResolver resolver = this.stylesheetReferenceResolvers[i];
-            String reference = resolver.getStylesheetIdentifier(resource, document);
+            String reference = resolver.getStylesheetIdentifier(document);
             
             if (reference != null) {
                 return reference;

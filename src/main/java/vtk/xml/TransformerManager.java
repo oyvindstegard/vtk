@@ -45,7 +45,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
-import vtk.repository.Resource;
 
 
 
@@ -224,33 +223,29 @@ public class TransformerManager implements InitializingBean {
      * @exception TransformerConfigurationException if an error occurs
      * @exception StylesheetCompilationException if an error occurs
      */
-    public Transformer getTransformer(Resource resource, Document document)
+    public Transformer getTransformer(Document document)
         throws Exception {
 
-        String stylesheetIdentifier = resolveTemplateReference(resource, document);
+        String stylesheetIdentifier = resolveTemplateReference(document);
 
         if (stylesheetIdentifier == null) {
             throw new StylesheetCompilationException(
-                "Unable to find XSLT stylesheet identifier for resource " +
-                resource);
+                "Unable to find XSLT stylesheet identifier for document " +
+                document);
         }
         return getTransformer(stylesheetIdentifier);
     }
 
 
 
-    private String resolveTemplateReference(Resource resource, Document document) {
+    private String resolveTemplateReference(Document document) {
         
         for (int i = 0; i < this.stylesheetReferenceResolvers.length; i++) {
             StylesheetReferenceResolver resolver = this.stylesheetReferenceResolvers[i];
             // Obtain the stylesheet identifier:
-            String reference = resolver.getStylesheetIdentifier(resource, document);
+            String reference = resolver.getStylesheetIdentifier(document);
             
             if (reference != null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Found stylesheet identifier for resource '" +
-                                 resource + "': '" + reference + "'");
-                }
                 return reference;
             }
         }
@@ -309,6 +304,7 @@ public class TransformerManager implements InitializingBean {
             return null;
         }
 
+        @Override
         public String toString() {
             return "Chain: " + java.util.Arrays.asList(this.chain);
         }
@@ -325,6 +321,7 @@ public class TransformerManager implements InitializingBean {
             this.throttle = throttle;
         }
         
+        @Override
         public void transform(javax.xml.transform.Source xmlSource,
                                        javax.xml.transform.Result outputTarget)
             throws TransformerException {
@@ -336,46 +333,57 @@ public class TransformerManager implements InitializingBean {
             }
         }
         
+        @Override
         public void setParameter(String name, Object value) {
             this.transformer.setParameter(name, value);
         }
         
+        @Override
         public Object getParameter(String name) {
             return this.transformer.getParameter(name);
         }
 
+        @Override
         public void clearParameters() {
             this.transformer.clearParameters();
         }
 
+        @Override
         public void setURIResolver(URIResolver resolver) {
             this.transformer.setURIResolver(resolver);
         }
 
+        @Override
         public URIResolver getURIResolver() {
             return this.transformer.getURIResolver();
         }
 
+        @Override
         public void setOutputProperties(java.util.Properties properties) {
             this.transformer.setOutputProperties(properties);
         }
         
+        @Override
         public java.util.Properties getOutputProperties() {
             return this.transformer.getOutputProperties();
         }
 
+        @Override
         public void setOutputProperty(String name, String value) {
             this.transformer.setOutputProperty(name, value);
         }
 
+        @Override
         public String getOutputProperty(String name) {
             return this.transformer.getOutputProperty(name);
         }
 
+        @Override
         public void setErrorListener(javax.xml.transform.ErrorListener listener) {
             this.transformer.setErrorListener(listener);
         }
 
+        @Override
         public javax.xml.transform.ErrorListener getErrorListener() {
             return this.transformer.getErrorListener();
         }

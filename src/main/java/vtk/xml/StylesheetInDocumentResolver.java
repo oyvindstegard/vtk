@@ -35,7 +35,6 @@ import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.ProcessingInstruction;
-import vtk.repository.PropertySet;
 
 /**
  * Stylesgeet resolver that gets XSLT stylesheets from
@@ -43,18 +42,11 @@ import vtk.repository.PropertySet;
  */
 public class StylesheetInDocumentResolver implements StylesheetReferenceResolver {
 
-    public String getStylesheetIdentifier(PropertySet resource, Document document) {
-        String stylesheetURL = getStylesheetURLFromDocument(document);
-        return stylesheetURL;
-    }
-
-
-    @SuppressWarnings("rawtypes")
-    private String getStylesheetURLFromDocument(Document doc) {
-
-        List content = doc.getContent();
+    @Override
+    public String getStylesheetIdentifier(Document document) {
+        List<?> content = document.getContent();
         
-        for (Iterator i = content.iterator(); i.hasNext();) {
+        for (Iterator<?> i = content.iterator(); i.hasNext();) {
             Object o = i.next();
 
             if (o instanceof ProcessingInstruction) {
@@ -73,5 +65,4 @@ public class StylesheetInDocumentResolver implements StylesheetReferenceResolver
         }
         return null;
     }
-
 }

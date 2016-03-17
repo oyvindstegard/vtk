@@ -31,7 +31,6 @@
 package vtk.xml;
 
 import org.jdom.Document;
-import vtk.repository.PropertySet;
 
 
 /**
@@ -42,6 +41,6 @@ import vtk.repository.PropertySet;
  */
 public interface StylesheetReferenceResolver {
 
-    public String getStylesheetIdentifier(PropertySet resource, Document document);
+    public String getStylesheetIdentifier(Document document);
     
 }

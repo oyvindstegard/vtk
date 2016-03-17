@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.LastModified;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.RepositoryException;
@@ -207,7 +208,7 @@ public class DisplayXmlResourceController implements Controller, LastModified {
         if (document != null) {
 
             if (!this.ignoreXMLErrors) {
-                this.transformerManager.getTransformer(resource, document);
+                this.transformerManager.getTransformer(document);
                 if (logger.isDebugEnabled()) {
                     logger.debug("Successfully obtained XSLT transformer for resource "
                                  + resource);
