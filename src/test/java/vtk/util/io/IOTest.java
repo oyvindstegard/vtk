@@ -57,8 +57,6 @@ import static org.junit.Assert.fail;
 
 /**
  * Thorough test-case for IO class.
- * 
- * TODO clean up test names and consolidate some test code
  */
 public class IOTest {
 
@@ -91,24 +89,26 @@ public class IOTest {
         String result = new String(out.toByteArray());
         assertEquals(s, result);
         assertEquals(len, copied);
+    }
 
+    @Test
+    public void testCopy_InputStream_OutputStream_30000bytes() throws Exception {
         byte[] data = generateRandomDataBuffer(30000);
-        in = new ByteArrayInputStream(data);
-        out = new ByteArrayOutputStream();
+        InputStream in = new ByteArrayInputStream(data);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        copied = IO.copy(in, out).perform();
+        long copied = IO.copy(in, out).perform();
         
         byte[] resultData = out.toByteArray();
         assertTrue(buffersEqual(data, resultData));
         assertEquals(data.length, copied);
-        
     }
     
     // Don't run this one normally, since it requires a lot of memory for the
     // JVM executing it.
     @Ignore
     @Test(expected = IOException.class)
-    public void streamLimit() throws Exception {
+    public void read_bytearray_limit() throws Exception {
         IO.read(new DevZeroInputStream()).perform();
     }
 
@@ -121,9 +121,12 @@ public class IOTest {
 
         assertTrue(buffersEqual(data, out.toByteArray()));
         assertTrue(out.isClosed());
+    }
 
-        out = new CheckForCloseByteArrayOutputStream();
-        data = "foobar".getBytes();
+    @Test
+    public void testWrite_close() throws Exception {
+        CheckForCloseByteArrayOutputStream out = new CheckForCloseByteArrayOutputStream();
+        byte[] data = "foobar".getBytes();
 
         IO.write(data, out).closeOut(false).perform();
         
@@ -132,23 +135,29 @@ public class IOTest {
     }
 
     @Test
-    public void testCopy_3args() throws Exception {
-        String s = "data to copy";
-        int len = s.getBytes().length;
-        InputStream in = new ByteArrayInputStream(s.getBytes());
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        
-        long piped = IO.copy(in, out).bufferSize(1).perform();
-        
-        String result = new String(out.toByteArray());
-        assertEquals(s, result);
-        assertEquals(len, piped);
+    public void testCopy_various_buffersizes() throws Exception {
+        for (int bufferSize : new int[]{1, 2, 10, 16384}) {
+            String s = "data to copy";
+            int len = s.getBytes().length;
+            InputStream in = new ByteArrayInputStream(s.getBytes());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+            long piped = IO.copy(in, out).bufferSize(1).perform();
+
+            String result = new String(out.toByteArray());
+            assertEquals("Failed for buffer size: " + bufferSize, s, result);
+            assertEquals("Failed for buffer size: " + bufferSize, len, piped);
+        }
+    }
+
+    @Test
+    public void testCopy_misc() throws Exception {
 
         byte[] data = generateRandomDataBuffer(10000);
-        in = new ByteArrayInputStream(data);
-        out = new ByteArrayOutputStream();
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
         
-        piped = IO.copy(in, out).bufferSize(10).perform();
+        long piped = IO.copy(in, out).bufferSize(10).perform();
 
         byte[] resultData = out.toByteArray();
         assertTrue(buffersEqual(data, resultData));
@@ -260,75 +269,40 @@ public class IOTest {
     }
 
     @Test
-    public void test_read_InputStream() throws Exception {
-        byte[] data = new byte[0];
-        ByteArrayInputStream content = new ByteArrayInputStream(data);
+    public void testRead_InputStream() throws Exception {
+        for (int dataSize : new int[]{0, 1, 2, 1000, 8191, 12288, 100000}) {
+            byte[] data = generateRandomDataBuffer(dataSize);
+            ByteArrayInputStream in = new ByteArrayInputStream(data);
+            
+            byte[] result = IO.read(in).perform();
+            
+            assertEquals("Failed for data size: " + dataSize, -1, in.read());
+            assertTrue("Failed for data size: " + dataSize, buffersEqual(data, result));
+        }
+    }
+    
+    @Test
+    public void testRead_small_chunk_and_check_closed() throws Exception {
+        
+        byte[] data = generateRandomDataBuffer(30001);
+        SmallChunkInputStream content = new SmallChunkInputStream(data);
         
         byte[] result = IO.read(content).perform();
         assertEquals(-1, content.read());
-        assertTrue(buffersEqual(data, result));
-
-        data = generateRandomDataBuffer(1);
-        content = new ByteArrayInputStream(data);
-        
-        result = IO.read(content).perform();
-        assertEquals(-1, content.read());
-        assertTrue(buffersEqual(data, result));
-
-        data = generateRandomDataBuffer(2);
-        content = new ByteArrayInputStream(data);
-        
-        result = IO.read(content).perform();
-        assertEquals(-1, content.read());
-        assertTrue(buffersEqual(data, result));
-
-        data = generateRandomDataBuffer(1000);
-        content = new ByteArrayInputStream(data);
-
-        result = IO.read(content).perform();
-        assertEquals(-1, content.read());
-        assertTrue(buffersEqual(data, result));
-
-        data = generateRandomDataBuffer(8191);
-        content = new ByteArrayInputStream(data);
-        
-        result = IO.read(content).perform();
-        assertEquals(-1, content.read());
-        assertTrue(buffersEqual(data, result));
-
-        data = generateRandomDataBuffer(12288);
-        content = new ByteArrayInputStream(data);
-        
-        result = IO.read(content).perform();
-        assertEquals(-1, content.read());
-        assertTrue(buffersEqual(data, result));
-
-        data = generateRandomDataBuffer(100000);
-        content = new ByteArrayInputStream(data);
-        
-        result = IO.read(content).perform();
-        assertEquals(-1, content.read());
-        assertTrue(buffersEqual(data, result));
-
-        data = generateRandomDataBuffer(30001);
-        content = new SmallChunkInputStream(data);
-        
-        result = IO.read(content).perform();
-        assertEquals(-1, content.read());
-        assertTrue(((SmallChunkInputStream)content).isClosed());
+        assertTrue(content.isClosed());
         assertTrue(buffersEqual(data, result));
 
         data = generateRandomDataBuffer(1000);
         content = new SmallChunkInputStream(data);
         
         result = IO.read(content).perform();
-        assertTrue(((SmallChunkInputStream)content).isClosed());
+        assertTrue(content.isClosed());
         assertEquals(-1, content.read());
         assertTrue(buffersEqual(data, result));
     }
 
     @Test
-    public void testReadInputStream_InputStream_int() throws Exception {
+    public void testRead_limit_misc() throws Exception {
         byte[] data = new byte[0];
         ByteArrayInputStream content = new ByteArrayInputStream(data);
         byte[] result = IO.read(content).limit(0).perform();
@@ -529,7 +503,7 @@ public class IOTest {
     
     // Triggers and tests use of NIO copy path
     @Test
-    public void file_stream_copy() throws Exception {
+    public void testCopy_file_streams() throws Exception {
         byte[] data = generateRandomDataBuffer(1000);
         IO.TempFile tempFile = IO.tempFile(new ByteArrayInputStream(data)).perform();
         File destFile = File.createTempFile("IOTest", null);
@@ -569,7 +543,7 @@ public class IOTest {
     }
     
     @Test
-    public void test_progress_read() throws Exception {
+    public void testProgress_read() throws Exception {
         InputStream in = new ByteArrayInputStream(generateRandomDataBuffer(1000*1000));
         final List<Long> progressCallbacks = new ArrayList<>();
         IO.read(in).progress(p -> progressCallbacks.add(p)).progressInterval(256*1024).perform();
@@ -579,7 +553,7 @@ public class IOTest {
     }
     
     @Test
-    public void test_progress_copy() throws Exception {
+    public void testProgress_copy() throws Exception {
         InputStream in = new ByteArrayInputStream(generateRandomDataBuffer(1000*1000));
         OutputStream out = new ByteArrayOutputStream();
         final List<Long> progressCallbacks = new ArrayList<>();
@@ -590,7 +564,7 @@ public class IOTest {
     }
 
     @Test
-    public void test_progress_file_copy() throws Exception {
+    public void testProgress_file_copy() throws Exception {
         IO.TempFile inTmp = IO.tempFile(new DevZeroInputStream()).limit(512*1024).perform();
         assertEquals(512*1024, inTmp.file().length());
         IO.TempFile outTmp = IO.tempFile();
@@ -607,7 +581,7 @@ public class IOTest {
     }
     
     @Test
-    public void test_progress_write() throws Exception {
+    public void testProgress_write() throws Exception {
         byte[] data = generateRandomDataBuffer(512*1024);
         OutputStream out = new ByteArrayOutputStream();
         final List<Long> progressCallbacks = new ArrayList<>();
