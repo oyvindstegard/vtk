@@ -214,7 +214,7 @@ public abstract class IO {
          * <p>Default value is {@link IO#DEFAULT_BUFFER_SIZE}
          * 
          * <p>Depending on the actual types involved, this may or may not make
-         * a different, and some operation implementations will ignore this value.
+         * a difference, and some operation implementations will ignore this value.
          * @param size the buffering size in number of bytes
          * @return the <code>Copy</code> operation instance
          */
@@ -305,9 +305,8 @@ public abstract class IO {
         }
         
         protected byte[] readInputStream(InputStream in) throws IOException {
-            if (limit > -1) {
-                return readInputStream(in, limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)limit);
-            }
+            // External API is long-based, translate safely to int here
+            int limit = this.limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)this.limit;
             
             try {
                 byte[][] buffers = new byte[10][];
@@ -315,7 +314,8 @@ public abstract class IO {
                 buffers[0] = currentbuf;
                 int n, pos = 0, total = 0, bufcount = 1;
                 long lastProgressCallback = 0;
-                while ((n = in.read(currentbuf, pos, currentbuf.length - pos)) > 0) {
+                int chunksize = limit >= 0 ? Math.min(limit, currentbuf.length) : currentbuf.length;
+                while ((n = in.read(currentbuf, pos, chunksize)) > 0) {
                     if (total + n < total) {
                         throw new IOException("Stream exceeded maximum length of " + Integer.MAX_VALUE + " bytes.");
                     }
@@ -334,6 +334,8 @@ public abstract class IO {
                         currentbuf = newbuffer;
                         pos = 0;
                     }
+                    
+                    chunksize = limit >= 0 ? Math.min(limit-total, currentbuf.length - pos) : currentbuf.length - pos;
                     
                     if (total - lastProgressCallback >= progressInterval) {
                         progress.accept((long)total);
@@ -358,76 +360,6 @@ public abstract class IO {
                 if (closeIn) in.close();
             }
         }
-        
-        // XXX Does not handle negative limit as "no limit". Standardize it (fold limit handling into previous method).
-        private byte[] readInputStream(InputStream content, int limit) throws IOException {
-            try {
-                if (limit <= 0) {
-                    return new byte[0];
-                }
-
-                byte[][] buffers = new byte[10][];
-                byte[] currentbuf = new byte[8192];
-                buffers[0] = currentbuf;
-                int n, pos = 0, total = 0, bufcount = 1;
-                int chunksize = Math.min(currentbuf.length, limit);
-                long lastProgressCallback = 0;
-                while ((n = content.read(currentbuf, pos, chunksize)) > 0) {
-                    pos += n;
-                    total += n;
-
-                    if (total >= limit) {
-                        total = limit;
-                        break;
-                    }
-
-                    if (pos == currentbuf.length) {
-                        if (bufcount == buffers.length) {
-                            // Allocate for more buffers
-                            buffers = Arrays.copyOf(buffers, buffers.length << 1);
-                        }
-                        // Double size of new buffer, but keep roof at 64MiB
-                        byte[] newbuffer = new byte[Math.min(0x4000000, currentbuf.length << 1)];
-                        buffers[bufcount++] = newbuffer;
-                        currentbuf = newbuffer;
-                        pos = 0;
-                        chunksize = currentbuf.length;
-                    }
-
-                    if (chunksize + pos > currentbuf.length) {
-                        // Truncate next read chunk to fit current buffer
-                        chunksize = currentbuf.length - pos;
-                    }
-
-                    // Truncate next read chunk to remaining bytes if we're nearing maxLength
-                    chunksize = Math.min(chunksize, limit - total);
-                    
-                    if (total - lastProgressCallback >= progressInterval) {
-                        progress.accept((long) total);
-                        lastProgressCallback = total;
-                    }
-                }
-
-                // Assemble allocated buffers to single properly sized return value
-                final byte[] returnbuf = new byte[total];
-                int remaining = total;
-                for (int i = 0; i < bufcount; i++) {
-                    byte[] buf = buffers[i];
-                    int copycount = Math.min(buf.length, remaining);
-                    System.arraycopy(buf, 0, returnbuf, total - remaining, copycount);
-                    remaining -= copycount;
-                    buffers[i] = null; // GC as soon as possible
-                }
-
-                progress.accept((long) total);
-                return returnbuf;
-            } finally {
-                if (closeIn) {
-                    content.close();
-                }
-            }
-        }
-
     }
     
     private static abstract class CopyBase<I,O> implements Copy<I,O> {
@@ -637,23 +569,25 @@ public abstract class IO {
             @Override
             public long perform() throws IOException {
                 try {
-                    int written = 0;
+                    int total = 0;
                     int offset = (int) super.offset;
                     int limit = super.limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)super.limit;
                     int length = limit >= 0 ? Math.min(input.length-offset, limit) : input.length-offset;
                     long lastProgressCallback = 0;
-                    final int chunksize = 1024*1024;
-                    while (written < length) {
-                        int write = Math.min(chunksize, length - written);
-                        output.write(input, offset+written, write);
-                        written += write;
-                        if (written - lastProgressCallback >= progressInterval) {
-                            progress.accept((long)written);
-                            lastProgressCallback = written;
+                    while (total < length) {
+                        // We want chunk size as big as possible here, but it should not be bigger than
+                        // requested progressInterval
+                        int chunksize = Math.min(progressInterval, length - total);
+                        output.write(input, offset+total, chunksize);
+                        total += chunksize;
+                        
+                        if (total - lastProgressCallback >= progressInterval) {
+                            progress.accept((long)total);
+                            lastProgressCallback = total;
                         }
                     }
-                    progress.accept((long)written);
-                    return written;
+                    progress.accept((long)total);
+                    return total;
                 } finally {
                     if (closeOut) {
                         output.close();

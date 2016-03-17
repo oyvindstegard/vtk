@@ -42,7 +42,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -613,7 +612,7 @@ public class IOTest {
         OutputStream out = new ByteArrayOutputStream();
         final List<Long> progressCallbacks = new ArrayList<>();
         IO.write(data, out).progress(p -> progressCallbacks.add(p)).progressInterval(128*1024).perform();
-
+        
         assertTrue(progressCallbacks.size() > 0);
         assertEquals(new Long(512*1024), progressCallbacks.get(progressCallbacks.size()-1));
     }
