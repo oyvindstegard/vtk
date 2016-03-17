@@ -30,11 +30,13 @@
  */
 package vtk.util.repository;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +47,9 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.cluster.ClusterAware;
+import vtk.cluster.ClusterContext;
+import vtk.cluster.ClusterRole;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.event.RepositoryEvent;
@@ -55,8 +60,8 @@ import vtk.repository.event.ResourceMovedEvent;
 /**
  *  
  */
-public class MethodInvokingRepositoryEventTrigger 
-    extends AbstractRepositoryEventHandler implements InitializingBean {
+public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEventHandler 
+    implements InitializingBean, ClusterAware {
 
     private static Log logger = LogFactory.getLog(MethodInvokingRepositoryEventTrigger.class);
 
@@ -68,6 +73,10 @@ public class MethodInvokingRepositoryEventTrigger
 
     private LinkedHashMap<Object, String> multipleInvocations;
     private List<TargetAndMethod> methodInvocations;
+
+    private Optional<ClusterRole> clusterRole = Optional.empty();
+
+    private Optional<ClusterContext> clusterContext = Optional.empty();
     
     @Required
     public void setRepository(Repository repository)  {
@@ -101,30 +110,50 @@ public class MethodInvokingRepositoryEventTrigger
     
     public void setUriPatterns(List<String> uriPatterns) {
         this.uriPatterns = new ArrayList<>();
-        for (String uriPattern: uriPatterns)
+        for (String uriPattern: uriPatterns) {
             this.uriPatterns.add(Pattern.compile(uriPattern));
+        }
+    }
+    
+    @Override
+    public void clusterContext(ClusterContext context) {
+        this.clusterContext = Optional.of(context);
+        context.subscribe(InvokeMessage.class);
     }
 
     @Override
+    public void roleChange(ClusterRole role) {
+        this.clusterRole = Optional.of(role);
+    }
+
+    @Override
+    public void clusterMessage(Object message) throws Exception {
+        if ((message instanceof InvokeMessage) && !masterNode()) {
+            invoke();
+        }
+    }
+    
+    @Override
     public void afterPropertiesSet() {
-        if (this.uri == null && this.uriPatterns == null) {
+        if (uri == null && uriPatterns == null) {
             throw new BeanInitializationException(
                 "One of JavaBean properties 'uri', 'uriPattern' or 'uriPatterns' must be specified.");
         }
-        if (this.multipleInvocations != null && this.targetObject != null) {
+        if (multipleInvocations != null && targetObject != null) {
             throw new BeanInitializationException(
                     "Specify only one of properties 'targetObject + method' or 'multipleInvocations'");
         }
-        if (this.multipleInvocations == null && (this.targetObject == null || this.method == null)) {
+        if (multipleInvocations == null && (targetObject == null || method == null)) {
             throw new BeanInitializationException(
                     "Specify one of properties 'targetObject + method' or 'multipleInvocations'");
         }
 
-        this.methodInvocations = new ArrayList<>();
-        if (this.multipleInvocations == null) {
-            initMethodInvocation(this.targetObject, this.method);
-        } else {
-            for (Map.Entry<Object,String> entry: this.multipleInvocations.entrySet()) {
+        methodInvocations = new ArrayList<>();
+        if (multipleInvocations == null) {
+            initMethodInvocation(targetObject, method);
+        }
+        else {
+            for (Map.Entry<Object,String> entry: multipleInvocations.entrySet()) {
                 Object target = entry.getKey();
                 String methodName = entry.getValue();
                 initMethodInvocation(target, methodName);
@@ -141,14 +170,14 @@ public class MethodInvokingRepositoryEventTrigger
                     + methodName + "' for class " + target.getClass() 
                     + ". Only methods that take no arguments are supported.");
         }
-        this.methodInvocations.add(new TargetAndMethod(target, m));
+        methodInvocations.add(new TargetAndMethod(target, m));
     }
 
     @Override
     public void handleEvent(RepositoryEvent event) {
         
         Repository rep = event.getRepository();
-        if (! rep.getId().equals(this.repository.getId())) {
+        if (!rep.getId().equals(repository.getId())) {
             return;
         }
         
@@ -156,6 +185,9 @@ public class MethodInvokingRepositoryEventTrigger
 
         if (checkEvent(event, resourceURI)) {
             invoke();
+            if (masterNode()) {
+                
+            }
         }
         if (event instanceof ResourceMovedEvent) {
             resourceURI = ((ResourceMovedEvent) event).getFrom().getURI();
@@ -166,19 +198,19 @@ public class MethodInvokingRepositoryEventTrigger
     }
     
     private boolean checkEvent(RepositoryEvent event, Path resourceURI) {
-        if (this.uri != null) {
+        if (uri != null) {
             if (((event instanceof ResourceDeletionEvent)
                  || (event instanceof ResourceCreationEvent))
-                && (resourceURI.isAncestorOf(this.uri)
-                    || this.uri.isAncestorOf(resourceURI))) {
+                && (resourceURI.isAncestorOf(uri)
+                    || uri.isAncestorOf(resourceURI))) {
                 return true;
             }
-            else if (this.uri.equals(resourceURI)) {
+            else if (uri.equals(resourceURI)) {
                 return true;
             }
         } 
-        else if (this.uriPatterns != null) {
-            for (Pattern uriPattern: this.uriPatterns) {
+        else if (uriPatterns != null) {
+            for (Pattern uriPattern: uriPatterns) {
                 Matcher matcher = uriPattern.matcher(resourceURI.toString());
                 if (matcher.find()) {
                     return true;
@@ -189,42 +221,44 @@ public class MethodInvokingRepositoryEventTrigger
     }
     
     private void invoke() {
-        for (TargetAndMethod tm: this.methodInvocations) {
-            final Method m = tm.getMethod();
-            final Object target = tm.getTarget();
-
+        for (TargetAndMethod tm: methodInvocations) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Invoking method " + m + " on object "
-                        + this.targetObject);
+                logger.debug("Invoking method " + tm.method + " on object " 
+                        + tm.target);
             }
             try {
-                m.invoke(target, new Object[0]);
+                tm.method.invoke(tm.target, new Object[0]);
+                
+                if (masterNode()) {
+                    clusterContext.ifPresent(ctx -> ctx.clusterMessage(InvokeMessage));
+                }
             }
             catch (Throwable t) {
-                logger.warn("Failed to invoke method " + m
-                        + " on object " + targetObject, t);
+                logger.warn("Failed to invoke method " + tm.method
+                        + " on object " + tm.target, t);
                 return;
             }
         }
     }
 
+    private boolean masterNode() {
+        return !clusterRole.isPresent() || clusterRole.get() == ClusterRole.MASTER;
+    }
+
+    private static class InvokeMessage implements Serializable {
+        private static final long serialVersionUID = 3634433934600061048L;
+    }
+    private static final InvokeMessage InvokeMessage = new InvokeMessage();
+    
+
     private static final class TargetAndMethod {
-        private Object target;
-        private Method method;
+        public final Object target;
+        public final Method method;
 
         public TargetAndMethod(Object target, Method m) {
             this.target = target;
             this.method = m;
         }
-
-        public Object getTarget() {
-            return this.target;
-        }
-
-        public Method getMethod() {
-            return this.method;
-        }
     }
-
 }
 
