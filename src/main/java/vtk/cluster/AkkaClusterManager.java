@@ -88,7 +88,7 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
         LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
         private List<Subscription> subscriptions = new ArrayList<>();
-
+        
         @Override
         public void onReceive(Object msg) throws Exception {
             if (msg instanceof Subscription) {
@@ -103,12 +103,19 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
             }
             else if (msg instanceof ClusterToAppMessage) {
                 ClusterToAppMessage clusterMsg = (ClusterToAppMessage) msg;
-                for (Subscription sub: subscriptions) {
+                
+                subscriptions.forEach(sub -> {
                     if (clusterMsg.payload.getClass().isAssignableFrom(sub.msgClass)) {
                         log.debug("Forward cluster message {} to {}", msg, sub.clusterComponent);
-                        sub.clusterComponent.clusterMessage(clusterMsg.payload);
+                        try { 
+                            sub.clusterComponent.clusterMessage(clusterMsg.payload); 
+                        }
+                        catch (Exception e) {
+                            log.error(e, "Forward cluster message {} to {} failed",
+                                    msg, sub.clusterComponent);
+                        }
                     }
-                }
+                });
             }
             else {
                 unhandled(msg);
@@ -121,24 +128,25 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
         private ActorRef subscriptionActor;
         Cluster cluster = Cluster.get(getContext().system());
         private List<ClusterAware> appClusterComponents;
-
+        
         @SuppressWarnings("unused")
         public ClusterListener(ActorRef subscriptionActor, List<ClusterAware> clusterComponents) {
             this.subscriptionActor = subscriptionActor;
             this.appClusterComponents = clusterComponents;
             log.info("Create cluster listener: components=" + clusterComponents);
-            for (ClusterAware clusterComponent: appClusterComponents) {
+            
+            appClusterComponents.forEach(clusterComponent -> {
                 ClusterContext context = new ClusterContextImpl(
                         subscriptionActor, clusterComponent, getSelf());
                 clusterComponent.clusterContext(context);
-            }
+            });
         }
-
+        
         private void switchState(ClusterState state) {
-            for (ClusterAware aware: appClusterComponents) {
-                log.debug("Notify: " + aware + ": " + state);
-                aware.roleChange(state.role());
-            }
+            appClusterComponents.forEach(component -> {
+                log.debug("Notify: " + component + ": " + state);
+                component.roleChange(state.role());
+            });
         }
 
         @Override
@@ -161,13 +169,11 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
             }
             else if (message instanceof MemberUp) {
                 MemberUp up = (MemberUp) message;
-
                 log.info("Member is Up: {}", up.member());
             }
             else if (message instanceof UnreachableMember) {
                 UnreachableMember unreachable = (UnreachableMember) message;
                 log.info("Member detected as unreachable: {}", unreachable.member());
-
             }
             else if (message instanceof MemberRemoved) {
                 MemberRemoved removed = (MemberRemoved) message;
@@ -194,21 +200,18 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
 
                 List<Member> members = JavaConversions
                         .seqAsJavaList(cluster.state().members().toList());
-                for (Member member: members) {
-
+                
+                members.forEach(member -> {
                     if (!member.address().equals(cluster.selfAddress())) {
-                        ClusterMessage clusterMessage = new ClusterMessage();
-                        clusterMessage.payload = msg.payload;
+                        ClusterMessage clusterMessage = new ClusterMessage(msg.payload);
                         getContext().actorSelection(member.address() + "/user/cluster-listener")
                             .tell(clusterMessage, getSelf());
                     }
-                }
+                });
             }
             else if (message instanceof ClusterMessage) {
                 ClusterMessage msg = (ClusterMessage) message;
-                ClusterToAppMessage appMsg = new ClusterToAppMessage();
-                appMsg.payload = msg.payload;
-                subscriptionActor.tell(appMsg, getSelf());
+                subscriptionActor.tell(new ClusterToAppMessage(msg.payload), getSelf());
             }
             else {
                 unhandled(message);
@@ -225,8 +228,14 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
     }
 
     private static class Subscription {
-        ClusterAware clusterComponent;
-        Class<? extends Serializable> msgClass;
+        public final ClusterAware clusterComponent;
+        public final Class<? extends Serializable> msgClass;
+        
+        public Subscription(ClusterAware clusterComponent, Class<? extends Serializable> msgClass) {
+            this.clusterComponent = clusterComponent;
+            this.msgClass = msgClass;
+        }
+        
         @Override
         public String toString() {
             return getClass().getSimpleName() + "(" + clusterComponent + "," + msgClass + ")";
@@ -234,12 +243,24 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
     }
 
     private static class Unsubscribe {
-        ClusterAware clusterComponent;
+        public final ClusterAware clusterComponent;
+        
+        public Unsubscribe(ClusterAware clusterComponent) {
+            this.clusterComponent = clusterComponent;
+        }
+        
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(" + clusterComponent + ")";
+        }
     }
 
     private static class AppToClusterMessage implements Serializable {
         private static final long serialVersionUID = 882137978891170594L;
-        Object payload;
+        public final Object payload;
+        public AppToClusterMessage(Object payload) {
+            this.payload = payload;
+        }
 
         @Override
         public String toString() {
@@ -249,7 +270,11 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
 
     private static class ClusterToAppMessage implements Serializable {
         private static final long serialVersionUID = 140652585953838528L;
-        Object payload;
+        public final Object payload;
+        
+        public ClusterToAppMessage(Object payload) {
+            this.payload = payload;
+        }
 
         @Override
         public String toString() {
@@ -259,7 +284,10 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
 
     private static class ClusterMessage implements Serializable {
         private static final long serialVersionUID = -8821132695623282742L;
-        Object payload;
+        public final Object payload;
+        public ClusterMessage(Object payload) {
+            this.payload = payload;
+        }
 
         @Override
         public String toString() {
@@ -282,24 +310,17 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
 
         @Override
         public void subscribe(Class<? extends Serializable> msgClass) {
-            Subscription sub = new Subscription();
-            sub.clusterComponent = this.clusterComponent;
-            sub.msgClass = msgClass;
-            subscriptionActor.tell(sub, null);
+            subscriptionActor.tell(new Subscription(clusterComponent, msgClass), null);
         }
 
         @Override
         public void unsubscribe() {
-            Unsubscribe unsub = new Unsubscribe();
-            unsub.clusterComponent = this.clusterComponent;
-            subscriptionActor.tell(unsub, null);
+            subscriptionActor.tell(new Unsubscribe(clusterComponent), null);
         }
 
         @Override
         public void clusterMessage(Object msg) {
-            AppToClusterMessage clusterMessage = new AppToClusterMessage();
-            clusterMessage.payload = msg;
-            clusterListener.tell(clusterMessage, null);
+            clusterListener.tell(new AppToClusterMessage(msg), null);
         }
     }
     
@@ -325,7 +346,8 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "(" + role + ")";
+            return getClass().getSimpleName() 
+                    + "(" + role + ", " + members + ", " + self + ")";
         }
     }
 
