@@ -65,8 +65,8 @@ public class OperationLogInterceptor implements MethodInterceptor {
         if (paramValues.length == formalParams.length) {
             for (int i=0; i<formalParams.length; i++) {
                 OpLogParam p = formalParams[i].getAnnotation(OpLogParam.class);
-                Object value = formatValue(paramValues[i]);
                 if (p != null) {
+                    Object value = formatValue(paramValues[i]);
                     if (info.length() > 1) {
                         info.append(", ");
                     }
