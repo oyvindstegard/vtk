@@ -137,10 +137,9 @@ public class SystemChangeContext implements StoreContext {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.jobName);
-        sb.append(", created at ").append(this.time);
-        sb.append(", affecting ").append(this.affectedProperties);
-        return sb.toString();
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("{");
+        sb.append("jobName: ").append(jobName).append(", affecting: ").append(affectedProperties);
+        return sb.append("}").toString();
     }
 
 }

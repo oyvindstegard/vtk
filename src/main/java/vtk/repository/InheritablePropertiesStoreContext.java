@@ -74,4 +74,11 @@ public class InheritablePropertiesStoreContext implements StoreContext {
         return this.affectedProperties;
     }
     
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("{");
+        sb.append(", affecting: ").append(affectedProperties);
+        return sb.append("}").toString();
+    }
+    
 }

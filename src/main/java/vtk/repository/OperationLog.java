@@ -32,58 +32,47 @@ package vtk.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import vtk.security.Principal;
 
 
 public class OperationLog {
 
-    private static Log logger = LogFactory.getLog(OperationLog.class);
+    private static final Log LOGGER = LogFactory.getLog(OperationLog.class);
 
-    private static Log writeLogger = LogFactory.getLog(
+    private static final Log WRITE_LOGGER = LogFactory.getLog(
         OperationLog.class.getName() + ".write");
 
-    public static void info(RepositoryOperation operation, String parameters,
-                            String token, Principal principal) {
+    public static void info(String op, String parameters, boolean write) {
         StringBuilder msg = new StringBuilder();
-        msg.append(operation).append(parameters);
-        msg.append(", principal: ").append(principal);
-        msg.append(", token: ").append(token);
-        if (logger.isDebugEnabled()) {
-            logger.debug(msg.toString());
+        msg.append(op).append(parameters);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(msg.toString());
         }
-        if (writeLogger.isDebugEnabled() && operation.isWrite()) {
-            writeLogger.debug(msg.toString());
+        if (WRITE_LOGGER.isDebugEnabled() && write) {
+            WRITE_LOGGER.debug(msg.toString());
         }
     }
 
-    public static void success(RepositoryOperation operation, String parameters,
-                               String token, Principal principal) {
+    public static void success(String op, String parameters, boolean write) {
         StringBuilder msg = new StringBuilder();
-        msg.append(operation).append(parameters);
-        msg.append(" succeeded, principal: ").append(principal);
-        msg.append(", token: ").append(token);
-        if (logger.isDebugEnabled()) {
-            logger.debug(msg.toString());
+        msg.append(op).append(parameters);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(msg.toString() + " succeeded");
         }
-        if (writeLogger.isDebugEnabled() && operation.isWrite()) {
-            writeLogger.debug(msg.toString());
+        if (WRITE_LOGGER.isDebugEnabled() && write) {
+            WRITE_LOGGER.debug(msg.toString() + " succeeded");
         }
     }
 
-    public static void failure(RepositoryOperation operation, String parameters,
-                               String message, String token,
-        Principal principal) {
+    public static void failure(String op, String parameters, String error, boolean write) {
         StringBuilder msg = new StringBuilder();
 
-        msg.append(operation).append(parameters);
-        msg.append(" failed: ").append(message);
-        msg.append(", principal: ").append(principal);
-        msg.append(", token: ").append(token);
-        if (logger.isDebugEnabled()) {
-            logger.debug(msg.toString());
+        msg.append(op).append(parameters);
+        msg.append(" failed: ").append(error);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(msg.toString());
         }
-        if (writeLogger.isDebugEnabled() && operation.isWrite()) {
-            writeLogger.debug(msg.toString());
+        if (WRITE_LOGGER.isDebugEnabled() && write) {
+            WRITE_LOGGER.debug(msg.toString());
         }
     }
 

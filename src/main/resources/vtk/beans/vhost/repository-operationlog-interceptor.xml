@@ -9,14 +9,15 @@
        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
 
   <!--  Setup point-cut for operation log interceptor (only for bean 'repository.internal') -->
+  <!-- Consider creating dedicated pointcut for @OpLog annotation, which will allow logging
+       of non-transactional repository operations as well. -->
   <aop:config>
     <aop:advisor advice-ref="repository.repositoryOperationLogInterceptor"
                  pointcut-ref="transactionalAnnotationPointcut"
                  order="-1000"/> <!-- Run as early as possible, before all other interceptors -->
   </aop:config>
 
-  <bean id="repository.repositoryOperationLogInterceptor"
-    class="vtk.repository.RepositoryOperationLogInterceptor">
+  <bean id="repository.repositoryOperationLogInterceptor" class="vtk.repository.OperationLogInterceptor">
     <property name="tokenManager" ref="tokenManager"/>
   </bean>
 
