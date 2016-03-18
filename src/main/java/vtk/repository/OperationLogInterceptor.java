@@ -66,21 +66,21 @@ public class OperationLogInterceptor implements MethodInterceptor {
             for (int i=0; i<formalParams.length; i++) {
                 OpLogParam p = formalParams[i].getAnnotation(OpLogParam.class);
                 if (p != null) {
-                    Object value = formatValue(paramValues[i]);
+                    String formattedValue = formatValue(paramValues[i]);
                     if (info.length() > 1) {
                         info.append(", ");
                     }
                     if (!p.name().isEmpty()) {
                         // Add user info if token param is recognized
                         if (p.name().equals("token")) {
-                            userInfo.append("token: ").append(value).append(", ");
-                            Principal principal = tokenManager.getPrincipal(value != null ? value.toString() : null);
+                            userInfo.append("token: ").append(formattedValue).append(", ");
+                            Principal principal = tokenManager.getPrincipal(paramValues[i] != null ? paramValues[i].toString() : null);
                             userInfo.append("principal: ").append(principal);
                         } else {
-                            info.append(p.name()).append(": ").append(value);
+                            info.append(p.name()).append(": ").append(formattedValue);
                         }
                     } else {
-                        info.append(value);
+                        info.append(formattedValue);
                     }
                 }
             }
@@ -100,13 +100,19 @@ public class OperationLogInterceptor implements MethodInterceptor {
         if (value == null) return "null";
         
         if (value instanceof Resource) {
-            value = ((Resource) value).getURI().toString();
-        } else if (value instanceof Revision) {
-            value = "r" + ((Revision) value).getID();
-        } else if (value instanceof Comment) {
-            value = ((Comment) value).getURI().toString();
-        } else if (value instanceof RecoverableResource) {
-            value = ((RecoverableResource) value).getTrashUri();
+            return ((Resource) value).getURI().toString();
+        }
+        
+        if (value instanceof Revision) {
+            return "r" + ((Revision) value).getID();
+        }
+        
+        if (value instanceof Comment) {
+            return ((Comment) value).getURI().toString();
+        }
+        
+        if (value instanceof RecoverableResource) {
+            return ((RecoverableResource) value).getTrashUri();
         }
         
         return value.toString();
