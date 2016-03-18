@@ -170,16 +170,19 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public boolean exists(String token, Path uri) throws IOException {
+    public boolean exists(@OpLogParam(name = "token") String token, @OpLogParam Path uri) throws IOException {
 
-        return (this.dao.load(uri) != null);
+        return this.dao.load(uri) != null;
 
     }
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public Resource retrieve(String token, Path uri, boolean forProcessing) throws ResourceNotFoundException,
+    public Resource retrieve(@OpLogParam(name = "token") String token, 
+                             @OpLogParam Path uri, boolean forProcessing) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
         if (uri == null) {
             throw new IllegalArgumentException("URI is NULL");
@@ -217,8 +220,10 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public Resource retrieve(String token, Path uri, boolean forProcessing, Revision revision)
+    public Resource retrieve(@OpLogParam(name = "token") String token,
+            @OpLogParam Path uri, boolean forProcessing, @OpLogParam Revision revision)
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
 
         if (uri == null) {
@@ -292,8 +297,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public InputStream getInputStream(String token, Path uri, boolean forProcessing) throws ResourceNotFoundException,
+    public InputStream getInputStream(@OpLogParam(name = "token") String token, @OpLogParam Path uri, boolean forProcessing) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, ResourceLockedException, IOException {
 
         Principal principal = this.tokenManager.getPrincipal(token);
@@ -325,8 +331,10 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public InputStream getInputStream(String token, Path uri, boolean forProcessing, Revision revision)
+    public InputStream getInputStream(@OpLogParam(name = "token") String token, @OpLogParam Path uri, 
+            boolean forProcessing, @OpLogParam Revision revision)
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, ResourceLockedException,
             IOException {
 
@@ -367,8 +375,10 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public ContentStream getAlternativeContentStream(String token, Path uri, boolean forProcessing, String contentIdentifier) 
+    public ContentStream getAlternativeContentStream(@OpLogParam(name = "token") String token, @OpLogParam Path uri, boolean forProcessing, 
+            @OpLogParam(name = "contentId") String contentIdentifier) 
             throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
 
         if (contentIdentifier == null) {
@@ -405,8 +415,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
     
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public Resource[] listChildren(String token, Path uri, boolean forProcessing) throws ResourceNotFoundException,
+    public Resource[] listChildren(@OpLogParam(name = "token") String token, @OpLogParam Path uri, boolean forProcessing) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
 
         Principal principal = this.tokenManager.getPrincipal(token);
@@ -448,8 +459,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource createCollection(String token, Path uri) throws IllegalOperationException, AuthorizationException,
+    public Resource createCollection(@OpLogParam(name="token") String token, @OpLogParam Path uri) throws IllegalOperationException, AuthorizationException,
             AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
         Principal principal = this.tokenManager.getPrincipal(token);
         ResourceImpl resource = this.dao.load(uri);
@@ -510,8 +522,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public void copy(String token, Path srcUri, Path destUri, boolean overwrite, boolean copyAcl)
+    public void copy(@OpLogParam(name = "token") String token, @OpLogParam Path srcUri, @OpLogParam Path destUri, boolean overwrite, boolean copyAcl)
             throws IllegalOperationException, AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceOverwriteException, ResourceLockedException, ResourceNotFoundException,
             ReadOnlyException, IOException {
@@ -604,8 +617,10 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public void move(String token, Path srcUri, Path destUri, boolean overwrite) throws IllegalOperationException,
+    public void move(@OpLogParam(name = "token") String token, 
+            @OpLogParam Path srcUri, @OpLogParam Path destUri, boolean overwrite) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, FailedDependencyException, ResourceOverwriteException,
             ResourceLockedException, ResourceNotFoundException, ReadOnlyException, IOException {
 
@@ -704,8 +719,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public void delete(String token, Path uri, boolean restorable) throws IllegalOperationException,
+    public void delete(@OpLogParam(name = "token") String token, @OpLogParam Path uri, @OpLogParam boolean restorable) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
             FailedDependencyException, ReadOnlyException, IOException, CloneNotSupportedException {
 
@@ -773,8 +789,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public List<RecoverableResource> getRecoverableResources(String token, Path uri) throws ResourceNotFoundException,
+    public List<RecoverableResource> getRecoverableResources(@OpLogParam(name = "token") String token, @OpLogParam Path uri) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
 
         Principal principal = this.tokenManager.getPrincipal(token);
@@ -788,8 +805,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public void recover(String token, Path parentUri, RecoverableResource recoverableResource)
+    public void recover(@OpLogParam(name = "token") String token, @OpLogParam Path parentUri, @OpLogParam RecoverableResource recoverableResource)
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
 
         Principal principal = this.tokenManager.getPrincipal(token);
@@ -821,8 +839,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public void deleteRecoverable(String token, Path parentUri, RecoverableResource recoverableResource)
+    public void deleteRecoverable(@OpLogParam(name = "token") String token, @OpLogParam Path parentUri, @OpLogParam RecoverableResource recoverableResource)
             throws Exception {
 
         ResourceImpl parent = this.dao.load(parentUri);
@@ -836,8 +855,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource lock(String token, Path uri, String ownerInfo, Repository.Depth depth, int requestedTimeoutSeconds,
+    public Resource lock(@OpLogParam(name = "token") String token, @OpLogParam Path uri, String ownerInfo, Repository.Depth depth, int requestedTimeoutSeconds,
             String lockToken) throws ResourceNotFoundException, AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceLockedException, IllegalOperationException, ReadOnlyException,
             IOException {
@@ -913,8 +933,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public void unlock(String token, Path uri, String lockToken) throws ResourceNotFoundException,
+    public void unlock(@OpLogParam(name = "token") String token, @OpLogParam Path uri, String lockToken) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
         Principal principal = this.tokenManager.getPrincipal(token);
         ResourceImpl r = this.dao.load(uri);
@@ -931,15 +952,17 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource store(String token, Resource resource) throws ResourceNotFoundException, AuthorizationException,
+    public Resource store(@OpLogParam(name = "token") String token, @OpLogParam Resource resource) throws ResourceNotFoundException, AuthorizationException,
             ResourceLockedException, AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
         return store(token, resource, null);
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource store(String token, Resource resource, StoreContext storeContext) throws ResourceNotFoundException,
+    public Resource store(@OpLogParam(name = "token") String token, @OpLogParam Resource resource, @OpLogParam StoreContext storeContext) throws ResourceNotFoundException,
             AuthorizationException, ResourceLockedException, AuthenticationException, IllegalOperationException,
             ReadOnlyException, IOException {
 
@@ -1103,8 +1126,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource createDocument(String token, Path uri, InputStream inStream) throws IllegalOperationException,
+    public Resource createDocument(@OpLogParam(name = "token") String token, @OpLogParam Path uri, InputStream inStream) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
 
         Principal principal = this.tokenManager.getPrincipal(token);
@@ -1176,8 +1200,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
      * Requests that an InputStream be written to a resource.
      */
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource storeContent(String token, Path uri, InputStream byteStream) throws AuthorizationException,
+    public Resource storeContent(@OpLogParam(name = "token") String token, @OpLogParam Path uri, InputStream byteStream) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, IOException {
 
@@ -1230,8 +1255,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
      * Used to update contents of working copy revision.
      */
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource storeContent(String token, Path uri, InputStream stream, Revision revision)
+    public Resource storeContent(@OpLogParam(name = "token") String token, @OpLogParam Path uri, InputStream stream, @OpLogParam Revision revision)
             throws AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
             IllegalOperationException, ReadOnlyException, IOException {
 
@@ -1373,15 +1399,17 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource storeACL(String token, Path uri, Acl acl) throws ResourceNotFoundException, AuthorizationException,
+    public Resource storeACL(@OpLogParam(name = "token") String token, @OpLogParam Path uri, Acl acl) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
         return this.storeACL(token, uri, acl, true);
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource storeACL(String token, Path uri, Acl acl, boolean validateACL) throws ResourceNotFoundException,
+    public Resource storeACL(@OpLogParam(name = "token") String token, @OpLogParam Path uri, Acl acl, boolean validateACL) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
 
         if (uri == null) {
@@ -1431,8 +1459,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Resource deleteACL(String token, Path uri) throws ResourceNotFoundException, AuthorizationException,
+    public Resource deleteACL(@OpLogParam(name = "token") String token, @OpLogParam Path uri) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException, ReadOnlyException, Exception {
         if (uri == null) {
             throw new IllegalArgumentException("URI is null");
@@ -1487,8 +1516,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public List<Revision> getRevisions(String token, Path uri) throws AuthorizationException,
+    public List<Revision> getRevisions(@OpLogParam(name = "token") String token, @OpLogParam Path uri) throws AuthorizationException,
             ResourceNotFoundException, AuthenticationException, IOException {
         if (uri == null) {
             throw new IllegalArgumentException("URI is NULL");
@@ -1503,8 +1533,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Revision createRevision(String token, Path uri, Revision.Type type) throws ReadOnlyException,
+    public Revision createRevision(@OpLogParam(name = "token") String token, @OpLogParam Path uri, @OpLogParam Revision.Type type) throws ReadOnlyException,
             AuthorizationException, ResourceNotFoundException, AuthenticationException, IOException {
         if (uri == null) {
             throw new IllegalArgumentException("URI is NULL");
@@ -1592,8 +1623,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public void deleteRevision(String token, Path uri, Revision revision) throws ResourceNotFoundException,
+    public void deleteRevision(@OpLogParam(name = "token") String token, @OpLogParam Path uri, @OpLogParam Revision revision) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, Exception {
 
         if (uri == null) {
@@ -1630,14 +1662,16 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public List<Comment> getComments(String token, Resource resource) {
+    public List<Comment> getComments(@OpLogParam(name="token") String token, @OpLogParam Resource resource) {
         return getComments(token, resource, false, 500);
     }
 
     @Transactional(readOnly=true)
+    @OpLog
     @Override
-    public List<Comment> getComments(String token, Resource resource, boolean deep, int max) {
+    public List<Comment> getComments(@OpLogParam(name="token") String token, @OpLogParam Resource resource, boolean deep, int max) {
         Principal principal = this.tokenManager.getPrincipal(token);
 
         if (resource == null) {
@@ -1671,8 +1705,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Comment addComment(String token, Resource resource, String title, String text) {
+    public Comment addComment(@OpLogParam(name="token") String token, @OpLogParam Resource resource, String title, String text) {
         Principal principal = this.tokenManager.getPrincipal(token);
 
         if (resource == null) {
@@ -1726,8 +1761,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog
     @Override
-    public Comment addComment(String token, Comment comment) {
+    public Comment addComment(@OpLogParam(name="token") String token, @OpLogParam Comment comment) {
 
         Principal principal = this.tokenManager.getPrincipal(token);
 
@@ -1738,8 +1774,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public void deleteComment(String token, Resource resource, Comment comment) {
+    public void deleteComment(@OpLogParam(name="token") String token, @OpLogParam Resource resource, Comment comment) {
         Principal principal = this.tokenManager.getPrincipal(token);
 
         if (resource == null) {
@@ -1777,8 +1814,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public void deleteAllComments(String token, Resource resource) {
+    public void deleteAllComments(@OpLogParam(name="token") String token, @OpLogParam Resource resource) {
         Principal principal = this.tokenManager.getPrincipal(token);
 
         if (resource == null) {
@@ -1816,8 +1854,9 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     }
 
     @Transactional(readOnly=false)
+    @OpLog(write = true)
     @Override
-    public Comment updateComment(String token, Resource resource, Comment comment) {
+    public Comment updateComment(@OpLogParam(name="token") String token, @OpLogParam Resource resource, Comment comment) {
         Principal principal = this.tokenManager.getPrincipal(token);
 
         if (resource == null) {

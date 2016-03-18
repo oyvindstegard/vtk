@@ -323,9 +323,8 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
-        sb.append(": [name=").append(this.name).append("]");
-        return sb.toString();
+        String prefix = namespace == null ? null : namespace.getPrefix();
+        return "PropDef{"+(prefix != null ? prefix + ":" + name : name)+"}";
     }
 
     @Override
