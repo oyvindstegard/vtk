@@ -62,25 +62,25 @@ public class OperationLogInterceptor implements MethodInterceptor {
         Object[] paramValues = invocation.getArguments();
         StringBuilder info = new StringBuilder("(");
         StringBuilder userInfo = new StringBuilder();
-        if (paramValues.length == formalParams.length) {
+        if (paramValues.length == formalParams.length) { // paranoid ?
             for (int i=0; i<formalParams.length; i++) {
                 OpLogParam p = formalParams[i].getAnnotation(OpLogParam.class);
                 if (p != null) {
-                    String formattedValue = formatValue(paramValues[i]);
+                    Object value = paramValues[i];
                     if (info.length() > 1) {
                         info.append(", ");
                     }
                     if (!p.name().isEmpty()) {
                         // Add user info if token param is recognized
                         if (p.name().equals("token")) {
-                            userInfo.append("token: ").append(formattedValue).append(", ");
-                            Principal principal = tokenManager.getPrincipal(paramValues[i] != null ? paramValues[i].toString() : null);
+                            userInfo.append("token: ").append(format(value)).append(", ");
+                            Principal principal = tokenManager.getPrincipal(value != null ? value.toString() : null);
                             userInfo.append("principal: ").append(principal);
                         } else {
-                            info.append(p.name()).append(": ").append(formattedValue);
+                            info.append(p.name()).append(": ").append(format(value));
                         }
                     } else {
-                        info.append(formattedValue);
+                        info.append(format(value));
                     }
                 }
             }
@@ -96,7 +96,7 @@ public class OperationLogInterceptor implements MethodInterceptor {
         return dispatchAndLog(invocation, info.toString(), opLog);
     }
     
-    private String formatValue(Object value) {
+    private String format(Object value) {
         if (value == null) return "null";
         
         if (value instanceof Resource) {
@@ -134,7 +134,6 @@ public class OperationLogInterceptor implements MethodInterceptor {
             throw rnf;
         } catch (IllegalOperationException | IOException ioe) {
             OperationLog.failure(operation, params, ioe.getMessage(), op.write());
-                    
             throw ioe;
         } catch (AuthenticationException authenticationException) {
             OperationLog.failure(operation, params, "not authenticated", op.write());
