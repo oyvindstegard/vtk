@@ -558,11 +558,6 @@
     <property name="resourceTypeDefinition" ref="htmlResourceTypeDefinition" />
   </bean>
 
-  <bean id="resourceTypeIsNotXhtml" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceTypeDefinition" ref="xhtml10ResourceTypeDefinition" />
-    <property name="invert" value="true" />
-  </bean>
-
   <bean id="manage.refreshLockHandler" class="vtk.web.actions.lock.LockRefreshController">
     <property name="viewName" value="manage.refreshLockView" />
   </bean>
@@ -889,7 +884,6 @@
         <ref bean="guessedCharacterEncodingPropDef" />
         <ref bean="characterEncodingPropDef" />
         <ref bean="plaintextEditPropDef" />
-        <ref bean="xhtml10TransTypePropDef" />
         <ref bean="commentsEnabledPropDef" />
 
         <!-- Unpublished collection inheritable property -->

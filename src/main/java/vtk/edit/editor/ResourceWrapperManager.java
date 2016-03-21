@@ -35,8 +35,10 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -53,14 +55,13 @@ import vtk.text.html.HtmlPageParser;
 import vtk.web.RequestContext;
 
 public class ResourceWrapperManager {
-
+    private EditablePropertyProvider editPropertyProvider = new ResourceTypeEditablePropertyProvider();
     private HtmlPageParser htmlParser;
     private HtmlPageFilter htmlPropsFilter;
-    private EditablePropertyProvider editPropertyProvider = new ResourceTypeEditablePropertyProvider();
-    private ResourceTypeDefinition contentResourceType;
+    private Optional<ResourceTypeDefinition> contentResourceType = Optional.empty();
     private final static String defaultCharacterEncoding = "utf-8";
     private boolean allowInheritablePropertiesStore = false;
-    private List<PropertyTypeDefinition> explicitlyStoredInheritableProperties = new ArrayList<PropertyTypeDefinition>();
+    private List<PropertyTypeDefinition> explicitlyStoredInheritableProperties = new ArrayList<>();
 
     public HtmlPageParser getHtmlParser() {
         return this.htmlParser;
@@ -93,15 +94,15 @@ public class ResourceWrapperManager {
         populateWrapper(wrapper, uri, false);
         return wrapper;
     }
-
-    private void populateWrapper(ResourceWrapper wrapper, Path uri, boolean forProcessing) throws Exception {
+    
+    protected void populateWrapper(ResourceWrapper wrapper, Path uri, boolean forProcessing) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         Resource resource = requestContext.getRepository().retrieve(token, uri, forProcessing);
         populateWrapper(wrapper, resource, forProcessing);
     }
 
-    private void populateWrapper(ResourceWrapper wrapper, Resource resource, boolean forProcessing) throws Exception {
+    protected void populateWrapper(ResourceWrapper wrapper, Resource resource, boolean forProcessing) throws Exception {
         if (resource == null) {
             throw new IllegalArgumentException("Resource cannot be NULL");
         }
@@ -112,24 +113,27 @@ public class ResourceWrapperManager {
         if (wrapper instanceof ResourceEditWrapper) {
             ResourceEditWrapper editWrapper = (ResourceEditWrapper) wrapper;
             TypeInfo type = requestContext.getRepository().getTypeInfo(resource);
-            if (type.isOfType(this.contentResourceType)) {
+            
+            editWrapper.setEditProperties(editPropertyProvider.getEditProperties(resource, type));
+
+            if (contentResourceType.isPresent() && type.isOfType(contentResourceType.get())) {
                 InputStream is = requestContext.getRepository().getInputStream(token, resource.getURI(), forProcessing);
                 HtmlPage content = null;
 
                 if (resource.getCharacterEncoding() != null) {
                     // Read as default encoding (utf-8) if unsupported encoding.
                     if (Charset.isSupported(resource.getCharacterEncoding())) {
-                        content = this.htmlParser.parse(is, resource.getCharacterEncoding());
-                    } else {
-                        content = this.htmlParser.parse(is, defaultCharacterEncoding);
+                        content = htmlParser.parse(is, resource.getCharacterEncoding());
                     }
-                } else {
-                    content = this.htmlParser.parse(is, defaultCharacterEncoding);
+                    else {
+                        content = htmlParser.parse(is, defaultCharacterEncoding);
+                    }
+                }
+                else {
+                    content = htmlParser.parse(is, defaultCharacterEncoding);
                 }
                 editWrapper.setContent(content);
             }
-            editWrapper.setPreContentProperties(this.editPropertyProvider.getPreContentProperties(resource, type));
-            editWrapper.setPostContentProperties(this.editPropertyProvider.getPostContentProperties(resource, type));
         }
     }
 
@@ -141,16 +145,10 @@ public class ResourceWrapperManager {
         Repository repository = requestContext.getRepository();
 
         if (wrapper.isPropChange()) {
-            if (this.allowInheritablePropertiesStore) {
+            if (allowInheritablePropertiesStore) {
                 InheritablePropertiesStoreContext sc = new InheritablePropertiesStoreContext();
 
-                for (PropertyTypeDefinition def : wrapper.getPreContentProperties()) {
-                    if (def.isInheritable()) {
-                        sc.addAffectedProperty(def);
-                    }
-                }
-
-                for (PropertyTypeDefinition def : wrapper.getPostContentProperties()) {
+                for (PropertyTypeDefinition def : wrapper.getEditProperties()) {
                     if (def.isInheritable()) {
                         sc.addAffectedProperty(def);
                     }
@@ -164,11 +162,13 @@ public class ResourceWrapperManager {
 
                 if (!sc.getAffectedProperties().isEmpty()) {
                     resource = repository.store(token, resource, sc);
-                } else {
+                }
+                else {
                     resource = repository.store(token, resource);
                 }
 
-            } else {
+            }
+            else {
                 resource = repository.store(token, resource);
             }
         }
@@ -183,11 +183,13 @@ public class ResourceWrapperManager {
                     bytes = wrapper.getContent().getStringRepresentation().getBytes(resource.getCharacterEncoding());
                     repository.storeContent(token, uri, new ByteArrayInputStream(bytes));
 
-                } else {
+                }
+                else {
                     bytes = wrapper.getContent().getStringRepresentation().getBytes(defaultCharacterEncoding);
                     repository.storeContent(token, uri, new ByteArrayInputStream(bytes));
                 }
-            } else {
+            }
+            else {
                 bytes = wrapper.getContent().getStringRepresentation().getBytes(defaultCharacterEncoding);
                 repository.storeContent(token, uri, new ByteArrayInputStream(bytes));
             }
@@ -200,9 +202,8 @@ public class ResourceWrapperManager {
         this.htmlParser = htmlParser;
     }
 
-    @Required
     public void setContentResourceType(ResourceTypeDefinition contentResourceType) {
-        this.contentResourceType = contentResourceType;
+        this.contentResourceType = Optional.of(contentResourceType);
     }
 
     @Required
@@ -224,10 +225,11 @@ public class ResourceWrapperManager {
         Principal principal = requestContext.getPrincipal();
         requestContext.getRepository().lock(token, uri, principal.getQualifiedName(), Depth.ZERO, 600, null);
     }
-
+    
     public void setEditPropertyProvider(EditablePropertyProvider editPropertyProvider) {
         this.editPropertyProvider = editPropertyProvider;
     }
+
 
     public void setAllowInheritablePropertiesStore(boolean allow) {
         this.allowInheritablePropertiesStore = allow;

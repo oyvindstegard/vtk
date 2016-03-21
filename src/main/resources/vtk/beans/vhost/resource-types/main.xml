@@ -24,9 +24,6 @@
   <import resource="apt.xml" />
   <import resource="php.xml" />
   <import resource="html.xml" />
-  <import resource="xhtml10.xml" />
-  <import resource="article.xml" />
-  <import resource="event.xml" />
   <import resource="xml.xml" />
   <import resource="managed-xml.xml" />
   <import resource="msoffice.xml" />

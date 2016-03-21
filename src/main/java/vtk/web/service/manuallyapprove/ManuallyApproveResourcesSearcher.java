@@ -41,9 +41,9 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.MultiHostSearcher;
@@ -156,11 +156,9 @@ public class ManuallyApproveResourcesSearcher {
         Sorting sorting = new Sorting();
         sorting.addSortField(new PropertySortField(this.publishDatePropDef, SortFieldDirection.DESC));
 
-        String resourceTypePointer = this.listingResourceTypeMappingPointers.get(collection.getResourceType());
         Query resourceTypeQuery = new TypeTermQuery("file", TermOperator.IN);
+        String resourceTypePointer = this.listingResourceTypeMappingPointers.get(collection.getResourceType());
         if (resourceTypePointer != null) {
-            resourceTypePointer = resourceTypePointer.startsWith("structured.") ? resourceTypePointer.replace(".", "-")
-                    : resourceTypePointer;
             resourceTypeQuery = new TypeTermQuery(resourceTypePointer, TermOperator.IN);
         }
 

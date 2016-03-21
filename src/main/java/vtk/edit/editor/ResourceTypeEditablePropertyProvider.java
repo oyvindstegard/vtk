@@ -38,47 +38,38 @@ import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.MixinResourceTypeDefinition;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.repository.resourcetype.PropertyTypeDefinition.ContentRelation;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 
 public class ResourceTypeEditablePropertyProvider implements EditablePropertyProvider {
-	
-	public List<PropertyTypeDefinition> getPreContentProperties(Resource resource, TypeInfo typeInfo) {
-        ContentRelation type = PropertyTypeDefinition.ContentRelation.PRE_CONTENT;
-	    return getPropertyDefinitionsOfType(typeInfo, type);
-	}
 
-    public List<PropertyTypeDefinition> getPostContentProperties(Resource resource, TypeInfo typeInfo) {
-        ContentRelation type = PropertyTypeDefinition.ContentRelation.POST_CONTENT;
-        return getPropertyDefinitionsOfType(typeInfo, type);
+    @Override
+    public List<PropertyTypeDefinition> getEditProperties(Resource resource, TypeInfo typeInfo) {
+        return getPropertyDefinitionsOfType(typeInfo);
     }
 
-	
-	private List<PropertyTypeDefinition> getPropertyDefinitionsOfType(TypeInfo typeInfo, ContentRelation type) {
-        List<ResourceTypeDefinition> resourceDefinitions = new ArrayList<ResourceTypeDefinition>();
-	    populateDefinitions(resourceDefinitions, typeInfo.getResourceType());
-	    List<PropertyTypeDefinition> defs = new ArrayList<PropertyTypeDefinition>();
-	    for (ResourceTypeDefinition resourceDef : resourceDefinitions) {
-	        for (PropertyTypeDefinition propDef: resourceDef.getPropertyTypeDefinitions()) {
-                if (propDef.getContentRelation() == type) {
-	                defs.add(propDef);
-	            }
-	        }
+    private List<PropertyTypeDefinition> getPropertyDefinitionsOfType(TypeInfo typeInfo) {
+        List<ResourceTypeDefinition> resourceDefinitions = new ArrayList<>();
+        populateDefinitions(resourceDefinitions, typeInfo.getResourceType());
+        List<PropertyTypeDefinition> defs = new ArrayList<>();
+        for (ResourceTypeDefinition resourceDef : resourceDefinitions) {
+            for (PropertyTypeDefinition propDef: resourceDef.getPropertyTypeDefinitions()) {
+                defs.add(propDef);
 	    }
-	    return defs;
+        }
+        return defs;
     }
 
-	private void populateDefinitions(List<ResourceTypeDefinition> definitions, PrimaryResourceTypeDefinition resourceTypeDefinition) {
-	    if (resourceTypeDefinition != null) {
-	        populateDefinitions(definitions, resourceTypeDefinition.getParentTypeDefinition());
-	        definitions.add(resourceTypeDefinition);
-	        List<MixinResourceTypeDefinition> mixins = resourceTypeDefinition.getMixinTypeDefinitions();
-	        if (mixins != null) {
-	            for (MixinResourceTypeDefinition mixin : mixins) {
+    private void populateDefinitions(List<ResourceTypeDefinition> definitions, PrimaryResourceTypeDefinition resourceTypeDefinition) {
+        if (resourceTypeDefinition != null) {
+            populateDefinitions(definitions, resourceTypeDefinition.getParentTypeDefinition());
+            definitions.add(resourceTypeDefinition);
+            List<MixinResourceTypeDefinition> mixins = resourceTypeDefinition.getMixinTypeDefinitions();
+            if (mixins != null) {
+                for (MixinResourceTypeDefinition mixin : mixins) {
                     definitions.add(mixin);
                 }
-	        }
-	    }
+            }
+        }
     }
 
 }

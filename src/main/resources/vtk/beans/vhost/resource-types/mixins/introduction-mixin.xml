@@ -18,7 +18,6 @@
   </bean>  
 
   <bean id="introductionPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="contentRelation" value="PRE_CONTENT" />
     <property name="name" value="introduction"/>
     <property name="type" value="HTML"/>
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE"/>
@@ -26,7 +25,6 @@
   </bean>
 
   <bean id="introductionImagePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="contentRelation" value="PRE_CONTENT" />
     <property name="name" value="picture"/>
     <property name="type" value="IMAGE_REF"/>
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE"/>
@@ -34,7 +32,6 @@
   </bean>
   
   <bean id="introductionImageAltPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="contentRelation" value="PRE_CONTENT" />
     <property name="name" value="pictureAlt"/>
     <property name="type" value="STRING"/>
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE"/>
@@ -42,7 +39,6 @@
   </bean>
   
   <bean id="introductionImageCaptionPropDef" class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="contentRelation" value="PRE_CONTENT" />
     <property name="name" value="caption"/>
     <property name="type" value="HTML"/>
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE"/>
@@ -50,7 +46,6 @@
   </bean>
 
   <bean id="tagsPropDef" class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="contentRelation" value="POST_CONTENT" />
     <property name="name" value="tags" /> 
     <property name="type" value="STRING" />
     <property name="multiple" value="true" />

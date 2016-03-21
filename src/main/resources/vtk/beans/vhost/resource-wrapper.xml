@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="resourceManager" class="vtk.edit.editor.ResourceWrapperManager">
+    <property name="htmlParser" ref="decorating.htmlParser" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
+    <property name="contentResourceType" ref="htmlResourceTypeDefinition" />
+  </bean>
+
+  <bean id="resourceManager.htmlPropsFilter" class="vtk.text.html.SimpleHtmlPageFilter">
+    <property name="keepComments" value="false" />
+    <property name="illegalElements" ref="resourceManager.htmlPropsFilter.illegalHtmlElementSet" />
+    <property name="validElements" ref="resourceManager.htmlPropsFilter.validHtmlElementSet" />
+  </bean>
+
+  <bean id="resourceManager.htmlPropsFilter.illegalHtmlElementSet" class="org.springframework.beans.factory.config.SetFactoryBean">
+    <property name="sourceSet">
+      <set>
+        <value>script</value>
+        <value>style</value>
+        <!--value>form</value-->
+        <!--value>input</value-->
+        <value>frameset</value>
+        <value>frame</value>
+        <value>iframe</value>
+        <value>object</value>
+        <value>embed</value>
+      </set>
+    </property>
+  </bean>
+
+  <bean id="resourceManager.htmlPropsFilter.validHtmlElementSet" class="org.springframework.beans.factory.config.SetFactoryBean">
+    <property name="sourceSet">
+      <set>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="a" />
+          <property name="attributes">
+            <set>
+              <value>href</value>
+              <value>rel</value>
+              <value>class</value>
+              <value>id</value>
+              <value>target</value>
+              <value>title</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="p" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="sub" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="sup" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="em" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="strong" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="cite" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="code" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="strike" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="s" />
+        </bean>
+        <!-- Additional legal elements: -->
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="b" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="i" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="h2" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="h3" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="h4" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="h5" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="h6" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="pre" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="hr" />
+          <property name="validAsEmpty" value="true" />
+        </bean>
+
+        <!-- Lists -->
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="ul" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="ol" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="li" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+            </set>
+          </property>
+        </bean>
+
+        <!-- Table -->
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="table" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+              <value>style</value>
+              <value>align</value>
+              <value>cellpadding</value>
+              <value>cellspacing</value>
+              <value>summary</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="td" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+              <value>style</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="tr" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+              <value>style</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="th" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+              <value>style</value>
+              <value>scope</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="caption" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="tbody" />
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="thead" />
+        </bean>
+
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="img" />
+          <property name="validAsEmpty" value="true" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>style</value>
+              <value>class</value>
+              <value>src</value>
+              <value>alt</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="div" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+              <value>style</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="span" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+              <value>style</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="form" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+              <value>method</value>
+              <value>action</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="fieldset" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="label" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="input" />
+          <property name="validAsEmpty" value="true" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>class</value>
+              <value>type</value>
+              <value>value</value>
+              <value>size</value>
+              <value>autocomplete</value>
+            </set>
+          </property>
+        </bean>
+        <bean class="vtk.text.html.HtmlElementDescriptor">
+          <property name="name" value="button" />
+          <property name="attributes">
+            <set>
+              <value>id</value>
+              <value>name</value>
+              <value>type</value>
+              <value>class</value>
+            </set>
+          </property>
+        </bean>
+      </set>
+    </property>
+  </bean>
+
+</beans>

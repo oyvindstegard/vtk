@@ -2,6 +2,37 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
+  <bean id="articleListing.resourceTypeQueryString" class="java.lang.String">
+    <constructor-arg value="type IN structured-article" />
+  </bean>
+
+  <bean id="articleListing.sortPropDefPointers" class="java.util.ArrayList">
+    <constructor-arg>
+      <list>
+        <value>publish-date</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
+  <bean id="article.configurablePropertySelectPointersList" class="java.util.ArrayList">
+    <constructor-arg>
+      <list>
+        <value>title</value>
+        <value>publish-date</value>
+        <value>resource:picture</value>
+        <value>resource:pictureAlt</value>
+        <value>resource:caption</value>
+        <value>resource:introduction</value>
+        <value>resource:hasBodyContent</value>
+        <value>resource:media</value>
+        <value>numberOfComments</value>
+        <value>lastModified</value>
+        <value>contentLocale</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
+
   <bean id="articleListing.viewService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="collectionListing.viewService" />
     <property name="order" value="0" />
@@ -48,7 +79,6 @@
 
   <bean id="articleListing.feedView" class="vtk.web.display.collection.article.ArticleListingAtomFeedView" 
         parent="atomFeedView">
-    <property name="overridePublishDatePropDef" ref="publishedDatePropDef" />
     <property name="feedMetadata">
       <map>
         <entry key="feed-type" value="article-listing" />
@@ -75,10 +105,6 @@
           <property name="preventDisplayProperty" ref="articleListing.hideIntroductionImagePropDef" />
         </bean>
         <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="publishedDatePropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hidePublishedDatePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
           <property name="displayProperty" ref="introductionPropDef" />
           <property name="preventDisplayProperty" ref="articleListing.hideIntroductionPropDef" />
         </bean>
@@ -89,12 +115,12 @@
       <list>
         <ref bean="articleListing.excludeFeaturedArticlesQueryBuilder" />
         <bean parent="queryStringParser">
-          <property name="queryString" ref="${override.listing.prefix}articleListing.resourceTypeQueryString" />
+          <property name="queryString" ref="articleListing.resourceTypeQueryString" />
         </bean>
       </list>
     </property>
     <property name="searchSorting" ref="articleListing.searchSorting" />
-    <property name="configurablePropertySelectPointers" ref="${override.listing.prefix}article.configurablePropertySelectPointersList" />
+    <property name="configurablePropertySelectPointers" ref="article.configurablePropertySelectPointersList" />
     <property name="displayEditLinks" value="false" />
   </bean>
 
@@ -115,7 +141,7 @@
   <bean id="articleListing.excludeFeaturedArticlesQueryBuilder" class="vtk.web.search.articlelisting.FeaturedArticlesQueryBuilder"
     parent="queryStringParser">
     <property name="featuredArticlesPropDef" ref="articleListing.featuredArticlesPropDef" />
-    <property name="queryString" ref="${override.listing.prefix}articleListing.resourceTypeQueryString" />
+    <property name="queryString" ref="articleListing.resourceTypeQueryString" />
   </bean>
 
   <bean id="articleListing.featuredArticlesQueryBuilder" parent="articleListing.excludeFeaturedArticlesQueryBuilder">
@@ -138,10 +164,6 @@
           <property name="preventDisplayProperty" ref="articleListing.hideIntroductionImagePropDef" />
         </bean>
         <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="publishedDatePropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hidePublishedDatePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
           <property name="displayProperty" ref="introductionPropDef" />
           <property name="preventDisplayProperty" ref="articleListing.hideIntroductionPropDef" />
         </bean>
@@ -154,14 +176,14 @@
     </property>
     <property name="searchSorting" ref="articleListing.searchSorting" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="configurablePropertySelectPointers" ref="${override.listing.prefix}article.configurablePropertySelectPointersList" />
+    <property name="configurablePropertySelectPointers" ref="article.configurablePropertySelectPointersList" />
   </bean>
 
 
   <bean id="articleListing.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
     <property name="sortPropDef" ref="articleListing.sortingPropDef" />
     <property name="sortOrderPropDefPointers">
-      <ref bean="${override.listing.prefix}articleListing.sortPropDefPointers" />
+      <ref bean="articleListing.sortPropDefPointers" />
     </property>
     <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="defaultSortOrder" ref="SORT_ORDER.DESC" />
@@ -190,21 +212,5 @@
   </bean>
 
   <bean id="articleListing.view" parent="collectionListing.view" />
-
-  <!-- ### Legacy resource types and properties -->
-
-  <bean id="articleListing.resourceTypeQueryString" class="java.lang.String">
-    <constructor-arg value="(type IN article AND published-date &lt;= {$currentTime})" />
-  </bean>
-
-  <bean id="articleListing.sortPropDefPointers" class="java.util.ArrayList">
-    <constructor-arg>
-      <list>
-        <value>published-date</value>
-      </list>
-    </constructor-arg>
-  </bean>
-
-  <bean id="article.configurablePropertySelectPointersList" class="java.util.ArrayList" />
 
 </beans>

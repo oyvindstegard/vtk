@@ -217,7 +217,7 @@
     <#assign editURL = vrtx.linkConstructor("", '') />
     <form action="${editURL?html}" method="post" id="editor">
       <div class="properties"<#if isImage> id="image-properties"</#if>>
-        <@propsForm resource.preContentProperties />
+        <@propsForm resource.editProperties />
       </div>
  
       <#if (resource.content)?exists>
@@ -227,10 +227,6 @@
           <@editor.createEditor  'resource.content' true false simpleHTML />
         </div>
       </#if>
-
-      <div class="properties<#if (resource.content)?exists> properties-post</#if>">
-        <@propsForm resource.postContentProperties />
-      </div>
  
      <#if isImage>
        <div id="vrtx-image-editor-wrapper">

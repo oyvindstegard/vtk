@@ -49,7 +49,6 @@
     <property name="assertions">
       <list>
         <ref bean="resourceTypeInHtml" />
-        <ref bean="resourceTypeIsNotDocument" />
         <ref bean="resourceTypeIsNotOoXml" />
       </list>
     </property>
@@ -249,18 +248,6 @@
     <property name="arguments" ref="editor.eventListingEditService" />
   </bean>
 
-  <bean id="editor.documentEditService" parent="editor.abstractEditService">
-    <property name="assertions">
-      <list>
-        <ref bean="resourceTypeIsDocument" />
-      </list>
-    </property>
-    <property name="handler" ref="editor.editHandler" />
-  </bean>
-  <bean parent="manage.tabsBuilder">
-    <property name="arguments" ref="editor.documentEditService" />
-  </bean>
-
   <bean id="editor.browseService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-999" />
     <property name="assertions">
@@ -279,13 +266,6 @@
       </bean>
     </property>
   </bean>
-
-  <!--
-  <bean id="editor.getSourceStripHeadersInterceptor" class="vtk.web.interceptors.HeaderControlHandlerInterceptor">
-    <property name="includeLastModifiedHeader" value="false" />
-    <property name="includeEtagHeader" value="false" />
-  </bean>
-  -->
 
   <bean id="editor.browseUriAssertion" class="vtk.web.service.RequestURIRegexpAssertion">
     <property name="pattern" value="${editor.fck.browseURL}" />
@@ -563,28 +543,27 @@
     <property name="contentResourceType" ref="htmlResourceTypeDefinition" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="htmlTitlePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
 
-  <bean id="editor.imageResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
+  <bean id="editor.imageResourceManager" class="vtk.edit.editor.ImageResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
     <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="photographerPropDef" />
             <ref bean="imageHtmlDescriptionPropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
@@ -592,10 +571,9 @@
   <bean id="editor.videoResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
     <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="videoHtmlDescriptionPropDef" />
@@ -603,7 +581,7 @@
             <ref bean="hideVideoDownloadLinkPropDef" />
             <ref bean="hideVideoFallbackLinkPropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
@@ -611,26 +589,24 @@
   <bean id="editor.audioResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
     <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="audioHtmlDescriptionPropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
 
   <bean id="editor.collectionResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -654,18 +630,17 @@
             <ref bean="additionalContentPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
 
   <bean id="editor.personResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="personListing.unitAreaCodePropDef" />
             <ref bean="userTitlePropDef" />
@@ -682,18 +657,17 @@
             <ref bean="aggregationPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
 
   <bean id="editor.projectResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -710,18 +684,17 @@
             <ref bean="additionalContentPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
 
   <bean id="editor.researchGroupResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -738,7 +711,7 @@
             <ref bean="additionalContentPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
@@ -746,10 +719,9 @@
   <bean id="editor.imageListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
     <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -763,7 +735,7 @@
             <ref bean="imageListing.displayTypePropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
@@ -771,10 +743,9 @@
   <bean id="editor.audioVideoListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
     <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -790,18 +761,17 @@
             <ref bean="collection.sortingPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
 
   <bean id="editor.articleListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -829,18 +799,17 @@
             <ref bean="additionalContentPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
 
   <bean id="editor.folderListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="navigationTitlePropDef" />
@@ -854,7 +823,7 @@
             <ref bean="collection.sortingPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
@@ -862,10 +831,9 @@
   <bean id="editor.messageListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
     <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -877,18 +845,17 @@
             <ref bean="aggregationPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
 
   <bean id="editor.blogListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -903,18 +870,17 @@
             <ref bean="additionalContentPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>
 
   <bean id="editor.eventListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -941,293 +907,8 @@
             <ref bean="additionalContentPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
-    </property>
-  </bean>
-
-
-  <!-- XXX: Separate HTML filter setup for person listing: -->
-
-  <bean id="personResourceManager.htmlPropsFilter" class="vtk.text.html.SimpleHtmlPageFilter">
-    <property name="keepComments" value="false" />
-    <property name="illegalElements" ref="personResourceManager.htmlPropsFilter.illegalHtmlElementSet" />
-    <property name="validElements" ref="personResourceManager.htmlPropsFilter.validHtmlElementSet" />
-  </bean>
-
-  <bean id="personResourceManager.htmlPropsFilter.illegalHtmlElementSet" class="org.springframework.beans.factory.config.SetFactoryBean">
-    <property name="sourceSet">
-      <set>
-        <value>script</value>
-        <value>style</value>
-        <value>frameset</value>
-        <value>frame</value>
-        <value>iframe</value>
-        <value>object</value>
-        <value>embed</value>
-      </set>
-    </property>
-  </bean>
-
-  <bean id="personResourceManager.htmlPropsFilter.validHtmlElementSet" class="org.springframework.beans.factory.config.SetFactoryBean">
-    <property name="sourceSet">
-      <set>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="a" />
-          <property name="attributes">
-            <set>
-              <value>href</value>
-              <value>rel</value>
-              <value>class</value>
-              <value>id</value>
-              <value>target</value>
-              <value>title</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="p" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="sub" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="sup" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="em" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="strong" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="cite" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="code" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="strike" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="s" />
-        </bean>
-        <!-- Additional legal elements: -->
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="b" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="i" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="h2" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="h3" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="h4" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="h5" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="h6" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="pre" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="hr" />
-          <property name="validAsEmpty" value="true" />
-        </bean>
-
-        <!-- Lists -->
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="ul" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="ol" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="li" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-            </set>
-          </property>
-        </bean>
-
-        <!-- Table -->
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="table" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-              <value>style</value>
-              <value>align</value>
-              <value>cellpadding</value>
-              <value>cellspacing</value>
-              <value>summary</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="td" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-              <value>style</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="tr" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-              <value>style</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="th" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-              <value>style</value>
-              <value>scope</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="caption" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="tbody" />
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="thead" />
-        </bean>
-
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="img" />
-          <property name="validAsEmpty" value="true" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>style</value>
-              <value>class</value>
-              <value>src</value>
-              <value>alt</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="div" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-              <value>style</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="span" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-              <value>style</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="form" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-              <value>method</value>
-              <value>action</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="fieldset" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="label" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="input" />
-          <property name="validAsEmpty" value="true" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>class</value>
-              <value>type</value>
-              <value>value</value>
-              <value>size</value>
-              <value>autocomplete</value>
-            </set>
-          </property>
-        </bean>
-        <bean class="vtk.text.html.HtmlElementDescriptor">
-          <property name="name" value="button" />
-          <property name="attributes">
-            <set>
-              <value>id</value>
-              <value>name</value>
-              <value>type</value>
-              <value>class</value>
-            </set>
-          </property>
-        </bean>
-      </set>
     </property>
   </bean>
 

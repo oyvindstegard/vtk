@@ -38,10 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
 
-import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
-import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
 import vtk.web.display.feed.ListingFeedView;
 import vtk.web.service.Service;
@@ -50,7 +48,6 @@ import vtk.web.tags.TagsHelper;
 
 public class TagsAtomFeedView extends ListingFeedView {
 
-    private PropertyTypeDefinition overridePublishDatePropDef;
     protected TagsHelper tagsHelper;
 
     @Override
@@ -95,22 +92,9 @@ public class TagsAtomFeedView extends ListingFeedView {
         return new Date();
     }
 
-    @Override
-    protected Property getPublishDate(PropertySet resource) {
-        Property overridePublishDateProp = resource.getProperty(overridePublishDatePropDef);
-        if (overridePublishDateProp != null) {
-            return overridePublishDateProp;
-        }
-        return getDefaultPublishDate(resource);
-    }
-
     @Required
     public void setTagsHelper(TagsHelper tagsHelper) {
         this.tagsHelper = tagsHelper;
-    }
-
-    public void setOverridePublishDatePropDef(PropertyTypeDefinition overridePublishDatePropDef) {
-        this.overridePublishDatePropDef = overridePublishDatePropDef;
     }
 
 }

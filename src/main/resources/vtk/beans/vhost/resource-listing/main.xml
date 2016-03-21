@@ -17,10 +17,6 @@
   <import resource="view-feed-listing.xml" />
   <import resource="view-filtered-listing.xml" />
 
-  <!-- Beans to override default listing of events and articles -->
-  <import resource="view-structured-article-listing.xml" />
-  <import resource="view-structured-event-listing.xml" />
-
   <import resource="view-employee-listing.xml" />
   <import resource="view-person-listing.xml" />
 

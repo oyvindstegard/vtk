@@ -33,7 +33,6 @@
   <import resource="controllers.xml" />
   <import resource="service.xml" />
   <import resource="authentication.xml" />
-  <import resource="article.xml" />
   <import resource="structured-resources-management.xml" />
   <import resource="structured-resources.xml" />
 
@@ -44,6 +43,8 @@
 
   <!-- Default editor -->
   <import resource="editor/editor.xml" />
+
+  <import resource="resource-wrapper.xml" />
 
   <import resource="manage.xml" />
   <import resource="actions-listing.xml" />

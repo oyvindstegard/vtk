@@ -273,7 +273,6 @@
         <property name="maxComments" value="100" />
         <property name="viewService" ref="viewService" />
         <property name="resourceCommentsFeedService" ref="commenting.feedService" />
-        <property name="publishedDatePropDef" ref="publishedDatePropDef" />
         <property name="includeCommentsFromUnpublished" value="true" />
       </bean>
     </property>
@@ -294,7 +293,6 @@
         <property name="viewService" ref="viewService" />
         <property name="recentCommentsService" ref="commenting.resourceCommentsService" />
         <property name="resourceCommentsFeedService" ref="commenting.feedService" />
-        <property name="publishedDatePropDef" ref="publishedDatePropDef" />
       </bean>    
     </property>  
   </bean>

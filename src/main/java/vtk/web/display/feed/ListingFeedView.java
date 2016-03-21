@@ -482,12 +482,6 @@ public class ListingFeedView implements View {
         return ret;
     }
 
-    protected Property getDefaultPublishDate(PropertySet result) {
-        if (publishDatePropDef != null) {
-            return result.getProperty(publishDatePropDef);
-        }
-        return null;
-    }
 
     protected String getIntroduction(PropertySet resource) {
         Property introductionProp = getProperty(resource, introductionPropDefPointer);
@@ -576,7 +570,7 @@ public class ListingFeedView implements View {
     }
 
     protected Property getPublishDate(PropertySet propertySet) {
-        return getDefaultPublishDate(propertySet);
+        return propertySet.getProperty(publishDatePropDef);
     }
 
     /**

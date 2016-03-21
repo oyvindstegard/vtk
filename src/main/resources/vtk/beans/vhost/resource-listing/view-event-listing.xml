@@ -2,6 +2,98 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
+  <bean id="eventListing.specificDateEventSearchComponent" parent="eventListing.upcomingEventsSearchComponent">
+    <property name="name" value="eventListing.specificDateEventSearchComponent" />
+    <property name="queryBuilders">
+      <list>
+        <bean parent="queryStringParser">
+          <property name="queryString" value="type IN structured-event" />
+        </bean>
+        <bean class="vtk.web.search.eventlisting.DateAndSearchTypeQueryStringProcessor" parent="queryStringParser">
+          <property name="helper" ref="eventListingHelper" />
+          <property name="queryString"
+            value="(resource:start-date &gt;= [1] AND resource:start-date &lt; [2])
+            OR (resource:end-date &gt;= [1] AND resource:end-date &lt; [2])
+            OR (resource:start-date &lt;= [1] AND resource:end-date &gt;= [2])" />
+        </bean>
+      </list>
+    </property>
+    <property name="titleLocalizationKey">
+      <null />
+    </property>
+    <property name="configurablePropertySelectPointers" ref="event.configurablePropertySelectPointersList" />
+  </bean>
+
+  <bean id="eventListingFeed.specificDateEventSearchComponent" parent="eventListing.specificDateEventSearchComponent">
+    <property name="name" value="eventListingFeed.specificDateEventSearchComponent" />
+    <property name="resolveMultiHostResultSet" value="false" />
+  </bean>
+
+  <bean id="eventListing.currentMonthSearchComponent" parent="eventListing.specificDateEventSearchComponent">
+    <property name="name" value="eventListing.currentMonthSearchComponent" />
+    <property name="queryBuilders">
+      <list>
+        <bean parent="queryStringParser">
+          <property name="queryString" value="type IN structured-event" />
+        </bean>
+        <bean class="vtk.web.search.eventlisting.CurrentMonthQueryStringProcessor" parent="queryStringParser">
+          <property name="helper" ref="eventListingHelper" />
+          <property name="queryString"
+            value="(resource:start-date &gt;= [1] AND resource:start-date &lt; [2])
+            OR (resource:end-date &gt;= [1] AND resource:end-date &lt; [2])
+            OR (resource:start-date &lt;= [1] AND resource:end-date &gt;= [2])" />
+        </bean>
+      </list>
+    </property>
+    <property name="configurablePropertySelectPointers" ref="event.configurablePropertySelectPointersList" />
+  </bean>
+
+  <!-- ### JSON resource type resource types and properties ### -->
+
+  <bean id="eventListing.resourceTypeQueryString" class="java.lang.String">
+    <constructor-arg type="java.lang.String">
+      <value>type IN structured-event</value>
+    </constructor-arg>
+  </bean>
+
+  <bean id="eventListing.startDatePropDefPointer" class="java.lang.String">
+    <constructor-arg type="java.lang.String">
+      <value>resource:start-date</value>
+    </constructor-arg>
+  </bean>
+
+  <bean id="eventListing.endDatePropDefPointer" class="java.lang.String">
+    <constructor-arg type="java.lang.String">
+      <value>resource:end-date</value>
+    </constructor-arg>
+  </bean>
+
+  <bean id="event.configurablePropertySelectPointersList" class="java.util.ArrayList">
+    <constructor-arg>
+      <list>
+        <value>title</value>
+        <value>publish-date</value>
+        <value>resource:introduction</value>
+        <value>resource:picture</value>
+        <value>resource:pictureAlt</value>
+        <value>resource:caption</value>
+        <value>resource:location</value>
+        <value>resource:end-date</value>
+        <value>resource:start-date</value>
+        <value>resource:mapurl</value>
+        <value>resource:hasBodyContent</value>
+        <value>numberOfComments</value>
+        <value>lastModified</value>
+        <value>contentLocale</value>
+      </list>
+    </constructor-arg>
+  </bean>
+
+
+
+
+
+
   <bean id="eventListing.viewService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="collectionListing.viewService" />
     <property name="order" value="0" />
@@ -41,13 +133,13 @@
     </property>
     <property name="includeRequestParametersInAlternativeRepresentation" value="true" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="startPropDefPointer" ref="${override.listing.prefix}eventListing.startDatePropDefPointer" />
+    <property name="startPropDefPointer" ref="eventListing.startDatePropDefPointer" />
   </bean>
 
   <bean id="eventListing.eventListingSearcher" class="vtk.web.display.collection.event.EventListingSearcher">
     <property name="upcomingEventsSearch" ref="eventListing.upcomingEventsSearchComponent" />
     <property name="previousEventsSearch" ref="eventListing.previousEventsSearchComponent" />
-    <property name="specificDateEventSearchComponent" ref="${override.listing.prefix}eventListing.specificDateEventSearchComponent" />
+    <property name="specificDateEventSearchComponent" ref="eventListing.specificDateEventSearchComponent" />
   </bean>
 
   <bean name="eventListing.feedHandler" parent="eventListing.calendarAllUpcomingHandler">
@@ -65,22 +157,13 @@
     </property>
   </bean>
 
-
-  <bean id="overridePublishDatePropDefPointer" class="java.lang.String">
-    <constructor-arg value="start-date" />
-  </bean>
-
-  <bean id="structured.overridePublishDatePropDefPointer" class="java.lang.String">
-    <constructor-arg value="resource:start-date" />
-  </bean>
-
   <bean id="eventListingHelper" class="vtk.web.display.collection.event.EventListingHelper">
     <property name="localeResolver" ref="viewServiceResourceAwareLocaleResolver" />
     <property name="dateValueFormatter" ref="dateValueFormatter" />
     <property name="eventTypeTitlePropDef" ref="eventListing.eventTypeTitlePropDef" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="startPropDefPointer" ref="${override.listing.prefix}eventListing.startDatePropDefPointer" />
-    <property name="endPropDefPointer" ref="${override.listing.prefix}eventListing.endDatePropDefPointer" />
+    <property name="startPropDefPointer" ref="eventListing.startDatePropDefPointer" />
+    <property name="endPropDefPointer" ref="eventListing.endDatePropDefPointer" />
   </bean>
 
   <bean id="eventListing.upcomingEventsSearchComponent" parent="collectionListing.searchComponent">
@@ -92,18 +175,18 @@
       <list>
         <ref bean="eventListing.upcomingEventsQueryBuilder" />
         <bean parent="queryStringParser">
-          <property name="queryString" ref="${override.listing.prefix}eventListing.resourceTypeQueryString" />
+          <property name="queryString" ref="eventListing.resourceTypeQueryString" />
         </bean>
       </list>
     </property>
     <property name="searchSorting" ref="eventListing.upcoming.searchSorting" />
-    <property name="configurablePropertySelectPointers" ref="${override.listing.prefix}event.configurablePropertySelectPointersList" />
+    <property name="configurablePropertySelectPointers" ref="event.configurablePropertySelectPointersList" />
   </bean>
 
   <bean id="eventListing.upcomingEventsQueryBuilder" class="vtk.web.search.eventlisting.EventsDateAndTimeQueryBuilder">
     <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="startPropDefPointer" ref="${override.listing.prefix}eventListing.startDatePropDefPointer" />
-    <property name="endPropDefPointer" ref="${override.listing.prefix}eventListing.endDatePropDefPointer" />
+    <property name="startPropDefPointer" ref="eventListing.startDatePropDefPointer" />
+    <property name="endPropDefPointer" ref="eventListing.endDatePropDefPointer" />
   </bean>
 
   <bean id="eventListing.previousEventsQueryBuilder" parent="eventListing.upcomingEventsQueryBuilder">
@@ -124,8 +207,8 @@
   <bean id="eventListing.upcoming.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
     <property name="sortOrderPropDefPointers">
       <list>
-        <ref bean="${override.listing.prefix}eventListing.startDatePropDefPointer" />
-        <ref bean="${override.listing.prefix}eventListing.endDatePropDefPointer" />
+        <ref bean="eventListing.startDatePropDefPointer" />
+        <ref bean="eventListing.endDatePropDefPointer" />
       </list>
     </property>
     <property name="resourceTypeTree" ref="resourceTypeTree" />
@@ -139,19 +222,19 @@
       <list>
         <ref bean="eventListing.previousEventsQueryBuilder" />
         <bean parent="queryStringParser">
-          <property name="queryString" ref="${override.listing.prefix}eventListing.resourceTypeQueryString" />
+          <property name="queryString" ref="eventListing.resourceTypeQueryString" />
         </bean>
       </list>
     </property>
     <property name="searchSorting" ref="eventListing.previous.searchSorting" />
-    <property name="configurablePropertySelectPointers" ref="${override.listing.prefix}event.configurablePropertySelectPointersList" />
+    <property name="configurablePropertySelectPointers" ref="event.configurablePropertySelectPointersList" />
   </bean>
 
   <bean id="eventListing.previous.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
     <property name="sortOrderPropDefPointers">
       <list>
-        <ref bean="${override.listing.prefix}eventListing.startDatePropDefPointer" />
-        <ref bean="${override.listing.prefix}eventListing.endDatePropDefPointer" />
+        <ref bean="eventListing.startDatePropDefPointer" />
+        <ref bean="eventListing.endDatePropDefPointer" />
       </list>
     </property>
     <property name="resourceTypeTree" ref="resourceTypeTree" />
@@ -161,6 +244,7 @@
   <bean id="eventListing.listableProperties" class="java.util.ArrayList">
     <constructor-arg>
       <list>
+        <!--
         <bean class="vtk.web.search.PropertyDisplayConfig">
           <property name="displayProperty" ref="startDatePropDef" />
         </bean>
@@ -184,6 +268,7 @@
           <property name="displayProperty" ref="introductionPropDef" />
           <property name="preventDisplayProperty" ref="articleListing.hideIntroductionPropDef" />
         </bean>
+        -->
       </list>
     </constructor-arg>
   </bean>
@@ -217,27 +302,5 @@
       </map>
     </property>
   </bean>
-
-  <!-- ### Legacy resource types and properties -->
-
-  <bean id="eventListing.resourceTypeQueryString" class="java.lang.String">
-    <constructor-arg type="java.lang.String">
-      <value>type IN event</value>
-    </constructor-arg>
-  </bean>
-
-  <bean id="eventListing.startDatePropDefPointer" class="java.lang.String">
-    <constructor-arg type="java.lang.String">
-      <value>start-date</value>
-    </constructor-arg>
-  </bean>
-
-  <bean id="eventListing.endDatePropDefPointer" class="java.lang.String">
-    <constructor-arg type="java.lang.String">
-      <value>end-date</value>
-    </constructor-arg>
-  </bean>
-
-  <bean id="event.configurablePropertySelectPointersList" class="java.util.ArrayList" />
 
 </beans>

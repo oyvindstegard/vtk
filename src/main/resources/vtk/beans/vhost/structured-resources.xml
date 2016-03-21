@@ -440,8 +440,23 @@
 
   <bean id="structuredResources.displayView" class="vtk.web.decorating.TemplateView">
     <property name="templateRef" value="structured-resources.template" />
-    <property name="templateManager" ref="article.templateManager" />
+    <property name="templateManager" ref="structuredResources.displayView.templateManager" />
   </bean>
+
+  <bean id="structuredResources.displayView.templateManager"
+        class="vtk.web.decorating.StaticTemplateManager">
+    <property name="templateFactory" ref="structuredResources.displayView.decoratorTemplateFactory" />
+    <property name="uriPrefix" value="${article.decoratorTemplatesLocation}" />
+    <property name="characterEncoding" value="utf-8" />
+  </bean>
+
+  <bean id="structuredResources.displayView.decoratorTemplateFactory"
+        class="vtk.web.decorating.ParsedHtmlDecoratorTemplateFactory">
+    <property name="htmlParser" ref="decorating.htmlParser" />
+    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
+    <property name="componentParser" ref="decorating.dollarSyntaxTemplateParser" />
+  </bean>
+
 
   <bean id="structuredResources.editView" parent="freemarkerView">
     <property name="url" value="structured-resources/editor.ftl" />

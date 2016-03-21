@@ -30,6 +30,8 @@
  */
 package vtk.edit.editor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +43,12 @@ import vtk.text.html.HtmlPage;
 
 public class ResourceEditWrapper extends ResourceWrapper {
     private HtmlPage content;
-    private List<PropertyTypeDefinition> preContentProperties;
-    private List<PropertyTypeDefinition> postContentProperties;
-    private Map<PropertyTypeDefinition, String> errors = new HashMap<PropertyTypeDefinition, String>();
+    private List<PropertyTypeDefinition> editProperties = new ArrayList<>();
+    private Map<PropertyTypeDefinition, String> errors = new HashMap<>();
 
+    private boolean save = false;
+    private boolean saveCopy = false;
+    private boolean view = false;
 
     public ResourceEditWrapper(ResourceWrapperManager resourceManager) {
         super(resourceManager);
@@ -70,22 +74,13 @@ public class ResourceEditWrapper extends ResourceWrapper {
         this.propChange = propChange;
     }
 
-    public List<PropertyTypeDefinition> getPreContentProperties() {
-        return this.preContentProperties;
+    public List<PropertyTypeDefinition> getEditProperties() {
+        return this.editProperties;
     }
 
-    public void setPreContentProperties(List<PropertyTypeDefinition> contentProperties) {
-        this.preContentProperties = contentProperties;
+    public void setEditProperties(List<PropertyTypeDefinition> properties) {
+        this.editProperties = Collections.unmodifiableList(properties);
     }
-
-    public List<PropertyTypeDefinition> getPostContentProperties() {
-        return this.postContentProperties;
-    }
-
-    public void setPostContentProperties(List<PropertyTypeDefinition> extraContentProperties) {
-        this.postContentProperties = extraContentProperties;
-    }
-
 
     public HtmlPage getContent() {
         return this.content;
@@ -103,7 +98,6 @@ public class ResourceEditWrapper extends ResourceWrapper {
         return elements.get(0).getContent(); 
     }
 
-
     public void reject(PropertyTypeDefinition propDef, String code) {
         this.errors.put(propDef, code);
     }
@@ -119,11 +113,6 @@ public class ResourceEditWrapper extends ResourceWrapper {
     public Map<PropertyTypeDefinition, String> getErrors() {
         return this.errors;
     }
-
-
-    private boolean save = false;
-    private boolean saveCopy = false;
-    private boolean view = false;
 
     public boolean isSave() {
         return this.save;
@@ -149,58 +138,4 @@ public class ResourceEditWrapper extends ResourceWrapper {
         return view;
     }
 
-    private int cropX = 0;
-    private int cropY = 0;
-    private int cropWidth = 0;
-    private int cropHeight = 0;
-    private int newWidth = 0;
-    private int newHeight = 0;
-    
-    public int getCropX() {
-        return cropX;
-    }
-
-    public void setCropX(int cropX) {
-        this.cropX = cropX;
-    }
-
-    public int getCropY() {
-        return cropY;
-    }
-
-    public void setCropY(int cropY) {
-        this.cropY = cropY;
-    }
-
-    public int getCropWidth() {
-        return cropWidth;
-    }
-
-    public void setCropWidth(int cropWidth) {
-        this.cropWidth = cropWidth;
-    }
-
-    public int getCropHeight() {
-        return cropHeight;
-    }
-
-    public void setCropHeight(int cropHeight) {
-        this.cropHeight = cropHeight;
-    }
-
-    public int getNewWidth() {
-        return newWidth;
-    }
-
-    public void setNewWidth(int newWidth) {
-        this.newWidth = newWidth;
-    }
-
-    public int getNewHeight() {
-        return newHeight;
-    }
-
-    public void setNewHeight(int newHeight) {
-        this.newHeight = newHeight;
-    }
 }

@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -66,11 +67,22 @@ public class ImageEditController extends ResourceEditController {
     private SaveImageHelper saveImageHelper;
     private PropertyTypeDefinition heightPropDef;
     private PropertyTypeDefinition widthPropDef;
+    
+    
+    @Override
+    protected ServletRequestDataBinder createBinder(HttpServletRequest request, ResourceEditWrapper wrapper) throws Exception {
+        ServletRequestDataBinder binder = new ImageEditDataBinder(wrapper, getCommandName(),
+                resourceManager.getHtmlParser(), resourceManager.getHtmlPropsFilter(), propertyEditPreprocessors);
+        return binder;
+    }
+    
 
     @Override
     protected ModelAndView onSubmit(HttpServletRequest request,
-            HttpServletResponse response, ResourceEditWrapper wrapper,
+            HttpServletResponse response, ResourceEditWrapper wrapperObj,
             BindException errors) throws Exception {
+        ImageResourceEditWrapper wrapper = (ImageResourceEditWrapper) wrapperObj;
+        
         Resource resource = wrapper.getResource();
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();

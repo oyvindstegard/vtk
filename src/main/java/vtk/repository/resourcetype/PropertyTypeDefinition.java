@@ -44,22 +44,7 @@ import vtk.repository.resourcetype.PropertyType.Type;
  * The definition of a property
  */
 public interface PropertyTypeDefinition {
-
-    /**
-     * Used by old resource editor framework.
-     * @deprecated
-     */
-    public enum ContentRelation {
-        PRE_CONTENT,
-        POST_CONTENT
-    }
     
-    /**
-     * Temporary marker for properties that are visualized as content for the resource.
-     * Will only have meaning for properties/resources using the old editor regime.
-     */
-    public ContentRelation getContentRelation();
-
     public static final String METADATA_EDITING_HINTS = "editingHints";
     
     public static final String METADATA_INDEXABLE_JSON = "indexableJsonHint";

@@ -39,6 +39,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertyImpl;
@@ -74,17 +75,7 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     private Vocabulary<Value> vocabulary;
     private ValueFactory valueFactory;
     private ValueFormatterRegistry valueFormatterRegistry;
-    private ContentRelation contentRelation;
     private TypeLocalizationProvider typeLocalizationProvider = null;
-
-    public void setContentRelation(ContentRelation contentRelation) {
-        this.contentRelation = contentRelation;
-    }
-
-    @Override
-    public ContentRelation getContentRelation() {
-        return this.contentRelation;
-    }
 
     public void setMetadata(Map<String, Object> metadata) {
         if (metadata == null) {

@@ -38,11 +38,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
-import vtk.edit.editor.ResourceWrapperManager;
+
 import vtk.repository.Repository;
 import vtk.repository.RepositoryException;
 import vtk.repository.Resource;
-import vtk.repository.ResourceWrapper;
 import vtk.repository.Revision;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
@@ -69,8 +68,6 @@ import vtk.web.service.ServiceUnlinkableException;
  * looking up the resource from the model. Default is <code>resource</code>.
  * <li><code>modelName</code> - the name to use for the submodel (default is
  * <code>resourceContext</code>).
- * <li><code>resourceWrapperManager</code> - optional resource wrapper manager.
- * If set, the resource will be wrapped in a {@link ResourceWrapper}
  * </ul>
  * 
  * <p>
@@ -91,7 +88,6 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
     private boolean getResourceFromModel = false;
     private String resourceFromModelKey = "resource";
     private String modelName = "resourceContext";
-    private ResourceWrapperManager resourceWrapperManager;
     private String revisionRequestParameter = null;
 
     public void setRetrieveForProcessing(boolean retrieveForProcessing) {
@@ -109,11 +105,7 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
     public void setModelName(String modelName) {
         this.modelName = modelName;
     }
-
-    public void setResourceWrapperManager(ResourceWrapperManager resourceWrapperManager) {
-        this.resourceWrapperManager = resourceWrapperManager;
-    }
-
+    
     public void setRevisionRequestParameter(String revisionRequestParameter) {
         this.revisionRequestParameter = revisionRequestParameter;
     }
@@ -173,22 +165,22 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
             try {
                 resource = repository.retrieve(requestContext.getSecurityToken(), requestContext.getResourceURI(),
                         this.retrieveForProcessing);
-            } catch (RepositoryException e) {
-            }
+            } 
+            catch (RepositoryException e) { }
         }
         if (resource != null && !resource.getURI().isRoot()) {
             try {
                 parent = repository.retrieve(requestContext.getSecurityToken(), requestContext.getResourceURI()
                         .getParent(), this.retrieveForProcessing);
-            } catch (Exception e) {
             }
+            catch (Exception e) { }
         }
 
-        if (this.resourceWrapperManager != null && resource != null) {
-            if (!(resource instanceof ResourceWrapper)) {
-                resource = this.resourceWrapperManager.createResourceWrapper(resource);
-            }
-        }
+//        if (this.resourceWrapperManager != null && resource != null) {
+//            if (!(resource instanceof ResourceWrapper)) {
+//                resource = this.resourceWrapperManager.createResourceWrapper(resource);
+//            }
+//        }
 
         resourceContextModel.put("principal", principal);
         resourceContextModel.put("currentResource", resource);
@@ -203,9 +195,10 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
         resourceContextModel.put("currentServiceName", currentService.getName());
         try {
             resourceContextModel.put("currentServiceURL", currentService.constructURL(resource, principal));
-        } catch (ServiceUnlinkableException sue) {
-        } catch (Exception ex) {
         }
+        catch (ServiceUnlinkableException e) { }
+        catch (Exception e) { }
+
         resourceContextModel.put("repositoryId", repository.getId());
         resourceContextModel.put("requestContext", requestContext);
         resourceContextModel.put("repositoryReadOnly", repository.isReadOnly(requestContext.getResourceURI(), false));

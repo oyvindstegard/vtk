@@ -515,24 +515,6 @@
     <property name="exactMatch" value="false" />
   </bean>
 
-  <bean id="resourceTypeInXhtml" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceTypeDefinition" ref="xhtml10ResourceTypeDefinition" />
-    <property name="exactMatch" value="false" />
-  </bean>
-
-  <bean id="resourceTypeIsXhtml" parent="resourceTypeInXhtml" >
-    <property name="exactMatch" value="true" />
-  </bean>
-
-  <bean id="resourceTypeInXhtmlTrans" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceTypeDefinition" ref="xhtml10TransResourceTypeDefinition" />
-    <property name="exactMatch" value="false" />
-  </bean>
-
-  <bean id="resourceTypeIsXhtmlTrans" parent="resourceTypeInXhtmlTrans">
-    <property name="exactMatch" value="true" />
-  </bean>
-
   <bean id="abstractResourcePrincipalPermissionAssertion"
         class="vtk.web.service.ResourcePrincipalPermissionAssertion"
         abstract="true">

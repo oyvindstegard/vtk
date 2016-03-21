@@ -38,6 +38,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Comment;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -46,7 +47,6 @@ import vtk.repository.Repository;
 import vtk.repository.RepositoryAction;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyType;
-import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
@@ -61,7 +61,6 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
     private Service resourceCommentsFeedService;
     private Service recentCommentsService;
     private boolean includeCommentsFromUnpublished;
-    private PropertyTypeDefinition publishedDatePropDef;
 
     public void setDeepCommentsListing(boolean deepCommentsListing) {
         this.deepCommentsListing = deepCommentsListing;
@@ -91,10 +90,6 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
         this.includeCommentsFromUnpublished = includeCommentsFromUnpublished;
     }
 
-    public void setPublishedDatePropDef(PropertyTypeDefinition publishedDatePropDef) {
-        this.publishedDatePropDef = publishedDatePropDef;
-    }
-    
     @Override
     public void referenceData(final Map<String, Object> model, HttpServletRequest servletRequest) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
@@ -112,12 +107,13 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
         Resource resource = repository.retrieve(token, uri, true);
         // If deepCommentListing is specified, always find the nearest
         // collection:
-        if (!resource.isCollection() && this.deepCommentsListing) {
+        if (!resource.isCollection() && deepCommentsListing) {
             uri = uri.getParent();
             resource = repository.retrieve(token, uri, true);
         }
 
-        List<Comment> comments = repository.getComments(token, resource, this.deepCommentsListing, this.maxComments);
+        List<Comment> comments = repository.getComments(token, resource, 
+                deepCommentsListing, maxComments);
 
         Map<String, Resource> resourceMap = new HashMap<>();
         Map<String, URL> commentURLMap = new HashMap<>();
@@ -127,27 +123,22 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
                 Resource r = repository.retrieve(token, comment.getURI(), true);
                 
                 // Don't include comments from resources that are not published
-                Property publishedDate = null;
-                if (publishedDatePropDef != null) {
-                    publishedDate = r.getProperty(publishedDatePropDef);
-                    if (publishedDate == null && "application/json".equals(r.getContentType())) {
-                      publishedDate = r.getProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.PUBLISHED_PROP_NAME);
-                      if (!publishedDate.getBooleanValue()) {
-                          publishedDate = null;
-                      }
-                    }
+                Property published = r.getProperty(Namespace.DEFAULT_NAMESPACE, 
+                        PropertyType.PUBLISHED_PROP_NAME);
+                if (!published.getBooleanValue()) {
+                    published = null;
                 }
 
-                if (!this.includeCommentsFromUnpublished && publishedDate == null) {
+                if (!includeCommentsFromUnpublished && published == null) {
                     continue;
                 }
                 
                 filteredComments.add(comment);
                 resourceMap.put(r.getURI().toString(), r);
-                URL commentURL = this.viewService.constructURL(r, principal);
+                URL commentURL = viewService.constructURL(r, principal);
                 commentURLMap.put(comment.getID(), commentURL);
-            } catch (Throwable t) {
             }
+            catch (Throwable t) { }
         }
 
         boolean commentsAllowed =
@@ -155,24 +146,24 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
 
         URL baseCommentURL = null;
         try {
-            baseCommentURL = this.viewService.constructURL(resource, principal);
-        } catch (Exception e) {
+            baseCommentURL = viewService.constructURL(resource, principal);
         }
+        catch (Exception e) { }
 
         URL feedURL = null;
-        if (this.resourceCommentsFeedService != null) {
+        if (resourceCommentsFeedService != null) {
             try {
-                feedURL = this.resourceCommentsFeedService.constructURL(resource, principal);
-            } catch (Exception e) {
+                feedURL = resourceCommentsFeedService.constructURL(resource, principal);
             }
+            catch (Exception e) { }
         }
 
         URL recentCommentsURL = null;
-        if (this.recentCommentsService != null) {
+        if (recentCommentsService != null) {
             try {
-                recentCommentsURL = this.recentCommentsService.constructURL(resource, principal);
-            } catch (Exception e) {
+                recentCommentsURL = recentCommentsService.constructURL(resource, principal);
             }
+            catch (Exception e) { }
         }
 
         model.put("commentsEnabled", false);

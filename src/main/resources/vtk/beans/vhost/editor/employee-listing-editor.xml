@@ -21,11 +21,10 @@
 
   <bean id="editor.employeeResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="htmlPropsFilter" ref="personResourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
+    <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="propertyDefinitions">
           <list>
             <ref bean="employeeListing.unitAreaCodePropDef" />
             <ref bean="userTitlePropDef" />
@@ -38,7 +37,7 @@
             <ref bean="employeeListing.displayAffiliationTabsPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>

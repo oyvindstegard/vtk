@@ -112,7 +112,6 @@
   </bean>
 
   <bean id="userTitlePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="contentRelation" value="PRE_CONTENT" />
     <property name="name" value="userTitle" />
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />

@@ -23,10 +23,9 @@
   <bean id="editor.blogListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
     <property name="htmlParser" ref="decorating.htmlParser" />
     <property name="htmlPropsFilter" ref="resourceManager.htmlPropsFilter" />
-    <property name="contentResourceType" ref="documentResourceTypeDefinition" />
     <property name="editPropertyProvider">
       <bean class="vtk.edit.editor.ConfigurableEditablePropertyProvider">
-        <property name="preContentProperties">
+        <constructor-arg name="editProperties">
           <list>
             <ref bean="userTitlePropDef" />
             <ref bean="introductionPropDef" />
@@ -39,7 +38,7 @@
             <ref bean="pageLimitPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
-        </property>
+        </constructor-arg>
       </bean>
     </property>
   </bean>

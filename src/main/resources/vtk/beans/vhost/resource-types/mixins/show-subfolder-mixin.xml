@@ -15,7 +15,6 @@
 
   <bean id="showSubfolderTitlePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
     parent="abstractPropDef">
-    <property name="contentRelation" value="PRE_CONTENT" />
     <property name="name" value="show-subfolder-title" />
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
