@@ -33,8 +33,8 @@ package vtk.web.actions.versioning;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
@@ -48,7 +48,7 @@ import vtk.web.service.URL;
 
 public class DeleteRevisionController implements Controller {
 
-    private static Log logger = LogFactory.getLog(DeleteRevisionController.class);
+    private static Logger logger = LoggerFactory.getLogger(DeleteRevisionController.class);
     private Service redirectService;
 
     @Required

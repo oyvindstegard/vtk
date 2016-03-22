@@ -39,8 +39,8 @@ import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -86,7 +86,7 @@ import freemarker.template.TemplateException;
 public class MultiTemplateLocationsFreeMarkerConfigurer
   implements FreeMarkerConfig, InitializingBean, ApplicationContextAware, ServletContextAware {
 
-    private final Log logger = LogFactory.getLog(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ApplicationContext applicationContext;
     private Resource configLocation;

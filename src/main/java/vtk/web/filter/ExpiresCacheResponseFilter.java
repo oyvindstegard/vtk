@@ -40,8 +40,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -55,7 +55,7 @@ import vtk.web.service.Service;
 
 public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
 
-    private static Log logger = LogFactory.getLog(ExpiresCacheResponseFilter.class);
+    private static Logger logger = LoggerFactory.getLogger(ExpiresCacheResponseFilter.class);
     
     private PropertyTypeDefinition expiresPropDef;
     private int globalMaxAge = -1;

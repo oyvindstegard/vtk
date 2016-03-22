@@ -32,8 +32,8 @@ package vtk.aop.interceptor;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -51,7 +51,7 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class LoggingMethodTimerInterceptor implements MethodInterceptor, InitializingBean {
 
-    private Log logger = LogFactory.getLog(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     private long timeLimitMilliseconds = -1;
     private boolean logStackTraces = false;
@@ -127,7 +127,7 @@ public class LoggingMethodTimerInterceptor implements MethodInterceptor, Initial
             }
         }
 
-        logger.warn(msg);
+        logger.warn(msg.toString());
         
     }
 }

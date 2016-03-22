@@ -35,8 +35,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -64,7 +64,7 @@ public class WarmupSearcherFactory extends SearcherFactory implements Initializi
     
     private List<String> warmupSearchSpecs = Collections.emptyList();
     
-    private final Log logger = LogFactory.getLog(WarmupSearcherFactory.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(WarmupSearcherFactory.class.getName());
 
     @Override
     public void afterPropertiesSet() throws Exception {

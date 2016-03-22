@@ -50,8 +50,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -146,8 +146,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
 
     private static final int FILE_COPY_BUF_SIZE = 122880;
 
-    private final Log searchLogger = LogFactory.getLog(RepositoryImpl.class.getName() + ".Search");
-    private final Log trashLogger = LogFactory.getLog(RepositoryImpl.class.getName() + ".Trash");
+    private final Logger searchLogger = LoggerFactory.getLogger(RepositoryImpl.class.getName() + ".Search");
+    private final Logger trashLogger = LoggerFactory.getLogger(RepositoryImpl.class.getName() + ".Trash");
     
     @Override
     public boolean isReadOnly() {
@@ -2177,7 +2177,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         this.maintenanceIntervalSeconds = interval;
     }
 
-    private final Log periodicLogger = LogFactory.getLog(RepositoryImpl.class.getName() + ".Maintenance");
+    private final Logger periodicLogger = LoggerFactory.getLogger(RepositoryImpl.class.getName() + ".Maintenance");
     private Set<Integer> revisionGCHours = new HashSet<Integer>(Arrays.asList(new Integer[] { 3 }));
     private Set<Integer> trashCanPurgeHours = new HashSet<Integer>(Arrays.asList(new Integer[] { 4 }));
     private int maintenanceIntervalSeconds = 600;

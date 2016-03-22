@@ -33,15 +33,15 @@ package vtk.web.service;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
 
 public class AndAssertion implements Assertion {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private Assertion[] assertions;
 
 

@@ -39,8 +39,8 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -68,7 +68,7 @@ public class BaseCollectionListingController implements ListingController {
     public final static String MODEL_KEY_HIDE_NUMBER_OF_COMMENTS = "hideNumberOfComments";
     public final static String MODEL_KEY_FEATURED_ARTICLES = "featuredArticles";
 
-    protected static Log logger = LogFactory.getLog(BaseCollectionListingController.class);
+    protected static Logger logger = LoggerFactory.getLogger(BaseCollectionListingController.class);
 
     protected ResourceWrapperManager resourceManager;
     protected int defaultPageLimit = 20;

@@ -35,8 +35,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.Ordered;
 
@@ -69,7 +69,7 @@ import vtk.web.service.Assertion;
 public abstract class AbstractAuthenticationHandler implements
         AuthenticationHandler, Ordered {
 
-    protected Log logger = LogFactory.getLog(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String identifier;
     

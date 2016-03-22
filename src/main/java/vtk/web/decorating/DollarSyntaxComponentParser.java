@@ -38,14 +38,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.text.html.HtmlUtil;
 
 
 public class DollarSyntaxComponentParser implements TextualComponentParser {
 
-    private static Log logger = LogFactory.getLog(DollarSyntaxComponentParser.class);
+    private static Logger logger = LoggerFactory.getLogger(DollarSyntaxComponentParser.class);
 
     private static final Pattern NAMESPACE_REGEX_PATTERN = Pattern.compile("[a-zA-Z]+");
     private static final Pattern NAME_REGEX_PATTERN = Pattern.compile("[a-zA-Z]+(-[a-zA-Z]+)*");

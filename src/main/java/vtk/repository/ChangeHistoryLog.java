@@ -30,15 +30,15 @@
  */
 package vtk.repository;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.security.Principal;
 
 public class ChangeHistoryLog {
 
-    private static Log logger = LogFactory.getLog(ChangeHistoryLog.class);
+    private static Logger logger = LoggerFactory.getLogger(ChangeHistoryLog.class);
 
-    private static Log securityLogger = LogFactory.getLog(
+    private static Logger securityLogger = LoggerFactory.getLogger(
     		ChangeHistoryLog.class.getName() + ".security"); 
     
     public static void change(String operation, boolean security, Path uri, String description,

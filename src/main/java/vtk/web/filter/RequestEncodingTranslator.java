@@ -44,8 +44,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import vtk.repository.Path;
@@ -72,7 +72,7 @@ public class RequestEncodingTranslator extends AbstractRequestFilter
     private String fromEncoding;
     private String toEncoding;
     private Set<String> translatedHeaders = new HashSet<String>();
-    private static Log logger = LogFactory.getLog(RequestEncodingTranslator.class);
+    private static Logger logger = LoggerFactory.getLogger(RequestEncodingTranslator.class);
     private Map<Pattern, String> urlReplacements;
 
     public void setFromEncoding(String fromEncoding) {

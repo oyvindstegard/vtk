@@ -31,8 +31,8 @@
 package vtk.web.search;
 
 import java.util.Set;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
@@ -52,7 +52,7 @@ import vtk.web.service.URL;
  */
 public class MultiHostUtil {
 
-    private static final Log logger = LogFactory.getLog(MultiHostUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(MultiHostUtil.class);
 
     /**
      * Get MultiHostUrl Property from a PropertySet.
@@ -196,7 +196,7 @@ public class MultiHostUtil {
                     Path resourceParentPath = url.getPath().getParent();
                     path = resourceParentPath.expand(ret);
                 } catch (Exception e) {
-                    // Ignore. Log??
+                    // Ignore. Logger??
                 }
             }
 

@@ -42,8 +42,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -74,7 +74,7 @@ import vtk.repository.resourcetype.ValueFormatterRegistry;
  */
 public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean, ApplicationContextAware {
 
-    private static Log logger = LogFactory.getLog(ResourceTypeTreeImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(ResourceTypeTreeImpl.class);
     
     private ApplicationContext applicationContext;
     

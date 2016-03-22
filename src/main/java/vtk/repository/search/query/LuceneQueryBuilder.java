@@ -35,8 +35,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
@@ -96,7 +96,7 @@ import vtk.repository.search.query.security.QueryAuthorizationFilterFactory;
  */
 public class LuceneQueryBuilder implements InitializingBean {
 
-    private final Log logger = LogFactory.getLog(LuceneQueryBuilder.class);
+    private final Logger logger = LoggerFactory.getLogger(LuceneQueryBuilder.class);
 
     private ResourceTypeTree resourceTypeTree;
     private DocumentMapper documentMapper;

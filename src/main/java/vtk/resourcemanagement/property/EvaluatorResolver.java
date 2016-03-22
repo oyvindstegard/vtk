@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Namespace;
@@ -60,7 +60,7 @@ import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 
 public class EvaluatorResolver {
-    private static Log logger = LogFactory.getLog(EvaluatorResolver.class);
+    private static Logger logger = LoggerFactory.getLogger(EvaluatorResolver.class);
 
     // XXX Reconsider this whole setup. No good implementation.
     private ExternalServiceInvoker serviceInvoker;

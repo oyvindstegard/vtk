@@ -36,8 +36,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -50,7 +50,7 @@ import vtk.web.service.Service;
 
 public class RenameController extends SimpleFormController<RenameCommand> {
 
-    private static Log logger = LogFactory.getLog(RenameController.class);
+    private static Logger logger = LoggerFactory.getLogger(RenameController.class);
 
     @Override
     protected RenameCommand formBackingObject(HttpServletRequest request) throws Exception {

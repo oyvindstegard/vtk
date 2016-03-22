@@ -32,8 +32,8 @@ package vtk.repository.index.management;
 
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.index.DirectReindexer;
 import vtk.repository.index.IndirectReindexer;
 import vtk.repository.index.PropertySetIndex;
@@ -53,7 +53,7 @@ public class IndexOperationManagerImpl implements IndexOperationManager {
                                                           "consistencyChecker";
     public static final String REINDEXER_THREAD_NAME = "reindexer";
     
-    private static final Log LOG = LogFactory.getLog(
+    private static final Logger LOG = LoggerFactory.getLogger(
                                             IndexOperationManagerImpl.class);
     
     private final PropertySetIndex index;

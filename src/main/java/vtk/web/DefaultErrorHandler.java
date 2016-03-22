@@ -36,8 +36,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -81,7 +81,7 @@ import vtk.web.service.Service;
 public class DefaultErrorHandler
   implements ErrorHandler, BeanNameAware, InitializingBean {
     
-    private static Log logger = LogFactory.getLog(DefaultErrorHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(DefaultErrorHandler.class);
     
     public static final String DEFAULT_ERROR_CODE = "error.default";
     public static final String DEFAULT_ERROR_DESCRIPTION = "Internal server error";

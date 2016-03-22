@@ -46,8 +46,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -79,7 +79,7 @@ public class XmlSearcher {
 
     private static final String URL_IDENTIFIER = "url";
 
-    private static Log logger = LogFactory.getLog(XmlSearcher.class);
+    private static Logger logger = LoggerFactory.getLogger(XmlSearcher.class);
 
     private Searcher searcher;
     private Parser parser;

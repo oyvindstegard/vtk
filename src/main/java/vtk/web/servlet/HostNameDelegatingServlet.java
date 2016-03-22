@@ -40,8 +40,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HttpServletBean;
 
 
@@ -49,7 +49,7 @@ public class HostNameDelegatingServlet extends HttpServletBean {
 
     private static final long serialVersionUID = 3689067326964052024L;
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private Map<String, String> hostMap = null;
     private ServletContext servletContext = null;
 

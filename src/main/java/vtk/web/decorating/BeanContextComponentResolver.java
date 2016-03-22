@@ -38,8 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -55,7 +55,7 @@ import vtk.web.RequestContext;
 public class BeanContextComponentResolver
     implements ComponentResolver, ApplicationContextAware, InitializingBean {
 
-    private static Log logger = LogFactory.getLog(BeanContextComponentResolver.class);
+    private static Logger logger = LoggerFactory.getLogger(BeanContextComponentResolver.class);
 
     private volatile boolean initialized = false;
     private ApplicationContext applicationContext;

@@ -39,8 +39,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.owasp.html.PolicyFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
@@ -69,7 +69,7 @@ import vtk.web.service.URL;
  * Optionally stores the binding errors object in the session.
  */
 public class PostCommentController extends SimpleFormController<PostCommentCommand> {
-    private final Log logger = LogFactory.getLog(PostCommentController.class);
+    private final Logger logger = LoggerFactory.getLogger(PostCommentController.class);
     
     private String formSessionAttributeName;
     private HtmlPageParser parser;

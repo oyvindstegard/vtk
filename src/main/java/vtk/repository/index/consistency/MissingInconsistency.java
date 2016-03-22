@@ -31,8 +31,8 @@
 package vtk.repository.index.consistency;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.PropertySetImpl;
@@ -47,7 +47,7 @@ import vtk.repository.index.PropertySetIndex;
  */
 public class MissingInconsistency extends RequireOriginalDataConsistencyError {
     
-    private static final Log LOG = LogFactory.getLog(MissingInconsistency.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MissingInconsistency.class);
 
     
     public MissingInconsistency(Path uri, PropertySetImpl repositoryPropSet,

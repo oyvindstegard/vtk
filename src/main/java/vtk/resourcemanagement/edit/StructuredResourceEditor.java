@@ -43,8 +43,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
@@ -81,7 +81,7 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
     private HtmlPageFilter safeHtmlFilter;
     private Service listComponentsService;
     private Locale defaultLocale;
-    private static Log logger = LogFactory.getLog(StructuredResourceEditor.class);
+    private static Logger logger = LoggerFactory.getLogger(StructuredResourceEditor.class);
 
     
     @Override

@@ -35,8 +35,8 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
@@ -92,7 +92,7 @@ import vtk.util.web.HttpUtil;
 public class HttpDigestAuthenticationHandler
   implements AuthenticationHandler, AuthenticationChallenge, Ordered, InitializingBean {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String identifier;
     private PrincipalFactory principalFactory;

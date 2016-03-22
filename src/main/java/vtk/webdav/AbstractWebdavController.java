@@ -40,8 +40,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Namespace;
 import org.springframework.web.servlet.mvc.Controller;
 import vtk.repository.Path;
@@ -55,7 +55,7 @@ import vtk.web.service.URL;
  */
 public abstract class AbstractWebdavController implements Controller {
 
-    protected Log logger = LogFactory.getLog(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
     private List<Pattern> deniedFileNamePatterns = new ArrayList<Pattern>();
 
     public void setDeniedFileNames(List<String> deniedFileNames) {

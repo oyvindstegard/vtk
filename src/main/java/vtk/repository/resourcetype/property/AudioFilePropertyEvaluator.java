@@ -32,8 +32,8 @@ package vtk.repository.resourcetype.property;
 
 import javax.sound.sampled.AudioFileFormat;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertyEvaluationContext.Type;
@@ -50,7 +50,7 @@ import vtk.repository.resourcetype.PropertyEvaluator;
  */
 public class AudioFilePropertyEvaluator implements PropertyEvaluator {
 
-    private final Log logger = LogFactory.getLog(AudioFilePropertyEvaluator.class);
+    private final Logger logger = LoggerFactory.getLogger(AudioFilePropertyEvaluator.class);
 
     private String audioFileProperty;
 

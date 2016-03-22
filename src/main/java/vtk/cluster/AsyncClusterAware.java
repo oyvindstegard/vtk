@@ -33,8 +33,8 @@ package vtk.cluster;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wraps an underlying ClusterAware and converts all calls to asynchronous
@@ -44,11 +44,11 @@ import org.apache.commons.logging.LogFactory;
 public class AsyncClusterAware implements ClusterAware {
     private final ClusterAware underlyingClusterAware;
     private final ExecutorService executorService;
-    private final Log log;
+    private final Logger log;
 
     public AsyncClusterAware(ClusterAware underlying) {
         this.underlyingClusterAware = underlying;
-        this.log = LogFactory.getLog(
+        this.log = LoggerFactory.getLogger(
             getClass().getName() + "." + underlying.getClass().getSimpleName());
         this.executorService = Executors.newSingleThreadExecutor(
             r -> new Thread(r, toString()));

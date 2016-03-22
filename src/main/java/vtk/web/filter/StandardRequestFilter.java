@@ -41,8 +41,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import vtk.util.web.HttpUtil;
 import vtk.web.service.URL;
@@ -62,7 +62,7 @@ import vtk.web.service.URL;
  */
 public class StandardRequestFilter extends AbstractRequestFilter {
 
-    private static Log logger = LogFactory.getLog(StandardRequestFilter.class);
+    private static Logger logger = LoggerFactory.getLogger(StandardRequestFilter.class);
 
     private Map<Pattern, String> urlReplacements;
     private Pattern xForwardedFor = null;

@@ -42,8 +42,8 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
@@ -75,7 +75,7 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
 
     private int maxLogBytesBody = 4096;
     private Service service;
-    private Log logger;
+    private Logger logger;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -83,7 +83,7 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
         if (this.service != null) {
             loggerId += "." + this.service.getName();
         }
-        this.logger = LogFactory.getLog(loggerId);
+        this.logger = LoggerFactory.getLogger(loggerId);
     }
 
     @Override

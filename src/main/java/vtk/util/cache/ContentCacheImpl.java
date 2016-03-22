@@ -38,8 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -86,7 +86,7 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public final class ContentCacheImpl<K,V> implements ContentCache<K,V>, InitializingBean, DisposableBean {
     
-    private static Log logger = LogFactory.getLog(ContentCacheImpl.class);    
+    private static Logger logger = LoggerFactory.getLogger(ContentCacheImpl.class);    
 
     private String name;
     private ContentCacheLoader<K, V> loader;

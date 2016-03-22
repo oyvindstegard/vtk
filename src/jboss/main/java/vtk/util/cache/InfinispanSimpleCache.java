@@ -33,8 +33,8 @@ package vtk.util.cache;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
@@ -48,7 +48,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * Infinispan uses JGroups as underlying message protocol, same as JBoss.
  */
 public class InfinispanSimpleCache<K, V> implements SimpleCache<K, V> {
-    private static final Log log = LogFactory.getLog(InfinispanSimpleCache.class);
+    private static final Logger log = LoggerFactory.getLogger(InfinispanSimpleCache.class);
     private static final EmbeddedCacheManager manager =
         new DefaultCacheManager(GlobalConfigurationBuilder
             .defaultClusteredBuilder()

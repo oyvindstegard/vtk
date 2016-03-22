@@ -42,8 +42,8 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.util.repository.InvalidURIException;
 import vtk.util.web.LinkTypesPrefixes;
 
@@ -58,7 +58,7 @@ import vtk.util.web.LinkTypesPrefixes;
 public class FileURIResolver implements StylesheetURIResolver {
 
     public static final String PROTOCOL_PREFIX = LinkTypesPrefixes.FILE + "//";
-    protected Log logger = LogFactory.getLog(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
     
     /**
      * Will only match paths starting with a '/' character.

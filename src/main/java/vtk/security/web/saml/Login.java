@@ -37,14 +37,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Response;
 import org.opensaml.util.storage.MapBasedStorageService;
 import org.opensaml.util.storage.ReplayCache;
 import org.opensaml.util.storage.ReplayCacheEntry;
 import org.opensaml.util.storage.StorageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
@@ -53,9 +53,9 @@ import vtk.web.service.URL;
 
 public class Login extends SamlService {
 
-    private static Log logger = LogFactory.getLog(Login.class);
+    private static Logger logger = LoggerFactory.getLogger(Login.class);
 
-    private static Log authLogger = LogFactory.getLog("vtk.security.web.AuthLog");
+    private static Logger authLogger = LoggerFactory.getLogger("vtk.security.web.AuthLog");
 
     int replayMinutes = 60;
     private StorageService<String, ReplayCacheEntry> replayStorage = new MapBasedStorageService<String, ReplayCacheEntry>();
@@ -230,6 +230,6 @@ public class Login extends SamlService {
             }
         }
         message.append("]");
-        logger.debug(message);
+        logger.debug(message.toString());
     }
 }

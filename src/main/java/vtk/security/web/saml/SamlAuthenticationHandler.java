@@ -46,8 +46,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
@@ -94,9 +94,9 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
     private PrincipalFactory principalFactory;
 
-    private static Log logger = LogFactory.getLog(SamlAuthenticationHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(SamlAuthenticationHandler.class);
 
-    private static Log authLogger = LogFactory.getLog("vtk.security.web.AuthLog");
+    private static Logger authLogger = LoggerFactory.getLogger("vtk.security.web.AuthLog");
 
     private IECookieStore iECookieStore;
     
@@ -112,7 +112,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
     private String backstepParameter = "backsteps";
 
-    private final Log authDebugLog = LogFactory.getLog("vtk.security.web.AUTH_DEBUG");
+    private final Logger authDebugLog = LoggerFactory.getLogger("vtk.security.web.AUTH_DEBUG");
 
     @Override
     public void challenge(HttpServletRequest request, HttpServletResponse response)

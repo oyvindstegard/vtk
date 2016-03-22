@@ -42,8 +42,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -65,7 +65,7 @@ import vtk.web.service.Service;
  */
 public class FileUploadController extends SimpleFormController<FileUploadCommand> {
 
-    private static Log logger = LogFactory.getLog(FileUploadController.class);
+    private static Logger logger = LoggerFactory.getLogger(FileUploadController.class);
 
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));
 

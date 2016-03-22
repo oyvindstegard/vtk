@@ -46,8 +46,8 @@ import javax.servlet.http.HttpSession;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -126,7 +126,7 @@ public abstract class SamlService {
 
     private String logoutURL;
 
-    protected final Log authDebugLog = LogFactory.getLog("vtk.security.web.AUTH_DEBUG");
+    protected final Logger authDebugLog = LoggerFactory.getLogger("vtk.security.web.AUTH_DEBUG");
 
     private SimpleCache<String,UUID> requestIdStore;
 

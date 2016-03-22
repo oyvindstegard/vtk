@@ -35,8 +35,8 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -47,7 +47,7 @@ import vtk.web.RequestContext;
 
 public class RenameCommandValidator implements Validator {
 
-    private static Log logger = LogFactory.getLog(RenameCommandValidator.class);
+    private static Logger logger = LoggerFactory.getLogger(RenameCommandValidator.class);
     private Map<String, String> replaceNameChars;
 
     @SuppressWarnings("rawtypes")

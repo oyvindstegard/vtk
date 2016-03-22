@@ -39,8 +39,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import net.sf.ehcache.Ehcache;
@@ -49,7 +49,7 @@ import vtk.web.service.URL;
 
 public class LinkChecker {
     
-    private static Log logger = LogFactory.getLog(LinkChecker.class); 
+    private static Logger logger = LoggerFactory.getLogger(LinkChecker.class); 
     
     private Ehcache cache;
     private int connectTimeout = 5000;

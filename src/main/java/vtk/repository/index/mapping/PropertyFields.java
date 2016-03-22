@@ -43,8 +43,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 
@@ -67,7 +67,7 @@ public class PropertyFields extends Fields {
     public static final String NAMESPACEPREFIX_NAME_SEPARATOR = ":";
     public static final String JSON_ATTRIBUTE_SEPARATOR = "@";
     
-    private final Log logger = LogFactory.getLog(PropertyFields.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(PropertyFields.class.getName());
     
     private final ValueFactory valueFactory;
 

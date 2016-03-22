@@ -39,10 +39,11 @@ import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -87,7 +88,7 @@ import vtk.web.actions.convert.CopyAction;
  */
 public class CopyMoveToSelectedFolderController implements Controller {
 
-    private static Log logger = LogFactory.getLog(CopyMoveToSelectedFolderController.class);
+    private static Logger logger = LoggerFactory.getLogger(CopyMoveToSelectedFolderController.class);
     public static final String COPYMOVE_SESSION_ATTRIBUTE = "copymovesession";
     private String viewName = "DEFAULT_VIEW_NAME";
     private CopyHelper copyHelper;
@@ -218,7 +219,7 @@ public class CopyMoveToSelectedFolderController implements Controller {
                 StringBuilder msg = new StringBuilder("Could not perform ");
                 msg.append(moveAction ? "move of " : "copy of ").append(filePath);
                 msg.append(": ").append(e.getMessage());
-                logger.warn(msg);
+                logger.warn(msg.toString());
                 this.addToFailures(failures, fileUri, msgKey, "generic");
             }
         }

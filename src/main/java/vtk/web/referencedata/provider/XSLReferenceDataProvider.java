@@ -37,8 +37,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -114,7 +114,7 @@ public class XSLReferenceDataProvider implements ReferenceDataProvider {
     private static final String PATH_ELEMENTS = "pathElements";
     private static final String CURRENT_USER = "currentUser";
 
-    protected Log logger = LogFactory.getLog(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String modelName = null;
     private Service adminService;

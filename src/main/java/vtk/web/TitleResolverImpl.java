@@ -39,8 +39,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -137,7 +137,7 @@ import vtk.util.text.SimpleTemplate;
  */
 public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEvent>, TitleResolver {
 
-    private final Log logger = LogFactory.getLog(TitleResolverImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(TitleResolverImpl.class);
     private Repository repository;
     private ResourceTypeTree resourceTypeTree;
     private Path configPath;

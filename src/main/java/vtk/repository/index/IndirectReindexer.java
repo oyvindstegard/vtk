@@ -30,8 +30,8 @@
  */
 package vtk.repository.index;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.store.IndexDao;
 
 /**
@@ -54,7 +54,7 @@ public class IndirectReindexer implements PropertySetIndexReindexer {
     private final IndexDao indexDao;
     private final PropertySetIndex targetIndex;
     private final PropertySetIndex temporaryIndex;
-    private static final Log LOG = LogFactory.getLog(IndirectReindexer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IndirectReindexer.class);
     
     public IndirectReindexer(PropertySetIndex targetIndex, 
                              PropertySetIndex temporaryIndex,

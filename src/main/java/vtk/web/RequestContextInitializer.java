@@ -41,8 +41,8 @@ import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.OrderComparator;
@@ -88,7 +88,7 @@ public class RequestContextInitializer implements ContextInitializer {
     
     private IndexFileResolver indexFileResolver;
     private PrincipalMetadataDAO principalMetadataDAO;
-    private static Log logger = LogFactory.getLog(RequestContextInitializer.class);
+    private static Logger logger = LoggerFactory.getLogger(RequestContextInitializer.class);
     private List<Service> rootServices = new ArrayList<>();
 
     private String trustedToken;
@@ -154,7 +154,7 @@ public class RequestContextInitializer implements ContextInitializer {
             logger.info("Registered service tree root services in the following order: " 
                         + rootServices);
             logger.info("Service tree:");
-            logger.info(printServiceTree(true));
+            logger.info(printServiceTree(true).toString());
         }
     }
     

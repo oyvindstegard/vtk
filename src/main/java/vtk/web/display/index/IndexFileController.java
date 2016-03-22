@@ -37,8 +37,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.context.ServletContextAware;
@@ -72,7 +72,7 @@ import vtk.web.servlet.VTKServlet;
  * </ul>
  */
 public class IndexFileController implements Controller, LastModified, InitializingBean, ServletContextAware {
-    private static final Log logger = LogFactory.getLog(IndexFileController.class);
+    private static final Logger logger = LoggerFactory.getLogger(IndexFileController.class);
 
     private ServletContext servletContext;
 

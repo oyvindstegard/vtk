@@ -35,8 +35,8 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.util.Set;
 import javax.imageio.ImageIO;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.graphics.ImageUtil;
 import vtk.repository.Path;
@@ -63,7 +63,7 @@ public class ImageMetadataJob extends AbstractResourceJob {
     private PropertyTypeDefinition imageHeightPropDef;
     private PropertyTypeDefinition imageWidthPropDef;
     
-    private final Log logger = LogFactory.getLog(ImageMetadataJob.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(ImageMetadataJob.class.getName());
 
     public ImageMetadataJob() {
         setAbortOnException(false);

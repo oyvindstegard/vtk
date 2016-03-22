@@ -38,8 +38,8 @@ import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
@@ -54,7 +54,7 @@ import vtk.web.display.feed.ListingFeedView;
 
 public class AudioVideoListingAtomFeedView extends ListingFeedView {
 
-    private final Log logger = LogFactory.getLog(AudioVideoListingAtomFeedView.class);
+    private final Logger logger = LoggerFactory.getLogger(AudioVideoListingAtomFeedView.class);
 
     private PropertyTypeDefinition videoHtmlDescriptionPropDef;
     private PropertyTypeDefinition audioHtmlDescriptionPropDef;

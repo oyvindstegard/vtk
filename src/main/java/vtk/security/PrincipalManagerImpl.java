@@ -35,8 +35,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import vtk.util.cache.SimpleCache;
@@ -52,7 +52,7 @@ import vtk.util.cache.SimpleCacheImpl;
  */
 public class PrincipalManagerImpl implements PrincipalManager, InitializingBean {
     
-    private static Log logger = LogFactory.getLog(PrincipalManagerImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(PrincipalManagerImpl.class);
 
     private PrincipalStore principalStore;
     private GroupStore groupStore;

@@ -148,7 +148,7 @@ public class OperationLogInterceptor implements MethodInterceptor {
             OperationLog.failure(operation, params, "cannot overwrite destination resource", op.write());
             throw roe;
         } catch (FailedDependencyException fde) {
-            // XXX: Log this exception ?
+            // XXX: Logger this exception ?
             OperationLog.failure(operation, params, "failed dependency", op.write());
             throw fde;
         }

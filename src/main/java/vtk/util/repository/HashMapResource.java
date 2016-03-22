@@ -38,13 +38,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 
@@ -79,7 +80,7 @@ public class HashMapResource extends HashMap implements InitializingBean,
 
     private static final long serialVersionUID = 3588458569422752713L;
 
-    private static Log logger = LogFactory.getLog(HashMapResource.class);
+    private static Logger logger = LoggerFactory.getLogger(HashMapResource.class);
 
     private Repository repository;
     private Path uri;
@@ -141,9 +142,10 @@ public class HashMapResource extends HashMap implements InitializingBean,
 
         if (event instanceof ContextRefreshedEvent) {
             try {
-                this.load();
-            } catch (Exception e) {
-                logger.warn(e);
+                load();
+            }
+            catch (Exception e) {
+                logger.warn("Load failed", e);
             }
         }
     }
@@ -159,7 +161,7 @@ public class HashMapResource extends HashMap implements InitializingBean,
                 "JavaBean property 'uri' not specified");
         }
         if (!this.lazyInit) {
-            this.load();
+            load();
         }
     }
 

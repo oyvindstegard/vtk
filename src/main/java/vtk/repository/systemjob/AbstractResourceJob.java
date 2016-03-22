@@ -34,8 +34,8 @@ package vtk.repository.systemjob;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Path;
@@ -75,7 +75,7 @@ public abstract class AbstractResourceJob extends RepositoryJob {
     private boolean skipLockedResources = true;
     private boolean executeWhenReadOnly = false;
     
-    private final Log logger = LogFactory.getLog(AbstractResourceJob.class);
+    private final Logger logger = LoggerFactory.getLogger(AbstractResourceJob.class);
     
     @Override
     public final void executeWithRepository(final Repository repository, 

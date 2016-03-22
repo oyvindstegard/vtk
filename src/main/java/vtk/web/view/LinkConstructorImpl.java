@@ -33,8 +33,8 @@ package vtk.web.view;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Path;
 import vtk.web.RequestContext;
 import vtk.web.service.ServiceUrlProvider;
@@ -42,7 +42,7 @@ import vtk.web.service.URL;
 
 
 public class LinkConstructorImpl implements LinkConstructor {
-    private static final Log logger = LogFactory.getLog(LinkConstructorImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(LinkConstructorImpl.class);
     
 	private final ServiceUrlProvider serviceUrlProvider;
 

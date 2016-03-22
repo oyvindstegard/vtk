@@ -34,8 +34,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.PropertyEvaluationContext.Type;
 import vtk.repository.resourcetype.ConstraintViolationException;
@@ -54,7 +54,7 @@ import vtk.web.service.RepositoryAssertion;
 
 public class RepositoryResourceHelper {
 
-    private static Log logger = LogFactory.getLog(RepositoryResourceHelper.class);
+    private static Logger logger = LoggerFactory.getLogger(RepositoryResourceHelper.class);
 
     private AuthorizationManager authorizationManager;
     private ResourceTypeTree resourceTypeTree;

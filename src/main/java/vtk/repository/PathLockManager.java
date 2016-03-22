@@ -39,8 +39,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -72,7 +72,7 @@ public class PathLockManager {
     // ReentrantReadWriteLock can be queried about queue size and hold count natively.
     private final Map<Path, PathLock> locks = new HashMap<Path, PathLock>();
 
-    private final Log logger = LogFactory.getLog(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Aquires lock on a single URI. Blocks until lock is

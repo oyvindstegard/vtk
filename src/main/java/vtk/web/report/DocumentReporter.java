@@ -1,4 +1,4 @@
-/* Copyright (c) 2010–2015, University of Oslo, Norway
+/* Copyright (c) 2010???2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import vtk.repository.Acl;
 import vtk.repository.Privilege;
@@ -54,7 +54,7 @@ import vtk.web.service.URL;
 
 public abstract class DocumentReporter extends AbstractReporter {
 
-    private static Log logger = LogFactory.getLog(DocumentReporter.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(DocumentReporter.class.getName());
 
     private int pageSize = DEFAULT_SEARCH_LIMIT;
     private Service manageService, reportService;

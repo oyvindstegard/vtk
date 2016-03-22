@@ -32,15 +32,15 @@ package vtk.web.display.xml;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Property;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
 public class LastModifiedEvaluatorImpl implements LastModifiedEvaluator {
     
-    private static Log logger = LogFactory.getLog(LastModifiedEvaluatorImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(LastModifiedEvaluatorImpl.class);
     private List<String> lookupList;
 
     private boolean handleLastModifiedForValuesInList;

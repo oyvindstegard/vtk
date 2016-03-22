@@ -43,8 +43,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.web.context.WebApplicationContext;
@@ -144,9 +144,9 @@ public class VTKServlet extends DispatcherServlet {
         VTKServlet.class.getName() + ".servlet_name";
 
     
-    private final Log logger = LogFactory.getLog(this.getClass().getName());
-    private final Log requestLogger = LogFactory.getLog(this.getClass().getName() + ".Request");
-    private final Log errorLogger = LogFactory.getLog(this.getClass().getName() + ".Error");
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private final Logger requestLogger = LoggerFactory.getLogger(this.getClass().getName() + ".Request");
+    private final Logger errorLogger = LoggerFactory.getLogger(this.getClass().getName() + ".Error");
 
     private RequestFilter[] requestFilters = new RequestFilter[0];
     private ResponseFilter[] responseFilters = new ResponseFilter[0];
@@ -543,7 +543,7 @@ public class VTKServlet extends DispatcherServlet {
         msg.append(" - referrer: ").append(req.getHeader("Referer"));
         msg.append(" - bytes: ").append(resp.getHeaderValue("Content-Length"));
         msg.append(" - time: ").append(processingTime);
-        this.requestLogger.info(msg);
+        this.requestLogger.info(msg.toString());
     }
     
 
@@ -691,7 +691,7 @@ public class VTKServlet extends DispatcherServlet {
         }
 
 
-        // Log '500 internal server error' incidents to the error log:
+        // Logger '500 internal server error' incidents to the error log:
         if (statusCode == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) {
             logError(req, t);
         }

@@ -44,8 +44,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.text.html.HtmlAttribute;
 import vtk.text.html.HtmlComment;
 import vtk.text.html.HtmlContent;
@@ -64,7 +64,7 @@ import vtk.util.io.InputSource;
  */
 public class ParsedHtmlDecoratorTemplate implements Template {
 
-    private static Log logger = LogFactory.getLog(ParsedHtmlDecoratorTemplate.class);
+    private static Logger logger = LoggerFactory.getLogger(ParsedHtmlDecoratorTemplate.class);
 
     private HtmlPageParser htmlParser;
     private TextualComponentParser componentParser;

@@ -38,8 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -118,7 +118,7 @@ import vtk.security.Principal;
  */
 public class Cache implements DataAccessor, InitializingBean {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private DataAccessor wrappedAccessor;
     private int maxItems = 1000;
     private double evictionRatio = 0.1;

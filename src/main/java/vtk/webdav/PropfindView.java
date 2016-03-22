@@ -43,8 +43,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -74,7 +74,7 @@ import vtk.web.service.Service;
  */
 public class PropfindView implements View, InitializingBean {
 
-    private static Log logger = LogFactory.getLog(PropfindView.class);
+    private static Logger logger = LoggerFactory.getLogger(PropfindView.class);
 
     private Service webdavService = null;
 

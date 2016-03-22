@@ -37,8 +37,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.document.Document;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
@@ -69,7 +69,7 @@ import vtk.repository.resourcetype.ValueFactory;
  */
 public class DocumentMapper implements InitializingBean {
 
-    private final Log logger = LogFactory.getLog(DocumentMapper.class);
+    private final Logger logger = LoggerFactory.getLogger(DocumentMapper.class);
 
     private ResourceTypeTree resourceTypeTree;
     private PrincipalFactory principalFactory;

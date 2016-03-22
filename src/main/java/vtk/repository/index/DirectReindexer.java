@@ -32,8 +32,8 @@ package vtk.repository.index;
 
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Acl;
 import vtk.repository.PropertySet;
 import vtk.repository.index.mapping.AclFields;
@@ -52,7 +52,7 @@ public class DirectReindexer implements PropertySetIndexReindexer {
 
     private PropertySetIndex targetIndex;
     private IndexDao indexDao;
-    private final Log logger = LogFactory.getLog(DirectReindexer.class);
+    private final Logger logger = LoggerFactory.getLogger(DirectReindexer.class);
     
     public DirectReindexer(PropertySetIndex targetIndex, IndexDao indexDao) {
         this.targetIndex = targetIndex;

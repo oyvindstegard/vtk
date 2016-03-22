@@ -30,8 +30,8 @@
  */
 package vtk.repository.index.consistency;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Path;
 import vtk.repository.index.IndexException;
 import vtk.repository.index.PropertySetIndex;
@@ -46,7 +46,7 @@ import vtk.repository.index.PropertySetIndex;
  */
 public class DanglingInconsistency extends AbstractConsistencyError {
 
-    private static final Log LOG = LogFactory.getLog(DanglingInconsistency.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DanglingInconsistency.class);
     
     public DanglingInconsistency(Path uri) {
         super(uri);

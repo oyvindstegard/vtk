@@ -35,8 +35,8 @@ package vtk.repository.resourcetype;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.security.InvalidPrincipalException;
@@ -74,7 +74,7 @@ public class ValueFactoryImpl implements ValueFactory {
         }
     }
 
-    private final Log logger = LogFactory.getLog(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
     /*

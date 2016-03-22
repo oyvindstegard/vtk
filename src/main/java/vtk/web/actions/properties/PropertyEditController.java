@@ -44,8 +44,8 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.LocaleResolver;
@@ -117,7 +117,7 @@ import vtk.web.service.ServiceUnlinkableException;
 public class PropertyEditController extends SimpleFormController<PropertyEditCommand> 
     implements ReferenceDataProvider, ReferenceDataProviding {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String toggleRequestParameter = "toggle";
 

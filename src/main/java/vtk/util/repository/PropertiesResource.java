@@ -33,8 +33,8 @@ package vtk.util.repository;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -70,7 +70,7 @@ public final class PropertiesResource extends Properties implements Initializing
     
     private static final long serialVersionUID = 8393113714334599560L;
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Repository repository;
     private Path uri;

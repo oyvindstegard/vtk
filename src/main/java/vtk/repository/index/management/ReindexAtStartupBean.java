@@ -30,8 +30,8 @@
  */
 package vtk.repository.index.management;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
@@ -47,7 +47,7 @@ import vtk.repository.store.IndexDao;
  */
 public class ReindexAtStartupBean implements InitializingBean {
     
-    private Log logger = LogFactory.getLog(ReindexAtStartupBean.class);
+    private Logger logger = LoggerFactory.getLogger(ReindexAtStartupBean.class);
     
     private PropertySetIndex index;
     private IndexDao indexDao;

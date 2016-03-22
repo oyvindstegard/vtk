@@ -35,8 +35,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
@@ -57,7 +57,7 @@ public class ListCollectionsProvider {
     private Repository repository;
     private final int maxLimit = 500;
 
-    private static Log logger = LogFactory.getLog(ListCollectionsProvider.class);
+    private static Logger logger = LoggerFactory.getLogger(ListCollectionsProvider.class);
 
     public List<Resource> buildSearchAndPopulateResources(String uri, String token) {
         AndQuery mainQuery = new AndQuery();

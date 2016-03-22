@@ -40,8 +40,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -63,7 +63,7 @@ import vtk.repository.event.ResourceMovedEvent;
 public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEventHandler 
     implements InitializingBean, ClusterAware {
 
-    private static Log logger = LogFactory.getLog(MethodInvokingRepositoryEventTrigger.class);
+    private static Logger logger = LoggerFactory.getLogger(MethodInvokingRepositoryEventTrigger.class);
 
     private Repository repository;
     private Path uri;

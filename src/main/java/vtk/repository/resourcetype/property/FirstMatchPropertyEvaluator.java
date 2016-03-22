@@ -30,8 +30,8 @@
  */
 package vtk.repository.resourcetype.property;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.PropertyEvaluator;
@@ -39,7 +39,7 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 
 public class FirstMatchPropertyEvaluator implements PropertyEvaluator {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private PropertyTypeDefinition[] propertyDefinitions;
     

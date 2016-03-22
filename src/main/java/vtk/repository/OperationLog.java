@@ -30,15 +30,15 @@
  */
 package vtk.repository;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class OperationLog {
 
-    private static final Log LOGGER = LogFactory.getLog(OperationLog.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OperationLog.class);
 
-    private static final Log WRITE_LOGGER = LogFactory.getLog(
+    private static final Logger WRITE_LOGGER = LoggerFactory.getLogger(
         OperationLog.class.getName() + ".write");
 
     public static void info(String op, String parameters, boolean write) {

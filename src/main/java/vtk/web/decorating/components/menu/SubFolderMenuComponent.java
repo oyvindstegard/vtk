@@ -34,8 +34,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
@@ -116,7 +116,7 @@ public class SubFolderMenuComponent extends ListMenuComponent {
     protected static final String PARAMETER_DISPLAY = "display";
     private static final String PARAMETER_DISPLAY_DESC = "Specifies how to display the subfolder-menu. The default is normal lists. 'comma-separated' separates sublist-elements with commas.";
 
-    private static Log logger = LogFactory.getLog(SubFolderMenuComponent.class);
+    private static Logger logger = LoggerFactory.getLogger(SubFolderMenuComponent.class);
 
     @Override
     public void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)

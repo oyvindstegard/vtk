@@ -37,8 +37,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.springframework.beans.factory.annotation.Required;
@@ -88,7 +88,7 @@ import vtk.xml.TransformerManager;
  */
 public class DisplayXmlResourceController implements Controller, LastModified {
 
-    private static Log logger = LogFactory.getLog(DisplayXmlResourceController.class);
+    private static Logger logger = LoggerFactory.getLogger(DisplayXmlResourceController.class);
 
     public static final String DEFAULT_VIEW_NAME = "transformXmlResource";
     private TransformerManager transformerManager;

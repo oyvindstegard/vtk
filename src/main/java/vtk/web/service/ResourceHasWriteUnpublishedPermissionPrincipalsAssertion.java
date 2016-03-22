@@ -32,15 +32,15 @@ package vtk.web.service;
 
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Privilege;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
 public class ResourceHasWriteUnpublishedPermissionPrincipalsAssertion extends AbstractRepositoryAssertion {
 
-    private static Log logger = LogFactory.getLog(
+    private static Logger logger = LoggerFactory.getLogger(
             ResourceHasWriteUnpublishedPermissionPrincipalsAssertion.class);
 
     @Override

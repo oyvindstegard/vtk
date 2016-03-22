@@ -44,8 +44,8 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.outerj.daisy.diff.DaisyDiff;
 import org.outerj.daisy.diff.XslFilter;
 import org.outerj.daisy.diff.helper.NekoHtmlParser;
@@ -64,7 +64,7 @@ import org.xml.sax.XMLReader;
  * PS: Pardon the pun in the class name.
  */
 public class DifferenceEngine {
-    private static Log logger = LogFactory.getLog(DifferenceEngine.class);
+    private static Logger logger = LoggerFactory.getLogger(DifferenceEngine.class);
     private SAXParserFactory parserFactory = SAXParserFactory.newInstance();
     private SAXTransformerFactory transformerFactory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
     private String encoding = null;

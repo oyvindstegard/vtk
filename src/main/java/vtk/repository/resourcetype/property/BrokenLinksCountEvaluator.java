@@ -37,8 +37,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.mutable.MutableInt;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -59,7 +59,7 @@ import vtk.repository.resourcetype.Value;
 public class BrokenLinksCountEvaluator implements PropertyEvaluator {
 
     private PropertyTypeDefinition linkCheckPropDef;
-    private final Log logger = LogFactory.getLog(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Counts number of entries in broken links list of link-check property

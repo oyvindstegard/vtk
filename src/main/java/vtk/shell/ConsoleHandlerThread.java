@@ -32,8 +32,8 @@ package vtk.shell;
 
 import java.io.PrintStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple shell handler thread that reads commands from stdin and
@@ -48,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ConsoleHandlerThread extends ShellHandlerThread {
 
-    protected Log logger = LogFactory.getLog(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
     private boolean alive = true;
     private CommandReader reader = new ConsoleReader();
     private PrintStream outputter = System.out;

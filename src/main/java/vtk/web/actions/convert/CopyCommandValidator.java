@@ -31,8 +31,8 @@
 package vtk.web.actions.convert;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import vtk.repository.Path;
@@ -41,7 +41,7 @@ import vtk.web.RequestContext;
 
 public abstract class CopyCommandValidator implements Validator {
 
-    private static Log logger = LogFactory.getLog(CopyCommandValidator.class);
+    private static Logger logger = LoggerFactory.getLogger(CopyCommandValidator.class);
 
     @SuppressWarnings("rawtypes")
     protected abstract boolean supportsClass(Class clazz);

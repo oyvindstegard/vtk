@@ -35,8 +35,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
@@ -48,7 +48,7 @@ import org.jdom.output.XMLOutputter;
  */
 public class Validator {
 
-    private static Log logger = LogFactory.getLog(Validator.class);
+    private static Logger logger = LoggerFactory.getLogger(Validator.class);
     
     /** Validates a JDOM {@link Document} throwing appropriate exceptions when failing
      * @param document

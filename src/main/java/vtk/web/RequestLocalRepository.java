@@ -34,8 +34,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Acl;
 import vtk.repository.AuthorizationException;
@@ -66,7 +66,7 @@ import vtk.security.Principal;
 
 public class RequestLocalRepository implements Repository {
 
-    private static Log logger = LogFactory.getLog(RequestLocalRepository.class);
+    private static Logger logger = LoggerFactory.getLogger(RequestLocalRepository.class);
     private Repository repository;
 
     @Required

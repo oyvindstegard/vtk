@@ -33,8 +33,8 @@ package vtk.web.display.collection.message;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.abdera.model.Entry;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import vtk.repository.Namespace;
 import vtk.repository.Property;
@@ -46,7 +46,7 @@ import vtk.web.service.URL;
 
 public class MessageListingAtomFeedView extends ListingFeedView {
 
-    private final Log logger = LogFactory.getLog(MessageListingAtomFeedView.class);
+    private final Logger logger = LoggerFactory.getLogger(MessageListingAtomFeedView.class);
 
     @Override
     protected void setFeedEntrySummary(HttpServletRequest request, 
