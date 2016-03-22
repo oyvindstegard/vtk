@@ -110,10 +110,14 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
             // Purge destination URI and destination parent URI from cache
             flushFromCache(destUri, true, "copy");
+            notifyFlush(destUri, true, "copy");
+
             if (destUri.getParent() != null) {
                 flushFromCache(destUri.getParent(), false, "copy");
+                notifyFlush(destUri.getParent(), false, "copy");
             }
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -157,15 +161,21 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             // Purge source, source parent and dest-parent from cache after
             // transaction has been comitted.
             flushFromCache(srcUri, true, "move");
+            notifyFlush(srcUri, true, "move");
+            
             flushFromCache(destUri, true, "move");
+            notifyFlush(destUri, true, "move");
 
             if (srcParent != null) {
                 flushFromCache(srcParent, false, "move");
+                notifyFlush(srcParent, false, "move");
             }
             if (destParent != null) {
                 flushFromCache(destParent, false, "move");
+                notifyFlush(destParent, false, "move");
             }
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -191,11 +201,12 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             Path parent = resource.getURI().getParent();
             if (parent != null) {
                 flushFromCache(parent, false, "createCollection"); // Purge parent from cache after
+                notifyFlush(parent, false, "createCollection"); // Purge parent from cache after
                 // transaction has been comitted.
             }
-
             return resource;
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -235,14 +246,17 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
                 if (parent != null) {
                     // Purge parent from cache after transaction has been comitted.
                     flushFromCache(parent, false, "createDocument");
+                    notifyFlush(parent, false, "createDocument");
                 }
 
                 return resource;
-            } finally {
+            }
+            finally {
                 this.lockManager.unlock(locked, true);
             }
 
-        } finally {
+        }
+        finally {
             if (tempFile != null) {
                 tempFile.delete();
             }
@@ -271,11 +285,14 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             this.wrappedRepository.delete(token, uri, restorable); // Tx
 
             flushFromCache(uri, true, "delete");
+            notifyFlush(uri, true, "delete");
             Path parent = uri.getParent();
             if (parent != null) {
                 flushFromCache(parent, false, "delete");
+                notifyFlush(parent, false, "delete");
             }
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -302,7 +319,9 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         try {
             this.wrappedRepository.recover(token, parentUri, recoverableResource);
             flushFromCache(parentUri, false, "recover");
-        } finally {
+            notifyFlush(parentUri, false, "recover");
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -318,7 +337,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         List<Path> locked = this.lockManager.lock(resource.getURI(), true);
         try {
             this.wrappedRepository.deleteAllComments(token, resource); // Tx
-            flushFromCache(resource.getURI(), false, "deleteAllComments");
+            notifyFlush(resource.getURI(), false, "deleteAllComments");
         }
         finally {
             this.lockManager.unlock(locked, true);
@@ -331,7 +350,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         List<Path> locked = this.lockManager.lock(resource.getURI(), true);
         try {
             this.wrappedRepository.deleteComment(token, resource, comment); // Tx
-            flushFromCache(resource.getURI(), false, "deleteComment");
+            notifyFlush(resource.getURI(), false, "deleteComment");
         }
         finally {
             this.lockManager.unlock(locked, true);
@@ -377,7 +396,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         List<Path> locked = this.lockManager.lock(uri, false);
         try {
             return this.wrappedRepository.getInputStream(token, uri, forProcessing); // Tx
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, false);
         }
     }
@@ -389,7 +409,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         List<Path> locked = this.lockManager.lock(uri, false);
         try {
             return this.wrappedRepository.getInputStream(token, uri, forProcessing, revision); // Tx
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, false);
         }
     }
@@ -401,7 +422,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         List<Path> locked = this.lockManager.lock(uri, false);
         try {
             return this.wrappedRepository.getAlternativeContentStream(token, uri, forProcessing, contentIdentifier); // Tx
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, false);
         }
     }
@@ -429,7 +451,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(uri, false);
         try {
             return this.wrappedRepository.listChildren(token, uri, forProcessing); // Tx
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, false);
         }
     }
@@ -444,9 +467,10 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(uri, true);
         try {
             Resource r = this.wrappedRepository.lock(token, uri, ownerInfo, depth, requestedTimoutSeconds, lockToken); // Tx
-            flushFromCache(uri, false, "lock");
+            notifyFlush(uri, false, "lock");
             return r;
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -460,8 +484,9 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(uri, true);
         try {
             this.wrappedRepository.unlock(token, uri, lockToken); // Tx
-            flushFromCache(uri, false, "unlock");
-        } finally {
+            notifyFlush(uri, false, "unlock");
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -473,7 +498,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(uri, false);
         try {
             return this.wrappedRepository.retrieve(token, uri, forProcessing); // Tx
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, false);
         }
     }
@@ -485,7 +511,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(uri, false);
         try {
             return this.wrappedRepository.retrieve(token, uri, forProcessing, revision); // Tx
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, false);
         }
     }
@@ -513,9 +540,11 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             Resource r = this.wrappedRepository.store(token, resource, storeContext); // Tx
             if (storeContext instanceof InheritablePropertiesStoreContext) {
                 flushFromCache(resource.getURI(), true, "store");
+                notifyFlush(resource.getURI(), true, "store");
             }
             return r;
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -530,9 +559,10 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
         try {
             Resource r = this.wrappedRepository.store(token, resource); // Tx
-            flushFromCache(resource.getURI(), false, "store");
+            notifyFlush(resource.getURI(), false, "store");
             return r;
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -553,8 +583,10 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         try {
             Resource r = this.wrappedRepository.storeACL(token, uri, acl); // Tx
             flushFromCache(uri, true, "storeACL");
+            notifyFlush(uri, true, "storeACL");
             return r;
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -573,10 +605,13 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(lockUris, true);
 
         try {
-            Resource r = this.wrappedRepository.storeACL(token, uri, acl, validateACL); // Tx
+            Resource resource = this.wrappedRepository.storeACL(token, uri, acl, validateACL); // Tx
             flushFromCache(uri, true, "storeACL");
-            return r;
-        } finally {
+            notifyFlush(uri, true, "storeACL");
+
+            return resource;
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -599,8 +634,10 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         try {
             Resource r = this.wrappedRepository.deleteACL(token, uri); // Tx
             flushFromCache(uri, true, "deleteACL");
+            notifyFlush(uri, true, "deleteACL");
             return r;
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -625,9 +662,10 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(uri, true);
         try {
            Resource r = this.wrappedRepository.storeContent(token, uri, byteStream); // Tx
-           flushFromCache(uri, false, "storeContent");
+           notifyFlush(uri, false, "storeContent");
            return r;
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -641,10 +679,11 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         // - URI
         final List<Path> locked = this.lockManager.lock(uri, true);
         try {
-           Resource r = this.wrappedRepository.storeContent(token, uri, byteStream, revision); // Tx
-           flushFromCache(uri, false, "storeContent");
-           return r;
-        } finally {
+            Resource r = this.wrappedRepository.storeContent(token, uri, byteStream, revision); // Tx
+            notifyFlush(uri, false, "storeContent");
+            return r;
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -656,7 +695,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(resource.getURI(), true);
         try {
             Comment c = this.wrappedRepository.updateComment(token, resource, comment); // Tx
-            flushFromCache(resource.getURI(), false, "updateComment");
+            notifyFlush(resource.getURI(), false, "updateComment");
             return c;
         }
         finally {
@@ -696,8 +735,11 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             logger.debug(serviceMethodName + "() completed, purged from cache: "
                     + uri + (includeDescendants ? " (including descendants)" : ""));
         }
+    }
+    
+    private void notifyFlush(Path uri, boolean includeDescendants, String serviceMethodName) {
         if (clusterContext.isPresent()) {
-            FlushMessage flushMessage = new FlushMessage(uri, includeDescendants);
+            FlushMessage flushMessage = new FlushMessage(uri, includeDescendants, serviceMethodName);
             if (logger.isDebugEnabled()) {
                 logger.debug(serviceMethodName
                         + "() completed, sending cluster flush message: " + uri);
@@ -717,7 +759,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(uri, false);
         try {
             return this.wrappedRepository.getRevisions(token, uri); // Tx
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, false);
         }
     }
@@ -729,7 +772,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(uri, true);
         try {
             return this.wrappedRepository.createRevision(token, uri, type); // Tx
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -744,7 +788,8 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         final List<Path> locked = this.lockManager.lock(uri, true);
         try {
             this.wrappedRepository.deleteRevision(token, uri, revision); // Tx
-        } finally {
+        }
+        finally {
             this.lockManager.unlock(locked, true);
         }
     }
@@ -774,17 +819,19 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     public static class FlushMessage implements Serializable {
         private static final long serialVersionUID = 8288073797498465660L;
-        public final Path uri;
-        public boolean flushDescendants;
+        public final boolean flushDescendants;
+        public final Path path;
+        public final String serviceMethodName;
 
-        public FlushMessage(Path path, boolean descendants) {
-            this.uri = path;
-            this.flushDescendants = descendants;
+        public FlushMessage(Path path, boolean flushDescendants, String serviceMethodName) {
+            this.path = path;
+            this.flushDescendants = flushDescendants;
+            this.serviceMethodName = serviceMethodName;
         }
 
         @Override
-        public String toString() 
-            { return getClass().getSimpleName() + "(" + uri + ", " + flushDescendants+ ")"; }
+        public String toString() { return getClass().getSimpleName() 
+            + "(" + path + ", " + serviceMethodName + ", " + flushDescendants + ")"; }
     }
 
     @Override
@@ -805,19 +852,20 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
                 FlushMessage flushMessage = (FlushMessage) message;
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Received flush message from cluster: " + flushMessage.uri);
+                    logger.debug("Received flush message from cluster: " + flushMessage.path);
                 }
 
                 List<Path> lockUris = new ArrayList<>();
-                lockUris.add(flushMessage.uri);
+                lockUris.add(flushMessage.path);
                 if (flushMessage.flushDescendants) {
-                    lockUris.addAll(getCachedDescendants(flushMessage.uri));
+                    lockUris.addAll(getCachedDescendants(flushMessage.path));
                 }
 
                 final List<Path> locked = this.lockManager.lock(lockUris, true);
 
                 try {
-                    this.cache.flushFromCache(flushMessage.uri, flushMessage.flushDescendants);
+                    flushFromCache(flushMessage.path, flushMessage.flushDescendants, 
+                            "remote::" + flushMessage.serviceMethodName);
                 }
                 finally {
                     this.lockManager.unlock(locked, true);
