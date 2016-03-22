@@ -849,16 +849,6 @@
       <version>2.5.2</version><!-- (match version in spring-session-data-redis) -->
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.doxia</groupId>
-      <artifactId>doxia-module-xhtml</artifactId>
-      <version>1.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.doxia</groupId>
-      <artifactId>doxia-module-apt</artifactId>
-      <version>1.6</version>
-    </dependency>
-    <dependency>
       <groupId>org.mybatis</groupId>
       <artifactId>mybatis</artifactId>
       <version>3.3.0</version>
