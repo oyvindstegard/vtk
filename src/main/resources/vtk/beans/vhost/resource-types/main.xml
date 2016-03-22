@@ -21,7 +21,6 @@
   <import resource="video.xml" />
   <import resource="pdf.xml" />
   <import resource="text.xml" />
-  <import resource="apt.xml" />
   <import resource="php.xml" />
   <import resource="html.xml" />
   <import resource="xml.xml" />
