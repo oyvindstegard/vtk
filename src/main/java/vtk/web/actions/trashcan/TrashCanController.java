@@ -131,7 +131,6 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
                     tco.setRecoverableResource(rr);
                     tco.setSelectedForRecovery(true);
                     conflictedObjs.add(tco);
-                    
                 }
                 command.setTrashCanObjects(conflictedObjs);
                 
@@ -150,6 +149,10 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
             if (selectedResources.size() == command.getTrashCanObjects().size()) {
                 return new ModelAndView(this.getSuccessView(), model);
             }
+            
+            List<TrashCanObject> trashCanObjs = new ArrayList<>(command.getTrashCanObjects());
+            trashCanObjs.removeIf(tco -> tco.isSelectedForRecovery());
+            command.setTrashCanObjects(trashCanObjs);
             return new ModelAndView(getFormView(), model);
 
         } 
