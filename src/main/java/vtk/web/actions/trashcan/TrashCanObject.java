@@ -33,7 +33,7 @@ package vtk.web.actions.trashcan;
 import vtk.repository.RecoverableResource;
 
 public class TrashCanObject {
-
+    
     private RecoverableResource recoverableResource;
     private boolean selectedForRecovery;
 
@@ -51,6 +51,11 @@ public class TrashCanObject {
 
     public void setSelectedForRecovery(boolean selectedForRecovery) {
         this.selectedForRecovery = selectedForRecovery;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + recoverableResource + ")";
     }
 
 }

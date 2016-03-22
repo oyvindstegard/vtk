@@ -118,6 +118,7 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
 
             // Check for conflicted resources, notify user of failed recovery
             List<RecoverableResource> conflicted = recoveryObject.getConflicted();
+            List<TrashCanObject> conflictedObjs = new ArrayList<>();
             if (conflicted != null && conflicted.size() > 0) {
                 String msgKey = "trash-can.recovery.conflict.";
                 msgKey = conflicted.size() == 1 ? msgKey + "single" : msgKey + "multiple";
@@ -125,7 +126,15 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
 
                 for (RecoverableResource rr : conflicted) {
                     msg.addMessage(rr.getName());
+                    
+                    TrashCanObject tco = new TrashCanObject();
+                    tco.setRecoverableResource(rr);
+                    tco.setSelectedForRecovery(true);
+                    conflictedObjs.add(tco);
+                    
                 }
+                command.setTrashCanObjects(conflictedObjs);
+                
                 RequestContext.getRequestContext().addErrorMessage(msg);
                 return new ModelAndView(getFormView(), model);
             }

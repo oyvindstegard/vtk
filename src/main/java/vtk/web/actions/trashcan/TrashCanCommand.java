@@ -40,14 +40,14 @@ import vtk.repository.Resource;
 import vtk.web.actions.UpdateCancelCommand;
 
 public class TrashCanCommand extends UpdateCancelCommand {
-
+    
     private static final long serialVersionUID = 5317220025031262419L;
     private String recoverAction;
     private String deletePermanentAction;
 
     private Resource parentResource;
-    private List<TrashCanObject> trashCanObjects = new ArrayList<TrashCanObject>();
-    private Map<String, TrashCanSortLink> sortLinks = new HashMap<String, TrashCanSortLink>();
+    private List<TrashCanObject> trashCanObjects = new ArrayList<>();
+    private Map<String, TrashCanSortLink> sortLinks = new HashMap<>();
 
     public String getRecoverAction() {
         return recoverAction;
@@ -120,6 +120,11 @@ public class TrashCanCommand extends UpdateCancelCommand {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + trashCanObjects + ")";
     }
 
 }
