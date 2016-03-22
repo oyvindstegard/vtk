@@ -122,7 +122,7 @@
       <#-- Introduction and image -->
       <#assign introduction = vrtx.getIntroduction(resource) />
       <#assign introductionImage = vrtx.propValue(resource, "picture") />
-      <#if !viewOngoingProjectsLink?exists && !isBlogListing &&
+      <#if !viewOngoingProjectsLink?exists &&
            (introduction?has_content || introductionImage != "")>
         <div class="vrtx-introduction">
           <#-- Image -->
