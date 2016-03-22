@@ -61,8 +61,8 @@
 
   <bean id="eventListing.calendarCurrentMonthAndForwardQueryBuilder" class="vtk.web.search.eventlisting.EventCalendarQueryBuilder">
     <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="startPropDefPointer" ref="${override.listing.prefix}eventListing.startDatePropDefPointer" />
-    <property name="endPropDefPointer" ref="${override.listing.prefix}eventListing.endDatePropDefPointer" />
+    <property name="startPropDefPointer" ref="eventListing.startDatePropDefPointer" />
+    <property name="endPropDefPointer" ref="eventListing.endDatePropDefPointer" />
     <property name="helper" ref="eventListingHelper" />
   </bean>
 
@@ -290,7 +290,7 @@
 
   <bean id="eventCalendarContentProvider" class="vtk.web.referencedata.provider.EventCalendarContentProvider">
     <property name="helper" ref="eventListingHelper" />
-    <property name="currentMonthSearchComponent" ref="${override.listing.prefix}eventListing.currentMonthSearchComponent" />
+    <property name="currentMonthSearchComponent" ref="eventListing.currentMonthSearchComponent" />
   </bean>
 
 </beans>

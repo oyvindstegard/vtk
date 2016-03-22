@@ -50,11 +50,11 @@ public class EventAsICalHelperTest {
         titlePropDef = RepositoryResourceSetUpHelper.getPropertyTypeDefinition(
                 Namespace.DEFAULT_NAMESPACE, "title", Type.STRING, new StringValueFormatter());
 
-        helper.setStartDatePropDef(startDatePropDef);
-        helper.setEndDatePropDef(endDatePropDef);
-        helper.setLocationPropDef(locationPropDef);
-        helper.setIntroductionPropDef(introductionPropDef);
-        helper.setTitlePropDef(titlePropDef);
+        helper.setStartDate(startDatePropDef.getName());
+        helper.setEndDate(endDatePropDef.getName());
+        helper.setLocation(locationPropDef.getName());
+        helper.setIntroduction(introductionPropDef.getName());
+        helper.setTitle(titlePropDef.getName());
 
         RepositoryImpl repository = new RepositoryImpl();
         repository.setId("www.testhost.uio.no");

@@ -37,29 +37,28 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.HtmlValueFormatter;
-import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
 public final class EventAsICalHelper {
 
-    private PropertyTypeDefinition startDatePropDef;
-    private PropertyTypeDefinition endDatePropDef;
-    private PropertyTypeDefinition locationPropDef;
-    private PropertyTypeDefinition introductionPropDef;
-    private PropertyTypeDefinition titlePropDef;
+    private String startDate;
+    private String endDate;
+    private String location;
+    private String introduction;
+    private String title;
 
     public String getAsICal(List<PropertySet> events) {
 
@@ -109,7 +108,7 @@ public final class EventAsICalHelper {
         // stated in spec (4.6.1).
 
         // We don't create anything unless we have the startdate
-        Property startDate = getProperty(event, startDatePropDef);
+        Property startDateProp = getProperty(event, startDate);
         if (startDate == null) {
             return null;
         }
@@ -118,34 +117,35 @@ public final class EventAsICalHelper {
         iCalEntry.append("BEGIN:VEVENT\n");
         iCalEntry.append("DTSTAMP:" + getDtstamp() + "\n");
         iCalEntry.append("UID:" + getUiD(event, repositoryId) + "\n");
-        iCalEntry.append("DTSTART:" + getICalDate(startDate.getDateValue()) + "Z\n");
+        iCalEntry.append("DTSTART:" + getICalDate(startDateProp.getDateValue()) + "Z\n");
 
-        Property endDate = getProperty(event, endDatePropDef);
+        Property endDateProp = getProperty(event, endDate);
         if (endDate != null) {
-            iCalEntry.append("DTEND:" + getICalDate(endDate.getDateValue()) + "Z\n");
+            iCalEntry.append("DTEND:" + getICalDate(endDateProp.getDateValue()) + "Z\n");
         }
 
-        Property location = getProperty(event, locationPropDef);
+        Property locationProp = getProperty(event, location);
         if (location != null) {
-            iCalEntry.append("LOCATION:" + location.getStringValue() + "\n");
+            iCalEntry.append("LOCATION:" + locationProp.getStringValue() + "\n");
         }
 
-        Property description = getProperty(event, introductionPropDef);
-        if (description != null && StringUtils.isNotBlank(description.getStringValue())) {
-            iCalEntry.append("DESCRIPTION:" + getDescription(description) + "\n");
+        Property descriptionProp = getProperty(event, introduction);
+        if (descriptionProp != null && StringUtils.isNotBlank(descriptionProp.getStringValue())) {
+            iCalEntry.append("DESCRIPTION:" + getDescription(descriptionProp) + "\n");
         }
 
-        String summary = event.getProperty(titlePropDef).getStringValue();
+        String summary = event.getPropertyByPrefix(null, "title").getStringValue();
         iCalEntry.append("SUMMARY:" + summary + "\n");
         iCalEntry.append("END:VEVENT\n");
         return iCalEntry.toString();
     }
 
-    private Property getProperty(PropertySet event, PropertyTypeDefinition propDef) {
-        Property prop = event.getProperty(Namespace.STRUCTURED_RESOURCE_NAMESPACE, propDef.getName());
+    private Property getProperty(PropertySet event, String name) {
+        Property prop = event.getProperty(Namespace.STRUCTURED_RESOURCE_NAMESPACE, name);
         if (prop == null) {
-            prop = event.getProperty(propDef);
+            prop = event.getPropertyByPrefix(null, name);
         }
+
         return prop;
     }
 
@@ -190,28 +190,28 @@ public final class EventAsICalHelper {
     }
 
     @Required
-    public void setStartDatePropDef(PropertyTypeDefinition startDatePropDef) {
-        this.startDatePropDef = startDatePropDef;
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
     }
 
     @Required
-    public void setEndDatePropDef(PropertyTypeDefinition endDatePropDef) {
-        this.endDatePropDef = endDatePropDef;
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     @Required
-    public void setLocationPropDef(PropertyTypeDefinition locationPropDef) {
-        this.locationPropDef = locationPropDef;
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     @Required
-    public void setIntroductionPropDef(PropertyTypeDefinition introductionPropDef) {
-        this.introductionPropDef = introductionPropDef;
+    public void setIntroduction(String introduction) {
+        this.introduction = introduction;
     }
 
     @Required
-    public void setTitlePropDef(PropertyTypeDefinition titlePropDef) {
-        this.titlePropDef = titlePropDef;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
 }

@@ -30,7 +30,6 @@
  */
 package vtk.edit.editor;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,27 +39,16 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 
 public class ConfigurableEditablePropertyProvider implements
         EditablePropertyProvider {
-
-    private List<PropertyTypeDefinition> preContentProperties = new ArrayList<PropertyTypeDefinition>();
-    private List<PropertyTypeDefinition> postContentProperties = new ArrayList<PropertyTypeDefinition>();
     
-    public List<PropertyTypeDefinition> getPreContentProperties(Resource resource, TypeInfo typeInfo) {
-        return Collections.unmodifiableList(this.preContentProperties);
+    private List<PropertyTypeDefinition> propertyDefinitions;
 
+    public ConfigurableEditablePropertyProvider(List<PropertyTypeDefinition> propertyDefinitions) {
+        this.propertyDefinitions = Collections.unmodifiableList(propertyDefinitions);
     }
 
-    public List<PropertyTypeDefinition> getPostContentProperties(Resource resource, TypeInfo typeInfo) {
-        return Collections.unmodifiableList(this.postContentProperties);
-    }
-
-    public void setPreContentProperties(
-            List<PropertyTypeDefinition> preContentProperties) {
-        this.preContentProperties = preContentProperties;
-    }
-
-    public void setPostContentProperties(
-            List<PropertyTypeDefinition> postContentProperties) {
-        this.postContentProperties = postContentProperties;
+    @Override
+    public List<PropertyTypeDefinition> getEditProperties(Resource resource, TypeInfo typeInfo) {
+        return propertyDefinitions;
     }
 
 }

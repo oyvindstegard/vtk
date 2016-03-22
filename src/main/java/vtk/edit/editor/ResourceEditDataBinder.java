@@ -40,6 +40,7 @@ import javax.servlet.ServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.web.bind.ServletRequestDataBinder;
+
 import vtk.repository.Property;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyType;
@@ -75,33 +76,20 @@ public class ResourceEditDataBinder extends ServletRequestDataBinder {
 
             if (request.getParameter("save") != null) {
                 command.setSave(true);
-            } else if (request.getParameter("saveview") != null) {
+            }
+            else if (request.getParameter("saveview") != null) {
                 command.setSave(true);
                 command.setView(true);
-            } else if (request.getParameter("savecopy") != null) {
+            }
+            else if (request.getParameter("savecopy") != null) {
                 command.setSaveCopy(true);
-            } else {
+            }
+            else {
                 return;
             }
-
-            String cropXStr = request.getParameter("crop-x");
-            String cropYStr = request.getParameter("crop-y");
-            String cropWidthStr = request.getParameter("crop-width");
-            String cropHeightStr = request.getParameter("crop-height");
-            String newWidthStr = request.getParameter("new-width");
-            String newHeightStr = request.getParameter("new-height");
-
-            if (cropXStr != null) command.setCropX(Integer.parseInt(cropXStr));
-            if (cropYStr != null) command.setCropY(Integer.parseInt(cropYStr));
-            if (cropWidthStr != null) command.setCropWidth(Integer.parseInt(cropWidthStr));
-            if (cropHeightStr != null) command.setCropHeight(Integer.parseInt(cropHeightStr));
-            if (newWidthStr != null) command.setNewWidth(Integer.parseInt(newWidthStr));
-            if (newHeightStr != null) command.setNewHeight(Integer.parseInt(newHeightStr));
-
             Resource resource = command.getResource();
 
-            setProperties(request, command, resource, command.getPreContentProperties());
-            setProperties(request, command, resource, command.getPostContentProperties());
+            setProperties(request, command, resource, command.getEditProperties());
 
             if (command.getContent() != null) {
                 String content = command.getContent().getStringRepresentation();
@@ -110,7 +98,8 @@ public class ResourceEditDataBinder extends ServletRequestDataBinder {
                     parseContent(command, postedHtml);
                 }
             }
-        } else {
+        }
+        else {
             super.bind(request);
         }
     }

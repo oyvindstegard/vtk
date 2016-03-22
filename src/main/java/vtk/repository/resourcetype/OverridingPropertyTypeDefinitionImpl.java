@@ -37,6 +37,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.RepositoryAction;
@@ -177,11 +178,6 @@ public class OverridingPropertyTypeDefinitionImpl implements OverridableProperty
         return this.overriddenPropDef.createProperty();
     }
 
-    @Override
-    public ContentRelation getContentRelation() {
-        return this.overriddenPropDef.getContentRelation();
-    }
-    
     public void setMetadata(Map<String, Object> metadata) {
         if (metadata == null) {
             throw new IllegalArgumentException("metadata map cannot be null");

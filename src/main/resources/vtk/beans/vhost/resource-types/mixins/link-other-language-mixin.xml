@@ -14,7 +14,6 @@
   </bean>  
 
   <bean id="linkOtherLanguagePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="contentRelation" value="POST_CONTENT" />
     <property name="name" value="linkOtherLanguage"/>
     <property name="type" value="STRING"/>
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE"/>

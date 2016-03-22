@@ -37,9 +37,7 @@ import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
 public interface EditablePropertyProvider {
-
-    public List<PropertyTypeDefinition> getPreContentProperties(Resource resource, TypeInfo typeInfo);
-
-    public List<PropertyTypeDefinition> getPostContentProperties(Resource resource, TypeInfo typeInfo);
+    
+    public List<PropertyTypeDefinition> getEditProperties(Resource resource, TypeInfo typeInfo);
 
 }

@@ -8,14 +8,7 @@
     <property name="order" value="-999" />
     <property name="assertions">
       <list>
-         <bean class="vtk.web.service.OrAssertion">
-          <property name="assertions">
-            <list>
-              <ref bean="isEventAssertion" />
-              <ref bean="resourceTypeIsStructuredEvent" />
-            </list>
-          </property>
-        </bean>
+        <ref bean="resourceTypeIsStructuredEvent" />
         <bean class="vtk.web.service.RequestParameterAssertion">
           <property name="parameterName" value="vrtx" />
           <property name="parameterValue" value="ical" />
@@ -56,11 +49,11 @@
   </bean>
 
   <bean id="event.iCalHelper" class="vtk.web.display.ical.EventAsICalHelper">
-    <property name="startDatePropDef" ref="startDatePropDef" />
-    <property name="endDatePropDef" ref="endDatePropDef" />
-    <property name="locationPropDef" ref="locationPropDef" />
-    <property name="introductionPropDef" ref="introductionPropDef" />
-    <property name="titlePropDef" ref="titlePropDef" />
+    <property name="startDate" value="start-date" />
+    <property name="endDate" value="end-date" />
+    <property name="location" value="location" />
+    <property name="introduction" value="introduction" />
+    <property name="title" value="title" />
   </bean>
 
 </beans>

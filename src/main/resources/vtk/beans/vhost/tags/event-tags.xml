@@ -52,7 +52,7 @@
       <list>
         <ref bean="eventListing.upcomingEventsQueryBuilder" />
         <bean parent="queryStringParser">
-          <property name="queryString" ref="${override.listing.prefix}eventListing.resourceTypeQueryString" />
+          <property name="queryString" ref="eventListing.resourceTypeQueryString" />
         </bean>
         <bean class="vtk.web.search.PropertyValueQueryBuilder">
           <property name="parameterName" value="tag" />
@@ -68,7 +68,7 @@
       <list>
         <ref bean="eventListing.previousEventsQueryBuilder" />
         <bean parent="queryStringParser">
-          <property name="queryString" ref="${override.listing.prefix}eventListing.resourceTypeQueryString" />
+          <property name="queryString" ref="eventListing.resourceTypeQueryString" />
         </bean>
         <bean class="vtk.web.search.PropertyValueQueryBuilder">
           <property name="parameterName" value="tag" />

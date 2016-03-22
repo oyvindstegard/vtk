@@ -164,7 +164,6 @@
   </bean>
 
   <bean id="posterImagePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-    <property name="contentRelation" value="PRE_CONTENT" />
     <property name="name" value="poster-image" />
     <property name="type" value="IMAGE_REF" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />

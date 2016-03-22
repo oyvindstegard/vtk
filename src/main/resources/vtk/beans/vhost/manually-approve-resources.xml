@@ -37,11 +37,12 @@
     <property name="timeToLive" value="600" /> <!-- 10mins -->
   </bean>
 
-  <bean id="editor.collection.manuallyApproveResourcesSearcher" class="vtk.web.service.manuallyapprove.ManuallyApproveResourcesSearcher">
+  <bean id="editor.collection.manuallyApproveResourcesSearcher" 
+        class="vtk.web.service.manuallyapprove.ManuallyApproveResourcesSearcher">
     <property name="listingResourceTypeMappingPointers">
       <map>
-        <entry key="article-listing" value="${override.listing.prefix}article" />
-        <entry key="event-listing" value="${override.listing.prefix}event" />
+        <entry key="article-listing" value="structured-article" />
+        <entry key="event-listing" value="structured-event" />
         <entry key="course-description-listing" value="course-description" />
       </map>
     </property>

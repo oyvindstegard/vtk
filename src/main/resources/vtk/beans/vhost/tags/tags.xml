@@ -107,7 +107,6 @@
       </map>
     </property>
     <property name="viewService" ref="tags.viewService" />
-    <property name="overridePublishDatePropDef" ref="publishedDatePropDef" />
     <property name="tagsHelper" ref="tagsHelper" />
   </bean>
 
