@@ -87,7 +87,6 @@
 
   <#assign page = page?default(1) />
 
-  <#assign isBlogListing = resource.resourceType = 'blog-listing' />
   <#assign eventListingDisplayType = vrtx.propValue(resource, 'display-type', '', 'el') />
   <#assign isEventCalendarListing = (eventListingDisplayType?has_content && eventListingDisplayType = 'calendar') />
   
@@ -98,7 +97,7 @@
   <#-- Regular "additional content" placed in right-column -->
   <#assign additionalContent = vrtx.propValue(resource, "additionalContents") />
   <#if collection.resourceType != 'image-listing'
-       && collection.resourceType != 'person-listing' && !isEventCalendarListing && !isBlogListing>
+       && collection.resourceType != 'person-listing' && !isEventCalendarListing>
       <#if additionalContent?has_content>
         <div id="vrtx-content">
           <div id="vrtx-main-content">
@@ -213,8 +212,7 @@
 	 <#-- XXX: this is quite hacky -->
      <#if (collection.resourceType != 'image-listing'
        && collection.resourceType != 'person-listing'
-       && !isEventCalendarListing
-       && !isBlogListing)>
+       && !isEventCalendarListing)>
        <#if additionalContent?has_content>
            </div><#-- end vrtx-main-content -->
            <div id="vrtx-additional-content">

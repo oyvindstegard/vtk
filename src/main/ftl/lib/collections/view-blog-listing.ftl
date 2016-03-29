@@ -7,18 +7,6 @@
   <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
   <div class="container">
     <div class="main-article-listing">
-      <#if page == 1>
-        <#if introduction?has_content || introductionImage != "">
-          <div class="vrtx-introduction">
-            <#-- Image -->
-            <@viewutils.displayImage collection />
-            <#-- Introduction -->
-            <#if introduction?has_content>
-			  ${introduction}
-            </#if>
-          </div>
-        </#if>
-      </#if>
       <#local listingView = "regular">
       <@articles.displayArticles page=page collectionListings=searchComponents listingView=listingView hideNumberOfComments=hideNumberOfComments displayMoreURLs=true />
     </div>
