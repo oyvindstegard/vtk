@@ -6,14 +6,10 @@
   <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
   <#local listingView = "regular">
   <@articles.displayArticles page=page collectionListings=searchComponents listingView=listingView hideNumberOfComments=hideNumberOfComments displayMoreURLs=true />
-    <#if additionalContent?has_content>
-      <div id="vrtx-related-content">
-        <@vrtx.invokeComponentRefs additionalContent />
-      </div>
-    </#if>
 </#macro>
 
 <#macro listComments>
+
   <#if (comments?size > 0) >
     <div class="vrtx-recent-comments">
       <a class="comments-title" href="${moreCommentsUrl}"><@vrtx.msg code="commenting.comments.recent" /></a>

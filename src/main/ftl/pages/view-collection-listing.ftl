@@ -208,24 +208,26 @@
      <@projects.projectListingViewServiceURL />
      <@master.masterListingViewServiceURL />
      <#if !isEventCalendarListing>
-	   <@viewutils.pagingSubscribeServices />
-	 </#if>
-	 <#-- XXX: this is quite hacky -->
+       <@viewutils.pagingSubscribeServices />
+     </#if>
+
      <#if (collection.resourceType != 'image-listing'
        && collection.resourceType != 'person-listing'
        && !isEventCalendarListing)>
-       <#if additionalContent?has_content>
-           </div><#-- end vrtx-main-content -->
-           <div id="vrtx-additional-content">
-             <div id="vrtx-related-content"> 
-               <#if collection.resourceType = 'blog-listing'>
-                 <@tagCloud.createTagCloud true />
-                 <@blogs.listComments />
-               </#if>
-               <@vrtx.invokeComponentRefs additionalContent />
-             </div>
+
+       <#if additionalContent?has_content || collection.resourceType = 'blog-listing'>
+         </div><#-- end vrtx-main-content -->
+         <div id="vrtx-additional-content">
+           <#if collection.resourceType = 'blog-listing'>
+             <@tagCloud.createTagCloud true />
+             <@blogs.listComments />
+           </#if>
+           <#if additionalContent?has_content>
+           <div id="vrtx-related-content">
+             <@vrtx.invokeComponentRefs additionalContent />
            </div>
-         </div><#-- end vrtx-content -->
+           </#if>
+         </div>
        </#if>
      </#if>
      <#if isEventCalendarListing>
