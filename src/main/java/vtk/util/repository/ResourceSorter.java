@@ -145,9 +145,9 @@ public class ResourceSorter {
         @Override
         public int compare(Resource r1, Resource r2) {
             if (!this.invert) {
-                return r1.getLastModified().compareTo(r2.getLastModified());
+                return r2.getLastModified().compareTo(r1.getLastModified());
             }
-            return r2.getLastModified().compareTo(r1.getLastModified());
+            return r1.getLastModified().compareTo(r2.getLastModified());
         }
     }
 
