@@ -127,9 +127,11 @@
     <property name="defaultSortOrder" ref="SORT_ORDER.ASC" />
     <property name="sortOrderMapping">
       <map>
-        <entry key="lastModified" value-ref="SORT_ORDER.DESC" />
-        <entry key="title" value-ref="SORT_ORDER.ASC" />
+        <entry key="lastModified" value-ref="SORT_ORDER.DESC" />        
+        <entry key="title" value-ref="SORT_ORDER.ASC" />        
+        <entry key="titleDesc" value-ref="SORT_ORDER.DESC" />                
         <entry key="name" value-ref="SORT_ORDER.ASC" />
+        <entry key="nameDesc" value-ref="SORT_ORDER.DESC" />        
       </map>
     </property>
   </bean>
