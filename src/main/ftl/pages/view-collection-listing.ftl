@@ -23,6 +23,7 @@
 <#import "/lib/dump.ftl" as dumper>
 <#import "/lib/view-utils.ftl" as viewutils />
 <#import "/layouts/subfolder-menu.ftl" as subfolder />
+<#import "/layouts/tag-cloud.ftl" as tagCloud />
 
 <#import "/lib/collections/view-collection-listing.ftl" as coll />
 <#import "/lib/collections/view-article-listing.ftl" as articles />
@@ -217,6 +218,10 @@
            </div><#-- end vrtx-main-content -->
            <div id="vrtx-additional-content">
              <div id="vrtx-related-content"> 
+               <#if collection.resourceType = 'blog-listing'>
+                 <@tagCloud.createTagCloud true />
+                 <@blogs.listComments />
+               </#if>
                <@vrtx.invokeComponentRefs additionalContent />
              </div>
            </div>

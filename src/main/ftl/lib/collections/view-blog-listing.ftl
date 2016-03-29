@@ -1,25 +1,16 @@
 <#ftl strip_whitespace=true>
-<#import "/layouts/tag-cloud.ftl" as tagCloud />
 
 <#macro displayBlogs blogListing collection>
   <#assign introduction = vrtx.getIntroduction(collection) />
   <#assign introductionImage = vrtx.propValue(collection, "picture") />
   <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
-  <div class="container">
-    <div class="main-article-listing">
-      <#local listingView = "regular">
-      <@articles.displayArticles page=page collectionListings=searchComponents listingView=listingView hideNumberOfComments=hideNumberOfComments displayMoreURLs=true />
-    </div>
-    <div class="additional-information">
-      <@tagCloud.createTagCloud true />
-      <@listComments />
-      <#if additionalContent?has_content>
-        <div id="vrtx-related-content">
-          <@vrtx.invokeComponentRefs additionalContent />
-        </div>
-      </#if>
-    </div>
-  </div>
+  <#local listingView = "regular">
+  <@articles.displayArticles page=page collectionListings=searchComponents listingView=listingView hideNumberOfComments=hideNumberOfComments displayMoreURLs=true />
+    <#if additionalContent?has_content>
+      <div id="vrtx-related-content">
+        <@vrtx.invokeComponentRefs additionalContent />
+      </div>
+    </#if>
 </#macro>
 
 <#macro listComments>
