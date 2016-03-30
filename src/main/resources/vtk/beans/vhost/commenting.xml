@@ -318,6 +318,9 @@
     <property name="view" ref="commenting.commentsView" />
   </bean>
 
+  <bean name="commenting.resourceNamespace.listCommentsComponent" parent="commenting.listCommentsComponent">
+    <property name="namespace" ref="decorating.resourceNamespace" />
+  </bean>
 
   <bean name="commenting.recentCommentsComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
     <property name="namespace" ref="decorating.includeNamespace" />
@@ -342,6 +345,30 @@
       </set>
     </property>
   </bean>
+
+
+  <bean id="commenting.resourceNamespace.feedLinkComponent"
+        class="vtk.web.commenting.CommentsFeedUrlProvider">
+    <property name="namespace" ref="decorating.resourceNamespace" />
+    <property name="name" value="comments-feed-link" />
+    <property name="description" value="Inserts a link reference to the comments feed for articles" />
+    <property name="view" ref="commenting.commentsFeedURLView" />
+  </bean>
+
+  <bean id="commenting.commentsFeedURLView" parent="freemarkerView">
+    <property name="url" value="commenting/comments-feed-url.ftl" />
+    <property name="referenceDataProviderList">
+      <list>
+        <ref bean="resourceContextProvider" />
+        <bean class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
+          <property name="modelName" value="commentsFeed" />
+          <property name="urlName" value="url" />
+          <property name="service" ref="commenting.feedService" />
+        </bean>
+      </list>
+    </property>
+  </bean>
+
 
 
   <bean id="commenting.titlesEnabled" class="java.lang.Boolean">
