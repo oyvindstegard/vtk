@@ -98,8 +98,8 @@
   <#-- Regular "additional content" placed in right-column -->
   <#assign additionalContent = vrtx.propValue(resource, "additionalContents") />
   <#if collection.resourceType != 'image-listing'
-       && collection.resourceType != 'person-listing' && !isEventCalendarListing>
-      <#if additionalContent?has_content>
+    && collection.resourceType != 'person-listing' && !isEventCalendarListing>
+      <#if additionalContent?has_content || collection.resourceType = 'blog-listing'>
         <div id="vrtx-content">
           <div id="vrtx-main-content">
       </#if>
@@ -212,8 +212,7 @@
      </#if>
 
      <#if (collection.resourceType != 'image-listing'
-       && collection.resourceType != 'person-listing'
-       && !isEventCalendarListing)>
+        && collection.resourceType != 'person-listing' && !isEventCalendarListing)>
 
        <#if additionalContent?has_content || collection.resourceType = 'blog-listing'>
          </div><#-- end vrtx-main-content -->
