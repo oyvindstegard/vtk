@@ -37,10 +37,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -106,7 +108,7 @@ public class BreadCrumbProvider implements ReferenceDataProvider, InitializingBe
     private PropertyTypeDefinition navigationTitlePropDef;
     private int displayFromLevel = 0;
 
-    private final Logger logger = Logger.getLogger(BreadCrumbProvider.class);
+    private final Logger logger = LoggerFactory.getLogger(BreadCrumbProvider.class);
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {

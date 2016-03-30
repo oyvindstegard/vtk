@@ -37,8 +37,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
@@ -46,7 +48,7 @@ import vtk.security.PrincipalManager;
 
 public class PrincipalDataProvider implements VocabularyDataProvider<Principal> {
 
-    private static final Logger logger = Logger.getLogger(PrincipalDataProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(PrincipalDataProvider.class);
 
     private Type type;
     private PrincipalFactory principalFactory;
