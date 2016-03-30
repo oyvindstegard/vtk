@@ -42,7 +42,12 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 
-
+/**
+ * Use {@link IO} instead.
+ * 
+ * @deprecated
+ */
+@Deprecated
 public abstract class StreamUtil {
 
     public static final String TEMP_FILE_PREFIX = "StreamUtil-tmpfile";
