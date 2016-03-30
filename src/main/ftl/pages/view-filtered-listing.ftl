@@ -78,8 +78,10 @@
                 <#elseif filterKey = "semester"><#-- TODO: Hack to avoid year in i18n -->
                   <#if parameterKey?starts_with("v")>
                     <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.v")} 20${parameterKey?substring(1)}</a>
-                  <#else>
+                  <#elseif parameterKey?starts_with("h")>
                     <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.h")} 20${parameterKey?substring(1)}</a>
+                  <#else>
+                    <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.s")} 20${parameterKey?substring(1)}</a>
                   </#if>
                 <#else>
                   <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.${parameterKey}")}</a>
