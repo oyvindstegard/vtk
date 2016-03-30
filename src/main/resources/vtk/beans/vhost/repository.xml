@@ -70,9 +70,9 @@
   </bean>
 
   <!-- Default data source setup -->
-  <bean id="repository.dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+  <bean id="repository.dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
     <property name="driverClassName" value="${databaseDriver}" />
-    <property name="maxActive" value="${maxDatabaseConnections}" />
+    <property name="maxTotal" value="${maxDatabaseConnections}" />
     <property name="url" value="${databaseURL}" />
     <property name="username" value="${jdbcUsername}" />
     <property name="password" value="${jdbcPassword}" />
