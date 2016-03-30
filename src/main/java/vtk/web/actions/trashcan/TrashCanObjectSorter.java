@@ -188,9 +188,9 @@ public class TrashCanObjectSorter {
             Date d1 = r1.getDeletedTime();
             Date d2 = r2.getDeletedTime();
             if (!this.invert) {
-                return d1.compareTo(d2);
+                return d2.compareTo(d1);
             }
-            return d2.compareTo(d1);
+            return d1.compareTo(d2);
         }
     }
 

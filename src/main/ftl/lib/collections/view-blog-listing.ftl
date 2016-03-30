@@ -1,40 +1,15 @@
 <#ftl strip_whitespace=true>
-<#import "/layouts/tag-cloud.ftl" as tagCloud />
 
 <#macro displayBlogs blogListing collection>
   <#assign introduction = vrtx.getIntroduction(collection) />
   <#assign introductionImage = vrtx.propValue(collection, "picture") />
   <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
-  <div class="container">
-    <div class="main-article-listing">
-      <#if page == 1>
-        <#if introduction?has_content || introductionImage != "">
-          <div class="vrtx-introduction">
-            <#-- Image -->
-            <@viewutils.displayImage collection />
-            <#-- Introduction -->
-            <#if introduction?has_content>
-			  ${introduction}
-            </#if>
-          </div>
-        </#if>
-      </#if>
-      <#local listingView = "regular">
-      <@articles.displayArticles page=page collectionListings=searchComponents listingView=listingView hideNumberOfComments=hideNumberOfComments displayMoreURLs=true />
-    </div>
-    <div class="additional-information">
-      <@tagCloud.createTagCloud true />
-      <@listComments />
-      <#if additionalContent?has_content>
-        <div id="vrtx-related-content">
-          <@vrtx.invokeComponentRefs additionalContent />
-        </div>
-      </#if>
-    </div>
-  </div>
+  <#local listingView = "regular">
+  <@articles.displayArticles page=page collectionListings=searchComponents listingView=listingView hideNumberOfComments=hideNumberOfComments displayMoreURLs=true />
 </#macro>
 
 <#macro listComments>
+
   <#if (comments?size > 0) >
     <div class="vrtx-recent-comments">
       <a class="comments-title" href="${moreCommentsUrl}"><@vrtx.msg code="commenting.comments.recent" /></a>
