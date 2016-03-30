@@ -201,6 +201,9 @@ public abstract class IO {
         /**
          * Set where to start copying from the source, as a zero based byte offset.
          * 
+         * <p>If amount of source bytes is less than provided offset, then nothing (zero bytes)
+         * will be copied to the destination.
+         * 
          * <p>Default is 0
          * 
          * @param offset an offset value which must be greater than or equal to zero.
