@@ -23,6 +23,7 @@
 <#import "/lib/dump.ftl" as dumper>
 <#import "/lib/view-utils.ftl" as viewutils />
 <#import "/layouts/subfolder-menu.ftl" as subfolder />
+<#import "/layouts/tag-cloud.ftl" as tagCloud />
 
 <#import "/lib/collections/view-collection-listing.ftl" as coll />
 <#import "/lib/collections/view-article-listing.ftl" as articles />
@@ -87,7 +88,6 @@
 
   <#assign page = page?default(1) />
 
-  <#assign isBlogListing = resource.resourceType = 'blog-listing' />
   <#assign eventListingDisplayType = vrtx.propValue(resource, 'display-type', '', 'el') />
   <#assign isEventCalendarListing = (eventListingDisplayType?has_content && eventListingDisplayType = 'calendar') />
   
@@ -98,7 +98,7 @@
   <#-- Regular "additional content" placed in right-column -->
   <#assign additionalContent = vrtx.propValue(resource, "additionalContents") />
   <#if collection.resourceType != 'image-listing'
-       && collection.resourceType != 'person-listing' && !isEventCalendarListing && !isBlogListing>
+       && collection.resourceType != 'person-listing' && !isEventCalendarListing>
       <#if additionalContent?has_content>
         <div id="vrtx-content">
           <div id="vrtx-main-content">
@@ -208,21 +208,26 @@
      <@projects.projectListingViewServiceURL />
      <@master.masterListingViewServiceURL />
      <#if !isEventCalendarListing>
-	   <@viewutils.pagingSubscribeServices />
-	 </#if>
-	 <#-- XXX: this is quite hacky -->
+       <@viewutils.pagingSubscribeServices />
+     </#if>
+
      <#if (collection.resourceType != 'image-listing'
        && collection.resourceType != 'person-listing'
-       && !isEventCalendarListing
-       && !isBlogListing)>
-       <#if additionalContent?has_content>
-           </div><#-- end vrtx-main-content -->
-           <div id="vrtx-additional-content">
-             <div id="vrtx-related-content"> 
-               <@vrtx.invokeComponentRefs additionalContent />
-             </div>
+       && !isEventCalendarListing)>
+
+       <#if additionalContent?has_content || collection.resourceType = 'blog-listing'>
+         </div><#-- end vrtx-main-content -->
+         <div id="vrtx-additional-content">
+           <#if collection.resourceType = 'blog-listing'>
+             <@tagCloud.createTagCloud true />
+             <@blogs.listComments />
+           </#if>
+           <#if additionalContent?has_content>
+           <div id="vrtx-related-content">
+             <@vrtx.invokeComponentRefs additionalContent />
            </div>
-         </div><#-- end vrtx-content -->
+           </#if>
+         </div>
        </#if>
      </#if>
      <#if isEventCalendarListing>
