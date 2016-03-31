@@ -35,10 +35,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Required;
 
+import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
@@ -130,18 +129,9 @@ public class SubFolderMenuProvider implements InitializingBean {
         ArrayList<Path> includeURIs = new ArrayList<Path>();
         int searchLimit = Integer.MAX_VALUE;
 
-		if (sortProperty != null) {
-			if ("name".equals(sortProperty.getName()) || "nameDesc".equals(sortProperty.getName())) {
-				sortByName = true;
-				if ("nameDesc".equals(sortProperty.getName())) {
-					ascendingSort = false;
-				}
-			}
-			if ("titleDesc".equals(sortProperty.getName())) {
-				sortProperty = null;
-				ascendingSort = false;
-			}
-		}
+        if (sortProperty != null && "name".equals(sortProperty.getName())) {
+            sortByName = true;
+        }
 
         MenuRequest menuRequest = this.menuGenerator.getMenuRequest(collection.getURI(), title, sortProperty,
                 ascendingSort, sortByName, resultSets, groupResultSetsBy, freezeAtLevel, depth, displayFromLevel,
