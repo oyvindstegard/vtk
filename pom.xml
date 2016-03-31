@@ -960,6 +960,21 @@
       <version>1.7.19</version>
       <scope>runtime</scope>
     </dependency>
+    <!-- Provide slf4j code with log4j2 output: -->
+    <!--
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    -->
     <!-- Provide slf4j code with log4j-output: -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -967,7 +982,6 @@
       <version>1.7.19</version>
       <scope>runtime</scope>
     </dependency>
-
     <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr-runtime</artifactId>
