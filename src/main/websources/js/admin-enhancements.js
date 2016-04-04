@@ -662,6 +662,9 @@ VrtxAdmin.prototype.embeddedView = function embeddedView() {
     // Choose proper fail message (we know these sends you to preview)
     var vrtxAdm = vrtxAdmin;
     if(!canEdit || lockedByOther.length) {
+      // Remove preview wrapper (not sure why it doesn't work as before)
+      $("#preview-loading").remove();
+    
       // Title and fail message
       var csTitle = vrtxAdm.lang === "en" ? "Edit activity" : "Rediger aktivitet";
       if(!canEdit) {

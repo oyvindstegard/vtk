@@ -109,7 +109,7 @@ public final class EventAsICalHelper {
 
         // We don't create anything unless we have the startdate
         Property startDateProp = getProperty(event, startDate);
-        if (startDate == null) {
+        if (startDateProp == null) {
             return null;
         }
 
@@ -120,12 +120,12 @@ public final class EventAsICalHelper {
         iCalEntry.append("DTSTART:" + getICalDate(startDateProp.getDateValue()) + "Z\n");
 
         Property endDateProp = getProperty(event, endDate);
-        if (endDate != null) {
+        if (endDateProp != null) {
             iCalEntry.append("DTEND:" + getICalDate(endDateProp.getDateValue()) + "Z\n");
         }
 
         Property locationProp = getProperty(event, location);
-        if (location != null) {
+        if (locationProp != null) {
             iCalEntry.append("LOCATION:" + locationProp.getStringValue() + "\n");
         }
 
@@ -134,7 +134,7 @@ public final class EventAsICalHelper {
             iCalEntry.append("DESCRIPTION:" + getDescription(descriptionProp) + "\n");
         }
 
-        String summary = event.getPropertyByPrefix(null, "title").getStringValue();
+        String summary = event.getPropertyByPrefix(null, title).getStringValue();
         iCalEntry.append("SUMMARY:" + summary + "\n");
         iCalEntry.append("END:VEVENT\n");
         return iCalEntry.toString();
