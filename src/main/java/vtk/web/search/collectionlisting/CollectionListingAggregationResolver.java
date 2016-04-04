@@ -37,8 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.MultiHostSearcher;
@@ -86,7 +86,7 @@ import vtk.web.service.URL;
  */
 public class CollectionListingAggregationResolver implements AggregationResolver {
 
-    private static Log logger = LogFactory.getLog(CollectionListingAggregationResolver.class);
+    private static Logger logger = LoggerFactory.getLogger(CollectionListingAggregationResolver.class);
 
     public final static int DEFAULT_LIMIT = 5;
     public final static int DEFAULT_RECURSIVE_DEPTH = 2;

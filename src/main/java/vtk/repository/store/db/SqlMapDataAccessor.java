@@ -42,8 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -91,7 +91,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     private ValueFactory valueFactory;
     private ResourceTypeMapper resourceTypeMapper;
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private boolean optimizedAclCopySupported = false;
     

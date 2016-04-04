@@ -35,8 +35,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -44,7 +44,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 public class DataImportUtil implements InitializingBean {
 
-    private final Log logger = LogFactory.getLog(DataImportUtil.class);
+    private final Logger logger = LoggerFactory.getLogger(DataImportUtil.class);
     
     private Repository repository;
     private boolean skipExistingResources = false;

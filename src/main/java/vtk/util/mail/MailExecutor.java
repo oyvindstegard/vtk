@@ -37,8 +37,8 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -47,7 +47,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class MailExecutor {
-    private static final Log logger = LogFactory.getLog(MailExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(MailExecutor.class);
 
     private final JavaMailSender mailSender;
     private final TaskExecutor taskExecutor;

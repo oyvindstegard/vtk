@@ -42,8 +42,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.security.AuthenticationException;
@@ -88,9 +88,9 @@ public class SecurityInitializer {
 
     private String uioAuthIDP;
 
-    private static Log logger = LogFactory.getLog(SecurityInitializer.class);
+    private static Logger logger = LoggerFactory.getLogger(SecurityInitializer.class);
 
-    private static Log authLogger = LogFactory.getLog("vtk.security.web.AuthLog");
+    private static Logger authLogger = LoggerFactory.getLogger("vtk.security.web.AuthLog");
 
     private TokenManager tokenManager;
 

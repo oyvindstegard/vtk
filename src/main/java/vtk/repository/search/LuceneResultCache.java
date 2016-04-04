@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -80,7 +80,7 @@ class LuceneResultCache {
     private final AtomicInteger hits = new AtomicInteger();
     private final AtomicInteger misses = new AtomicInteger();
     
-    private final Log logger = LogFactory.getLog(LuceneResultCache.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(LuceneResultCache.class.getName());
 
     /**
      * Construct a new cache instance with {@link #DEFAULT_MAX_ITEMS} max number

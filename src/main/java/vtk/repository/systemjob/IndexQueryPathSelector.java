@@ -32,8 +32,8 @@
 package vtk.repository.systemjob;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.PropertySet;
@@ -54,7 +54,7 @@ import vtk.security.SecurityContext;
  */
 public class IndexQueryPathSelector implements PathSelector {
 
-    private final Log logger = LogFactory.getLog(IndexQueryPathSelector.class);
+    private final Logger logger = LoggerFactory.getLogger(IndexQueryPathSelector.class);
     
     protected Searcher searcher;
     protected Parser parser;

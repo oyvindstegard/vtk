@@ -35,8 +35,8 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Optional;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -70,7 +70,7 @@ import vtk.repository.index.mapping.ResourceFields;
  */
 public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, InitializingBean {
 
-    Log logger = LogFactory.getLog(PropertySetIndexImpl.class);
+    Logger logger = LoggerFactory.getLogger(PropertySetIndexImpl.class);
 
     private IndexManager index;
     private DocumentMapper documentMapper;

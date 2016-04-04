@@ -39,8 +39,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.View;
 import vtk.web.referencedata.ReferenceDataProvider;
@@ -59,7 +59,7 @@ import vtk.web.servlet.ConfigurableRequestWrapper;
  */
 public class WrappingView implements View, InitializingBean {
 
-    private static Log logger = LogFactory.getLog(WrappingView.class);
+    private static Logger logger = LoggerFactory.getLogger(WrappingView.class);
 
     private ReferenceDataProvider[] referenceDataProviders;
     private View view;

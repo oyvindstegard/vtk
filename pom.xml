@@ -300,10 +300,6 @@
           <contextXml>src/conf/jetty/jetty-context.xml</contextXml>
           <systemProperties>
             <systemProperty>
-              <name>org.apache.commons.logging.Log</name>
-              <value>org.apache.commons.logging.impl.Log4JLogger</value>
-            </systemProperty>
-            <systemProperty>
               <name>log4j.configuration</name>
               <value>log4j.vortex.xml</value>
             </systemProperty>
@@ -555,6 +551,13 @@
   </build>
   <dependencies>
 
+    <dependency>
+      <artifactId>commons-logging</artifactId>
+      <groupId>commons-logging</groupId>
+      <version>1.2</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- ehcache -->
     <dependency>
       <groupId>net.sf.ehcache</groupId>
@@ -642,8 +645,13 @@
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-jcl</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>com.ibm.icu</groupId>
       <artifactId>icu4j</artifactId>
@@ -673,27 +681,6 @@
       <artifactId>mockito-core</artifactId>
       <version>2.0.31-beta</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>logkit</groupId>
-          <artifactId>logkit</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>avalon-framework</groupId>
-          <artifactId>avalon-framework</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -835,6 +822,11 @@
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-slf4j_2.11</artifactId>
+      <version>2.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-cluster_2.11</artifactId>
       <version>2.4.1</version>
     </dependency>
@@ -898,12 +890,11 @@
 
     <!-- runtime dependencies -->
     <dependency>
-      <groupId>commons-dbcp</groupId>
-      <artifactId>commons-dbcp</artifactId>
-      <version>1.4</version>
-      <scope>runtime</scope>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
+      <version>2.1.1</version>
     </dependency>
-    
+
     <!--
         Requirements for Spring's tx:advice:
     -->
@@ -956,14 +947,41 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.19</version>
+      <scope>compile</scope>
+    </dependency>
+    <!-- Because Spring uses commons-logging: -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>1.7.19</version>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- Provide slf4j code with log4j2 output: -->
+    <!--
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    -->
     <!-- Provide slf4j code with log4j-output: -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.12</version>
+      <version>1.7.19</version>
       <scope>runtime</scope>
     </dependency>
-
     <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr-runtime</artifactId>

@@ -35,8 +35,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.web.reporting.TagsReportingComponent;
 import vtk.web.reporting.TagsReportingComponent.TagFrequency;
@@ -47,7 +47,7 @@ import vtk.web.tags.Tag;
  */
 public class RepositoryTagsDataProvider implements VocabularyDataProvider<Tag> {
 
-    private final Log logger = LogFactory.getLog(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private TagsReportingComponent tagsReporter;
 
     /*

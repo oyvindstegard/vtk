@@ -32,8 +32,8 @@ package vtk.repository.search.query.security;
 
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -52,7 +52,7 @@ import vtk.security.token.TokenManager;
 public abstract class AbstractQueryAuthorizationFilterFactory implements 
                                                 QueryAuthorizationFilterFactory {
 
-    Log logger = LogFactory.getLog(AbstractQueryAuthorizationFilterFactory.class);
+    Logger logger = LoggerFactory.getLogger(AbstractQueryAuthorizationFilterFactory.class);
     
     private PrincipalManager principalManager;
     private TokenManager tokenManager;

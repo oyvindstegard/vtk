@@ -36,10 +36,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.LastModified;
+
 import vtk.repository.ContentStream;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -54,7 +56,7 @@ import vtk.web.service.URL;
 
 public class DisplayThumbnailController implements Controller, LastModified {
 
-    private static final Logger log = Logger.getLogger(DisplayThumbnailController.class);
+    private static final Logger log = LoggerFactory.getLogger(DisplayThumbnailController.class);
 
     private static final String VIDEO_LOGO = "/web/themes/default/icons/video-icon.png";
     private static final String VIDEO_LOGO_CONTENT_TYPE = "image/png";

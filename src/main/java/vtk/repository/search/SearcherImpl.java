@@ -31,8 +31,7 @@
 package vtk.repository.search;
 
 import java.io.IOException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DocumentStoredFieldVisitor;
 import org.apache.lucene.index.AtomicReader;
@@ -51,16 +50,18 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.FixedBitSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Acl;
 import vtk.repository.PropertySet;
 import vtk.repository.index.IndexManager;
 import vtk.repository.index.mapping.DocumentMapper;
 import vtk.repository.index.mapping.LazyMappedPropertySet;
 import vtk.repository.index.mapping.ResultSetWithAcls;
-import vtk.repository.search.Searcher.MatchingResult;
 import vtk.repository.search.query.DumpQueryTreeVisitor;
 import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.Query;
@@ -71,7 +72,7 @@ import vtk.repository.search.query.Query;
  */
 public class SearcherImpl implements Searcher, InitializingBean {
 
-    private final Log logger = LogFactory.getLog(SearcherImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(SearcherImpl.class);
 
     private IndexManager indexAccessor;
     private DocumentMapper documentMapper;
@@ -193,7 +194,7 @@ public class SearcherImpl implements Searcher, InitializingBean {
             rs.setTotalHits(topDocs.totalHits);
 
             if (totalTime > this.totalQueryTimeWarnThreshold) {
-                // Log a warning, query took too long to complete.
+                // Logger a warning, query took too long to complete.
                 StringBuilder msg
                         = new StringBuilder("Total execution time for Lucene query '");
                 msg.append(luceneQuery).append("'");
@@ -201,7 +202,7 @@ public class SearcherImpl implements Searcher, InitializingBean {
                 msg.append(", was ").append(totalTime).append("ms. ");
                 msg.append("This exceeds the warning threshold of ");
                 msg.append(this.totalQueryTimeWarnThreshold).append("ms");
-                logger.warn(msg);
+                logger.warn(msg.toString());
             }
 
             return rs;

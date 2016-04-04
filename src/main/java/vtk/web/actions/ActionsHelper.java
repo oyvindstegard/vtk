@@ -36,8 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.Path;
@@ -56,7 +57,7 @@ public class ActionsHelper {
     private static final String publishMsgKey = "manage.publish.error.";
     private static final String unpublishMsgKey = "manage.unpublish.error.";
 
-    private static Log logger = LogFactory.getLog(ActionsHelper.class);
+    private static Logger logger = LoggerFactory.getLogger(ActionsHelper.class);
 
     public static void deleteResource(Repository repository, String token, Path uri, boolean recoverable,
             Map<String, List<Path>> failures) {
@@ -109,7 +110,7 @@ public class ActionsHelper {
             StringBuilder msg = new StringBuilder("Could not perform ");
             msg.append("publish of ").append(uri);
             msg.append(": ").append(ex.getMessage());
-            logger.warn(msg);
+            logger.warn(msg.toString());
             addToFailures(failures, uri, publishMsgKey, "generic");
         }
     }
@@ -141,7 +142,7 @@ public class ActionsHelper {
             StringBuilder msg = new StringBuilder("Could not perform ");
             msg.append("unpublish of ").append(uri);
             msg.append(": ").append(ex.getMessage());
-            logger.warn(msg);
+            logger.warn(msg.toString());
             addToFailures(failures, uri, unpublishMsgKey, "generic");
         }
     }

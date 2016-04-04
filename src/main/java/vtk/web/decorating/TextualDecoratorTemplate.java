@@ -37,8 +37,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.text.html.HtmlPage;
 import vtk.util.io.InputSource;
 
@@ -48,7 +48,7 @@ public class TextualDecoratorTemplate implements Template {
     private static final String DEFAULT_DOCTYPE =
         "html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"";
 
-    private static Log logger = LogFactory.getLog(TextualDecoratorTemplate.class);
+    private static Logger logger = LoggerFactory.getLogger(TextualDecoratorTemplate.class);
 
     private TextualComponentParser parser;
     private ComponentInvocation[] fragments;

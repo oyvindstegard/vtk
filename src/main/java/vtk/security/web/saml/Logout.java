@@ -39,8 +39,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.opensaml.common.SAMLObject;
 import org.opensaml.common.binding.BasicSAMLMessageContext;
 import org.opensaml.saml2.binding.decoding.HTTPRedirectDeflateDecoder;
@@ -69,7 +69,7 @@ public class Logout extends SamlService {
 
     private Assertion manageAssertion;
 
-    private static Log authLogger = LogFactory.getLog("vtk.security.web.AuthLog");
+    private static Logger authLogger = LoggerFactory.getLogger("vtk.security.web.AuthLog");
 
     public void initiateLogout(HttpServletRequest request, HttpServletResponse response) {
 

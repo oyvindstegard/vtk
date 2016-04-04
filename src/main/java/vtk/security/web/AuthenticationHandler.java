@@ -128,7 +128,7 @@ public interface AuthenticationHandler {
 
 
     /**
-     * Log out the client from the authentication system. Some handler implementations may want to write to the servlet
+     * Logger out the client from the authentication system. Some handler implementations may want to write to the servlet
      * response (perform a redirect, etc.), and some do not. This is indicated using the return value of this method.
      * 
      * @param principal

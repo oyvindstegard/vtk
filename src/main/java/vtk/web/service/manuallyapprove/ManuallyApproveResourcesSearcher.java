@@ -1,4 +1,4 @@
-/* Copyright (c) 2012–2015 University of Oslo, Norway
+/* Copyright (c) 2012???2015 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.MultiHostSearcher;
@@ -119,7 +119,7 @@ public class ManuallyApproveResourcesSearcher {
     private PropertyTypeDefinition publishDatePropDef;
     private PropertyTypeDefinition creationTimePropDef;
     
-    private final Log logger = LogFactory.getLog(ManuallyApproveResourcesSearcher.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(ManuallyApproveResourcesSearcher.class.getName());
 
     /**
      * <p>

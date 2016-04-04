@@ -35,8 +35,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openid4java.consumer.ConsumerManager;
 import org.openid4java.consumer.VerificationResult;
 import org.openid4java.discovery.DiscoveryInformation;
@@ -65,7 +65,7 @@ public class OpenIDAuthenticationHandler
     private static final String DISCOVERY_SESSION_ATTRIBUTE = OpenIDAuthenticationHandler.class.getName() + ".discovered";
     private static final String ORIGINAL_URI_SESSION_ATTRIBUTE = OpenIDAuthenticationHandler.class.getName() + ".original_uri";
     
-    private static Log logger = LogFactory.getLog(OpenIDAuthenticationHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(OpenIDAuthenticationHandler.class);
 
     private String identifier;
     

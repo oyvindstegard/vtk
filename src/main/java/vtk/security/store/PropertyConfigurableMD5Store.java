@@ -33,8 +33,8 @@ package vtk.security.store;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import vtk.security.AuthenticationException;
@@ -63,7 +63,7 @@ import vtk.util.codec.MD5;
  */
 public class PropertyConfigurableMD5Store implements MD5PasswordStore, Ordered {
 
-    private static Log logger = LogFactory.getLog(PropertyConfigurableMD5Store.class);
+    private static Logger logger = LoggerFactory.getLogger(PropertyConfigurableMD5Store.class);
 
     private Properties principals;
     private String realm;

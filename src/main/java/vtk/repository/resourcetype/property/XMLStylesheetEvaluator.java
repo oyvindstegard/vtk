@@ -30,8 +30,8 @@
  */
 package vtk.repository.resourcetype.property;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -57,7 +57,7 @@ import vtk.xml.StylesheetReferenceResolver;
 public class XMLStylesheetEvaluator 
     implements PropertyEvaluator, InitializingBean {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private StylesheetReferenceResolver[] stylesheetReferenceResolvers;
 
     public void setStylesheetReferenceResolvers(

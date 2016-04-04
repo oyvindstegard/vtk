@@ -34,8 +34,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class with methods for extracting doctype and declared character
@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class HtmlExtractUtil {
 
-    private static Log logger = LogFactory.getLog(HtmlExtractUtil.class);
+    private static Logger logger = LoggerFactory.getLogger(HtmlExtractUtil.class);
     private static final int NUM_HEAD_BYTES = 4096;
     private static final Pattern DOCTYPE_REGEXP =
             Pattern.compile("<\\s*!DOCTYPE\\s+([^>]+)>",

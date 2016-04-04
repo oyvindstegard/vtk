@@ -39,8 +39,8 @@ import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
@@ -58,7 +58,7 @@ public class TextResourceContentHelper {
 
     private String defaultCharacterEncoding = "utf-8";
 
-    private static Log logger = LogFactory.getLog(TextResourceContentHelper.class);
+    private static Logger logger = LoggerFactory.getLogger(TextResourceContentHelper.class);
     private Repository repository;
 
 

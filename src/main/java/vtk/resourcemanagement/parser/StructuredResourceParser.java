@@ -43,8 +43,8 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.LocaleUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import vtk.repository.resource.ResourcetreeLexer;
@@ -55,7 +55,7 @@ import vtk.resourcemanagement.StructuredResourceDescription;
 
 @SuppressWarnings("unchecked")
 public class StructuredResourceParser {
-    private static final Log logger = LogFactory.getLog(StructuredResourceParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(StructuredResourceParser.class);
     private final Resource source;
     private final ResourceLoader resourceLoader;
     private List<ParsedNode> parsedNodes = new ArrayList<>();

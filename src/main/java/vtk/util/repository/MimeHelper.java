@@ -34,8 +34,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.util.text.TextUtils;
 
 
@@ -137,7 +137,7 @@ public class MimeHelper {
     protected static void load() {
         properties = new Properties();
 
-        Log logger = LogFactory.getLog(MimeHelper.class);
+        Logger logger = LoggerFactory.getLogger(MimeHelper.class);
 
         String fileName = System.getProperty("vtk.mime.properties.file",
                 "vtk/util/repository/mime.properties");

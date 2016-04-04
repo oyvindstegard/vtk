@@ -36,8 +36,8 @@ import static org.junit.Assert.assertNotEquals;
 import java.io.IOException;
 
 import org.apache.axiom.attachments.utils.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 import vtk.util.io.StreamUtil;
@@ -53,7 +53,7 @@ public class DisplayRevisionsDifferenceTest {
         System.setProperty("log4j.configuration", "log4j.test.xml");
     }
 
-    private static Log logger = LogFactory.getLog(DisplayRevisionsDifferenceTest.class);
+    private static Logger logger = LoggerFactory.getLogger(DisplayRevisionsDifferenceTest.class);
     
     @Test
     public void diffWhenTextChangeThenReportAsSuch() throws Exception {

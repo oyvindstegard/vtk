@@ -30,8 +30,8 @@
  */
 package vtk.resourcemanagement.parser;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ResourceLoaderAware;
@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StructuredResourceSpringAdapter implements InitializingBean, ResourceLoaderAware {
-    private static Log logger = LogFactory.getLog(StructuredResourceSpringAdapter.class);
+    private static Logger logger = LoggerFactory.getLogger(StructuredResourceSpringAdapter.class);
     private String[] defaultTypeDefinitionFiles;
     private List<Resource> typeDefinitionFileStore = new ArrayList<>();
     private StructuredResourceManager structuredResourceManager;

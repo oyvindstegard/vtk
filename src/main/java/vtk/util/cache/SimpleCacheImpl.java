@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -55,7 +55,7 @@ import org.springframework.beans.factory.InitializingBean;
 public class SimpleCacheImpl<K, V> implements SimpleCache<K, V>, BeanNameAware,
                                         InitializingBean, DisposableBean {
     
-    private final Log logger = LogFactory.getLog(SimpleCacheImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(SimpleCacheImpl.class);
     
     private final Map<K, Item> cache = new ConcurrentHashMap<K, Item>();
     private int timeoutSeconds = 0;

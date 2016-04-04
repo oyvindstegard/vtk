@@ -42,8 +42,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.AuthorizationException;
@@ -82,7 +82,7 @@ public class LinkCheckJob extends AbstractResourceJob {
     private static final int MAX_BROKEN_LINKS = 100;   // max number of broken links we bother storing
     private static final int MAX_CHECK_LINKS = 100;    // max number of links to check per resource per round
     
-    private static final Log logger = LogFactory.getLog(LinkCheckJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(LinkCheckJob.class);
 
     public LinkCheckJob() {
         setSkipLockedResources(false);

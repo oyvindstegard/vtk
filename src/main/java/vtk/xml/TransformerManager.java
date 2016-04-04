@@ -40,8 +40,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -57,7 +57,7 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class TransformerManager implements InitializingBean {
 
-    private static Log logger = LogFactory.getLog(TransformerManager.class);
+    private static Logger logger = LoggerFactory.getLogger(TransformerManager.class);
 
     private boolean alwaysCompile = false;
     private StylesheetTemplatesRegistry stylesheetRegistry = new StylesheetTemplatesRegistry();

@@ -40,8 +40,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -65,7 +65,7 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
             "\\s*([a-zA-Z]*)\\s*=\\s*\"([^\"]+)\"",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-    private static Log logger = LogFactory.getLog(ComponentInvokingNodeFilter.class);
+    private static Logger logger = LoggerFactory.getLogger(ComponentInvokingNodeFilter.class);
 
     private ComponentResolver componentResolver;
 

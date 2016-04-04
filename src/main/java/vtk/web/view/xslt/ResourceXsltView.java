@@ -44,8 +44,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.jdom.transform.JDOMSource;
@@ -107,7 +107,7 @@ import vtk.xml.TransformerManager;
 public class ResourceXsltView extends AbstractView
   implements ReferenceDataProviding, InitializingBean {
 
-    private static Log logger = LogFactory.getLog(ResourceXsltView.class);
+    private static Logger logger = LoggerFactory.getLogger(ResourceXsltView.class);
 
     private static String PARAMETER_NAMESPACE = "{http://www.uio.no/vortex/xsl-parameters}";
 

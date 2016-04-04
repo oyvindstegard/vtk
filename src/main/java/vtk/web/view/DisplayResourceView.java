@@ -36,8 +36,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.view.AbstractView;
 import vtk.repository.Resource;
 import vtk.util.io.StreamUtil;
@@ -79,7 +79,7 @@ import vtk.web.referencedata.ReferenceDataProviding;
 public class DisplayResourceView extends AbstractView
   implements ReferenceDataProviding {
 
-    private static Log logger = LogFactory.getLog(DisplayResourceView.class);
+    private static Logger logger = LoggerFactory.getLogger(DisplayResourceView.class);
     
     private int streamBufferSize = 5000;
     private boolean supportRangeRequests = false;

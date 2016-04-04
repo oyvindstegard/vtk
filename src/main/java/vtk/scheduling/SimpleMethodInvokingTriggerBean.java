@@ -36,8 +36,8 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.BeanNameAware;
@@ -105,7 +105,7 @@ public class SimpleMethodInvokingTriggerBean implements BeanNameAware,
 
     public static final int REPEAT_INDEFINITELY = -1;
     
-    private final Log logger = LogFactory.getLog(SimpleMethodInvokingTriggerBean.class);
+    private final Logger logger = LoggerFactory.getLogger(SimpleMethodInvokingTriggerBean.class);
     
     private String beanName;
     private Thread triggerThread;

@@ -39,15 +39,15 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.support.RequestContext;
 
 public class DisplayComponentController implements Controller {
-    private static Log logger = LogFactory.getLog(DisplayComponentController.class);
+    private static Logger logger = LoggerFactory.getLogger(DisplayComponentController.class);
 
     private ComponentResolver componentResolver;
     private static final String DOCTYPE = "";

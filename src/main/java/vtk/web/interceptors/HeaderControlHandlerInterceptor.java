@@ -37,8 +37,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import vtk.repository.Path;
@@ -98,7 +98,7 @@ import vtk.web.RequestContext;
  *
  */
 public class HeaderControlHandlerInterceptor implements HandlerInterceptor {
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private boolean includeLastModifiedHeader = false;
     private boolean includeContentLanguageHeader = false;

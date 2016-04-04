@@ -57,8 +57,8 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.security.AuthenticationException;
@@ -94,7 +94,7 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
 
     public static final String TOKEN_REQUEST_PARAMETER = "csrf-prevention-token";
     private static final String SECRET_SESSION_ATTRIBUTE = "csrf-prevention-secret";
-    private static Log logger = LogFactory.getLog(CSRFPreventionHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(CSRFPreventionHandler.class);
     private String ALGORITHM = "HmacSHA1";
 
     /**

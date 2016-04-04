@@ -40,8 +40,8 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
@@ -78,7 +78,7 @@ import vtk.web.servlet.VTKServlet;
  */
 public class DisplayRevisionsDifferenceController extends ParameterizableViewController implements Controller, InitializingBean {
 
-    private static Log logger = LogFactory.getLog(DisplayRevisionsDifferenceController.class);
+    private static Logger logger = LoggerFactory.getLogger(DisplayRevisionsDifferenceController.class);
 
     private PrincipalFactory principalFactory;
     private Service viewService;

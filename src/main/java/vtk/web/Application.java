@@ -44,8 +44,8 @@ import java.util.stream.Collectors;
 import javax.servlet.Servlet;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.jetty.server.NetworkTrafficServerConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -84,7 +84,7 @@ import vtk.web.servlet.VTKServlet;
 public class Application extends SpringBootServletInitializer {
     private static final String GRACEFUL_ARG = "--graceful";
     private static final int DEFAULT_GRACE_PERIOD = 15;
-    private final Log logger = LogFactory.getLog(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Bean
     public Servlet dispatcherServlet() {

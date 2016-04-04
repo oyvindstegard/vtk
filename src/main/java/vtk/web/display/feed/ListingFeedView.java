@@ -48,8 +48,8 @@ import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openxri.IRIUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.View;
@@ -82,7 +82,7 @@ import vtk.web.service.URL;
 
 /**
  *
- * Creates an Atom feed using the Apache Abdera library≈
+ * Creates an Atom feed using the Apache Abdera library???
  *
  * Subclasses provide results for and add entries to feed, as well
  * as override title and certain other properties (date,
@@ -91,7 +91,7 @@ import vtk.web.service.URL;
  */
 public class ListingFeedView implements View {
 
-    private static final Log logger = LogFactory.getLog(ListingFeedView.class);
+    private static final Logger logger = LoggerFactory.getLogger(ListingFeedView.class);
 
     public static final String TAG_PREFIX = "tag:";
     private static final String THUMBNAIL = "thumbnail";

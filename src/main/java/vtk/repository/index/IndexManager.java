@@ -1,4 +1,4 @@
-/* Copyright (c) 2014–2015, University of Oslo, Norway
+/* Copyright (c) 2014???2015, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.CheckIndex;
 import org.apache.lucene.index.DirectoryReader;
@@ -79,7 +79,7 @@ import vtk.util.threads.Mutex;
  */
 public class IndexManager implements DisposableBean {
     
-    private final Log logger = LogFactory.getLog(IndexManager.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(IndexManager.class.getName());
     
     private File storageRootPath;
     private String storageId;

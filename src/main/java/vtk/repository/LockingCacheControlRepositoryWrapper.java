@@ -40,8 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.cluster.ClusterAware;
@@ -66,7 +66,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     private Cache cache;
     private Repository wrappedRepository;
-    private final Log logger = LogFactory.getLog(LockingCacheControlRepositoryWrapper.class);
+    private final Logger logger = LoggerFactory.getLogger(LockingCacheControlRepositoryWrapper.class);
     private final PathLockManager lockManager = new PathLockManager();
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));
 

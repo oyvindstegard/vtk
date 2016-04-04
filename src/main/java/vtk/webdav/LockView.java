@@ -39,8 +39,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -57,7 +57,7 @@ import vtk.web.InvalidModelException;
  */
 public class LockView implements View {
 
-    private static Log logger = LogFactory.getLog(PropfindView.class);
+    private static Logger logger = LoggerFactory.getLogger(PropfindView.class);
 
     @SuppressWarnings("rawtypes")
     public void render(Map model, HttpServletRequest request,

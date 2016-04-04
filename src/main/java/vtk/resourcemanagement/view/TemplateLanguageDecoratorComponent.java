@@ -38,8 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.resourcemanagement.ComponentDefinition;
 import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlFragment;
@@ -67,7 +67,7 @@ implements HtmlDecoratorComponent {
     private NodeList nodeList;
     private HtmlPageParser htmlParser;
     private List<DirectiveHandler> directiveHandlers;
-    private static Log logger = LogFactory.getLog(TemplateLanguageDecoratorComponent.class); 
+    private static Logger logger = LoggerFactory.getLogger(TemplateLanguageDecoratorComponent.class); 
 
     private Date compileTime;
 

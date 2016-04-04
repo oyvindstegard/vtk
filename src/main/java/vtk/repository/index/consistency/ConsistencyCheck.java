@@ -39,8 +39,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -67,7 +67,7 @@ import vtk.repository.store.PropertySetHandler;
  */
 public class ConsistencyCheck {
 
-    private static final Log LOG = LogFactory.getLog(ConsistencyCheck.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConsistencyCheck.class);
 
     /**
      * Error limit. If more than this number of errors are encountered during check, 

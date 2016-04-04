@@ -40,8 +40,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.apache.commons.codec.binary.Base64;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.opensaml.saml2.core.AuthnRequest;
 import vtk.security.AuthenticationProcessingException;
 import vtk.web.service.URL;
@@ -49,7 +49,7 @@ import vtk.web.service.URL;
 public class Challenge extends SamlService {
     private static final String UNSOLICITED_AUTH_REDIRECT = Challenge.class.getName() + ".unsolicitedRedirectURL";
 
-    private static Log logger = LogFactory.getLog(Challenge.class);
+    private static Logger logger = LoggerFactory.getLogger(Challenge.class);
 
     private String urlSessionAttribute = null;
     
@@ -127,11 +127,9 @@ public class Challenge extends SamlService {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] digestBytes = md.digest(uuidStringBytes);
             return Base64.encodeBase64URLSafeString(digestBytes);
-        } catch (UnsupportedEncodingException ex) {
-            logger.error(ex);
-            return uuid.toString();
-        } catch (NoSuchAlgorithmException ex) {
-            logger.error(ex);
+        }
+        catch (Throwable t) {
+            logger.error("Failed to get auth ticket value from UUID " + uuid, t);
             return uuid.toString();
         }
     }

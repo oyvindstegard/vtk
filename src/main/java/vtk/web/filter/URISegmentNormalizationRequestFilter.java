@@ -33,8 +33,8 @@ package vtk.web.filter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A request filter that normalizes the URI of an <code>HttpServletRequest</code>
@@ -55,7 +55,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class URISegmentNormalizationRequestFilter extends AbstractRequestFilter {
 
-    Log logger = LogFactory.getLog(URISegmentNormalizationRequestFilter.class);
+    Logger logger = LoggerFactory.getLogger(URISegmentNormalizationRequestFilter.class);
     
     private boolean normalizeSlashes = false;
     

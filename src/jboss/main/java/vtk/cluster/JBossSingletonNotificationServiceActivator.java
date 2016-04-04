@@ -32,8 +32,8 @@ package vtk.cluster;
 
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jboss.as.clustering.singleton.SingletonService;
@@ -47,7 +47,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistryException;
 
 public class JBossSingletonNotificationServiceActivator implements ServiceActivator {
-    private final Log log = LogFactory.getLog(this.getClass());
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private String preferredMaster = null;
 
     /**

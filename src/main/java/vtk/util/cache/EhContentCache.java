@@ -37,8 +37,8 @@ import net.sf.ehcache.Element;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.constructs.blocking.SelfPopulatingCache;
 import net.sf.ehcache.util.TimeUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 
 /**
@@ -58,7 +58,7 @@ import org.springframework.beans.factory.DisposableBean;
  * @param <V> value type for the cache
  */
 public class EhContentCache<K, V>  implements ContentCache<K, V>, DisposableBean {
-    private final static Log logger = LogFactory.getLog(EhContentCache.class);
+    private final static Logger logger = LoggerFactory.getLogger(EhContentCache.class);
     private final SelfPopulatingCache cache;
 
     private final int timeToIdleSeconds;

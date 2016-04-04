@@ -32,8 +32,8 @@ package vtk.cluster;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
@@ -42,7 +42,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * MASTER/SLAVE role. A started service is equated with MASTER.
  */
 public class JBossClusterManager implements ApplicationListener<ContextRefreshedEvent> {
-    private final Log log = LogFactory.getLog(JBossClusterManager.class);
+    private final Logger log = LoggerFactory.getLogger(JBossClusterManager.class);
 
     /**
      * List of components to notify of state change.

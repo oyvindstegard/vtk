@@ -35,8 +35,8 @@ import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.PropertyEvaluator;
@@ -66,7 +66,7 @@ public class XMLCharacterEncodingEvaluator implements PropertyEvaluator {
         "\\s*<\\?xml\\s+[^>]*\\s+encoding=[\"']([A-Za-z0-9._\\-]+)[\"'][^>]*\\?>.*",
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public void setMaxBytes(int maxBytes) {
         this.maxBytes = maxBytes;

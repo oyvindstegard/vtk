@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.store.Metadata;
 import vtk.repository.store.PrincipalMetadata;
 import vtk.repository.store.PrincipalMetadataDAO;
@@ -48,7 +48,7 @@ import vtk.security.Principal.Type;
 
 public class PrincipalFactory {
 
-    private final Log logger = LogFactory.getLog(PrincipalFactory.class);
+    private final Logger logger = LoggerFactory.getLogger(PrincipalFactory.class);
 
     public static final String NAME_ALL = "pseudo:all";
 

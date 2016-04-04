@@ -40,8 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.DocType;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -71,7 +71,7 @@ public class EditDocument extends Document {
 
     private static final long serialVersionUID = 3256719598073361459L;
 
-    private static Log logger = LogFactory.getLog(EditDocument.class);
+    private static Logger logger = LoggerFactory.getLogger(EditDocument.class);
 
     private Repository repository;
     private Resource resource;

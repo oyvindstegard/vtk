@@ -36,8 +36,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import vtk.repository.Path;
@@ -69,7 +69,7 @@ import vtk.util.repository.ContentTypeHelper;
  */
 public class DefaultDocumentTemplates implements DocumentTemplates, InitializingBean {
 
-    private static Log logger = LogFactory.getLog(DefaultDocumentTemplates.class);
+    private static Logger logger = LoggerFactory.getLogger(DefaultDocumentTemplates.class);
     
     private Path templatesCollection = null;
     private Repository repository = null;

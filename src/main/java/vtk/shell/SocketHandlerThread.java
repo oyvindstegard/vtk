@@ -43,8 +43,8 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A shell handler that reads commands from network clients. Supports
@@ -65,7 +65,7 @@ import org.apache.commons.logging.LogFactory;
 public class SocketHandlerThread extends ShellHandlerThread {
 
     private static final int LISTEN_BACKLOG = 10;
-    private static final Log logger = LogFactory.getLog(SocketHandlerThread.class);
+    private static final Logger logger = LoggerFactory.getLogger(SocketHandlerThread.class);
     private boolean alive = true;
     private int port = 9999;
     private String listenAddress = "localhost";

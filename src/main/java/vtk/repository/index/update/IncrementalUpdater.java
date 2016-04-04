@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +58,7 @@ import vtk.repository.store.PropertySetHandler;
  */
 public class IncrementalUpdater implements ClusterAware {
 
-    private final Log logger = LogFactory.getLog(IncrementalUpdater.class);
+    private final Logger logger = LoggerFactory.getLogger(IncrementalUpdater.class);
 
     private PropertySetIndex index;
     private IndexDao indexDao;
@@ -184,7 +184,7 @@ public class IncrementalUpdater implements ClusterAware {
                     // If not last operation on resource was delete, we add to updates
                     if (! (entry.getValue().getOperation() == Operation.DELETED)) {
                         Path uri = entry.getKey();
-                        logger.debug(uri);
+                        logger.debug(uri.toString());
 
                         this.index.deletePropertySet(uri);
                         updateUris.add(uri);
@@ -212,7 +212,7 @@ public class IncrementalUpdater implements ClusterAware {
                         index.addPropertySet(propertySet, acl);
 
                         if (++count % 2000 == 0) {
-                            // Log some progress to update
+                            // Logger some progress to update
                             logger.info("Incremental index update progress: "  + count + " resources indexed of "
                                     + updateUris.size() + " total in current update batch.");
                         }

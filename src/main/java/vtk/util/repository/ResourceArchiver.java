@@ -55,8 +55,8 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
@@ -81,7 +81,7 @@ import vtk.security.PrincipalFactory;
 
 public class ResourceArchiver {
 
-    private static Log logger = LogFactory.getLog(ResourceArchiver.class);
+    private static Logger logger = LoggerFactory.getLogger(ResourceArchiver.class);
 
     private PrincipalFactory principalFactory;
     private Repository repository;
@@ -154,7 +154,7 @@ public class ResourceArchiver {
                     tmp.delete();
             }
         } catch (Exception e) {
-            // Log the exception and throw it up the chain to break properly
+            // Logger the exception and throw it up the chain to break properly
             logger.error("An error occured while creating archive '" + r.getURI() + "'", e);
             throw e;
         }
@@ -370,7 +370,7 @@ public class ResourceArchiver {
                 }
             }
         } catch (Exception e) {
-            // We'll ignore resources that fail and continue. Log broken
+            // We'll ignore resources that fail and continue. Logger broken
             // resources and handle them manually some other way later.
             logger.error("Error writing manifest entry for '" + path.toString() + "'\n", e);
         }
@@ -920,7 +920,7 @@ public class ResourceArchiver {
                     ignored.append("\n  ").append(ignorableResource);
                 }
             }
-            logger.info(ignored);
+            logger.info(ignored.toString());
         }
     }
 }

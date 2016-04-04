@@ -33,8 +33,8 @@ package vtk.repository.resourcetype.property;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jaxen.SimpleFunctionContext;
 import org.jaxen.SimpleNamespaceContext;
 import org.jaxen.SimpleVariableContext;
@@ -70,7 +70,7 @@ import vtk.xml.xpath.XPathFunction;
  */
 public class XPathEvaluator implements PropertyEvaluator {
 
-    private static final Log logger = LogFactory.getLog(XPathEvaluator.class);
+    private static final Logger logger = LoggerFactory.getLogger(XPathEvaluator.class);
 
     private ValueFactory valueFactory;
     

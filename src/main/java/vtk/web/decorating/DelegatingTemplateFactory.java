@@ -35,14 +35,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.util.io.InputSource;
 
 
 public class DelegatingTemplateFactory implements TemplateFactory {
-    private static Log logger = LogFactory.getLog(DelegatingTemplateFactory.class);
+    private static Logger logger = LoggerFactory.getLogger(DelegatingTemplateFactory.class);
     private Map<Pattern, TemplateFactory> templateFactoryMap;
     
     public Template newTemplate(InputSource templateSource)

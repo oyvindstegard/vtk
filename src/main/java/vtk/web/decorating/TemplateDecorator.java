@@ -43,8 +43,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.text.html.HtmlNodeFilter;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageFilter;
@@ -63,7 +63,7 @@ public class TemplateDecorator implements Decorator {
     private final static String EMPTY_DOCUMENT = EMPTY_DOCUMENT_START + EMPTY_DOCUMENT_END;
     private final static String DEFAULT_ENCODING = "utf-8";
 
-    private static Log logger = LogFactory.getLog(TemplateDecorator.class);
+    private static Logger logger = LoggerFactory.getLogger(TemplateDecorator.class);
     
     private HtmlPageParser htmlParser;
     private DecorationResolver decorationResolver;

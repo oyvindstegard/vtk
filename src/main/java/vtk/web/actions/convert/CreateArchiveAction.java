@@ -37,8 +37,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -48,7 +48,7 @@ import vtk.util.repository.ResourceArchiver;
 
 public class CreateArchiveAction implements CopyAction {
 
-    private static Log logger = LogFactory.getLog(CreateArchiveAction.class);
+    private static Logger logger = LoggerFactory.getLogger(CreateArchiveAction.class);
 
     private Repository repository;
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));

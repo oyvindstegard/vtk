@@ -45,8 +45,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
@@ -59,7 +59,7 @@ import vtk.util.text.JsonStreamer;
 import vtk.web.service.URL;
 
 public class LostPostHandler implements Controller {
-    private static final Log logger = LogFactory.getLog(LostPostHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(LostPostHandler.class);
     private static final String COOKIE_NAME = "vrtx.lostpost.id";
     
     private File workingDirectory;

@@ -36,8 +36,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.IllegalOperationException;
@@ -54,7 +54,7 @@ import vtk.web.service.URL;
  */
 public class FileSystemContentStore implements InitializingBean, ContentStore {
 
-    private static Log logger = LogFactory.getLog(FileSystemContentStore.class);
+    private static Logger logger = LoggerFactory.getLogger(FileSystemContentStore.class);
 
     private static final int COPY_BUF_SIZE = 122880;
     

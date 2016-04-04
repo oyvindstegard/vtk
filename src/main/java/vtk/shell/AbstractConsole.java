@@ -34,8 +34,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -72,7 +72,7 @@ public abstract class AbstractConsole
   implements ApplicationContextAware, InitializingBean,
              DisposableBean, BeanNameAware, ResourceLoaderAware {
 
-    protected Log logger = LogFactory.getLog(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
     private String beanName = null;
     private ApplicationContext context = null;
     private String[] initFiles = null;

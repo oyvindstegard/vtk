@@ -31,8 +31,8 @@
 
 package vtk.scheduling;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -41,7 +41,7 @@ public class DummyTask extends AbstractTask {
 
     private boolean throwRuntimeException = false;
     
-    private final Log logger = LogFactory.getLog(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     
     @Override
     public void run() {

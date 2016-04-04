@@ -34,8 +34,8 @@ package vtk.repository.search.preprocessor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.repository.Path;
 import vtk.repository.search.QueryException;
 import vtk.web.RequestContext;
@@ -50,7 +50,7 @@ import vtk.web.RequestContext;
  */
 public class CurrentDepthExpressionEvaluator implements ExpressionEvaluator {
     
-    private static Log logger = LogFactory.getLog(CurrentDepthExpressionEvaluator.class);
+    private static Logger logger = LoggerFactory.getLogger(CurrentDepthExpressionEvaluator.class);
     
     private String variableName = "currentDepth";
     private Pattern pattern = compilePattern();

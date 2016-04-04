@@ -37,8 +37,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides a minimum of protection against session hijacking.
@@ -58,7 +58,7 @@ import org.apache.commons.logging.LogFactory;
 public class SessionValidationRequestFilter extends AbstractRequestFilter 
     implements RequestFilter {
 
-    private static final Log logger = LogFactory.getLog(SessionValidationRequestFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SessionValidationRequestFilter.class);
 
     private Set<String> authorizedAddresses = new HashSet<String>();
     

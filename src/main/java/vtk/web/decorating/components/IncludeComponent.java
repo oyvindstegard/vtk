@@ -45,8 +45,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.context.ServletContextAware;
 
@@ -144,7 +144,7 @@ implements ServletContextAware {
     }
     
     
-    private static Log logger = LogFactory.getLog(IncludeComponent.class);
+    private static Logger logger = LoggerFactory.getLogger(IncludeComponent.class);
     public void render(DecoratorRequest request, DecoratorResponse response)
     throws Exception {
 

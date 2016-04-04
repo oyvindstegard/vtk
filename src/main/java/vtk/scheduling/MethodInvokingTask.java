@@ -34,8 +34,8 @@ package vtk.scheduling;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -54,7 +54,7 @@ public class MethodInvokingTask extends AbstractTask implements InitializingBean
     private Object[] arguments;
     private Class<?>[] argumentTypes;
     
-    private final Log logger = LogFactory.getLog(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     
     @Override
     public void run() {

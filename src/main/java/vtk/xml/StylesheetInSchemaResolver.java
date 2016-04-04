@@ -31,8 +31,8 @@
 package vtk.xml;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -64,7 +64,7 @@ public class StylesheetInSchemaResolver implements StylesheetReferenceResolver {
         Namespace.getNamespace("xsi",
                                "http://www.w3.org/2001/XMLSchema-instance");
 
-    private static Log logger = LogFactory.getLog(StylesheetInSchemaResolver.class);
+    private static Logger logger = LoggerFactory.getLogger(StylesheetInSchemaResolver.class);
     
     private XmlSchemaRegistry schemaRegistry;
     private String elementXPath = "/xsd:schema/xsd:annotation/xsd:appinfo/view/xsl";

@@ -30,8 +30,8 @@
  */
 package vtk.xml;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.util.threads.Semaphore;
 
 
@@ -41,7 +41,7 @@ import vtk.util.threads.Semaphore;
  *
  */
 public class TransformationThrottle {
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private int size = 0;
     private Semaphore semaphore = null;
