@@ -31,9 +31,12 @@
 package vtk.repository.store;
 
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.function.Consumer;
 
 import vtk.repository.Path;
 import vtk.repository.RecoverableResource;
+import vtk.util.io.IO;
 
 
 /**
@@ -87,12 +90,21 @@ public interface ContentStore {
      * The supplied <code>InputStream</code> should be closed by this
      * method, after it has been read.
      * 
-     * @param uri
-     * @param inputStream
+     * @param uri path to where content should be stored
+     * @param content input stream of content to store
      * @throws DataAccessException in case of errors.
      */
-    public void storeContent(Path uri, InputStream inputStream) throws DataAccessException;
-
+    public void storeContent(Path uri, InputStream content) throws DataAccessException;
+    
+    public default void storeContent(Path uri, InputStream content, Consumer<Long> progress, int progressInterval) throws DataAccessException {
+        storeContent(uri, content);
+        if (progress != null) {
+            // Minimum requirement is at least one call to progress callback.
+            // Content store impls should generally override this method and provide proper progress feedback
+            progress.accept(getContentLength(uri));
+        }
+    }
+    
     public void copy(Path srcURI, Path destURI) throws DataAccessException;
     
     public void move(Path srcURI, Path destURI) throws DataAccessException;

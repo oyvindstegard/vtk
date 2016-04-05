@@ -31,6 +31,7 @@
 package vtk.security;
 
 import vtk.context.BaseContext;
+import vtk.security.token.TokenManager;
 import vtk.security.web.SecurityInitializer;
 
 public class SecurityContext {
@@ -73,18 +74,18 @@ public class SecurityContext {
      * @return the principal
      */
     public Principal getPrincipal() {
-        return getSecurityContext().principal;
+        return principal;
     }
 
     /**
      * @return the security token.
      */
     public String getToken() {
-        return getSecurityContext().token;
+        return token;
     }
     
     public SecurityInitializer securityInitializer() {
-        return getSecurityContext().securityInitializer;
+        return securityInitializer;
     }
 
     @Override

@@ -62,6 +62,7 @@
     <property name="wrappedRepository" ref="repository.internal" />
     <property name="cache" ref="repository.cache" />
     <property name="tempDir" value="${repository.tempDir}" />
+    <property name="tokenManager" ref="tokenManager" />
   </bean>
 
   <!-- Wrapper around the repository that caches retrievals in thread-local context when executing in a servlet request: -->

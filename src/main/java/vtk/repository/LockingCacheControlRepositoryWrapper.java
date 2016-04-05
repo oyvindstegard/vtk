@@ -53,7 +53,8 @@ import vtk.repository.search.Search;
 import vtk.repository.store.Cache;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
-import vtk.util.io.StreamUtil;
+import vtk.security.token.TokenManager;
+import vtk.util.io.IO;
 
 /**
  * Handles synchronization in URI namespace of repository read/write operations
@@ -67,6 +68,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     private Cache cache;
     private Repository wrappedRepository;
     private final Logger logger = LoggerFactory.getLogger(LockingCacheControlRepositoryWrapper.class);
+    private TokenManager tokenManager;
     private final PathLockManager lockManager = new PathLockManager();
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));
 
@@ -211,21 +213,22 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         }
     }
 
-
-
     @Override
-    public Resource createDocument(String token, Path uri, InputStream byteStream) throws IllegalOperationException,
+    public Resource createDocument(final String token, final Path uri, InputStream byteStream) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, Exception {
 
-        StreamUtil.TempFile tempFile = null;
+        IO.TempFile tempFile = null;
         try {
             // Convert input stream to file FileInputStream if necessary, to ensure
             // most efficient transfer to repository content store while holding locks.
             if (! ((byteStream instanceof FileInputStream)
                     || (byteStream instanceof ByteArrayInputStream))) {
 
-                tempFile = StreamUtil.streamToTempFile(byteStream, this.tempDir);
-                byteStream = tempFile.getFileInputStream();
+                tempFile = IO.tempFile(byteStream, tempDir)
+                            .progress(p -> tokenManager.getPrincipal(token)) // Refresh token because upload may be slow
+                            .progressInterval(128*1024*1024)
+                            .perform();
+                byteStream =  tempFile.inputStream();
             }
 
             // Synchronize on:
@@ -798,6 +801,11 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     @Required
     public void setCache(Cache cache) {
         this.cache = cache;
+    }
+    
+    @Required
+    public void setTokenManager(TokenManager tokenManager) {
+        this.tokenManager = tokenManager;
     }
 
     @Required
