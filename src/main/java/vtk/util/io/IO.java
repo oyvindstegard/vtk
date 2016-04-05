@@ -723,7 +723,8 @@ public abstract class IO {
                 OutputStream out = new FileOutputStream(backingFile);
                 boolean truncated = false;
                 if (limit >= 0) {
-                    long written = copy(in, out).closeIn(false).limit(limit).progress(progress).perform();
+                    long written = copy(in, out)
+                            .closeIn(false).limit(limit).progress(progress).progressInterval(progressInterval).perform();
                     if (written == limit && in.markSupported()) {
                         in.mark(1);
                         if (in.read() > -1) {
@@ -732,7 +733,7 @@ public abstract class IO {
                         }
                     }
                 } else {
-                    copy(in, out).closeIn(false).progress(progress).perform();
+                    copy(in, out).closeIn(false).progress(progress).progressInterval(progressInterval).perform();
                 }
                 if (closeIn) {
                     in.close();
