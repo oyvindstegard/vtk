@@ -596,7 +596,7 @@ public class IOTest {
         InputStream in = new ByteArrayInputStream(generateRandomDataBuffer(1024*1024));
         
         final List<Long> progressCallbacks = new ArrayList<>();
-        IO.tempFile(in).progress(p -> progressCallbacks.add(p)).perform();
+        IO.tempFile(in).progress(p -> progressCallbacks.add(p)).perform().delete();
 
         assertTrue(progressCallbacks.size() > 0);
         assertEquals(new Long(1024*1024), progressCallbacks.get(progressCallbacks.size()-1));
@@ -607,7 +607,7 @@ public class IOTest {
         InputStream in = new SmallChunkInputStream(generateRandomDataBuffer(1024*1024));
         
         final List<Long> progressCallbacks = new ArrayList<>();
-        IO.tempFile(in).progress(p -> progressCallbacks.add(p)).progressInterval(1024).perform();
+        IO.tempFile(in).progress(p -> progressCallbacks.add(p)).progressInterval(1024).perform().delete();
         
         // Expect (much) more than two progress callbacks with current setup
         assertTrue(progressCallbacks.size() > 512);
@@ -621,7 +621,7 @@ public class IOTest {
         
         final List<Long> progressCallbacks = new ArrayList<>();
         IO.tempFile(in).limit(8*IO.DEFAULT_BUFFER_SIZE)
-                .progress(p -> progressCallbacks.add(p)).progressInterval(IO.DEFAULT_BUFFER_SIZE).perform();
+                .progress(p -> progressCallbacks.add(p)).progressInterval(IO.DEFAULT_BUFFER_SIZE).perform().delete();
 
         // Expect more than two progress callbacks with current setup
         assertTrue(progressCallbacks.size() > 2);
