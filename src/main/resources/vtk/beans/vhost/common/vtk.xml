@@ -120,8 +120,14 @@
   <!-- Spring session filter (works only with spring boot) -->
   <!--bean id="springSessionRepositoryFilter" class="vtk.web.servlet.NullFilter" /-->
   <bean id="springSessionRepositoryFilter" 
-        class="org.springframework.session.web.http.SessionRepositoryFilter">
+        class="vtk.web.servlet.SessionRepositoryFilter">
     <constructor-arg name="sessionRepository" ref="spring.sessionRepository" />
+    <property name="sessionStrategy">
+      <bean class="vtk.web.servlet.CookieHttpSessionStrategy">
+        <constructor-arg name="cookieNameHttp" value="${session.cookieName.http}" />
+        <constructor-arg name="cookieNameHttps" value="${session.cookieName.https}" />
+      </bean>
+    </property>
   </bean>
 
   <bean id="spring.sessionRepository" 
