@@ -226,7 +226,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
                 tempFile = IO.tempFile(byteStream, tempDir)
                             .progress(p -> tokenManager.getPrincipal(token)) // Refresh token because upload may be slow
-                            .progressInterval(128*1024*1024)
+                            .progressInterval(128*1024*1024)                 // Refresh approx. for every 128M uploaded
                             .perform();
                 byteStream =  tempFile.inputStream();
             }
