@@ -349,9 +349,9 @@ resourcetype frontpage {
        nn : ("white-box" = "Hvit boks", "grey-box" = "Grå boks", "undefined" = "Blank")
      },
      main-content:boxCssSizeAndPlacement {
-       en : ("undefined" = "Full width", "half-box-left" = "Half width (1 of 2)", "half-box-right" = "Half width (2 of 2)", "third-box-left" = "Third width (1 of 3)", "third-box-middle" = "Third width (2 of 3)", "third-box-right" = "Third width (3 of 3)"),
-       no : ("undefined" = "Full bredde", "half-box-left" = "Halv bredde (1 av 2)", "half-box-right" = "Halv bredde (2 av 2)", "third-box-left" = "Tredjedel bredde (1 av 3)", "third-box-middle" = "Tredjedel bredde (2 av 3)", "third-box-right" = "Tredjedel bredde (3 av 3)"),
-       nn : ("undefined" = "Full bredde", "half-box-left" = "Halv bredde (1 av 2)", "half-box-right" = "Halv bredde (2 av 2)", "third-box-left" = "Tredjedel bredde (1 av 3)", "third-box-middle" = "Tredjedel bredde (2 av 3)", "third-box-right" = "Tredjedel bredde (3 av 3)")
+       en : ("undefined" = "Full width", "half-box-left" = "Half width (Left)", "half-box-right" = "Half width (Right)", "third-box-left" = "Third width (Left)", "third-box-middle" = "Third width (Middle)", "third-box-right" = "Third width (Right)", "third-box-left third-box-double" = "Two thirds width (Left) (Only for test)", "third-box-right third-box-double" = "Two thirds width (Right) (Only for test)"),
+       no : ("undefined" = "Full bredde", "half-box-left" = "Halv bredde (Venstre)", "half-box-right" = "Halv bredde (Høyre)", "third-box-left" = "Tredjedel bredde (Venstre)", "third-box-middle" = "Tredjedel bredde (Midten)", "third-box-right" = "Tredjedel bredde (Høyre)", "third-box-left third-box-double" = "To tredjedels bredde (Venstre) (Kun til test)", "third-box-right third-box-double" = "To tredjedels bredde (Høyre) (Kun til test)"),
+       nn : ("undefined" = "Full bredde", "half-box-left" = "Halv bredde (Venstre)", "half-box-right" = "Halv bredde (Høyre)", "third-box-left" = "Tredjedel bredde (Venstre)", "third-box-middle" = "Tredjedel bredde (Midten)", "third-box-right" = "Tredjedel bredde (Høyre)", "third-box-left third-box-double" = "To tredjedels bredde (Venstre) (Kun til test)", "third-box-right third-box-double" = "To tredjedels bredde (Høyre) (Kun til test)")
      }
   }
   
