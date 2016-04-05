@@ -43,9 +43,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 
 /**
- * Use {@link IO} instead.
- * 
- * @deprecated
+ * @deprecated Use {@link vtk.util.io.IO} instead.
  */
 @Deprecated
 public abstract class StreamUtil {

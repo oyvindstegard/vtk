@@ -313,7 +313,7 @@ public abstract class IO {
             
             try {
                 byte[][] buffers = new byte[10][];
-                byte[] currentbuf = new byte[8192];
+                byte[] currentbuf = new byte[DEFAULT_BUFFER_SIZE];
                 buffers[0] = currentbuf;
                 int n, pos = 0, total = 0, bufcount = 1;
                 long lastProgressCallback = 0;
