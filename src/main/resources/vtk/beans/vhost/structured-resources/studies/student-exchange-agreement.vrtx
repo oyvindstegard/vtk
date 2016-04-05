@@ -278,9 +278,9 @@ resourcetype student-exchange-agreement {
 
   vocabulary {
     type-of-agreement {
-      en : ("erasmus" = "Erasmus", "nordplus" = "Nordplus", "nordlys" = "Nordlys", "bilateral" = "Bilateral", "uio-avtale" = "UiO agreement", "other" = "Other"),
-      no : ("erasmus" = "Erasmus", "nordplus" = "Nordplus", "nordlys" = "Nordlys", "bilateral" = "Bilateral", "uio-avtale" = "UiO-avtale", "other" = "Annet"),
-      nn : ("erasmus" = "Erasmus", "nordplus" = "Nordplus", "nordlys" = "Nordlys", "bilateral" = "Bilateral", "uio-avtale" = "UiO-avtale", "other" = "Anna")
+      en : ("erasmus" = "Erasmus+", "nordplus" = "Nordplus", "nordlys" = "Nordlys", "bilateral" = "Bilateral", "uio-avtale" = "UiO agreement", "other" = "Other"),
+      no : ("erasmus" = "Erasmus+", "nordplus" = "Nordplus", "nordlys" = "Nordlys", "bilateral" = "Bilateral", "uio-avtale" = "UiO-avtale", "other" = "Annet"),
+      nn : ("erasmus" = "Erasmus+", "nordplus" = "Nordplus", "nordlys" = "Nordlys", "bilateral" = "Bilateral", "uio-avtale" = "UiO-avtale", "other" = "Anna")
     }
   }
 
