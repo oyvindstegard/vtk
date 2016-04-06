@@ -92,7 +92,7 @@ import vtk.security.AuthenticationException;
 import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 import vtk.security.token.TokenManager;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.repository.MimeHelper;
 
 /**
@@ -145,6 +145,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     private long lockMaxTimeout = LOCK_DEFAULT_TIMEOUT;
 
     private static final int FILE_COPY_BUF_SIZE = 122880;
+    
+    static final int TOKEN_REFRESH_PROGRESS_INTERVAL = 128*1024*1024;
 
     private final Logger searchLogger = LoggerFactory.getLogger(RepositoryImpl.class.getName() + ".Search");
     private final Logger trashLogger = LoggerFactory.getLogger(RepositoryImpl.class.getName() + ".Trash");
@@ -1167,7 +1169,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(contentType);
             if (hooks != null) {
                 try {
-                    newResource = hooks.storeContentOnCreate(newResource, inStream, contentType);
+                    newResource = hooks.storeContentOnCreate(newResource, inStream, contentType,
+                                                             p -> tokenManager.getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                     Content content = hooks.getContentForEvaluation(newResource, getDefaultContent(newResource));
                     newResource = this.resourceHelper.create(principal, newResource, false, content);
                 } catch (UnsupportedContentException uce) {
@@ -1181,7 +1184,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                     throw new TypeHandlerHookException("failed in onCreateDocument hook: " + e.getMessage(), e);
                 }
             } else {
-                this.contentStore.storeContent(uri, inStream);
+                this.contentStore.storeContent(uri, inStream, 
+                                               p -> tokenManager.getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                 // Run through type evaluation
                 newResource = this.resourceHelper.create(principal, newResource, false, getContent(newResource));
             }
@@ -1202,7 +1206,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @Transactional(readOnly=false)
     @OpLog(write = true)
     @Override
-    public Resource storeContent(@OpLogParam(name = "token") String token, @OpLogParam Path uri, InputStream byteStream) throws AuthorizationException,
+    public Resource storeContent(@OpLogParam(name = "token") String token, @OpLogParam Path uri, InputStream contentStream) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, IOException {
 
@@ -1229,12 +1233,14 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(r);
             if (hooks != null) {
                 try {
-                    r = hooks.storeContent(r, byteStream, MimeHelper.map(uri.getName()));
+                    r = hooks.storeContent(r, contentStream, MimeHelper.map(uri.getName()),
+                                           p -> tokenManager.getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                 } catch (Exception e) {
                     throw new TypeHandlerHookException("failed in onStoreContent hook: " + e.getMessage(), e);
                 }
             } else {
-                this.contentStore.storeContent(uri, byteStream);
+                this.contentStore.storeContent(uri, contentStream,
+                                               p -> tokenManager.getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
             }
 
             Content content = getContent(r);
@@ -1315,7 +1321,11 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             tempFile = File.createTempFile("revision", null, this.tempDir);
             ChecksumWrapper wrapper = Revisions.wrap(stream);
             OutputStream out = new FileOutputStream(tempFile);
-            StreamUtil.pipe(wrapper, out, FILE_COPY_BUF_SIZE, true);
+            
+            IO.copy(wrapper, out).bufferSize(FILE_COPY_BUF_SIZE)
+                    .progress(p -> tokenManager.getPrincipal(token))
+                    .progressInterval(TOKEN_REFRESH_PROGRESS_INTERVAL)
+                    .perform();
             checksum = wrapper.checksum();
 
             stream = new FileInputStream(tempFile);
@@ -1604,7 +1614,11 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             tempFile = File.createTempFile("revision", null, this.tempDir);
             Revisions.ChecksumWrapper wrapper = Revisions.wrap(content);
             OutputStream out = new FileOutputStream(tempFile);
-            StreamUtil.pipe(wrapper, out, FILE_COPY_BUF_SIZE, true);
+            IO.copy(wrapper, out).bufferSize(FILE_COPY_BUF_SIZE)
+                                 .progress(p -> tokenManager.getPrincipal(token))
+                                 .progressInterval(TOKEN_REFRESH_PROGRESS_INTERVAL)
+                                 .perform();
+            
             checksum = wrapper.checksum();
 
             content = new FileInputStream(tempFile);

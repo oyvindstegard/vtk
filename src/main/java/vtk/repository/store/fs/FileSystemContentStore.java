@@ -35,6 +35,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,8 @@ import vtk.repository.Path;
 import vtk.repository.RecoverableResource;
 import vtk.repository.store.ContentStore;
 import vtk.repository.store.DataAccessException;
+import vtk.util.io.IO;
+import vtk.util.io.IO.Copy;
 import vtk.util.io.StreamUtil;
 import vtk.web.service.URL;
 
@@ -145,16 +149,21 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
     }
 
     @Override
-    public void storeContent(Path uri, InputStream inputStream) throws DataAccessException {
+    public void storeContent(Path uri, InputStream content) throws DataAccessException {
+        storeContent(uri, content, null, -1);
+    }
+
+    @Override
+    public void storeContent(Path uri, InputStream content, Consumer<Long> progressCallback, int progressInterval) throws DataAccessException {
         String fileName = getLocalFilename(uri);
         File dest = new File(fileName);
         try {
-            FileOutputStream outputStream = new FileOutputStream(dest);
-            if (inputStream instanceof FileInputStream) {
-                StreamUtil.fileStreamCopy((FileInputStream)inputStream, outputStream, true);
-            } else {
-                StreamUtil.pipe(inputStream, outputStream, COPY_BUF_SIZE, true);                
+            FileOutputStream outFileStream = new FileOutputStream(dest);
+            Copy<InputStream,OutputStream> copyOp = IO.copy(content, outFileStream);
+            if (progressCallback != null) {
+                copyOp.progress(progressCallback).progressInterval(progressInterval);
             }
+            copyOp.perform();
         } catch (IOException e) {
             throw new DataAccessException("Store content [" + uri + "] failed", e);
         }

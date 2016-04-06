@@ -201,6 +201,9 @@ public abstract class IO {
         /**
          * Set where to start copying from the source, as a zero based byte offset.
          * 
+         * <p>If amount of source bytes is less than provided offset, then nothing (zero bytes)
+         * will be copied to the destination.
+         * 
          * <p>Default is 0
          * 
          * @param offset an offset value which must be greater than or equal to zero.
@@ -310,7 +313,7 @@ public abstract class IO {
             
             try {
                 byte[][] buffers = new byte[10][];
-                byte[] currentbuf = new byte[8192];
+                byte[] currentbuf = new byte[DEFAULT_BUFFER_SIZE];
                 buffers[0] = currentbuf;
                 int n, pos = 0, total = 0, bufcount = 1;
                 long lastProgressCallback = 0;
@@ -720,7 +723,8 @@ public abstract class IO {
                 OutputStream out = new FileOutputStream(backingFile);
                 boolean truncated = false;
                 if (limit >= 0) {
-                    long written = copy(in, out).closeIn(false).limit(limit).progress(progress).perform();
+                    long written = copy(in, out)
+                            .closeIn(false).limit(limit).progress(progress).progressInterval(progressInterval).perform();
                     if (written == limit && in.markSupported()) {
                         in.mark(1);
                         if (in.read() > -1) {
@@ -729,7 +733,7 @@ public abstract class IO {
                         }
                     }
                 } else {
-                    copy(in, out).closeIn(false).progress(progress).perform();
+                    copy(in, out).closeIn(false).progress(progress).progressInterval(progressInterval).perform();
                 }
                 if (closeIn) {
                     in.close();

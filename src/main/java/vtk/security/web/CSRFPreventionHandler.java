@@ -62,6 +62,7 @@ import org.slf4j.LoggerFactory;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.security.AuthenticationException;
+import vtk.security.SecurityContext;
 import vtk.text.html.AbstractHtmlPageFilter;
 import vtk.text.html.HtmlAttribute;
 import vtk.text.html.HtmlContent;
@@ -69,7 +70,7 @@ import vtk.text.html.HtmlElement;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlText;
 import vtk.text.html.HtmlUtil;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
 import vtk.web.filter.HandlerFilter;
@@ -317,7 +318,7 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
 
     private static class MultipartWrapper extends HttpServletRequestWrapper {
         private HttpServletRequest request;
-        private StreamUtil.TempFile tempFile;
+        private IO.TempFile tempFile;
         private long maxMultipartSize;
         private File tempDir;
         private Map<String, List<String>> params = new HashMap<String, List<String>>();
@@ -331,7 +332,7 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
 
         public void cleanup() {
             if (logger.isDebugEnabled()) {
-                logger.debug("Cleanup temp file: " + this.tempFile + ", exists: " + this.tempFile.getFile().exists());
+                logger.debug("Cleanup temp file: " + this.tempFile + ", exists: " + this.tempFile.file().exists());
             }
             if (this.tempFile != null) {
                 this.tempFile.delete();
@@ -340,7 +341,7 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
 
         @Override
         public ServletInputStream getInputStream() throws IOException {
-            FileInputStream fileStream = this.tempFile.getFileInputStream();
+            FileInputStream fileStream = this.tempFile.inputStream();
             return new vtk.util.io.ServletInputStream(fileStream);
         }
 
@@ -428,8 +429,12 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
         }
 
         private void writeTempFile() throws IOException, FileUploadException {
-            this.tempFile = StreamUtil.streamToTempFile(
-                    request.getInputStream(), this.maxMultipartSize, this.tempDir);
+            this.tempFile = IO.tempFile(request.getInputStream(), this.tempDir)
+                                .limit(this.maxMultipartSize)
+                                 // Potentially long running upload, make sure security token does not expire
+                                .progress(p -> SecurityContext.getSecurityContext().resetTokenExpiry())
+                                .progressInterval(128*1024*1024)
+                                .perform();
             if (this.tempFile.isTruncatedToSizeLimit()) {
                 throw new FileUploadException("Upload limit exceeded");
             }
@@ -446,14 +451,12 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
                 FileItemStream item = iter.next();
                 if (item.isFormField()) {
                     String name = item.getFieldName();
-                    InputStream stream = item.openStream();
-                    byte[] buf = StreamUtil.readInputStream(stream, 2000);
                     // XXX:
                     String encoding = this.request.getCharacterEncoding();
                     if (encoding == null) {
                         encoding = "utf-8";
                     }
-                    String value = new String(buf, encoding);
+                    String value = IO.readString(item.openStream(), encoding).limit(2000).perform();
                     addParameter(name, value);
                 } else {
                     multipartUploadFileItemNames.add(item.getName());

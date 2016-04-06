@@ -108,6 +108,7 @@ public class TokenManagerImpl implements TokenManager {
     @Override
     public void removeToken(String token) {
 
+        // XXX theoretically this races with background token expiry
         PrincipalItem item = this.cache.get(token);
         if (item == null) {
             throw new IllegalArgumentException(
@@ -127,11 +128,6 @@ public class TokenManagerImpl implements TokenManager {
         return null;
     }
 
-//    
-//    public Set<String> getTokens() {
-//        return this.cache.getKeys();
-//    }
-    
     private String generateID() {
         return UUID.randomUUID().toString();
     }

@@ -38,9 +38,14 @@ import vtk.security.web.AuthenticationHandler;
  * storing and removing authenticated tokens as well as mapping
  * tokens to principal objects.
  * 
- * This interface is not intended to be exposed directly to
+ * <p>This interface is not intended to be exposed directly to
  * application code. Such components should rather be provided a
  * token and a principal object directly, through a PrincipalManager.
+ * 
+ * <p>
+ * Tokens should automatically expire after some amount of time. Methods
+ * {@link #getPrincipal(java.lang.String) } and {@link #getAuthenticationHandlerID(java.lang.String)
+ * } of this API should cause such timeouts to be reset, keeping it alive.
  *
  * @see vtk.security.PrincipalStore
  */
@@ -48,7 +53,7 @@ public interface TokenManager {
 
     /**
      * Maps a token to a principal object.
-     *
+     * 
      * @param token a <code>String</code> value
      * @return a <code>Principal</code>, or <code>null</code> if no
      * such session exists
@@ -84,6 +89,14 @@ public interface TokenManager {
      * principal was authenticated using a different method.
      */
     public String getAuthenticationHandlerID(String token);
-    
+
+    /**
+     * Get the token of a registered principal. Such principals are typically
+     * system users with well known identifiers, and their tokens should always
+     * be available.
+     * 
+     * @param principal the principal for which to retrieve token
+     * @return the token
+     */
     public String getRegisteredToken(Principal principal);
 }

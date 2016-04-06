@@ -32,6 +32,7 @@
 package vtk.repository.hooks;
 
 import java.io.InputStream;
+import java.util.function.Consumer;
 import vtk.repository.ContentStream;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.NoSuchContentException;
@@ -149,8 +150,8 @@ public abstract class DefaultTypeHanderHooks implements TypeHandlerHooks {
      */
     @Override
     public ResourceImpl storeContent(ResourceImpl resource, InputStream stream, 
-            String contentType) throws Exception {
-        getContentStore().storeContent(resource.getURI(), stream);
+            String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception {
+        getContentStore().storeContent(resource.getURI(), stream, progressCallback, progressInterval);
         return resource;
     }
 
@@ -176,8 +177,8 @@ public abstract class DefaultTypeHanderHooks implements TypeHandlerHooks {
      */
     @Override
     public ResourceImpl storeContentOnCreate(ResourceImpl resource, InputStream stream, 
-            String contentType) throws Exception {
-        getContentStore().storeContent(resource.getURI(), stream);
+            String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception {
+        getContentStore().storeContent(resource.getURI(), stream, progressCallback, progressInterval);
         return resource;
     }
 

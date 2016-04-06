@@ -32,7 +32,7 @@ package vtk.repository.hooks;
 
 import java.io.IOException;
 import vtk.repository.ContentStream;
-import vtk.util.io.StreamUtil.TempFile;
+import vtk.util.io.IO;
 
 /**
  * Exception which may be thrown by type handler hooks when the provided
@@ -69,11 +69,11 @@ public class UnsupportedContentException extends TypeHandlerHookException {
      * @param message
      * @param contentFile 
      */
-    public UnsupportedContentException(String message, TempFile contentFile) throws IOException {
+    public UnsupportedContentException(String message, IO.TempFile contentFile) throws IOException {
         super(message);
         try {
-            this.content = new ContentStream(contentFile.getFileInputStream(),
-                           contentFile.getFile().length());
+            this.content = new ContentStream(contentFile.inputStream(),
+                           contentFile.file().length());
         } catch (IOException io) {}
     }
     
@@ -84,11 +84,11 @@ public class UnsupportedContentException extends TypeHandlerHookException {
      * @param message
      * @param contentFile 
      */
-    public UnsupportedContentException(String message, TempFile contentFile, Throwable cause) throws IOException {
+    public UnsupportedContentException(String message, IO.TempFile contentFile, Throwable cause) throws IOException {
         super(message, cause);
         try {
-            this.content = new ContentStream(contentFile.getFileInputStream(),
-                           contentFile.getFile().length());
+            this.content = new ContentStream(contentFile.inputStream(),
+                           contentFile.file().length());
         } catch (IOException io) {}
     }
     

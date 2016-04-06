@@ -31,6 +31,7 @@
 package vtk.security;
 
 import vtk.context.BaseContext;
+import vtk.security.token.TokenManager;
 import vtk.security.web.SecurityInitializer;
 
 public class SecurityContext {
@@ -73,18 +74,35 @@ public class SecurityContext {
      * @return the principal
      */
     public Principal getPrincipal() {
-        return getSecurityContext().principal;
+        return principal;
     }
 
     /**
      * @return the security token.
      */
     public String getToken() {
-        return getSecurityContext().token;
+        return token;
+    }
+    
+    /**
+     * Reset the expirty timeout for the current security token.
+     * 
+     * <p>This method is provided so that tokens can be kept alive by code
+     * which potentially does long running operations that may exceed the token
+     * expiry timeout.
+     * @return <code>true</code> if token was still valid and its expiry was reset, <code>false</code> otherwise
+     */
+    public boolean resetTokenExpiry() {
+        // XXX should not need null-test here, something is bad in design
+        // (A SecurityContext should not be allowed to exist without a backing security manager instance)
+        if (securityInitializer != null) {
+            return securityInitializer.resetTokenExpiry(token);
+        }
+        return false;
     }
     
     public SecurityInitializer securityInitializer() {
-        return getSecurityContext().securityInitializer;
+        return securityInitializer;
     }
 
     @Override

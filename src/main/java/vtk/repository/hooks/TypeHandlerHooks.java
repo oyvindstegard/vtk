@@ -31,6 +31,7 @@
 package vtk.repository.hooks;
 
 import java.io.InputStream;
+import java.util.function.Consumer;
 import vtk.repository.ContentStream;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.NoSuchContentException;
@@ -221,7 +222,7 @@ public interface TypeHandlerHooks {
      * @return the resource (may be modified)
      * @throws Exception in case of errors
      */
-    ResourceImpl storeContent(ResourceImpl resource, InputStream stream, String contentType) throws Exception;
+    ResourceImpl storeContent(ResourceImpl resource, InputStream stream, String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception;
 
     /**
      * Hook method called when {@link Repository#getInputStream(java.lang.String, vtk.repository.Path, boolean)
@@ -266,7 +267,7 @@ public interface TypeHandlerHooks {
      * @throws Exception in case of errors.
      */
     ResourceImpl storeContentOnCreate(ResourceImpl resource,
-            InputStream stream, String contentType) throws Exception;
+            InputStream stream, String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception;
 
     /**
      * Hook method called when copying a resource takes place.

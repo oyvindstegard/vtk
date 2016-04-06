@@ -401,6 +401,15 @@ public class SecurityInitializer {
     }
 
     /**
+     * Reset the expiry for the provided token.
+     * @param token
+     * @return <code>true</code> if token existed and its expiry was reset, <code>false</code> otherwise
+     */
+    public boolean resetTokenExpiry(String token) {
+        return tokenManager.getPrincipal(token) != null;
+    }
+
+    /**
      * @see vtk.web.ContextInitializer#destroyContext()
      */
     public void destroyContext() {

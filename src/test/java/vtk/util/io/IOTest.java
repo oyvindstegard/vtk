@@ -591,6 +591,44 @@ public class IOTest {
         assertEquals(new Long(512*1024), progressCallbacks.get(progressCallbacks.size()-1));
     }
     
+    @Test
+    public void testProgress_tempFile() throws Exception {
+        InputStream in = new ByteArrayInputStream(generateRandomDataBuffer(1024*1024));
+        
+        final List<Long> progressCallbacks = new ArrayList<>();
+        IO.tempFile(in).progress(p -> progressCallbacks.add(p)).perform().delete();
+
+        assertTrue(progressCallbacks.size() > 0);
+        assertEquals(new Long(1024*1024), progressCallbacks.get(progressCallbacks.size()-1));
+    }
+    
+    @Test
+    public void testProgressInterval_tempFile() throws Exception {
+        InputStream in = new SmallChunkInputStream(generateRandomDataBuffer(1024*1024));
+        
+        final List<Long> progressCallbacks = new ArrayList<>();
+        IO.tempFile(in).progress(p -> progressCallbacks.add(p)).progressInterval(1024).perform().delete();
+        
+        // Expect (much) more than two progress callbacks with current setup
+        assertTrue(progressCallbacks.size() > 512);
+        assertEquals(Long.valueOf(1024*1024), progressCallbacks.get(progressCallbacks.size()-1));
+        
+    }
+    
+    @Test
+    public void testProgressInterval_tempFile_limit() throws Exception {
+        InputStream in = new DevZeroInputStream();
+        
+        final List<Long> progressCallbacks = new ArrayList<>();
+        IO.tempFile(in).limit(8*IO.DEFAULT_BUFFER_SIZE)
+                .progress(p -> progressCallbacks.add(p)).progressInterval(IO.DEFAULT_BUFFER_SIZE).perform().delete();
+
+        // Expect more than two progress callbacks with current setup
+        assertTrue(progressCallbacks.size() > 2);
+        assertEquals(Long.valueOf(8*IO.DEFAULT_BUFFER_SIZE), progressCallbacks.get(progressCallbacks.size()-1));
+        
+    }
+    
     private boolean buffersEqual(byte[] a, byte[] b) {
         if (a.length != b.length) {
             return false;
