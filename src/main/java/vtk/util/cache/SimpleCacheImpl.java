@@ -188,10 +188,14 @@ public class SimpleCacheImpl<K, V> implements SimpleCache<K, V>, BeanNameAware,
             return this.date;
         }
         
-        
         public V getValue() {
             if (SimpleCacheImpl.this.refreshTimestampOnGet) this.date = new Date();
             return this.value;
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "(" + value + "," + date + ")";
         }
     }
 
