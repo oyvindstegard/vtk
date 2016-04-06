@@ -150,29 +150,6 @@
     <property name="targetMethod" value="add" />
   </bean>
 
-  <bean parent="defaultRequestFilters.builder">
-    <property name="arguments" ref="stdReqFilter" />
-  </bean>
-
-  <bean id="stdReqFilter" class="vtk.web.filter.StandardRequestFilter">
-    <property name="urlReplacements" ref="stdReqFilter.urlReplacements" />
-    <property name="xForwardedFor" value="${request.xForwardedFor}" />
-    <property name="xForwardedProto" value="${request.xForwardedProto}" />
-    <property name="xForwardedPort" value="${request.xForwardedPort}" />
-    <property name="requestForwardFieldHeader" value="${request.forwardFieldHeader}" />
-  </bean>
-  
-  <bean id="stdReqFilter.urlReplacements"
-        class="org.springframework.beans.factory.config.MapFactoryBean">
-    <property name="sourceMap">
-      <map>
-        <!--
-            <entry key="\+" value="%2B" />
-        -->
-      </map>
-    </property>
-  </bean>
-
   <bean id="defaultResponseFilters" class="vtk.util.SortedCollection">
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />

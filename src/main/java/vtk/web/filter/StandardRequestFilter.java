@@ -30,6 +30,7 @@
  */
 package vtk.web.filter;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -38,6 +39,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
@@ -60,7 +66,7 @@ import vtk.web.service.URL;
  *    (TODO: change to support <code>Forwarded</code> header, RFC7239).
  * </ol>
  */
-public class StandardRequestFilter extends AbstractRequestFilter {
+public class StandardRequestFilter extends AbstractRequestFilter implements javax.servlet.Filter {
 
     private static Logger logger = LoggerFactory.getLogger(StandardRequestFilter.class);
 
@@ -69,6 +75,7 @@ public class StandardRequestFilter extends AbstractRequestFilter {
     private String xForwardedProto = null;
     private String xForwardedPort = null;
     private String requestForwardFieldHeader = null;
+
 
     public void setUrlReplacements(Map<String, String> urlReplacements) {
         this.urlReplacements = new LinkedHashMap<Pattern, String>();
@@ -102,6 +109,19 @@ public class StandardRequestFilter extends AbstractRequestFilter {
     }
 
     @Override
+    public void init(FilterConfig filterConfig) throws ServletException { }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response,
+            FilterChain chain) throws IOException, ServletException {
+        if (!(request instanceof HttpServletRequest)) chain.doFilter(request, response);
+        chain.doFilter(new RequestWrapper((HttpServletRequest) request), response);
+    }
+
+    @Override
+    public void destroy() { }
+
+    @Override
     public HttpServletRequest filterRequest(HttpServletRequest request) {
         return new RequestWrapper(request);
     }
@@ -120,7 +140,6 @@ public class StandardRequestFilter extends AbstractRequestFilter {
             if (logger.isDebugEnabled()) {
                 logger.debug("Translated requestURL: from '" + requestURL + "' to '" + this.requestURL + "'");
             }
-            
             if (xForwardedFor != null && xForwardedFor.matcher(request.getRequestURL()).matches()) {
                 String xForwardHeader = request.getHeader("X-Forwarded-For");
                 if (xForwardHeader != null) {

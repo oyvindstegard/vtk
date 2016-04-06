@@ -2,9 +2,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-    <!-- Location of property config files -->
+  <!-- This file is NOT loaded by Spring Boot -->
 
-    <bean id="vtk.configLocations"
+  <!-- Location of property config files -->
+  <bean id="vtk.configLocations"
         class="org.springframework.beans.factory.config.ListFactoryBean">
     <property name="sourceList">
       <list>

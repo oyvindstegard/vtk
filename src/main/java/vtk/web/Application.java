@@ -38,17 +38,19 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.Servlet;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.eclipse.jetty.server.NetworkTrafficServerConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -58,6 +60,7 @@ import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.DispatcherServletAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ServerPropertiesAutoConfiguration;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
@@ -67,10 +70,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import vtk.util.Version;
+import vtk.web.filter.StandardRequestFilter;
 import vtk.web.servlet.VTKServlet;
 
 @EnableWebMvc
@@ -86,13 +91,28 @@ public class Application extends SpringBootServletInitializer {
     private static final int DEFAULT_GRACE_PERIOD = 15;
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Bean
+    @Bean(name="dispatcherServlet")
     public Servlet dispatcherServlet() {
         VTKServlet servlet = new VTKServlet();
         return servlet;
     }
 
-    @Bean
+    @Bean(name="vtk.standardRequestFilter")
+    public FilterRegistrationBean standardRequestFilter() {
+        FilterRegistrationBean registration = new FilterRegistrationBean();
+        StandardRequestFilter filter = new StandardRequestFilter();
+        registration.setFilter(filter);
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        if (handleXForward()) {
+            filter.setxForwardedFor(".*");
+            filter.setxForwardedProto("X-Forwarded-Proto");
+            filter.setxForwardedPort("X-Forwarded-Port");
+        }
+        registration.setDispatcherTypes(EnumSet.allOf(DispatcherType.class));
+        return registration;
+    }
+
+    @Bean(name="vtk.servletContainer")
     public EmbeddedServletContainerFactory containerFactory() throws UnknownHostException {
 
         HostPort[] listenAddrs = listenAddrs();
@@ -100,7 +120,7 @@ public class Application extends SpringBootServletInitializer {
         if (listenAddrs.length == 0) {
             throw new IllegalStateException(
                     "No listen address configured. "
-                            + " Please specify -Dvtk.listen=host1:port1,host2:port2:...");
+                  + " Please specify -Dvtk.listen=host1:port1,host2:port2:...");
         }
 
         final int maxThreads = 200;
@@ -113,6 +133,10 @@ public class Application extends SpringBootServletInitializer {
 
         factory.setAddress(InetAddress.getByName(listenAddrs[0].addr));
         factory.setPort(listenAddrs[0].port);
+
+        // Supports X-Forwarded-For and X-Forwarded-Proto, 
+        // but not X-Forwarded-Port (or RFC 7239):
+        //factory.setUseForwardHeaders(handleXForward());
 
         factory.addServerCustomizers(new JettyServerCustomizer() {
             @Override
@@ -213,6 +237,11 @@ public class Application extends SpringBootServletInitializer {
         return result;
     }
 
+    protected boolean handleXForward() {
+        String prop = System.getProperty("vtk.xForward");
+        if (prop == null) return false;
+        return "true".equals(prop.trim().toLowerCase());
+    }
 
     protected List<String> userBeanDefinitions() throws IOException {
         String prop = System.getProperty("vtk.beanLocations");
