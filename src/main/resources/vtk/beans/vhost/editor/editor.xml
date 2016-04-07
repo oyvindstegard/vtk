@@ -619,6 +619,7 @@
             <ref bean="pageLimitPropDef" />
             <ref bean="collection.sortingPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
             <ref bean="displayManuallyApprovedPropDef" />
@@ -784,8 +785,8 @@
             <ref bean="pageLimitPropDef" />
             <ref bean="articleListing.listingViewPropDef" />
             <ref bean="articleListing.featuredArticlesPropDef" />
-            <ref bean="articleListing.recursiveListingPropDef" />
-            <ref bean="articleListing.recursiveListingSubfoldersPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
             <ref bean="displayManuallyApprovedPropDef" />
@@ -866,7 +867,8 @@
             <ref bean="importancePropDef" />
             <ref bean="hiddenPropDef" />
             <ref bean="pageLimitPropDef" />
-            <ref bean="blogListing.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="additionalContentPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
@@ -891,7 +893,8 @@
             <ref bean="importancePropDef" />
             <ref bean="hiddenPropDef" />
             <ref bean="pageLimitPropDef" />
-            <ref bean="eventListing.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
             <ref bean="displayManuallyApprovedPropDef" />

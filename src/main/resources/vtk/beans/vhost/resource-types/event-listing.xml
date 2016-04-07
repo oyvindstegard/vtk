@@ -18,7 +18,6 @@
     </property>
     <property name="propertyTypeDefinitions">
       <list>
-        <ref bean="eventListing.recursiveListingPropDef" />
         <ref bean="eventListing.hideEndDatePropDef" />
         <ref bean="eventListing.hideLocationPropDef" />
         <ref bean="eventListing.displayTypePropDef" />
@@ -26,9 +25,6 @@
       </list>
     </property>
   </bean>
-  
-  <bean id="eventListing.recursiveListingPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
-    parent="articleListing.recursiveListingPropDef" />
   
   <bean id="eventListing.hideEndDatePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
     parent="abstractPropDef">

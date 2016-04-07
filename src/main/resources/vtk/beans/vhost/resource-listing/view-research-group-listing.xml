@@ -28,7 +28,7 @@
 
   <bean id="researchGroupListing.searchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="researchGroupListing.defaultListing" />
-    <property name="listingUriQueryBuilder" ref="collection.defaultRecursiveListingUriQueryBuilder" />
+    <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">

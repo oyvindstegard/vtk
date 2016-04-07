@@ -16,15 +16,7 @@
         </bean>
       </list>
     </property>
-     <property name="propertyTypeDefinitions">
-      <list>
-        <ref bean="blogListing.recursiveListingPropDef" />
-      </list>
-    </property>
   </bean>
-  
-  <bean id="blogListing.recursiveListingPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
-    parent="articleListing.recursiveListingPropDef" />
 
   <bean id="resourceIsBlogListing" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="blogListingResourceTypeDefinition" />

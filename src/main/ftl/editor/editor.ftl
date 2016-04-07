@@ -486,15 +486,9 @@
             </#if>
 
           <#elseif useRadioButtons>
-          
-            <#-- Special case for recursive listing... Jesus Christ... -->
-            <#if name == 'recursive-listing'>
-              <@displayAllowedValuesAsRadioButtons propDef name allowedValues value />
-              <@displayDefaultSelectedValueAsRadioButton propDef name />
-            <#else>
-              <@displayDefaultSelectedValueAsRadioButton propDef name />
-              <@displayAllowedValuesAsRadioButtons propDef name allowedValues value />
-            </#if>
+
+          <@displayDefaultSelectedValueAsRadioButton propDef name />
+          <@displayAllowedValuesAsRadioButtons propDef name allowedValues value />
             
           <#else>
             <select name="resource.${name}" id="resource.${name}">
@@ -529,10 +523,6 @@
             </#list>
           </select>
         <#else>
-
-          <#if name = 'recursive-listing-subfolders'>
-            <label>${vrtx.getMsg("editor.recursive-listing.featured-articles")}</label>
-          </#if>
           <input class="vrtx-textfield<#if multiple> vrtx-multiple</#if>" type="text" id="resource.${name}" name="resource.${name}" value="${value?html}" size="32" />
     
           <#if name = 'recursive-listing-subfolders'>
@@ -574,9 +564,6 @@
         <input name="resource.${name}" id="resource.${name}.unspecified" type="radio" value="" />
         <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue?html}</label>
       </#if>
-      <#if name = "recursive-listing">
-        <abbr tabindex="0" class="tooltips" title="${vrtx.getMsg('editor.recursive-listing.info')}"></abbr>
-      </#if>
     </div>
   </#if>
 </#macro>
@@ -595,8 +582,12 @@
         <input name="resource.${name}" id="resource.${name}.${v?html}" type="radio" value="${v?html}" />
         <label class="resource.${name}" for="resource.${name}.${v?html}">${localized?html}</label>
       </#if>
+      <#if name = "recursive-listing" && v = "true">
+          <abbr tabindex="0" class="tooltips" title="${vrtx.getMsg('editor.recursive-listing.info')}"></abbr>
+      </#if>
     </div>
   </#list>
+
 </#macro>
 
 <#macro genEditorHelpMenu type isCollection>

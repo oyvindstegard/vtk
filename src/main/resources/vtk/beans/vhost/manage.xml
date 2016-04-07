@@ -996,7 +996,7 @@
     <property name="descriptionPropDef" ref="descriptionPropDef" />
     <property name="normalFolderProperties">
       <map>
-        <entry key-ref="collection.recursiveListingPropDef" value-ref="VALUE_FALSE" />
+        <entry key-ref="collection.recursiveListingPropDef" value-ref="collection.string_value_false" />
       </map>
     </property>
     <property name="publishDatePropDef" ref="publishDatePropDef" />

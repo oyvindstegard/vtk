@@ -56,7 +56,7 @@
 
   <bean id="projectListing.searchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="projectListing.defaultListing" />
-    <property name="listingUriQueryBuilder" ref="collection.defaultRecursiveListingUriQueryBuilder" />
+    <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">
@@ -68,7 +68,7 @@
 
   <bean id="projectListing.viewCompletedProjectsSearchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="projectListing.defaultListing" />
-    <property name="listingUriQueryBuilder" ref="collection.defaultRecursiveListingUriQueryBuilder" />
+    <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">

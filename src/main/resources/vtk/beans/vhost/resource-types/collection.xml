@@ -29,6 +29,7 @@
         <ref bean="collection.typePropDef" />
         <ref bean="collection.indexFilePropDef" />
         <ref bean="collection.recursiveListingPropDef" />
+        <ref bean="collection.recursiveListingSubfoldersPropDef" />
         <ref bean="displayAggregationPropDef" />
         <ref bean="aggregationPropDef" />
         <ref bean="displayManuallyApprovedPropDef" />
@@ -371,23 +372,46 @@
     <property name="fallbackTitlePropDef" ref="collectionTitlePropDef" />
   </bean>
 
+
+  <bean id="collection.string_value_true" class="vtk.repository.resourcetype.Value">
+    <constructor-arg type="java.lang.String">
+      <value>true</value>
+    </constructor-arg>
+    <constructor-arg ref="TYPE_STRING" />
+  </bean>
+  <bean id="collection.string_value_false" class="vtk.repository.resourcetype.Value">
+    <constructor-arg type="java.lang.String">
+      <value>false</value>
+    </constructor-arg>
+    <constructor-arg ref="TYPE_STRING" />
+  </bean>
+  <bean id="collection.string_value_selected" class="vtk.repository.resourcetype.Value">
+    <constructor-arg type="java.lang.String">
+      <value>selected</value>
+    </constructor-arg>
+    <constructor-arg ref="TYPE_STRING" />
+  </bean>
+
   <bean id="collection.recursiveListingPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
-    parent="abstractPropDef">
+        parent="abstractPropDef">
     <property name="name" value="recursive-listing" />
-    <property name="type" value="BOOLEAN" />
+    <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
-    <property name="mandatory" value="false" />
+    <property name="mandatory" value="true" />
+    <property name="defaultValue" ref="collection.string_value_true" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-listing-recursive-listing" />
-        <constructor-arg value="BOOLEAN" />
+        <constructor-arg value="STRING" />
       </bean>
     </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <property name="values">
           <list>
-            <ref bean="VALUE_FALSE" />
+            <ref bean="collection.string_value_false" />
+            <ref bean="collection.string_value_true" />
+            <ref bean="collection.string_value_selected" />
           </list>
         </property>
       </bean>
@@ -402,6 +426,24 @@
       </map>
     </property>
   </bean>
+
+  <bean id="collection.recursiveListingSubfoldersPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
+        parent="abstractPropDef">
+    <property name="name" value="recursive-listing-subfolders" />
+    <property name="type" value="STRING" />
+    <property name="multiple" value="true" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="metadata">
+      <map>
+        <entry key="editingHints">
+          <map>
+            <entry key="hideLabel" value="true" />
+          </map>
+        </entry>
+      </map>
+    </property>
+  </bean>
+
 
   <bean id="pageLimitPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
     <property name="name" value="page-limit" />
