@@ -617,7 +617,6 @@
             <ref bean="importancePropDef" />
             <ref bean="hiddenPropDef" />
             <ref bean="pageLimitPropDef" />
-            <ref bean="collection.sortingPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
             <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
@@ -625,6 +624,7 @@
             <ref bean="displayManuallyApprovedPropDef" />
             <ref bean="manuallyApproveFromPropDef" />
             <ref bean="manuallyApprovedResourcesPropDef" />
+            <ref bean="collection.sortingPropDef" />
             <ref bean="collection.hideLastModifiedPropDef" />
             <ref bean="collection.hideIntroductionPropDef" />
             <ref bean="collection.hideIconPropDef" />
@@ -730,6 +730,8 @@
             <ref bean="importancePropDef" />
             <ref bean="hiddenPropDef" />
             <ref bean="pageLimitPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
             <ref bean="collection.sortingPropDef" />
@@ -757,6 +759,8 @@
             <ref bean="importancePropDef" />
             <ref bean="hiddenPropDef" />
             <ref bean="pageLimitPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
             <ref bean="collection.sortingPropDef" />
@@ -821,6 +825,8 @@
             <ref bean="importancePropDef" />
             <ref bean="hiddenPropDef" />
             <ref bean="pageLimitPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="collection.sortingPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
@@ -842,6 +848,8 @@
             <ref bean="importancePropDef" />
             <ref bean="hiddenPropDef" />
             <ref bean="pageLimitPropDef" />
+            <ref bean="collection.recursiveListingPropDef" />
+            <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
