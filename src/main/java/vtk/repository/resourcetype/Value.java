@@ -45,7 +45,7 @@ import vtk.util.text.JsonStreamer;
  * JSON values are always stored in the stringValue field, even though they
  * can also be set and get as binary values.
  */
-public class Value implements Cloneable, Comparable<Value> { 
+public class    Value implements Cloneable, Comparable<Value> {
 
     private Type type = Type.STRING;
 

@@ -170,7 +170,7 @@
     <property name="name" value="eventListing.upcomingEventsSearchComponent" />
     <property name="titleLocalizationKey" value="eventListing.upcomingEvents" />
     <property name="listableProperties" ref="eventListing.listableProperties" />
-    <property name="listingUriQueryBuilder" ref="eventListing.listingUriQueryBuilder" />
+    <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
     <property name="queryBuilders">
       <list>
         <ref bean="eventListing.upcomingEventsQueryBuilder" />
@@ -198,10 +198,6 @@
     <property name="titleLocalizationKey">
       <null />
     </property>
-  </bean>
-
-  <bean id="eventListing.listingUriQueryBuilder" parent="collection.defaultRecursiveListingUriQueryBuilder">
-    <property name="recursivePropDef" ref="eventListing.recursiveListingPropDef" />
   </bean>
 
   <bean id="eventListing.upcoming.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">

@@ -37,11 +37,7 @@
       </list>
     </property>
     <property name="searchSorting" ref="articleListing.searchSorting" />
-    <property name="listingUriQueryBuilder">
-      <bean parent="collection.defaultRecursiveListingUriQueryBuilder">
-        <property name="recursivePropDef" ref="blogListing.recursiveListingPropDef" />
-      </bean>
-    </property>
+    <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
   </bean>
 
   <bean id="structured.blogListing.searchComponent" parent="blogListing.searchComponent">

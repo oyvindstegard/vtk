@@ -16,7 +16,7 @@
 
   <!-- ##
     Handler does nothing here, resource depends on dedicated functionality found in parent project (Vortex).
-    Bean is overridden with necessary configuration there. Jesus...
+    Bean is overridden with necessary configuration there.
   ## -->
   <bean id="employeeListing.handler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
     <property name="viewName" value="employeeListing.view" />

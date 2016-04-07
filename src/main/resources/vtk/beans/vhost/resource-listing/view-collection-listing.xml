@@ -90,7 +90,7 @@
     <property name="searchSorting" ref="collectionListing.searchSorting" />
     <property name="aggregationResolver" ref="aggregationResolver" />
     <property name="multiHostSearcher" ref="multiHostSearcher" />
-    <property name="listingUriQueryBuilder" ref="collection.defaultRecursiveListingUriQueryBuilder" />
+    <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
     <property name="queryBuilders">
       <list>
         <bean parent="queryStringParser">
@@ -108,12 +108,10 @@
     <property name="defaultRecursive" value="true" />
   </bean>
 
-  <bean id="collection.listingUriQueryBuilder" class="vtk.web.search.ListingUriQueryBuilder">
-    <property name="recursivePropDef" ref="collection.recursiveListingPropDef" />
-  </bean>
-
-  <bean id="collection.defaultRecursiveListingUriQueryBuilder" parent="collection.listingUriQueryBuilder">
+  <bean id="collection.recursiveListingUriQueryBuilder" class="vtk.web.search.ListingUriQueryBuilder">
     <property name="defaultRecursive" value="true" />
+    <property name="recursivePropDef" ref="collection.recursiveListingPropDef" />
+    <property name="subfolderPropDef" ref="collection.recursiveListingSubfoldersPropDef" />
   </bean>
 
   <bean id="collectionListing.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">

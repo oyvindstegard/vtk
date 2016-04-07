@@ -66,7 +66,7 @@ public class ListingUriQueryBuilder {
         if (this.subfolderPropDef != null) {
             subfolderProp = collection.getProperty(this.subfolderPropDef);
         }
-        if (subfolderProp != null && recursiveProp == null) {
+        if (subfolderProp != null && recursiveProp.getStringValue().equals("selected")) {
             Set<String> set = new HashSet<String>();
             for (Value value : subfolderProp.getValues()) {
                 try {
@@ -98,7 +98,7 @@ public class ListingUriQueryBuilder {
         } else {
             // If no recursion is defined, supplement the default query with
             // limited depth when searching
-            if (!this.defaultRecursive || (recursiveProp != null && !recursiveProp.getBooleanValue())) {
+            if (!this.defaultRecursive || recursiveProp.getStringValue().equals("false")) {
                 AndQuery and = new AndQuery();
                 UriDepthQuery uriDepthQuery = new UriDepthQuery(collectionUri.getDepth() + 1);
                 and.add(uriPrefixQuery);

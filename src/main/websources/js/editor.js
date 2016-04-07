@@ -1270,24 +1270,20 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
   // Exchange sub-folder title
   setShowHideBooleanOldEditor("#resource\\.show-subfolder-menu\\.true, #resource\\.show-subfolder-menu\\.unspecified",
     "#vrtx-resource\\.show-subfolder-title",
-    "#resource\\.show-subfolder-menu\\.unspecified:checked",
-    "");
+    "#resource\\.show-subfolder-menu\\.unspecified:checked");
     
   // Recursive
-  setShowHideBooleanOldEditor("#resource\\.recursive-listing\\.false, #resource\\.recursive-listing\\.unspecified",
+  setShowHideBooleanOldEditor("#resource\\.recursive-listing\\.false, #resource\\.recursive-listing\\.true, #resource\\.recursive-listing\\.selected",
     "#vrtx-resource\\.recursive-listing-subfolders",
-    "#resource\\.recursive-listing\\.false:checked",
-    "false");
+    "#resource\\.recursive-listing\\.false:checked, #resource\\.recursive-listing\\.true:checked");
     
   // Calendar title
   setShowHideBooleanOldEditor("#resource\\.display-type\\.unspecified, #resource\\.display-type\\.calendar",
     "#vrtx-resource\\.event-type-title",
-    "#resource\\.display-type\\.calendar:checked",
-    null);
+    "#resource\\.display-type\\.unspecified:checked");
   setShowHideBooleanOldEditor("#resource\\.display-type\\.unspecified, #resource\\.display-type\\.calendar",
     "#vrtx-resource\\.hide-additional-content",
-    "#resource\\.display-type\\.calendar:checked",
-    "calendar");
+    "#resource\\.display-type\\.unspecified:checked");
 
 
   // Show / hide mappings for selects
@@ -1349,13 +1345,14 @@ function setShowHideBooleanNewEditor(name, properties, hideTrues) {
   });
 }
 
-function setShowHideBooleanOldEditor(radioIds, properties, conditionHide, conditionHideEqual) {
+function setShowHideBooleanOldEditor(radioIds, properties, conditionHide) {
   vrtxEditor.initEventHandler(radioIds, {
     wrapper: "#editor",
-    callback: function (props, conditionHide, conditionHideEqual, init) {
-      toggleShowHideBoolean(props, $(conditionHide).val() != conditionHideEqual, init);
+    callback: function (props, conditionHide, init) {
+      var show = $(conditionHide).val() === undefined;
+      toggleShowHideBoolean(props, show, init);
     },
-    callbackParams: [properties, conditionHide, conditionHideEqual]
+    callbackParams: [properties, conditionHide]
   });
 }
 

@@ -110,7 +110,7 @@
         </bean>
       </list>
     </property>
-    <property name="listingUriQueryBuilder" ref="articleListing.listingUriQueryBuilder" />
+    <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
     <property name="queryBuilders">
       <list>
         <ref bean="articleListing.excludeFeaturedArticlesQueryBuilder" />
@@ -131,11 +131,6 @@
   <bean id="articleListingFeed.searchComponent" parent="articleListing.searchComponent">
     <property name="name" value="articleListingFeed.defaultArticles" />
     <property name="resolveMultiHostResultSet" value="false" />
-  </bean>
-
-  <bean id="articleListing.listingUriQueryBuilder" parent="collection.defaultRecursiveListingUriQueryBuilder">
-    <property name="recursivePropDef" ref="articleListing.recursiveListingPropDef" />
-    <property name="subfolderPropDef" ref="articleListing.recursiveListingSubfoldersPropDef" />
   </bean>
 
   <bean id="articleListing.excludeFeaturedArticlesQueryBuilder" class="vtk.web.search.articlelisting.FeaturedArticlesQueryBuilder"
