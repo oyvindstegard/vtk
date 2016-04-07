@@ -1054,25 +1054,26 @@ function validTextLengthsInEditor(isOldEditor) {
 }
 
 function validTextLengthsInEditorError(elm, isOldEditor) {
-  if (typeof tooLongFieldPre !== "undefined" && typeof tooLongFieldPost !== "undefined") {
-    $("html").scrollTop(0);
-    var lbl = "";
-    if (isOldEditor) {
-      var elmPropWrapper = elm.closest(".property-item");
-      if (elmPropWrapper.length) {
-        lbl = elmPropWrapper.find(".property-label:first");
-      }
-    } else {
-      lbl = elm.find("label");
+  $("html").scrollTop(0);
+  var lbl = "";
+  if (isOldEditor) {
+    var elmPropWrapper = elm.closest(".property-item");
+    if (elmPropWrapper.length) {
+      lbl = elmPropWrapper.find(".property-label:first");
     }
-    if(lbl.length) {
-      lbl = lbl.text();
-    } else {
-      lbl = "<?>";
-    }
-    var d = new VrtxMsgDialog({ msg: tooLongFieldPre + lbl + tooLongFieldPost, title: "" });
-    d.open();
+  } else {
+    lbl = elm.find("label");
   }
+  if(lbl.length) {
+    lbl = lbl.text();
+  } else {
+    lbl = "<?>";
+  }
+  var d = new VrtxMsgDialog({
+    title: messages.validationError,
+    msg: messages.tooLongFieldPre + lbl + messages.tooLongFieldPost
+  });
+  d.open();
 }
 
 

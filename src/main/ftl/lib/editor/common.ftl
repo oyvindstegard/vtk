@@ -24,8 +24,10 @@
 <#macro addCommonScripts language oldEditor=false>
 
   <script type="text/javascript"><!--
-    var tooLongFieldPre = "<@vrtx.msg code='editor.too-long-field-pre' />";
-    var tooLongFieldPost = "<@vrtx.msg code='editor.too-long-field-post' />";
+    window.messages = window.messages || {};
+    messages.validationError = "<@vrtx.msg code='editor.error.validation' />";
+    messages.tooLongFieldPre = "<@vrtx.msg code='editor.too-long-field-pre' />";
+    messages.tooLongFieldPost = "<@vrtx.msg code='editor.too-long-field-post' />";
     
     vrtxAdmin.multipleFormGroupingMessages = {
       add: "${vrtx.getMsg('editor.add', 'Add')}",

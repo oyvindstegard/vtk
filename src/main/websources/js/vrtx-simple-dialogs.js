@@ -128,7 +128,9 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
         futureUi.resolve();
       });
     } else {
-      futureUi.resolve();
+      setTimeout(function () {
+        futureUi.resolve();
+      }, 1);
     }
     $.when(futureUi).done(function() {
       if (dialog.__state.opening) {
@@ -215,7 +217,9 @@ var VrtxMsgDialog = dejavu.Class.declare({
       title: opts.title,
       width: opts.width,
       height: opts.height,
-      hasOk: true
+      noTitle: opts.noTitle,
+      hasOk: true,
+      unclosable: true
     });
   }
 });
