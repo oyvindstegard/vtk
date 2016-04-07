@@ -160,7 +160,7 @@ public class PropertyImpl implements Cloneable, Property {
         setValues(values, true);
     }
 
-    /**'
+    /**
      * Internal API: allow setting values without strict validation. Used when
      * loading properties from DAO layer.
      * 
