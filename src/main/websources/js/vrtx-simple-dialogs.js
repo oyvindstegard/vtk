@@ -128,9 +128,7 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
         futureUi.resolve();
       });
     } else {
-      setTimeout(function () {
-        futureUi.resolve();
-      }, 1);
+      futureUi.resolve();
     }
     $.when(futureUi).done(function() {
       if (dialog.__state.opening) {

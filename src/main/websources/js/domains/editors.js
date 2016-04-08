@@ -201,20 +201,21 @@ function ajaxSave() {
     vrtxEditor.richtextEditorFacade.updateInstances();
   }
   var startTime = new Date();
-  
+
+  var ok = validTextLengthsInEditor(true);
+  if(!ok) {
+    vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [null, null]);
+    return false;
+  }
+
   var d = new VrtxLoadingDialog({title: ajaxSaveText});
   d.open();
 
   if (typeof vrtxImageEditor !== "undefined" && vrtxImageEditor.save) {
     vrtxImageEditor.save();
   }
-  if (typeof performSave !== "undefined") {
-    var ok = performSave();
-    if (!ok) {
-      d.close();
-      vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [null, null]);
-      return false;
-    }
+  if(window.vrtxEditor && !vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
+    saveMultipleInputFields();
   }
   
   if(!isServerLastModifiedOlderThanClientLastModified(d)) return false;
