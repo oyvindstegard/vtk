@@ -6,7 +6,8 @@ select extra_prop_entry_seq_pk.nextval,
        'recursive-listing',
        'true',
        null,
-       null
+       null,
+       'N'
 from vortex_resource
 where is_collection = 'Y'
 and resource_id not in
