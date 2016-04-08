@@ -65,10 +65,12 @@
     COMPLETE_UNSAVED_CHANGES_CONFIRMATION = "<@vrtx.msg code='manage.completeUnsavedChangesConfirmation' />";
     window.onbeforeunload = unsavedChangesInEditorMessage;
 
+    function performValidation() {
+      return vrtxEditor.editorForm.hasClass("vrtx-course-schedule") ? true : validTextLengthsInEditor(false);
+    }
+
     function performSave() {
       /* Ignore special JSON binary editor for course-schedule document */
-      var ok = vrtxEditor.editorForm.hasClass("vrtx-course-schedule") ? true : validTextLengthsInEditor(false);
-      if(!ok) return false;
       datepickerEditor.prepareForSave(); // js/datepicker/datepicker-admin.js
       saveMultipleInputFields();
       

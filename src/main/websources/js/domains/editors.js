@@ -201,7 +201,15 @@ function ajaxSave() {
     vrtxEditor.richtextEditorFacade.updateInstances();
   }
   var startTime = new Date();
-  
+
+  if (typeof performValidation !== "undefined") {
+    var ok = performValidation();
+    if(!ok) {
+      vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [null, null]);
+      return false;
+    }
+  }
+
   var d = new VrtxLoadingDialog({title: ajaxSaveText});
   d.open();
 
@@ -209,12 +217,7 @@ function ajaxSave() {
     vrtxImageEditor.save();
   }
   if (typeof performSave !== "undefined") {
-    var ok = performSave();
-    if (!ok) {
-      d.close();
-      vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [null, null]);
-      return false;
-    }
+    performSave();
   }
   
   if(!isServerLastModifiedOlderThanClientLastModified(d)) return false;
