@@ -202,10 +202,12 @@ function ajaxSave() {
   }
   var startTime = new Date();
 
-  var ok = validTextLengthsInEditor(true);
-  if(!ok) {
-    vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [null, null]);
-    return false;
+  if (typeof performValidation !== "undefined") {
+    var ok = performValidation();
+    if(!ok) {
+      vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [null, null]);
+      return false;
+    }
   }
 
   var d = new VrtxLoadingDialog({title: ajaxSaveText});
@@ -214,8 +216,8 @@ function ajaxSave() {
   if (typeof vrtxImageEditor !== "undefined" && vrtxImageEditor.save) {
     vrtxImageEditor.save();
   }
-  if(window.vrtxEditor && !vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
-    saveMultipleInputFields();
+  if (typeof performSave !== "undefined") {
+    performSave();
   }
   
   if(!isServerLastModifiedOlderThanClientLastModified(d)) return false;

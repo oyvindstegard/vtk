@@ -72,8 +72,11 @@
         
         // Save and copy
         _$("#editor").on("click", "#saveAndViewButton, #saveCopyButton", function(e) {
-          var ok = performSave();
-          if(!ok) return false;
+          var ok = performValidation();
+          if(ok)
+            performSave();
+          else
+            return false;
           if(this.id === "saveCopyButton") {
             vrtxEditor.needToConfirm = false;
           }
@@ -115,15 +118,15 @@
       UNSAVED_CHANGES_CONFIRMATION = "<@vrtx.msg code='manage.unsavedChangesConfirmation' />";
       COMPLETE_UNSAVED_CHANGES_CONFIRMATION = "<@vrtx.msg code='manage.completeUnsavedChangesConfirmation' />";
       window.onbeforeunload = unsavedChangesInEditorMessage;
-      
+
+      function performValidation() {
+        return validTextLengthsInEditor(true);
+      }
+
       function performSave() {
-        var ok = validTextLengthsInEditor(true);
-        if(!ok) return false;
-        
         if(!vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
           saveMultipleInputFields();
         }
-        return true;
       }
       
       // Async. save i18n
