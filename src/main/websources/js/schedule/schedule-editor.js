@@ -648,13 +648,14 @@ function courseSchedule() {
 
     // Lookup session
     if(onlySessionId) {
-      var session = cs.sessionsLookup["single"]["one"];
+      var sessionId = "one";
+      var id = "single";
     } else {
       var clz = text.attr("class");
       var sessionId = clz.replace(/^.*SID([\S]+).*$/, "$1");
       var id = clz.replace(/^.*RID([\S]+).*$/, "$1");
-      var session = cs.sessionsLookup[id][sessionId];
     }
+    var session = cs.sessionsLookup[id][sessionId];
 
     // Reset to TP value
     
