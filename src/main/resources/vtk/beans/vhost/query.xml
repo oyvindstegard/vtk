@@ -93,7 +93,7 @@
   <!-- A Lucene index accessor (secondary instance, batch indexing tuned,
        never shared storage) -->
   <bean id="secondarySystemIndexAccessor" class="vtk.repository.index.IndexManager">
-    <property name="storageRootPath" value="${repository.tempDir}"/>
+    <property name="storageRootPath" value="${indexStorageRootPath}"/>
     <property name="storageId" value="property_index.secondary"/>
     <property name="batchIndexingMode" value="true"/>
     <property name="forceUnlock" value="true"/>
