@@ -56,7 +56,7 @@ public class JBossSingletonNotificationServiceActivator implements ServiceActiva
      * Setup is done in this class because it is the earliest accessible
      * point in the application when running on JBoss.
      * Also, this setup is required because when JBoss is in charge of log
-     * configuration the property is ignored.
+     * configuration the "log4j.configuration" property is ignored.
      *
      * TODO: A better location for this code? (Make it more reusable.)
      * (Can entire function be obsoleted? Perhaps by using standard "log4j.xml"
@@ -94,13 +94,10 @@ public class JBossSingletonNotificationServiceActivator implements ServiceActiva
              * The NamePreference is a combination of the node name (-Djboss.node.name) and the name of
              * the configured cache "singleton". If there is more than 1 node, it is possible to add more than
              * one name and the election will use the first available node in that list.
-             *   -  To pass a chain of election policies to the singleton and tell JGroups to run the
-             * singleton on a node with a particular name, uncomment the first line  and
-             * comment the second line below.
-             *   - To pass a list of more than one node, comment the first line and uncomment the
-             * second line below.
              */
+            preferredMaster = System.getProperty("vtk.cluster.preferredMaster");
             if (preferredMaster != null) {
+                log.info("Setting '" + preferredMaster + "' as preferred master");
                 singleton.setElectionPolicy(
                     new PreferredSingletonElectionPolicy(
                         new SimpleSingletonElectionPolicy(),
