@@ -84,22 +84,13 @@ public abstract class AbstractAuthenticationHandler implements
 
     private int order = Integer.MAX_VALUE;
     
-    public void setCache(SimpleCache<String, AuthResult> cache) {
-        this.cache = cache;
-    }
 
-    public void setRecognizedDomains(Set<String> recognizedDomains) {
-        this.recognizedDomains = recognizedDomains;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
+    @Override
     public int getOrder() {
         return this.order;
     }
 
+    @Override
     public boolean isRecognizedAuthenticationRequest(HttpServletRequest req)
             throws AuthenticationProcessingException {
 
@@ -133,6 +124,7 @@ public abstract class AbstractAuthenticationHandler implements
         return false;
     }
 
+    @Override
     public AuthResult authenticate(HttpServletRequest request)
             throws AuthenticationProcessingException, AuthenticationException {
 
@@ -172,7 +164,7 @@ public abstract class AbstractAuthenticationHandler implements
         return authResult;
     }
 
-    public abstract void authenticateInternal(String uid,
+    protected abstract void authenticateInternal(String uid,
             String password) throws AuthenticationProcessingException,
             AuthenticationException;
 
@@ -184,11 +176,24 @@ public abstract class AbstractAuthenticationHandler implements
         this.requestAssertions = requestAssertions;
     }
 
+    public void setCache(SimpleCache<String, AuthResult> cache) {
+        this.cache = cache;
+    }
+
+    public void setRecognizedDomains(Set<String> recognizedDomains) {
+        this.recognizedDomains = recognizedDomains;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+    
     @Required
     public void setPrincipalFactory(PrincipalFactory principalFactory) {
         this.principalFactory = principalFactory;
     }
 
+    @Override
     public String getIdentifier() {
         return this.identifier;
     }
