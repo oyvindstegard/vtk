@@ -18,7 +18,7 @@ delete from extra_prop_entry where name_space is null and name = 'authors';
 
 -- A) Resources with no recursive-listing property
 -- B) Resources with only <null>:recursive-listing (no namespace)
--- C) Resources with only <notnull>:recursive-listing ('al' or 'el' namespace)
+-- C) Resources with only <notnull>:recursive-listing ('al', 'bl' or 'el' namespace)
 -- D) Resources with both <null>:recursive-listing and <notnull>:recursive-listing
 
 -- Ultimately the goal is to be left with only class B, while preserving any
