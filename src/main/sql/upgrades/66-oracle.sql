@@ -10,7 +10,7 @@ delete from extra_prop_entry where name_space is null and name = 'authors';
 -- HTML-based article listings, and later for new JSON-based resource
 -- types and listings:
 -- * Legacy type: <null>:recursive-listing
--- * Event listing: {el,al}:recursive-listing
+-- * Article/event/blog listing: {el,al,bl}:recursive-listing
 
 -- This property is now to become mandatory with name space <null>. 
 
