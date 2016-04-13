@@ -75,16 +75,11 @@
     <property name="name" value="collectionListing.searchComponent" />
     <property name="viewService" ref="webService" />
     <property name="resourceManager" ref="resourceManager" />
-    <property name="listableProperties">
+    <property name="hideableProperties">
       <list>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="lastModifiedPropDef" />
-          <property name="preventDisplayProperty" ref="collection.hideLastModifiedPropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionPropDef" />
-          <property name="preventDisplayProperty" ref="collection.hideIntroductionPropDef" />
-        </bean>
+        <ref bean="collection.hideLastModifiedPropDef" />
+        <ref bean="collection.hideIntroductionPropDef" />
+        <ref bean="hideNumberOfCommentsPropDef" />
       </list>
     </property>
     <property name="searchSorting" ref="collectionListing.searchSorting" />

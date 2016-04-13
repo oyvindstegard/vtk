@@ -61,7 +61,7 @@ public abstract class QuerySearchComponent implements SearchComponent {
     private String name;
     private String titleLocalizationKey;
     private ResourceWrapperManager resourceManager;
-    private List<PropertyDisplayConfig> listableProperties;
+    private List<PropertyTypeDefinition> hideableProperties;
     private SearchSorting searchSorting;
     private List<String> configurablePropertySelectPointers;
     private ResourceTypeTree resourceTypeTree;
@@ -132,14 +132,11 @@ public abstract class QuerySearchComponent implements SearchComponent {
         }
 
         List<PropertyTypeDefinition> displayPropDefs = new ArrayList<PropertyTypeDefinition>();
-        if (listableProperties != null) {
-            for (PropertyDisplayConfig config : listableProperties) {
-                Property hide = null;
-                if (config.getPreventDisplayProperty() != null) {
-                    hide = collection.getProperty(config.getPreventDisplayProperty());
-                }
-                if (hide == null) {
-                    displayPropDefs.add(config.getDisplayProperty());
+        if (hideableProperties != null) {
+            for (PropertyTypeDefinition typeDefinition : hideableProperties) {
+                Property hide = collection.getProperty(typeDefinition);
+                if (hide != null) {
+                    displayPropDefs.add(typeDefinition);
                 }
             }
         }
@@ -186,8 +183,8 @@ public abstract class QuerySearchComponent implements SearchComponent {
         this.searchSorting = searchSorting;
     }
 
-    public void setListableProperties(List<PropertyDisplayConfig> listableProperties) {
-        this.listableProperties = listableProperties;
+    public void setHideableProperties(List<PropertyTypeDefinition> hideableProperties) {
+        this.hideableProperties = hideableProperties;
     }
 
     public void setTitleLocalizationKey(String titleLocalizationKey) {

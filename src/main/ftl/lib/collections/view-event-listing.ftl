@@ -187,11 +187,11 @@
   <#local location  = vrtx.prop(event, 'location')  />
   <#local caption = vrtx.propValue(event, 'caption')  />
   <#local endDate = vrtx.prop(event, 'end-date') />
-  <#local hideEndDate = !endDate?has_content || !parent.hasDisplayPropDef(endDate.definition.name) />
-  <#local hideLocation = !location?has_content || !parent.hasDisplayPropDef(location.definition.name) />
+  <#local hideEndDate = !endDate?has_content || parent.hasDisplayPropDef("hide-end-date") />
+  <#local hideLocation = !location?has_content || parent.hasDisplayPropDef("hide-location") />
 
   <div class="vrtx-resource vevent">
-    <#if introImg?has_content && parent.hasDisplayPropDef(introImg.definition.name)>
+    <#if introImg?has_content && !parent.hasDisplayPropDef("hide-introduction-image")>
       <#local introImgURI = vrtx.propValue(event, 'picture') />
       <#if introImgURI?exists>
 			<#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
@@ -211,7 +211,7 @@
       <@viewutils.displayTimeAndPlace event title hideEndDate hideLocation hideNumberOfComments />
     </div>
 
-    <#if intro?has_content && parent.hasDisplayPropDef(intro.definition.name)>
+    <#if intro?has_content && !parent.hasDisplayPropDef("hide-introduction")>
       <div class="description introduction">
         <@vrtx.linkResolveFilter intro.value eventEntry.url requestURL />
       </div>

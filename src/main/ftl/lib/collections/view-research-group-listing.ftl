@@ -52,7 +52,7 @@
           <div class="vrtx-title">
             <a class="vrtx-title summary" href="${researchGroupEntry.url?html}">${title?html}</a>
 	      </div>
-          <#if intro?has_content && researchGroupListing.hasDisplayPropDef(intro.definition.name)>
+          <#if intro?has_content && researchGroupListing.hasDisplayPropDef("hide-introduction")>
             <div class="description introduction">
               <@vrtx.linkResolveFilter intro.value researchGroupEntry.url requestURL />
             </div>

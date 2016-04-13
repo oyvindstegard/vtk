@@ -49,7 +49,7 @@
 
   <bean id="eventListing.calendarCurrentMonthAndForwardSearchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="eventListing.calendarCurrentMonthAndForwardSearchComponent" />
-    <property name="listableProperties" ref="eventListing.listableProperties" />
+    <property name="hideableProperties" ref="eventListing.hideableProperties" />
     <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
     <property name="queryBuilders">
       <list>
