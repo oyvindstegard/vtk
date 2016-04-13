@@ -61,37 +61,35 @@
           </#if>
 		</div>
 
-        <#list collectionListing.displayPropDefs as displayPropDef>
-          <#if displayPropDef.name = 'introduction'>
-            <#assign val = vrtx.getIntroduction(entryPropSet) />
-          <#elseif displayPropDef.type = 'IMAGE_REF'>
-            <#assign val><img src="${vrtx.propValue(entryPropSet, displayPropDef.name, "")}" /></#assign>
-          <#elseif displayPropDef.name = 'lastModified'>
-            <#assign val>
-              <@vrtx.msg code="viewCollectionListing.lastModified"
-                         args=[vrtx.propValue(entryPropSet, displayPropDef.name, "long")] />
-            </#assign>
-            <#assign modifiedBy = vrtx.prop(entryPropSet, 'modifiedBy').principalValue />
-            <#if principalDocuments?exists && principalDocuments[modifiedBy.name]?exists>
-              <#assign principal = principalDocuments[modifiedBy.name] />
-              <#if principal.URL?exists>
-                <#assign val = val + " <a href='${principal.URL}'>${principal.description}</a>" />
-              <#else>
-                <#assign val = val + " ${principal.description}" />
-              </#if>
+	    <#local lastModified = vrtx.propValue(entryPropSet, "lastModified", "long") />
+		<#if lastModified?has_content && !collectionListing.hasDisplayPropDef("hide-last-modified")>
+		  <#assign val>
+            <@vrtx.msg code="viewCollectionListing.lastModified"
+                       args=[lastModified] />
+          </#assign>
+          <#assign modifiedBy = vrtx.prop(entryPropSet, 'modifiedBy').principalValue />
+          <#if principalDocuments?exists && principalDocuments[modifiedBy.name]?exists>
+            <#assign principal = principalDocuments[modifiedBy.name] />
+            <#if principal.URL?exists>
+              <#assign val = val + " <a href='${principal.URL}'>${principal.description}</a>" />
             <#else>
-              <#assign val = val + " " + vrtx.propValue(entryPropSet, 'modifiedBy', 'link') />
+              <#assign val = val + " ${principal.description}" />
             </#if>
           <#else>
-            <#assign val = vrtx.propValue(entryPropSet, displayPropDef.name, "long") /> <#-- Default to 'long' format -->
+            <#assign val = val + " " + vrtx.propValue(entryPropSet, 'modifiedBy', 'link') />
           </#if>
+ 	      <div class="lastModified">
+            ${val}
+		  </div>
+		</#if>
 
-          <#if val?has_content>
-            <div class="${displayPropDef.name}">
-              ${val}
-            </div>
-          </#if>
-        </#list>
+		<#local introduction = vrtx.getIntroduction(entryPropSet) />
+		<#if introduction?has_content && !collectionListing.hasDisplayPropDef("hide-introduction")>
+		  <div class="introduction">
+		    ${introduction}
+		  </div>
+		</#if>
+
         </div>
       </#list>
     </div>

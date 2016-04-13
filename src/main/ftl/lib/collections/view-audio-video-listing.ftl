@@ -83,30 +83,43 @@
          <div class="vrtx-image-info">
            <div class="vrtx-image-title">
              <a class="vrtx-title" href="${entry.url?html}">${vrtx.propValue(r, "title", "", "")?html}</a>
-		       </div>
-		   
-           <#list collectionListing.displayPropDefs as displayPropDef>
-             <#assign val = "" />
-             <#if displayPropDef.name = 'introduction'>
-               <#assign val = vrtx.getIntroduction(r) />
-             <#elseif displayPropDef.type = 'IMAGE_REF'>
-             <#elseif displayPropDef.name = 'lastModified'>
-               <#assign val = vrtx.propValue(r, displayPropDef.name, 'short') />
-             <#elseif displayPropDef.name = 'duration'  >
-                <#if r.getProperty(displayPropDef)?exists >
-                  <div class="${displayPropDef.name}">
-                      <@vrtx.displayTime r.getProperty(displayPropDef).intValue />
-                  </div>
-                </#if>
-             <#else>
-                <#assign val = vrtx.propValue(r, displayPropDef.name) />
-             </#if>
-             <#if val?has_content>
-               <div class="${displayPropDef.name}">
-                 ${val}
-               </div>
-             </#if>
-           </#list>
+           </div>
+
+		   <#local duration = vrtx.propValue(r, "duration") />
+           <#if duration?has_content>
+             <div class="duration">
+               ${duration}
+             </div>
+           </#if>
+
+		   <#local lastModified = vrtx.propValue(r, "lastModified", "short") />
+           <#if lastModified?has_content && !collectionListing.hasDisplayPropDef("hide-last-modified")>
+             <div class="lastModified">
+               ${lastModified}
+             </div>
+           </#if>
+
+		   <#local videoDescription = vrtx.propValue(r, "video-description") />
+           <#if videoDescription?has_content>
+             <div class="video-description">
+               ${videoDescription}
+             </div>
+           </#if>
+
+		   <#local audioDescription = vrtx.propValue(r, "audio-description") />
+           <#if audioDescription?has_content>
+             <div class="audio-description">
+               ${audioDescription}
+             </div>
+           </#if>
+
+           <#local introduction = vrtx.getIntroduction(r) />
+           <#if introduction?has_content && !collectionListing.hasDisplayPropDef("hide-introduction")>
+             <div class="introduction">
+               ${introduction}
+             </div>
+           </#if>
+
          </div>
          </li>
          <#assign count = count +1 />

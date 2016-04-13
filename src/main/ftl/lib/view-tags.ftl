@@ -176,7 +176,6 @@
 <#macro displayCommonTagListing listing>
   
   <#assign resources = listing.entries />
-  <#assign displayPropDefs = listing.displayPropDefs />
   <#assign i = 1 />
 
   <#list resources as resourceEntry>
@@ -194,34 +193,29 @@
       <div class="vrtx-title">
         <a href="${resourceEntry.url?html}" class="vrtx-title"> ${resourceTitle?html}</a>
       </div>
-      <#list displayPropDefs as displayPropDef>
-        <#if displayPropDef.name = 'introduction'>
-          <#assign val = vrtx.getIntroduction(resource) />
-        <#elseif displayPropDef.type = 'IMAGE_REF'>
-          <#assign val><img src="${vrtx.propValue(resource, displayPropDef.name, "")}" /></#assign>
-        <#elseif displayPropDef.name = 'publish-date'>
-          <#assign val>
-            <@vrtx.localizeMessage code="viewCollectionListing.publishedDate" default="" args=[] locale=locale />${vrtx.propValue(resource, displayPropDef.name)}
-          </#assign>
-        <#else>
-          <#assign val = vrtx.propValue(resource, displayPropDef.name, "long") />
-        </#if>
-        <#if val?has_content>
-          <div class="${displayPropDef.name}">
-            ${val} 
-            <#if displayPropDef.name = 'introduction'>
-              <#assign hasBody = vrtx.propValue(resource, 'hasBodyContent') == 'true' />
-              <#if hasBody>
-                <div class="vrtx-read-more">
-                  <a href="${resourceEntry.url?html}" class="more">
-                    <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
-                  </a>
-                </div>
-              </#if>
-            </#if>
-          </div>
-        </#if> 
-      </#list>
+
+      <#local publishDate = vrtx.propValue(resource, 'publish-date') />
+      <#if publishDate?has_content>
+        <div class="publish-date">
+          <@vrtx.localizeMessage code="viewCollectionListing.publishedDate"
+             default="" args=[] locale=locale />${publishDate}
+        </div>
+      </#if>
+
+      <#local introduction = vrtx.getIntroduction(resource) />
+      <#if introduction?has_content && !listing.hasDisplayPropDef("hide-introduction")>
+        <div class="introduction">
+          ${introduction}
+          <#assign hasBody = vrtx.propValue(resource, 'hasBodyContent') == 'true' />
+          <#if hasBody>
+            <div class="vrtx-read-more">
+              <a href="${resourceEntry.url?html}" class="more">
+                <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
+              </a>
+            </div>
+          </#if>
+        </div>
+      </#if>
     </div>
     <#assign i = i + 1 />
   </#list>

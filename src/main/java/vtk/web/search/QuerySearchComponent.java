@@ -131,7 +131,7 @@ public abstract class QuerySearchComponent implements SearchComponent {
             entries.add(new ListingEntry(propSet, url, editInfo));
         }
 
-        List<PropertyTypeDefinition> displayPropDefs = new ArrayList<PropertyTypeDefinition>();
+        List<PropertyTypeDefinition> displayPropDefs = new ArrayList<>();
         if (hideableProperties != null) {
             for (PropertyTypeDefinition typeDefinition : hideableProperties) {
                 Property hide = collection.getProperty(typeDefinition);
