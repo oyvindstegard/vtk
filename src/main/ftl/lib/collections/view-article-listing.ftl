@@ -30,10 +30,10 @@
           <#local locale = vrtx.getLocale(entryPropSet) />
           <#local title = vrtx.propValue(entryPropSet, 'title') />
           <#local introImg  = vrtx.prop(entryPropSet, 'picture')  />
-          <#local publishedDate  = vrtx.prop(entryPropSet, 'published-date')  />
           <#local intro  = vrtx.prop(entryPropSet, 'introduction')  />
           <#local caption = vrtx.propValue(entryPropSet, 'caption')  />
           <#local publishDateProp = vrtx.prop(entryPropSet, 'publish-date') />
+          <#local hidePublishDate = vrtx.prop(entryPropSet, 'hide-published-date') />
 
           <#local articleType = "vrtx-default-article" />
           <#if articles.name == "articleListing.featuredArticles">
@@ -46,7 +46,7 @@
     	   <#else>
     	     <#local thumbnail = "" />
    		   </#if>
-           <#if introImg?has_content && articles.hasDisplayPropDef(introImg.definition.name)>
+           <#if introImg?has_content && !articles.hasDisplayPropDef("hide-introduction-image")>
              <#local introImgAlt = vrtx.propValue(entryPropSet, 'pictureAlt') />
              <a class="vrtx-image" href="${entry.url?html}">
                <img src="${thumbnail?html}" alt="<#if introImgAlt?has_content>${introImgAlt?html}</#if>" />
@@ -55,15 +55,7 @@
 
             <div class="vrtx-title">
             <a class="vrtx-title" href="${entry.url?html}">${title?html}</a></div>
-
-            <#if publishedDate?has_content && articles.hasDisplayPropDef(publishedDate.definition.name)>
-              <div class="published-date">
-                <span class="published-date-prefix">
-                  <@vrtx.localizeMessage code="viewCollectionListing.publishedDate" default="" args=[] locale=locale />
-                </span>
-                ${publishedDate.getFormattedValue('long', locale)}
-              </div>
-            <#elseif publishDateProp?has_content && articles.hasDisplayPropDef("published-date")>
+            <#if publishDateProp?has_content && !articles.hasDisplayPropDef("hide-published-date")>
               <div class="published-date">
                 <span class="published-date-prefix">
                   <@vrtx.localizeMessage code="viewCollectionListing.publishedDate" default="" args=[] locale=locale />
@@ -81,7 +73,7 @@
                </#if>
             </#if>
 
-            <#if intro?has_content && articles.hasDisplayPropDef(intro.definition.name)>
+            <#if intro?has_content && !articles.hasDisplayPropDef("hide-introduction")>
               <div class="description introduction"><@vrtx.linkResolveFilter intro.value entry.url requestURL /> </div>
             </#if>
 

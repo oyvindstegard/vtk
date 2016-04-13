@@ -36,25 +36,7 @@
     </property>
     <property name="listableProperties">
       <list>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="mediaDurationPropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="posterImagePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="lastModifiedPropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="videoHtmlDescriptionPropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="audioHtmlDescriptionPropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionPropDef" />
-          <property name="preventDisplayProperty" ref="collection.hideIntroductionPropDef" />
-        </bean>
+        <ref bean="collection.hideIntroductionPropDef" />
       </list>
     </property>
     <property name="configurablePropertySelectPointers">

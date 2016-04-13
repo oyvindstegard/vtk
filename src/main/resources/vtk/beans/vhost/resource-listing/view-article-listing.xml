@@ -96,18 +96,10 @@
     <property name="name" value="articleListing.defaultArticles" />
     <property name="listableProperties">
       <list>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionImagePropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hideIntroductionImagePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionImageAltPropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hideIntroductionImagePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionPropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hideIntroductionPropDef" />
-        </bean>
+        <ref bean="articleListing.hidePublishedDatePropDef" />
+        <ref bean="articleListing.hideIntroductionImagePropDef" />
+        <ref bean="articleListing.hideIntroductionPropDef" />
+        <ref bean="hideNumberOfCommentsPropDef" />
       </list>
     </property>
     <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
@@ -150,18 +142,10 @@
     <property name="resourceManager" ref="resourceManager" />
     <property name="listableProperties">
       <list>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionImagePropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hideIntroductionImagePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionImageAltPropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hideIntroductionImagePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionPropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hideIntroductionPropDef" />
-        </bean>
+        <ref bean="articleListing.hidePublishedDatePropDef" />
+        <ref bean="articleListing.hideIntroductionImagePropDef" />
+        <ref bean="articleListing.hideIntroductionPropDef" />
+        <ref bean="hideNumberOfCommentsPropDef" />
       </list>
     </property>
     <property name="queryBuilders">

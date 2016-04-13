@@ -240,31 +240,11 @@
   <bean id="eventListing.listableProperties" class="java.util.ArrayList">
     <constructor-arg>
       <list>
-        <!--
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="startDatePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="endDatePropDef" />
-          <property name="preventDisplayProperty" ref="eventListing.hideEndDatePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="locationPropDef" />
-          <property name="preventDisplayProperty" ref="eventListing.hideLocationPropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionImagePropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hideIntroductionImagePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionImageAltPropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hideIntroductionImagePropDef" />
-        </bean>
-        <bean class="vtk.web.search.PropertyDisplayConfig">
-          <property name="displayProperty" ref="introductionPropDef" />
-          <property name="preventDisplayProperty" ref="articleListing.hideIntroductionPropDef" />
-        </bean>
-        -->
+        <ref bean="eventListing.hideEndDatePropDef" />
+        <ref bean="eventListing.hideLocationPropDef" />
+        <ref bean="articleListing.hideIntroductionImagePropDef"/>
+        <ref bean="articleListing.hideIntroductionPropDef" />
+        <ref bean="hideNumberOfCommentsPropDef" />
       </list>
     </constructor-arg>
   </bean>
