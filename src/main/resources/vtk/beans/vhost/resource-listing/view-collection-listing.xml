@@ -75,7 +75,7 @@
     <property name="name" value="collectionListing.searchComponent" />
     <property name="viewService" ref="webService" />
     <property name="resourceManager" ref="resourceManager" />
-    <property name="listableProperties">
+    <property name="hideableProperties">
       <list>
         <ref bean="collection.hideLastModifiedPropDef" />
         <ref bean="collection.hideIntroductionPropDef" />

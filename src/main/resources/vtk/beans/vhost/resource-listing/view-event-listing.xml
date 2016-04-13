@@ -169,7 +169,7 @@
   <bean id="eventListing.upcomingEventsSearchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="eventListing.upcomingEventsSearchComponent" />
     <property name="titleLocalizationKey" value="eventListing.upcomingEvents" />
-    <property name="listableProperties" ref="eventListing.listableProperties" />
+    <property name="hideableProperties" ref="eventListing.hideableProperties" />
     <property name="listingUriQueryBuilder" ref="collection.recursiveListingUriQueryBuilder" />
     <property name="queryBuilders">
       <list>
@@ -237,7 +237,7 @@
     <property name="defaultSortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="eventListing.listableProperties" class="java.util.ArrayList">
+  <bean id="eventListing.hideableProperties" class="java.util.ArrayList">
     <constructor-arg>
       <list>
         <ref bean="eventListing.hideEndDatePropDef" />

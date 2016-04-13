@@ -34,7 +34,7 @@
         </bean>
       </list>
     </property>
-    <property name="listableProperties">
+    <property name="hideableProperties">
       <list>
         <ref bean="collection.hideIntroductionPropDef" />
       </list>

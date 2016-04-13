@@ -115,7 +115,7 @@
     <property name="name" value="tags.searchComponent" />
     <property name="viewService" ref="webService" />
     <property name="resourceManager" ref="resourceManager" />
-    <property name="listableProperties">
+    <property name="hideableProperties">
       <list>
         <ref bean="collection.hideIntroductionPropDef" />
       </list>

@@ -94,7 +94,7 @@
 
   <bean id="articleListing.searchComponent" parent="collectionListing.searchComponent">
     <property name="name" value="articleListing.defaultArticles" />
-    <property name="listableProperties">
+    <property name="hideableProperties">
       <list>
         <ref bean="articleListing.hidePublishedDatePropDef" />
         <ref bean="articleListing.hideIntroductionImagePropDef" />
@@ -140,7 +140,7 @@
     <property name="name" value="articleListing.featuredArticles" />
     <property name="viewService" ref="webService" />
     <property name="resourceManager" ref="resourceManager" />
-    <property name="listableProperties">
+    <property name="hideableProperties">
       <list>
         <ref bean="articleListing.hidePublishedDatePropDef" />
         <ref bean="articleListing.hideIntroductionImagePropDef" />
