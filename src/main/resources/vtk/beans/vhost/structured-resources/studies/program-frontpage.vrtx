@@ -201,7 +201,7 @@ resourcetype program-frontpage : program-document {
     [def phd-web-address document.properties.phd-web-address]
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
-    [if program-type != null && program-type != "" && phd-web-address != null && phd-web-address != ""]
+    [if program-type != null && program-type != "" && program-type = "phd" && phd-web-address != null && phd-web-address != ""]
       <head>
         <title>[call "comp:title"]</title>
         <meta http-equiv="refresh" content="0; url=[val phd-web-address]">
