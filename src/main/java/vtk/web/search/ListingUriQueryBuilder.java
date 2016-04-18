@@ -51,23 +51,19 @@ public class ListingUriQueryBuilder {
     private PropertyTypeDefinition subfolderPropDef;
 
     public Query build(Resource collection) {
+        Property recursiveProp = (recursivePropDef != null) ?
+                collection.getProperty(this.recursivePropDef) : null;
+        Property subfolderProp = (subfolderPropDef != null) ?
+                collection.getProperty(this.subfolderPropDef) : null;
+
+        RecursionType recursionType = getRecursionType(recursiveProp);
 
         Path collectionUri = collection.getURI();
-        Query query = null;
-
         // The default query, simple uri match on the current resource
         UriPrefixQuery uriPrefixQuery = new UriPrefixQuery(collectionUri.toString());
-
-        Property recursiveProp = recursivePropDef != null ? 
-                collection.getProperty(this.recursivePropDef) : null;
-
-        // If explicit subfolders to retrieve from are defined
-        Property subfolderProp = null;
-        if (this.subfolderPropDef != null) {
-            subfolderProp = collection.getProperty(this.subfolderPropDef);
-        }
-        if (subfolderProp != null && recursiveProp.getStringValue().equals("selected")) {
-            Set<String> set = new HashSet<String>();
+        Query query = uriPrefixQuery;
+        if (recursionType. equals(RecursionType.SELECTED) && subfolderProp != null) {
+            Set<String> set = new HashSet<>();
             for (Value value : subfolderProp.getValues()) {
                 try {
                     String subfolder = value.getStringValue();
@@ -88,27 +84,20 @@ public class ListingUriQueryBuilder {
                 if (set.size() == 1) {
                     query = new UriPrefixQuery(set.iterator().next());
                 } else {
-                    OrQuery or = new OrQuery();
+                    OrQuery orQuery = new OrQuery();
                     for (String s : set) {
-                        or.add(new UriPrefixQuery(s));
+                        orQuery.add(new UriPrefixQuery(s));
                     }
-                    query = or;
+                    query = orQuery;
                 }
             }
-        } else {
-            // If no recursion is defined, supplement the default query with
-            // limited depth when searching
-            if (!this.defaultRecursive || recursiveProp.getStringValue().equals("false")) {
-                AndQuery and = new AndQuery();
-                UriDepthQuery uriDepthQuery = new UriDepthQuery(collectionUri.getDepth() + 1);
-                and.add(uriPrefixQuery);
-                and.add(uriDepthQuery);
-                query = and;
-            }
-        }
-
-        if (query == null) {
-            query = uriPrefixQuery;
+        } else if (recursionType.equals(RecursionType.SELF)) {
+            // Only show content from this collection
+            AndQuery andQuery = new AndQuery();
+            UriDepthQuery uriDepthQuery = new UriDepthQuery(collectionUri.getDepth() + 1);
+            andQuery.add(uriPrefixQuery);
+            andQuery.add(uriDepthQuery);
+            query = andQuery;
         }
 
         return query;
@@ -124,6 +113,28 @@ public class ListingUriQueryBuilder {
 
     public void setSubfolderPropDef(PropertyTypeDefinition subfolderPropDef) {
         this.subfolderPropDef = subfolderPropDef;
+    }
+
+    protected RecursionType getRecursionType(Property recursiveProp) {
+        RecursionType type = (defaultRecursive) ? RecursionType.RECURSION : RecursionType.SELF;
+        if (recursiveProp != null) {
+            switch (recursiveProp.getStringValue()) {
+                case "selected":
+                    type = RecursionType.SELECTED;
+                    break;
+                case "true":
+                    type = RecursionType.RECURSION;
+                    break;
+                case "false":
+                    type = RecursionType.SELF;
+                    break;
+            }
+        }
+        return type;
+    }
+
+    protected enum RecursionType {
+        RECURSION, SELF, SELECTED
     }
 
 }
