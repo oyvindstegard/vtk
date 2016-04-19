@@ -5,6 +5,12 @@
 
 delete from extra_prop_entry where name_space is null and name = 'authors';
 
+-- recursive-listing-subfolders has changed its namespace:
+
+update extra_prop_entry set name_space = null
+       where name_space = 'http://www.uio.no/resource-types/article-listing'
+       and name = 'recursive-listing-subfolders';
+
 
 -- The 'recursive-listing' property: this property first existed for
 -- HTML-based article listings, and later for new JSON-based resource

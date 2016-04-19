@@ -161,48 +161,9 @@
     <property name="parameterName" value="view" />
   </bean>
 
-  <bean id="eventListing.specificDateEventSearchComponent" parent="eventListing.upcomingEventsSearchComponent">
-    <property name="name" value="eventListing.specificDateEventSearchComponent" />
-    <property name="queryBuilders">
-      <list>
-        <bean parent="queryStringParser">
-          <property name="queryString" value="type IN event" />
-        </bean>
-        <bean class="vtk.web.search.eventlisting.DateAndSearchTypeQueryStringProcessor" parent="queryStringParser">
-          <property name="helper" ref="eventListingHelper" />
-          <property name="queryString"
-            value="(start-date &gt;= [1] AND start-date &lt; [2])
-            OR (end-date &gt;= [1] AND end-date &lt; [2])
-            OR (start-date &lt;= [1] AND end-date &gt;= [2])" />
-        </bean>
-      </list>
-    </property>
-    <property name="titleLocalizationKey">
-      <null />
-    </property>
-  </bean>
-
   <bean id="eventListingFeed.specificDateEventSearchComponent" parent="eventListing.specificDateEventSearchComponent">
     <property name="name" value="eventListingFeed.specificDateEventSearchComponent" />
     <property name="resolveMultiHostResultSet" value="false" />
-  </bean>
-
-  <bean id="eventListing.currentMonthSearchComponent" parent="eventListing.specificDateEventSearchComponent">
-    <property name="name" value="eventListing.currentMonthSearchComponent" />
-    <property name="queryBuilders">
-      <list>
-        <bean parent="queryStringParser">
-          <property name="queryString" value="type IN event" />
-        </bean>
-        <bean class="vtk.web.search.eventlisting.CurrentMonthQueryStringProcessor" parent="queryStringParser">
-          <property name="helper" ref="eventListingHelper" />
-          <property name="queryString"
-            value="(start-date &gt;= [1] AND start-date &lt; [2])
-            OR (end-date &gt;= [1] AND end-date &lt; [2])
-            OR (start-date &lt;= [1] AND end-date &gt;= [2])" />
-        </bean>
-      </list>
-    </property>
   </bean>
 
   <bean id="eventListingCalendar.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
