@@ -70,13 +70,22 @@ public final class NodeList implements Iterable<Node> {
      */
     public boolean render(Context ctx, Writer out) throws Exception {
         for (Node node: this.nodes) {
-            if (!node.render(ctx, out)) {
+            try {
+                if (!node.render(ctx, out)) {
+                    return false;
+                }
+            }
+            catch (Throwable t) {
+                String msg = t.getMessage();
+                out.append("Error: " + node);
+                if (msg != null) out.append(": ").append(t.getMessage());
                 return false;
             }
         }
         return true;
     }
 
+    @Override
     public String toString() {
         return this.nodes.toString();
     }
