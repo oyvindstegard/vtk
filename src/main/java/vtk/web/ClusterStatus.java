@@ -41,6 +41,7 @@ import org.springframework.web.servlet.mvc.Controller;
 import vtk.cluster.ClusterAware;
 import vtk.cluster.ClusterRole;
 import vtk.repository.Path;
+import vtk.util.text.JsonStreamer;
 
 public class ClusterStatus implements Controller, ClusterAware {
     
@@ -79,6 +80,16 @@ public class ClusterStatus implements Controller, ClusterAware {
             else {
                 response.setStatus(HttpServletResponse.SC_OK);
             }
+            break;
+        case "cluster-status":
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json; charset=utf-8");
+            JsonStreamer json = new JsonStreamer(response.getWriter(), 2);
+            json.beginObject()
+                    .member("role", role.isPresent() ? role.get().toString() : "unset")
+                    .member("draining", draining)
+                    .endJson();
+            response.getWriter().close();
             break;
         default:
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
