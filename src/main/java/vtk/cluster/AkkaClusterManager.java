@@ -35,8 +35,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 
 import akka.actor.ActorRef;
@@ -54,12 +57,14 @@ import akka.cluster.Member;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import scala.collection.JavaConversions;
+import scala.concurrent.Await;
+import scala.concurrent.duration.Duration;
 import vtk.context.ApplicationInitializedEvent;
 
 public class AkkaClusterManager implements ApplicationListener<ApplicationInitializedEvent> {
-
+    private final static Logger logger = LoggerFactory.getLogger(AkkaClusterManager.class);
     private final static Object LEAVE = new Object();
-    
+
     Collection<ClusterAware> clusterComponents;
     
     private ActorSystem system;
@@ -76,12 +81,39 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
                 Props.create(SubscriptionActor.class), "subscription-actor");
         this.clusterListener = system.actorOf(
                 Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
-                "cluster-listener");
+                "cluster-listener"
+        );
     }
-    
-    public void destroy() {
+
+    public Thread destroy() throws InterruptedException {
+        Cluster cluster = Cluster.get(system);
+        logger.info("Removing node from cluster: {}", cluster.selfAddress());
+        cluster.registerOnMemberRemoved(new Runnable() {
+            @Override
+            public void run() {
+                // shut down ActorSystem
+                system.terminate();
+            }
+        });
+        Thread akkaShutdown =  new Thread() {
+            @Override
+            public void run() {
+                // In case ActorSystem shutdown takes longer than 10 seconds,
+                // exit the JVM forcefully anyway.
+                // We must spawn a separate thread to not block current thread,
+                // since that would have blocked the shutdown of the ActorSystem.
+                try {
+                    Await.ready(system.whenTerminated(), Duration.create(10, TimeUnit.SECONDS));
+                    logger.info("Node gracefully removed: {}", cluster.selfAddress());
+                } catch (Exception e) {
+                    logger.warn("Node abruptly removed: {}", cluster.selfAddress());
+                }
+
+            }
+        };
+        akkaShutdown.start();
         clusterListener.tell(LEAVE, null);
-        system.terminate();
+        return akkaShutdown;
     }
     
     private static class SubscriptionActor extends UntypedActor {
@@ -164,6 +196,7 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
         @Override
         public void onReceive(Object message) {
             log.debug("Recv: {}", message);
+            if (cluster.isTerminated()) return;
             if (message == LEAVE) {
                 cluster.leave(cluster.selfAddress());
             }
@@ -182,14 +215,15 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
             }
             else if (message instanceof LeaderChanged) {
                 LeaderChanged changed = (LeaderChanged) message;
+
                 if (changed.getLeader().equals(cluster.selfAddress())) {
-                    log.info("Change to master mode");
+                    log.info("Change to master mode: {}", cluster.selfAddress());
                     switchState(new ClusterState(
                             ClusterRole.MASTER,
                             cluster.selfAddress().toString(), members()));
                 }
                 else {
-                    log.info("Change to slave mode");
+                    log.info("Change to slave mode: {}", cluster.selfAddress());
                     switchState(new ClusterState(
                             ClusterRole.SLAVE,
                             cluster.selfAddress().toString(), members()));
