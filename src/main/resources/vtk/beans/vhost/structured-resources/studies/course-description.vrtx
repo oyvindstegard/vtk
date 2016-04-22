@@ -293,10 +293,12 @@ resourcetype course-description {
           <div class="vrtx-frontpage-box grey-box" id="vrtx-course-semesters">
           <h2>[localized 'semester-title']</h2>
           <p><strong>[localized 'semester']</strong></p>
-          <ul class="thirds-left">
+          <ul class="left">
         [endif]
         [if _index = 4]
-          </ul><ul id="vrtx-course-more-semesters">
+          </ul>
+          <div id="vrtx-course-more-semesters">
+          
           <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/include-jquery.js"></script>
           <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/toggle.js"></script>
           <script type="text/javascript"><!--
@@ -307,24 +309,31 @@ resourcetype course-description {
             });
           // -->
           </script>
+          
+          <ul class="left">
         [endif]
         [def url view-url(semester)]
         [def term resource-prop-obj-val(semester, "semesterContext.semesterTerm")]
         [def year resource-prop-obj-val(semester, "semesterContext.semesterYear")]
         [def termNumber resource-prop-obj-val(semester, "semesterContext.semesterTermNumber")]
         [if _index < 4]
-          [if _index = 2]</ul><ul class="thirds-middle">[endif]
+          [if _index = 2]</ul><ul class="right">[endif]
           <li>
         [else]
+          [def splitPosition ceil((_size - 4) / 2) + 4]
+          [if _index = splitPosition && _size > 5]</ul><ul class="right">[endif]
           <li class="course-more-semesters">
         [endif]
           <a href="[val url]">[if term != null && term != "" && year != null && year != ""][if term = "v"][localized 'spring'][elseif term = "h"][localized 'autumn'][else][localized 'summer'][endif] [val year][if termNumber != null] - [localized 'termNumber'] [val termNumber][endif][else][val url][endif]</a>
         </li>
         [if _index = (_size - 1)]
           </ul>
-          <span id="vrtx-course-more-semesters-toggle-wrapper" style="display:none">
-            <a id="vrtx-course-more-semesters-toggle" href="javascript:void(0);">[localized 'term-more-toggle-show']</a>
-          </span> 
+          [if _size > 4]
+            </div>
+            <span id="vrtx-course-more-semesters-toggle-wrapper" style="display:none">
+              <a id="vrtx-course-more-semesters-toggle" href="javascript:void(0);">[localized 'term-more-toggle-show']</a>
+            </span> 
+          [endif]
           </div>
         [endif]
       [endlist]
@@ -369,7 +378,7 @@ resourcetype course-description {
     course-toc (document) {
       ##
       <h2>[localized 'toc-title']</h2>
-      <ul class="thirds-left">
+      <ul class="left">
       [def count 0]
       [def course-content document.properties.course-content]
       [if course-content != null && course-content != ""]
@@ -393,7 +402,6 @@ resourcetype course-description {
       [def obligatoriske-forkunnskaper-text-field document.properties.obligatoriske-forkunnskaper-text-field]
       [def recommended-prerequisites-text-field document.properties.recommended-prerequisites-text-field]
       [if (obligatoriske-forkunnskaper-text-field != null && obligatoriske-forkunnskaper-text-field != "") || (obligatoriske-forkunnskaper != null && obligatoriske-forkunnskaper != "") || (recommended-prerequisites-text-field != null && recommended-prerequisites-text-field != "")]
-        [if count = 3]</ul><ul class="thirds-middle"><li>[endif]
         <li><a href="#prerequisites">[localized 'prerequisites-group']</a></li>
         [def count count + 1]
       [endif]
@@ -408,7 +416,7 @@ resourcetype course-description {
         [endlist]
       [endif]
       [if list-length != 0 || (overlapping-courses-text-field != null && overlapping-courses-text-field != "")]
-        [if count = 3]</ul><ul class="thirds-middle"><li>[endif]
+        [if count = 4]</ul><ul class="right">[endif]
         <li><a href="#overlapping-courses">[localized 'overlapping-courses-group']</a></li>
         [def count count + 1]
       [endif]
@@ -417,7 +425,7 @@ resourcetype course-description {
       [def adgang document.properties.adgang]
       [def adgang-text-field document.properties.adgang-text-field]
       [if (teaching-text-field != null && teaching-text-field != "") || (forsikring != null && forsikring != "")  || (adgang != null && adgang != "") || (adgang-text-field != null && adgang-text-field != "")]
-        [if count = 3]</ul><ul class="thirds-middle"><li>[endif]
+        [if count = 4]</ul><ul class="right">[endif]
         <li><a href="#teaching">[localized 'teaching-group']</a></li>
         [def count count + 1]
       [endif]
@@ -444,16 +452,14 @@ resourcetype course-description {
           (ny-utsatt-eksamen-text-field != null && ny-utsatt-eksamen-text-field != "") || (ny-utsatt-eksamen != null && ny-utsatt-eksamen != "") ||
           (antall-forsok-trekk-text-field != null && antall-forsok-trekk-text-field != "") || (antall-forsok-trekk != null && antall-forsok-trekk != "") || 
           (tilrettelagt-eksamen-text-field != null && tilrettelagt-eksamen-text-field != "") || (tilrettelagt-eksamen != null && tilrettelagt-eksamen != "")]
-        [if count = 3]</ul><ul class="thirds-middle"><li>
-        [elseif count = 6]</ul><ul class="thirds-right"><li>[endif]
+        [if count = 4]</ul><ul class="right">[endif]
         <li><a href="#exam">[localized 'assessment-and-grading']</a></li>
         [def count count + 1]
       [endif]
       [def evaluering-av-emnet document.properties.evaluering-av-emnet]
       [def evaluering-av-emnet-text-field document.properties.evaluering-av-emnet-text-field]
       [if (evaluering-av-emnet-text-field != null && evaluering-av-emnet-text-field != "") || (evaluering-av-emnet != null && evaluering-av-emnet != "")]
-        [if count = 3]</ul><ul class="thirds-middle"><li>
-        [elseif count = 6]</ul><ul class="thirds-right"><li>[endif]
+        [if count = 4]</ul><ul class="right">[endif]
         <li><a href="#evaluering-av-emnet">[localized 'evaluering-av-emnet-group']</a></li>
         [def count count + 1]
       [endif]
