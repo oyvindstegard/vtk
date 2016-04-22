@@ -59,6 +59,12 @@ if(typeof viewDropdown === "undefined") { // Avoid duplicate running code
           e.preventDefault();
         }
       };
+      
+      var closeOnDocClick = function(e) {
+        if(!$(e.target).hasClass("vrtx-dropdown-link")) {
+          $(".vrtx-dropdown-link.active").click();
+        }
+      };
     
       /* Initialize dropdowns */
       var wrappers = $(".vrtx-dropdown-wrapper"),
@@ -81,6 +87,7 @@ if(typeof viewDropdown === "undefined") { // Avoid duplicate running code
       
       /* Listen for click events */
       doc.on("click keydown", ".vrtx-dropdown-component a.vrtx-dropdown-link, .vrtx-dropdown-component a.vrtx-dropdown-close-link", toggledOpenClosable);
+      doc.on("click", closeOnDocClick);
       
       var dropdownForm = $(".vrtx-dropdown-form");
       if(dropdownForm.length) {
