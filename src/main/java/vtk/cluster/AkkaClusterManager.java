@@ -38,17 +38,19 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import akka.actor.*;
+import akka.cluster.pubsub.DistributedPubSub;
+import akka.cluster.pubsub.DistributedPubSubMediator;
+import akka.cluster.singleton.ClusterSingletonManager;
+import akka.cluster.singleton.ClusterSingletonManagerSettings;
+import akka.cluster.singleton.ClusterSingletonProxy;
+import akka.cluster.singleton.ClusterSingletonProxySettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
-import akka.cluster.ClusterEvent.LeaderChanged;
 import akka.cluster.ClusterEvent.MemberEvent;
 import akka.cluster.ClusterEvent.MemberRemoved;
 import akka.cluster.ClusterEvent.MemberUp;
@@ -69,6 +71,7 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
     
     private ActorSystem system;
     private ActorRef clusterListener;
+    private ActorRef writeTokenActor;
 
     public AkkaClusterManager(ActorSystem system, Collection<ClusterAware> clusterComponents) {
         this.system = system;
@@ -83,6 +86,21 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
                 Props.create(ClusterListener.class, subscriptionActor, clusterComponents),
                 "cluster-listener"
         );
+        ClusterSingletonManagerSettings settings =
+                ClusterSingletonManagerSettings.create(system);
+        system.actorOf(
+                ClusterSingletonManager.props(
+                    Props.create(WriteToken.class),
+                    PoisonPill.getInstance(),
+                    settings
+                ),
+                "write-token"
+        );
+        ClusterSingletonProxySettings proxySettings =
+                ClusterSingletonProxySettings.create(system);
+        this.writeTokenActor = system.actorOf(ClusterSingletonProxy.props("/user/write-token", proxySettings));
+        writeTokenActor.tell(new WriteTokenStatus(), clusterListener);
+
     }
 
     public Thread destroy() throws InterruptedException {
@@ -156,17 +174,27 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
     }
 
     private static class ClusterListener extends UntypedActor {
-        LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-        private ActorRef subscriptionActor;
-        Cluster cluster = Cluster.get(getContext().system());
-        private List<ClusterAware> appClusterComponents;
+        private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+        private final Cluster cluster = Cluster.get(getContext().system());
+        private final ActorRef subscriptionActor;
+        private final ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+        private final List<ClusterAware> appClusterComponents;
         
         @SuppressWarnings("unused")
-        public ClusterListener(ActorRef subscriptionActor, List<ClusterAware> clusterComponents) {
+        public ClusterListener(
+                ActorRef subscriptionActor,
+                List<ClusterAware> clusterComponents
+        ) {
             this.subscriptionActor = subscriptionActor;
             this.appClusterComponents = clusterComponents;
+
+            log.debug("Subscribe to topic named write-token-change");
+            mediator.tell(
+                    new DistributedPubSubMediator.Subscribe("write-token-change", getSelf()),
+                    getSelf()
+            );
+
             log.info("Create cluster listener: components=" + clusterComponents);
-            
             appClusterComponents.forEach(clusterComponent -> {
                 ClusterContext context = new ClusterContextImpl(
                         subscriptionActor, clusterComponent, getSelf());
@@ -184,8 +212,7 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
         @Override
         public void preStart() {
             cluster.subscribe(getSelf(), ClusterEvent.initialStateAsEvents(),
-                              MemberEvent.class, UnreachableMember.class,
-                              LeaderChanged.class);
+                              MemberEvent.class, UnreachableMember.class);
         }
 
         @Override
@@ -211,12 +238,11 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
             else if (message instanceof MemberRemoved) {
                 MemberRemoved removed = (MemberRemoved) message;
                 log.info("Member is Removed: {}", removed.member());
-
             }
-            else if (message instanceof LeaderChanged) {
-                LeaderChanged changed = (LeaderChanged) message;
+            else if (message instanceof WriteTokenChanged) {
+                WriteTokenChanged writeTokenChanged = (WriteTokenChanged) message;
 
-                if (changed.getLeader().equals(cluster.selfAddress())) {
+                if (writeTokenChanged.getWriteTokenHolder().equals(cluster.selfAddress())) {
                     log.info("Change to master mode: {}", cluster.selfAddress());
                     switchState(new ClusterState(
                             ClusterRole.MASTER,
@@ -382,6 +408,52 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
         public String toString() {
             return getClass().getSimpleName() 
                     + "(" + role + ", " + members + ", " + self + ")";
+        }
+    }
+
+    private static class WriteTokenStatus implements Serializable {}
+
+    private static class WriteTokenChanged implements Serializable {
+        private final Address writeTokenHolder;
+
+        private WriteTokenChanged(Address writeTokenHolder) {
+            this.writeTokenHolder = writeTokenHolder;
+        }
+
+        public Address getWriteTokenHolder() {
+            return writeTokenHolder;
+        }
+    }
+
+    private static class WriteToken extends UntypedActor {
+        private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+        private final Cluster cluster = Cluster.get(getContext().system());
+        private final ActorRef mediator = DistributedPubSub.get(getContext().system()).mediator();
+
+        public WriteToken() {
+            log.info("Create WriteToken singleton on " + cluster.selfAddress());
+        }
+
+        @Override
+        public void preStart() {
+            log.info("Tell who has write token to all members of the cluster");
+            mediator.tell(
+                    new DistributedPubSubMediator.Publish("write-token-change", new WriteTokenChanged(cluster.selfAddress())),
+                    getSelf()
+            );
+        }
+
+        @Override
+        public void onReceive(Object message) {
+            log.debug("Recv: {}", message);
+            if (message instanceof WriteTokenStatus) {
+                if (!getSender().path().address().equals(cluster.selfAddress())) {
+                    log.info("Tell who has write token to {}", getSender().path());
+                    getSender().tell(new WriteTokenChanged(cluster.selfAddress()), self());
+                }
+            } else {
+                unhandled(message);
+            }
         }
     }
 

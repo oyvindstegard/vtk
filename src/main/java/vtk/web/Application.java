@@ -80,9 +80,9 @@ import vtk.web.servlet.VTKServlet;
     ServerPropertiesAutoConfiguration.class
 })
 public class Application  {
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String GRACEFUL_ARG = "--graceful";
     private static final int DEFAULT_GRACE_PERIOD = 15;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Bean(name="dispatcherServlet")
     public Servlet dispatcherServlet() {

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 WEB_PORT=9322
 WEBDAV_PORT=9321
 CLUSTER_PORTS=( )
@@ -48,7 +49,8 @@ do
     shift # past argument or value
 done
 
-JAVA_ARGS="-Dvtk.listen=localhost:$WEB_PORT,localhost:$WEBDAV_PORT \
+JAVA_ARGS="-Dlogging.config=${SCRIPT_DIR}/src/main/webapp/WEB-INF/classes/log4j.vortex.xml \
+-Dvtk.listen=localhost:$WEB_PORT,localhost:$WEBDAV_PORT \
 -Dvtk.web.port=$WEB_PORT -Dvtk.webdav.port=$WEBDAV_PORT \
 -Dvtk.configLocations=$CONFIG_LOCATIONS"
 
