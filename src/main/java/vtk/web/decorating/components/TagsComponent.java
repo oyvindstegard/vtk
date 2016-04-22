@@ -220,6 +220,7 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
 
             model.put("showOccurence", showOccurence);
             model.put("numberOfTagsInEachColumn", numberOfTagsInEachColumn);
+            model.put("numberOfColumns", resultSet);
             model.put("tagElements", tagElements);
             if (resourceTypeDefs.size() > 0) {
                 model.put("resourceTypes", resourceTypeDefs);

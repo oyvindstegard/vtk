@@ -29,9 +29,9 @@
          
       <#if subFolderMenu.resultSets?exists>
         <#if commaSeparated>
-          <div class="vrtx-subfolder-menu comma-separated">
+          <div class="vrtx-subfolder-menu comma-separated vrtx-subfolder-menu-sets-${subFolderMenu.resultSets?size}">
         <#else>
-          <div class="vrtx-subfolder-menu">
+          <div class="vrtx-subfolder-menu vrtx-subfolder-menu-sets-${subFolderMenu.resultSets?size}">
         </#if>
           <#if subFolderMenu.title?exists>
             <div class="menu-title">${subFolderMenu.title?html}</div>

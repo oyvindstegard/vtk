@@ -10,7 +10,7 @@
   -->
 
 <#if tagElements?exists && tagElements?size &gt; 0>
-  <div id="vrtx-tags">
+  <div id="vrtx-tags" class="vrtx-tags-sets-${numberOfColumns}">
     <#assign i=1 >
     <ul class="vrtx-tags-${i?html}">
       <#assign counter=0 >
