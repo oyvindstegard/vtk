@@ -24,9 +24,9 @@ resourcetype featured-content {
           [def number _index + 1]
           
           [if picture != null && picture != ""]
-            <div class="vrtx-featured-item vrtx-featured-item-picture" id="vrtx-featured-item-[val number]">
+            <div class="vrtx-featured-item vrtx-featured-item-picture vrtx-featured-item-[val number]">
           [else] 
-            <div class="vrtx-featured-item" id="vrtx-featured-item-[val number]">
+            <div class="vrtx-featured-item vrtx-featured-item-[val number]">
           [endif] 
             [if picture != null && picture != ""]
               <div class="vrtx-featured-item-picture">
