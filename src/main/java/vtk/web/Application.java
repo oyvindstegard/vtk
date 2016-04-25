@@ -35,11 +35,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.servlet.DispatcherType;
@@ -63,17 +59,15 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import vtk.cluster.AkkaClusterManager;
 import vtk.util.Version;
 import vtk.web.filter.StandardRequestFilter;
 import vtk.web.servlet.VTKServlet;
@@ -85,11 +79,10 @@ import vtk.web.servlet.VTKServlet;
     DispatcherServletAutoConfiguration.class,
     ServerPropertiesAutoConfiguration.class
 })
-
-public class Application extends SpringBootServletInitializer {
+public class Application  {
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String GRACEFUL_ARG = "--graceful";
     private static final int DEFAULT_GRACE_PERIOD = 15;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Bean(name="dispatcherServlet")
     public Servlet dispatcherServlet() {
@@ -207,10 +200,12 @@ public class Application extends SpringBootServletInitializer {
         app.setBanner(banner());
         app.setHeadless(true);
         if (gracefulRestart) {
-            app.setRegisterShutdownHook(true);
-            app.addListeners(new GracefulShutdown(gracePeriodSeconds));
+            app.setRegisterShutdownHook(false);
         }
-        app.run(springArgs);
+        ConfigurableApplicationContext applicationContext = app.run(springArgs);
+        if (gracefulRestart) {
+            Runtime.getRuntime().addShutdownHook(new GracefulShutdownHook(applicationContext, gracePeriodSeconds));
+        }
     }
 
 
@@ -343,26 +338,37 @@ public class Application extends SpringBootServletInitializer {
         }
     }
 
-    private class GracefulShutdown implements ApplicationListener<ContextClosedEvent> {
+    private class GracefulShutdownHook extends Thread {
+        private final ConfigurableApplicationContext applicationContext;
         private final int gracePeriodSeconds;
 
-        public GracefulShutdown(int gracePeriodSeconds) {
+        GracefulShutdownHook(ConfigurableApplicationContext applicationContext, int gracePeriodSeconds) {
+            this.applicationContext = applicationContext;
             this.gracePeriodSeconds = gracePeriodSeconds;
         }
 
         @Override
-        public void onApplicationEvent(ContextClosedEvent event) {
+        public void run() {
             logger.info(String.format(
                     "Graceful shutdown initiated - waiting for %d seconds.",
                     gracePeriodSeconds
             ));
-            ClusterStatus status = event.getApplicationContext().getBean(ClusterStatus.class);
+
+            ClusterStatus status = applicationContext.getBean(ClusterStatus.class);
             status.setDraining(true);
             try {
                 Thread.sleep(gracePeriodSeconds * 1000);
+                try {
+                    AkkaClusterManager clusterManager = applicationContext.getBean(AkkaClusterManager.class);
+                    Thread akkaShutdown = clusterManager.destroy();
+                    akkaShutdown.join();
+                } catch (BeansException e) {
+                    //Akka cluster not activated
+                }
             } catch (InterruptedException e) {
-                logger.warn("Graceful shutdown interupted");
+                logger.warn("Graceful shutdown interrupted");
             }
+            applicationContext.close();
         }
     }
 }

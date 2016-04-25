@@ -18,10 +18,10 @@ To run (minimal setup):
 
 2. Run the application:
 
-./jar-start-debug.sh target/vtk-<version>.jar
+./run-boot.sh --jar target/vtk-<version>.jar
 
 If you want give a load balancer a chance to finish the requests it has queued for the app.
 
-./jar-start-debug.sh target/vtk-<version>.jar --graceful[=n]
+./run-boot.sh --jar target/vtk-<version>.jar --graceful[=n]
 
 n is the time to wait in seconds.
