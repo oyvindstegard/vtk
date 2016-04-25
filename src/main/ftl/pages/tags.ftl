@@ -18,15 +18,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   
-  <title>${title}
+  <title>${title?html}
     <#if page?has_content>
-      <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page}</#if>
+      <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page?html}</#if>
     </#if>
   </title>
   
   <#if cssURLs??>
     <#list cssURLs as cssUrl>
-       <link href="${cssUrl}" type="text/css" rel="stylesheet" />
+       <link href="${cssUrl?html}" type="text/css" rel="stylesheet" />
     </#list>
   </#if>
   
@@ -42,9 +42,9 @@
 
 <body id="vrtx-tagview">
 
-  <h1>${title}
+  <h1>${title?html}
     <#if page?has_content>
-      <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page}</#if>
+      <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page?html}</#if>
     </#if>
   </h1>
   
@@ -63,7 +63,7 @@
   <#if scopeUp??>
     <div class="vrtx-tags-scope-up vrtx-has-tags-scope">
       <ul>
-        <li><a href="${scopeUp.url}">${scopeUp.title}</a></li>
+        <li><a href="${scopeUp.url?html}">${scopeUp.title?html}</a></li>
       </ul>
     </div>
   </#if>
