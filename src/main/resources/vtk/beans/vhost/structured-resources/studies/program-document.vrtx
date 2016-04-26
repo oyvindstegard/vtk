@@ -396,7 +396,7 @@ resourcetype program-document {
     boxUrlText : (en : "Link text", no : "Lenketekst", nn : "Lenkjetekst"),
     boxUrl : (en : "Webaddress", no : "Webadresse", nn : "Webadresse"),
     halvtaar : (en : "1/2-year", no : "1/2 år", nn : "1/2 år"),
-    aarsenhet : (en : "One-year unit", no : "årsenhet", nn : "årseining"),
+    aarsenhet : (en : "One-year programme", no : "årsenhet", nn : "årseining"),
     bachelor : (en : "bachelor's", no : "bachelor", nn : "bachelor"),
     ettoghalvt-aarig-master : (en : "master's 1 1/2-years", no : "master - halvannet år", nn : "master - halvanna år"),
     to-aarig-master : (en : "master's two years", no : "master - to år", nn : "master - to år"),
