@@ -36,6 +36,10 @@ import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.web.service.URL;
 
+/*
+ * TODO this interface does not belong in the vtk.repository package, and the concept itself
+ * does not belong in VTK. Major refactoring required.
+ */
 public interface MultiHostSearchComponent {
 
     public ResultSet search(String token, Search search);

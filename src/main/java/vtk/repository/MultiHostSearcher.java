@@ -36,6 +36,10 @@ import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.web.service.URL;
 
+/*
+ * TODO this class does not belong in the vtk.repository package, 
+ * or even in the VTK project in its current form !
+ */
 public class MultiHostSearcher {
 
     public static final String URL_PROP_NAME = "solr.url";
