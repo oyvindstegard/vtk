@@ -35,7 +35,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.servlet.DispatcherType;
@@ -116,9 +120,9 @@ public class Application  {
                   + " Please specify -Dvtk.listen=host1:port1,host2:port2:...");
         }
 
-        final int maxThreads = 200;
-        final int minThreads = 8;
-        final int idleTimeout = 60000;
+        final int maxThreads = maxThreads();
+        final int minThreads = minThreads();
+        final int idleTimeout = idleTimeout();
 
         JettyEmbeddedServletContainerFactory factory =
                 new JettyEmbeddedServletContainerFactory();
@@ -147,8 +151,6 @@ public class Application  {
                     connector.setPort(hp.port);
                     server.addConnector(connector);
                 }
-
-                //server.setSessionIdManager(sessionIdManager);
             }
         });
         return factory;
@@ -217,6 +219,42 @@ public class Application  {
                 .collect(Collectors.toList());
 
         return result.toArray(new HostPort[result.size()]);
+    }
+    
+    protected int maxThreads() {
+        String prop = System.getProperty("vtk.maxThreads");
+        if (prop != null) {
+            try {
+                int n = Integer.parseInt(prop);
+                if (n > 0) return n;
+            }
+            catch (Throwable t) {}
+        }
+        return 200;
+    }
+    
+    protected int minThreads() {
+        String prop = System.getProperty("vtk.minThreads");
+        if (prop != null) {
+            try {
+                int n = Integer.parseInt(prop);
+                if (n > 0) return n;
+            }
+            catch (Throwable t) {}
+        }
+        return 8;
+    }
+    
+    protected int idleTimeout() {
+        String prop = System.getProperty("vtk.idleTimeout");
+        if (prop != null) {
+            try {
+                int n = Integer.parseInt(prop);
+                if (n > 0) return n;
+            }
+            catch (Throwable t) {}
+        }
+        return 60000;
     }
 
     protected List<String> mainXml() {
