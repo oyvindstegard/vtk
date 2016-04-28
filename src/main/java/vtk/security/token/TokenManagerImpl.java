@@ -30,14 +30,18 @@
  */
 package vtk.security.token;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import vtk.security.Principal;
+import vtk.security.Principal.Type;
+import vtk.security.PrincipalFactory;
 import vtk.security.web.AuthenticationHandler;
 import vtk.util.cache.SimpleCache;
+import vtk.util.cache.SimpleCacheImpl;
 
 /**
  * Default implementation of the {@link TokenManager} interface. Keeps
@@ -57,11 +61,20 @@ import vtk.util.cache.SimpleCache;
  */
 public class TokenManagerImpl implements TokenManager {
 
-    private SimpleCache<String, PrincipalItem> cache = null;
-    private Map<String, Principal> registeredPrincipals = new HashMap<String, Principal>();
+    private PrincipalFactory principalFactory;
+    private SimpleCache<String, PrincipalItem> cache;
+    private SimpleCache<String, Principal> lookupCache;
+    private Map<String, Principal> registeredPrincipals = new HashMap<>();
     
-    public TokenManagerImpl(SimpleCache<String, PrincipalItem> cache) {
+    public TokenManagerImpl(PrincipalFactory principalFactory,
+            SimpleCache<String, PrincipalItem> cache) {
+        this.principalFactory = principalFactory;
         this.cache = cache;
+        SimpleCacheImpl<String, Principal> impl = 
+                new SimpleCacheImpl<>((int) Duration.ofMinutes(10).getSeconds());
+        impl.setRefreshTimestampOnGet(false);
+        impl.afterPropertiesSet();
+        this.lookupCache = impl;
     }
 
     public void setDefaultPrincipals(List<Principal> defaultPrincipals) {
@@ -81,7 +94,13 @@ public class TokenManagerImpl implements TokenManager {
         if (item == null) {
             return null;
         }
-        return item.getPrincipal();
+
+        Principal p = lookupCache.get(item.principalID);
+        if (p != null) return p;
+        p = principalFactory.getPrincipal(item.principalID, Type.USER);
+
+        if (p != null) lookupCache.put(item.principalID, p); 
+        return p;
     }
 
     @Override
@@ -93,14 +112,17 @@ public class TokenManagerImpl implements TokenManager {
         if (item == null) {
             return null;
         }
-        return item.getAuthenticationHandlerId();
+        return item.authenticationHandlerID;
     }
 
     @Override
     public String newToken(Principal principal,
                            AuthenticationHandler authenticationHandler) {
         String token = generateID();
-        PrincipalItem item = new PrincipalItem(principal, authenticationHandler.getIdentifier());
+        
+        PrincipalItem item = new PrincipalItem(
+                principal.getQualifiedName(), 
+                authenticationHandler.getIdentifier());
         this.cache.put(token, item);
         return token;
     }
@@ -133,26 +155,18 @@ public class TokenManagerImpl implements TokenManager {
     }
 
     /**
-     * Class holding (Principal, AuthenticationHandler) pairs.
+     * Class holding (Principal ID, AuthenticationHandler ID) pairs.
      */
     private static class PrincipalItem implements java.io.Serializable {
         private static final long serialVersionUID = 2690838387670375336L;
 
-        private Principal principal = null;
-        private String authenticationHandlerId = null;
+        public final String principalID;
+        public final String authenticationHandlerID;
 
-        public PrincipalItem(Principal principal,
-                             String authenticationHandlerId) {
-            this.principal = principal;
-            this.authenticationHandlerId = authenticationHandlerId;
-        }
-
-        public Principal getPrincipal() {
-            return this.principal;
-        }
-
-        public String getAuthenticationHandlerId() {
-            return this.authenticationHandlerId;
+        public PrincipalItem(String principalID,
+                             String authenticationHandlerID) {
+            this.principalID = principalID;
+            this.authenticationHandlerID = authenticationHandlerID;
         }
     }
 
