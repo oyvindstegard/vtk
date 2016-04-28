@@ -8,15 +8,15 @@
     <constructor-arg name="clusterId" value="${repositoryID}"/>
   </bean>
 
-  <!-- Override bean "systemIndexAccessor" in vtk/beans/vhost/query.xml -->
+  <!-- Override bean "systemIndexAccessor" in vtk/beans/query.xml -->
   <bean id="systemIndexAccessor" class="vtk.repository.index.IndexManager">
     <property name="storageRootPath" value="${indexStorageRootPath}"/>
-    <property name="storageId" value="property_index"/>
+    <property name="storageId" value="property_index.${repository.index.updateLoggerId}"/>
     <property name="forceUnlock" value="true"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
     <property name="searcherFactory" ref="searcherFactory"/>
-    <property name="keepOldCommits" value="5" />
-    <property name="useSimpleLockFactory" value="true" />
+    <property name="keepOldCommits" value="#{'${repository.index.clusterSharedStorage}'=='true' ? '5' : '0'}" />
+    <property name="useSimpleLockFactory" value="#{'${repository.index.clusterSharedStorage}'=='true' ? 'true' : 'false'}" />
     <property name="writeLockTimeoutSeconds" value="30" />
   </bean>
 
@@ -25,6 +25,7 @@
     <property name="indexAccessor" ref="systemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
     <property name="initClusterRole" value="SLAVE" />
+    <property name="clusterSharedStorage" value="${repository.index.clusterSharedStorage}" />
   </bean>
 
   <!-- Override and replace bean -->

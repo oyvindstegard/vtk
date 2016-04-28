@@ -16,14 +16,6 @@
   <bean parent="cluster.component">
     <property name="arguments">
       <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="repository.index.incrementalUpdater"/>
-      </bean>
-    </property>
-  </bean>
-
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
         <constructor-arg ref="systemIndex"/>
       </bean>
     </property>

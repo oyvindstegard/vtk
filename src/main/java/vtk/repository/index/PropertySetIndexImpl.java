@@ -79,22 +79,24 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     private Optional<ClusterContext> clusterContext = Optional.empty();
     private Optional<ClusterRole> clusterRole = Optional.empty();
     private ClusterRole initClusterRole = ClusterRole.MASTER;
+    private boolean clusterSharedStorage = true;
     
     @Override
     public void afterPropertiesSet() throws IOException {
-        index.open(false, readOnly());
+        index.open(false, isClusterSharedReadOnly());
         if (closeAfterInit) {
             index.close();
         }
     }
 
-    private boolean readOnly() {
-        return clusterRole.orElse(initClusterRole) == ClusterRole.SLAVE;
+    @Override
+    public boolean isClusterSharedReadOnly() {
+        return clusterSharedStorage && clusterRole.orElse(initClusterRole) == ClusterRole.SLAVE;
     }
     
     private void checkWriteAccess() {
-        if (readOnly()) {
-            throw new IndexException("Cannot write to index when cluster role is SLAVE");
+        if (isClusterSharedReadOnly()) {
+            throw new IndexException("Cannot write to shared index when cluster role is SLAVE");
         }
     }
 
@@ -300,7 +302,7 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
     public void reinitialize() throws IndexException {
         try {
             logger.info("Re-initializing index ..");
-            this.index.reopen(readOnly());
+            this.index.reopen(isClusterSharedReadOnly());
         } catch (IOException io) {
             throw new IndexException(io);
         }
@@ -426,9 +428,24 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
         }
         this.initClusterRole = initClusterRole;
     }
-    
+
+    /**
+     * Set whether the index is using storage that is shared amongst all nodes
+     * in a cluster configuration.
+     * @param clusterSharedStorage 
+     */
+    public void setClusterSharedStorage(boolean clusterSharedStorage) {
+        this.clusterSharedStorage = clusterSharedStorage;
+    }
+
     @Override
     public void roleChange(ClusterRole role) {
+        if (!clusterSharedStorage) {
+            // Role doesn't matter when index is not using cluster shared storage
+            this.clusterRole = Optional.of(role);
+            return;
+        }
+        
         Optional<ClusterRole> prev = clusterRole;
         try {
             switch (role) {
@@ -456,12 +473,9 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
 
     @Override
     public void clusterMessage(Object message) {
-        // XXX We shouldn't do unnecessary reinit here if we are the "source" of
-        //     thismessage (e.g MASTER node). Assuming that cluster messages
-        //     in general are not received by "self" node in the clustering framework.
-        if (message instanceof Reinitialize) {
+        if (clusterSharedStorage && message instanceof Reinitialize) {
             try {
-                this.index.reopen(readOnly());
+                this.index.reopen(isClusterSharedReadOnly());
             } catch (IOException io) {
                 throw new IndexException(io);
             }

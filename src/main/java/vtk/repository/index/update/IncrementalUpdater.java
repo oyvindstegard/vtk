@@ -34,15 +34,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.transaction.annotation.Transactional;
 
-import vtk.cluster.ClusterAware;
-import vtk.cluster.ClusterRole;
 import vtk.repository.Acl;
 import vtk.repository.ChangeLogEntry;
 import vtk.repository.ChangeLogEntry.Operation;
@@ -56,20 +53,17 @@ import vtk.repository.store.PropertySetHandler;
 /**
  * Incremental index updates from database resource change log.
  */
-public class IncrementalUpdater implements ClusterAware {
+public class IncrementalUpdater {
 
     private final Logger logger = LoggerFactory.getLogger(IncrementalUpdater.class);
 
     private PropertySetIndex index;
     private IndexDao indexDao;
-    private boolean enabled = true;
 
     private ChangeLogDAO changeLogDAO;
     private int loggerType;
     private int loggerId;
     private int maxChangesPerUpdate = 40000;
-
-    private Optional<ClusterRole> clusterRole = Optional.empty();
 
     /**
      * This method should be called periodically to poll database for resource
@@ -83,10 +77,12 @@ public class IncrementalUpdater implements ClusterAware {
     @Transactional(readOnly=false)
     public synchronized void update() throws Exception {
 
-        if (clusterRole.isPresent() && clusterRole.get() == ClusterRole.SLAVE) {
-            logger.debug("update(): slave mode, returning");
+        if (index.isClusterSharedReadOnly()) {
+            // We are probably not cluster MASTER, so do nothing.
+            logger.debug("update(): index is not available for writing on this node, aborting update round");
             return;
         }
+        
         try {
             List<ChangeLogEntry> changes =
             	this.changeLogDAO.getChangeLogEntries(this.loggerType,
@@ -119,14 +115,9 @@ public class IncrementalUpdater implements ClusterAware {
             }
 
             if (changes.size() > 0) {
-                if (isEnabled()) {
-                    // Index changes
-                    logger.debug("--- update(): applying changes to index");
-                    applyChanges(changes);
-                    logger.debug("--- update(): finished applying changes to index.");
-                } else {
-                    logger.warn("Index updates disabled, discarding resource change events.");
-                }
+                logger.debug("--- update(): applying changes to index");
+                applyChanges(changes);
+                logger.debug("--- update(): finished applying changes to index.");
 
                 // Remove changelog entries from DAO
                 this.changeLogDAO.removeChangeLogEntries(changes);
@@ -247,14 +238,6 @@ public class IncrementalUpdater implements ClusterAware {
         }
     }
 
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
     @Required
     public void setIndex(PropertySetIndex index) {
         this.index = index;
@@ -286,9 +269,5 @@ public class IncrementalUpdater implements ClusterAware {
         }
         this.maxChangesPerUpdate = maxChanges;
     }
-
-    @Override
-    public void roleChange(ClusterRole role) {
-        this.clusterRole = Optional.of(role);
-    }
+    
 }

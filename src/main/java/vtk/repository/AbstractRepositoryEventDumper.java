@@ -1,4 +1,4 @@
-/* Copyright (c) 2004, University of Oslo, Norway
+/* Copyright (c) 2004,2016 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,8 @@ import vtk.repository.event.ResourceMovedEvent;
 
 
 /**
- * 
+ * Base class for consumers of repository events which delegates to 
+ * specific methods based on event type.
  */
 public abstract class AbstractRepositoryEventDumper implements ApplicationListener<RepositoryEvent> {
 
