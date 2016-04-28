@@ -37,6 +37,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.session.Session;
 import org.springframework.session.web.http.HttpSessionStrategy;
 
@@ -45,6 +47,7 @@ import org.springframework.session.web.http.HttpSessionStrategy;
  * names for http and https.
  */
 public class CookieHttpSessionStrategy implements HttpSessionStrategy {
+    private static final Logger logger = LoggerFactory.getLogger(CookieHttpSessionStrategy.class);
     
     private String cookieNameHttp;
     private String cookieNameHttps;
@@ -66,6 +69,9 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
             HttpServletResponse response) {
         String cookieName = request.isSecure() ? cookieNameHttps : cookieNameHttp;
         Cookie cookie = new Cookie(cookieName, session.getId());
+        logger.debug("New session cookie: " + cookieName + ":" + session.getId());
+        cookie.setDomain(request.getServerName());
+        cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setSecure(request.isSecure());
         cookie.setMaxAge(-1); // Session cookie (not stored)
@@ -75,8 +81,12 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
     @Override
     public void onInvalidateSession(HttpServletRequest request,
             HttpServletResponse response) {
+        Optional<String> id = sessionCookie(request).map(cookie -> cookie.getValue());
         String cookieName = request.isSecure() ? cookieNameHttps : cookieNameHttp;
-        Cookie cookie = new Cookie(cookieName, "");
+        Cookie cookie = new Cookie(cookieName, id.orElse(""));
+        logger.debug("Remove session cookie: " + cookieName);
+        cookie.setDomain(request.getServerName());
+        cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setSecure(request.isSecure());
         cookie.setMaxAge(0);
