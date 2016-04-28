@@ -51,6 +51,7 @@
       mapping them to user names, and making sure they expire after
       periods of inactivity.
     </description>
+    <constructor-arg name="principalFactory" ref="principalFactory" />
     <constructor-arg name="cache" ref="tokenManagerCache" />
     <property name="defaultPrincipals">
       <list>
