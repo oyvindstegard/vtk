@@ -148,8 +148,12 @@ public class ChangeHistoryEventDumper extends AbstractDBEventDumper {
     @Override
     public void aclModified(Resource resource, Resource originalResource) {
         Principal changer = SecurityContext.getSecurityContext().getPrincipal();
+        String description = "ACL before " 
+                + (originalResource.isInheritedAcl() ? "(inherited): " : "(not inherited): ") 
+                + originalResource.getAcl() + ", ACL after " 
+                + (resource.isInheritedAcl() ? "(inherited): " : "(not inherited): ") + resource.getAcl(); 
         logVersioningEvent("MODIFIED_ACL", true, resource.getURI(),
-                "", resource.isCollection(), changer);
+                description, resource.isCollection(), changer);
     }
 
     protected void logVersioningEvent(String operation, boolean security, Path uri, String description,
