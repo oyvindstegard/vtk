@@ -42,9 +42,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
@@ -407,17 +407,27 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     }
 
     @Override
-    public void deleteRecoverable(RecoverableResource recoverableResource) throws DataAccessException {
+    public void deleteRecoverable(List<RecoverableResource> recoverableResources) throws DataAccessException {
         // XXX Lazy delete, #missing parent#
         String sqlMap = getSqlMap("deletePermanentlyMarkDeleted");
+        
+        int n = 0;
         Map<String, Object> parameters = new HashMap<String, Object>();
-        String trashUri = recoverableResource.getTrashUri();
-        parameters.put("trashCanURI", trashUri);
-        parameters.put("trashCanURIWildCard", SqlDaoUtils.getStringSqlWildcard(trashUri, SQL_ESCAPE_CHAR));
-        this.getSqlSession().delete(sqlMap, parameters);
-        sqlMap = getSqlMap("deleteFromTrashCan");
-        this.getSqlSession().delete(sqlMap, recoverableResource.getId());
-
+        SqlSession session = getSqlSession();
+        for (RecoverableResource recoverable: recoverableResources) {
+            logger.info("Permanently deleting recoverable: " + recoverable);
+            
+            String trashUri = recoverable.getTrashUri();
+            parameters.put("trashCanURI", trashUri);
+            parameters.put("trashCanURIWildCard", SqlDaoUtils.getStringSqlWildcard(trashUri, SQL_ESCAPE_CHAR));
+            session.delete(sqlMap, parameters);
+            sqlMap = getSqlMap("deleteFromTrashCan");
+            session.delete(sqlMap, recoverable.getId());
+            if (++n % UPDATE_BATCH_SIZE_LIMIT == 0) {
+                session.flushStatements();
+            }
+        }
+        session.flushStatements();
     }
 
     @Override
@@ -459,7 +469,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             populateStandardProperties(resource, resourceMap);
 
             if (locks.containsKey(uri)) {
-                resource.setLock((LockImpl) locks.get(uri));
+                resource.setLock(locks.get(uri));
             }
 
             children.add(resource);
