@@ -852,7 +852,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             throw new ResourceNotFoundException(parentUri);
         }
 
-        this.dao.deleteRecoverable(recoverableResource);
+        this.dao.deleteRecoverable(Collections.singletonList(recoverableResource));
         this.contentStore.deleteRecoverable(recoverableResource);
     }
 
@@ -2376,27 +2376,30 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 if (overdue != null && overdue.size() > 0) {
                     trashLogger.info("Found " + overdue.size()
                             + " recoverable resources that are overdue for permanent deletion.");
-                    for (RecoverableResource rr : overdue) {
-                        trashLogger.info("Permanently deleting recoverable resource: " + rr);
-                        try {
-                            dao.deleteRecoverable(rr);
+                    try {
+                        dao.deleteRecoverable(overdue);
+                        for (RecoverableResource rr : overdue) {
+                            trashLogger.info("Permanently deleting recoverable filesystem resource: " + rr);
                             contentStore.deleteRecoverable(rr);
-                        } catch (Throwable t) {
-                            trashLogger.warn("Could not permanently delete recoverable resource: " + rr, t);
                         }
+                    }
+                    catch (Throwable t) {
+                        trashLogger.warn("Failed to permanently delete recoverable resource(s)", t);
                     }
                 }
                 List<RecoverableResource> orphans = dao.getTrashCanOrphans();
                 if (orphans != null && orphans.size() > 0) {
                     trashLogger.info("Found " + orphans.size() + " recoverable resources that are orphans.");
-                    for (RecoverableResource rr : orphans) {
-                        trashLogger.info("Permanently deleting orphan: " + rr);
-                        try {
-                            dao.deleteRecoverable(rr);
+
+                    try {
+                        dao.deleteRecoverable(orphans);
+                        for (RecoverableResource rr : orphans) {
+                            trashLogger.info("Permanently deleting recoverable filesystem resource: " + rr);
                             contentStore.deleteRecoverable(rr);
-                        } catch (Throwable t) {
-                            trashLogger.warn("Could not permanently delete orphan: " + rr, t);
                         }
+                    }
+                    catch (Throwable t) {
+                        trashLogger.warn("Failed to permanently delete recoverable resource(s)", t);
                     }
                 }
                 lastRun = new Date();

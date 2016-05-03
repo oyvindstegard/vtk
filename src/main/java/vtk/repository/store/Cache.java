@@ -507,8 +507,8 @@ public class Cache implements DataAccessor, InitializingBean {
     }
 
     @Override
-    public void deleteRecoverable(RecoverableResource recoverableResource) throws DataAccessException {
-        this.wrappedAccessor.deleteRecoverable(recoverableResource);
+    public void deleteRecoverable(List<RecoverableResource> recoverableResources) throws DataAccessException {
+        this.wrappedAccessor.deleteRecoverable(recoverableResources);
     }
 
     @Override

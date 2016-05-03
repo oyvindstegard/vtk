@@ -133,13 +133,13 @@ public interface DataAccessor {
     public ResourceImpl recover(Path parentUri, RecoverableResource recoverableResource) throws DataAccessException;
 
     /**
-     * Permanently deletes a recoverable resource
+     * Permanently deletes a list of recoverable resources
      * 
-     * @param recoverableResource
-     *            The recoverable resource to delete
+     * @param recoverableResources
+     *            The list of recoverable resources to delete
      * @throws DataAccessException
      */
-    public void deleteRecoverable(RecoverableResource recoverableResource) throws DataAccessException;
+    public void deleteRecoverable(List<RecoverableResource> recoverableResources) throws DataAccessException;
 
     /**
      * Retrieves resources in the trash can that are overdue for permanent
