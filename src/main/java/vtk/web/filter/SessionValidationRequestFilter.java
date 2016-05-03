@@ -139,7 +139,8 @@ public class SessionValidationRequestFilter extends AbstractRequestFilter
         
         @Override
         public String toString() {
-            return this.getClass().getName() + "[" + this.request + "]";
+            return SessionValidationRequestFilter.class.getSimpleName() + 
+                    "." + getClass().getSimpleName() + "(" + request + ")";
         }
     }
 }
