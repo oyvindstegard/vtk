@@ -59,7 +59,7 @@ JAVA_ARGS="-Dlogging.config=${SCRIPT_DIR}/src/main/webapp/WEB-INF/classes/log4j.
 -Dvtk.web.port=$WEB_PORT -Dvtk.webdav.port=$WEBDAV_PORT \
 -Dvtk.configLocations=$CONFIG_LOCATIONS"
 
-if [ ! -z $DEBUG_PORT ]
+if [ ! -z "$DEBUG_PORT" ]
 then
     DEBUG_ARGS="-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=$DEBUG_PORT,suspend=n"
 fi
@@ -85,18 +85,22 @@ then
     fi
 fi
 
-if [ ! -z $VTK_EXTENSIONS ]
+if [ ! -z "$VTK_EXTENSIONS" ]
 then
     VTK_EXTENSIONS=${VTK_EXTENSIONS%?} # Strip last comma
     JAVA_ARGS="$JAVA_ARGS -Dvtk.extensions=$VTK_EXTENSIONS"
 fi
 
 # If jar file is specified
-if [ ! -z $JAR_FILE ]
+if [ ! -z "$JAR_FILE" ]
 then
     EXEC="java $DEBUG_ARGS $JAVA_ARGS -jar $@"
 else
-    EXEC="MAVEN_OPTS=$DEBUG_ARGS mvn $JAVA_ARGS spring-boot:run"
+    if [ ! -z "$DEBUG_ARGS" ]
+    then
+        export MAVEN_OPTS="$DEBUG_ARGS"
+    fi
+    EXEC="mvn $JAVA_ARGS spring-boot:run"
 fi
 echo "Run: $EXEC"
-$EXEC
+exec $EXEC
