@@ -190,7 +190,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             throw new IllegalArgumentException("URI is NULL");
         }
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         ResourceImpl resource = this.dao.load(uri);
 
@@ -234,7 +234,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         if (revision == null) {
             throw new IllegalArgumentException("Revision is NULL");
         }
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         ResourceImpl resource = this.dao.load(uri);
 
@@ -304,7 +304,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     public InputStream getInputStream(@OpLogParam(name = "token") String token, @OpLogParam Path uri, boolean forProcessing) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, ResourceLockedException, IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         ResourceImpl r = this.dao.load(uri);
 
         if (r == null) {
@@ -340,7 +340,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, ResourceLockedException,
             IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         ResourceImpl r = this.dao.load(uri);
 
         if (r == null) {
@@ -387,7 +387,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             throw new IllegalArgumentException("Content identifier null");
         }
         
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         ResourceImpl r = this.dao.load(uri);
 
         if (r == null) {
@@ -422,7 +422,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     public Resource[] listChildren(@OpLogParam(name = "token") String token, @OpLogParam Path uri, boolean forProcessing) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         ResourceImpl collection = this.dao.load(uri);
 
         if (collection == null) {
@@ -465,7 +465,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @Override
     public Resource createCollection(@OpLogParam(name="token") String token, @OpLogParam Path uri) throws IllegalOperationException, AuthorizationException,
             AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         ResourceImpl resource = this.dao.load(uri);
         if (resource != null) {
             throw new ResourceOverwriteException(uri);
@@ -531,7 +531,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             FailedDependencyException, ResourceOverwriteException, ResourceLockedException, ResourceNotFoundException,
             ReadOnlyException, IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         validateCopyURIs(srcUri, destUri);
 
         ResourceImpl src = this.dao.load(srcUri);
@@ -626,7 +626,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             AuthorizationException, AuthenticationException, FailedDependencyException, ResourceOverwriteException,
             ResourceLockedException, ResourceNotFoundException, ReadOnlyException, IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         validateCopyURIs(srcUri, destUri);
 
         // Loading and checking source resource
@@ -727,7 +727,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
             FailedDependencyException, ReadOnlyException, IOException, CloneNotSupportedException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         if (uri.isRoot()) {
             throw new IllegalOperationException("Cannot delete the root resource ('/')");
@@ -796,7 +796,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     public List<RecoverableResource> getRecoverableResources(@OpLogParam(name = "token") String token, @OpLogParam Path uri) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         ResourceImpl resource = this.dao.load(uri);
         this.authorizationManager.authorizeRead(uri, principal);
 
@@ -812,7 +812,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     public void recover(@OpLogParam(name = "token") String token, @OpLogParam Path parentUri, @OpLogParam RecoverableResource recoverableResource)
             throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         ResourceImpl parent = this.dao.load(parentUri);
 
         if (parent == null) {
@@ -864,7 +864,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             FailedDependencyException, ResourceLockedException, IllegalOperationException, ReadOnlyException,
             IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         if (depth == Depth.ONE || depth == Depth.INF) {
             throw new IllegalOperationException("Unsupported depth parameter: " + depth);
         }
@@ -939,7 +939,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @Override
     public void unlock(@OpLogParam(name = "token") String token, @OpLogParam Path uri, String lockToken) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         ResourceImpl r = this.dao.load(uri);
         if (r == null) {
             throw new ResourceNotFoundException(uri);
@@ -968,7 +968,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             AuthorizationException, ResourceLockedException, AuthenticationException, IllegalOperationException,
             ReadOnlyException, IOException {
 
-        final Principal principal = this.tokenManager.getPrincipal(token);
+        final Principal principal = getPrincipal(token);
 
         if (resource == null) {
             throw new IllegalOperationException("Can't store nothingness.");
@@ -1133,7 +1133,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     public Resource createDocument(@OpLogParam(name = "token") String token, @OpLogParam Path uri, InputStream inStream) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         if (this.dao.load(uri) != null) {
             throw new ResourceOverwriteException(uri);
         }
@@ -1170,7 +1170,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             if (hooks != null) {
                 try {
                     newResource = hooks.storeContentOnCreate(newResource, inStream, contentType,
-                                                             p -> tokenManager.getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
+                                                             p -> getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                     Content content = hooks.getContentForEvaluation(newResource, getDefaultContent(newResource));
                     newResource = this.resourceHelper.create(principal, newResource, false, content);
                 } catch (UnsupportedContentException uce) {
@@ -1185,7 +1185,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 }
             } else {
                 this.contentStore.storeContent(uri, inStream, 
-                                               p -> tokenManager.getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
+                                               p -> getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                 // Run through type evaluation
                 newResource = this.resourceHelper.create(principal, newResource, false, getContent(newResource));
             }
@@ -1210,7 +1210,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, IOException {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         ResourceImpl r = this.dao.load(uri);
 
@@ -1234,13 +1234,13 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             if (hooks != null) {
                 try {
                     r = hooks.storeContent(r, contentStream, MimeHelper.map(uri.getName()),
-                                           p -> tokenManager.getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
+                                           p -> getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                 } catch (Exception e) {
                     throw new TypeHandlerHookException("failed in onStoreContent hook: " + e.getMessage(), e);
                 }
             } else {
                 this.contentStore.storeContent(uri, contentStream,
-                                               p -> tokenManager.getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
+                                               p -> getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
             }
 
             Content content = getContent(r);
@@ -1279,7 +1279,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         if (revision.getType() != Revision.Type.WORKING_COPY) {
             throw new IllegalArgumentException("Only WORKING_COPY is supported");
         }
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         ResourceImpl r = this.dao.load(uri);
 
@@ -1323,7 +1323,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             OutputStream out = new FileOutputStream(tempFile);
             
             IO.copy(wrapper, out).bufferSize(FILE_COPY_BUF_SIZE)
-                    .progress(p -> tokenManager.getPrincipal(token))
+                    .progress(p -> getPrincipal(token))
                     .progressInterval(TOKEN_REFRESH_PROGRESS_INTERVAL)
                     .perform();
             checksum = wrapper.checksum();
@@ -1428,7 +1428,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         if (acl == null) {
             throw new IllegalArgumentException("ACL is null");
         }
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         ResourceImpl r = this.dao.load(uri);
         if (r == null) {
@@ -1479,7 +1479,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         if (uri == Path.ROOT) {
             throw new IllegalOperationException("The root resource cannot have an inherited ACL");
         }
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         ResourceImpl r = this.dao.load(uri);
         if (r == null) {
@@ -1537,7 +1537,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         if (resource == null) {
             throw new ResourceNotFoundException(uri);
         }
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         this.authorizationManager.authorizeReadProcessed(resource.getURI(), principal);
         return Collections.unmodifiableList(this.revisionStore.list(resource));
     }
@@ -1557,7 +1557,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         if (resource == null) {
             throw new ResourceNotFoundException(uri);
         }
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         checkLock(resource, principal);
         if (resource.hasPublishDate()) {
@@ -1615,7 +1615,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
             Revisions.ChecksumWrapper wrapper = Revisions.wrap(content);
             OutputStream out = new FileOutputStream(tempFile);
             IO.copy(wrapper, out).bufferSize(FILE_COPY_BUF_SIZE)
-                                 .progress(p -> tokenManager.getPrincipal(token))
+                                 .progress(p -> getPrincipal(token))
                                  .progressInterval(TOKEN_REFRESH_PROGRESS_INTERVAL)
                                  .perform();
             
@@ -1652,7 +1652,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         if (resource == null) {
             throw new ResourceNotFoundException(uri);
         }
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         checkLock(resource, principal);
         if (revision.getType() == Revision.Type.WORKING_COPY) {
@@ -1686,7 +1686,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @OpLog
     @Override
     public List<Comment> getComments(@OpLogParam(name="token") String token, @OpLogParam Resource resource, boolean deep, int max) {
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         if (resource == null) {
             throw new IllegalOperationException("Resource argument cannot be NULL");
@@ -1722,7 +1722,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @OpLog(write = true)
     @Override
     public Comment addComment(@OpLogParam(name="token") String token, @OpLogParam Resource resource, String title, String text) {
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         if (resource == null) {
             throw new IllegalOperationException("Resource argument cannot be NULL");
@@ -1779,7 +1779,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @Override
     public Comment addComment(@OpLogParam(name="token") String token, @OpLogParam Comment comment) {
 
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         // XXX Only allow for users with root privilege?
         this.authorizationManager.authorizeRootRoleAction(principal);
@@ -1791,7 +1791,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @OpLog(write = true)
     @Override
     public void deleteComment(@OpLogParam(name="token") String token, @OpLogParam Resource resource, Comment comment) {
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         if (resource == null) {
             throw new IllegalOperationException("Resource argument cannot be NULL");
@@ -1831,7 +1831,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @OpLog(write = true)
     @Override
     public void deleteAllComments(@OpLogParam(name="token") String token, @OpLogParam Resource resource) {
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         if (resource == null) {
             throw new IllegalOperationException("Resource argument cannot be NULL");
@@ -1871,7 +1871,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @OpLog(write = true)
     @Override
     public Comment updateComment(@OpLogParam(name="token") String token, @OpLogParam Resource resource, Comment comment) {
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
 
         if (resource == null) {
             throw new IllegalOperationException("Resource argument cannot be NULL");
@@ -1907,6 +1907,10 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         } catch (IOException e) {
             throw new RuntimeException("Unhandled IO exception", e);
         }
+    }
+
+    private Principal getPrincipal(String token) {
+        return tokenManager.getPrincipal(token);
     }
 
     private void checkMaxChildren(ResourceImpl resource) {
@@ -1953,7 +1957,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
 
     @Override
     public void setReadOnly(String token, boolean readOnly) throws AuthorizationException {
-        Principal principal = this.tokenManager.getPrincipal(token);
+        Principal principal = getPrincipal(token);
         this.authorizationManager.authorizeRootRoleAction(principal);
         this.authorizationManager.setReadOnly(readOnly);
     }
