@@ -5,6 +5,7 @@ WEB_PORT=9322
 WEBDAV_PORT=9321
 CLUSTER_PORTS=( )
 CONFIG_LOCATIONS=$HOME/.vtk.properties
+PRIVATE_INDEX=false
 DEBUG_PORT=
 VTK_EXTENSIONS=
 JAR_FILE=
@@ -33,9 +34,13 @@ do
         DEBUG_PORT="$2"
         shift
         ;;
-        -e|--extensions)
+        -vtk|--vtk-extensions)
         VTK_EXTENSIONS="$2,"
         shift
+        ;;
+        -pi|--private-index)
+        PRIVATE_INDEX=true
+        #No-value option
         ;;
         -j|--jar)
         JAR_FILE="$2,"
@@ -63,14 +68,26 @@ if [ ${#CLUSTER_PORTS[@]} -gt 0 ]
 then
     VTK_EXTENSIONS="${VTK_EXTENSIONS}cluster-akka,shared-session-akka,"
     JAVA_ARGS="$JAVA_ARGS -Dvtk.cluster.port=${CLUSTER_PORTS[0]}"
+    INDEX_LOGGER_IDS=
     for index in "${!CLUSTER_PORTS[@]}"
     do
         JAVA_ARGS="$JAVA_ARGS -Dakka.cluster.seed-nodes.${index}=akka.tcp://vtk-cluster@localhost:${CLUSTER_PORTS[$index]}"
+        if [ "$PRIVATE_INDEX" = true ]
+        then
+            INDEX_LOGGER_IDS="${INDEX_LOGGER_IDS}${CLUSTER_PORTS[$index]},"
+        fi
     done
+    if [ "$PRIVATE_INDEX" = true ]
+    then
+        INDEX_LOGGER_IDS=${INDEX_LOGGER_IDS%?} # Strip last comma
+        JAVA_ARGS="$JAVA_ARGS -Drepository.index.clusterSharedStorage=false \
+-Drepository.index.updateLoggerId=${CLUSTER_PORTS[0]} -Drepository.index.loggerIds=$INDEX_LOGGER_IDS"
+    fi
 fi
 
 if [ ! -z $VTK_EXTENSIONS ]
 then
+    VTK_EXTENSIONS=${VTK_EXTENSIONS%?} # Strip last comma
     JAVA_ARGS="$JAVA_ARGS -Dvtk.extensions=$VTK_EXTENSIONS"
 fi
 
