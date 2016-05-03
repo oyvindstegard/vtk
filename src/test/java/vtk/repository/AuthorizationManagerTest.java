@@ -50,6 +50,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.junit.Test;
+
 import vtk.repository.store.DataAccessException;
 import vtk.repository.store.DataAccessor;
 import vtk.security.AuthenticationException;
@@ -377,6 +378,7 @@ public class AuthorizationManagerTest {
                 }
             }
             
+            @Override
             public String toString() {
                 return this.id;
             }
@@ -435,6 +437,7 @@ public class AuthorizationManagerTest {
                 }
             }
             
+            @Override
             public String toString() {
                 return this.id;
             }
@@ -545,7 +548,7 @@ public class AuthorizationManagerTest {
         }
 
         @Override
-        public void deleteRecoverable(RecoverableResource recoverableResource)
+        public void deleteRecoverable(List<RecoverableResource> recoverableResources)
                 throws DataAccessException {
             throw new UnsupportedOperationException();
         }
