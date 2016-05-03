@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
 import vtk.repository.RecoverableResource;
@@ -253,7 +254,8 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
         String recover = dest + "/" + recoverableResource.getName();
         String trashPath = this.repositoryTrashCanDirectory + "/" + recoverableResource.getTrashUri();
         if (!new File(trashPath).renameTo(new File(recover))) {
-            throw new DataAccessException("Unable to recover file " + recoverableResource.getTrashUri());
+            throw new DataAccessException("Unable to recover resource " + recoverableResource.getTrashUri() 
+            + ": failed to rename " + trashPath + " to " + recover);
         }
         File trashDir = new File(this.repositoryTrashCanDirectory + "/" + recoverableResource.getTrashID());
         trashDir.delete();
