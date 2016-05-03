@@ -6,6 +6,7 @@
 
   <!-- Override -->
   <bean id="saml.ieCookieStore.cache"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="id" value="saml.ieCookieStore.cache" />
     <constructor-arg name="system" ref="akka.actorSystem" />
     <constructor-arg name="maxAge" value="3600" />
   </bean>
@@ -13,27 +14,30 @@
 
   <!-- Override -->
   <bean id="saml.requestIdStore"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="id" value="saml.requestIdStore" />
     <constructor-arg name="system" ref="akka.actorSystem" />
     <constructor-arg name="maxAge" value="1800" />
     <constructor-arg name="refresh" value="false" />
   </bean>
 
   <!-- Override -->
-  <!--
   <bean id="feide.requestIdStore"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="id" value="feide.requestIdStore" />
     <constructor-arg name="system" ref="akka.actorSystem" />
     <constructor-arg name="maxAge" value="1800" />
   </bean>
-  -->
+
 
   <!-- Override -->
   <bean id="tokenManagerCache"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="id" value="tokenManagerCache" />
     <constructor-arg name="system" ref="akka.actorSystem" />
     <constructor-arg name="maxAge" value="3600" />
   </bean>
 
   <!-- Override -->
   <bean id="cookieLinkStore.cache"  class="vtk.util.cache.AkkaReplicatedCache">
+    <constructor-arg name="id" value="cookieLinkStore.cache" />
     <constructor-arg name="system" ref="akka.actorSystem" />
     <constructor-arg name="maxAge" value="3600" />
   </bean>
@@ -42,6 +46,7 @@
   <bean id="spring.sessionRepository" class="vtk.util.web.SimpleCacheSessionRepository">
     <constructor-arg name="cache">
       <bean class="vtk.util.cache.AkkaReplicatedCache">
+        <constructor-arg name="id" value="spring.sessionRepository.cache" />
         <constructor-arg name="system" ref="akka.actorSystem" />
         <constructor-arg name="maxAge" value="3600" />
       </bean>

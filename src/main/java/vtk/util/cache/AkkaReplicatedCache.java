@@ -46,15 +46,16 @@ import akka.actor.ActorSystem;
 import akka.actor.Deploy;
 import akka.actor.Props;
 import akka.cluster.Cluster;
-import akka.cluster.ddata.DistributedData;
 import akka.cluster.ddata.Key;
 import akka.cluster.ddata.LWWMap;
 import akka.cluster.ddata.LWWMapKey;
+import akka.cluster.ddata.Replicator;
 import akka.cluster.ddata.Replicator.Get;
 import akka.cluster.ddata.Replicator.GetSuccess;
 import akka.cluster.ddata.Replicator.NotFound;
 import akka.cluster.ddata.Replicator.Update;
 import akka.cluster.ddata.Replicator.UpdateResponse;
+import akka.cluster.ddata.ReplicatorSettings;
 import akka.japi.pf.ReceiveBuilder;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
@@ -67,23 +68,25 @@ import scala.concurrent.duration.Duration;
 
 
 public class AkkaReplicatedCache<K, V> implements SimpleCache<K, V> {
-    
+    private String id;
     private ActorRef actor;
     Timeout timeout = new Timeout(Duration.create(5, "seconds"));
 
-    public AkkaReplicatedCache(ActorSystem system, int maxAge) {
-        this(system, maxAge, true);
+    public AkkaReplicatedCache(String id, ActorSystem system, int maxAge) {
+        this(id, system, maxAge, true);
     }
     
-    public AkkaReplicatedCache(ActorSystem system, int maxAge, boolean refresh) {
+    public AkkaReplicatedCache(String id, ActorSystem system, int maxAge, boolean refresh) {
+        if (id == null) throw new IllegalArgumentException("id");
+        this.id = id;
         Optional<Integer> optMaxAge = maxAge > 0 ? 
                 Optional.of(maxAge) : Optional.empty();
-        actor = system.actorOf(CacheActor.props(optMaxAge, refresh));
+        actor = system.actorOf(CacheActor.props(id, optMaxAge, refresh));
     }
     
     @Override
     public void put(K key, V value) {
-        actor.tell(new CacheActor.PutRequest(key.toString(), value), null);
+        actor.tell(new CacheActor.PutRequest(key.toString(), value), ActorRef.noSender());
     }
 
     @Override
@@ -109,7 +112,7 @@ public class AkkaReplicatedCache<K, V> implements SimpleCache<K, V> {
     @Override
     public V remove(K key) {
         V result = get(key);
-        actor.tell(new CacheActor.RemoveRequest(key.toString()), null);
+        actor.tell(new CacheActor.RemoveRequest(key.toString()), ActorRef.noSender());
         return result;
         
     }
@@ -231,23 +234,27 @@ public class AkkaReplicatedCache<K, V> implements SimpleCache<K, V> {
         
         private long lastCleanup = 0L;
 
-        private static Props props(Optional<Integer> maxAge, boolean refresh) {
+        private static Props props(String id, Optional<Integer> maxAge, boolean refresh) {
             List<Object> args = new ArrayList<>();
+            args.add(id);
             args.add(maxAge);
             args.add(refresh);
             Seq<Object> asScalaBuffer = JavaConversions.asScalaBuffer(args).toList();
             return new Props(Deploy.local(), CacheActor.class, asScalaBuffer);
         }
-
-        private final ActorRef replicator = DistributedData.get(context().system()).replicator();
-        private final Cluster node = Cluster.get(context().system());
         
+        private final ActorRef replicator;
+        private final Cluster node;
         private Optional<Integer> maxAge = Optional.empty();
         private boolean refresh = false;
 
-        private CacheActor(Optional<Integer> maxAge, boolean refresh) {
+        private CacheActor(String id, Optional<Integer> maxAge, boolean refresh) {
             this.maxAge = maxAge;
             this.refresh = refresh;
+            ReplicatorSettings settings = ReplicatorSettings.apply(context().system());
+            node = Cluster.get(context().system());
+            replicator = context().system().actorOf(Replicator.props(settings), "replicator-" + id);
+
             receive(ReceiveBuilder
                     .match(PutRequest.class, req -> receivePutRequest(req.key, req.value))
                     .match(RemoveRequest.class, req -> receiveRemoveRequest(req.key))

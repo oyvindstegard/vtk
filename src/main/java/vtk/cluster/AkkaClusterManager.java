@@ -38,17 +38,16 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import akka.actor.*;
-import akka.cluster.pubsub.DistributedPubSub;
-import akka.cluster.pubsub.DistributedPubSubMediator;
-import akka.cluster.singleton.ClusterSingletonManager;
-import akka.cluster.singleton.ClusterSingletonManagerSettings;
-import akka.cluster.singleton.ClusterSingletonProxy;
-import akka.cluster.singleton.ClusterSingletonProxySettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Address;
+import akka.actor.PoisonPill;
+import akka.actor.Props;
+import akka.actor.UntypedActor;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
 import akka.cluster.ClusterEvent.MemberEvent;
@@ -56,6 +55,12 @@ import akka.cluster.ClusterEvent.MemberRemoved;
 import akka.cluster.ClusterEvent.MemberUp;
 import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.cluster.Member;
+import akka.cluster.pubsub.DistributedPubSub;
+import akka.cluster.pubsub.DistributedPubSubMediator;
+import akka.cluster.singleton.ClusterSingletonManager;
+import akka.cluster.singleton.ClusterSingletonManagerSettings;
+import akka.cluster.singleton.ClusterSingletonProxy;
+import akka.cluster.singleton.ClusterSingletonProxySettings;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import scala.collection.JavaConversions;
@@ -130,7 +135,7 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
             }
         };
         akkaShutdown.start();
-        clusterListener.tell(LEAVE, null);
+        clusterListener.tell(LEAVE, ActorRef.noSender());
         return akkaShutdown;
     }
     
@@ -370,17 +375,17 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
 
         @Override
         public void subscribe(Class<? extends Serializable> msgClass) {
-            subscriptionActor.tell(new Subscription(clusterComponent, msgClass), null);
+            subscriptionActor.tell(new Subscription(clusterComponent, msgClass), ActorRef.noSender());
         }
 
         @Override
         public void unsubscribe() {
-            subscriptionActor.tell(new Unsubscribe(clusterComponent), null);
+            subscriptionActor.tell(new Unsubscribe(clusterComponent), ActorRef.noSender());
         }
 
         @Override
         public void clusterMessage(Object msg) {
-            clusterListener.tell(new AppToClusterMessage(msg), null);
+            clusterListener.tell(new AppToClusterMessage(msg), ActorRef.noSender());
         }
     }
     
