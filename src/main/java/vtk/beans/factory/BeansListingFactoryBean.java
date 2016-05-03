@@ -52,21 +52,13 @@ import org.springframework.core.OrderComparator;
  * 
  * @see #setTargetBeansClass
  */
-public class BeansListingFactoryBean<T> implements FactoryBean,
+public class BeansListingFactoryBean<T> implements FactoryBean<List<T>>,
         ApplicationContextAware {
 
     private Class<T> targetBeansClass;
 
     private ApplicationContext applicationContext;
 
-    /**
-     * Set the class of the target beans.
-     * <p>
-     * This property is required.
-     * 
-     * @param targetBeansClass
-     *            the class of the target beans
-     */
     @Required
     public void setTargetBeansClass(Class<T> targetBeansClass) {
         this.targetBeansClass = targetBeansClass;
@@ -79,7 +71,6 @@ public class BeansListingFactoryBean<T> implements FactoryBean,
 
     }
 
-    @SuppressWarnings("unchecked")
     public List<T> getObject() throws BeansException {
         Map<?, T> matchingBeans = BeanFactoryUtils
                 .beansOfTypeIncludingAncestors(this.applicationContext,
@@ -91,8 +82,8 @@ public class BeansListingFactoryBean<T> implements FactoryBean,
     }
 
     @SuppressWarnings("unchecked")
-    public Class getObjectType() {
-        return List.class;
+    public Class<T> getObjectType() {
+        return (Class<T>) List.class;
     }
 
     public boolean isSingleton() {
