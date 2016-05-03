@@ -50,6 +50,7 @@ import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.Version;
@@ -87,7 +88,7 @@ public class IndexManager implements DisposableBean {
 
     private int maxLockAcquireTimeOnShutdown = 30; // 30 seconds max to wait for mutex lock when shutting down
     private boolean forceUnlock = true;
-    private int writeLockTimeoutSeconds = 30;
+    private int writeLockTimeoutSeconds = 30;      // 30 seconds max to wait for Lucene write lock
     private int keepOldCommits = 0;
     private boolean useSimpleLockFactory = false;
 
@@ -231,7 +232,16 @@ public class IndexManager implements DisposableBean {
                 // Possible need more advanced lock handling here in clustered scenario
                 // We may need to wait a certain grace period, before we try claim index write lock,
                 // if a lock was detected. Force unlocking is not safe in a clustered scenario.
-                writer = new IndexWriter(directory, newIndexWriterConfig());
+                try {
+                    writer = new IndexWriter(directory, newIndexWriterConfig());
+                } catch (LockObtainFailedException e) {
+                    logger.warn("Failed to obtain Lucene write lock on index {}: {}: {}", 
+                            storageId, e.getClass().getSimpleName(), e.getMessage());
+                    
+                    // Really not safe in shared storage scenario, but when using simple lock factory
+                    // it is handy to clean up stale lock files.
+                    checkIndexLock(directory);
+                }
             }
         }
     }
@@ -340,12 +350,15 @@ public class IndexManager implements DisposableBean {
     private void checkIndexLock(Directory directory) throws IOException {
         if (IndexWriter.isLocked(directory)) {
             // See if we should try to force-unlock it
+            logger.warn("Index directory '{}' is write locked", storageId);
             if (forceUnlock) {
-                logger.warn("Index directory is locked, forcing unlock");
+                if (!useSimpleLockFactory) {
+                    throw new IOException("Force unlocking is only supported when using simple lock factory");
+                }
+                logger.warn("Forcing unlock");
                 IndexWriter.unlock(directory);
             } else {
-                throw new IOException("Index directory " + directory
-                        + " is locked and 'forceUnlock' is set to 'false'.");
+                throw new IOException("Index directory '"+storageId+"' is locked");
             }
         }
     }
@@ -429,11 +442,6 @@ public class IndexManager implements DisposableBean {
             });
         }
         
-        // XXX switch to LogByteSizeMergePolicy if problems with (default) TieredMergePolicy arise.
-//        LogByteSizeMergePolicy mp = new LogByteSizeMergePolicy();
-//        mp.setMergeFactor(this.batchIndexingMode ? 25: 5);
-//        cfg.setMergePolicy(mp);
-
         cfg.setRAMBufferSizeMB(batchIndexingMode ? 32.0 : IndexWriterConfig.DEFAULT_RAM_BUFFER_SIZE_MB);
         return cfg;
     }

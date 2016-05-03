@@ -30,11 +30,11 @@
  */
 package vtk.context;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * Create a <code>java.util.List<String></code> from a CSV list string.
+ * Create a <code>java.util.List&lt;String&gt;</code> from a CSV list string.
  *
  */
 public class CSVListFactoryBean extends AbstractCSVFactoryBean {
@@ -42,16 +42,11 @@ public class CSVListFactoryBean extends AbstractCSVFactoryBean {
     /**
      * Create a new <code>List</code> instance on every call in case the 
      * <code>FactoryBean</code> is not a singleton, but a prototype.
+     * @return the created list object
      */
     @Override
-    public Object createInstance() throws Exception {
-        List<String> list = new ArrayList<String>(super.elements.length);
-        
-        for (int i=0; i<super.elements.length; i++) {
-            list.add(super.elements[i]);
-        }
-        
-        return list;
+    public Object createInstance() {
+        return Arrays.asList(super.elements);
     }
 
     @SuppressWarnings("rawtypes")

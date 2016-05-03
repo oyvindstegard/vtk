@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.2.xsd" xmlns:util="http://www.springframework.org/schema/util">
 
   <bean id="queryParserFactory"
         class="vtk.repository.search.QueryParserFactoryImpl">
@@ -48,10 +49,9 @@
   <!-- Document mapper -->
   <bean id="documentMapper" class="vtk.repository.index.mapping.DocumentMapper"
         depends-on="structuredResource.parser">
-    <!-- 
-         XXX: This bean depends the structured resource parser being
-         initialized (because it modifies the resource type tree)
-     -->
+    <!-- XXX: This bean depends the structured resource parser being
+         initialized (because the resource type tree is not complete without it) -->
+
     <property name="resourceTypeTree" ref="resourceTypeTree"/>
     <property name="principalFactory" ref="principalFactory" />
     <property name="valueFactory" ref="valueFactory" />
@@ -78,7 +78,6 @@
   <bean id="systemIndexAccessor" class="vtk.repository.index.IndexManager">
     <property name="storageRootPath" value="${indexStorageRootPath}"/>
     <property name="storageId" value="property_index"/>
-    <property name="forceUnlock" value="true"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
     <property name="searcherFactory" ref="searcherFactory"/>
   </bean>
@@ -87,16 +86,13 @@
   <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="systemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
-    <property name="initClusterRole" value="MASTER" />
   </bean>
 
-  <!-- A Lucene index accessor (secondary instance, batch indexing tuned,
-       never shared storage) -->
+  <!-- A Lucene index accessor (secondary instance, batch indexing tuned) -->
   <bean id="secondarySystemIndexAccessor" class="vtk.repository.index.IndexManager">
     <property name="storageRootPath" value="${indexStorageRootPath}"/>
     <property name="storageId" value="property_index.secondary"/>
     <property name="batchIndexingMode" value="true"/>
-    <property name="forceUnlock" value="true"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
   </bean>
 
@@ -105,7 +101,6 @@
     <property name="indexAccessor" ref="secondarySystemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
     <property name="closeAfterInit" value="true"/>
-    <property name="initClusterRole" value="MASTER" />
   </bean>
   
   <!-- Factory for building Lucene queries. -->
@@ -146,7 +141,11 @@
     class="vtk.repository.ProcessedContentEventDumperAll">
     <property name="changeLogDAO" ref="repository.changeLogDAO"/>
     <property name="repository" ref="repository"/>
-    <property name="loggerId" value="1" />
+    <property name="loggerIds">
+      <bean class="vtk.context.CSVListFactoryBean">
+        <property name="csvList" value="${repository.index.loggerIds}"/>
+      </bean>
+    </property>
     <property name="loggerType" value="3" />
   </bean>
 
@@ -156,10 +155,11 @@
     <property name="index" ref="systemIndex"/>
     <property name="indexDao" ref="repository.indexDao"/>
     <property name="changeLogDAO" ref="repository.changeLogDAO"/>
-    <property name="loggerId" value="1"/>
+    <property name="loggerId" value="${repository.index.updateLoggerId}"/>
     <property name="loggerType" value="3" />
-    <property name="maxChangesPerUpdate" value="${repository.indexUpdater.batchsize}" />
+    <property name="maxChangesPerUpdate" value="${repository.index.updateBatchsize}" />
   </bean>
+
   <!-- Background thread for triggering incremental updates -->
   <bean id="repository.index.updateTrigger"
         class="vtk.scheduling.SimpleMethodInvokingTriggerBean">
@@ -167,7 +167,7 @@
     <property name="targetObject" ref="repository.index.incrementalUpdater"/>
     <property name="triggerThreadName" value="${repositoryID}.indexupdater"/>
     <property name="startDelay" value="20000"/>
-    <property name="repeatInterval" value="${repository.indexUpdater.interval}"/>
+    <property name="repeatInterval" value="${repository.index.updateInterval}"/>
     <property name="startTriggerAfterInitialization" value="true"/>
     <property name="abortTriggerOnTargetMethodException" value="false"/>
   </bean>

@@ -1,8 +1,39 @@
-(Work In Progress)
+README Spring boot and Akka cluster manager
+===========================================
+
+Common setup
+------------
+You will need standard VTK configuration for database user, storage directories
+etc. Consult main README file for details. Point the system property
+'vtk.configLocations' to the properties file when launching VTK using spring-boot.
 
 
-A. Akka cluster manager, Redis shared session/cache store
--------------------------------------------------------------------------------------------
+A. Akka cluster manager, Akka shared session/cache store
+--------------------------------------------------------
+
+This setup does not require an external shared cluster cache.
+
+1. Start node 1: 
+
+        mvn -Dvtk.extensions=cluster-akka,shared-session-akka, -Dvtk.cluster.port=6262 -Dakka.cluster.seed-nodes.0=akka.tcp://vtk-cluster@localhost:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://vtk-cluster@localhost:6263 \
+        -Dvtk.listen=localhost:9321,localhost:9322 -Dvtk.webdav.port=9321 -Dvtk.web.port=9322 \
+        -Dlogging.config=src/main/webapp/WEB-INF/classes/log4j.vortex.xml \
+        -Dvtk.configLocations=$HOME/.vtk.properties spring-boot:run
+
+(Web access on http://localhost:9322, WebDAV access on http://localhost:9321)
+
+2. Start node 2:
+
+        mvn -Dvtk.extensions=cluster-akka,shared-session-akka -Dvtk.cluster.port=6263 -Dakka.cluster.seed-nodes.0=akka.tcp://vtk-cluster@localhost:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://vtk-cluster@localhost:6263 \
+        -Dvtk.listen=localhost:9323,localhost:9324 -Dvtk.webdav.port=9323 -Dvtk.web.port=9324 \
+        -Dlogging.config=src/main/webapp/WEB-INF/classes/log4j.vortex.xml \
+        -Dvtk.configLocations=$HOME/.vtk.properties spring-boot:run
+
+(Web access on http://localhost:9324, WebDAV access on http://localhost:9323)
+
+
+B. Akka cluster manager, Redis shared session/cache store
+---------------------------------------------------------
 
 1. Set up Redis to listen on localhost on the default port
 
@@ -10,30 +41,49 @@ A. Akka cluster manager, Redis shared session/cache store
 
 2. Start node 1:
 
-mvn -Dvtk.extensions=cluster-akka,redis -Dvtk.cluster.port=6263 -Dakka.cluster.seed-nodes.0=akka.tcp://vtk-cluster@127.0.0.1:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://vtk-cluster@127.0.0.1:6263 -Dvtk.listen=localhost:9321,localhost:9322 -Dvtk.webdav.port=9321 -Dvtk.web.port=9322 spring-boot:run
+        mvn -Dvtk.extensions=cluster-akka,redis -Dvtk.cluster.port=6262 -Dakka.cluster.seed-nodes.0=akka.tcp://vtk-cluster@localhost:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://vtk-cluster@localhost:6263 \
+        -Dvtk.listen=localhost:9321,localhost:9322 -Dvtk.webdav.port=9321 -Dvtk.web.port=9322 \
+        -Dlogging.config=src/main/webapp/WEB-INF/classes/log4j.vortex.xml \
+        -Dvtk.configLocations=$HOME/.vtk.properties spring-boot:run
 
 (Web access on http://localhost:9322, WebDAV access on http://localhost:9321)
 
 3. Start node 2:
 
-mvn -Dvtk.extensions=cluster-akka,redis -Dvtk.cluster.port=6262 -Dakka.cluster.seed-nodes.0=akka.tcp://vtk-cluster@127.0.0.1:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://vtk-cluster@127.0.0.1:6263 -Dvtk.listen=localhost:9323,localhost:9324 -Dvtk.webdav.port=9323 -Dvtk.web.port=9324 spring-boot:run
+        mvn -Dvtk.extensions=cluster-akka,redis -Dvtk.cluster.port=6263 -Dakka.cluster.seed-nodes.0=akka.tcp://vtk-cluster@localhost:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://vtk-cluster@localhost:6263 \
+        -Dvtk.listen=localhost:9323,localhost:9324 -Dvtk.webdav.port=9323 -Dvtk.web.port=9324 \
+        -Dlogging.config=src/main/webapp/WEB-INF/classes/log4j.vortex.xml \
+        -Dvtk.configLocations=$HOME/.vtk.properties spring-boot:run
 
 (Web access on http://localhost:9324, WebDAV access on http://localhost:9323)
 
 
+Shared or node private system index
+-----------------------------------
 
+VTK system index can be setup in two different modes when running a cluster.
 
-B. Akka cluster manager, Akka shared session/cache store
--------------------------------------------------------------------------------------------
+1. Shared storage - all nodes read from the same physical index storage, current
+   master node can write/update.
 
-1. Start node 1: 
+   This mode is the default and requires no extra parameters.
 
-mvn -Dvtk.extensions=cluster-akka,shared-session-akka, -Dvtk.cluster.port=6263 -Dakka.cluster.seed-nodes.0=akka.tcp://vtk-cluster@127.0.0.1:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://vtk-cluster@127.0.0.1:6263 -Dvtk.listen=localhost:9321,localhost:9322 -Dvtk.webdav.port=9321 -Dvtk.web.port=9322 spring-boot:run
+2. Per node private indexes - all nodes have their own system index which they
+   update individually. This allows storage on non-shared file systems and
+   avoids possible index write locking issues between nodes. However, system
+   index may not be 100% equal between all nodes at all times, thus giving
+   slightly different search results for shorter periods.
 
-(Web access on http://localhost:9322, WebDAV access on http://localhost:9321)
+   Use the following extra parameters when starting cluster nodes:
 
-2. Start node 2:
+   For the first node:
+        
+        -Drepository.index.loggerIds=1,2 -Drepository.index.clusterSharedStorage=false -Drepository.index.updateLoggerId=1
 
-mvn -Dvtk.extensions=cluster-akka,shared-session-akka -Dvtk.cluster.port=6262 -Dakka.cluster.seed-nodes.0=akka.tcp://vtk-cluster@127.0.0.1:6262 -Dakka.cluster.seed-nodes.1=akka.tcp://vtk-cluster@127.0.0.1:6263 -Dvtk.listen=localhost:9323,localhost:9324 -Dvtk.webdav.port=9323 -Dvtk.web.port=9324 spring-boot:run
+   And for the second node, set:
 
-(Web access on http://localhost:9324, WebDAV access on http://localhost:9323)
+        -Drepository.index.loggerIds=1,2 -Drepository.index.clusterSharedStorage=false -Drepository.index.updateLoggerId=2
+
+   To add more nodes, expand list of logger ids in `repository.index.loggerIds`
+   and make sure each node has its own individual value for
+   `repository.index.updateLoggerId`.

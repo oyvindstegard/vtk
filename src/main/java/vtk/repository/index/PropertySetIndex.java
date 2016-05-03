@@ -249,6 +249,13 @@ public interface PropertySetIndex {
     public void validateStorageFacility() throws StorageCorruptionException;
     
     /**
+     * Check whether the index is currently in read-only mode. This typically
+     * indicates that node has cluster SLAVE role and is using shared index.
+     * @return whether index is currently read-only mode.
+     */
+    public boolean isClusterSharedReadOnly();
+    
+    /**
      * Return a runtime ID for the index instance.
      * @return id as a string
      */

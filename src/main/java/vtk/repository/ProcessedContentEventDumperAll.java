@@ -31,11 +31,13 @@
 package vtk.repository;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.ChangeLogEntry.Operation;
 import vtk.repository.store.ChangeLogDAO;
+import vtk.repository.store.ChangeLogDAO.GenerateDescendantEntries;
 
 
 public class ProcessedContentEventDumperAll extends AbstractDBEventDumper {
@@ -44,21 +46,16 @@ public class ProcessedContentEventDumperAll extends AbstractDBEventDumper {
 
     @Override
     public void created(Resource resource) {
-        ChangeLogEntry entry = changeLogEntry(this.loggerId, this.loggerType, resource.getURI(), 
-                Operation.CREATED,
-                -1, resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.CREATED, -1, resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntry(entry, true);
-
+        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.SUBTREE);
     }
 
     @Override
     public void deleted(Resource resource) {
-        ChangeLogEntry entry = changeLogEntry(this.loggerId, this.loggerType, resource.getURI(), 
-                Operation.DELETED,
-                resource.getID(), resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.DELETED, resource.getID(), resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntry(entry, false);
+        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.NONE);
     }
 
     @Override
@@ -69,29 +66,23 @@ public class ProcessedContentEventDumperAll extends AbstractDBEventDumper {
 
     @Override
     public void modified(Resource resource, Resource originalResource) {
-        ChangeLogEntry entry = changeLogEntry(this.loggerId, this.loggerType, resource.getURI(), 
-                Operation.MODIFIED_PROPS,
-                -1, resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, -1, resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntry(entry, false);
+        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.NONE);
     }
 
     @Override
     public void modifiedInheritableProperties(Resource resource, Resource originalResource) {
-        ChangeLogEntry entry = changeLogEntry(this.loggerId, this.loggerType, resource.getURI(), 
-                Operation.MODIFIED_PROPS,
-                -1, resource.isCollection(), new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, -1, resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntry(entry, true);
+        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.SUBTREE);
     }
     
     @Override
     public void contentModified(Resource resource, Resource original) {
-        ChangeLogEntry entry = changeLogEntry(this.loggerId, this.loggerType, resource.getURI(),
-                Operation.MODIFIED_CONTENT, -1, resource.isCollection(),
-                new Date());
+        List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_CONTENT, -1, resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntry(entry, false);
+        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.NONE);
     }
 
 
@@ -107,27 +98,25 @@ public class ProcessedContentEventDumperAll extends AbstractDBEventDumper {
             return;
         }
                 
-        final ChangeLogEntry entry = changeLogEntry(super.loggerId, super.loggerType, 
-                resource.getURI(), 
-                ChangeLogEntry.Operation.MODIFIED_ACL, ((ResourceImpl) resource).getID(),
-                resource.isCollection(), 
-                new Date());
+        final List<ChangeLogEntry> entries = changeLogEntries(
+                resource.getURI(), Operation.MODIFIED_ACL, ((ResourceImpl) resource).getID(), resource.isCollection(), new Date());
 
-        if (resource.isInheritedAcl()) {
-            // Resource ACL inheritance has been turned ON.
-            // Apply ACL modification event to:
-            // 1. The resource itself.
-            // 2. All descendants of the resource which used to inherit their ACL
-            //    from it. 
-            this.changeLogDAO.addChangeLogEntryInheritedToInheritance(entry);
-        } else {
-            // Resource ACL inheritance turned OFF or ACL has been modified.
-            // Apply ACL modification event to:
-            // 1. The resource itself.
-            // 2. All descendants of the resource which inherit their ACLa
-            //    from it.
-            this.changeLogDAO.addChangeLogEntryInherited(entry);
-        }
+        GenerateDescendantEntries generate = resource.isInheritedAcl() ? 
+                // Resource ACL inheritance has been turned ON.
+                // Apply ACL modification event to:
+                // 1. The resource itself.
+                // 2. All descendants of the resource which used to inherit their ACL
+                //    from it. 
+                GenerateDescendantEntries.ACL_INHERITED_TO_INHERITANCE :
+
+                // Resource ACL inheritance turned OFF or ACL has been modified.
+                // Apply ACL modification event to:
+                // 1. The resource itself.
+                // 2. All descendants of the resource which inherit their ACLa
+                //    from it.
+                GenerateDescendantEntries.ACL_INHERITED;
+        
+        changeLogDAO.addChangeLogEntries(entries, generate);
     }
 
     @Required

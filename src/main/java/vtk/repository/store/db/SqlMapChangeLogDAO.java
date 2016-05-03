@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009,2016 University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,8 +40,7 @@ import vtk.repository.ChangeLogEntry;
 import vtk.repository.store.ChangeLogDAO;
 import vtk.repository.store.DataAccessException;
 
-public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor 
-    implements ChangeLogDAO {
+public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor implements ChangeLogDAO {
 	
     @SuppressWarnings("unchecked")
     @Override
@@ -120,44 +119,58 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor
     }
 
     @Override
-    public void addChangeLogEntry(ChangeLogEntry entry, boolean recurse) 
-        throws DataAccessException {
-        String sqlMap = null;
+    public void addChangeLogEntries(List<ChangeLogEntry> entries, GenerateDescendantEntries generate) throws DataAccessException {
         SqlSession client = getSqlSession();
-        if (entry.isCollection() && recurse) {
-            sqlMap = getSqlMap("insertChangeLogEntriesRecursively");
-            Map<String, Object> parameters = new HashMap<String, Object>();
-            parameters.put("entry", entry);
-            parameters.put("uriWildcard", 
-                           SqlDaoUtils.getUriSqlWildcard(entry.getUri(), SQL_ESCAPE_CHAR));
-
-            client.insert(sqlMap, parameters);
-                
-        } else {
-            sqlMap = getSqlMap("insertChangeLogEntry");
-            client.insert(sqlMap, entry);
+        for (ChangeLogEntry entry: entries) {
+            addChangeLogEntryInternal(entry, generate, client);
         }
     }
 
     @Override
-    public void addChangeLogEntryInherited(ChangeLogEntry entry) 
-        throws DataAccessException {
-        String sqlMap = null;
-        sqlMap = getSqlMap("insertChangeLogEntryInherited");
-        getSqlSession().insert(sqlMap, entry);
+    public void addChangeLogEntry(ChangeLogEntry entry, GenerateDescendantEntries generate) throws DataAccessException {
+        addChangeLogEntryInternal(entry, generate, getSqlSession());
     }
+    
+    private void addChangeLogEntryInternal(ChangeLogEntry entry, GenerateDescendantEntries generate, SqlSession client) throws DataAccessException {
+        String sqlMap;
+        switch (generate) {
+            case NONE:
+                sqlMap = getSqlMap("insertChangeLogEntry");
+                client.insert(sqlMap, entry);
+                break;
+            
+            case SUBTREE:
+                if (entry.isCollection()) {
+                    sqlMap = getSqlMap("insertChangeLogEntriesRecursively");
+                    Map<String, Object> parameters = new HashMap<>();
+                    parameters.put("entry", entry);
+                    parameters.put("uriWildcard",
+                            SqlDaoUtils.getUriSqlWildcard(entry.getUri(), SQL_ESCAPE_CHAR));
 
-    @Override
-    public void addChangeLogEntryInheritedToInheritance(ChangeLogEntry entry) 
-        throws DataAccessException {
-        String sqlMap = null;
-        
-        sqlMap = getSqlMap("insertChangeLogEntryInheritedToInheritance");
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("entry", entry);
-        parameters.put("uriWildcard", 
-                       SqlDaoUtils.getUriSqlWildcard(entry.getUri(), SQL_ESCAPE_CHAR));
-        getSqlSession().insert(sqlMap, parameters);
+                    client.insert(sqlMap, parameters);
+                } else {
+                    sqlMap = getSqlMap("insertChangeLogEntry");
+                    client.insert(sqlMap, entry);
+                }
+                break;
+
+            case ACL_INHERITED:
+                sqlMap = getSqlMap("insertChangeLogEntryInherited");
+                client.insert(sqlMap, entry);
+                break;
+                
+            case ACL_INHERITED_TO_INHERITANCE:
+                sqlMap = getSqlMap("insertChangeLogEntryInheritedToInheritance");
+                Map<String, Object> parameters = new HashMap<>();
+                parameters.put("entry", entry);
+                parameters.put("uriWildcard",
+                        SqlDaoUtils.getUriSqlWildcard(entry.getUri(), SQL_ESCAPE_CHAR));
+                client.insert(sqlMap, parameters);
+                break;
+                
+            default:
+                throw new IllegalArgumentException("Unsupported generate mode: " + generate);
+        }
     }
-
+    
 }

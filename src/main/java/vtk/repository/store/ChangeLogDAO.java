@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009,2016 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,44 @@ import java.util.List;
 
 import vtk.repository.ChangeLogEntry;
 
+/**
+ * Low level interface to changelog event storage.
+ */
 public interface ChangeLogDAO {
+    
+    /**
+     * Specifies mode for generating extra events per added changelog entry.
+     */
+    public enum GenerateDescendantEntries {
+        /**
+         * No extra entries are generated, just the provided changelog entries
+         * are inserted as-is.
+         */
+        NONE,
+        /**
+         * Extra entries are generated for the entire subtree of the resource
+         * in changelog entry.
+         */
+        SUBTREE,
+        /**
+         * Extra entries are generated for all resources which inherit their ACL
+         * from the resource in changelog entry.
+         * 
+         * <p>Can be used when an ACL has been set on a resource and updates for
+         * all sub resources that now inherit this new ACL should be generated.
+         */
+        ACL_INHERITED,
+        /**
+         * Extra entries are generated for all resources in the subtree of the
+         * resource in changelog entry that inherit their ACL from the
+         * same ancestor that resource does.
+         * 
+         * <p>Can be used when an ACL has been removed from resource (switched to inheritance).
+         * Events for all sub resources that will have their ACL affected by such
+         * a change are generated.
+         */
+        ACL_INHERITED_TO_INHERITANCE
+    }
 
     /**
      * Get changelog entries with the given logger type and id.
@@ -60,7 +97,7 @@ public interface ChangeLogDAO {
     	throws DataAccessException;
 
     /**
-     * Remove changelog entries.
+     * Remove list of changelog entries.
      * @param entries
      * @throws DataAccessException 
      */
@@ -68,32 +105,24 @@ public interface ChangeLogDAO {
         throws DataAccessException;
     
     /**
-     * Add changelog entry, optionally add entries for entire subtree.
-     * @param entry
-     * @param recurse
+     * Add a changelog entry with spec for generating extra entries.
+     * @param entry changelog entry
+     * @param generate spec for how to generate extra entries
      * @throws DataAccessException 
      */
-    public void addChangeLogEntry(ChangeLogEntry entry, boolean recurse)
-        throws DataAccessException;
-
-    /**
-     * Add change log entry for resource and all resources which inherit
-     * ACL from the resource.
-     * 
-     * @param entry
-     * @throws DataAccessException 
-     */
-    public void addChangeLogEntryInherited(ChangeLogEntry entry)
+    public void addChangeLogEntry(ChangeLogEntry entry, GenerateDescendantEntries generate)
         throws DataAccessException;
     
     /**
-     * Add change log entry for resource and all descendants which inherit
-     * their ACL from the same ancestor that resource itself inherits from.
+     * Add a list of changelog entries with spec for generating extra entries
+     * per changelog entry in list.
      * 
-     * @param entry
+     * @param entries list of changelog entries
+     * @param generate spec for hwo to generate extra entries.
      * @throws DataAccessException 
      */
-    public void addChangeLogEntryInheritedToInheritance(ChangeLogEntry entry)
-    throws DataAccessException;
+    public void addChangeLogEntries(List<ChangeLogEntry> entries, GenerateDescendantEntries generate)
+        throws DataAccessException;
+
 
 }

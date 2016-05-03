@@ -34,8 +34,7 @@ import java.util.Date;
 
 
 /**
- * JavaBean representing a database changelog entry.
- *
+ * A resource changelog entry.
  */
 public class ChangeLogEntry {
 
