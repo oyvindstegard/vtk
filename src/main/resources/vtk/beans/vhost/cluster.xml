@@ -24,6 +24,14 @@
   <bean parent="cluster.component">
     <property name="arguments">
       <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="secondarySystemIndex"/>
+      </bean>
+    </property>
+  </bean>
+  
+  <bean parent="cluster.component">
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
         <constructor-arg ref="authorizationManager"/>
       </bean>
     </property>

@@ -49,10 +49,9 @@
   <!-- Document mapper -->
   <bean id="documentMapper" class="vtk.repository.index.mapping.DocumentMapper"
         depends-on="structuredResource.parser">
-    <!-- 
-         XXX: This bean depends the structured resource parser being
-         initialized (because it modifies the resource type tree)
-     -->
+    <!-- XXX: This bean depends the structured resource parser being
+         initialized (because the resource type tree is not complete without it) -->
+
     <property name="resourceTypeTree" ref="resourceTypeTree"/>
     <property name="principalFactory" ref="principalFactory" />
     <property name="valueFactory" ref="valueFactory" />
@@ -78,8 +77,7 @@
   <!-- Primary Lucene index accessor instance. Manages low-level access. -->
   <bean id="systemIndexAccessor" class="vtk.repository.index.IndexManager">
     <property name="storageRootPath" value="${indexStorageRootPath}"/>
-    <property name="storageId" value="property_index.${repository.index.updateLoggerId}"/>
-    <property name="forceUnlock" value="true"/>
+    <property name="storageId" value="property_index"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
     <property name="searcherFactory" ref="searcherFactory"/>
   </bean>
@@ -88,16 +86,13 @@
   <bean id="systemIndex" class="vtk.repository.index.PropertySetIndexImpl">
     <property name="indexAccessor" ref="systemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
-    <property name="initClusterRole" value="MASTER" />
   </bean>
 
-  <!-- A Lucene index accessor (secondary instance, batch indexing tuned,
-       never shared storage) -->
+  <!-- A Lucene index accessor (secondary instance, batch indexing tuned) -->
   <bean id="secondarySystemIndexAccessor" class="vtk.repository.index.IndexManager">
     <property name="storageRootPath" value="${indexStorageRootPath}"/>
-    <property name="storageId" value="property_index.secondary.${repository.index.updateLoggerId}"/>
+    <property name="storageId" value="property_index.secondary"/>
     <property name="batchIndexingMode" value="true"/>
-    <property name="forceUnlock" value="true"/>
     <property name="maxLockAcquireTimeOnShutdown" value="20"/>
   </bean>
 
@@ -106,7 +101,6 @@
     <property name="indexAccessor" ref="secondarySystemIndexAccessor"/>
     <property name="documentMapper" ref="documentMapper"/>
     <property name="closeAfterInit" value="true"/>
-    <property name="initClusterRole" value="MASTER" />
   </bean>
   
   <!-- Factory for building Lucene queries. -->
