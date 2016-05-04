@@ -17,6 +17,7 @@
     <constructor-arg name="id" value="saml.requestIdStore" />
     <constructor-arg name="system" ref="akka.actorSystem" />
     <constructor-arg name="maxAge" value="1800" />
+    <constructor-arg name="buckets" value="500" />
     <constructor-arg name="refresh" value="false" />
   </bean>
 
@@ -25,6 +26,7 @@
     <constructor-arg name="id" value="feide.requestIdStore" />
     <constructor-arg name="system" ref="akka.actorSystem" />
     <constructor-arg name="maxAge" value="1800" />
+    <constructor-arg name="refresh" value="false" />
   </bean>
 
 
