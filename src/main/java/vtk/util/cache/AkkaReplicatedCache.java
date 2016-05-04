@@ -68,20 +68,18 @@ import scala.concurrent.duration.Duration;
 
 
 public class AkkaReplicatedCache<K, V> implements SimpleCache<K, V> {
-    private String id;
     private ActorRef actor;
     Timeout timeout = new Timeout(Duration.create(5, "seconds"));
 
     public AkkaReplicatedCache(String id, ActorSystem system, int maxAge) {
-        this(id, system, maxAge, true);
+        this(id, system, maxAge, 100, true);
     }
     
-    public AkkaReplicatedCache(String id, ActorSystem system, int maxAge, boolean refresh) {
+    public AkkaReplicatedCache(String id, ActorSystem system, int maxAge, int buckets, boolean refresh) {
         if (id == null) throw new IllegalArgumentException("id");
-        this.id = id;
         Optional<Integer> optMaxAge = maxAge > 0 ? 
                 Optional.of(maxAge) : Optional.empty();
-        actor = system.actorOf(CacheActor.props(id, optMaxAge, refresh));
+        actor = system.actorOf(CacheActor.props(id, optMaxAge, buckets, refresh));
     }
     
     @Override
@@ -219,25 +217,32 @@ public class AkkaReplicatedCache<K, V> implements SimpleCache<K, V> {
             }
         }
         
-        private static class CacheItem implements Serializable {
+        private static class CacheItem<V> implements Serializable {
             private static final long serialVersionUID = -3172599560055335146L;
             public final String key;
-            public final Object value;
+            public final V value;
             public final long timestamp;
             
-            public CacheItem(String key, Object value, long timestamp) {
+            public CacheItem(String key, V value, long timestamp) {
                 this.key = key;
                 this.value = value;
                 this.timestamp = timestamp;
+            }
+            
+            @Override
+            public String toString() {
+                return getClass().getSimpleName() 
+                        + "(" + key + "," + value + "," + timestamp + ")";
             }
         }
         
         private long lastCleanup = 0L;
 
-        private static Props props(String id, Optional<Integer> maxAge, boolean refresh) {
+        private static Props props(String id, Optional<Integer> maxAge, Integer buckets, boolean refresh) {
             List<Object> args = new ArrayList<>();
             args.add(id);
             args.add(maxAge);
+            args.add(buckets);
             args.add(refresh);
             Seq<Object> asScalaBuffer = JavaConversions.asScalaBuffer(args).toList();
             return new Props(Deploy.local(), CacheActor.class, asScalaBuffer);
@@ -246,11 +251,13 @@ public class AkkaReplicatedCache<K, V> implements SimpleCache<K, V> {
         private final ActorRef replicator;
         private final Cluster node;
         private Optional<Integer> maxAge = Optional.empty();
-        private boolean refresh = false;
+        private boolean refresh;
+        private int buckets;
 
-        private CacheActor(String id, Optional<Integer> maxAge, boolean refresh) {
+        private CacheActor(String id, Optional<Integer> maxAge, int buckets, boolean refresh) {
             this.maxAge = maxAge;
             this.refresh = refresh;
+            this.buckets = buckets;
             ReplicatorSettings settings = ReplicatorSettings.apply(context().system());
             node = Cluster.get(context().system());
             replicator = context().system().actorOf(Replicator.props(settings), "replicator-" + id);
@@ -345,7 +352,7 @@ public class AkkaReplicatedCache<K, V> implements SimpleCache<K, V> {
         }
 
         private Key<LWWMap<Object>> dataKey(String entryKey) {
-            return LWWMapKey.create("cache-" + Math.abs(entryKey.hashCode()) % 100);
+            return LWWMapKey.create("cache-" + Math.abs(entryKey.hashCode()) % buckets);
         }
         
         
