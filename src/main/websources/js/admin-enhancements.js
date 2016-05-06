@@ -2188,8 +2188,11 @@ VrtxAdmin.prototype.serverFacade = {
       msg = this.errorMessages.abort;
     } else if (textStatus === "parsererror") {
       msg = this.errorMessages.parsererror;
-    } else if (status === 0) {   
-      msg = this.errorCheckNeedReauthenticationOrOffline();
+    } else if (status === 0) {
+      vrtxAdmin.log({ msg: "Offline or REAUTH" });
+      msg = this.errorCheckNeedReauthenticationOrOfflineOrAccessDenied(status) === "RE_AUTH"
+          ? "RE_AUTH"
+          : this.errorMessages.offline;
     } else if (status === 503 || (xhr.readyState === 4 && status === 200)) {
       msg = (useStatusCodeInMsg ? status + " - " : "") + this.errorMessages.down;
     } else if (status === 500) {
@@ -2199,7 +2202,10 @@ VrtxAdmin.prototype.serverFacade = {
     } else if (status === 401) {
       msg = (useStatusCodeInMsg ? status + " - " : "") + this.errorMessages.s401;
     } else if (status === 403) { // Handle server down => up
-      msg = (useStatusCodeInMsg ? status + " - " : "") + this.errorMessages.s403;
+      vrtxAdmin.log({ msg: "Access denied or REAUTH" });
+      msg = this.errorCheckNeedReauthenticationOrOfflineOrAccessDenied(status) === "RE_AUTH"
+          ? "RE_AUTH"
+          : (useStatusCodeInMsg ? status + " - " : "") + this.errorMessages.s403;
     } else if (status === 404) {
       msg = this.errorCheckLockedOr404(status, useStatusCodeInMsg);
     } else if (status === 4233) { // Parent locked
@@ -2209,17 +2215,16 @@ VrtxAdmin.prototype.serverFacade = {
     }
     return msg;
   },
-  errorCheckNeedReauthenticationOrOffline: function () {
+  errorCheckNeedReauthenticationOrOfflineOrAccessDenied: function (status) {
     var serverFacade = this, msg = "";
     vrtxAdmin._$.ajax({
       type: "GET",
-      url: vrtxAdmin.rootUrl + "/themes/default/images/globe.png?" + (+new Date()),
+      url: (status === 0 ? vrtxAdmin.rootUrl + "/themes/default/images/globe.png?" + (+new Date())
+                         : location.href + "&" + (+new Date())),
       async: false,
-      success: function (results, status, resp) { // Re-authentication needed - Online
+      success: function (results, status, resp) { // Re-authentication needed (Online and has access)
+        vrtxAdmin.log({ msg: "REAUTH" });
         msg = "RE_AUTH";
-      },
-      error: function (xhr, textStatus) {         // Offline
-        msg = serverFacade.errorMessages.offline;
       }
     });
     return msg;
