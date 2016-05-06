@@ -204,9 +204,7 @@ var onlySessionId = gup("sessionid", window.location.href);
 
 vrtxAdmin._$(document).ready(function () {
   var startReadyTime = getNowTime(), vrtxAdm = vrtxAdmin, _$ = vrtxAdm._$;
-  
-  vrtxAdm.lastActionUrl = window.location.href;
-  
+
   if(typeof datePickerLang === "string") {
     vrtxAdm.lang = datePickerLang;
   }
@@ -2114,17 +2112,12 @@ VrtxAdmin.prototype.serverFacade = {
       url: url,
       dataType: type,
       cache: useCache,
-      success: function(results, status, resp) {
-        vrtxAdmin.lastActionUrl = window.location.href;
-        callbacks.success(results, status, resp);
-      },
+      success: callbacks.success,
       error: function (xhr, textStatus) {
         var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, true);
         if(msg === "RE_AUTH" && !vrtxAdmin.ignoreAjaxErrors) {
-          vrtxAdmin.lastActionUrl = url;
           reAuthenticateRetokenizeForms(false);
         } else {
-          vrtxAdmin.lastActionUrl = window.location.href;
           vrtxAdmin.displayErrorMsg(msg);
         }
         if (callbacks.error) {
@@ -2132,7 +2125,6 @@ VrtxAdmin.prototype.serverFacade = {
         }
       },
       complete: function (xhr, textStatus) {
-        vrtxAdmin.lastActionUrl = window.location.href;
         if (callbacks.complete) {
           callbacks.complete(xhr, textStatus);
         }
@@ -2156,17 +2148,12 @@ VrtxAdmin.prototype.serverFacade = {
       data: params,
       dataType: type,
       contentType: contentType,
-      success: function(results, status, resp) {
-        vrtxAdmin.lastActionUrl = window.location.href;
-        callbacks.success(results, status, resp);
-      },
+      success: callbacks.success,
       error: function (xhr, textStatus) {
         var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, true);
         if(msg === "RE_AUTH" && !vrtxAdmin.ignoreAjaxErrors) {
-          vrtxAdmin.lastActionUrl = url;
           reAuthenticateRetokenizeForms(false);
         } else {
-          vrtxAdmin.lastActionUrl = window.location.href;
           vrtxAdmin.displayErrorMsg(msg);
         }
         if (callbacks.error) {
@@ -2312,7 +2299,7 @@ function reAuthenticateRetokenizeForms(isEditorSave) {
 function retokenizeFormsOpenSaveDialog(d2, isEditorSave) {
   $.ajax({
     type: "GET",
-    url: (isEditorSave ? window.location.href : vrtxAdmin.lastActionUrl),
+    url: window.location.href,
     cache: true,
     dataType: "html",
     success: function (results, status, resp) {
@@ -2320,26 +2307,34 @@ function retokenizeFormsOpenSaveDialog(d2, isEditorSave) {
       // Repopulate all tokens
       var current = $("input[name='csrf-prevention-token']");
       var updated = $($.parseHTML(results)).find("input[name='csrf-prevention-token']");
-      for(var i = 0, currentLen = current.length; i < currentLen; i++) {
-        current[i].value = updated[i].value;
+      var currentLen = current.length;
+      var updatedLen = updated.length;
+      if(currentLen === updatedLen) {
+        for(var i = 0; i < currentLen; i++) {
+          current[i].value = updated[i].value;
+        }
       }
 
       // Stop loading
       d2.close();
       
+      var isMismatch = currentLen !== updatedLen;
+      
       // Open save dialog
       var d = new VrtxHtmlDialog({
         name: "reauth-save",
-        html: isEditorSave ? vrtxAdmin.serverFacade.errorMessages.sessionValidatedSave 
-                           : vrtxAdmin.serverFacade.errorMessages.sessionValidated,
+        html: isMismatch ? vrtxAdmin.serverFacade.errorMessages.sessionValidatedFailed
+                         : (isEditorSave ? vrtxAdmin.serverFacade.errorMessages.sessionValidatedSave 
+                                         : vrtxAdmin.serverFacade.errorMessages.sessionValidated),
         title: vrtxAdmin.serverFacade.errorMessages.sessionValidatedTitle,
         onOk: function() { // Trigger save or close
           if(isEditorSave) {
             vrtxAdmin.editorSaveButton.click();
           }
         },
-        btnTextOk: isEditorSave ? vrtxAdmin.serverFacade.errorMessages.sessionValidatedOkSave
-                                : vrtxAdmin.serverFacade.errorMessages.sessionValidatedOk
+        btnTextOk: isMismatch ? vrtxAdmin.serverFacade.errorMessages.sessionValidatedFailedOk
+                              : (isEditorSave ? vrtxAdmin.serverFacade.errorMessages.sessionValidatedOkSave
+                                              : vrtxAdmin.serverFacade.errorMessages.sessionValidatedOk)
       });
       d.open();
     },

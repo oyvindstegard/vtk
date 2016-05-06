@@ -105,6 +105,8 @@
     sessionInvalidTitle: "${vrtx.getMsg('ajaxError.sessionInvalid.title')}",
     sessionValidated: "${vrtx.getMsg('ajaxError.sessionValidated')}",
     sessionValidatedOk: "${vrtx.getMsg('ajaxError.sessionValidated.ok')}",
+    sessionValidatedFailed: "${vrtx.getMsg('ajaxError.sessionValidatedFailed')}",
+    sessionValidatedFailedOk: "${vrtx.getMsg('ajaxError.sessionValidatedFailed.ok')}",
     down: "${vrtx.getMsg('ajaxError.down')}",
     s500: "${vrtx.getMsg('ajaxError.s500')}",
     s400: "${vrtx.getMsg('ajaxError.s400')}",
