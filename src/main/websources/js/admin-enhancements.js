@@ -205,6 +205,8 @@ var onlySessionId = gup("sessionid", window.location.href);
 vrtxAdmin._$(document).ready(function () {
   var startReadyTime = getNowTime(), vrtxAdm = vrtxAdmin, _$ = vrtxAdm._$;
   
+  vrtxAdm.lastActionUrl = window.location.href;
+  
   if(typeof datePickerLang === "string") {
     vrtxAdm.lang = datePickerLang;
   }
@@ -2112,12 +2114,17 @@ VrtxAdmin.prototype.serverFacade = {
       url: url,
       dataType: type,
       cache: useCache,
-      success: callbacks.success,
+      success: function(results, status, resp) {
+        vrtxAdmin.lastActionUrl = window.location.href;
+        callbacks.success(results, status, resp);
+      },
       error: function (xhr, textStatus) {
         var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, true);
         if(msg === "RE_AUTH" && !vrtxAdmin.ignoreAjaxErrors) {
+          vrtxAdmin.lastActionUrl = url;
           reAuthenticateRetokenizeForms(false);
         } else {
+          vrtxAdmin.lastActionUrl = window.location.href;
           vrtxAdmin.displayErrorMsg(msg);
         }
         if (callbacks.error) {
@@ -2125,6 +2132,7 @@ VrtxAdmin.prototype.serverFacade = {
         }
       },
       complete: function (xhr, textStatus) {
+        vrtxAdmin.lastActionUrl = window.location.href;
         if (callbacks.complete) {
           callbacks.complete(xhr, textStatus);
         }
@@ -2148,12 +2156,17 @@ VrtxAdmin.prototype.serverFacade = {
       data: params,
       dataType: type,
       contentType: contentType,
-      success: callbacks.success,
+      success: function(results, status, resp) {
+        vrtxAdmin.lastActionUrl = window.location.href;
+        callbacks.success(results, status, resp);
+      },
       error: function (xhr, textStatus) {
         var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, true);
         if(msg === "RE_AUTH" && !vrtxAdmin.ignoreAjaxErrors) {
+          vrtxAdmin.lastActionUrl = url;
           reAuthenticateRetokenizeForms(false);
         } else {
+          vrtxAdmin.lastActionUrl = window.location.href;
           vrtxAdmin.displayErrorMsg(msg);
         }
         if (callbacks.error) {
@@ -2299,7 +2312,7 @@ function reAuthenticateRetokenizeForms(isEditorSave) {
 function retokenizeFormsOpenSaveDialog(d2, isEditorSave) {
   $.ajax({
     type: "GET",
-    url: window.location.href,
+    url: (isEditorSave ? window.location.href : vrtxAdmin.lastActionUrl),
     cache: true,
     dataType: "html",
     success: function (results, status, resp) {
