@@ -665,13 +665,17 @@ VrtxAdmin.prototype.embeddedView = function embeddedView() {
       // Remove preview wrapper (not sure why it doesn't work as before)
       $("#preview-loading").remove();
     
-      // Title and fail message
-      var csTitle = vrtxAdm.lang === "en" ? "Edit activity" : "Rediger aktivitet";
+      // Title and fail message.
+      var csTitle = vrtxAdm.lang === "en" ? "Edit activity"
+                                          : "Rediger aktivitet";
       if(!canEdit) {
-        var csFail = vrtxAdm.lang === "en" ? "You don't have write permissions to edit the course schedule." : "Du har ikke skriverettigheter til å redigere denne timeplanen.";
+        var csFail = vrtxAdm.lang === "en" ? "You don't have write permissions to edit the course schedule."
+                                           : "Du har ikke skriverettigheter til å redigere denne timeplanen.";
       } else {
-        var csFail = vrtxAdm.lang === "en" ? "The course schedule is locked by other user: " + lockedByOther : "Timeplanen er låst av en annen bruker: " + lockedByOther;
+        var csFail = vrtxAdm.lang === "en" ? "The course schedule is locked by other user: " + lockedByOther
+                                           : "Timeplanen er låst av en annen bruker: " + lockedByOther;
       }
+      
       var failHtml = "<p id='editor-fail'>" + csFail + "</p>";
       
       this.cachedBody.addClass("embedded-editor-fail");
