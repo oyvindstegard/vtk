@@ -3,4 +3,34 @@
 <!-- Vortex instances generally have '/' root context on a virtualhost. -->
 <jboss-web>
   <context-root>/</context-root>
+  
+  <!-- Valve which can be used to set remote IP and secure status
+       from typical frontend load balancer headers. Enable if needed. -->
+  <!--
+  <valve>
+    <class-name>org.apache.catalina.valves.RemoteIpValve</class-name>
+    <param>
+      <param-name>remoteIpHeader</param-name>
+      <param-value>X-Forwarded-For</param-value>
+    </param>
+    <param>
+      <param-name>internalProxies</param-name>
+      
+      // Restrict to IPs of trusted load balancers (regexp):
+      <param-value>.*</param-value>
+    </param>
+    <param>
+      <param-name>protocolHeader</param-name>
+
+      // Name of header which tells if the client to frontend connection
+      // is secure (encrypted):
+      <param-value>X-Is-Secure</param-value>
+    </param>
+    <param>
+      <param-name>protocolHeaderHttpsValue</param-name>
+      <param-value>True</param-value>
+    </param>
+  </valve>
+  -->
+
 </jboss-web>
