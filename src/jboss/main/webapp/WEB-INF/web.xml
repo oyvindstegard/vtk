@@ -14,7 +14,7 @@
       <param-value>/WEB-INF/applicationContext.xml,file://${user.home}/*vtk.xml,file://${user.home}/*vrtx-context.xml</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
-  </servlet>  
+  </servlet>
   
   <servlet-mapping>
     <servlet-name>vtk</servlet-name>
@@ -23,8 +23,16 @@
 
   <distributable/>
   
-  <!-- Unfortunately, it looks like standard servlet spec session config does not allow
-  to set separate cookies per protocol .. This is incomplete, but at least sets the 'http-only' flag -->
+  <!-- Let spring-session handle http sessions: -->
+  <filter>
+    <filter-name>springSessionRepositoryFilter</filter-name>
+    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>springSessionRepositoryFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
   <session-config>
     <cookie-config>
       <name>VRTXID</name>
