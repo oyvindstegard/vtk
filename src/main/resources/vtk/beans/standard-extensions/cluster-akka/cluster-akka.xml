@@ -53,6 +53,7 @@
             <value type="java.lang.String">
             akka.remote.netty.tcp.hostname=${cluster.hostname}
             akka.remote.netty.tcp.port=${cluster.port}
+            akka.remote.netty.tcp.maximum-frame-size = ${cluster.akka.remoting.maximumFrameSize}
             </value>
           </list>
         </property>
