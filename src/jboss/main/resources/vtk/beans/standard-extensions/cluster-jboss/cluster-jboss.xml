@@ -85,5 +85,16 @@
     <constructor-arg name="timeoutSeconds" value="1800" />
     <constructor-arg name="updateTimeouts" value="true" />
   </bean>
+  
+  <!-- Override bean defined in 'vhost/common/vtk.xml' -->
+  <bean id="spring.sessionRepository" class="vtk.util.web.SimpleCacheSessionRepository">
+    <constructor-arg name="cache">
+      <bean class="vtk.util.cache.InfinispanSimpleCache">
+        <constructor-arg name="name" value="spring.sessionRepository.cache" />
+        <constructor-arg name="timeoutSeconds" value="1800" />
+        <constructor-arg name="updateTimeouts" value="true" />
+      </bean>
+    </constructor-arg>
+  </bean>
 
 </beans>
