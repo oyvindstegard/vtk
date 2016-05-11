@@ -31,109 +31,28 @@
 package vtk.web.context;
 
 import org.springframework.context.ApplicationListener;
-import org.springframework.web.context.support.RequestHandledEvent;
+import org.springframework.web.context.support.ServletRequestHandledEvent;
 
-public class RequestLoadListener implements ApplicationListener<RequestHandledEvent> {
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 
-    private long totalRequests;
-    private int seconds = 60;
-    private int[] history = new int[this.seconds];
-    private int currentIndex = 0;
-    private long lastUpdate = System.currentTimeMillis();
+public class RequestLoadListener implements ApplicationListener<ServletRequestHandledEvent> {
+
+    private final Meter requests;
+    private final Meter errors;
+    private final Histogram processing;
     
-    
-    public void setHistorySeconds(int seconds) {
-        if (seconds <= 0) {
-            throw new IllegalArgumentException("Argument must be an integer > 0");
-        }
-        this.seconds = seconds;
-        this.history = new int[seconds];
+    public RequestLoadListener(MetricRegistry registry) {
+        this.requests = registry.meter("requests.handled");
+        this.processing = registry.histogram("processing.time");
+        this.errors = registry.meter("requests.failed");
     }
     
-
-    private void shift() {
-        int cur = (this.currentIndex + 1 == this.seconds) 
-            ? 0 : this.currentIndex + 1;
-        this.history[cur] = 0;
-        this.currentIndex = cur;
-    }
-    
-
-    private int getRelativeIndex(int incr) {
-        if (incr > this.seconds || incr < -this.seconds)
-            throw new IllegalArgumentException("Invalid increment: " + incr);
-        int index = this.currentIndex + incr;
-        if (index >= this.seconds) {
-            index = index - this.seconds;
-        } else if (index < 0) {
-            index = this.seconds + index;
-        }
-        return index;
-    }
-    
-    
-    private synchronized void update() {
-        long now = System.currentTimeMillis();
-        long duration = now - this.lastUpdate;
-        if (duration >= 1000) {
-            long intervalsToShift = duration / 1000;
-            for (int i = 0; i < intervalsToShift && i < this.seconds; i++) {
-                shift();
-            }
-            this.lastUpdate = now;
-        }
-    }
-    
-
-    public int getLoad(int lastSeconds) {
-        if (lastSeconds <= 0) throw new IllegalArgumentException(
-            "Argument must be a positive integer < " + this.seconds);
-        if (lastSeconds > this.seconds) 
-            throw new IllegalArgumentException("Request history only spans over "
-                                               + this.seconds + " seconds");
-        update();
-
-        int total = 0;
-        for (int i = 0; i < lastSeconds; i++) {
-            total += this.history[getRelativeIndex(-i)];
-        }
-        return total;
-    }
-    
-
-    public long getTotalRequests() {
-        return this.totalRequests;
-    }
-    
-
-
     @Override
-    public void onApplicationEvent(RequestHandledEvent event) {
-        update();
-        this.history[this.currentIndex]++;
-        this.totalRequests++;
+    public void onApplicationEvent(ServletRequestHandledEvent event) {
+        requests.mark();
+        processing.update(event.getProcessingTimeMillis());
+        if (event.wasFailure()) errors.mark();
     }
-
-
-
-    @Override
-    public String toString() {
-        update();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("history for  last ").append(this.seconds);
-        sb.append(" seconds\n");
-
-        for (int i = 0; i < this.history.length; i++) {
-            int slot = getRelativeIndex(-i);
-            sb.append(i).append("      ").append(this.history[slot]);
-            sb.append("\n");
-        }
-        sb.append("total requests: ").append(this.totalRequests);
-        return sb.toString();
-    }
-    
-
-
-
 }

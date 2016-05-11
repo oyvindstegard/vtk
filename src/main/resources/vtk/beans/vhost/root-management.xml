@@ -200,10 +200,13 @@
   </bean>
   
   
+  <bean id="metrics.registry" class="com.codahale.metrics.MetricRegistry">
+  </bean>
 
   <bean id="requestLoadListener"
         class="vtk.web.context.RequestLoadListener">
-    <property name="historySeconds" value="3600" />
+    <constructor-arg name="registry" ref="metrics.registry" />
+    <!--property name="historySeconds" value="3600" /-->
   </bean>
 
 
