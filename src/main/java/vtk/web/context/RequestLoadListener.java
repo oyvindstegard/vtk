@@ -30,29 +30,60 @@
  */
 package vtk.web.context;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricSet;
+
+import vtk.web.RequestContext;
+import vtk.web.service.Service;
 
 public class RequestLoadListener implements ApplicationListener<ServletRequestHandledEvent> {
 
     private final Meter requests;
     private final Meter errors;
     private final Histogram processing;
+    private final MetricSet services;
     
-    public RequestLoadListener(MetricRegistry registry) {
+    public RequestLoadListener(MetricRegistry registry, List<Service> services) {
         this.requests = registry.meter("requests.handled");
-        this.processing = registry.histogram("processing.time");
+        this.processing = registry.histogram("requests.processing.time");
         this.errors = registry.meter("requests.failed");
+
+        final Map<String, Metric> serviceMap = new HashMap<>();
+        services.stream().forEach(service -> {
+            serviceMap.put("requests.services." + service.getName(), new Counter());
+        });
+        this.services = new MetricSet() {
+            @Override
+            public Map<String, Metric> getMetrics() {
+                return serviceMap;
+            }
+        };
+        registry.registerAll(this.services);
     }
     
     @Override
     public void onApplicationEvent(ServletRequestHandledEvent event) {
         requests.mark();
         processing.update(event.getProcessingTimeMillis());
-        if (event.wasFailure()) errors.mark();
+        if (event.wasFailure()) {
+            errors.mark();
+        }
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Service service = requestContext.getService();
+        if (service != null) {
+            Counter meter = (Counter) services.getMetrics().get("request.services." + service.getName());
+            meter.inc();
+        }
     }
 }

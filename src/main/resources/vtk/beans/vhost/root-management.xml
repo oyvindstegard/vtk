@@ -200,13 +200,47 @@
   </bean>
   
   
-  <bean id="metrics.registry" class="com.codahale.metrics.MetricRegistry">
-  </bean>
+  <bean id="metrics.registry" class="com.codahale.metrics.MetricRegistry" />
 
   <bean id="requestLoadListener"
         class="vtk.web.context.RequestLoadListener">
     <constructor-arg name="registry" ref="metrics.registry" />
-    <!--property name="historySeconds" value="3600" /-->
+    <constructor-arg name="services" ref="services" />
+  </bean>
+
+
+  <bean id="metrics.metric" 
+        class="org.springframework.beans.factory.config.MethodInvokingBean" 
+        abstract="true">
+    <property name="targetObject" ref="metrics.registry" />
+    <property name="targetMethod" value="register" />
+  </bean>
+
+  <bean parent="metrics.metric">
+    <property name="arguments">
+      <list>
+        <value>gc</value>
+        <bean class="com.codahale.metrics.jvm.GarbageCollectorMetricSet" />
+      </list>
+    </property>
+  </bean>
+
+  <bean parent="metrics.metric">
+    <property name="arguments">
+      <list>
+        <value>memory</value>
+        <bean class="com.codahale.metrics.jvm.MemoryUsageGaugeSet" />
+      </list>
+    </property>
+  </bean>
+
+  <bean parent="metrics.metric">
+    <property name="arguments">
+      <list>
+        <value>threads</value>
+        <bean class="com.codahale.metrics.jvm.ThreadStatesGaugeSet" />
+      </list>
+    </property>
   </bean>
 
 
