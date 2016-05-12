@@ -545,8 +545,7 @@ public class AuthorizationManagerTest {
         }
 
         @Override
-        public void deleteRecoverable(RecoverableResource recoverableResource)
-                throws DataAccessException {
+        public void deleteRecoverable(List<RecoverableResource> recoverableResources) throws DataAccessException {
             throw new UnsupportedOperationException();
         }
 
