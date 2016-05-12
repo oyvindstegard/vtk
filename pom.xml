@@ -1009,6 +1009,11 @@
       <artifactId>metrics-jvm</artifactId>
       <version>3.1.2</version>
     </dependency>
+    <dependency>
+      <groupId>com.basistech</groupId>
+      <artifactId>metrics-statsd</artifactId>
+      <version>3.0.0</version>
+    </dependency>
 
   </dependencies>
   

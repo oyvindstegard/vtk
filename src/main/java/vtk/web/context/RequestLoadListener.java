@@ -31,8 +31,9 @@
 package vtk.web.context;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
@@ -40,50 +41,93 @@ import org.springframework.web.context.support.ServletRequestHandledEvent;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.MetricSet;
 
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 
 public class RequestLoadListener implements ApplicationListener<ServletRequestHandledEvent> {
-
-    private final Meter requests;
-    private final Meter errors;
-    private final Histogram processing;
-    private final MetricSet services;
+    private final ExecutorService executorService;
+    private final MetricsHandler metricsHandler;
     
-    public RequestLoadListener(MetricRegistry registry, List<Service> services) {
-        this.requests = registry.meter("requests.handled");
-        this.processing = registry.histogram("requests.processing.time");
-        this.errors = registry.meter("requests.failed");
-
-        final Map<String, Metric> serviceMap = new HashMap<>();
-        services.stream().forEach(service -> {
-            serviceMap.put("requests.services." + service.getName(), new Counter());
-        });
-        this.services = new MetricSet() {
-            @Override
-            public Map<String, Metric> getMetrics() {
-                return serviceMap;
-            }
-        };
-        registry.registerAll(this.services);
+    public RequestLoadListener(MetricRegistry registry) {
+        this.executorService = Executors.newSingleThreadExecutor(
+                r -> new Thread(r));
+        this.metricsHandler = new MetricsHandler(registry);
     }
     
+
     @Override
     public void onApplicationEvent(ServletRequestHandledEvent event) {
-        requests.mark();
-        processing.update(event.getProcessingTimeMillis());
-        if (event.wasFailure()) {
-            errors.mark();
-        }
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
-        if (service != null) {
-            Counter meter = (Counter) services.getMetrics().get("requests.services." + service.getName());
-            meter.inc();
+        boolean auth = requestContext.getPrincipal() != null;
+        VrtxEvent vrtxEvent = new VrtxEvent(event, service, auth);
+        executorService.submit(() -> {
+            metricsHandler.event(vrtxEvent);
+        });
+    }
+
+
+    private static class VrtxEvent {
+        public final Service service;
+        public final boolean auth;
+        public final boolean failure;
+        public final long processingTimeMillis;
+        public final long statusCode;
+        public VrtxEvent(ServletRequestHandledEvent reqEvent, Service service, boolean auth) {
+            this.service = service;
+            this.auth = auth;
+            this.failure = reqEvent.wasFailure();
+            this.processingTimeMillis = reqEvent.getProcessingTimeMillis();
+            this.statusCode = reqEvent.getStatusCode();
+        }
+    }
+
+    private static final class MetricsHandler {
+        private final MetricRegistry registry;
+        private final Counter requests;
+        private final Meter errors;
+        private final Meter authenticated;
+        private final Histogram processing;
+        private final Map<String, Counter> services = new HashMap<>();;
+        private final Map<String, Counter> status = new HashMap<>();;
+
+        public MetricsHandler(MetricRegistry registry) {
+            this.registry = registry;
+            this.requests = registry.counter("requests.handled");
+            this.errors = registry.meter("requests.failed");
+            this.authenticated = registry.meter("requests.authenticated");
+            this.processing = registry.histogram("requests.processing.time");
+        }
+
+        public void event(VrtxEvent event) {
+            requests.inc();
+            processing.update(event.processingTimeMillis);
+            if (event.failure) {
+                errors.mark();
+            }
+            if (event.service != null) {
+                String name = "requests.services." + event.service.getName();
+                Counter counter = services.get(name);
+                if (counter == null) {
+                    counter = registry.counter(name);
+                    services.put(name, counter);
+                }
+                counter.inc();
+            }
+            if (event.auth) {
+                authenticated.mark();
+            }
+            if (event.statusCode != -1) {
+                String statusKey = String.valueOf("requests.status." + event.statusCode);
+                Counter counter = status.get(statusKey);
+                if (counter == null) {
+                    counter = registry.counter(statusKey);
+                    status.put(statusKey, counter);
+                }
+                counter.inc();
+            }
         }
     }
 }
