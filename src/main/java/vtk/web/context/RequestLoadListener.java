@@ -82,7 +82,7 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
         if (service != null) {
-            Counter meter = (Counter) services.getMetrics().get("request.services." + service.getName());
+            Counter meter = (Counter) services.getMetrics().get("requests.services." + service.getName());
             meter.inc();
         }
     }
