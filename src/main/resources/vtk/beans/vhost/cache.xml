@@ -20,6 +20,16 @@
     <property name="timeToLive" value="86400" />
   </bean>
   
+  <bean parent="metrics.gaugeRegistration">
+    <property name="arguments">
+      <list>
+        <value>ehcache.linkcheck.size</value>
+        <value>context.getBean("ehCache.LINK_CHECK_CACHE").getSize()</value>
+      </list>
+    </property>
+  </bean>
+
+
   <!-- Ehcache used by bean 'collectionListing.searchComponent' defined in view-collection-listing.xml -->
   <bean id="ehCache.MULTI_HOST_INDEX_SEARCH_CACHE"
         class="org.springframework.cache.ehcache.EhCacheFactoryBean">

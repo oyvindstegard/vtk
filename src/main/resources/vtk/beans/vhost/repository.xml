@@ -149,6 +149,15 @@
     <property name="wrappedAccessor" ref="${repository.dao}" />
   </bean>
 
+  <bean parent="metrics.gaugeRegistration">
+    <property name="arguments">
+      <list>
+        <value>repository.cache.size</value>
+        <value>context.getBean("repository.cache").size()</value>
+      </list>
+    </property>
+  </bean>
+
   <bean id="repository.defaultRevisionStore" class="vtk.repository.store.DefaultRevisionStore" 
         parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
