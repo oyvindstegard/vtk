@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
+                           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.1.xsd">
+
+
+  <bean id="metrics.registry" class="com.codahale.metrics.MetricRegistry" />
+
+  <bean id="requestLoadListener"
+        class="vtk.web.context.RequestLoadListener">
+    <constructor-arg name="registry" ref="metrics.registry" />
+  </bean>
+
+
+  <bean id="metrics.metric" 
+        class="org.springframework.beans.factory.config.MethodInvokingBean" 
+        abstract="true">
+    <property name="targetObject" ref="metrics.registry" />
+    <property name="targetMethod" value="register" />
+  </bean>
+
+  <bean parent="metrics.metric">
+    <property name="arguments">
+      <list>
+        <value>gc</value>
+        <bean class="com.codahale.metrics.jvm.GarbageCollectorMetricSet" />
+      </list>
+    </property>
+  </bean>
+
+  <bean parent="metrics.metric">
+    <property name="arguments">
+      <list>
+        <value>memory</value>
+        <bean class="com.codahale.metrics.jvm.MemoryUsageGaugeSet" />
+      </list>
+    </property>
+  </bean>
+
+  <bean parent="metrics.metric">
+    <property name="arguments">
+      <list>
+        <value>threads</value>
+        <bean class="com.codahale.metrics.jvm.ThreadStatesGaugeSet" />
+      </list>
+    </property>
+  </bean>
+
+
+   <lang:bsh id="metrics.dynamicRegistration">
+     <lang:inline-script>
+       import com.codahale.metrics.*;
+       import org.springframework.context.*;
+
+       public class BshVariousMetrics implements ApplicationContextAware {
+           private MetricRegistry registry;
+           private ApplicationContext context;
+
+           public void setRegistry(MetricRegistry registry) {
+               this.registry = registry;
+           }
+
+           public void setApplicationContext(ApplicationContext context) {
+               this.context = context;
+           }
+
+           public void gauge(String name, String expr) {
+               Gauge gauge = new Gauge() {
+                    public Integer getValue() {
+                         return eval(expr);
+                    }
+               };
+               registry.register(name, gauge);
+           }
+       }
+     </lang:inline-script>
+     <lang:property name="registry" ref="metrics.registry" />
+   </lang:bsh>
+
+  <bean id="metrics.gaugeRegistration" abstract="true"
+        class="org.springframework.beans.factory.config.MethodInvokingBean">
+    <property name="targetObject" ref="metrics.dynamicRegistration" />
+    <property name="targetMethod" value="gauge" />
+  </bean>
+
+</beans>

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
+                           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.1.xsd">
 
   <bean id="repositoryManageService" 
         class="vtk.web.service.ServiceImpl">
@@ -118,63 +120,8 @@
   <bean id="managementStatsGroups" class="java.util.HashMap">
     <constructor-arg>
       <map>
-        <entry key="Principals" value-ref="principalStatsGroup" />
-        <entry key="Java VM" value-ref="jvmStatsGroup" />
-        <entry key="Servlet" value-ref="servletStatsGroup" />       
         <entry key="Repository" value-ref="repositoryStatsGroup" />
         <entry key="Resource types" value-ref="resourceTypesStatsGroup" />
-      </map>
-    </constructor-arg>
-  </bean>
-
-  <bean id="principalStatsGroup" class="java.util.HashMap">
-    <constructor-arg>
-      <map>
-        <entry key="Principal manager tokens">
-          <value>context.getBean("tokenManagerCache").getSize()</value>
-        </entry>
-      </map>
-    </constructor-arg>
-  </bean>
-
-  <bean id="jvmStatsGroup" class="java.util.HashMap">
-    <constructor-arg>
-      <map>
-        <entry key="Available processors">
-          <value>Runtime.getRuntime().availableProcessors()</value>
-        </entry>
-        <entry key="Total memory">
-          <value>Runtime.getRuntime().totalMemory()</value>
-        </entry>
-        <entry key="Maximum memory">
-          <value>Runtime.getRuntime().maxMemory()</value>
-        </entry>
-        <entry key="Free memory">
-          <value>Runtime.getRuntime().freeMemory()</value>
-        </entry>
-      </map>
-    </constructor-arg>
-  </bean>
-
-  <bean id="servletStatsGroup" class="java.util.HashMap">
-    <constructor-arg>
-      <map>
-        <entry key="Request load (avg reqs per second)">
-          <value>
-            java.text.DecimalFormat df = new java.text.DecimalFormat("0.00");
-            listener = context.getBean("requestLoadListener");
-
-            df.format((float) listener.getLoad(60)/60) + " (1m), " +
-            df.format((float) listener.getLoad(600)/600) + " (10m), " +
-            df.format((float) listener.getLoad(3600)/3600) + " (1h)";
-          </value>
-        </entry>
-        <entry key="Total requests">
-          <value>context.getBean("requestLoadListener").getTotalRequests()</value>
-        </entry>
-        <entry key="Application startup">
-          <value>new java.util.Date(context.getStartupDate());</value>
-        </entry>
       </map>
     </constructor-arg>
   </bean>
@@ -200,13 +147,6 @@
   </bean>
   
   
-
-  <bean id="requestLoadListener"
-        class="vtk.web.context.RequestLoadListener">
-    <property name="historySeconds" value="3600" />
-  </bean>
-
-
   <bean id="beanShellEvaluator" class="vtk.shell.BeanShellConsole">
     <property name="runEvalLoop" value="false" />
     <property name="wrapOutputInBrackets" value="false" />
