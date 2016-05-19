@@ -1,4 +1,4 @@
-/*  
+/*
  *  Iframe resizing for cross domain (admin)
  *
  *  Not essential functionality. Only works in browsers which support postMessage (>IE7).
@@ -9,7 +9,7 @@
  *  - Animates changed height visible in window
  *
  */
- 
+
 (function ($) {
 
   var isPreviewMode,
@@ -21,13 +21,13 @@
       previewLoading,
       animationOff = false,
       surplusAnimationSpeed = 200;
- 
+
   var crossDocComLink = new CrossDocComLink();
   crossDocComLink.setUpReceiveDataHandler(function(cmdParams, source) {
     postback = true;
     var vrtxAdm = vrtxAdmin;
     var previewIframe = $("iframe#previewIframe")[0];
-    
+
     switch(cmdParams[0]) {
       case "preview-loaded":
         crossDocComLink.postCmdToIframe(previewIframe, "admin-min-height|" + previewIframeMinHeight);
@@ -36,11 +36,11 @@
         var dataHeight = (cmdParams.length === 2) ? cmdParams[1] : 0;
         var newHeight = Math.min(Math.max(dataHeight, previewIframeMinHeight), 20000); // Keep height between available window pixels and 20000 pixels
         previewIframe.style.height = newHeight + "px";
-        break; 
+        break;
       case "preview-height":
         var dataHeight = (cmdParams.length === 2) ? cmdParams[1] : 0;
         var newHeight = Math.min(Math.max(dataHeight, previewIframeMinHeight), 20000); // Keep height between available window pixels and 20000 pixels
-        
+
         if(!vrtxAdm.isIE8 && !animationOff) {
           var diff = newHeight - previewIframeMinHeight;
           var surplus = (appFooterHeight + 13 + 20) - surplusReduce; // +contentBottomMargin+border+contentBottomPadding+border
@@ -63,14 +63,14 @@
       default:
     }
   });
-  
+
   var initHashParamsRunned = false;
-  function initHashParams() {   
+  function initHashParams() {
     if(initHashParamsRunned) return;
-    
+
     var isMobilePreview = $.bbq.getState("mobile") === "on",
         isFullscreen = $.bbq.getState("fullscreen") === "on";
- 
+
     if(isMobilePreview) {
       $("#preview-mode a").click();
       var isMobilePreviewLandscape = $.bbq.getState("orientation") === "horizontal";
@@ -85,7 +85,7 @@
     if(isFullscreen) {
       $("#preview-actions-fullscreen-toggle").click();
     }
-    
+
     var link = $("#preview-actions-share");
     if(link.length) {
       updateHashShareLink(link);
@@ -93,23 +93,23 @@
         updateHashShareLink(link);
       });
     }
-    
+
     initHashParamsRunned = true;
   }
-  
+
   function updateHashShareLink(link) {
     if(window.location.hash.length === 1) {
       var hash = "";
-      if(window.history && window.history.pushState) { 
+      if(window.history && window.history.pushState) {
         window.history.pushState("", "", window.location.pathname + window.location.search);
       }
     } else {
       var hash = window.location.hash;
     }
-  
+
     var msg = link[0].href;
     var msgLines = decodeURI(msg).split("\n");
-      
+
     var msgUrlLineNr = 2;
     var replacedUrl = encodeURIComponent($.trim(decodeURIComponent(msgLines[msgUrlLineNr]).replace(/#.*$/, "")) + window.location.hash);
     msgLines[msgUrlLineNr] = replacedUrl;
@@ -129,9 +129,9 @@
       previewLoadingCompleteAfter(previewLoading);
     }
   }
-  
+
   function previewLoadingCompleteAfter(previewLoading) {
-    vrtxAdmin.cachedContent.removeAttr('style');  
+    vrtxAdmin.cachedContent.removeAttr('style');
     previewLoading.remove();
     initHashParams();
     vrtxAdmin.ariaBusy("#previewIframe", false);
@@ -142,16 +142,16 @@
     var vrtxAdm = vrtxAdmin;
 
     vrtxAdm.cacheDOMNodesForReuse();
-    
+
     if(window.location.hash.length > 1) {
       animationOff = true;
     }
-  
-    isPreviewMode = $("#vrtx-preview").length;
+
+    isPreviewMode = $("#vrtx-preview").length && !isEmbedded; // When schedule is locked and goes to preview
     if(isPreviewMode) {
-   
+
       htmlTag = $("html");
-    
+
       // As we can't check on matchMedia and Modernizr is not included in admin yet - hide if <= IE8
       if(vrtxAdm.isIE8 || vrtxAdm.isMobileWebkitDevice || !hasPreviewIframeCommunication) {
         $("#preview-mode").hide();
@@ -170,14 +170,14 @@
             htmlTag.removeClass("animated");
             htmlTag.removeClass("change-bg");
           }
-      
+
           htmlTag.toggleClass("mobile");
 
           var notLink = $("#preview-mode span");
-        
+
           notLink.parent().removeClass("active-mode");
           $(this).parent().addClass("active-mode");
-        
+
           notLink.replaceWith("<a id='" + notLink.attr("id") + "' href='javascript:void(0);'>" + notLink.text() + "</span");
           $(this).replaceWith("<span id='" + this.id + "'>" + $(this).text() + "</span>");
           e.preventDefault();
@@ -205,7 +205,7 @@
         var waitForTheEnd = null;
         vrtxAdm.cachedContent.on("click", "#preview-mode-mobile-rotate-hv", function(e) {
           if(waitForTheEnd !== null) return;
-          
+
           $("#previewIframeInnerWrapper").stop().fadeTo((!animationOff ? 150 : 0), 0, "easeInCubic", function() {
             /* Make shadow "follow along" rotation */
             if(htmlTag.hasClass("change-bg")) {
@@ -229,11 +229,11 @@
             }
             if(!animationOff) {
               if(!htmlTag.hasClass("animated")) {
-                htmlTag.addClass("animated"); 
+                htmlTag.addClass("animated");
               }
             }
             htmlTag.toggleClass("horizontal");
-            
+
           }).delay((!animationOff ? 250 : 0)).fadeTo((!animationOff ? 150 : 0), 1, "easeOutCubic");
 
           e.preventDefault();
@@ -247,7 +247,7 @@
           e.preventDefault();
           e.stopPropagation();
         });
-        
+
         var editorStickyBar = null;
         vrtxAdm.cachedContent.on("click", "#preview-actions-fullscreen-toggle", function(e) {
           htmlTag.toggleClass('fullscreen-toggle-open');
@@ -257,7 +257,7 @@
             $(this).text(fullscreenToggleClose);
             var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
             var futureStickyBar = (typeof VrtxStickyBar === "undefined") ? getScriptFn("/vrtx/__vrtx/static-resources/js/vrtx-sticky-bar.js") : $.Deferred().resolve();
-            $.when(futureStickyBar).done(function() {     
+            $.when(futureStickyBar).done(function() {
               editorStickyBar = new VrtxStickyBar({
                  wrapperId: "#preview-mode-actions",
                  stickyClass: "vrtx-sticky-preview-mode-actions",
@@ -298,23 +298,23 @@
       } else {
         previewIframeMinHeight = availWinHeight;
       }
-      
+
       vrtxAdmin.ariaBusy("#previewIframe", true);
-      
+
       vrtxAdm.cachedContent.append("<span id='preview-loading'><span id='preview-loading-inner'><span>" + previewLoadingMsg + "...</span></span></span>")
                            .css({ position: "relative",
                                     height: (previewIframeMinHeight + extras + 2) + "px" });
-      
+
       previewLoading = vrtxAdm.cachedContent.find("#preview-loading");
       previewLoading.css({
         height: previewIframeMinHeight + "px",
         top: extras + "px"
       });
-      
+
       previewLoading.find("#preview-loading-inner").css({
         height: availWinHeight + "px"
       });
-      
+
       if(!hasPreviewIframeCommunication) {
         previewLoadingComplete($("iframe#previewIframe")[0], previewIframeMinHeight, previewLoading, vrtxAdm);
       }
@@ -326,7 +326,7 @@
 /*
  * jQuery BBQ: Back Button & Query Library - v1.2.1 - 2/17/2010
  * http://benalman.com/projects/jquery-bbq-plugin/
- * 
+ *
  * Copyright (c) 2010 "Cowboy" Ben Alman
  * Dual licensed under the MIT and GPL licenses.
  * http://benalman.com/about/license/
@@ -335,7 +335,7 @@
 /*
  * jQuery hashchange event - v1.2 - 2/11/2010
  * http://benalman.com/projects/jquery-hashchange-plugin/
- * 
+ *
  * Copyright (c) 2010 "Cowboy" Ben Alman
  * Dual licensed under the MIT and GPL licenses.
  * http://benalman.com/about/license/
