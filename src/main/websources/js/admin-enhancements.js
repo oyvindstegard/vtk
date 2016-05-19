@@ -1,7 +1,7 @@
 /*
  *  Vortex Admin enhancements
  *
- *  ToC: 
+ *  ToC:
  *
  *  1.  Config
  *  2.  DOM is ready
@@ -34,7 +34,7 @@ function VrtxAdmin() {
 
   // Browser info/capabilities: used for e.g. progressive enhancement and performance scaling based on knowledge of current JS-engine
   this.ua = window.navigator.userAgent.toLowerCase();
-  
+
   /* IE */
   this.isIE = /(msie) ([\w.]+)/.test(this.ua);
   var ieVersion = /(msie) ([\w.]+)/.exec(this.ua);
@@ -44,7 +44,7 @@ function VrtxAdmin() {
   this.isIE7 = this.isIE && this.browserVersion <= 7;
   this.isIE6 = this.isIE && this.browserVersion <= 6;
   this.isIETridentInComp = this.isIE7 && /trident/.test(this.ua);
-  
+
   /* Mobile (iOS and Android) */
   this.isIPhone = /iphone/.test(this.ua);
   this.isIPad = /ipad/.test(this.ua);
@@ -53,14 +53,14 @@ function VrtxAdmin() {
   this.isAndroid = /android/.test(this.ua); // http://www.gtrifonov.com/2011/04/15/google-android-user-agent-strings-2/
   this.isMobileWebkitDevice = (this.isIPhone || this.isIPad || this.isAndroid);
   this.isTouchDevice = window.ontouchstart !== undefined;
-  
+
   /* Windows */
   this.isWin = ((this.ua.indexOf("win") !== -1) || (this.ua.indexOf("16bit") !== -1));
-  
+
   this.supportsFileList = window.FileList;
   this.animateTableRows = !this.isIE9;
   this.hasFreeze = typeof Object.freeze !== "undefined"; // ECMAScript 5 check
-  
+
   this.hasConsole = typeof console !== "undefined";
   this.hasConsoleLog = this.hasConsole && console.log;
   this.hasConsoleError = this.hasConsole && console.error;
@@ -114,21 +114,21 @@ function VrtxAdmin() {
   this.editorSaveButtonName = "";
   this.editorSaveButton = null;
   this.editorSaveIsRedirectPreview = false;
-  
+
   /* Async operations */
   this.asyncEditorSavedDeferred = null;
   this.asyncGetFormsInProgress = 0;
   this.asyncGetStatInProgress = false;
-  
+
   /* Upload */
   this.uploadCopyMoveSkippedFiles = {};
   this.uploadCompleteTimeoutBeforeProcessingDialog = 2000; // 2s
-  
+
   /* Create and trashcan */
   this.createResourceReplaceTitle = true;
   this.createDocumentFileName = "";
   this.trashcanCheckedFiles = 0;
-  
+
   /** Keyboard keys enum
    * @type object */
   this.keys = { TAB: 9, ENTER: 13, ESCAPE: 27, SPACE: 32, LEFT_ARROW: 37, UP_ARROW: 38, RIGHT_ARROW: 39, DOWN_ARROW: 40 };
@@ -142,11 +142,11 @@ function VrtxAdmin() {
   this.domainsIsReady = $.Deferred();
   this.domainsInstantIsReady = $.Deferred();
   this.bodyId = "";
-  
+
   this.requiredScriptsLoaded = null;
-  
+
   this.messages = {}; /* Populated with i18n in resource-bar.ftl */
-  
+
   this.rootUrl = "/vrtx/__vrtx/static-resources";
 }
 
@@ -155,7 +155,7 @@ var vrtxAdmin = new VrtxAdmin();
 /* Dummy containers for required init components (external scripts)
  *
  * Replaced and applied in the future when script-retrieval is done
- * (you have to be really fast or have a slow connection speed to get this code running, 
+ * (you have to be really fast or have a slow connection speed to get this code running,
  *  but the latter could occur on e.g. a 3G-connection)
  */
 var VrtxTree = function(opts) {
@@ -180,7 +180,7 @@ var VrtxAnimation = function(opts) {
   var futureAppliedFn = function(methodName, args) {
     if(methodName !== null) { objApplied.push({fn: methodName, args: args}); }
   };
-  
+
   /* Add applied functions for future running.
    * TODO: general object prop access handling possible? http://blog.calyptus.eu/seb/2010/11/javascript-proxies-leaky-this/?
    * TODO: Firefox can use Proxy and get() for adding future applied functions(?) http://wiki.ecmascript.org/doku.php?id=harmony%3adirect_proxies
@@ -204,12 +204,12 @@ var onlySessionId = gup("sessionid", window.location.href);
 
 vrtxAdmin._$(document).ready(function () {
   var startReadyTime = getNowTime(), vrtxAdm = vrtxAdmin, _$ = vrtxAdm._$;
-  
+
   if(typeof datePickerLang === "string") {
     vrtxAdm.lang = datePickerLang;
   }
   vrtxAdm.cacheDOMNodesForReuse();
-  
+
   isEmbedded2 = vrtxAdm.cachedBody.hasClass("embedded2");
   if(isEmbedded2) {
     $("html").addClass("embedded2");
@@ -221,7 +221,7 @@ vrtxAdmin._$(document).ready(function () {
     vrtxAdm.cachedBody.addClass("ie8");
   }
   vrtxAdm.embeddedView();
-  
+
   // Show message in IE6=>IE8 and IETrident in compability mode
   if ((vrtxAdm.isIE8 || vrtxAdm.isIETridentInComp) && typeof outdatedBrowserText === "string") {
     var message = vrtxAdm.cachedAppContent.find(" > .message");
@@ -243,25 +243,25 @@ vrtxAdmin._$(document).ready(function () {
   vrtxAdm.requiredScriptsLoaded = $.Deferred();
   vrtxAdm.loadScripts(["/js/vrtx-animation.js", "/js/vrtx-tree.js"], vrtxAdm.requiredScriptsLoaded);
   vrtxAdm.clientLastModified = $("#resource-last-modified").text().split(",");
- 
+
   /* Delay some stuff and only run some stuff if not embedded */
   if(!isEmbedded && !isEmbedded2) {
     vrtxAdm.initDropdowns();
     vrtxAdm.initScrollBreadcrumbs();
   }
   vrtxAdm.domainsInstantIsReady.resolve();
-  
+
   if(!isEmbedded && !isEmbedded2) {
     vrtxAdm.initMiscAdjustments();
   }
-  
+
   var waitALittle = setTimeout(function() {
     vrtxAdm.initTooltips();
     if(!isEmbedded && !isEmbedded2) {
       vrtxAdm.initGlobalDialogs();
     }
   }, 15);
-  
+
   var waitALittleMore = setTimeout(function() {
     if(!isEmbedded && !isEmbedded2) {
       vrtxAdm.initResourceMenus();
@@ -313,7 +313,7 @@ VrtxAdmin.prototype.cacheDOMNodesForReuse = function cacheDOMNodesForReuse() {
  * Tooltips init
  *
  */
- 
+
 VrtxAdmin.prototype.initTooltips = function initTooltips() {
   var titleContainer = $("#title-container");
   if(titleContainer.length) {
@@ -353,7 +353,7 @@ VrtxAdmin.prototype.initTooltips = function initTooltips() {
  * Resource menus init
  *
  */
- 
+
 VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
   var vrtxAdm = this,
       bodyId = vrtxAdm.bodyId;
@@ -368,10 +368,10 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       nodeType: "div",
       simultanSliding: true
     });
-    
+
     // Ajax post if rename (with redirect)
     var isRename = resourceMenuLeftServices[i] === "renameService";
-    
+
     vrtxAdm.completeFormAsync({
       selector: "form#" + resourceMenuLeftServices[i] + "-form input[type=submit]",
       errorContainer: "errorContainer",
@@ -432,7 +432,7 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
       post: (!isSavingBeforePublish && (typeof isImageAudioVideo !== "boolean" || !isImageAudioVideo))
     });
   }
-  
+
   // Unlock form
   vrtxAdm.getFormAsync({
     selector: "#title-container a#manage\\.unlockFormService",
@@ -455,12 +455,12 @@ VrtxAdmin.prototype.initResourceMenus = function initResourceMenus() {
     post: (bodyId !== "vrtx-preview" && bodyId !== "vrtx-editor" && bodyId !== "vrtx-edit-plaintext" && bodyId !== "")
   });
 };
- 
+
 /*
  * Global dialogs init
  *
  */
- 
+
 VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
   var vrtxAdm = this,
       bodyId = vrtxAdm.bodyId;
@@ -486,7 +486,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
           height: 395,
           onOpen: function() {
             var dialog = $(".ui-dialog:visible");
-            
+
             var treeElem = dialog.find(".tree-create");
             var treeTrav = dialog.find("#vrtx-create-tree-folders").hide().text().split(",");
             var treeType = dialog.find("#vrtx-create-tree-type").hide().text();
@@ -505,7 +505,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
             dialog.on("click", ".tip a", function (e) { // Override jQuery UI prevention
               window.location.href = this.href;
             });
-            
+
             var tree = new VrtxTree({
               service: service,
               elem: treeElem,
@@ -523,7 +523,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
       }
     });
   });
-  
+
   // Advanced publish settings (need more encapsulation)
   var apsD;
   var datepickerApsD;
@@ -537,7 +537,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
         }
         vrtxAdm.cachedBody.append("<div id='" + id + "'>" + _$(_$.parseHTML(results)).find("#vrtx-advanced-publish-settings-dialog").html() + "</div>");
         dialogAPS = _$("#" + id);
-        dialogAPS.hide();     
+        dialogAPS.hide();
         apsD = new VrtxHtmlDialog({
           name: "advanced-publish-settings",
           html: dialogAPS.html(),
@@ -560,7 +560,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
       }
     });
   });
-  
+
   vrtxAdm.completeFormAsync({
     selector: "#dialog-html-advanced-publish-settings-content #submitButtons input",
     updateSelectors: ["#resource-title", "#directory-listing", ".prop-lastModified", "#resource-last-modified"],
@@ -576,19 +576,19 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
 
       var publishDate = generateDateObjForValidation(dialog, "publishDate");
       var unpublishDate = generateDateObjForValidation(dialog, "unpublishDate");
-      
+
       // Check that unpublish date is not set alone
       if(unpublishDate !== null && publishDate === null) {
         vrtxAdm.displayDialogErrorMsg(dialogId + " #submitButtons", vrtxAdmin.messages.publish.unpublishDateNonExisting);
-        return; 
+        return;
       }
-      
+
       // Check that unpublish date is not before or same as publish date
       if(unpublishDate !== null && (unpublishDate <= publishDate)) {
         vrtxAdm.displayDialogErrorMsg(dialogId + " #submitButtons", vrtxAdmin.messages.publish.unpublishDateBefore);
         return;
       }
-      
+
       datepickerApsD.prepareForSave();
       vrtxAdm.completeFormAsyncPost(options);
     },
@@ -600,7 +600,7 @@ VrtxAdmin.prototype.initGlobalDialogs = function initGlobalDialogs() {
       vrtxAdm.globalAsyncComplete();
     }
   });
-  
+
   // Validation of dates
   var generateDateObjForValidation = function(dialog, idInfix) {
     var date = dialog.find("#" + idInfix + "-date").val();
@@ -651,20 +651,17 @@ VrtxAdmin.prototype.globalAsyncComplete = function globalAsyncComplete() {
  */
 VrtxAdmin.prototype.embeddedView = function embeddedView() {
   if(!isEmbedded) return;
-  
+
   $("html").addClass("embedded embedded-loading");
-  
+
   if(onlySessionId) { // Also handles when locked or no write permissions (goes to preview)
     var canEdit = $("#resource-can-edit").text() === "true";
     var lockedByOtherElm = $("#resource-locked-by-other");
     var lockedByOther = (lockedByOtherElm.length && lockedByOtherElm.text() === "true") ? $("#resource-locked-by").html() : "";
-                          
+
     // Choose proper fail message (we know these sends you to preview)
     var vrtxAdm = vrtxAdmin;
     if(!canEdit || lockedByOther.length) {
-      // Remove preview wrapper (not sure why it doesn't work as before)
-      $("#preview-loading").remove();
-    
       // Title and fail message
       var csTitle = vrtxAdm.lang === "en" ? "Edit activity" : "Rediger aktivitet";
       if(!canEdit) {
@@ -672,15 +669,16 @@ VrtxAdmin.prototype.embeddedView = function embeddedView() {
       } else {
         var csFail = vrtxAdm.lang === "en" ? "The course schedule is locked by other user: " + lockedByOther : "Timeplanen er låst av en annen bruker: " + lockedByOther;
       }
+
       var failHtml = "<p id='editor-fail'>" + csFail + "</p>";
-      
+
       this.cachedBody.addClass("embedded-editor-fail");
 
       // Add embedded editor fail HTML
       var titleHtml = '<div id="vrtx-editor-title-submit-buttons"><div id="vrtx-editor-title-submit-buttons-inner-wrapper"><h2>' + csTitle + '<a href="javascript:void(0)" class="vrtx-close-dialog-editor"></a></h2></div></div>';
       var buttonsHtml = '<div class="submit submitButtons"><input class="vrtx-focus-button vrtx-embedded-button" id="vrtx-embedded-cancel-button" type="submit" value="Ok" /></div>';
       this.cachedContent.html(titleHtml + failHtml + buttonsHtml);
-      
+
       // Ok / 'X' goes back to view
       eventListen(vrtxAdm.cachedDoc, "click", "#vrtx-embedded-cancel-button, .vrtx-close-dialog-editor", function (ref) {
         location.href = $("#global-menu-leave-admin a").attr("href");
@@ -699,7 +697,7 @@ VrtxAdmin.prototype.initDomains = function initDomains() {
   var vrtxAdm = this,
       bodyId = vrtxAdm.bodyId;
       _$ = vrtxAdm._$;
-      
+
   switch (bodyId) {
     case "vrtx-preview":
     case "vrtx-revisions":
@@ -837,11 +835,11 @@ VrtxAdmin.prototype.dropdownPlain = function dropdownPlain(selector) {
     languageMenu.attr("id", idWrp);
   }
   var idLink = selector.substring(1) + "-header";
-  
+
   languageMenu.addClass("dropdown-shortcut-menu-container");
   languageMenu.attr("aria-hidden", "true");
   languageMenu.attr("aria-labelledby", idLink);
-  
+
   var parent = languageMenu.parent();
   var header = parent.find(selector + "-header");
   var headerText = header.text();
@@ -880,7 +878,7 @@ VrtxAdmin.prototype.dropdown = function dropdown(options) {
     if(options.small) {
       list.addClass("dropdown-shortcut-menu-small");
     }
-    
+
     var idWrp = "dropdown-shortcut-menu-container-" + Math.round(+new Date() * Math.random());
     var idLink = "dropdown-shortcut-menu-click-area-" + Math.round((+new Date() + 1) * Math.random());
 
@@ -895,11 +893,11 @@ VrtxAdmin.prototype.dropdown = function dropdown(options) {
     listElements.filter("li" + dropdownClickArea).append("<span id='" + idLink + "' title='" + options.title + "' role='link' aria-haspopup='true' aria-controls='" + idWrp + "' aria-expanded='false' tabindex='0' class='dropdown-shortcut-menu-click-area' />");
     var shortcutMenu = listParent.find(".dropdown-shortcut-menu-container");
     shortcutMenu.find("li" + startDropdown).remove();
-    
+
     var waitSome = setTimeout(function() { // Adjust positioning of dropdown container
       if (options.calcTop) {
         shortcutMenu.css("top", (list.position().top + list.height() - (parseInt(list.css("marginTop"), 10) * -1) + 2) + "px");
-      } 
+      }
       var left = (list.width() - list.find(".dropdown-shortcut-menu-click-area").width() - 2);
       if (options.calcLeft) {
         left += list.position().left;
@@ -909,7 +907,7 @@ VrtxAdmin.prototype.dropdown = function dropdown(options) {
 
     var togglerWrp = list.find("li" + dropdownClickArea);
     togglerWrp.addClass("dropdown-init");
-    
+
     eventListen(togglerWrp, "click keypress", ".dropdown-shortcut-menu-click-area", function (ref) {
       var link = $(ref);
       vrtxAdm.closeDropdowns();
@@ -920,7 +918,7 @@ VrtxAdmin.prototype.dropdown = function dropdown(options) {
 
 /**
  * Open dropdown (slide down)
- * 
+ *
  * @param {object} link The link that triggered the dropdown
  * @param {object} dropdown The element to be dropped down
  * @this {VrtxAdmin}
@@ -980,22 +978,22 @@ VrtxAdmin.prototype.initScrollBreadcrumbs = function initScrollBreadcrumbs() {
   vrtxAdm.crumbs = vrtxAdm.crumbsWrp.find(".vrtx-breadcrumb-level, .vrtx-breadcrumb-level-no-url");
   vrtxAdm.crumbs.wrapAll("<div id='vrtx-breadcrumb-outer'><div id='vrtx-breadcrumb-inner'></div></div>");
   vrtxAdm.crumbsInner = vrtxAdm.crumbsWrp.find("#vrtx-breadcrumb-inner");
-  
+
   if(vrtxAdm.crumbsInner.width() < 900) { // Don't initialize breadcrumb menu if it is narrower than min-width
     vrtxAdm.crumbsActive = false;
-    return;  
+    return;
   }
   vrtxAdm.crumbsActive = true;
-  
+
   var navHtml = "<span id='navigate-crumbs-left-coverup' />" +
                 "<a tabindex='0' id='navigate-crumbs-left' class='navigate-crumbs'><span class='navigate-crumbs-icon'></span><span class='navigate-crumbs-dividor'></span></a>" +
-                "<a tabindex='0' id='navigate-crumbs-right' class='navigate-crumbs'><span class='navigate-crumbs-icon'></span><span class='navigate-crumbs-dividor'></span></a>";                                      
+                "<a tabindex='0' id='navigate-crumbs-right' class='navigate-crumbs'><span class='navigate-crumbs-icon'></span><span class='navigate-crumbs-dividor'></span></a>";
   vrtxAdm.crumbsWrp.append(navHtml);
-      
+
   vrtxAdm.crumbsLeft = vrtxAdm.crumbsWrp.find("#navigate-crumbs-left");
   vrtxAdm.crumbsLeftCoverUp = vrtxAdm.crumbsWrp.find("#navigate-crumbs-left-coverup");
-  vrtxAdm.crumbsRight = vrtxAdm.crumbsWrp.find("#navigate-crumbs-right"); 
-  
+  vrtxAdm.crumbsRight = vrtxAdm.crumbsWrp.find("#navigate-crumbs-right");
+
   var waitAWhile = setTimeout(function() {
     var i = vrtxAdm.crumbs.length, crumbsWidth = 0;
     while(i--) {
@@ -1013,20 +1011,20 @@ VrtxAdmin.prototype.initScrollBreadcrumbs = function initScrollBreadcrumbs() {
   eventListen(vrtxAdm.cachedDoc, "keypress", ".vrtx-breadcrumb-level", function (ref) {
     window.location.href = $(ref).find("a").attr("href");
   }, "clickOrEnter", 10);
-  
+
   eventListen(vrtxAdm.cachedDoc, "click keypress", "#navigate-crumbs-left", function (ref) {
     vrtxAdmin.scrollBreadcrumbsLeft();
   }, "clickOrEnter");
-  
+
   eventListen(vrtxAdm.cachedDoc, "click keypress", "#navigate-crumbs-right", function (ref) {
     vrtxAdmin.scrollBreadcrumbsRight();
   }, "clickOrEnter");
-  
+
   /* TODO: replace with stacking of blue/hovered element above nav(?) */
   eventListen(vrtxAdm.cachedDoc, "mouseover mouseout", ".vrtx-breadcrumb-level", function(ref) {
     var hoveredBreadcrumb = $(ref);
     if(!hoveredBreadcrumb.hasClass("vrtx-breadcrumb-active")) {
-      if(vrtxAdm.crumbsState === "left") {            
+      if(vrtxAdm.crumbsState === "left") {
         var gradientRight = vrtxAdm.crumbsRight;
         var gradientLeftEdge = gradientRight.offset().left;
         var crumbRightEdge = hoveredBreadcrumb.offset().left + hoveredBreadcrumb.width();
@@ -1042,7 +1040,7 @@ VrtxAdmin.prototype.initScrollBreadcrumbs = function initScrollBreadcrumbs() {
         }
       }
     }
-  });     
+  });
 };
 
 VrtxAdmin.prototype.scrollBreadcrumbsLeft = function scrollBreadcrumbsLeft() {
@@ -1058,7 +1056,7 @@ VrtxAdmin.prototype.scrollBreadcrumbsHorizontal = function scrollBreadcrumbsHori
   if(!vrtxAdm.crumbsWidth) return;
 
   var width = $("#vrtx-breadcrumb").width();
-  var diff = vrtxAdm.crumbsWidth - width; 
+  var diff = vrtxAdm.crumbsWidth - width;
   if(diff > 0) {
     if(isRight) {
       vrtxAdm.crumbsState = "right";
@@ -1086,7 +1084,7 @@ VrtxAdmin.prototype.scrollBreadcrumbsHorizontal = function scrollBreadcrumbsHori
  * Misc.
  *
  */
- 
+
 VrtxAdmin.prototype.initMiscAdjustments = function initMiscAdjustments() {
   var vrtxAdm = this;
 
@@ -1107,14 +1105,14 @@ VrtxAdmin.prototype.initMiscAdjustments = function initMiscAdjustments() {
 
   vrtxAdm.logoutButtonAsLink();
   vrtxAdm.adjustResourceTitle();
-  
+
   // Ignore all AJAX errors when user navigate away (abort)
   if(typeof unsavedChangesInEditorMessage !== "function" && typeof unsavedChangesInPlaintextEditorMessage !== "function") {
     var ignoreAjaxErrorOnBeforeUnload = function() {
       vrtxAdm.ignoreAjaxErrors = true;
     };
-    window.onbeforeunload = ignoreAjaxErrorOnBeforeUnload;    
-  } 
+    window.onbeforeunload = ignoreAjaxErrorOnBeforeUnload;
+  }
 };
 
 /**
@@ -1133,7 +1131,7 @@ VrtxAdmin.prototype.adjustResourceTitle = function adjustResourceTitle() {
     var titleHeight = title.outerHeight(true) - 34;
     var resourceMenuLeftHeight = resourceMenuLeft.outerHeight(true);
     resourceMenuRight.css("marginTop", -(resourceMenuLeftHeight + titleHeight) + "px");
-    
+
     // Left adjust
     var w1 = title.outerWidth(true);
     var w2 = resourceMenuLeft.outerWidth(true);
@@ -1154,7 +1152,7 @@ VrtxAdmin.prototype.mapShortcut = function mapShortcut(selectors, reroutedSelect
 VrtxAdmin.prototype.logoutButtonAsLink = function logoutButtonAsLink() {
   var btn = $('input#logoutAction');
   if (!btn.length) return;
-  
+
   btn.hide();
   btn.after('&nbsp;<a id=\"logoutAction.link\" name=\"logoutAction\" href="javascript:void(0);">' + btn.attr('value') + '</a>');
   eventListen($("#app-head-wrapper"), "click", "#logoutAction\\.link", function(ref) {
@@ -1186,7 +1184,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
   },
   /**
    * Set caret position
-   * 
+   *
    * Credits: http://stackoverflow.com/questions/499126/jquery-set-cursor-position-in-text-area (first)
    *
    * @this {inputSelectionEngine}
@@ -1212,7 +1210,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
   },
   /**
    * Get caret position
-   * 
+   *
    * Credits: http://stackoverflow.com/questions/4928586/get-caret-position-in-html-input (fourth)
    *
    * @this {inputSelectionEngine}
@@ -1228,7 +1226,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
   },
   /**
    * Substitute characters
-   * 
+   *
    * @this {inputSelectionEngine}
    */
   substitute: function(val, toLowerCase, substitutions) {
@@ -1246,7 +1244,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
   },
   /**
    * Grow dynamically
-   *  
+   *
    * Based on: jQuery autoGrowInput plugin by James Padolsey:
    * http://stackoverflow.com/questions/931207/is-there-a-jquery-autogrow-plugin-for-text-fields
    *
@@ -1293,12 +1291,12 @@ VrtxAdmin.prototype.inputUpdateEngine = {
 
 
 /*-------------------------------------------------------------------*\
-    6. Async functions  
+    6. Async functions
 \*-------------------------------------------------------------------*/
 
 /**
  * Retrieve a form async
- * 
+ *
  * TODO: this is ripe for some cleanup
  *
  * @this {VrtxAdmin}
@@ -1317,7 +1315,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
  * @return {boolean} Proceed with regular link operation?
  */
 VrtxAdmin.prototype.getFormAsync = function getFormAsync(opts) {
-  var vrtxAdm = this, // use prototypal hierarchy 
+  var vrtxAdm = this, // use prototypal hierarchy
     _$ = vrtxAdm._$;
 
   vrtxAdm.cachedBody.dynClick(opts.selector, function (e) {
@@ -1325,7 +1323,7 @@ VrtxAdmin.prototype.getFormAsync = function getFormAsync(opts) {
       return false;
     }
     vrtxAdm.asyncGetFormsInProgress++;
-    
+
     var link = _$(this),
         url = link.attr("href") || link.closest("form").attr("action"),
         modeUrl = window.location.href,
@@ -1344,11 +1342,11 @@ VrtxAdmin.prototype.getFormAsync = function getFormAsync(opts) {
       }
       existExpandedFormIsReplaced = true;
     }
-    
+
     if(opts.funcBeforeComplete) {
       opts.funcBeforeComplete(link);
     }
-    
+
     vrtxAdmin.serverFacade.getHtml(url, {
       success: function (results, status, resp) {
         opts.formElm = _$(_$.parseHTML(results)).find("." + opts.selectorClass);
@@ -1496,7 +1494,7 @@ VrtxAdmin.prototype.addOriginalMarkup = function addOriginalMarkup(url, results,
 VrtxAdmin.prototype.addNewMarkup = function addNewMarkup(opts, form, link) {
   var vrtxAdm = this,
     _$ = vrtxAdm._$;
-    
+
   var inject = opts.findClosest ? link.closest(opts.insertAfterOrReplaceClass) : _$(opts.insertAfterOrReplaceClass);
   if (!inject.length) {
     inject = _$(opts.secondaryInsertAfterOrReplaceClass);
@@ -1552,7 +1550,7 @@ VrtxAdmin.prototype.addNewMarkup = function addNewMarkup(opts, form, link) {
 
 /**
  * Complete a form async
- * 
+ *
  * TODO: Maybe combine this function with completeSimpleFormAsync() (this as an expanded version of it for expanded slidable forms)
  *
  * @this {VrtxAdmin}
@@ -1672,7 +1670,7 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
       });
       animation.bottomUp();
     };
-    
+
     if (opts.errorContainer && vrtxAdm.hasErrorContainers(_$.parseHTML(results), opts.errorContainer)) {
       var parsedHtml = _$.parseHTML(results);
       vrtxAdm.displayErrorContainers(parsedHtml, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
@@ -1684,7 +1682,7 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
       }
     } else {
       if (opts.isReplacing) {
-        internalAnimation(opts.form.parent(), function(animation) { 
+        internalAnimation(opts.form.parent(), function(animation) {
           internalComplete(results);
           if(opts.funcAfterComplete) {
             opts.funcAfterComplete();
@@ -1738,7 +1736,7 @@ VrtxAdmin.prototype.completeFormAsyncPost = function completeFormAsyncPost(opts)
 
 /**
  * Complete a simple form async
- * 
+ *
  * @this {VrtxAdmin}
  * @param {object} options Configuration
  * @param {string} options.selector Selector for links that should complete a form async
@@ -1761,7 +1759,7 @@ VrtxAdmin.prototype.completeSimpleFormAsync = function completeSimpleFormAsync(o
     var url = form.attr("action");
     var startTime = new Date();
     var dataString = form.serialize() + "&" + encodeURIComponent(link.attr("name"));
-    
+
     if(opts.useClickVal)  dataString += "=" + encodeURIComponent(link.val());
     if(opts.extraParams)  dataString += opts.extraParams;
     if(opts.fnBeforePost) {
@@ -1793,16 +1791,16 @@ VrtxAdmin.prototype.completeSimpleFormAsync = function completeSimpleFormAsync(o
             };
             if(vrtxAdm.animateTableRows && (opts.rowFromFormAnimateOut || opts.rowCheckedAnimateOut)) {
               var trs = opts.rowFromFormAnimateOut ? [form.closest("tr")] : form.find("tr")
-                                                                                .filter(function(i) { 
+                                                                                .filter(function(i) {
                                                                                   return $(this).find("td.checkbox input:checked").length; }
                                                                                 );
               var futureAnims = [];
               for(var i = 0, len = trs.length; i < len; i++) {
                 var tr = $(trs[i]);
                 tr.prepareTableRowForSliding().hide(0).finish().slideDown(0, "linear", function() {
-                  var animA = tr.find("td").finish().animate({ 
+                  var animA = tr.find("td").finish().animate({
                       paddingTop: '0px',
-                      paddingBottom: '0px' 
+                      paddingBottom: '0px'
                     },
                     vrtxAdm.transitionDropdownSpeed,
                     vrtxAdm.transitionEasingSlideUp
@@ -1817,7 +1815,7 @@ VrtxAdmin.prototype.completeSimpleFormAsync = function completeSimpleFormAsync(o
               fnInternalComplete();
             }
           };
-        
+
           var endTime = new Date() - startTime;
           if (endTime >= (opts.minDelay || 0)) { // Wait minimum
             completion();
@@ -1881,7 +1879,7 @@ VrtxAdmin.prototype.templateEngineFacade = {
 
 
 /*-------------------------------------------------------------------*\
-    7. Async helper functions and AJAX server façade   
+    7. Async helper functions and AJAX server façade
 \*-------------------------------------------------------------------*/
 
 /**
@@ -1949,7 +1947,7 @@ VrtxAdmin.prototype.displayInfoMsg = function displayInfoMsg(msg) {
 
 /**
  * Display message
- * 
+ *
  * XXX: scrollTo top?
  *
  * @this {VrtxAdmin}
@@ -2009,7 +2007,7 @@ VrtxAdmin.prototype.displayDialogErrorMsg = function displayDialogErrorMsg(selec
     $("<p class='dialog-error-msg' role='alert'>" + msg + "</p>").insertBefore(selector);
   } else {
     msgWrp.text(msg);
-  } 
+  }
 };
 
 /**
@@ -2170,9 +2168,9 @@ VrtxAdmin.prototype.serverFacade = {
   },
   /**
    * Error Ajax handler
-   * 
+   *
    * TODO: More specific error-messages on what action that failed with function-origin
-   *      
+   *
    * @this {serverFacade}
    * @param {object} xhr The XMLHttpRequest object
    * @param {string} textStatus The text status
@@ -2188,7 +2186,7 @@ VrtxAdmin.prototype.serverFacade = {
       msg = this.errorMessages.abort;
     } else if (textStatus === "parsererror") {
       msg = this.errorMessages.parsererror;
-    } else if (status === 0) {   
+    } else if (status === 0) {
       msg = this.errorCheckNeedReauthenticationOrOffline();
     } else if (status === 503 || (xhr.readyState === 4 && status === 200)) {
       msg = (useStatusCodeInMsg ? status + " - " : "") + this.errorMessages.down;
@@ -2321,7 +2319,7 @@ function refreshParent() {
   window.opener.postMessage("displaymsg", "*");
 }
 if(gup("displaymsg", window.location.href) === "yes") {
-  window.onunload = refreshParent;    
+  window.onunload = refreshParent;
 }
 
 // Callback from the image browser:
@@ -2420,7 +2418,7 @@ VrtxAdmin.prototype.wrap = function wrap(node, cls, html) {
 };
 
 /**
- * jQuery outerHTML (because FF <11 don't support regular outerHTML) 
+ * jQuery outerHTML (because FF <11 don't support regular outerHTML)
  *
  * @this {VrtxAdmin}
  * @param {string} selector Context selector
@@ -2429,7 +2427,7 @@ VrtxAdmin.prototype.wrap = function wrap(node, cls, html) {
  */
 VrtxAdmin.prototype.outerHTML = function outerHTML(selector, subselector) {
   var _$ = this._$;
-  
+
   var wrp = _$(selector);
   var elm = wrp.find(subselector);
   if (elm.length) {
@@ -2560,8 +2558,8 @@ function unique(array) {
   return r;
 }
 
-/* 
- * Check keyboard input 
+/*
+ * Check keyboard input
  */
 function isKey(e, keyCodes) {
   for(var i = keyCodes.length; i--;) {
@@ -2614,8 +2612,8 @@ function eventListen(listenBase, eventType, listenOn, handlerFn, handlerFnCheck,
 \*-------------------------------------------------------------------*/
 
 /*  Override slideUp() / slideDown() to animate rows in a table
- *  
- *  Credits: 
+ *
+ *  Credits:
  *  o http://stackoverflow.com/questions/467336/jquery-how-to-use-slidedown-or-show-function-on-a-table-row/920480#920480
  *  o http://www.bennadel.com/blog/1624-Ask-Ben-Overriding-Core-jQuery-Methods.htm
  */
@@ -2686,7 +2684,7 @@ jQuery.fn.extend({
 /*
  * jQuery throttle / debounce - v1.1 - 3/7/2010
  * http://benalman.com/projects/jquery-throttle-debounce-plugin/
- * 
+ *
  * Copyright (c) 2010 "Cowboy" Ben Alman
  * Dual licensed under the MIT and GPL licenses.
  * http://benalman.com/about/license/
@@ -2744,7 +2742,7 @@ function repositionDialogsTouchDevices() {
 }
 
 /* Easing
- * 
+ *
  * TODO: Move to VrtxAnimation when slide and rotate animations (forms and preview) becomes part of it
  * TODO: Check if jQuery UI is available
  */
