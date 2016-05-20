@@ -60,6 +60,7 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
     @Override
     public void onApplicationEvent(ServletRequestHandledEvent event) {
         RequestContext requestContext = RequestContext.getRequestContext();
+        if (requestContext == null) return;
         Service service = requestContext.getService();
         boolean auth = requestContext.getPrincipal() != null;
         VrtxEvent vrtxEvent = new VrtxEvent(event, service, auth);
