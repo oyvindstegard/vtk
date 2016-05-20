@@ -13,6 +13,8 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       
         displaySystemGoingDownMessage();
         
+        keepAliveEditors();
+        
         // Dropdowns
         if(!isEmbedded) {
           vrtxAdm.dropdownPlain("#editor-help-menu");
@@ -38,6 +40,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
           ajaxSave();
           _$.when(vrtxAdm.asyncEditorSavedDeferred).done(function () {
             vrtxAdm.removeMsg("error");
+            
             // Redirect after save
             if(vrtxAdm.editorSaveIsRedirectPreview) {
               if(typeof vrtxEditor !== "undefined") vrtxEditor.needToConfirm = false;
@@ -63,6 +66,44 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       break;
   }
 });
+
+/* 
+ * Every 30s check time since last interaction,
+ * and don't send ping() requests after 30 minutes without interaction
+ * 
+ */
+function keepAliveEditors() {
+
+  var keepAliveEditorsTimer = setInterval(function() {
+    
+    vrtxAdmin.editorIsDead = (+new Date() - vrtxAdmin.editorLastInteraction) >= vrtxAdmin.editorKeepAlive;
+    
+    if(vrtxAdmin.editorIsDead && !vrtxAdmin.editorDeadMsgGiven) {
+      var d = new VrtxHtmlDialog({
+        title: vrtxAdmin.messages.editor.timedOut.title,
+        html: vrtxAdmin.messages.editor.timedOut.msg,
+        btnTextOk: vrtxAdmin.messages.editor.timedOut.ok,
+        btnTextCancel: cancelI18n,
+        width: 400,
+        onOpen: function() {
+          vrtxAdmin.editorDeadMsgGiven = true;
+        },
+        onOk: function() {
+          $(".vrtx-focus-button.vrtx-save-button").click();
+        },
+        onClose: function() {
+          vrtxAdmin.editorDeadMsgGiven = false;
+        }
+      });
+      d.open();
+    }
+    
+  }, 30000);
+  
+  vrtxAdmin.cachedDoc.on("mousedown keypress", function(e) {
+    vrtxAdmin.editorLastInteraction = +new Date();
+  });
+}
 
 /* 
  * Display system going down message when #server-going-down exists in admin-message (after 5s every 60s)

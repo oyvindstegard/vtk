@@ -18,6 +18,9 @@
   -->
 <#macro ping url interval=300 method="GET">
   <script type="text/javascript"><!--
+  
+     if(typeof vrtxAdmin === "undefined") var vrtxAdmin = { editorIsDead: false };
+  
      var intervalSec = ${interval};
      var req;
           
@@ -29,7 +32,7 @@
               req = new ActiveXObject("Microsoft.XMLHTTP");
            }
         }
-        if (req != null) {
+        if (req != null && !vrtxAdmin.editorIsDead) {
            var d=new Date();
            req.open('${method}', '${url}' + '&timestamp=' + d.getTime(), true);
            req.onreadystatechange = callback;

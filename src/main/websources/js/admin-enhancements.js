@@ -119,6 +119,12 @@ function VrtxAdmin() {
   this.asyncEditorSavedDeferred = null;
   this.asyncGetFormsInProgress = 0;
   this.asyncGetStatInProgress = false;
+  
+  /* Editor keep alive */
+  this.editorIsDead = false;
+  this.editorLastInteraction = +new Date();
+  this.editorKeepAlive = 30*60*1000;
+  this.editorDeadMsgGiven = false;
 
   /* Upload */
   this.uploadCopyMoveSkippedFiles = {};

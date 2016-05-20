@@ -391,8 +391,12 @@ VrtxEditor.prototype.richtextEditorFacade = {
   setupCTRLS: function() {
     var rteFacade = this;
     var setupCTRLSPrivate = function(event) {
+      // Interactions inside iframe
       _$(".cke_contents iframe").contents().find("body").bind('keydown', 'ctrl+s meta+s', $.debounce(150, true, function (e) {
         ctrlSEventHandler(_$, e);
+      }));
+      _$(".cke_contents iframe").contents().find("body").bind('keydown mousedown', $.debounce(150, true, function (e) {
+        vrtxAdmin.editorLastInteraction = +new Date();
       }));
       
       // Fix bug (http://dev.ckeditor.com/ticket/9958) with IE triggering onbeforeunload on dialog click
