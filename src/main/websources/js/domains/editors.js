@@ -8,12 +8,15 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
   switch (vrtxAdm.bodyId) {
     case "vrtx-editor":
     case "vrtx-edit-plaintext":
+      if (_$("form#editor").length) {
+        keepAliveEditors();
+      }
+    case "vrtx-editor":
+    case "vrtx-edit-plaintext":
     case "vrtx-visual-profile":
       if (_$("form#editor").length) {
       
         displaySystemGoingDownMessage();
-        
-        keepAliveEditors();
         
         // Dropdowns
         if(!isEmbedded) {
@@ -100,9 +103,9 @@ function keepAliveEditors() {
     
   }, 30000);
   
-  vrtxAdmin.cachedDoc.on("mousedown keypress", function(e) {
+  vrtxAdmin.cachedDoc.on("mousedown keypress", $.debounce(150, true, function (e) {
     vrtxAdmin.editorLastInteraction = +new Date();
-  });
+  }));
 }
 
 /* 
