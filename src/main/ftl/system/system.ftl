@@ -73,6 +73,13 @@
         title: '${vrtx.getMsg("system.going-down.title")}',
         msg: '${vrtx.getMsg("system.going-down.msg")}'
       }
+    },
+    editor: {
+      timedOut: {
+        title: '${vrtx.getMsg("editor.timed-out.title")}',
+        msg: '${vrtx.getMsg("editor.timed-out.msg")}',
+        ok: '${vrtx.getMsg("editor.timed-out.ok")}'
+      }
     }
   }
   
