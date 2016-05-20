@@ -78,7 +78,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
 function keepAliveEditors() {
 
   var keepAliveEditorsTimer = setInterval(function() {
-    
+  
     vrtxAdmin.editorIsDead = (+new Date() - vrtxAdmin.editorLastInteraction) >= vrtxAdmin.editorKeepAlive;
     
     if(vrtxAdmin.editorIsDead && !vrtxAdmin.editorDeadMsgGiven) {
@@ -101,7 +101,7 @@ function keepAliveEditors() {
       d.open();
     }
     
-  }, 30000);
+  }, vrtxAdmin.editorCheckLastInteraction);
   
   vrtxAdmin.cachedDoc.on("mousedown keypress", $.debounce(150, true, function (e) {
     vrtxAdmin.editorLastInteraction = +new Date();

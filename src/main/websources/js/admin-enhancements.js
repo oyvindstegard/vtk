@@ -123,6 +123,7 @@ function VrtxAdmin() {
   /* Editor keep alive */
   this.editorIsDead = false;
   this.editorLastInteraction = +new Date();
+  this.editorCheckLastInteraction = 30*1000;
   this.editorKeepAlive = 30*60*1000;
   this.editorDeadMsgGiven = false;
 
