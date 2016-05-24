@@ -69,6 +69,8 @@
     <constructor-arg name="redisConnectionFactory">
       <bean class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
         <constructor-arg name="poolConfig" ref="redis.pool.config" />
+        <property name="hostName" value="${redis.host}" />
+        <property name="port" value="${redis.port}" />
       </bean>
     </constructor-arg>
   </bean>
