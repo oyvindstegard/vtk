@@ -21,7 +21,7 @@
   <!-- Override -->
   <bean id="saml.ieCookieStore.cache" class="vtk.util.cache.RedisSimpleCache">
     <constructor-arg name="jedisPool" ref="redis.pool" />
-    <constructor-arg name="prefix" value="saml.ieCookieStore.cache." />
+    <constructor-arg name="prefix" value="vrtx:saml:${redis.namespace}:ieCookieStore:cache:" />
     <constructor-arg name="timeoutSeconds" value="3600" />
     <constructor-arg name="updateTimeouts" value="true" />
   </bean>
@@ -30,7 +30,7 @@
   <!-- Override -->
   <bean id="saml.requestIdStore" class="vtk.util.cache.RedisSimpleCache">
     <constructor-arg name="jedisPool" ref="redis.pool" />
-    <constructor-arg name="prefix" value="saml.requestIdStore." />
+    <constructor-arg name="prefix" value="vrtx:saml:${redis.namespace}:requestIdStore:" />
     <constructor-arg name="timeoutSeconds" value="1800" />
     <constructor-arg name="updateTimeouts" value="false" />
   </bean>
@@ -39,7 +39,7 @@
   <!--
   <bean id="feide.requestIdStore" class="vtk.util.cache.RedisSimpleCache">
     <constructor-arg name="jedisPool" ref="redis.pool" />
-    <constructor-arg name="prefix" value="feide.requestIdStore." />
+    <constructor-arg name="prefix" value="vrtx:feide:${redis.namespace}:requestIdStore:" />
     <constructor-arg name="timeoutSeconds" value="1800" />
     <constructor-arg name="updateTimeouts" value="false" />
   </bean>
@@ -48,7 +48,7 @@
   <!-- Override -->
   <bean id="tokenManagerCache" class="vtk.util.cache.RedisSimpleCache">
     <constructor-arg name="jedisPool" ref="redis.pool" />
-    <constructor-arg name="prefix" value="tokenManagerCache." />
+    <constructor-arg name="prefix" value="vrtx:security:${redis.namespace}:tokens:" />
     <constructor-arg name="timeoutSeconds" value="1800" />
     <constructor-arg name="updateTimeouts" value="true" />
   </bean>
@@ -57,7 +57,7 @@
   <!-- Override -->
   <bean id="cookieLinkStore.cache" class="vtk.util.cache.RedisSimpleCache">
     <constructor-arg name="jedisPool" ref="redis.pool" />
-    <constructor-arg name="prefix" value="cookieLinkStore.cache." />
+    <constructor-arg name="prefix" value="vrtx:security:${redis.namespace}:cookielink:" />
     <constructor-arg name="timeoutSeconds" value="3600" />
     <constructor-arg name="updateTimeouts" value="true" />
   </bean>
@@ -73,6 +73,7 @@
         <property name="port" value="${redis.port}" />
       </bean>
     </constructor-arg>
+    <property name="redisKeyNamespace" value="${redis.namespace}" />
   </bean>
 
 </beans>
