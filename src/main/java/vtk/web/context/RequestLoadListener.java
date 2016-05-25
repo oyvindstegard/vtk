@@ -30,10 +30,19 @@
  */
 package vtk.web.context;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
@@ -46,16 +55,29 @@ import com.codahale.metrics.MetricRegistry;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 
-public class RequestLoadListener implements ApplicationListener<ServletRequestHandledEvent> {
+public class RequestLoadListener implements ApplicationListener<ServletRequestHandledEvent>, Filter {
     private final ExecutorService executorService;
     private final MetricsHandler metricsHandler;
+    private Counter activeRequests;
     
     public RequestLoadListener(MetricRegistry registry) {
         this.executorService = Executors.newSingleThreadExecutor(
                 r -> new Thread(r));
         this.metricsHandler = new MetricsHandler(registry);
+        this.activeRequests = registry.counter("requests.active"); 
     }
     
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response,
+            FilterChain chain) throws IOException, ServletException {
+        try {
+            activeRequests.inc();
+            chain.doFilter(request, response);
+        }
+        finally {
+            activeRequests.dec();
+        }
+    }
 
     @Override
     public void onApplicationEvent(ServletRequestHandledEvent event) {
@@ -69,19 +91,27 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
         });
     }
 
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException { }
+
+    @Override
+    public void destroy() { }
+
 
     private static class VrtxEvent {
         public final Service service;
         public final boolean auth;
         public final boolean failure;
         public final long processingTimeMillis;
-        public final long statusCode;
+        public final Optional<Long> statusCode;
         public VrtxEvent(ServletRequestHandledEvent reqEvent, Service service, boolean auth) {
             this.service = service;
             this.auth = auth;
             this.failure = reqEvent.wasFailure();
             this.processingTimeMillis = reqEvent.getProcessingTimeMillis();
-            this.statusCode = reqEvent.getStatusCode();
+            long sc = reqEvent.getStatusCode();
+            this.statusCode = sc != -1 ? Optional.of(sc) : Optional.empty();
+            
         }
     }
 
@@ -120,7 +150,7 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
             if (event.auth) {
                 authenticated.mark();
             }
-            if (event.statusCode != -1) {
+            event.statusCode.ifPresent(code -> {
                 String statusKey = String.valueOf("requests.status." + event.statusCode);
                 Counter counter = status.get(statusKey);
                 if (counter == null) {
@@ -128,7 +158,8 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
                     status.put(statusKey, counter);
                 }
                 counter.inc();
-            }
+            });
         }
     }
+
 }
