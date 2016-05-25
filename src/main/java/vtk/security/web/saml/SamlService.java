@@ -35,19 +35,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -87,14 +82,17 @@ import org.opensaml.xml.signature.SignatureValidator;
 import org.opensaml.xml.util.Base64;
 import org.opensaml.xml.util.XMLHelper;
 import org.opensaml.xml.validation.ValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import vtk.repository.Path;
 import vtk.security.AuthenticationProcessingException;
 import vtk.util.cache.SimpleCache;
 import vtk.web.InvalidRequestException;
 import vtk.web.service.URL;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public abstract class SamlService {
 
@@ -556,7 +554,7 @@ public abstract class SamlService {
         if (!(assertion instanceof SignableSAMLObject)) {
             throw new IllegalArgumentException("Assertion must be an instance of SignableSAMLObject");
         }
-        SignableSAMLObject signable = (SignableSAMLObject) assertion;
+        SignableSAMLObject signable = assertion;
 
         Signature signature = signable.getSignature();
         if (signature == null) {

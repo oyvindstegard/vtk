@@ -148,8 +148,8 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         if (this.login.isUnsolicitedLoginResponse(request)) {
             this.challenge.prepareUnsolicitedChallenge(request);
             authLogger.debug(request.getRemoteAddr() + " - request-URI: " + request.getRequestURI() + " - "
-                    + "Unsolicitated authentication request: " + request);
-            throw new AuthenticationException("Unsolicitated authentication request: " + request);
+                    + "Unsolicited authentication request: " + request);
+            throw new AuthenticationException("Unsolicited authentication request: " + request);
         }
 
         UserData userData = this.login.login(request);
