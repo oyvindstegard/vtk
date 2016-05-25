@@ -65,6 +65,16 @@
     <property name="tokenManager" ref="tokenManager" />
   </bean>
 
+  <bean parent="metrics.gaugeRegistration">
+    <property name="arguments">
+      <list>
+        <value>repository.nslocks.size</value>
+        <value>context.getBean("repository.lockingCacheControlWrapper").lockManager.locks.size()</value>
+      </list>
+    </property>
+  </bean>
+
+
   <!-- Wrapper around the repository that caches retrievals in thread-local context when executing in a servlet request: -->
   <bean id="repository" class="vtk.web.RequestLocalRepository">
     <property name="repository" ref="repository.lockingCacheControlWrapper" />
