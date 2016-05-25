@@ -552,7 +552,7 @@ vrtxEditor.richtextEditorFacade.toolbars.commentsToolbar = [
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
-  ['PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'], ['Replace'], ['Link', 'Unlink', 'Anchor'],
+  ['About', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'], ['Replace'], ['Link', 'Unlink', 'Anchor'],
   ['Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'Mathjax', 'SpecialChar'],
   ['Maximize'], ['Source'], '/', ['Format'], 
   ['Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'TextColor', '-', 'RemoveFormat'],
