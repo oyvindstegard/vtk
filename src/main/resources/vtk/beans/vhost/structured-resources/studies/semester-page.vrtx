@@ -330,7 +330,7 @@ resourcetype semester-page {
               <div class="vrtx-frontpage-box white-box">
                 <h2>[localized 'fronter']</h2>
                 <p>[localized 'fronter-text']</p>
-                <a href="https://fronter.uio.no/" class="button"><span>[localized 'log-into-fronter']</span></a>
+                <a href="https://fronter.com/uio/" class="button"><span>[localized 'log-into-fronter']</span></a>
               </div>
             [endif]
             [if messagelisting != null && (((messages-placement = null || (messages-placement != null && messages-placement = "auto")) && resourceLinkCount < 5) || (messages-placement != null && messages-placement = "middle"))]
