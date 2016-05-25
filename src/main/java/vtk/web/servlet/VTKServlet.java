@@ -91,7 +91,7 @@ import vtk.web.service.URL;
  * {@link RequestContextInitializer} and the optional 
  * {@link RepositoryContextInitializer} classes.
  *
- * <p>The security innitializer takes care of checking requests for
+ * <p>The security initializer takes care of checking requests for
  * authentication credentials, and if present, authenticating users,
  * ultimately creating a {@link
  * vtk.security.SecurityContext} that lasts throughout the
