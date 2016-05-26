@@ -35,7 +35,6 @@ resourcetype frontpage {
         [def containers #()]
         [def containers2 #()]
         [def containers3 #()]
-        [def containers4 #()]
         [def startIndex 0]
         [def colored 0]
         [def count 0]
