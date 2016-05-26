@@ -30,7 +30,59 @@ resourcetype frontpage {
     main-content(document) {
       ##
       [def boxes document.properties.main-content]
+      
       [if boxes != null]
+        [def containers #()]
+        [def containers2 #()]
+        [def containers3 #()]
+        [def containers4 #()]
+        [def startIndex 0]
+        [def colored 0]
+        [def count 0]
+        [def coloredOne 0]
+        [def twoThirds 0]
+        
+        [list boxes box]
+          [def sizePlacement box.boxCssSizeAndPlacement]
+          [def color box.boxCssColor]
+          
+          [if sizePlacement != "half-box-right"
+           && sizePlacement != "third-box-middle"
+           && sizePlacement != "third-box-right"]
+            [if startIndex > 0]
+              [capture idx][val startIndex][endcapture]
+              [if count = colored]    [def containers containers.append(idx)]   [endif]
+              [if coloredOne > 0]     [def containers2 containers2.append(idx)] [endif]
+              [if twoThirds > 0]      [def containers3 containers3.append(idx)] [endif]
+              [def colored 0]
+              [def count 0]
+              [def coloredOne 0]
+              [def twoThirds 0]
+            [endif]
+            [def index _index + 1]
+            [def startIndex index]
+          [endif]
+          
+          [def count count + 1]
+          [if color = "grey-box"]
+            [def colored colored + 1]
+            [def coloredOne 1]
+          [endif]
+          [if sizePlacement = "two-thirds-left third-box-double"
+           || sizePlacement = "two-thirds-right third-box-double"]
+            [def twoThirds 1]
+          [endif]
+        [endlist]
+        
+        [if startIndex > 0]
+          [capture idx][val startIndex][endcapture]
+          [if count = colored]    [def containers containers.append(idx)]   [endif]
+          [if coloredOne > 0]     [def containers2 containers2.append(idx)] [endif]
+          [if twoThirds > 0]      [def containers3 containers3.append(idx)] [endif]
+        [endif]
+        
+        [def openedGridContainer "false"]
+        
         [list boxes box]
           [def type box.boxType]
           [def sizePlacement box.boxCssSizeAndPlacement]
@@ -78,6 +130,21 @@ resourcetype frontpage {
             [if cssClasses != ""] [def cssClasses concat(cssClasses, " ")] [endif]
             [def cssClasses concat(cssClasses, "vrtx-main-content-last")]
           [endif]
+          
+          [if sizePlacement != "half-box-right"
+           && sizePlacement != "third-box-middle"
+           && sizePlacement != "third-box-right"]
+            [if openedGridContainer = "true"]
+                </div>
+              </div>
+              [def openedGridContainer "false"]
+            [endif]
+            [def number number + ""]
+            <div class="grid-container[list containers idx][if number = idx] row-all-colored[endif][endlist][list containers2 idx][if number = idx] row-one-colored[endif][endlist][list containers3 idx][if number = idx] row-two-thirds[endif][endlist]">
+              <div class="row">
+        
+              [def openedGridContainer "true"]
+          [endif]
 
           [if cssClasses != null && cssClasses != ""]
             <div class="vrtx-frontpage-box [val cssClasses]" id="vrtx-main-content-[val number]">
@@ -119,6 +186,11 @@ resourcetype frontpage {
           [endif]
           </div>
         [endlist]
+        
+        [if openedGridContainer = "true"]
+            </div>
+          </div>
+        [endif]
       [endif]
       ##
     }
