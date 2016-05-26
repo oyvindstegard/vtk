@@ -45,6 +45,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -540,6 +541,15 @@ public class IOTest {
         assertTrue(tmp.file().getName().startsWith(IO.TEMP_FILE_PREFIX));
         assertTrue(tmp.file().getName().endsWith("foo"));
         tmp.delete();
+    }
+    
+    @Test
+    public void test_AutoCloseable() throws Exception {
+        File file;
+        try (IO.TempFile tempFile = IO.tempFile()) {
+            file = tempFile.file();
+        }
+        assertFalse(file.exists());
     }
     
     @Test
