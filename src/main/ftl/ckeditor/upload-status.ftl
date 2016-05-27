@@ -1,4 +1,4 @@
-<#ftl>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: upload-status.ftl
   -  
@@ -25,8 +25,8 @@
        uploadCompletedFunction = window.parent.OnUploadCompleted;
     }
     uploadCompletedFunction(
-      ${error}, '${(newFileName?html)?default("")}', 
-      '${(fileName?html)?default("")}', '${(customMessage?html)?default("")}'
+      ${error}, '${(newFileName)?default("")}', 
+      '${(fileName)?default("")}', '${(customMessage)?default("")}'
       );
   //-->
 </script>

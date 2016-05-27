@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#attempt>
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
@@ -6,7 +6,7 @@
 
 <#if command?exists && !command.done>
   <div class="globalmenu expandedForm">
-    <form name="form" action="${command.submitURL?html}" method="post">
+    <form name="form" action="${command.submitURL}" method="post">
       <h3><@vrtx.msg code="actions.transformHtmlToXhtmlService" default="Make webeditable copy"/>:</h3>
       <@spring.bind "command.name" /> 
       <@actionsLib.genErrorMessages spring.status.errorMessages />

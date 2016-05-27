@@ -1,4 +1,4 @@
-  <#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -9,7 +9,7 @@
   <#if (messages?size > 0)>
     <div id="${collectionListing.name}" class="vrtx-resources ${collectionListing.name}">
       <#if collectionListing.title?exists && collectionListing.offset == 0>
-        <h2>${collectionListing.title?html}</h2>
+        <h2>${collectionListing.title}</h2>
       </#if>
 
       <@displayMessages messages />
@@ -35,7 +35,7 @@
 
     <#if compactView> <#-- XXX: use feed-component instead (but need to avoid another search)? -->
       <li class="item-${i}">
-        <a class="item-title" href="${messageEntry.url?html}">${title?html}</a>
+        <a class="item-title" href="${messageEntry.url}">${title}</a>
         <#local publishDateProp = vrtx.prop(message, 'publish-date') />
         <span class="published-date"><@vrtx.date value=publishDateProp.dateValue format='long' locale=locale /></span>
       </li>
@@ -43,7 +43,7 @@
     <#else>
       <div class="vrtx-result-${i} vrtx-resource">
         <div class="vrtx-title">
-          <a class="vrtx-title" href="${messageEntry.url?html}">${title?html}</a>
+          <a class="vrtx-title" href="${messageEntry.url}">${title}</a>
           <#if messageEntry.editLocked>
             <span class="vrtx-message-listing-locked"><@vrtx.msg code="listing.edit.locked-by" /> ${messageEntry.lockedByNameHref}</span>
           <#elseif messageEntry.editAuthorized>
@@ -74,7 +74,7 @@
           <#local isTruncated = vrtx.propValue(message, "isTruncated", "", "") />
           <#if isTruncated?exists && isTruncated = 'true'>
             <div class="vrtx-read-more">
-              <a href="${messageEntry.url?html}" class="more">
+              <a href="${messageEntry.url}" class="more">
                 <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
               </a>
             </div>
@@ -103,7 +103,7 @@
               <#local isTruncated = vrtx.propValue(message, "isTruncated", "", "") />
               <#if isTruncated?exists && isTruncated = 'true'>
                 <div class="vrtx-read-more">
-                  <a href="${messageEntry.url?html}" class="more">
+                  <a href="${messageEntry.url}" class="more">
                     <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
                   </a>
                 </div>

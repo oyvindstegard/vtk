@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: select-language.ftl
   - 
@@ -16,12 +16,12 @@
       <span id="locale-selection-header"><@vrtx.msg code="localeSelection.selectLocale" default="Language settings"/>:</span>
       <ul>
         <#list switchLocaleActions.localeServiceNames as locale>
-          <#assign active = switchLocaleActions.localeServiceActive[locale]?html />
+          <#assign active = switchLocaleActions.localeServiceActive[locale] />
           <li class="locale ${locale} ${active}">
             <#if active = "active">
               <span><@vrtx.msg code="locales.${locale}" default="${locale}"/></span>
             <#else>
-              <a href="${switchLocaleActions.localeServiceURLs[locale]?html}"><@vrtx.msg code="locales.${locale}" default="${locale}"/></a>
+              <a href="${switchLocaleActions.localeServiceURLs[locale]}"><@vrtx.msg code="locales.${locale}" default="${locale}"/></a>
             </#if>
           </li>
         </#list>

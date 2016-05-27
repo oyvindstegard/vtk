@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 
 <#import "/lib/vtk.ftl" as vrtx />
 <#if conf.auth && (feed.entries?size &gt; 0 || conf.includeIfEmpty)>
@@ -6,9 +6,9 @@
   <#if overrideFeedTitle?exists && viewURL?exists>
     <a class="feed-title" href="${viewURL}">${overrideFeedTitle}</a>
   <#elseif conf.feedTitle?exists && viewURL?exists>
-    <a class="feed-title" href="${viewURL}">${feed.title?html}</a> 
+    <a class="feed-title" href="${viewURL}">${feed.title}</a> 
   <#elseif conf.feedTitleValue?exists>
-    <div class="feed-title">${conf.feedTitleValue?html}</div> 
+    <div class="feed-title">${conf.feedTitleValue}</div> 
   </#if>
 
   <#if conf.feedDescription?exists && feed.description?exists>
@@ -72,9 +72,9 @@
   <#local href="${entry.link?default('')}" />
   <#if element = "title" >
     <#if href != ''>
-      <a class="item-title" href="${href?html}">${entry.title?trim?html}</a>
+      <a class="item-title" href="${href}">${entry.title?trim}</a>
     <#else>
-      ${entry.title?trim?html}
+      ${entry.title?trim}
     </#if>
   </#if>
 
@@ -113,7 +113,7 @@
   
   <#if element = "channel" >
      <#if conf.displayChannel?exists>
-       <#if conf.publishedDate?exists && entry.publishedDate?exists> - </#if><a href="${feedMapping.getUrl(entry)}" class="channel">${feedMapping.getTitle(entry)?html}</a> 
+       <#if conf.publishedDate?exists && entry.publishedDate?exists> - </#if><a href="${feedMapping.getUrl(entry)}" class="channel">${feedMapping.getTitle(entry)}</a> 
      </#if>
   </#if>
   
@@ -125,7 +125,7 @@
 
   <#if element = "picture" && conf.itemPicture?exists && imageMap[entry]?exists && imageMap[entry]?has_content >
     <#if href != ''>
-     <a class="vrtx-image" href="${href?html}">${imageMap[entry]?string}</a>
+     <a class="vrtx-image" href="${href}">${imageMap[entry]?string}</a>
     <#else>
       ${imageMap[entry]?string}
     </#if>

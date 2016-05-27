@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "../vtk.ftl" as vrtx />
 
 <#macro displayMastersAlphabetical masterListing>
@@ -8,7 +8,7 @@
 	    <ul>
 		  <#list alpthabeticalOrdredResult[key] as master>
 			<#local title = vrtx.propValue(master.propertySet, 'title') />
-			<li><a href="${master.url?html}">${title}</a></li>
+			<li><a href="${master.url}">${title}</a></li>
 		  </#list>
 		</ul>
 	  </li>
@@ -34,7 +34,7 @@
   <#if (masters?size > 0) >
     <div id="${masterListing.name}" class="vrtx-masters ${masterListing.name}">
       <#if masterListing.title?exists && masterListing.offset == 0>
-        <h2>${masterListing.title?html}</h2>
+        <h2>${masterListing.title}</h2>
       </#if>
       <#local locale = springMacroRequestContext.getLocale() />
       <#list masters as masterEntry>
@@ -53,12 +53,12 @@
     		  <#local thumbnail = "" />
    		   	</#if>
    		   	<#local introImgAlt = vrtx.propValue(master, 'pictureAlt') />
-            <a class="vrtx-image" href="${masterEntry.url?html}">
-              <img src="${thumbnail?html}" alt="<#if introImgAlt?has_content>${introImgAlt?html}</#if>" />
+            <a class="vrtx-image" href="${masterEntry.url}">
+              <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
             </a>
           </#if>
           <div class="vrtx-title">
-            <a class="vrtx-title summary" href="${masterEntry.url?html}">${title?html}</a>
+            <a class="vrtx-title summary" href="${masterEntry.url}">${title}</a>
 		  </div>
           <#if intro?has_content && masterListing.hasDisplayPropDef("hide-introduction")>
             <div class="description introduction">
@@ -66,7 +66,7 @@
         	</div>
           </#if>
           <div class="vrtx-read-more">
-            <a href="${masterEntry.url?html}" class="more">
+            <a href="${masterEntry.url}" class="more">
               <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
             </a>
           </div>
@@ -101,7 +101,7 @@
             <tr id="vrtx-master-${masterCount}">
           </#if>
             <#local master = masterEntry.propertySet />
-            <#local title = vrtx.propValue(master, 'title')?html />
+            <#local title = vrtx.propValue(master, 'title') />
             <td class="vrtx-table-title"><a href="${masterEntry.url}">${title}</a></td>
             <#local publishDate = vrtx.propValue(master, 'publish-date', 'short', '') />
             <td class="vrtx-table-creation-time">${publishDate}</td>
@@ -120,9 +120,9 @@
                      <#if studentObj.studentName??>
 				       <li>
 				       <#if studentObj.studentUrl??>
-					     <a href="${studentObj.studentUrl?html}">${studentObj.studentName?html}</a><#t/>
+					     <a href="${studentObj.studentUrl}">${studentObj.studentName}</a><#t/>
 				       <#else>
-					     ${studentObj.studentName?html}<#t/>
+					     ${studentObj.studentName}<#t/>
 				       </#if>
 				       <#t/><#if (size > 1 && count < size)>,</#if>
 				       </li>
@@ -153,9 +153,9 @@
 			       <#if fullName != "" >
 				     <li>
 				       <#if url != "">
-					     <a href="${url?html}">${fullName?html}<#t/>
+					     <a href="${url}">${fullName}<#t/>
 					   <#else>
-					     ${fullName?html}<#t/>
+					     ${fullName}<#t/>
 					   </#if>
 					   <#t/><#if (size > 1 && count < size)>,</#if>
 				     </li>

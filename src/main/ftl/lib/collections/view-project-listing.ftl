@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "../vtk.ftl" as vrtx />
 
 <#macro displayProjectsAlphabetical projectListing>
@@ -8,7 +8,7 @@
 	    <ul>
 		  <#list alpthabeticalOrdredResult[key] as project>
 			  <#local title = vrtx.propValue(project.propertySet, 'title') />
-			  <li><a href="${project.url?html}">${title}</a></li>
+			  <li><a href="${project.url}">${title}</a></li>
 		  </#list>
 		</ul>
 	  </li>
@@ -36,7 +36,7 @@
   <#if (projects?size > 0) >
     <div id="${projectListing.name}" class="vrtx-resources vrtx-projects ${projectListing.name}">
     <#if projectListing.title?exists && projectListing.offset == 0>
-      <h2>${projectListing.title?html}</h2>
+      <h2>${projectListing.title}</h2>
     </#if>
     <#local locale = springMacroRequestContext.getLocale() />
 
@@ -58,18 +58,18 @@
     			<#local thumbnail = "" />
    		   	</#if>
    		   	<#local introImgAlt = vrtx.propValue(project, 'pictureAlt') />
-            <a class="vrtx-image" href="${projectEntry.url?html}">
-              <img src="${thumbnail?html}" alt="<#if introImgAlt?has_content>${introImgAlt?html}</#if>" />
+            <a class="vrtx-image" href="${projectEntry.url}">
+              <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
             </a>
           </#if>
           <div class="vrtx-title">
-            <a class="vrtx-title summary" href="${projectEntry.url?html}">${title?html}</a>
+            <a class="vrtx-title summary" href="${projectEntry.url}">${title}</a>
 			    </div>
         	<#if intro?has_content && projectListing.hasDisplayPropDef("hide-introduction")>
         	  <div class="description introduction"><@vrtx.linkResolveFilter intro.value projectEntry.url requestURL /></div>
           </#if>
           <div class="vrtx-read-more">
-            <a href="${projectEntry.url?html}" class="more">
+            <a href="${projectEntry.url}" class="more">
               <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
             </a>
           </div>

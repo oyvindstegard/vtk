@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -11,7 +11,7 @@
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/open-webdav.js"></script>
     <div id="${collectionListing.name}" class="vrtx-resources ${collectionListing.name}">
       <#if collectionListing.title?exists && collectionListing.offset == 0>
-        <h2>${collectionListing.title?html}</h2>
+        <h2>${collectionListing.title}</h2>
       </#if>
     
       <#list entries as entry>
@@ -39,7 +39,7 @@
           <div class="vrtx-resource">
         </#if>
         <#if !hideIcon?exists>
-		  <a class="vrtx-icon <@vrtx.resourceToIconResolver entryPropSet />" href="${url?html}"></a>
+		  <a class="vrtx-icon <@vrtx.resourceToIconResolver entryPropSet />" href="${url}"></a>
 		</#if> 
       
 		<div class="vrtx-title">
@@ -47,7 +47,7 @@
 		  <#if !title?has_content>
 		    <#assign title = vrtx.propValue(entryPropSet, "solr.name", "", "") />
 		  </#if>
-          <a class="vrtx-title vrtx-title-link" href="${linkURL?html}">${title?html}</a>
+          <a class="vrtx-title vrtx-title-link" href="${linkURL}">${title}</a>
 
           <#--
             Only local resources are ever evaluated for edit authorization.

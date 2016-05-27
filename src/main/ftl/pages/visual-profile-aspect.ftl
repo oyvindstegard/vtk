@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 
 <#--
   - File: visual-profile-aspect.ftl
@@ -26,7 +26,7 @@
 </head>
 <body id="vrtx-visual-profile">
   <#if form.configError?exists>
-    Error in configuration file: ${form.configError?html}
+    Error in configuration file: ${form.configError}
   <#else>
   <div class="resourceInfo visualProfile">
   <h2><@vrtx.msg code="visualProfileAspect.edit" default="Edit visual profile"/></h2>
@@ -34,13 +34,13 @@
   <#if !resourceContext.currentResource.isCollection()>
     <#assign backupURL = vrtx.linkConstructor(".", 'copyBackupService') />
     <#assign backupViewURL = vrtx.relativeLinkConstructor("", 'viewService') />
-    <form id="backupForm" action="${backupURL?html}" method="post" accept-charset="UTF-8">
+    <form id="backupForm" action="${backupURL}" method="post" accept-charset="UTF-8">
       <@vrtx.csrfPreventionToken url=backupURL />
-      <input type="hidden" name="uri" value="${backupViewURL?html}" />
+      <input type="hidden" name="uri" value="${backupViewURL}" />
     </form>
   </#if>
   
-  <form id="editor" action="${form.submitURL?html}" method="post">
+  <form id="editor" action="${form.submitURL}" method="post">
     <#assign formElementsSize = form.elements?size />
     <#list form.elements as element>
       <#if (element_index == (formElementsSize-1))>
@@ -49,30 +49,30 @@
         <div class="vrtx-visual-profile-rows">
       </#if>
       <#if element.type == 'flag'>
-        <input type="checkbox" name="${element.identifier?html}"
+        <input type="checkbox" name="${element.identifier}"
                value="true" <#if element.value?exists>checked="checked"</#if> /> 
-          ${element.label?html}
+          ${element.label}
       <#elseif element.type == 'string'>
-        <h3>${element.label?html}</h3>
-        <input class="vrtx-textfield" type="text" name="${element.identifier?html}" value="${element.value?default('')?html}" />
+        <h3>${element.label}</h3>
+        <input class="vrtx-textfield" type="text" name="${element.identifier}" value="${element.value?default('')}" />
 
       <#elseif element.type == 'enum'>
-        <h3>${element.label?html}</h3> 
+        <h3>${element.label}</h3> 
         <#if element.possibleValues?exists>
         <ul class="radio-buttons">
         <#list element.possibleValues as value>
           <#assign id = element.identifier + '.' + value.value?default('null') />
-          <li><input type="radio" id="${id?html}"  name="${element.identifier?html}" 
-                 value="${value.value?default('')?html}"<#if value.selected>checked="checked"</#if> />
-          <label for="${id?html}">${value.label?html}</label></li>
+          <li><input type="radio" id="${id}"  name="${element.identifier}" 
+                 value="${value.value?default('')}"<#if value.selected>checked="checked"</#if> />
+          <label for="${id}">${value.label}</label></li>
         </#list>
         </ul>
         </#if>
       <#else>
-        unknown type: ${element.type?html}
+        unknown type: ${element.type}
       </#if>
       <#if element.inheritable && element.inheritedValue?exists>
-        <div class="tooltip">(<@vrtx.msg code="default.inheritsValue" args=[element.inheritedValue?html] default="inherits" + element.inheritedValue?html />)</div>
+        <div class="tooltip">(<@vrtx.msg code="default.inheritsValue" args=[element.inheritedValue] default="inherits" + element.inheritedValue />)</div>
       </#if>
       </div>
     </#list>

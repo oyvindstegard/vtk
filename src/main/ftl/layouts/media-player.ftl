@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 
 <#--
   - File: layouts/media-player.ftl
@@ -14,7 +14,7 @@
   <#if media?exists>
     <#if streamType?exists>
 
-      <@mpLib.genPlaceholder "${media?html}" dateStr />
+      <@mpLib.genPlaceholder "${media}" dateStr />
       <@mpLib.initFlash '${media?url("UTF-8")}' dateStr true />
 
     <#elseif contentType?exists>
@@ -24,20 +24,20 @@
         || contentType == "audio/mp3"
         || contentType == "audio/x-mpeg">
 
-	    <@mpLib.genPlaceholder "${media?html}" dateStr true />
+	    <@mpLib.genPlaceholder "${media}" dateStr true />
         <@mpLib.initFlash '${media?url("UTF-8")}' dateStr false true />
 
-	    <@mpLib.genDownloadLink "${media?html}" "audio" />
+	    <@mpLib.genDownloadLink "${media}" "audio" />
 	  
       <#elseif contentType == "video/quicktime" >
         <object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" id="testid" width="${width}" height="${height}" 
                 codebase="http://www.apple.com/qtactivex/qtplugin.cab">
-          <param name="src" value="${media?html}"/>
+          <param name="src" value="${media}"/>
           <param name="autoplay" value="<#if autoplay?exists && autoplay = "true">true<#else>false</#if>"/>
           <param name="controller" value="true"/>
           <param name="loop" value="false"/>
           <param name="scale" value="aspect" />
-          <embed src="${media?html}" 
+          <embed src="${media}" 
                  width="${width}" 
                  height="${height}"
                  autoplay="<#if autoplay?exists && autoplay = "true">true<#else>false</#if>"
@@ -45,27 +45,27 @@
           </embed>
         </object>
         
-        <@mpLib.genDownloadLink "${media?html}" />
+        <@mpLib.genDownloadLink "${media}" />
       
       <#elseif contentType == "application/x-shockwave-flash"
                            && extension == "swf">
     
-	    <@mpLib.genPlaceholder "${media?html}" dateStr />
+	    <@mpLib.genPlaceholder "${media}" dateStr />
 	    <@mpLib.initFlash '${media?url("UTF-8")}' dateStr false false true />
 
       <#elseif contentType == "video/x-flv"
             || contentType == "video/mp4">
 
-	    <@mpLib.genPlaceholder "${media?html}" dateStr false true />
+	    <@mpLib.genPlaceholder "${media}" dateStr false true />
 	    <@mpLib.initFlash '${media?url("UTF-8")}' dateStr />
 	  
 	    <#if contentType == "video/mp4" && !media?starts_with("rtmp")>
-          <@mpLib.genDownloadLink "${media?html}" "video" />
+          <@mpLib.genDownloadLink "${media}" "video" />
 	    </#if>
 	  
       <#else>
 
-        <@mpLib.genDownloadLink "${media?html}" "media" true />
+        <@mpLib.genDownloadLink "${media}" "media" true />
       
       </#if>
     </#if>

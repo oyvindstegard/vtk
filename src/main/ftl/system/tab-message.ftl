@@ -1,10 +1,10 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#assign locale = springMacroRequestContext.getLocale() />
 
 <#if tabMessage?exists> <#-- the general one -->
-  <div class="tabMessage">${tabMessage?html}</div>
+  <div class="tabMessage">${tabMessage}</div>
 </#if>
 
 <#-- XXX: remove -->

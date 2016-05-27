@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: tags.ftl
   - 
@@ -12,13 +12,13 @@
 <#if tagElements?exists && tagElements?size &gt; 0>
   <div id="vrtx-tags" class="vrtx-tags-sets-${numberOfColumns}">
     <#assign i=1 >
-    <ul class="vrtx-tags-${i?html}">
+    <ul class="vrtx-tags-${i}">
       <#assign counter=0 >
       <#assign i = i +1>
       <#list tagElements as element>
 	    <#if counter == numberOfTagsInEachColumn>
 		  </ul>
-		  <ul class="vrtx-tags-${i?html}">
+		  <ul class="vrtx-tags-${i}">
 		    <#if completeColumn == 0 >
 		      <#assign numberOfTagsInEachColumn = numberOfTagsInEachColumn - 1>
 		    </#if>
@@ -29,9 +29,9 @@
 		    </#if>
 	    </#if>
 	    <li class="vrtx-tags-element">
-	      <a class="tags" href="${element.linkUrl?html}" rel="tags">${element.text?html}</a>
+	      <a class="tags" href="${element.linkUrl}" rel="tags">${element.text}</a>
 	      <#if showOccurence>
-	        (${element.occurences?html})
+	        (${element.occurences})
 	      </#if>
 	    </li>
 	    <#assign counter=counter + 1 >

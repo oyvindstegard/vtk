@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -20,7 +20,7 @@
   <#if events?size &gt; 0>
     <div id="${collectionListing.name}" class="vrtx-resources ${collectionListing.name}">
       <#if collectionListing.title?exists && collectionListing.offset == 0 && showTitle>
-        <h2>${collectionListing.title?html}</h2>
+        <h2>${collectionListing.title}</h2>
       </#if>
       <#assign count = 1 />
       <#list events as eventEntry>
@@ -45,27 +45,27 @@
   </#if>
   <#if allupcoming?has_content>
       <@vrtx.displayLinkOtherLang collection />
-	  <h1>${allupcomingTitle?html}</h1>
+	  <h1>${allupcomingTitle}</h1>
 	  <#if allupcoming.entries?size &gt; 0 >
 	    <@displayStandard allupcoming hideNumberOfComments displayMoreURLs false />
 	  <#else>
-	    <p class="vrtx-events-no-planned">${allupcomingNoPlannedTitle?html}</p>
+	    <p class="vrtx-events-no-planned">${allupcomingNoPlannedTitle}</p>
 	  </#if>
   <#elseif allprevious?has_content>
     <@vrtx.displayLinkOtherLang collection />
-    <h1>${allpreviousTitle?html}</h1>
+    <h1>${allpreviousTitle}</h1>
     <#if allprevious.entries?size &gt; 0 >
       <@displayStandard allprevious hideNumberOfComments displayMoreURLs false />
     <#else>
-	    <p class="vrtx-events-no-planned">${allpreviousNoPlannedTitle?html}</p>
+	    <p class="vrtx-events-no-planned">${allpreviousNoPlannedTitle}</p>
     </#if>
   <#elseif specificDate?has_content && specificDate>
     <@vrtx.displayLinkOtherLang collection />
-    <h1 class="vrtx-events-specific-date">${specificDateEventsTitle?html}</h1>
+    <h1 class="vrtx-events-specific-date">${specificDateEventsTitle}</h1>
     <#if specificDateEvents?has_content && specificDateEvents.entries?size &gt; 0>
       <@displayStandard specificDateEvents hideNumberOfComments displayMoreURLs=false />
     <#else>
-      <p class="vrtx-events-no-planned">${noPlannedEventsMsg?html}</p>
+      <p class="vrtx-events-no-planned">${noPlannedEventsMsg}</p>
     </#if>
   <#else>
     <div class="vrtx-events-calendar-introduction">
@@ -87,7 +87,7 @@
     </div>
     <#if groupedByDayEvents?has_content && groupedByDayEvents?size &gt; 0>
       <div id="vrtx-daily-events">
-        <h2 class="vrtx-events-title">${groupedEventsTitle?html}</h2>
+        <h2 class="vrtx-events-title">${groupedEventsTitle}</h2>
         <#assign count = 1 />
         <#list groupedByDayEvents as groupedEvents>
           <div id="vrtx-daily-events-${count}" class="vrtx-daily-events-listing">
@@ -128,7 +128,7 @@
 
     <#if furtherUpcoming?has_content && furtherUpcoming.entries?size &gt; 0>
       <div class="vrtx-events-further-upcoming">
-        <h2 class="vrtx-events-further-upcoming">${furtherUpcomingTitle?html}</h2>
+        <h2 class="vrtx-events-further-upcoming">${furtherUpcomingTitle}</h2>
         <@displayStandard furtherUpcoming hideNumberOfComments displayMoreURLs=false />
       </div>
     </#if>
@@ -139,10 +139,10 @@
       <div id="vrtx-events-nav" class="vrtx-events-nav-top-border">
     </#if>
     <#if viewAllUpcomingURL??>
-    <a href="${viewAllUpcomingURL}" id="vrtx-events-nav-all-upcoming">${viewAllUpcomingTitle?html}</a>
+    <a href="${viewAllUpcomingURL}" id="vrtx-events-nav-all-upcoming">${viewAllUpcomingTitle}</a>
     </#if>
     <#if viewAllPreviousURL??>
-    <a href="${viewAllPreviousURL}" id="vrtx-events-nav-all-previous">${viewAllPreviousTitle?html}</a>
+    <a href="${viewAllPreviousURL}" id="vrtx-events-nav-all-previous">${viewAllPreviousTitle}</a>
     </#if>
     </div>
     </#if>
@@ -199,12 +199,12 @@
 			<#local thumbnail = "" />
 	  </#if>
 	  <#local introImgAlt = vrtx.propValue(event, 'pictureAlt') />
-      <a class="vrtx-image" href="${eventEntry.url?html}">
-        <img src="${thumbnail?html}" alt="<#if introImgAlt?has_content>${introImgAlt?html}</#if>" />
+      <a class="vrtx-image" href="${eventEntry.url}">
+        <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
       </a>
     </#if>
     <div class="vrtx-title">
-      <a class="vrtx-title summary" href="${eventEntry.url?html}">${title?html}</a>
+      <a class="vrtx-title summary" href="${eventEntry.url}">${title}</a>
     </div>
 
     <div class="time-and-place">
@@ -220,7 +220,7 @@
     <#local hasBody = vrtx.propValue(event, 'hasBodyContent') == 'true' />
     <#if displayMoreURLs && hasBody>
       <div class="vrtx-read-more">
-        <a href="${eventEntry.url?html}" class="more" title="${title?html}">
+        <a href="${eventEntry.url}" class="more" title="${title}">
           <@vrtx.msg code="viewCollectionListing.readMore" />
         </a>
       </div>

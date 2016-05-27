@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: list-decorator-components.ftl
   - 
@@ -29,15 +28,15 @@
   <#list componentList?sort_by('name')?sort_by('namespace') as component>
     <#assign componentID = component.namespace + ":" + component.name />
     <#if !hiddenComponents?exists || !hiddenComponents?seq_contains(componentID)>
-      <h2 id="${componentID?html}">${componentID?html}</h2>
+      <h2 id="${componentID}">${componentID}</h2>
       <h3>Description</h3>
-      <div class="componentDescription">${(component.description?html)?if_exists}</div>
+      <div class="componentDescription">${(component.description)?if_exists}</div>
       <#if (component.parameterDescriptions)?exists>
         <h3>Parameters</h3>
         <#list component.parameterDescriptions?keys as paramName>
           <dl class="parameters">
             <dt>${paramName}</dt> 
-            <dd>${component.parameterDescriptions[paramName]?html}</dd>
+            <dd>${component.parameterDescriptions[paramName]}</dd>
           </dl>
         </#list>
       </#if>
@@ -58,7 +57,7 @@
     <h2>Compilation errors</h2>
     <ul>
       <#list componentLib.errors() as error>
-          <li>${error?html}</li>
+          <li>${error}</li>
       </#list>
     </ul>
   </div>

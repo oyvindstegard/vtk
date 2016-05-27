@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/editor/common.ftl" as editor />
 
@@ -21,9 +21,9 @@
   <#global baseFolder = "/" />
   <#if resourceContext.parentURI?exists>
     <#if isCollection?exists && isCollection>
-      <#global baseFolder = resourceContext.currentURI?html />
+      <#global baseFolder = resourceContext.currentURI />
     <#else>
-      <#global baseFolder = resourceContext.parentURI?html />
+      <#global baseFolder = resourceContext.parentURI />
     </#if>
   </#if>
   <#include "/system/javascript.ftl" />
@@ -49,9 +49,9 @@
     };
 	vrtxAdmin.multipleFormGroupingPaths = {
 	  <#if fckeditorBase??>
-	  baseBrowserURL: "${fckeditorBase.url?html}",
+	  baseBrowserURL: "${fckeditorBase.url}",
 	  baseFolderURL: "${baseFolder}",
-	  baseDocURL: "${fckeditorBase.documentURL?html}",
+	  baseDocURL: "${fckeditorBase.documentURL}",
 	  basePath: "${fckBrowse.url.pathRepresentation}"
 	  </#if>
 	};
@@ -63,7 +63,7 @@
     // CKEditor CSS
     var cssFileList = [<#if fckEditorAreaCSSURL?exists>
                          <#list fckEditorAreaCSSURL as cssURL>
-                           "${cssURL?html}" <#if cssURL_has_next>,</#if>
+                           "${cssURL}" <#if cssURL_has_next>,</#if>
                          </#list>
                        </#if>]; 
   // -->
@@ -125,13 +125,13 @@
           <div class="property-label">
             ${vrtx.getMsg("property.title")}
           </div>
-          <input class="vrtx-textfield" type="text" name="title" id="title"<#if properties?exists && properties.title?exists> value="${properties.title?html}"</#if> />
+          <input class="vrtx-textfield" type="text" name="title" id="title"<#if properties?exists && properties.title?exists> value="${properties.title}"</#if> />
         </div>
         <div id="vrtx-message" class="property-item">
           <div class="property-label">
             ${vrtx.getMsg("resourcetype.name.structured-message")}
           </div>
-          <textarea id="message" name="message"><#if properties?exists && properties.message?exists>${properties.message?html}</#if></textarea>
+          <textarea id="message" name="message"><#if properties?exists && properties.message?exists>${properties.message}</#if></textarea>
         </div>
       </div>
       

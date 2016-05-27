@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -12,7 +12,7 @@
       <#assign title = principal.description />
       <#assign titleLink = "" />
    <#else>
-      <#assign title = vrtx.getMsg("decoration.${type}.${opt?html}") />
+      <#assign title = vrtx.getMsg("decoration.${type}.${opt}") />
       <#assign titleLink = options[opt] />
       <#assign titleLinkTip = vrtx.getMsg("decoration.${type}.tip") />
     </#if>
@@ -21,7 +21,7 @@
   <#-- Rest of options => dropdown list -->
   <#if (options?size > 1)>
     <!-- begin view dropdown js -->
-    <script type="text/javascript" src="${jsUrl?html}"></script>
+    <script type="text/javascript" src="${jsUrl}"></script>
     <!-- end view dropdown js -->
   
     <@viewutils.displayDropdown type title titleLink false titleLinkTip>
@@ -39,18 +39,18 @@
           <li<#if classes != ""> class="${classes}"</#if>>
             <#assign url = options[opt] />
             <#if opt = "logout">
-              <form action="${url?html}" method="post" class="vrtx-dropdown-form">
+              <form action="${url}" method="post" class="vrtx-dropdown-form">
                 <@vrtx.csrfPreventionToken url=url />
                 <button type="submit" name="logoutAction">
-                  <@vrtx.msg code="decoration.${type}.${opt?html}" />
+                  <@vrtx.msg code="decoration.${type}.${opt}" />
                 </button>
               </form>
-              <a href="javascript:void(0);" class="vrtx-${type}-${opt?html} vrtx-dropdown-form-link">
-                <@vrtx.msg code="decoration.${type}.${opt?html}" />
+              <a href="javascript:void(0);" class="vrtx-${type}-${opt} vrtx-dropdown-form-link">
+                <@vrtx.msg code="decoration.${type}.${opt}" />
               </a>
             <#else>
-              <a href="${url?html}" class="vrtx-${type}-${opt?html}">
-                <@vrtx.msg code="decoration.${type}.${opt?html}" />
+              <a href="${url}" class="vrtx-${type}-${opt}">
+                <@vrtx.msg code="decoration.${type}.${opt}" />
               </a>
             </#if>
           </li>
@@ -62,8 +62,8 @@
   <#else>
   
     <div class="vrtx-${type}-component">
-      <a href="<#if titleLink != ''>${titleLink?html}<#else>javascript:void(0)</#if>" class="vrtx-${type}-link">
-        ${title?html}
+      <a href="<#if titleLink != ''>${titleLink}<#else>javascript:void(0)</#if>" class="vrtx-${type}-link">
+        ${title}
       </a>
     </div>
     

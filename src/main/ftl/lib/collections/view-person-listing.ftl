@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "../vtk.ftl" as vrtx />
 <#-- XXX: should reuse similar FTL in person-list-util.ftl in vortex-project -->
 <#macro displayPersons personListing title="">
@@ -7,7 +7,7 @@
 
   <#if (persons?size > 0)>
     <div class="vrtx-person-search-hits">
-      <#-- Removed until HTML5: summary="${vrtx.getMsg("person-listing.overview-of")} ${title?html}" -->
+      <#-- Removed until HTML5: summary="${vrtx.getMsg("person-listing.overview-of")} ${title}" -->
       <table class="vrtx-person-listing">
         <#if numberOfRecords?exists>
           <caption>
@@ -53,24 +53,24 @@
 	    <tr class="vrtx-person-${personNr}">
           <td class="vrtx-person-listing-name">
             <#if src?has_content>
-              <a class="vrtx-image" href="${personEntry.url?html}"><img src="${thumbnail?html}" alt="${imageAlt}" /></a>
+              <a class="vrtx-image" href="${personEntry.url}"><img src="${thumbnail}" alt="${imageAlt}" /></a>
             </#if>
             <#if surname?has_content >
-              <a href="${personEntry.url?html}">${surname}<#if firstName?has_content && surname?has_content>, </#if>${firstName?html}</a>
+              <a href="${personEntry.url}">${surname}<#if firstName?has_content && surname?has_content>, </#if>${firstName}</a>
             <#else>
-              <a href="${personEntry.url?html}">${title?html}</a>
+              <a href="${personEntry.url}">${title}</a>
             </#if>
-            <span>${position?html}</span>
+            <span>${position}</span>
           </td>
           <td class="vrtx-person-listing-phone">
             <#if phonenumbers != "" >
               <#list phonenumbers?split(",") as phone>
-                <span>${phone?html}</span>
+                <span>${phone}</span>
               </#list>
             </#if>
             <#if mobilenumbers != "" >
               <#list mobilenumbers?split(",") as mobile>
-                <span>${mobile?html}</span>
+                <span>${mobile}</span>
               </#list>
             </#if>
             <#if alternativephonenumber??>
@@ -83,12 +83,12 @@
                 <#if (email?string?length > 25) >
                   <#if email?string?contains('@') >
                     <#assign eS = email?string?split('@') />
-                    <a href="mailto:${email?html}"><span>${eS[0]?html}</span><span>@${eS[1]?html}</span></a>
+                    <a href="mailto:${email}"><span>${eS[0]}</span><span>@${eS[1]}</span></a>
                   <#else>
-                    <a href="mailto:${email?html}"><span>${email?string?substring(0, 25)?html}</span><span>${email?string?substring(25,email?string?length)?html}</span></a>
+                    <a href="mailto:${email}"><span>${email?string?substring(0, 25)}</span><span>${email?string?substring(25,email?string?length)}</span></a>
                   </#if>
                 <#else>
-                  <a href="mailto:${email?html}">${email?html}</a>
+                  <a href="mailto:${email}">${email}</a>
                 </#if>
               </#list>
             </#if>
@@ -104,7 +104,7 @@
                   <#local tagUrl = tagUrl + "&" + sortingParams />
                 </#if>
                 <#local tagsNr = tagsNr+1 />
-                <a href="${tagUrl?html}">${tag?trim?html}</a><#if tagsList?size != tagsNr>,</#if>
+                <a href="${tagUrl}">${tag?trim}</a><#if tagsList?size != tagsNr>,</#if>
               </#list>
             </#if>
           </td>

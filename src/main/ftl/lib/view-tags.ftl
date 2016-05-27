@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
@@ -25,7 +25,7 @@
     
       <#-- Tag element -->
       <li class="vrtx-tags-element-${count}">
-        <a class="tags" href="${element.linkUrl?html}" rel="tags">${element.text?html}<#if showOccurences> (${element.occurences?html})</#if></a>
+        <a class="tags" href="${element.linkUrl}" rel="tags">${element.text}<#if showOccurences> (${element.occurences})</#if></a>
       </li>
       
       <#if (count = colOneCount && colTwoCount > 0)>
@@ -57,7 +57,7 @@
     
       <#-- Tag element -->
       <li class="vrtx-tags-element-${count}">
-        <a class="tags" href="${element.linkUrl?html}" rel="tags">${element.text?html}<#if showOccurences> (${element.occurences?html})</#if></a>
+        <a class="tags" href="${element.linkUrl}" rel="tags">${element.text}<#if showOccurences> (${element.occurences})</#if></a>
       </li>
       
       <#if (count = colOneCount && colTwoCount > 0)>
@@ -83,7 +83,7 @@
     
       <#-- Tag element -->
       <li class="vrtx-tags-element-${count}">
-        <a class="tags" href="${element.linkUrl?html}" rel="tags">${element.text?html}<#if showOccurences> (${element.occurences?html})</#if></a>
+        <a class="tags" href="${element.linkUrl}" rel="tags">${element.text}<#if showOccurences> (${element.occurences})</#if></a>
       </li>
       
       <#-- Limit -->
@@ -122,7 +122,7 @@
             <#list tagElements as element>
               <#-- Tag element -->
               <li class="vrtx-tags-element-${count}">
-                <a class="tags" href="${element.linkUrl?html}" rel="tags">${element.text?html}<#if showOccurences> (${element.occurences?html})</#if></a>
+                <a class="tags" href="${element.linkUrl}" rel="tags">${element.text}<#if showOccurences> (${element.occurences})</#if></a>
               </li>
               <#local count = count + 1 />
             </#list>
@@ -163,7 +163,7 @@
       <#list alternativeRepresentations as alt>
         <#if alt.contentType = 'application/atom+xml'>
           <div class="vrtx-feed-link">
-            <a id="vrtx-feed-link" href="${alt.url?html}"><@vrtx.msg code="viewCollectionListing.feed.fromThis" /></a>
+            <a id="vrtx-feed-link" href="${alt.url}"><@vrtx.msg code="viewCollectionListing.feed.fromThis" /></a>
           </div>
           <#break />
         </#if>
@@ -185,13 +185,13 @@
     <#assign introImageAlt = vrtx.propValue(resource, "pictureAlt") />
     <div class="vrtx-resource" id="vrtx-result-${i}">
       <#if introImageProp != "">
-      <a href="${resourceEntry.url?html}" class="vrtx-image">
+      <a href="${resourceEntry.url}" class="vrtx-image">
         <#assign src = vrtx.propValue(resource, 'picture', 'thumbnail') />
-        <img src="${src?html}" alt="${introImageAlt?html}" />
+        <img src="${src}" alt="${introImageAlt}" />
       </a>
       </#if>
       <div class="vrtx-title">
-        <a href="${resourceEntry.url?html}" class="vrtx-title"> ${resourceTitle?html}</a>
+        <a href="${resourceEntry.url}" class="vrtx-title"> ${resourceTitle}</a>
       </div>
 
       <#local publishDate = vrtx.propValue(resource, 'publish-date') />
@@ -209,7 +209,7 @@
           <#assign hasBody = vrtx.propValue(resource, 'hasBodyContent') == 'true' />
           <#if hasBody>
             <div class="vrtx-read-more">
-              <a href="${resourceEntry.url?html}" class="more">
+              <a href="${resourceEntry.url}" class="more">
                 <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
               </a>
             </div>

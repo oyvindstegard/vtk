@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: image-as-html.ftl
   - 
@@ -35,7 +35,7 @@
   </div>
   
 <#if src?exists && inline>
-  <a href="${src?html}"><img src="${src?html}" alt="" /></a>
+  <a href="${src}"><img src="${src}" alt="" /></a>
 </#if>
 
 <#if description?exists >
@@ -49,7 +49,7 @@
 
 <h2>${vrtx.getMsg('imageAsHtml.source')}</h2>
 <p id="vrtx-image-view-link">
-  <a href="${src?html}">${resource.name?html}</a>
+  <a href="${src}">${resource.name}</a>
   <#if pixelHeight != "" && pixelWidth != "">
     &nbsp;(${pixelWidth} x ${pixelHeight} px)
   </#if>

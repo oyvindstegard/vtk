@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#attempt>
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
@@ -21,12 +21,12 @@
   <#assign currentPrincipal = resourceContext.principal.qualifiedName />
   <#if (!owner?exists || owner = currentPrincipal)>
      <#assign actionURL = vrtx.linkConstructor("", 'manage.unlockResourceService') />
-     <form method="post" action="${actionURL?html}" name="unlockForm">
+     <form method="post" action="${actionURL}" name="unlockForm">
        <@vrtx.csrfPreventionToken url=actionURL />
-       <input id="manage.unlockFormService" title="${titleMsg}" class="vrtx-button-small" type="submit" name="unlock" value="${item.title?html}" />
+       <input id="manage.unlockFormService" title="${titleMsg}" class="vrtx-button-small" type="submit" name="unlock" value="${item.title}" />
      </form>
   <#else>
-    <a id="manage.unlockFormService" class="vrtx-button-small" title="${titleMsg}" href="${actionURL?html}">${item.title?html}</a>
+    <a id="manage.unlockFormService" class="vrtx-button-small" title="${titleMsg}" href="${actionURL}">${item.title}</a>
   </#if>
 </#if>
 

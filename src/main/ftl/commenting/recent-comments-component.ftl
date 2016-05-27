@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true />
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#assign number = comments?size />
@@ -11,7 +11,7 @@
 <#if number &gt; 0 || includeIfEmpty>
 <div class="vrtx-recent-comments">
 
-  <a class="comments-title" href="${recentCommentsURL?html}"><@vrtx.msg code='commenting.comments.recent'
+  <a class="comments-title" href="${recentCommentsURL}"><@vrtx.msg code='commenting.comments.recent'
                    args=[resource.title] default='Recent comments' /></a>
   
   <#-- XXX: -->
@@ -41,9 +41,9 @@
       <#list comments as comment>
         <#if comment_index &gt; number - 1><#break /></#if>
         <li>
-          <a class="item-title" href="${(commentURLMap[comment.ID] + '#comment-' + comment.ID)?html}">
-            ${comment.author.description?html} <@vrtx.msg code="commenting.comments.on" default="about" />
-              "${resourceMap[comment.URI].title?html}"
+          <a class="item-title" href="${(commentURLMap[comment.ID] + '#comment-' + comment.ID)}">
+            ${comment.author.description} <@vrtx.msg code="commenting.comments.on" default="about" />
+              "${resourceMap[comment.URI].title}"
           </a>
           <span class="published-date"><@vrtx.date value=comment.time format='long' /></span>
           <div class="item-description">
@@ -52,14 +52,14 @@
                 <@vrtx.flattenHtml value=comment.content escape=false />
               </@vrtx.limit>
             </#assign>
-            ${description?html}
+            ${description}
           </div>
         </li>
       </#list>
     </ul>
   </#if>
   
-  <a class="all-comments" href="${recentCommentsURL?html}"><@vrtx.msg code="commenting.comments.more" default="More ..." /></a>
+  <a class="all-comments" href="${recentCommentsURL}"><@vrtx.msg code="commenting.comments.more" default="More ..." /></a>
   
 </div>
 </#if>

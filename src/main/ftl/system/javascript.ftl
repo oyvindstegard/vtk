@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#if jsURLs?exists>
   <#list jsURLs as jsURL>
     <script type="text/javascript" src="${jsURL}"></script>

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#--
   - File: lost-post.ftl
@@ -21,7 +21,7 @@
 <#else>
   <body>
 </#if>
-    <form name="vrtxLostPost" action="${postURL?html}" method="post">
+    <form name="vrtxLostPost" action="${postURL}" method="post">
       <p>A problem has occured while processing your posted data. Your login session
         was not found or was invalid.</p><p>This can typically happen in the following situations:</p>
       <ul>
@@ -34,7 +34,7 @@
           <@vrtx.csrfPreventionToken url=postURL />
         <#else>
           <#list body[name] as value>
-            <input type="hidden" name="${name?html}" value="${value?html}" />
+            <input type="hidden" name="${name}" value="${value}" />
           </#list>
         </#if>
       </#list>

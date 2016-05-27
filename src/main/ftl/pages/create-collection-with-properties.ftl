@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -6,7 +6,7 @@
 </head>
 <body>
   <div id="vrtx-manage-create-content">
-    <form id="create-collection-form" action="${submitURL?html}" method="post">
+    <form id="create-collection-form" action="${submitURL}" method="post">
 
       <div>
       URI: <input type="text" name="uri" />
@@ -24,7 +24,7 @@
           Value: <input type="text" name="propertyValue" />
         </fieldset>
       </#assign>
-      <#assign js_property_input = property_input?html?js_string />
+      <#assign js_property_input = property_input?js_string />
 
       <div id="property-inputs">
       ${property_input}

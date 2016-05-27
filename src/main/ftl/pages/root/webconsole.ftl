@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: webconsole.ftl
   - 
@@ -35,9 +34,9 @@
   <#if (commandForm.result)?exists>
     <p>
       <pre>
-        <#if (commandForm.command)?exists>[${commandForm.command?html}]:</#if>
+        <#if (commandForm.command)?exists>[${commandForm.command}]:</#if>
       </pre>
-      <textarea cols="80" rows="20">${commandForm.result?html}</textarea>
+      <textarea cols="80" rows="20">${commandForm.result}</textarea>
     </p>
   </#if>
 </body>

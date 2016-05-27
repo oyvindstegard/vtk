@@ -119,7 +119,7 @@ public class MultiTemplateLocationsFreeMarkerConfigurer
         class LatestCompatFreeMarkerConfigurationFactory extends FreeMarkerConfigurationFactory {
             @Override
             protected Configuration newConfiguration() throws IOException, TemplateException {
-                return new Configuration(Configuration.VERSION_2_3_23);
+                return new Configuration(Configuration.VERSION_2_3_24);
             }
         }
 
@@ -152,7 +152,7 @@ public class MultiTemplateLocationsFreeMarkerConfigurer
             
             loaders.add(new ClassTemplateLoader(FreeMarkerConfigurer.class, ""));
             
-            TemplateLoader[] templateLoaders = (TemplateLoader[]) loaders.toArray(
+            TemplateLoader[] templateLoaders = loaders.toArray(
                 new TemplateLoader[0]);
             MultiTemplateLoader loader = new MultiTemplateLoader(templateLoaders);
 

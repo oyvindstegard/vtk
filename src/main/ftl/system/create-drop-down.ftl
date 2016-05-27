@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#if docUrl?exists && collUrl?exists && upUrl?exists>
@@ -21,17 +21,17 @@
 
     <ul class="manage-create button-row">
       <li class="manage-create-drop first">
-        <a id="manage-create-drop-document" title="<@vrtx.msg code="manage.choose-location.document" default="Choose where you would like to create document" />" href="${docFinalUrl?html}">
+        <a id="manage-create-drop-document" title="<@vrtx.msg code="manage.choose-location.document" default="Choose where you would like to create document" />" href="${docFinalUrl}">
           <@vrtx.msg code="manage.document" default="Create document" />
         </a>
       </li>
       <li class="manage-create-drop">
-        <a id="manage-create-drop-collection" title="<@vrtx.msg code="manage.choose-location.collection" default="Choose where you would like to create folder" />" href="${collFinalUrl?html}">
+        <a id="manage-create-drop-collection" title="<@vrtx.msg code="manage.choose-location.collection" default="Choose where you would like to create folder" />" href="${collFinalUrl}">
           <@vrtx.msg code="manage.collection" default="Create folder" />
         </a>
       </li>
       <li class="manage-create-drop">
-        <a id="manage-create-drop-upload" title="<@vrtx.msg code="manage.choose-location.upload-file" default="Choose where you would like to upload file" />" href="${upFinalUrl?html}">
+        <a id="manage-create-drop-upload" title="<@vrtx.msg code="manage.choose-location.upload-file" default="Choose where you would like to upload file" />" href="${upFinalUrl}">
           <@vrtx.msg code="manage.upload-file" default="Upload file" />
         </a>
       </li>

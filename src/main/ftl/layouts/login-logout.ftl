@@ -1,7 +1,7 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#if loginURL?exists>
-  <#assign url = loginURL?html />
+  <#assign url = loginURL />
   <#-- XXX: remove hard-coded 'authTarget' parameter: -->
   <#if url?contains("?")>
     <#assign url = url + "&amp;authTarget=http" />
@@ -13,8 +13,8 @@
   </div>
 <#elseif logoutURL?exists>
   <div class="vrtx-logout" id="vrtx-logout">
-    <span class="vrtx-user">${principal.description?html}</span>
-    <form id="logoutForm" action="${logoutURL?html}" method="post" style="display:inline;">
+    <span class="vrtx-user">${principal.description}</span>
+    <form id="logoutForm" action="${logoutURL}" method="post" style="display:inline;">
       <@vrtx.csrfPreventionToken url=logoutURL />
       <button type="submit" id="logoutAction" name="logoutAction"><@vrtx.msg code="decorating.authenticationComponent.logout" default="logout"/></button>
     </form>

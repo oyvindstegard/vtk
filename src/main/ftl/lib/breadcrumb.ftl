@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: breadcrumb.ftl
   - 
@@ -35,17 +35,17 @@
         </#if>
         <#if (elem_index < (crumbsSize - 1))>
           <#if elem.URL??>
-            <span class="vrtx-breadcrumb-level vrtx-breadcrumb-level-${counter?html}<#if (elem_index == (crumbsSize - 2))> vrtx-breadcrumb-before-active</#if>">
-            <a href="${elem.URL?html}">${name?html}</a>
+            <span class="vrtx-breadcrumb-level vrtx-breadcrumb-level-${counter}<#if (elem_index == (crumbsSize - 2))> vrtx-breadcrumb-before-active</#if>">
+            <a href="${elem.URL}">${name}</a>
           <#else>
-            <span class="vrtx-breadcrumb-level-no-url vrtx-breadcrumb-level-${counter?html}<#if (elem_index == (crumbsSize - 2))> vrtx-breadcrumb-before-active</#if>">
-            <span class="vrtx-no-url">${name?html}</span>
+            <span class="vrtx-breadcrumb-level-no-url vrtx-breadcrumb-level-${counter}<#if (elem_index == (crumbsSize - 2))> vrtx-breadcrumb-before-active</#if>">
+            <span class="vrtx-no-url">${name}</span>
           </#if>
         <#else>
-          <span class="vrtx-breadcrumb-level vrtx-breadcrumb-level-${counter?html} vrtx-breadcrumb-active">${name?html}
+          <span class="vrtx-breadcrumb-level vrtx-breadcrumb-level-${counter} vrtx-breadcrumb-active">${name}
         </#if>
         <#if elem.delimiter?exists>
-      	  <span class="vrtx-breadcrumb-delimiter">${elem.delimiter?html}</span>
+      	  <span class="vrtx-breadcrumb-delimiter">${elem.delimiter}</span>
         </#if>
         </span>
         <#if counter = stopLevel>

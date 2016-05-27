@@ -1,3 +1,4 @@
+<#!--ftl strip_whitespace=true output_format="XML" auto_esc=true-->
 <#import "/spring.ftl" as spring />
 
 <#--

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true />
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -31,11 +31,11 @@
             <#assign url = (entry.actions['view'])?default('') />
             <#assign count = entry_index + 1 />
             <tr class="vrtx-directory-listing-${count} <#if entry_index % 2 == 0>odd<#else>even</#if> <@vrtx.resourceToIconResolver entry.resource /><#if entry.resource.collection> true</#if>">
-              <td class="name"><a href="${url?html}">${entry.resource.title}</a></td>
+              <td class="name"><a href="${url}">${entry.resource.title}</a></td>
               <td class="action">
                 <#list entry.actions?keys as action>
                   <#if action != "view">
-                    <a class="${action}-action" href="${entry.actions[action]?html}<#if action == "edit-title">&amp;default-value=${entry.resource.title?url("UTF-8")}</#if>">${vrtx.getMsg("embeddedListing.${action}")?lower_case}</a>&nbsp;&nbsp;&nbsp;
+                    <a class="${action}-action" href="${entry.actions[action]}<#if action == "edit-title">&amp;default-value=${entry.resource.title?url("UTF-8")}</#if>">${vrtx.getMsg("embeddedListing.${action}")?lower_case}</a>&nbsp;&nbsp;&nbsp;
                   </#if>
                 </#list>
               </td>
@@ -49,7 +49,7 @@
     
     <#list globalActions?keys as globalAction>
       <div class="globalaction">
-        <a class="vrtx-button" id="upload-action" href="${globalActions[globalAction]?html}">${vrtx.getMsg("embeddedListing.${globalAction}")}</a>
+        <a class="vrtx-button" id="upload-action" href="${globalActions[globalAction]}">${vrtx.getMsg("embeddedListing.${globalAction}")}</a>
         <#-- FIXME: Hack for showing info for medicine upload -->
         <#if globalAction == "upload"><p class='fixed-resources-permissions-info'>${vrtx.getMsg("embeddedListing.${globalAction}.fixed-resources-permissions-info")}</p></#if>
       </div>
