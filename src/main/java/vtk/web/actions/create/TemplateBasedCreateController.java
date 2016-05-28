@@ -52,7 +52,7 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.text.html.HtmlUtil;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
@@ -343,8 +343,8 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
 
         repository.copy(token, sourceURI, destinationURI, false, false);
 
-        String stream = StreamUtil.streamToString(repository.getInputStream(
-                token, destinationURI, false));
+        String newContent = IO.readString(repository.getInputStream(
+                token, destinationURI, false)).perform();
 
         String title = command.getTitle();
         if (title == null)
@@ -360,7 +360,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
         title = Matcher.quoteReplacement(title);
 
         Resource r = repository.storeContent(token, destinationURI,
-                StreamUtil.stringToStream(stream.replaceAll(titlePlaceholder, title)));
+                IO.stringStream(newContent.replaceAll(titlePlaceholder, title)));
 
         if (removePropList != null) {
             for (PropertyTypeDefinition ptd : removePropList) {

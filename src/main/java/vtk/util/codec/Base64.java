@@ -33,8 +33,7 @@ package vtk.util.codec;
 import java.io.InputStream;
 
 import org.apache.commons.ssl.Base64InputStream;
-
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 
 /**
  * A wrapper for commons codec's Base64 implementation.
@@ -52,7 +51,7 @@ public class Base64 {
     }
 
     public static String encode(InputStream in) throws Exception {
-        byte[] bytes = StreamUtil.readInputStream(in);
+        byte[] bytes = IO.read(in).perform();
         org.apache.commons.codec.binary.Base64 encoder = new org.apache.commons.codec.binary.Base64();
         return new String(encoder.encode(bytes));
     }

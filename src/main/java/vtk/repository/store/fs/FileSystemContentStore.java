@@ -50,7 +50,6 @@ import vtk.repository.store.ContentStore;
 import vtk.repository.store.DataAccessException;
 import vtk.util.io.IO;
 import vtk.util.io.IO.Copy;
-import vtk.util.io.StreamUtil;
 import vtk.web.service.URL;
 
 /**
@@ -207,7 +206,7 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
         try {
             src = new FileInputStream(from);
             dst = new FileOutputStream(to);
-            StreamUtil.fileStreamCopy(src, dst, false);
+            IO.copy(src, dst).closeIn(false).closeOut(false).perform();
         } finally {
             try {
                 if (src != null) {

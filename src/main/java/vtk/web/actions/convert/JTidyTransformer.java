@@ -38,13 +38,13 @@ import java.io.InputStream;
 import vtk.repository.Namespace;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyType;
-import vtk.util.io.StreamUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
+import vtk.util.io.IO;
 
 
 /**
@@ -109,7 +109,7 @@ public class JTidyTransformer implements Filter {
         }
 
         // Buffer the input stream:
-        byte[] buffer = StreamUtil.readInputStream(inStream);
+        byte[] buffer = IO.read(inStream).perform();
 
         // Convert stream to utf-8 encoding if necessary:
         if (!DEFAULT_ENCODING.equals(characterEncoding)) {
@@ -160,12 +160,12 @@ public class JTidyTransformer implements Filter {
         tidy.setInputEncoding(DEFAULT_ENCODING);
         tidy.setOutputEncoding(DEFAULT_ENCODING);
 
-        byte[] buffer = StreamUtil.readInputStream(inStream);
+        byte[] buffer = IO.read(inStream).perform();
         String s = new String(buffer, resource.getCharacterEncoding());
         if ("".equals(s.trim())) {
             s = MINIMAL_DOCUMENT;
         }
-        InputStream newStream = StreamUtil.stringToStream(s, DEFAULT_ENCODING);
+        InputStream newStream = IO.stringStream(s, DEFAULT_ENCODING);
 
         Document document = tidy.parseDOM(newStream, null);
         alterContentTypeMetaElement(document);

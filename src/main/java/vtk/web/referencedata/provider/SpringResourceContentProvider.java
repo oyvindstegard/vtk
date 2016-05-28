@@ -42,7 +42,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.support.RequestContext;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.web.referencedata.ReferenceDataProvider;
 
 public class SpringResourceContentProvider implements ReferenceDataProvider, ApplicationContextAware {
@@ -66,8 +66,7 @@ public class SpringResourceContentProvider implements ReferenceDataProvider, App
         try {
             Resource resource = getResource(fileLocaltions);
             if (resource != null) {
-                String content = StreamUtil.streamToString(
-                                resource.getInputStream(), this.encoding);
+                String content = IO.readString(resource.getInputStream(), this.encoding).perform();
                 model.put(this.modelKey, content);
             }
         } catch (Exception e) {

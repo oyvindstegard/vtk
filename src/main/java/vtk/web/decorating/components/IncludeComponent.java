@@ -62,7 +62,7 @@ import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageParser;
 import vtk.text.html.HtmlUtil;
 import vtk.util.cache.ContentCache;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.repository.ContentTypeHelper;
 import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
@@ -281,15 +281,12 @@ implements ServletContextAware {
             if (elements.size() > 0) {
                 result = elements.get(0).getContent();
             }
-            Writer writer = response.getWriter();
-            writer.write(result);
-            writer.close();
+            try (Writer writer = response.getWriter()) {
+                writer.write(result);
+            }
         } else {
-            byte[] bytes = StreamUtil.readInputStream(is);
             response.setCharacterEncoding(characterEncoding);
-            OutputStream out = response.getOutputStream();
-            out.write(bytes);
-            out.close();
+            IO.copy(is, response.getOutputStream()).perform();
         }
     }
     

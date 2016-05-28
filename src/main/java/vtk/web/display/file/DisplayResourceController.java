@@ -52,7 +52,7 @@ import vtk.repository.Repository;
 import vtk.repository.RepositoryException;
 import vtk.repository.Resource;
 import vtk.security.AuthenticationException;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.web.RequestContext;
 
 
@@ -213,7 +213,7 @@ public class DisplayResourceController
                 characterEncoding = defaultCharacterEncoding;
             }
 
-            String content = StreamUtil.streamToString(stream, characterEncoding);
+            String content = IO.readString(stream, characterEncoding).perform();
             model.put("resourceString", content);
         
         }

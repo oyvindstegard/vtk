@@ -57,8 +57,8 @@ import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import vtk.util.io.IO;
 
-import vtk.util.io.StreamUtil;
 import vtk.util.text.Json.Container;
 import vtk.util.text.Json.ListContainer;
 import vtk.util.text.Json.MapContainer;
@@ -87,7 +87,7 @@ public class JsonTest {
     @Before
     public void setUp() throws IOException {
         InputStream is = getClass().getResourceAsStream(JSON_TEST_RESOURCE);
-        jsonTestText = StreamUtil.streamToString(is, "utf-8");
+        jsonTestText = IO.readString(is, "utf-8").perform();
         jsonInputStream = getClass().getResourceAsStream(JSON_TEST_RESOURCE);
     }
     

@@ -49,7 +49,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import vtk.util.io.BoundedOutputStream;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.web.HttpUtil;
 
 /**
@@ -427,8 +427,8 @@ public class BufferedResponse implements StatusAwareHttpServletResponse {
         }
 
         // Write/copy content
-        StreamUtil.dump(getContentBuffer(),
-                response.getOutputStream(), closeOutputStream);
+        IO.write(getContentBuffer(), response.getOutputStream())
+                .closeOut(closeOutputStream).perform();
     }
 
     private void writeHeaderTo(HttpServletResponse response, String header, Object value, boolean add) {

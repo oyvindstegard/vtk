@@ -53,7 +53,7 @@ import org.springframework.web.servlet.mvc.Controller;
 
 import vtk.repository.Path;
 import vtk.security.AuthenticationProcessingException;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 import vtk.web.service.URL;
@@ -262,19 +262,19 @@ public class LostPostHandler implements Controller {
             if (!id.createNewFile()) {
                 throw new IOException("Cannot create file");
             }
-            StreamUtil.dump(state.identifier.getBytes(), new FileOutputStream(id), true);
+            IO.write(state.identifier.getBytes(), new FileOutputStream(id)).perform();
 
             File url = new File(tmp.getAbsolutePath() + File.separator + "url");
             if (!url.createNewFile()) {
                 throw new IOException("Cannot create file");
             }
-            StreamUtil.dump(postURL.toString().getBytes(), new FileOutputStream(url), true);
+            IO.write(postURL.toString().getBytes(), new FileOutputStream(url)).perform();
             
             File ip = new File(tmp.getAbsolutePath() + File.separator + "client-addr");
             if (!ip.createNewFile()) {
                 throw new IOException("Cannot create file");
             }
-            StreamUtil.dump(clientAddr.getBytes(), new FileOutputStream(ip), true);
+            IO.write(clientAddr.getBytes(), new FileOutputStream(ip)).perform();
             
             File body = new File(tmp.getAbsolutePath() + File.separator + "body");
             if (!body.createNewFile()) {
@@ -380,9 +380,8 @@ public class LostPostHandler implements Controller {
                 if (!file.exists()) {
                     throw new IllegalStateException("No 'url' file found");
                 }
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                StreamUtil.pipe(new FileInputStream(file), out);
-                return out.toString();
+
+                return IO.readString(new FileInputStream(file)).perform();
             } catch (IOException e) {
                 throw new IllegalStateException("Unable to retrieve attribute '" + name + "'");
             }

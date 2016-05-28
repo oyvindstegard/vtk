@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
@@ -57,7 +58,7 @@ import vtk.repository.store.db.AbstractSqlMapDataAccessor;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 
 public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements RevisionStore {
 
@@ -144,14 +145,14 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
         }
         try {
             FileOutputStream out = new FileOutputStream(revisionFile);
-            StreamUtil.pipe(content, out, COPY_BUF_SIZE, true);
+            IO.copy(content, out).bufferSize(COPY_BUF_SIZE).perform();
         } catch (IOException e) {
             throw new DataAccessException(e);
         }
     }
     
     private void insertRevision(ResourceImpl resource, Revision revision, SqlSession sqlSession) {
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("resourceId", resource.getID());
         parameters.put("revisionId", revision.getID());
         parameters.put("uid", revision.getUid());
@@ -231,7 +232,7 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
             throws DataAccessException {
         try {
             
-            Map<String, Object> parameters = new HashMap<String, Object>();
+            Map<String, Object> parameters = new HashMap<>();
             parameters.put("resourceId", resource.getID());
             parameters.put("revisionId", revision.getID());
             parameters.put("uid", revision.getUid());
@@ -250,11 +251,11 @@ public class DefaultRevisionStore extends AbstractSqlMapDataAccessor implements 
 
             try {
                 FileOutputStream outputStream = new FileOutputStream(tmp);
-                StreamUtil.pipe(content, outputStream, COPY_BUF_SIZE, true);
+                IO.copy(content, outputStream).bufferSize(COPY_BUF_SIZE).perform();
 
                 FileInputStream srcStream = new FileInputStream(tmp);
                 FileOutputStream destStream = new FileOutputStream(dest);
-                StreamUtil.pipe(srcStream, destStream, COPY_BUF_SIZE, true);
+                IO.copy(srcStream, destStream).bufferSize(COPY_BUF_SIZE).perform();
 
             } finally {
                 tmp.delete();

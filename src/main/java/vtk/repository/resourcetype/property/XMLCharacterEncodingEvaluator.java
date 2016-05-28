@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.PropertyEvaluator;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 
 
 
@@ -82,9 +82,7 @@ public class XMLCharacterEncodingEvaluator implements PropertyEvaluator {
       
         try {
             InputStream inputStream = ctx.getContent().getContentInputStream();
-            byte[] buffer = StreamUtil.readInputStream(inputStream, this.maxBytes);
-            xmlContent = new String(buffer, "utf-8");
-
+            xmlContent = IO.readString(inputStream, "utf-8").limit(maxBytes).perform();
         } catch (Exception e) {
             throw new PropertyEvaluationException("Unable to get String content representation", e);
         }

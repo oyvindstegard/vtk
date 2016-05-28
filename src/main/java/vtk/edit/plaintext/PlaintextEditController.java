@@ -57,7 +57,7 @@ import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.repository.ContentTypeHelper;
 import vtk.util.repository.TextResourceContentHelper;
 import vtk.util.text.HtmlExtractUtil;
@@ -263,7 +263,7 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
         InputStream is = requestContext.getRepository().getInputStream(
                 token, resource.getURI(), false);
 
-        return StreamUtil.streamToString(is, encoding);
+        return IO.readString(is, encoding).perform();
     }
 
 
