@@ -14,7 +14,7 @@
 </#if>
 
 <h3>${headerMsg}</h3>
-<p>${lockedBy}</p>
+<p>${lockedBy?no_esc}</p>
 
 <#if unlockPermission.permissionsQueryResult = 'true'>
   <#assign owner = resourceContext.currentResource.lock.principal.qualifiedName />
