@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=false>
 
 <#--
   - File: propertyList.ftl
@@ -261,7 +261,7 @@
         ${prefix}
       </#if>
       ${value}
-      <#if editURL != "">
+      <#if editURL??>
         ${editURL}
       </#if>
     </td>
@@ -421,7 +421,7 @@
     <#else>
       <#local defaultNotSet><@vrtx.msg code="resource.property.unset" default="Not set" /></#local>
       <#local label>
-        <@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet}" />
+        <@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet?markup_string}" />
       </#local>
       ${label}
     </#if>
@@ -632,8 +632,8 @@
       </#if>
     </#local>
      &nbsp;<a class="vrtx-button-small" href="${item.toggleURL?html}">${label}</a>
-  <#elseif item.editURL?exists>
-     &nbsp;<a class="vrtx-button-small" href="${item.editURL?html}"><@vrtx.msg code="propertyEditor.edit" default="edit" /></a>
+  <#elseif item.editURL?exists><#noautoesc>
+     &nbsp;<a class="vrtx-button-small" href="${item.editURL?html}"><@vrtx.msg code="propertyEditor.edit" default="edit" /></a></#noautoesc>
   </#if>
 </#macro>
 

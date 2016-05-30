@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#macro printPropertyEditView title inputFieldName value="" tooltip="" classes="" inputFieldSize=20 valuemap="" dropdown=false multiple=false defaultValue="">
 <div class="vrtx-string ${classes}<#if multiple> vrtx-multiple</#if>">
   <label for="${inputFieldName}">${title}</label>
@@ -12,13 +12,13 @@
           <#if key = "range">
             <#local rangeList = valuemap[key] />
             <#list rangeList as rangeEntry >
-              <option value="<#if rangeEntry?string != defaultValue>${rangeEntry?html}</#if>" <#if value == rangeEntry?string> selected="selected" </#if>>${rangeEntry}</option>
+              <option value="<#if rangeEntry?string != defaultValue>${rangeEntry}</#if>" <#if value == rangeEntry?string> selected="selected" </#if>>${rangeEntry}</option>
             </#list>
           <#else>
             <#if value != "">
-              <option value="${key?html}" <#if value == key> selected="selected" </#if>>${valuemap[key]}</option>
+              <option value="${key}" <#if value == key> selected="selected" </#if>>${valuemap[key]}</option>
             <#else>
-              <option value="${key?html}" <#if key == "undefined"> selected="selected" </#if>>${valuemap[key]}</option>
+              <option value="${key}" <#if key == "undefined"> selected="selected" </#if>>${valuemap[key]}</option>
             </#if>
           </#if>
 	    </#list>
@@ -32,7 +32,7 @@
           var dropdown${inputFieldName} = [
             <#list valuemap?keys as key>
               { 
-                key: "${key?html}",
+                key: "${key}",
                 value: "${valuemap[key]}"
               } 
               <#if (key_index < (valuemap?size - 1))>, </#if>
@@ -41,7 +41,7 @@
         // -->
         </script>
       </#if>
-	  <input <#if inputFieldName == "title">class="vrtx-textfield-big"<#elseif multiple && dropdown && valuemap?exists && valuemap?is_hash>class="vrtx-textfield vrtx-multiple-dropdown"<#else>class="vrtx-textfield"</#if> size="${inputFieldSize}" type="text" name="${inputFieldName}" id="${inputFieldName}" value="${value?html}" />
+	  <input <#if inputFieldName == "title">class="vrtx-textfield-big"<#elseif multiple && dropdown && valuemap?exists && valuemap?is_hash>class="vrtx-textfield vrtx-multiple-dropdown"<#else>class="vrtx-textfield"</#if> size="${inputFieldSize}" type="text" name="${inputFieldName}" id="${inputFieldName}" value="${value}" />
     </#if>
     <#if "${tooltip}" != ""><div class="tooltip">${tooltip}</div></#if>
   </div>

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#-- JSON contract -->
 
 <#macro script>
@@ -9,7 +9,7 @@
     <#assign contentLocale = resourceContext.currentResource.getContentLocale() />
   </#if>
 
-  <script type="text/javascript" src="${webResources?html}/jquery/plugins/jquery.scrollTo.min.js"></script>
+  <script type="text/javascript" src="${webResources}/jquery/plugins/jquery.scrollTo.min.js"></script>
   <script type="text/javascript"><!--
   
     var browseImagesPreview = '<@vrtx.msg code="editor.image.preview-title" />';

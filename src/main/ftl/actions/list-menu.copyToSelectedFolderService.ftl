@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=false>
 <#attempt>
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
@@ -26,16 +26,16 @@
 
 <#if !resourcesDisclosed?exists>
   <#if existingFilenames?has_content>
-    <span id="copy-move-existing-filenames"><#list existingFilenames as filename>${filename?html}<#if filename_has_next>#</#if></#list></span>
+    <span id="copy-move-existing-filenames"><#list existingFilenames as filename>${filename}<#if filename_has_next>#</#if></#list></span>
     <span id="copy-move-number-of-files">${session.filesToBeCopied?size}</span>
   </#if>
-  <form id="vrtx-copy-to-selected-folder" action="${actionURL?html}" method="${method}">
-     <button class="vrtx-button-small" title="${titleMsg}" type="submit" value="copy-resources-to-this-folder" name="action">${item.title?html}</button>
+  <form id="vrtx-copy-to-selected-folder" action="${actionURL}" method="${method}">
+     <button class="vrtx-button-small" title="${titleMsg}" type="submit" value="copy-resources-to-this-folder" name="action">${item.title}</button>
      <button class="vrtx-cancel-link" title="${clearTitleMsg}" type="submit" value="clear-action" name="clear-action">x</button>
   </form>
 <#else>
-  <form id="vrtx-copy-to-selected-folder" action="${item.url?html}" method="post">
-    <a class="vrtx-button-small vrtx-copy-move-to-selected-folder-disclosed" title="${titleMsg}" id="vrtx-copy-to-selected-folder" href="${actionURL?html}">${item.title?html}</a>
+  <form id="vrtx-copy-to-selected-folder" action="${item.url}" method="post">
+    <a class="vrtx-button-small vrtx-copy-move-to-selected-folder-disclosed" title="${titleMsg}" id="vrtx-copy-to-selected-folder" href="${actionURL}">${item.title}</a>
     <button class="vrtx-cancel-link" title="${clearTitleMsg}" type="submit" value="clear-action" name="clear-action">x</button>
   </form>
 </#if>

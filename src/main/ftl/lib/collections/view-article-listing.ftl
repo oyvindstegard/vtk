@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -48,13 +48,13 @@
    		   </#if>
            <#if introImg?has_content && !articles.hasDisplayPropDef("hide-introduction-image")>
              <#local introImgAlt = vrtx.propValue(entryPropSet, 'pictureAlt') />
-             <a class="vrtx-image" href="${entry.url?html}">
-               <img src="${thumbnail?html}" alt="<#if introImgAlt?has_content>${introImgAlt?html}</#if>" />
+             <a class="vrtx-image" href="${entry.url}">
+               <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
              </a>
            </#if>
 
             <div class="vrtx-title">
-            <a class="vrtx-title" href="${entry.url?html}">${title?html}</a></div>
+            <a class="vrtx-title" href="${entry.url}">${title}</a></div>
             <#if publishDateProp?has_content && !articles.hasDisplayPropDef("hide-published-date")>
               <div class="published-date">
                 <span class="published-date-prefix">
@@ -80,7 +80,7 @@
             <#local hasBody = vrtx.propValue(entryPropSet, 'hasBodyContent') == 'true' />
             <#if displayMoreURLs && hasBody>
             <div class="vrtx-read-more">
-              <a href="${entry.url?html}" class="more">
+              <a href="${entry.url}" class="more">
                 <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
               </a>
             </div>

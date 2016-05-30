@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/report.ftl" as reportLib />
 
@@ -12,7 +12,7 @@
     </#if>
     <#global baseFolder = "/" />
     <#if resourceContext.parentURI?exists>
-      <#global baseFolder = resourceContext.currentURI?html />
+      <#global baseFolder = resourceContext.currentURI />
     </#if>
     <!--[if lt IE 9]>
       <style type="text/css">
@@ -38,7 +38,7 @@
         browse: "${vrtx.getMsg('editor.browseImages')}"
       };
       vrtxAdmin.multipleFormGroupingPaths = {
-      	baseBrowserURL: "${fckeditorBase.url?html}",
+      	baseBrowserURL: "${fckeditorBase.url}",
 	    baseFolderURL: "${baseFolder}",
 	    basePath: "${fckBrowse.url.pathRepresentation}"
       };
@@ -60,11 +60,11 @@
   <div class="resourceInfo">
     <div class="vrtx-report-nav">
       <div class="back">
-        <a href="${serviceURL?html}" ><@vrtx.msg code="report.back" default="Back" /></a>
+        <a href="${serviceURL}" ><@vrtx.msg code="report.back" default="Back" /></a>
       </div>
     </div>
-    <h2><@vrtx.msg code="report.${report.reportname}.title" /> ${linkTypeLocalization?lower_case}
-    <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" />...</a>
+    <h2><@vrtx.msg code="report.${report.reportname}.title" /> ${linkTypeLocalization?markup_string?lower_case}
+    <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL}"><@vrtx.msg code="report.view-other-link" default="View other folder" />...</a>
     </h2>
   </div>
   
@@ -82,7 +82,7 @@
       <@vrtx.msg code="report.${report.reportname}.about"
                  args=[report.from, report.to, report.total, report.brokenLinkCount]
                  default="Listing results " + report.from + "–"
-                 + report.to + " of total " + report.total + " of web pages with " + report.brokenLinkCount + " broken" /> ${linkTypeLocalization?lower_case}
+                 + report.to + " of total " + report.total + " of web pages with " + report.brokenLinkCount + " broken" /> ${linkTypeLocalization?markup_string?lower_case}
     </p>
 
     <#if alternativeName?has_content>
@@ -149,14 +149,14 @@
                         || (report.linkType == "other"  && link.type != "ANCHOR" && link.type != "IMG" && link.type != "PROPERTY")>
                         <#assign countedBrokenLinks = countedBrokenLinks + 1 />
                         <#if !onlyCount>
-                          <li>${link.link?html}<#if (link.status)?exists><!--${link.status?html}--></#if></li>
+                          <li>${link.link}<#if (link.status)?exists><!--${link.status}--></#if></li>
                         </#if>
                       </#if>
                     </#if>
                   <#else>
                     <#assign countedBrokenLinks = countedBrokenLinks + 1 />
                     <#if !onlyCount>
-                      <li>${link?html}</li>
+                      <li>${link}</li>
                     </#if>
                   </#if>
                   <#if (countedBrokenLinks > 9 && !onlyCount)>
@@ -170,8 +170,8 @@
    
           <tr class="${rowType}${firstLast}">
             <td class="vrtx-report-broken-links-web-page">
-              <a href="${url?html}">${title?html}</a>
-              <span>${item.URI?html}</span>
+              <a href="${url}">${title}</a>
+              <span>${item.URI}</span>
             </td>
             <td class="vrtx-report-broken-links-count">
               ${countedBrokenLinks}
@@ -210,10 +210,10 @@
     <#if report.prev?exists || report.next?exists>
       <span class="vrtx-report-paging">
         <#if report.prev?exists>
-          <a href="${report.prev?html}" class="prev">
-          <@vrtx.msg code="report.prev-page" default="Previous page" /></a><#if report.next?exists><a href="${report.next?html}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a></#if>
+          <a href="${report.prev}" class="prev">
+          <@vrtx.msg code="report.prev-page" default="Previous page" /></a><#if report.next?exists><a href="${report.next}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a></#if>
         <#elseif report.next?exists>
-          <a href="${report.next?html}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a>
+          <a href="${report.next}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a>
         </#if>
       </span>
     </#if>

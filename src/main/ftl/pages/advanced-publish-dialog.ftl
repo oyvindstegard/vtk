@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#if !resourceContext?exists>
   <#stop "Unable to render model: required submodel 'resourceContext' missing">
@@ -14,7 +15,7 @@
   <div id="vrtx-advanced-publish-settings-dialog">
     <h1><@vrtx.msg code="publishing.advanced.title" /></h1>
     <#assign actionURL = vrtx.linkConstructor("", 'publishDialog') />
-    <form method="post" action="${actionURL?html}">
+    <form method="post" action="${actionURL}">
       <fieldset>
        <label for="publishDate"><@vrtx.msg code="publishing.publish-date" default="Publish on" /> </label>
        <@dateTimeInput "publish-date" "publishDate"/>

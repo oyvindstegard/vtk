@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -41,7 +41,7 @@
      </script>
      
      <#if collectionListing.title?exists && collectionListing.offset == 0>
-      <h2>${collectionListing.title?html}</h2>
+      <h2>${collectionListing.title}</h2>
      </#if>
     
      <div class="vrtx-image-listing-container">
@@ -64,7 +64,7 @@
          
          <div class="vrtx-image-container">
            <#if vrtx.isOfType("audio", r.resourceType) >
-             <a href="${entry.url?html}">
+             <a href="${entry.url}">
                <img src="/vrtx/__vrtx/static-resources/themes/default/icons/audio-icon.png" alt="" />
              </a>
            <#elseif vrtx.isOfType("video", r.resourceType)>
@@ -74,15 +74,15 @@
 	    	   <#else>
 	    		<#local thumbnail =  vrtx.relativeLinkConstructor(r.URI, 'displayThumbnailService') />
 	   	   </#if>
-            	<a href="${entry.url?html}">
-            	  <img src="${thumbnail?html}" alt="" />
+            	<a href="${entry.url}">
+            	  <img src="${thumbnail}" alt="" />
              	</a>
             </#if>
          </div>
          
          <div class="vrtx-image-info">
            <div class="vrtx-image-title">
-             <a class="vrtx-title" href="${entry.url?html}">${vrtx.propValue(r, "title", "", "")?html}</a>
+             <a class="vrtx-title" href="${entry.url}">${vrtx.propValue(r, "title", "", "")}</a>
            </div>
 
 		   <#local duration = vrtx.propValue(r, "duration") />

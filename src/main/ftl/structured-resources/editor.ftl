@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "include/scripts.ftl" as scripts />
 <#import "/lib/editor/common.ftl" as editor />
@@ -27,7 +27,7 @@
 
   <#global baseFolder = "/" />
   <#if resourceContext.parentURI?exists>
-    <#global baseFolder = resourceContext.parentURI?html />
+    <#global baseFolder = resourceContext.parentURI />
   </#if>
   
   <script type="text/javascript"><!--
@@ -91,7 +91,7 @@
     // CKEditor CSS
     var cssFileList = [<#if fckEditorAreaCSSURL?exists>
                          <#list fckEditorAreaCSSURL as cssURL>
-                           "${cssURL?html}" <#if cssURL_has_next>,</#if>
+                           "${cssURL}" <#if cssURL_has_next>,</#if>
                          </#list>
                        </#if>];   
     
@@ -116,7 +116,7 @@
   
   <#if form.workingCopy>
     <div class="tabMessage-big">
-      <@vrtx.rawMsg code="editor.workingCopyMsg" args=[versioning.currentVersionURL?html] />
+      <@vrtx.rawMsg code="editor.workingCopyMsg" args=[versioning.currentVersionURL] />
     </div>
   </#if>
 
@@ -195,12 +195,12 @@
 
   <#assign backupURL = vrtx.linkConstructor(".", 'copyBackupService') />
   <#assign backupViewURL = vrtx.relativeLinkConstructor("", 'viewService') />
-  <form id="backupForm" action="${backupURL?html}" method="post" accept-charset="UTF-8">
+  <form id="backupForm" action="${backupURL}" method="post" accept-charset="UTF-8">
     <@vrtx.csrfPreventionToken url=backupURL />
-    <input type="hidden" name="uri" value="${backupViewURL?html}" />
+    <input type="hidden" name="uri" value="${backupViewURL}" />
   </form>
     
-  <form action="${form.submitURL?html}" method="post" id="editor"<#if form.getResource().getType().getName()?exists> class="vrtx-${form.getResource().getType().getName()}"</#if>>
+  <form action="${form.submitURL}" method="post" id="editor"<#if form.getResource().getType().getName()?exists> class="vrtx-${form.getResource().getType().getName()}"</#if>>
     <div class="properties <#if (!form.workingCopy && form.hasPublishDate && form.onlyWriteUnpublished)>hidden-props</#if>">
       <#list form.elements as elementBox>
         <#if elementBox.formElements?size &gt; 1>
@@ -289,13 +289,14 @@
       <li> 
         <#assign lang><@vrtx.requestLanguage/></#assign>
         <#assign url = helpURL />
-        <#if .vars["helpURL.editor." + lang]?exists>
-          <#assign url = .vars["helpURL.editor." + lang] />
+        <#assign key = "helpURL.editor." + lang?markup_string />
+        <#if .vars[key]?exists>
+          <#assign url = .vars[key] />
         </#if>
-        <a href="${url?html}" target="_blank" class="help-link"><@vrtx.msg code="manage.help.editing" default="Help in editing" /></a>
+        <a href="${url}" target="_blank" class="help-link"><@vrtx.msg code="manage.help.editing" default="Help in editing" /></a>
       </li>
       <li>
-        <a class="help-link" href="${form.listComponentServiceURL?html}" target="new_window">
+        <a class="help-link" href="${form.listComponentServiceURL}" target="new_window">
           <@vrtx.msg code="plaintextEdit.tooltip.listDecoratorComponentsService" />
         </a>
       </li>

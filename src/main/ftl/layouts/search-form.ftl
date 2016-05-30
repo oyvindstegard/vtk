@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: search-form.ftl
   - 
@@ -10,7 +10,7 @@
   -->
 <#import "../lib/vtk.ftl" as vrtx />
 
-<form method="get" action="${url.path?html}" class="vrtx-search-form">
+<form method="get" action="${url.path}" class="vrtx-search-form">
    <fieldset>
      <input type="text" name="query" value="" class="vrtx-search-field" />
      <button type="submit">

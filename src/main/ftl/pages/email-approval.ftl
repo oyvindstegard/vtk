@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: email-a-friend.ftl
   - 
@@ -28,7 +28,7 @@
       
       <label for="emailTo" class="first"><@vrtx.msg code="email.form.to" default="Send e-mail to" /></label> 
       <#if emailSavedTo?has_content>
-        <input class="vrtx-textfield" type="text" id="emailTo" name="emailTo" value="${emailSavedTo?html}" />
+        <input class="vrtx-textfield" type="text" id="emailTo" name="emailTo" value="${emailSavedTo}" />
       <#else>
         <input class="vrtx-textfield" type="text" id="emailTo" name="emailTo" value="<#if editorialContacts??>${editorialContacts}</#if>" />
       </#if>
@@ -37,7 +37,7 @@
       <#if userEmailFrom??>
         <label for="emailFrom"><@vrtx.msg code="email.form.from" default="Your e-mail address" /></label>
         <#if emailSavedFrom?has_content>
-          <input class="vrtx-textfield" type="text" id="emailFrom" name="emailFrom" value="${emailSavedFrom?html}" />
+          <input class="vrtx-textfield" type="text" id="emailFrom" name="emailFrom" value="${emailSavedFrom}" />
         <#else>
           <input class="vrtx-textfield" type="text" id="emailFrom" name="emailFrom" value="" />
         </#if>
@@ -53,7 +53,7 @@
        
       <label for="yourCommentTxtArea"><@vrtx.msg code="email.form.yourcomment" default="Your comment" /></label> 
       <#if yourSavedComment?has_content>
-        <textarea class="round-corners" rows="6" cols="10" id="yourCommentTxtArea" name="yourComment">${yourSavedComment?html}</textarea>
+        <textarea class="round-corners" rows="6" cols="10" id="yourCommentTxtArea" name="yourComment">${yourSavedComment}</textarea>
       <#else>
         <textarea class="round-corners" rows="6" cols="10" id="yourCommentTxtArea" name="yourComment" value=""></textarea> 
       </#if>

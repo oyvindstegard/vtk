@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: subfolder-menu.ftl
   - 
@@ -34,7 +34,7 @@
           <div class="vrtx-subfolder-menu vrtx-subfolder-menu-sets-${subFolderMenu.resultSets?size}">
         </#if>
           <#if subFolderMenu.title?exists>
-            <div class="menu-title">${subFolderMenu.title?html}</div>
+            <div class="menu-title">${subFolderMenu.title}</div>
           </#if>
           <#list subFolderMenu.resultSets as resultSet>
             <#assign counter = counter+1>
@@ -56,13 +56,13 @@
 <#-- MACROS: -->
 <#macro displayItem item separator="none" >
   <#if item.menu?exists>
-    <a href="${item.url?html}">${item.label?html}</a>
+    <a href="${item.url}">${item.label}</a>
     <@displaySubMenu item.menu displaySubMenu />
   <#else>
     <#if separator = "none">
-      <a href="${item.url?html}">${item.label?html}</a>
+      <a href="${item.url}">${item.label}</a>
     <#else>
-      <a href="${item.url?html}">${item.label?html}</a>${separator}
+      <a href="${item.url}">${item.label}</a>${separator}
     </#if>
   </#if>
 </#macro>
@@ -72,10 +72,10 @@
     <#if currentCount != 1>
       </div>
     </#if>
-    <div class="vrtx-group-${groupCount?html}">
+    <div class="vrtx-group-${groupCount}">
   </#if>
   	
-  <ul class="resultset-${currentCount?html}">
+  <ul class="resultset-${currentCount}">
     <#list menu.itemsSorted as item>
       <li><@displayItem item=item /></li>
     </#list>
@@ -112,7 +112,7 @@
     
   	<#if (menu.totalNumberOfItems > menu.maxNumberOfItems)>
       <li class="vrtx-more">
-        <a href="${menu.moreUrl?html}"><@vrtx.msg code="subfolder.morelinkTitle" /></a>
+        <a href="${menu.moreUrl}"><@vrtx.msg code="subfolder.morelinkTitle" /></a>
       </li>
     </#if>
   </ul>

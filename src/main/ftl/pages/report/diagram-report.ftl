@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -14,11 +14,11 @@
   <div class="resourceInfo">
     <div class="vrtx-report-nav">
       <div class="back">
-        <a href="${serviceURL?html}" ><@vrtx.msg code="report.back" default="Back" /></a>
+        <a href="${serviceURL}" ><@vrtx.msg code="report.back" default="Back" /></a>
       </div>
     </div>
     <h2><@vrtx.msg code="report.${report.reportname}" />
-    <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" /> ...</a></h2>
+    <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL}"><@vrtx.msg code="report.view-other-link" default="View other folder" /> ...</a></h2>
   <#if (report.thirdtotal?exists && report.thirdtotal > 0)>
     <div class="vrtx-report-diagram">
       <div class="vrtx-report-diagram-table">
@@ -27,7 +27,7 @@
           <#list report.webTypes as type>
             <tr>
               <th scope="row" class="vrtx-report-diagram-text">
-                <#if report.webTypeURL[type_index]?exists><a href="${report.webTypeURL[type_index]?html}"><@vrtx.msg code="report.webDiagram.${type}" /></a>
+                <#if report.webTypeURL[type_index]?exists><a href="${report.webTypeURL[type_index]}"><@vrtx.msg code="report.webDiagram.${type}" /></a>
                 <#else><@vrtx.msg code="report.webDiagram.${type}" /></#if>
               </th>
               <td class="vrtx-report-diagram-count"><#if report.webTypeCount[type_index]?exists>${report.webTypeCount[type_index]}<#else>0</#if></td>
@@ -53,7 +53,7 @@
           <#list report.types as type>
             <tr>
               <th scope="row" class="vrtx-report-diagram-text">
-                <#if report.typeURL[type_index]?exists><a href="${report.typeURL[type_index]?html}"><@vrtx.msg code="report.diagram.${type}" /></a>
+                <#if report.typeURL[type_index]?exists><a href="${report.typeURL[type_index]}"><@vrtx.msg code="report.diagram.${type}" /></a>
                 <#else><@vrtx.msg code="report.diagram.${type}" /></#if>
               </th>
               <td class="vrtx-report-diagram-count"><#if report.typeCount[type_index]?exists>${report.typeCount[type_index]}<#else>0</#if></td>
@@ -77,11 +77,11 @@
         <table id="vrtx-report-diagram-filesandfolders">
           <caption><@vrtx.msg code="report.diagram.folderandfiletitle" /></caption>
           <tr>
-            <th scope="row" class="vrtx-report-diagram-text"><a href="${report.foldersURL?html}"><@vrtx.msg code="report.diagram.folder" /></a></th>
+            <th scope="row" class="vrtx-report-diagram-text"><a href="${report.foldersURL}"><@vrtx.msg code="report.diagram.folder" /></a></th>
             <td class="vrtx-report-diagram-count">${report.folders}</td>
           </tr>
           <tr>
-            <th scope="row" class="vrtx-report-diagram-text"><a href="${report.filesURL?html}"><@vrtx.msg code="report.diagram.file" /></a></th>
+            <th scope="row" class="vrtx-report-diagram-text"><a href="${report.filesURL}"><@vrtx.msg code="report.diagram.file" /></a></th>
             <td class="vrtx-report-diagram-count">${report.files}</td>
           </tr>
           <tr class="vrtx-report-diagram-total">

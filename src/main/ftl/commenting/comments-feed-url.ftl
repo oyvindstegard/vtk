@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: comments-feed-url.ftl
   - 
@@ -15,5 +15,5 @@
              args=[vrtx.propValue(resourceContext.currentResource, "title", "flattened")] />
 </#assign>
 <#if commentsEnabled?exists && commentsEnabled >
-  <link type="application/atom+xml" rel="alternate" href="${commentsFeed.url?html}" title="${linkTitle?html}" />
+  <link type="application/atom+xml" rel="alternate" href="${commentsFeed.url}" title="${linkTitle}" />
 </#if>

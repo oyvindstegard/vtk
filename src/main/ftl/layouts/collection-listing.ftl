@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -55,8 +55,8 @@
             <#else>
               <td class="vrtx-collection-listing-title first-col last-col">
             </#if>
-              <a class="vrtx-icon <@vrtx.resourceToIconResolver entryPropSet />" href="${entry.url?html}"></a>
-              <a class="vrtx-title-link" href="${entry.url?html}">${title?html}</a>
+              <a class="vrtx-icon <@vrtx.resourceToIconResolver entryPropSet />" href="${entry.url}"></a>
+              <a class="vrtx-title-link" href="${entry.url}">${title}</a>
 
             <#--
               Only local resources are ever evaluated for edit authorization.
@@ -69,7 +69,7 @@
               <a class="vrtx-resource-open-webdav" href="${vrtx.linkConstructor(entryPropSet.URI, 'webdavService')}"><@vrtx.msg code="collectionListing.edit" /></a>
             </#if>
             <#if conf.compactView>
-              <span>${lastModifiedTime?html}</span>
+              <span>${lastModifiedTime}</span>
             </#if>
             </td>
           <#if !conf.compactView>
@@ -87,14 +87,14 @@
                 ${modifiedByNameLink}
               </#if>
             </td>
-            <td class="vrtx-collection-listing-last-modified last-col">${lastModifiedTime?html}</td>
+            <td class="vrtx-collection-listing-last-modified last-col">${lastModifiedTime}</td>
           </#if>
           </tr>
         </#list>
         </tbody>
       </table>
       <#if (conf.goToFolderLink && goToFolderLink?exists)>
-        <a href="${goToFolderLink?html}"><@vrtx.msg code="collectionListing.goTo" default="Go to" /> ${folderTitle}</a>
+        <a href="${goToFolderLink}"><@vrtx.msg code="collectionListing.goTo" default="Go to" /> ${folderTitle}</a>
       </#if>
     </div>
   </div>

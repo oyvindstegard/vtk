@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: toc.ftl
   - 
@@ -27,4 +27,4 @@
 
 <div id="toc"></div>
 
-<script type="text/javascript" src="${url?html}"></script>
+<script type="text/javascript" src="${url}"></script>

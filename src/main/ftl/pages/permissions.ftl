@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: permissions.ftl
   - 
@@ -18,11 +17,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Permissions on resource</title>
-    <link rel="stylesheet" type="text/css" href="${webResources?html}/jquery/plugins/jquery.autocomplete.css" />
-    <link rel="stylesheet" type="text/css" href="${webResources?html}/js/autocomplete/autocomplete.override.css" />
-    <script type='text/javascript' src='${webResources?html}/jquery/plugins/jquery.autocomplete.js'></script>
-    <script type='text/javascript' src='${webResources?html}/js/autocomplete/autocomplete.js'></script>
-    <script type='text/javascript' src='${webResources?html}/js/autocomplete/autocomplete-permissions.js'></script>
+    <link rel="stylesheet" type="text/css" href="${webResources}/jquery/plugins/jquery.autocomplete.css" />
+    <link rel="stylesheet" type="text/css" href="${webResources}/js/autocomplete/autocomplete.override.css" />
+    <script type='text/javascript' src='${webResources}/jquery/plugins/jquery.autocomplete.js'></script>
+    <script type='text/javascript' src='${webResources}/js/autocomplete/autocomplete.js'></script>
+    <script type='text/javascript' src='${webResources}/js/autocomplete/autocomplete-permissions.js'></script>
   </head>
   <body id="vrtx-permissions">
 
@@ -45,7 +44,7 @@
       <#assign defaultNotInherited = vrtx.getMsg("permissions.notInherited", "Custom permissions") />
 
       <#if aclInfo.aclEditURLs?exists && aclInfo.aclEditURLs.inheritance?exists>
-      <form action="${aclInfo.aclEditURLs.inheritance?html}" method="post" id="permissions.toggleInheritance">
+      <form action="${aclInfo.aclEditURLs.inheritance}" method="post" id="permissions.toggleInheritance">
         <#if resourceContext.currentResource.inheritedAcl>
           <div id="permissions-inheritance">
           <@vrtx.msg code="permissions.isInherited" default="Inherited permissions" /><#t/>

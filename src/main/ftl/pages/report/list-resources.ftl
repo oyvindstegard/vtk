@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: list-resources.ftl
   - 
@@ -48,11 +48,11 @@
   <div class="resourceInfo" class="vrtx-report">
     <div class="vrtx-report-nav">
   	  <div class="back">
-	    <a href="${serviceURL?html}"><@vrtx.msg code="report.back" default="Back" /></a>
+	    <a href="${serviceURL}"><@vrtx.msg code="report.back" default="Back" /></a>
 	  </div>
 	</div> 
 	<h2><@vrtx.msg code="report.list-resources" />
-	<a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" /> ...</a></h2>
+	<a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL}"><@vrtx.msg code="report.view-other-link" default="View other folder" /> ...</a></h2>
 	<p>
 	  <@vrtx.msg code="report.list-resources.about" />
 	</p>

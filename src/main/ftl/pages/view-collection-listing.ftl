@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: view-collection-listing.ftl
   - 
@@ -17,7 +16,6 @@
   - Optional model data:
   -
   -->
-
 
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/dump.ftl" as dumper>
@@ -69,11 +67,11 @@
 
   <#if alternativeRepresentations?exists && !(hideAlternativeRepresentation?exists && hideAlternativeRepresentation)>
     <#list alternativeRepresentations as alt>
-      <link rel="alternate" type="${alt.contentType?html}" title="${alt.title?html}" href="${alt.url?html}" />
+      <link rel="alternate" type="${alt.contentType}" title="${alt.title}" href="${alt.url}" />
     </#list>
   </#if>
 
-  <title>${title?html}
+  <title>${title}
     <#if page?has_content && !overriddenTitle?has_content>
       <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page}</#if>
     </#if>
@@ -110,7 +108,7 @@
 	<#if viewOngoingMastersLink?exists>
 		<h1><@master.completed />
 	<#else>
-    <h1>${title?html}
+    <h1>${title}
       <@projects.completed />
     </#if>
       <#if page?has_content>
@@ -129,7 +127,7 @@
       	  <@viewutils.displayImage resource />
           <#-- Introduction -->
           <#if introduction?has_content>
-            ${introduction}
+            ${introduction?no_esc}
           </#if>
         </div>
       </#if>

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: tag-cloud.ftl
   - 
@@ -21,7 +21,7 @@
 	<ul class="vrtx-tag-cloud">
 	  <#list tagElements as element>
 	    <li class="tag-magnitude-${element.magnitude}">
-	      <a class="tag" href="${element.linkUrl?html}" rel="tag">${element.text?html}</a>
+	      <a class="tag" href="${element.linkUrl}" rel="tag">${element.text}</a>
 	    </li>
 	  </#list>
 	</ul>

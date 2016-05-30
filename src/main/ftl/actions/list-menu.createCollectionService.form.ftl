@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#attempt>
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
@@ -6,7 +6,7 @@
 
 <#if createCollectionForm?exists && !createCollectionForm.done>
   <div class="expandedForm vrtx-admin-form">
-    <form name="createCollectionService" id="createCollectionService-form" action="${createCollectionForm.submitURL?html}" method="post">
+    <form name="createCollectionService" id="createCollectionService-form" action="${createCollectionForm.submitURL}" method="post">
       <h3 class="nonul"><@vrtx.msg code="actions.createCollectionService" default="Create collection"/></h3>
       <h4><@vrtx.msg code="actions.createCollectionService.subtitle" default="Choose a folder type"/></h4>
       <@spring.bind "createCollectionForm" + ".sourceURI" /> 
@@ -43,17 +43,17 @@
 
       <div id="vrtx-div-collection-title">
         <h4 class="vrtx-admin-label"><@vrtx.msg code="actions.createCollectionService.title" default="Title" /></h4>
-        <input class="vrtx-textfield" type="text" id="${titleBind?html}" name="${titleBind?html}" value="${newColTitle?html}" size="40" />
+        <input class="vrtx-textfield" type="text" id="${titleBind}" name="${titleBind}" value="${newColTitle}" size="40" />
       </div>
       
       <div id="vrtx-div-collection-name">
         <h4 class="vrtx-admin-label"><@vrtx.msg code="actions.createCollectionService.collection-name" default="Folder name" /></h4>
-        <input class="vrtx-textfield" type="text" id="${nameBind?html}" name="${nameBind?html}" value="${newColName?html}" size="15" maxlength="50" />
+        <input class="vrtx-textfield" type="text" id="${nameBind}" name="${nameBind}" value="${newColName}" size="15" maxlength="50" />
         <@spring.bind "createCollectionForm" + ".publish" />
         <#assign publishBind = spring.status.expression>
         <@actionsLib.genErrorMessages spring.status.errorMessages />
         <div class="vrtx-checkbox" id="vrtx-checkbox-hide-from-navigation">
-          <input type="checkbox"  id="${publishBind?html}" name="${publishBind?html}" checked />
+          <input type="checkbox"  id="${publishBind}" name="${publishBind}" checked />
           <label for="publish"><@vrtx.msg code="publish.action.publish" default="Publish" /></label>
           <abbr tabindex="0" class="tooltips" title="<@vrtx.msg code="unpublishedCollection.info" />"></abbr>
         </div>

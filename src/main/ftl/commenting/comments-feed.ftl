@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true output_format="XML" auto_esc=true>
 <?xml version="1.0" encoding="utf-8"?>
 <#import "/lib/vtk.ftl" as vrtx />
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -9,26 +10,26 @@
     </#if>
   </title>
   <#assign uri = resource.URI.toString() />
-  <link href="${urlMap[uri]?html}" />
-  <link rel="self" href="${selfURL?html}" />
+  <link href="${urlMap[uri]}" />
+  <link rel="self" href="${selfURL}" />
   <#assign date_format>yyyy-MM-dd'T'HH:mm:ssZZ</#assign>
-  <updated><@vrtx.date value=resource.lastModified format=date_format/></updated>
-  <id>${selfURL?html}</id>
+  <updated><@vrtx.date value=resource.lastModified format=date_format?markup_string /></updated>
+  <id>${selfURL}</id>
   <#list comments as comment>
   <#assign resource = resourceMap[comment.URI] />
   <entry>
-    <title>${comment.author.description?html} <@vrtx.msg code="commenting.comments.on" default="about" /> "${resource.title?html}"</title>
-    <link href="${(urlMap[comment.URI] + '#comment-' + comment.ID)?html}" />
-    <id>${(urlMap[comment.URI] + '#comment-' + comment.ID)?html}</id>
+    <title>${comment.author.description} <@vrtx.msg code="commenting.comments.on" default="about" /> "${resource.title}"</title>
+    <link href="${(urlMap[comment.URI] + '#comment-' + comment.ID)}" />
+    <id>${(urlMap[comment.URI] + '#comment-' + comment.ID)}</id>
     <author>
-      <name>${comment.author.description?html}</name>
+      <name>${comment.author.description}</name>
       <#if comment.author.URL?exists>
-      <uri>${comment.author.URL?html}</uri>
+      <uri>${comment.author.URL}</uri>
       </#if>
     </author>
-    <published><@vrtx.date value=comment.time format=date_format /></published>
-    <updated><@vrtx.date value=comment.time format=date_format /></updated>
-    <summary type="html">${comment.content?html}</summary>
+    <published><@vrtx.date value=comment.time format=date_format?markup_string /></published>
+    <updated><@vrtx.date value=comment.time format=date_format?markup_string /></updated>
+    <summary type="html">${comment.content}</summary>
   </entry>
   </#list>
 </feed>

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 
 <#--
   - File: lib/media-player.ftl
@@ -44,16 +44,16 @@
 
   <#if useVideoTag>
     <div id="mediaspiller-${dateStr}" class="vrtx-media-player-no-flash">
-      <video src="${url}" controls<#if autoplay?? && autoplay == "true"> autoplay</#if> width="${width}" height="${height}" poster="${imgSrc?html}"></video>
+      <video src="${url}" controls<#if autoplay?? && autoplay == "true"> autoplay</#if> width="${width}" height="${height}" poster="${imgSrc}"></video>
     </div>
   <#else>
     <div id="mediaspiller-${dateStr}-print" class="vrtx-media-player-print<#if showPlayButton> vrtx-media-player-no-flash</#if>">
-      <img src="${imgSrc?html}" width="${width}" height="${height}" alt="${alt}"/>
+      <img src="${imgSrc}" width="${width}" height="${height}" alt="${alt}"/>
       <#if showPlayButton><a class="playbutton" href="${url}"></a></#if>
     </div>
     <div id="mediaspiller-${dateStr}"<#if showPlayButton> class="vrtx-media-player-no-flash"</#if>>
       <#if hideVideoFallbackLink?? == false><a class="vrtx-media" href="${url}"></#if>
-        <img src="${imgSrc?html}" width="${width}" height="${height}" alt="${alt}"/>
+        <img src="${imgSrc}" width="${width}" height="${height}" alt="${alt}"/>
         <#if showPlayButton><span class="playbutton"></span></#if>
       <#if hideVideoFallbackLink?? == false></a></#if>
     </div>
@@ -75,7 +75,7 @@
 -->
 <#macro initFlash url dateStr isStream=false isAudio=false isSWF=false>
 
-  <#local flashUrl = strobe?html />
+  <#local flashUrl = strobe />
   
   <script type="text/javascript"><!--
     if (typeof swfobject == 'undefined') {
@@ -122,7 +122,7 @@
 		menu: "false",
 	    wmode: "transparent"
 	  };	
-	  <#local flashUrl = audioFlashPlayerFlashURL?html />
+	  <#local flashUrl = audioFlashPlayerFlashURL />
 	  <#local width = "290" />
 	  <#local height = "24" />
     </#if>

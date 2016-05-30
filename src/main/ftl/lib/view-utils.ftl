@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: view-utils.ftl
   - 
@@ -35,7 +35,7 @@
   <#if introductionImage != "">
   
     <#if imageRes == "">
-      <img class="vrtx-introduction-image" src="${introductionImage}" alt="${introductionImageAlt?html}" />
+      <img class="vrtx-introduction-image" src="${introductionImage}" alt="${introductionImageAlt}" />
     <#else>
 
       <#if displayAsThumbnail>
@@ -52,7 +52,7 @@
         
       <#if caption != ""><#-- Caption is set -->
         <div class="vrtx-introduction-image" <#if style?has_content>style="${style}"</#if>>
-	      <img src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt?html}</#if>" />
+	      <img src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt}</#if>" />
           <div class="vrtx-imagetext">
             <div class="vrtx-imagedescription">${caption}</div>
             <span class="vrtx-photo">
@@ -65,7 +65,7 @@
       <#else>
         <#if photographer != ""><#-- No caption but image author set -->
           <div class="vrtx-introduction-image" <#if style?has_content>style="${style}"</#if>>
-            <img src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt?html}</#if>" />
+            <img src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt}</#if>" />
             <div class="vrtx-imagetext">
               <span class="vrtx-photo">
                 <span class="vrtx-photo-prefix"><@vrtx.msg code="article.photoprefix" />: </span>${photographer}
@@ -73,7 +73,7 @@
             </div>
           </div>
         <#else><#-- No caption or image author set -->
-          <img class="vrtx-introduction-image" src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt?html}</#if>" />
+          <img class="vrtx-introduction-image" src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt}</#if>" />
         </#if>
 	  </#if>
     </#if>
@@ -149,7 +149,7 @@
     <#if mapurl == "">
       ${location}
     <#else>
-      <a href="${mapurl?html}">${location}</a>
+      <a href="${mapurl}">${location}</a>
     </#if>
     </span>
   </#if>
@@ -170,7 +170,7 @@
   <#if isValidStartDate>
     <span class="vrtx-add-event">
       <#assign uri = vrtx.getUri(resource) />
-      <a class="vrtx-ical" href="${uri?html}?vrtx=ical"><@vrtx.msg code="event.add-to-calendar" /></a><a class="vrtx-ical-help" href="${vrtx.getMsg("event.add-to-calendar.help-url")?html}" title="${vrtx.getMsg("event.add-to-calendar.help")?html}"></a>
+      <a class="vrtx-ical" href="${uri}?vrtx=ical"><@vrtx.msg code="event.add-to-calendar" /></a><a class="vrtx-ical-help" href="${vrtx.getMsg("event.add-to-calendar.help-url")}" title="${vrtx.getMsg("event.add-to-calendar.help")}"></a>
     </span>
   </#if>
   
@@ -217,10 +217,10 @@
   <#if pageThroughUrls?exists && (pageThroughUrls?size > 1) >
     <span class="vrtx-paging-wrapper">
     	<#list pageThroughUrls as url>
-          <a href="${url.url?html}" class="<#if url.title == "prev">vrtx-previous<#elseif url.title="next">vrtx-next<#else>vrtx-page-number</#if><#if (url.marked) > vrtx-marked</#if>"><#compress>
+          <a href="${url.url}" class="<#if url.title == "prev">vrtx-previous<#elseif url.title="next">vrtx-next<#else>vrtx-page-number</#if><#if (url.marked) > vrtx-marked</#if>"><#compress>
           <#if (url.title) = "prev" ><@vrtx.msg code="viewCollectionListing.previous" />
           <#elseif (url.title) = "next" ><@vrtx.msg code="viewCollectionListing.next" />
-          <#else >${(url.title?html)}
+          <#else >${(url.title)}
           </#if>
           </#compress></a>
         </#list>
@@ -231,16 +231,16 @@
 <#macro displayDropdown type title titleLink='' displayDropdownTitleClose=true titleLinkTip='' toggle=false>
   <div class="vrtx-${type}-component vrtx-dropdown-component <#if !displayDropdownTitleClose>vrtx-dropdown-component-toggled<#else>vrtx-dropdown-component-not-toggled</#if><#if toggle> vrtx-dropdown-component-toggle</#if>">
     <#if titleLink != ''>
-      <a href="${titleLink?html}" class="vrtx-${type}-title-link vrtx-dropdown-title-link">${title?html}</a>
-      <a href="javascript:void(0)" class="vrtx-${type}-link vrtx-dropdown-link"><span class="offscreen-screenreader">${titleLinkTip?html}</span></a>
+      <a href="${titleLink}" class="vrtx-${type}-title-link vrtx-dropdown-title-link">${title}</a>
+      <a href="javascript:void(0)" class="vrtx-${type}-link vrtx-dropdown-link"><span class="offscreen-screenreader">${titleLinkTip}</span></a>
     <#else>
-      <a href="javascript:void(0)" class="vrtx-${type}-link vrtx-dropdown-link">${title?html}</a>
+      <a href="javascript:void(0)" class="vrtx-${type}-link vrtx-dropdown-link">${title}</a>
     </#if>
     <div class="vrtx-${type}-wrapper vrtx-dropdown-wrapper">
       <div class="vrtx-${type}-wrapper-inner vrtx-dropdown-wrapper-inner">
         <#if displayDropdownTitleClose>
           <div class="vrtx-${type}-top vrtx-dropdown-top">
-            <div class="vrtx-${type}-title vrtx-dropdown-title">${title?html}
+            <div class="vrtx-${type}-title vrtx-dropdown-title">${title}
               <a href="javascript:void(0)" class="vrtx-${type}-close-link vrtx-dropdown-close-link">
                 <@vrtx.msg code="decorating.shareAtComponent.close" default="Close" />
               </a>
@@ -268,9 +268,9 @@
             <ul>
             <#list alternativeRepresentations as alt>
               <#if alt.contentType = 'application/atom+xml'>
-                <li><a id="vrtx-feed-link" href="${alt.url?html}"><@vrtx.msg code="viewCollectionListing.feed.fromThis" /></a></li>
+                <li><a id="vrtx-feed-link" href="${alt.url}"><@vrtx.msg code="viewCollectionListing.feed.fromThis" /></a></li>
               <#elseif alt.contentType = 'text/calendar' && (displayEventListingICalLink?? && displayEventListingICalLink)>
-                <#assign altUrl = alt.url?replace("http://", "webcal://")?html />
+                <#assign altUrl = alt.url?replace("http://", "webcal://") />
                 <li><a id="vrtx-ical-link" href="${altUrl}"><@vrtx.msg code="eventListing.ical.add" /></a></li>
               </#if>
             </#list>
@@ -280,7 +280,7 @@
         <#list alternativeRepresentations as alt>
           <#if alt.contentType = 'application/atom+xml'>
             <div class="vrtx-feed-link">
-              <a id="vrtx-feed-link" href="${alt.url?html}"><@vrtx.msg code="viewCollectionListing.feed.fromThis" /></a>
+              <a id="vrtx-feed-link" href="${alt.url}"><@vrtx.msg code="viewCollectionListing.feed.fromThis" /></a>
             </div>
           </#if>
         </#list>

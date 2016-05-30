@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: confirm-publish.ftl
   - 
@@ -9,7 +8,6 @@
   -   url
   -   name
 -->
-
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
 

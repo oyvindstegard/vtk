@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#attempt>
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
@@ -18,8 +18,8 @@
   <#if !resourceContext.currentResource.isCollection()>
     <ul class="publishing-document button-row-small">
       <li class="first">
-        <a id="vrtx-publish-document" title="${titleMsg}" href="${actionURL?html}">
-          ${item.title?html}
+        <a id="vrtx-publish-document" title="${titleMsg}" href="${actionURL}">
+          ${item.title}
         </a>
       </li>
       <li>
@@ -29,7 +29,7 @@
       </li>    
     </ul>
   <#else>
-    <a id="vrtx-publish-document" class="vrtx-button-small" title="${titleMsg}" href="${actionURL?html}">${item.title?html}</a>
+    <a id="vrtx-publish-document" class="vrtx-button-small" title="${titleMsg}" href="${actionURL}">${item.title}</a>
   </#if>
 </#if>
 

@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: response-info.ftl
   - 
@@ -10,8 +9,7 @@
   -  
   - Optional model data:
   -
-  -->
-  
+  -->  
 <#if !responseInfo?exists>
   <#stop "This template only works with 'responseInfo' model map supplied." />
 </#if>
@@ -24,14 +22,14 @@
 <body>
   <h1>Response info</h1>
   <h2>Request</h2>
-  <p>URL: <a href="${responseInfo.requestURL?html}">${responseInfo.requestURL?html}</a></p>
+  <p>URL: <a href="${responseInfo.requestURL}">${responseInfo.requestURL}</a></p>
   <p>Method: ${responseInfo.method}</p>
   <p>
     Parameters: 
     <ul>
     <#list responseInfo.requestParameters?keys as name>
       <li>
-        <pre>${name?html} = ${responseInfo.requestParameters[name]?html?if_exists}
+        <pre>${name} = ${responseInfo.requestParameters[name]?if_exists}
       </li>
     </#list>
     </ul>
@@ -43,7 +41,7 @@
   <#list responseInfo.headers?keys as name>
     <#list responseInfo.headers[name] as value>
       <li>
-        <pre>${name?html}: ${value?html}</pre>
+        <pre>${name}: ${value}</pre>
       </li>
     </#list>
   </#list>

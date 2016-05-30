@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: comments-component.ftl
   - 
@@ -39,7 +39,7 @@
                    args=[comments?size] />
       </#assign>
       <#if baseCommentURL?exists>
-        <a class="header-href" href="${(baseCommentURL + '#comments')?html}">${header}</a>
+        <a class="header-href" href="${(baseCommentURL + '#comments')}">${header}</a>
       <#else>
         ${header}
       </#if>
@@ -52,17 +52,17 @@
       </#assign>
   
       <#if (deleteAllCommentsURL?exists && comments?size > 0)>
-        <form class="vrtx-comments-delete-all" action="${deleteAllCommentsURL?html}" method="post">
+        <form class="vrtx-comments-delete-all" action="${deleteAllCommentsURL}" method="post">
           <@vrtx.csrfPreventionToken url=deleteAllCommentsURL />
           <button type="submit" id="vrtx-comments-delete-all" class="button" name="delete-all-comments-button"
-                  onclick="return confirm('${confirmation}');"><span>${message?html}</span></button>
+                  onclick="return confirm('${confirmation}');"><span>${message}</span></button>
         </form>
       </#if>
     </div>
     
     <#if feedURL?exists>
       <div id="comments-header-feedHref">
-         <a href="${feedURL?html}"><@vrtx.msg code="commenting.subscribe" default="subscribe" /></a>
+         <a href="${feedURL}"><@vrtx.msg code="commenting.subscribe" default="subscribe" /></a>
       </div>
     </#if>
   </#if>
@@ -73,41 +73,41 @@
   <#assign rowclass="even" />
 
     <#list comments as comment>
-      <div class="vrtx-comment ${rowclass}" id="comment-${comment.ID?html}">
+      <div class="vrtx-comment ${rowclass}" id="comment-${comment.ID}">
         <#if config.titlesEnabled>
           <div class="comment-title">
             <#if baseCommentURL?exists>
-              <a href="${(baseCommentURL + '#comment-' + comment.ID)?html}">${comment.title?html}</a>
+              <a href="${(baseCommentURL + '#comment-' + comment.ID)}">${comment.title}</a>
               <#else>
-                ${comment.title?html}
+                ${comment.title}
               </#if>
           </div>
         </#if>
       <div class="comment-body">
       <#if config.htmlContentEnabled>
         <#-- Display content as raw html: -->
-        ${comment.content}
+        ${comment.content?no_esc}
       <#else>
         <#-- Display content as escaped html: -->
-        ${comment.content?html}
+        ${comment.content}
       </#if>
       </div>
       <div class="comment-info">
         <#if comment.author.URL?exists>
-         <span class="comment-author"><a href="${comment.author.URL?html}">${comment.author.description?html}</a></span><span class="comment-author-line"> -</span>
+         <span class="comment-author"><a href="${comment.author.URL}">${comment.author.description}</a></span><span class="comment-author-line"> -</span>
         <#else>
-         <span class="comment-author"><@vrtx.breakSpecificChar nchars=21 char='@'>${comment.author.description?html}</@vrtx.breakSpecificChar></span><span class="comment-author-line"> -</span>
+         <span class="comment-author"><@vrtx.breakSpecificChar nchars=21 char='@'>${comment.author.description}</@vrtx.breakSpecificChar></span><span class="comment-author-line"> -</span>
         </#if>
          <span class="comment-date"><@vrtx.date value=comment.time format='long' /></span>
-        <#if deleteCommentURLs[comment.ID?html]?exists>
+        <#if deleteCommentURLs[comment.ID]?exists>
           <#assign message><@vrtx.msg code="commenting.delete" default="delete" /></#assign>
           <#assign confirmation>
             <@vrtx.msg code="commenting.delete.confirmation" 
                        default="Are you sure you want to delete this comment?" />
           </#assign>
-          <form class="vrtx-comments-delete" action="${deleteCommentURLs[comment.ID]?html}" method="post">
+          <form class="vrtx-comments-delete" action="${deleteCommentURLs[comment.ID]}" method="post">
             <@vrtx.csrfPreventionToken url=deleteCommentURLs[comment.ID] />
-            <button class="comment-delete-button button" type="submit" onclick="return confirm('${confirmation}');"><span>${message?html}</span></button>
+            <button class="comment-delete-button button" type="submit" onclick="return confirm('${confirmation}');"><span>${message}</span></button>
           </form>
         </#if>
       </div>
@@ -122,9 +122,9 @@
        <p><@vrtx.msg code="commenting.disabled"
                   default="Commenting is disabled on this resource." /></p>
     <#elseif !principal?exists>
-      <#assign completeLoginURL>${loginURL?html}&amp;anchor=comment-form</#assign>
+      <#assign completeLoginURL>${loginURL}&amp;anchor=comment-form</#assign>
       <#assign defaultMsg><a class="button" href="${completeLoginURL}"><span>Log in</span></a> to comment</#assign>
-      <div id="add-comment-login"><@vrtx.rawMsg code="commenting.not-logged-in" default=defaultMsg args=[completeLoginURL] /></div>
+      <div id="add-comment-login"><@vrtx.rawMsg code="commenting.not-logged-in" default=defaultMsg?markup_string args=[completeLoginURL?markup_string] /></div>
       <div id="add-comment-webid"><@vrtx.rawMsg code="commenting.not-logged-in.webid" default="" /></div>
     <#elseif repositoryReadOnly>
        <p><@vrtx.msg code="commenting.read.only"
@@ -143,7 +143,7 @@
           // CKEditor CSS
           var cssFileList = [<#if fckEditorAreaCSSURL?exists>
                                <#list fckEditorAreaCSSURL as cssURL>
-                                 "${cssURL?html}" <#if cssURL_has_next>,</#if>
+                                 "${cssURL}" <#if cssURL_has_next>,</#if>
                                </#list>
                              </#if>]; 
       //-->
@@ -153,17 +153,17 @@
         <div class="syntax-head"><@vrtx.msg code="commenting.form.syntax-description" default="Allowed HTML syntax" />:</div>
         <p>
         <#list config.validHtmlElements as element>
-          &lt;${element.name?html}<#compress>
+          &lt;${element.name}<#compress>
           <#if (element.attributes)?exists>
             <#list element.attributes as attr>
-              &nbsp;${attr?html}=".."
+              &nbsp;${attr}=".."
             </#list>
           </#if>
           </#compress>&gt;<#if element_has_next>, </#if>
         </#list>
         </p>
       </div>
-      <form class="vrtx-comments-post" action="${postCommentURL?string?html}#comment-form" method="post">
+      <form class="vrtx-comments-post" action="${postCommentURL?string}#comment-form" method="post">
         <@vrtx.csrfPreventionToken url=postCommentURL />
         <#if config.titlesEnabled>
         <div class="comments-title">
@@ -181,7 +181,7 @@
         </#if>
         <div class="comments-text" id="comments-text-div">
           <#assign value><#if form?exists && form.text?exists>${form.text}</#if></#assign>
-          <textarea id="comments-text" name="text" rows="6" cols="80">${value?html}</textarea>
+          <textarea id="comments-text" name="text" rows="6" cols="80">${value}</textarea>
         <#if errors?exists && errors.getFieldError('text')?exists>
           <div class="error">
             <@vrtx.msg code=errors.getFieldError('text').getCode()
@@ -193,13 +193,12 @@
         <div class="submit">
         <#assign principalStr>
           <#compress>
-            <span class="user">${principal.description?html}</span>
+            <span class="user">${principal.description}</span>
           </#compress>
         </#assign>
         <input type="submit" id="submit-comment-button" name="save"
-          value="<@vrtx.msg code='commenting.form.submit'
-          default='Submit' />" />
-          (<@vrtx.rawMsg code="commenting.post.comment-as" default="as ${principal.description}" args=[principalStr] />)
+          value="<@vrtx.msg code='commenting.form.submit' default='Submit' />" />
+          (<@vrtx.rawMsg code="commenting.post.comment-as" default="as ${principal.description}" args=[principalStr?markup_string] />)
         </div> 
       </form>
       <@ck.editorInTextarea textarea="comments-text" toolbar="AddComment" runOnLoad=false  />

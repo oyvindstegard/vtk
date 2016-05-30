@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#--
   - File: list-menu.ftl
   - 
@@ -35,14 +35,14 @@
   <#if item.active>
     <#assign class="vrtx-active-item" />
     <#if item.label?exists>
-      <#assign class = class + " " +  item.label?html />
+      <#assign class = class + " " +  item.label />
     </#if>
     <#if isCurrent(item)>
       <#assign class = class + " vrtx-current-item" />
     </#if>
   <#else>
     <#if item.label?exists>
-      <#assign class = item.label?html />
+      <#assign class = item.label />
     </#if>
   </#if>
   <#if class?has_content>
@@ -69,7 +69,7 @@
 </#function>
 
 <#macro displayItem item>
-  <a href="${item.url?html}">${item.title?html}</a>
+  <a href="${item.url}">${item.title}</a>
   <#if item.menu?exists && item.menu.items?size &gt; 0>
     <#if item.menu.label?exists>
       <ul class="${item.menu.label}">

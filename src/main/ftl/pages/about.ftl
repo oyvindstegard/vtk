@@ -1,4 +1,6 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
+
+<#--ftl strip_whitespace=true-->
 
 <#--
   - File: about.ftl
@@ -49,7 +51,7 @@
       <#assign modifiedByStr = modifiedBy.description />
       <#if modifiedBy.URL?exists>
         <#assign modifiedByStr>
-          <a title="${modifiedBy.name?html}" href="${modifiedBy.URL?html}">${modifiedBy.description}</a>
+          <a title="${modifiedBy.name}" href="${modifiedBy.URL}">${modifiedBy.description}</a>
         </#assign>
       </#if>
       <#assign modifiedStr>
@@ -67,7 +69,7 @@
       <#assign createdByStr = createdBy.description />
       <#if createdBy.URL?exists>
         <#assign createdByStr>
-          <a title="${createdBy.name?html}" href="${createdBy.URL?html}">${createdBy.description}</a>
+          <a title="${createdBy.name}" href="${createdBy.URL}">${createdBy.description}</a>
         </#assign>
       </#if>
       <#assign createdByStr>
@@ -90,9 +92,9 @@
         </th>
         <td class="value">
           <#if owner.URL?exists>
-            <a title="${owner.name?html}" href="${owner.URL?html}">${owner.description?html}</a>
+            <a title="${owner.name}" href="${owner.URL}">${owner.description}</a>
           <#else>
-            ${owner.description?html}
+            ${owner.description}
           </#if>
 
           <#if ownerItem.toggleURL?exists>
@@ -104,12 +106,12 @@
                          default="Are you sure you want to take ownership of this resource?" />
             </#assign>
             <script type="text/javascript"><!--
-              var confirmTakeOwnershipMsg = '${warning?js_string}',
+              var confirmTakeOwnershipMsg = '${warning?markup_string?js_string}',
                   confirmTakeOwnershipTitle = '${editAction}';
             // -->
             </script>
             
-            <form id="vrtx-admin-ownership-form" action="${ownerItem.toggleURL?html}" method="post">
+            <form id="vrtx-admin-ownership-form" action="${ownerItem.toggleURL}" method="post">
               <input class="vrtx-button-small" id="vrtx-admin-ownership-button" type="submit" 
                      name="confirmation" value="${editAction}" />
             </form>
@@ -124,14 +126,14 @@
              value = vrtx.resourceTypeName(resource) />
 
       <!-- Web address -->
-      <#assign url><a id="vrtx-aboutWebAddress" href="${resourceDetail.viewURL?html}">${resourceDetail.viewURL?html}</a></#assign>
+      <#assign url><a id="vrtx-aboutWebAddress" href="${resourceDetail.viewURL}">${resourceDetail.viewURL}</a></#assign>
       <@propList.defaultPropertyDisplay
              propName = "viewURL"
              name = vrtx.getMsg("resource.viewURL", "Web address")
              value = url />
 
       <!-- WebDAV address -->
-      <#assign url>${resourceDetail.webdavURL?html}</#assign>
+      <#assign url>${resourceDetail.webdavURL}</#assign>
       <@propList.defaultPropertyDisplay 
              propName = "webdavURL"
              name = vrtx.getMsg("resource.webdavURL", "WebDAV address")
@@ -139,7 +141,7 @@
       
       <!-- Source address -->
       <#if resourceDetail.getSourceURL?exists>
-        <#assign url><a id="vrtx-aboutSourceAddress" href="${resourceDetail.getSourceURL?html}">${resourceDetail.getSourceURL?html}</a></#assign>
+        <#assign url><a id="vrtx-aboutSourceAddress" href="${resourceDetail.getSourceURL}">${resourceDetail.getSourceURL}</a></#assign>
         <@propList.defaultPropertyDisplay
              propName = "sourceURL"
              name = vrtx.getMsg("resource.sourceURL")
@@ -148,7 +150,7 @@
       
       
       <#if resourceDetail.viewImageInfoService?exists>
-        <#assign url><a href="${resourceDetail.viewImageInfoService?html}">${resourceDetail.viewImageInfoService?html}</a></#assign>
+        <#assign url><a href="${resourceDetail.viewImageInfoService}">${resourceDetail.viewImageInfoService}</a></#assign>
         <@propList.defaultPropertyDisplay
              propName = "viewAsWebpage"
              name = vrtx.getMsg("resource.viewAsWebpage")
@@ -156,7 +158,7 @@
       </#if>
       
       <#if resourceDetail.mediaPlayerService?exists>
-        <#assign url><a href="${resourceDetail.mediaPlayerService?html}">${resourceDetail.mediaPlayerService?html}</a></#assign>
+        <#assign url><a href="${resourceDetail.mediaPlayerService}">${resourceDetail.mediaPlayerService}</a></#assign>
         <@propList.defaultPropertyDisplay
              propName = "viewAsWebpage"
              name = vrtx.getMsg("resource.viewAsWebpage")
@@ -253,7 +255,7 @@
 
     <!-- content:description -->
     <#if resource.resourceType != "audio" && resource.resourceType != "video" && resource.resourceType != "image" >
-        <@propList.editOrDisplayProperty modelName='aboutItems' propertyName = 'content:description' inputSize=100 />
+        <@propList.editOrDisplayProperty modelName="aboutItems" propertyName = "content:description" inputSize=100 />
     </#if>
 
  </table>
@@ -343,7 +345,7 @@
           ${l}
       </#if>
       </#compress>
-      <#if editURL != "">
+      <#if editURL?markup_string != "">
         ${editURL}
       </#if>
     </td>
@@ -361,13 +363,13 @@
       <#if prefix?is_string>
         ${prefix}
       </#if>
-      ${value?trim}
+      ${value?markup_string?trim}
       <#compress>
       <#if .vars['aboutItems'][propName].property?exists && .vars['aboutItems'][propName].property.inherited>
          &nbsp;(<@vrtx.msg "resource.property.inherited"  "inherited" />)
       </#if>
       </#compress>
-      <#if editURL != "">
+      <#if editURL?markup_string != "">
         ${editURL}
       </#if>
     </td>
