@@ -53,6 +53,7 @@
         <#assign modifiedByStr>
           <a title="${modifiedBy.name}" href="${modifiedBy.URL}">${modifiedBy.description}</a>
         </#assign>
+        <#assign modifiedByStr = modifiedByStr?markup_string />
       </#if>
       <#assign modifiedStr>
         <@vrtx.rawMsg code = "property.lastModifiedBy"
@@ -71,6 +72,7 @@
         <#assign createdByStr>
           <a title="${createdBy.name}" href="${createdBy.URL}">${createdBy.description}</a>
         </#assign>
+        <#assign createdByStr = createdByStr?markup_string />
       </#if>
       <#assign createdByStr>
         <@vrtx.rawMsg code = "property.createdBy"
