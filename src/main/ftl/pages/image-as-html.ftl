@@ -61,10 +61,11 @@
   <p>${photographer}</p> 
 </#if>
 
+<#assign key = ("copyrightHelpURL." + lang)?markup_string />
 
-<#if .vars["copyrightHelpURL." + lang]?exists && .vars["copyrightHelpURL." + lang]?trim != "">
+<#if .vars[key]?exists && .vars[key]?trim != "">
   <h2>${vrtx.getMsg('imageAsHtml.copyright-info')}</h2>
-  <#assign url = .vars["copyrightHelpURL." + lang] />
+  <#assign url = .vars[key] />
   <p><#if url?exists>${url}</#if></p>
 </#if>
 
