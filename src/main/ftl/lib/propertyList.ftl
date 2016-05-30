@@ -485,7 +485,7 @@
                <label for="${alternative}">${label}</label>
             <#else>
               <#local defaultNotSet><@vrtx.msg code="resource.property.unset" default="Not set" /></#local>
-              <#local label><@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet}" /></#local>
+              <#local label><@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet?markup_string}" /></#local>
                 <input id="unset" type="radio" name="value" value=""
                            <#if !form.value?has_content>checked</#if> />
                   <label for="unset">${label}</label>
@@ -505,7 +505,7 @@
               <option value="${alternative}" <#if form.value?has_content && form.value = alternative>selected="true"</#if> label="${label}">${label}</option>
             <#else>
               <#local defaultNotSet><@vrtx.msg code="resource.property.unset" default="Not set" /></#local>
-              <#local label><@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet}" /></#local>
+              <#local label><@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet?markup_string}" /></#local>
               <option id="unset" value="" <#if !form.value?has_content>selected="true"</#if> label="${label}">${label}</option>
             </#if>
           </#list>
