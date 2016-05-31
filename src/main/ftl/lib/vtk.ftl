@@ -250,7 +250,7 @@
 <#macro linkResolveFilter value baseURL requestURL protocolRelative=false>
   <#compress>
     <#if VRTX_HTML_UTIL?exists>
-      ${VRTX_HTML_UTIL.linkResolveFilter(value, baseURL, requestURL, protocolRelative).getStringRepresentation()}
+      ${VRTX_HTML_UTIL.linkResolveFilter(value, baseURL, requestURL, protocolRelative).getStringRepresentation()?no_esc}
     <#else>
       Undefined
     </#if>
