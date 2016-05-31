@@ -47,40 +47,43 @@
       <#if !title?has_content>
         <#assign title = vrtx.propValue(entryPropSet, "solr.name", "", "") />
       </#if>
-          <a class="vrtx-title vrtx-title-link" href="${linkURL}">${title}</a>
+      <a class="vrtx-title vrtx-title-link" href="${linkURL}">${title}</a>
 
-          <#--
-            Only local resources are ever evaluated for edit authorization.
-            Use prop set path (uri) and NOT full entry url for link construction.
-            See open-webdav.js
-          -->
-          <#if entry.editLocked>
-            <span class="vrtx-resource-locked-webdav"><@vrtx.msg code="listing.edit.locked-by" /> ${entry.lockedByNameHref}</span>
-          <#elseif entry.editAuthorized>
-            <a class="vrtx-resource-open-webdav" href="${vrtx.linkConstructor(entryPropSet.URI, 'webdavService')}"><@vrtx.msg code="collectionListing.editlink" /></a>
-          </#if>
+      <#--
+        Only local resources are ever evaluated for edit authorization.
+        Use prop set path (uri) and NOT full entry url for link construction.
+        See open-webdav.js
+      -->
+      <#if entry.editLocked>
+        <span class="vrtx-resource-locked-webdav"><@vrtx.msg code="listing.edit.locked-by" /> ${entry.lockedByNameHref}</span>
+      <#elseif entry.editAuthorized>
+        <a class="vrtx-resource-open-webdav" href="${vrtx.linkConstructor(entryPropSet.URI, 'webdavService')}"><@vrtx.msg code="collectionListing.editlink" /></a>
+      </#if>
     </div>
 
-      <#local lastModified = vrtx.propValue(entryPropSet, "lastModified", "long") />
-            <#if lastModified?has_content && !collectionListing.hasDisplayPropDef("hide-last-modified")>
-              <#assign val>
-                <@vrtx.msg code="viewCollectionListing.lastModified" args=[lastModified] />
-              </#assign>
-              <#assign modifiedBy = vrtx.prop(entryPropSet, 'modifiedBy').principalValue />
-              <#if principalDocuments?exists && principalDocuments[modifiedBy.name]?exists>
-                <#assign principal = principalDocuments[modifiedBy.name] />
-                <#if principal.URL?exists>
-                  <#assign val = val + " <a href='${principal.URL}'>${principal.description}</a>" />
-                <#else>
-                  <#assign val = val + " ${principal.description}" />
-                </#if>
-              <#else>
-                <#assign val = val + " " + vrtx.propValue(entryPropSet, 'modifiedBy', 'link') />
-              </#if>
-         <div class="lastModified">
-                ${val?no_esc}
-              </div>
-            </#if>
+    <#local lastModified = vrtx.propValue(entryPropSet, "lastModified", "long") />
+    <#if lastModified?has_content && !collectionListing.hasDisplayPropDef("hide-last-modified")>
+      <#assign val>
+        <@vrtx.msg code="viewCollectionListing.lastModified" args=[lastModified] />
+      </#assign>
+      <#assign modifiedBy = vrtx.prop(entryPropSet, 'modifiedBy').principalValue />
+      <#if principalDocuments?exists && principalDocuments[modifiedBy.name]?exists>
+        <#assign principal = principalDocuments[modifiedBy.name] />
+        <div class="lastModified">
+          <@vrtx.msg code="viewCollectionListing.lastModified" args=[lastModified] />
+          <#if principal.URL?exists>
+            <a href="${principal.URL}">${principal.description}</a>
+          <#else>
+            ${principal.description}
+          </#if>
+        </div>
+      <#else>
+        <div class="lastModified">
+          <@vrtx.msg code="viewCollectionListing.lastModified" args=[lastModified] />
+          ${vrtx.propValue(entryPropSet, 'modifiedBy', 'link')}
+        </div>
+      </#if>
+    </#if>
 
     <#local introduction = vrtx.getIntroduction(entryPropSet) />
     <#if introduction?has_content && !collectionListing.hasDisplayPropDef("hide-introduction")>
