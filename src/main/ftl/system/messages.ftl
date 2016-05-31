@@ -18,7 +18,7 @@
 
 <#list requestContext.infoMessages as msg>
   <div class="infomessage ${msg.identifier}">
-    ${msg.title}
+    ${msg.title?no_esc}
     <#if msg.messages?has_content>
       <ul class="infoitems">
         <#list msg.messages as subMsg>

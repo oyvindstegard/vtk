@@ -6,7 +6,7 @@
   <#assign upscopedHost = "not-upscoped-host" />
 </#if> -->
 
-<#assign language = vrtx.getMsg("eventListing.calendar.lang", "en") />
+<#assign language = vrtx.getMsg("eventListing.calendar.lang", "en")?markup_string />
 
 <div id="line-top"<#if upscopedHost != ""> class="${upscopedHost}"</#if>>
   <#if upscopedHost == "">

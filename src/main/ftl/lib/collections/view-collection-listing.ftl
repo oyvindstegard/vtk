@@ -86,7 +86,7 @@
 		<#local introduction = vrtx.getIntroduction(entryPropSet) />
 		<#if introduction?has_content && !collectionListing.hasDisplayPropDef("hide-introduction")>
 		  <div class="introduction">
-		    ${introduction}
+		    ${introduction?no_esc}
 		  </div>
 		</#if>
 

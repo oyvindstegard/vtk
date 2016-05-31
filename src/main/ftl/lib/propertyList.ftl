@@ -257,9 +257,6 @@
       ${name}:
     </th>
     <td class="value">
-      <#if prefix?is_string>
-        ${prefix}
-      </#if>
       ${value}
       <#if editURL??>
         ${editURL}
@@ -383,9 +380,6 @@
       <#else>
         <#assign valueItem=defaultItem />
         <#assign prefix = vrtx.getMsg(msgPrefix + ".unset", "") />
-      </#if>
-      <#if prefix == "">
-        <#assign prefix=false />
       </#if>
     </#if>
 

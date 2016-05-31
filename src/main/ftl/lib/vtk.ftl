@@ -1,4 +1,4 @@
-<#!--ftl strip_whitespace=true output_format="XML" auto_esc=true-->
+<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
 <#import "/spring.ftl" as spring />
 
 <#--
@@ -68,7 +68,7 @@
   <#local localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext, locale) />
     <#if escape>
-      ${localizer.msg?html}
+      ${localizer.msg}
     <#else>
       ${localizer.msg}
     </#if>
@@ -91,7 +91,7 @@
   <#compress>
     <#local localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-    ${localizer.msg?html}
+    ${localizer.msg}
   </#compress>
 </#macro>
 
@@ -120,7 +120,7 @@
   <#compress>
     <#local localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-  ${localizer.msg}
+  ${localizer.msg?no_esc}
   </#compress>
 </#macro>
 
@@ -140,7 +140,7 @@
 <#function getMsg code default=code args=[] >
     <#assign localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-  <#return localizer.msg/>
+    <#return localizer.msg?no_esc />
 </#function>
 
 
@@ -226,7 +226,7 @@
   <#compress>
     <#if VRTX_HTML_UTIL?exists>
       <#if escape>
-        ${VRTX_HTML_UTIL.flatten(value)?html}
+        ${VRTX_HTML_UTIL.flatten(value)}
       <#else>
         ${VRTX_HTML_UTIL.flatten(value)}
       </#if>
@@ -337,6 +337,7 @@
 <#macro breakSpecificChar nchars splitClass="comment-author-part" char="">
   <#compress>
     <#local val><#nested /></#local>
+    <#local val = val?markup_string />
     <#if val?length &lt; nchars>
       ${val}
     <#else>
@@ -383,7 +384,7 @@
         <#local more = true />
         <#break />
       </#if>
-      <li>${file?split("/")?last?html}</li>
+      <li>${file?split("/")?last}</li>
     </#list>
     </ul>
     <#if more>
@@ -553,9 +554,9 @@
 <#macro displayUserPrincipal principal>
   <#compress>
     <#if principal.URL?exists>
-      <a class="user-principal" title="${principal.name?html}" href="${principal.URL?html}">${principal.description?html}</a>
+      <a class="user-principal" title="${principal.name}" href="${principal.URL}">${principal.description}</a>
     <#else>
-      ${principal.name?html}
+      ${principal.name}
     </#if>
   </#compress>
 </#macro>
@@ -571,9 +572,9 @@
 <#macro displayGroupPrincipal principal>
   <#compress>
     <#if principal.URL?exists>
-      <a class="group-principal" title="${principal.description?html}" href="${principal.URL?html}">${principal.name?html}</a>
+      <a class="group-principal" title="${principal.description}" href="${principal.URL}">${principal.name}</a>
     <#else>
-      ${principal.name?html}
+      ${principal.name}
     </#if>
   </#compress>
 </#macro>
@@ -588,7 +589,7 @@
 <#macro cssPlaceholder place>
   <#if cssRegistry?exists && place?exists>
     <#list cssRegistry.getMedia(place) as cssURL>
-      <link rel="stylesheet" href="${cssURL?html}" type="text/css" />
+      <link rel="stylesheet" href="${cssURL}" type="text/css" />
     </#list>
   </#if>
 </#macro>
@@ -810,6 +811,6 @@
 <#macro displayLinkOtherLang resource>
   <#assign linkOtherLanguage = vrtx.propValue(resource, "linkOtherLanguage") />
   <#if linkOtherLanguage?has_content>
-    <a id="vrtx-change-language-link" href="${linkOtherLanguage?html}"><@vrtx.msg code="link-other-language" /><span class="offscreen-screenreader"> <@vrtx.msg code="link-other-language.offscreen" /></span></a>
+    <a id="vrtx-change-language-link" href="${linkOtherLanguage}"><@vrtx.msg code="link-other-language" /><span class="offscreen-screenreader"> <@vrtx.msg code="link-other-language.offscreen" /></span></a>
   </#if>
 </#macro>
