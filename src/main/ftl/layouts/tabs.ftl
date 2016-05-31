@@ -22,9 +22,10 @@
             <a id="${tab.label}" href="${tab.url}" title="<@vrtx.msg code="describe.${tab.label}" default="${tab.title}"/>">${tab.title}</a>
           </li>
         <#else>
-          <li class="${tab.label}"><a id="${tab.label}" href="${tab.url}" title="<@vrtx.msg code="describe.${tab.label}" default="${tab.title}"/>">${tab.title}</a></li>
+          <li class="${tab.label}"><a id="${tab.label}" href="${tab.url}" title="<@vrtx.msg code="describe.${tab.label}" default="${tab.title}"/>">${tab.title?no_esc}</a></li>
         </#if>
       </#if>
     </#list>
   </ul>
 </div>
+
