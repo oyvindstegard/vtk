@@ -318,7 +318,7 @@
           </#if>
         </#local>
       <#else>
-        <#local localizedName = propDef.getLocalizedName(locale) />
+        <#local localizedName = propDef.getLocalizedName(locale)?no_esc />
       </#if>
       
       <#local value = resource.getValue(propDef) />
