@@ -293,7 +293,7 @@
 <#macro invokeComponentRefs html>
   <#local frag = VRTX_HTML_UTIL.parseFragment(html) />
   ${frag.filter(VRTX_DECORATING_NODE_FILTER)}
-  ${frag.stringRepresentation}
+  ${frag.stringRepresentation?no_esc}
 </#macro>
 
 

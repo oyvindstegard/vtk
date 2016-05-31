@@ -32,7 +32,7 @@
       <h2>
         <@vrtx.msg
            code="permissions.header.${resource.resourceType}"
-           default="${defaultHeader}"/>
+           default=defaultHeader?markup_string />
       </h2>
       
       <script type="text/javascript"><!--
@@ -62,11 +62,11 @@
                    "Are you sure you want to set inherited permissions? This cannot be undone.",
                    [resource.name]) />
           <div id="permissions-inheritance">
-          <@vrtx.msg code="permissions.notInherited.${resource.resourceType}" default="${defaultNotInherited}" />
+          <@vrtx.msg code="permissions.notInherited.${resource.resourceType}" default=defaultNotInherited?markup_string />
           <#if aclInfo.aclEditURLs.inheritance?exists>
             <#assign permissionsSetInherited><@vrtx.msg code="permissions.setInherited" /></#assign>
             <script type="text/javascript"><!--
-              var confirmSetInheritedPermissionsMsg = '${warning?js_string}',
+              var confirmSetInheritedPermissionsMsg = '${warning?markup_string?js_string}',
                   confirmSetInheritedPermissionsTitle = '${permissionsSetInherited}';
             // -->
             </script>
