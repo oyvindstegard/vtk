@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#macro printPropertyEditView title inputFieldName value="" tooltip="" classes="" inputFieldSize=20 valuemap="" dropdown=false defaultValue="">

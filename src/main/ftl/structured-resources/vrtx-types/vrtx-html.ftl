@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#macro printPropertyEditView title inputFieldName value="" tooltip="" classes="" editor="">
   <div class="${classes}"> 
     <label for="${inputFieldName}">${title}</label>

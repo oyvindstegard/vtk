@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/menu/list-menu.ftl" as listMenu />
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/ping.ftl" as ping />
@@ -86,7 +86,7 @@
         <#if resource.URI == '/'>
           ${repositoryID}
         <#else>
-          ${resource.name}
+          ${resource.title}
         </#if>
       </#compress></h1>
       <#if browseURL?exists && editField?exists><#-- TODO: fix this hack for browse -->

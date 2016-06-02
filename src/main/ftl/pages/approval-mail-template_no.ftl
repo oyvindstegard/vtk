@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#if resourceDetail?? && resourceDetail.hasWorkingCopy?? && resourceDetail.hasWorkingCopy>
   <p><a href="${uri}">${uri}</a> er endret. Endringen må godkjennes før den blir synlig på nettstedet.</p>
 <#else>

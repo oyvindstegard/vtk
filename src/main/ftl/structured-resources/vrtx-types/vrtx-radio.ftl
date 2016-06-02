@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#macro vrtxRadio title tooltip classes options>
   <div class="vrtx-radio ${classes}">
     <div>${title}</div>

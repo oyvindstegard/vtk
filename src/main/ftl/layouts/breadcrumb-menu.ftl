@@ -1,8 +1,6 @@
-<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#if breadcrumb?exists>
   <ul class="vrtx-breadcrumb-menu">
-
     <#list breadcrumb as elem >
       <#if children?exists && (children?size > 0)>
         <#if (elem_has_next)>

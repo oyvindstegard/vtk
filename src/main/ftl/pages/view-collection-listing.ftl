@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: view-collection-listing.ftl
   - 
@@ -36,7 +36,7 @@
 <#import "/lib/collections/view-message-listing.ftl" as messages />
 
 <#assign resource = collection />
-<#assign title = vrtx.propValue(resource, "title") />
+<#assign title = vrtx.propValue(resource, 'title') />
 <#if overriddenTitle?has_content>
   <#assign title = overriddenTitle />
 </#if>
@@ -44,7 +44,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-
   <#if collection.resourceType = 'image-listing'>
     <@images.addScripts collection />
   <#else>
@@ -83,18 +82,17 @@
   
 </head>
 <body id="vrtx-${resource.resourceType}">
-
   <#assign page = page?default(1) />
 
-  <#assign eventListingDisplayType = vrtx.propValue(resource, 'display-type', '', 'el') />
-  <#assign isEventCalendarListing = (eventListingDisplayType?has_content && eventListingDisplayType = 'calendar') />
+  <#assign eventListingDisplayType = vrtx.propValue(resource, 'display-type', '', 'el')! />
+  <#assign isEventCalendarListing = eventListingDisplayType?? && eventListingDisplayType == 'calendar' />
   
   <#if isEventCalendarListing>
     <div id="vrtx-calendar-listing">
   </#if>
   
   <#-- Regular "additional content" placed in right-column -->
-  <#assign additionalContent = vrtx.propValue(resource, "additionalContents") />
+  <#assign additionalContent = vrtx.propValue(resource, "additionalContents")! />
   <#if collection.resourceType != 'image-listing'
     && collection.resourceType != 'person-listing' && !isEventCalendarListing>
       <#if additionalContent?has_content || collection.resourceType = 'blog-listing'>
@@ -104,44 +102,44 @@
   </#if>
   
 <#if !isEventCalendarListing>
-    <@vrtx.displayLinkOtherLang resource />
-	<#if viewOngoingMastersLink?exists>
-		<h1><@master.completed />
-	<#else>
+  <@vrtx.displayLinkOtherLang resource />
+  <#if viewOngoingMastersLink?exists>
+    <h1><@master.completed />
+  <#else>
     <h1>${title}
-      <@projects.completed />
-    </#if>
-      <#if page?has_content>
-        <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page}</#if>
-      </#if>
+    <@projects.completed />
+  </#if>
+  <#if page?has_content>
+    <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page}</#if>
+  </#if>
     </h1>
-    
-    <#if page == 1>
-      <#-- Introduction and image -->
-      <#assign introduction = vrtx.getIntroduction(resource) />
-      <#assign introductionImage = vrtx.propValue(resource, "picture") />
-      <#if !viewOngoingProjectsLink?exists &&
-           (introduction?has_content || introductionImage != "")>
-        <div class="vrtx-introduction">
-          <#-- Image -->
-      	  <@viewutils.displayImage resource />
-          <#-- Introduction -->
-          <#if introduction?has_content>
-            ${introduction?no_esc}
-          </#if>
-        </div>
-      </#if>
-      <#-- List collections: -->
-      <#if subFolderMenu?exists> 
-      	<div id="vrtx-collections" class="vrtx-collections">
-  	    	<@subfolder.displaySubFolderMenu subFolderMenu />
-  	    </div>
-	  </#if> 
+  <#if page == 1>
+    <#-- Introduction and image -->
+    <!-- #assign introduction = vrtx.getIntroduction(resource) /-->
+    <#assign introduction = vrtx.prop(resource, "introduction") />
+    <#assign introductionImage = vrtx.propValue(resource, "picture")! />
+    <#if !viewOngoingProjectsLink?exists &&
+    (introduction?has_content || introductionImage?has_content)>
+      <div class="vrtx-introduction">
+        <#-- Image -->
+      	<@viewutils.displayImage resource />
+        <#-- Introduction -->
+        <#if introduction?has_content>
+          ${introduction.stringValue?no_esc}
+        </#if>
+      </div>
+    </#if>
+    <#-- List collections: -->
+    <#if subFolderMenu?exists> 
+      <div id="vrtx-collections" class="vrtx-collections">
+  	<@subfolder.displaySubFolderMenu subFolderMenu />
+      </div>
+    </#if> 
   </#if> 
 </#if>
 
      <#-- XXX: Person listing "additional content" placed under introduction -->
-     <#assign additionalContentPersonListing = vrtx.propValue(resource, "additionalContent", "", "pl") />
+     <#assign additionalContentPersonListing = vrtx.propValue(resource, "additionalContent", "", "pl")! />
      <#if additionalContentPersonListing?has_content>
        <div class="vrtx-additional-content">
          <@vrtx.invokeComponentRefs additionalContentPersonListing />

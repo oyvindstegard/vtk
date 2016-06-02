@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true output_format="XHTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "include/scripts.ftl" as scripts />
 <#import "/lib/editor/common.ftl" as editor />
