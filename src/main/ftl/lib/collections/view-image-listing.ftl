@@ -3,7 +3,7 @@
 <#import "/lib/gallery.ftl" as gallery />
 
 <#macro addScripts collection>
-  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl') />
+  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl')! />
   <#if displayTypeParam?exists>
     <#local listingType = displayTypeParam />
   </#if>
@@ -39,7 +39,7 @@
 </#macro>
 
 <#macro displayImages imageListing collection>
-  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl') />
+  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl')! />
   <#if displayTypeParam?exists>
     <#local listingType = displayTypeParam />
   </#if>
@@ -80,8 +80,8 @@
 
             <div class="vrtx-image-info">
               <div class="vrtx-image-title">
-                <#if (title?string?length > 20) >
-                  <a href="${imageEntry.url}?vrtx=view-as-webpage">${title?substring(0, 20)} ...</a>
+                <#if (title?markup_string?length > 20) >
+                  <a href="${imageEntry.url}?vrtx=view-as-webpage">${title?markup_string?substring(0, 20)} ...</a>
                 <#else>
                   <a href="${imageEntry.url}?vrtx=view-as-webpage">${title}</a>
                 </#if>
@@ -92,7 +92,7 @@
                 ${creationTime}
               </div>
 
-              <#local description = vrtx.propValue(image, 'image-description') />
+              <#local description = vrtx.propValue(image, 'image-description')! />
               <div class="vrtx-image-description">
                 <#if description?has_content>
                   <@vrtx.flattenHtml value=description escape=false />

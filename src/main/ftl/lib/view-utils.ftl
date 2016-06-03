@@ -27,14 +27,14 @@
 -->
 <#macro displayImage resource displayAsThumbnail=false>
   
-  <#local imageRes = vrtx.propResource(resource, "picture") />
-  <#local introductionImage = vrtx.propValue(resource, "picture") />
-  <#local introductionImageAlt = vrtx.propValue(resource, "pictureAlt") />
-  <#local caption = vrtx.propValue(resource, "caption") />
+  <#local imageRes = vrtx.propResource(resource, "picture")! />
+  <#local introductionImage = vrtx.propValue(resource, "picture")! />
+  <#local introductionImageAlt = vrtx.propValue(resource, "pictureAlt")! />
+  <#local caption = vrtx.propValue(resource, "caption")! />
   
-  <#if introductionImage != "">
+  <#if introductionImage??>
   
-    <#if imageRes == "">
+    <#if imageRes??>
       <img class="vrtx-introduction-image" src="${introductionImage}" alt="${introductionImageAlt}" />
     <#else>
 
@@ -42,8 +42,8 @@
         <#local introductionImage = vrtx.propValue(resource, "picture", "thumbnail") />
       </#if>
 
-      <#local pixelWidth = imageRes.getValueByName("pixelWidth")?default("") />
-      <#local photographer = imageRes.getValueByName("photographer")?default("") />
+      <#local pixelWidth = imageRes.getValueByName("pixelWidth")!"" />
+      <#local photographer = imageRes.getValueByName("photographer")!"" />
         
       <#local style="" />
       <#if pixelWidth != "">
@@ -52,7 +52,7 @@
         
       <#if caption != ""><#-- Caption is set -->
         <div class="vrtx-introduction-image" <#if style?has_content>style="${style}"</#if>>
-	      <img src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt}</#if>" />
+	  <img src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt}</#if>" />
           <div class="vrtx-imagetext">
             <div class="vrtx-imagedescription">${caption}</div>
             <span class="vrtx-photo">

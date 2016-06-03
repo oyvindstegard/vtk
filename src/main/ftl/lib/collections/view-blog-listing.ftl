@@ -1,15 +1,16 @@
 <#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 
 <#macro displayBlogs blogListing collection>
-  <#assign introduction = vrtx.getIntroduction(collection) />
-  <#assign introductionImage = vrtx.propValue(collection, "picture") />
-  <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
+  <#assign introduction = vrtx.getIntroduction(collection)! />
+  <#assign introductionImage = vrtx.propValue(collection, "picture")! />
+  <#assign additionalContent = vrtx.propValue(collection, "additionalContents")! />
   <#local listingView = "regular">
-  <@articles.displayArticles page=page collectionListings=searchComponents listingView=listingView hideNumberOfComments=hideNumberOfComments displayMoreURLs=true />
+  <@articles.displayArticles page=page collectionListings=searchComponents 
+                             listingView=listingView hideNumberOfComments=hideNumberOfComments 
+                             displayMoreURLs=true />
 </#macro>
 
 <#macro listComments>
-
   <#if (comments?size > 0) >
     <div class="vrtx-recent-comments">
       <a class="comments-title" href="${moreCommentsUrl}"><@vrtx.msg code="commenting.comments.recent" /></a>

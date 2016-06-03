@@ -89,7 +89,7 @@
             <@vrtx.date value=publishDateProp.dateValue format='long' locale=locale />
           </div>
 
-          <#local numberOfComments = vrtx.prop(message, "numberOfComments") />
+          <#local numberOfComments = vrtx.prop(message, "numberOfComments")! />
           <#if numberOfComments?has_content >
             <div class="vrtx-number-of-comments-add-event-container">
               <@viewutils.displayNumberOfComments message locale />
@@ -97,11 +97,11 @@
           </#if>
 
           <div class="description introduction">
-            <#local messageIntro = vrtx.propValue(message, "listingDisplayedMessage", "", "") />
-            <#if messageIntro??>
-              ${messageIntro}
-              <#local isTruncated = vrtx.propValue(message, "isTruncated", "", "") />
-              <#if isTruncated?exists && isTruncated = 'true'>
+            <#local messageIntro = vrtx.propValue(message, "listingDisplayedMessage", "", "")! />
+            <#if messageIntro?has_content>
+              ${messageIntro?no_esc}
+              <#local isTruncated = vrtx.propValue(message, "isTruncated", "", "")! />
+              <#if isTruncated?has_content && isTruncated?markup_string == 'true'>
                 <div class="vrtx-read-more">
                   <a href="${messageEntry.url}" class="more">
                     <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />

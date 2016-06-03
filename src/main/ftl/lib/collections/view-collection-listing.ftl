@@ -61,7 +61,8 @@
       </#if>
     </div>
 
-    <#local lastModified = vrtx.propValue(entryPropSet, "lastModified", "long") />
+    <local lastModified = vrtx.propValue(entryPropSet, "lastModified", "long") />
+
     <#if lastModified?has_content && !collectionListing.hasDisplayPropDef("hide-last-modified")>
       <#assign val>
         <@vrtx.msg code="viewCollectionListing.lastModified" args=[lastModified] />
@@ -85,7 +86,7 @@
       </#if>
     </#if>
 
-    <#local introduction = vrtx.getIntroduction(entryPropSet) />
+    <#local introduction = vrtx.getIntroduction(entryPropSet)! />
     <#if introduction?has_content && !collectionListing.hasDisplayPropDef("hide-introduction")>
       <div class="introduction">
         ${introduction?no_esc}
