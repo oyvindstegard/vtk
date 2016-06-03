@@ -50,7 +50,7 @@
         </#if>
         <#if templates?has_content>
           <ul class="radio-buttons">
-            <@vrtx.formRadioButtons "createDocumentForm.sourceURI", templates, "<li>", "</li>", descriptions, titles, true, "", splitAfterRecommenedTitle />
+            <@vrtx.formRadioButtons "createDocumentForm.sourceURI", templates, "<li>"?no_esc, "</li>"?no_esc, descriptions, titles, true, "", splitAfterRecommenedTitle />
           </ul>
           <#if isRecommendedBind>
             </div>

@@ -23,7 +23,7 @@
         </#if>
       <#if templates?has_content>
         <ul class="radio-buttons">
-          <@vrtx.formRadioButtons "createCollectionForm.sourceURI", templates, "<li>", "</li>" />
+          <@vrtx.formRadioButtons "createCollectionForm.sourceURI", templates, "<li>"?no_esc, "</li>"?no_esc />
         </ul>
         <button id="initCreateChangeTemplate" type="button" onclick="createChangeTemplate(true)"></button>
         
