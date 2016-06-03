@@ -77,11 +77,11 @@
       </form>
       <#elseif resourceContext.currentResource.inheritedAcl>
       	<div id="permissions-inheritance">
-     		<@vrtx.msg code="permissions.isInherited" default="Inherited permissions" />
+     	  <@vrtx.msg code="permissions.isInherited" default="Inherited permissions" />
      	</div>
       <#elseif !resourceContext.currentResource.inheritedAcl>
       	<div id="permissions-inheritance">
-      		<@vrtx.msg code="permissions.notInherited.${resource.resourceType}" default="${defaultNotInherited}" />
+      	  <@vrtx.msg code="permissions.notInherited.${resource.resourceType}" default="${defaultNotInherited?markup_string}" />
       	</div>
       </#if>	
       
