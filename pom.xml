@@ -24,7 +24,7 @@
   </organization>
   <issueManagement>
     <system>JIRA</system>
-    <url>https://utv.uio.no/jira/browse/VTK</url>
+    <url>https://jira.usit.uio.no/browse/VTK</url>
   </issueManagement>
   <developers>
     <developer>
@@ -125,8 +125,9 @@
     <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     <checkstyle.config.location>src/main/checkstyle/checkstyle.xml</checkstyle.config.location>
     <java.version>1.8</java.version>
-    <spring.version>4.2.4.RELEASE</spring.version>
-    <spring.boot.version>1.3.2.RELEASE</spring.boot.version>
+    <spring.version>4.2.6.RELEASE</spring.version>
+    <spring.boot.version>1.3.5.RELEASE</spring.boot.version>
+    <jetty.version>9.3.9.v20160517</jetty.version>
     <frontend.build.args>default --production</frontend.build.args>
   </properties>
 
@@ -292,7 +293,7 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.2.10.v20150310</version>
+        <version>${jetty.version}</version>
         <configuration>
           <!-- Configures Jetty Server: -->
           <jettyXml>src/conf/jetty/jetty.xml</jettyXml>
@@ -369,7 +370,7 @@
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>1.3</version>
+        <version>1.5</version>
         <executions>
           <execution>
             <id>add-hostname-property</id>
@@ -408,7 +409,7 @@
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>2.3.7</version>
+            <version>2.4.6</version>
             <scope>runtime</scope>
           </dependency>
         </dependencies>
@@ -418,7 +419,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>1.3</version>
+        <version>1.4</version>
         <executions>
           <execution>
             <phase>initialize</phase>
@@ -485,7 +486,7 @@
           <dependency>
             <groupId>org.apache.maven.wagon</groupId>
             <artifactId>wagon-ssh</artifactId>
-            <version>2.7</version>
+            <version>2.10</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -493,12 +494,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.5</version>
+        <version>3.0.0</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.5.1</version>
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
@@ -508,15 +509,16 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.5.1</version>
         <configuration>
           <outputEncoding>utf-8</outputEncoding>
         </configuration>
       </plugin>
+      <!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-eclipse-plugin</artifactId>
-        <version>2.9</version>
+        <version>2.10</version>
         <configuration>
           <downloadSources>true</downloadSources>
           <projectnatures>
@@ -525,12 +527,13 @@
           </projectnatures>
         </configuration>
       </plugin>
+      -->
       
       <!-- Surefire -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.17</version>
+        <version>2.19.1</version>
         <configuration>
           <skip>${test.skip}</skip>
           <useFile>false</useFile>
@@ -562,14 +565,14 @@
     <dependency>
       <groupId>net.sf.ehcache</groupId>
       <artifactId>ehcache</artifactId>
-      <version>2.10.1</version>
+      <version>2.10.2.2.21</version>
     </dependency>
 
     <!-- Joda -->
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>2.9</version>
+      <version>2.9.4</version>
     </dependency>
 
     <!-- JSON -->
@@ -667,19 +670,19 @@
     <dependency>
       <groupId>org.jmock</groupId>
       <artifactId>jmock-junit4</artifactId>
-      <version>2.8.1</version>
+      <version>2.8.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.2.0</version>
+      <version>3.4.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>2.0.31-beta</version>
+      <version>2.0.54-beta</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -707,12 +710,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlets</artifactId>
-      <version>9.2.14.v20151106</version>
+      <version>${jetty.version}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.2.14.v20151106</version>
+      <version>${jetty.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.session</groupId>
@@ -803,7 +806,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.4</version>
+      <version>2.5</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -823,22 +826,22 @@
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-slf4j_2.11</artifactId>
-      <version>2.4.4</version>
+      <version>2.4.7</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-cluster_2.11</artifactId>
-      <version>2.4.4</version>
+      <version>2.4.7</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-cluster-tools_2.11</artifactId>
-      <version>2.4.4</version>
+      <version>2.4.7</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-distributed-data-experimental_2.11</artifactId>
-      <version>2.4.4</version>
+      <version>2.4.7</version>
     </dependency>
     <dependency>
       <groupId>redis.clients</groupId>
@@ -848,12 +851,12 @@
     <dependency>
       <groupId>org.mybatis</groupId>
       <artifactId>mybatis</artifactId>
-      <version>3.3.0</version>
+      <version>3.4.0</version>
     </dependency>
     <dependency>
       <groupId>org.mybatis</groupId>
       <artifactId>mybatis-spring</artifactId>
-      <version>1.2.4</version>
+      <version>1.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.htmlparser</groupId>
@@ -878,7 +881,7 @@
     <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
-      <version>1.3.1</version>
+      <version>1.3.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -889,7 +892,7 @@
     <dependency>
       <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
       <artifactId>owasp-java-html-sanitizer</artifactId>
-      <version>20151202.2</version>
+      <version>20160526.1</version>
       <scope>compile</scope>
     </dependency>
 
@@ -906,13 +909,13 @@
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjweaver</artifactId>
-      <version>1.8.7</version>
+      <version>1.8.9</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>cglib</groupId>
       <artifactId>cglib-nodep</artifactId>
-      <version>3.2.0</version>
+      <version>3.2.2</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -942,27 +945,27 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.4-1201-jdbc41</version>
+      <version>9.4.1208.jre7</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
-      <version>2.3.3</version>
+      <version>2.3.4</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.19</version>
+      <version>1.7.21</version>
       <scope>compile</scope>
     </dependency>
     <!-- Because Spring uses commons-logging: -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.19</version>
+      <version>1.7.21</version>
       <scope>runtime</scope>
     </dependency>
     <!-- Provide slf4j code with log4j2 output: -->
@@ -984,7 +987,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.19</version>
+      <version>1.7.21</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
