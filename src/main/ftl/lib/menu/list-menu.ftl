@@ -60,16 +60,14 @@
             <#else>
               <li class="${item.label}">
             </#if>
-                <#if item_index != 0 && item_index != menu.items?size>${between}</#if>
-                  <#attempt>
-                    <#include "/actions/list-menu.${item.label}.ftl" />
-                  <#recover>
-
-                  ${prepend}<a id="${item.label}" href="${item.url}">${item.title}</a>${append}
-          
-                  </#attempt>
+            <#if item_index != 0 && item_index != menu.items?size>${between}</#if>
+            <#attempt>
+              <#include "/actions/list-menu.${item.label}.ftl" />
+            <#recover>
+                ${prepend}<a id="${item.label}" href="${item.url}">${item.title}</a>${append}
+            </#attempt>
               </li>
-              <#assign count = count+1 />
+            <#assign count = count+1 />
           </#if>
         </#list>
       </#if>
@@ -101,11 +99,11 @@
      
     <#-- Output the form if it exists -->
     <#if displayForms && menu.activeItem?exists>
+      <#include "/actions/list-menu.${menu.activeItem.label}.form.ftl" />
       <#attempt>
-        <#include "/actions/list-menu.${menu.activeItem.label}.form.ftl" />
       <#recover>
         <#-- Do nothing -->
-      </#recover>
+      </#attempt>
     </#if>
   </#if>
 </#macro>

@@ -1,9 +1,8 @@
 <#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
-<#attempt>
+
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/actions.ftl" as actionsLib />
-
 <#if createDocumentForm?exists && !createDocumentForm.done>
   <div class="expandedForm vrtx-admin-form">
     <form name="createDocumentService" id="createDocumentService-form" action="${createDocumentForm.submitURL}"
@@ -15,42 +14,45 @@
       <@spring.bind "createDocumentForm" + ".isRecommended" /> 
       <#assign isRecommendedBind = spring.status.value>
       <@actionsLib.genErrorMessages spring.status.errorMessages />
-      
-      <#assign splitAfterRecommenedTitle = "" />
-      <#assign subTitle><#compress>
-        <#if !isRecommendedBind>
-          <@vrtx.msg code="actions.createDocumentService.subtitle" default="Choose a template"/>
-        <#else>
-          <@vrtx.msg code="actions.createDocumentService.subtitle.recommended" default="Recommended template in this folder"/>
-          <#assign splitAfterRecommenedTitle>
-            </ul>
-            <div id="vrtx-create-templates-not-recommended">
-              <h4><@vrtx.msg code="actions.createDocumentService.subtitle.not-recommended" default="Other available templates" /></h4>
-              <ul class="radio-buttons">
-          </#assign>
-        </#if>
-      </#compress></#assign>
+
+      <#if !isRecommendedBind>
+        <#assign subTitle = vrtx.getMsg("actions.createDocumentService.subtitle", "Choose a template") />
+        <#assign splitAfterRecommendedTitle = "" />
+      <#else>
+        <#assign subTitle = vrtx.getMsg("actions.createDocumentService.subtitle.recommended", "Recommended template in this folder") />
+        <#assign splitAfterRecommendedTitle></ul><div id="vrtx-create-templates-not-recommended">
+            <h4><@vrtx.msg code="actions.createDocumentService.subtitle.not-recommended" default="Other available templates" /></h4>
+            <ul class="radio-buttons">
+        </#assign>
+      </#if>
+
+      <#if splitAfterRecommendedTitle?is_markup_output>
+        <#assign splitAfterRecommendedTitle = splitAfterRecommendedTitle?markup_string />
+      </#if>
       
       <h4>${subTitle}</h4>
       <#compress>
         <@spring.bind "createDocumentForm" + ".sourceURI" />
-        <#assign sourceURIBind = spring.status.value?default("")>
+        <#assign sourceURIBind = spring.status.value!"">
         <@actionsLib.genErrorMessages spring.status.errorMessages />
         <#assign newDocTitle = "">
         <#assign newDocName = "">
         <#-- Set the name of the new file to whatever the user already has supplied-->
-        <#if createDocumentForm.title?exists>
+        <#if (createDocumentForm.title)?has_content>
           <#assign newDocTitle = createDocumentForm.title>
         </#if>
-        <#if createDocumentForm.name?exists>
+        <#if (createDocumentForm.name)?has_content>
           <#assign newDocName = createDocumentForm.name>
         </#if>
         <#if createDocumentForm.isIndex?exists>
           <#assign isIndex = createDocumentForm.isIndex>
         </#if>
+
         <#if templates?has_content>
           <ul class="radio-buttons">
-            <@vrtx.formRadioButtons "createDocumentForm.sourceURI", templates, "<li>"?no_esc, "</li>"?no_esc, descriptions, titles, true, "", splitAfterRecommenedTitle />
+            <@vrtx.formRadioButtons "createDocumentForm.sourceURI", templates, 
+              "<li>"?no_esc, "</li>"?no_esc, descriptions, 
+              titles, true, "", splitAfterRecommendedTitle />
           </ul>
           <#if isRecommendedBind>
             </div>
@@ -105,7 +107,3 @@
     </form>
   </div>
 </#if>
- 
-<#recover>
-${.error}
-</#recover>

@@ -796,7 +796,7 @@
     </#if>
     ${post}
     <#if c = 0 && splitAfterFirstTitle != "">
-      ${splitAfterFirstTitle}
+      ${splitAfterFirstTitle?no_esc}
     </#if>
     <#local c = c + 1 />
   </#list>
