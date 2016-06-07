@@ -3,7 +3,7 @@
   <div class="${classes}"> 
     <label for="${inputFieldName}">${title}</label>
     <div>
-      <textarea class="${editor}" name="${inputFieldName}" id="${inputFieldName}" rows="7" cols="60"><#--XXX: should be escaped:-->${value?no_esc}</textarea>
+      <textarea class="${editor}" name="${inputFieldName}" id="${inputFieldName}" rows="7" cols="60">${value}</textarea>
     </div>
   </div>
 </#macro>

@@ -2,7 +2,7 @@
 <#import "/lib/vtk.ftl" as vrtx />
 <#if sharedText??>
   <#if sharedText?has_content>
-    ${sharedText}
+    ${sharedText?no_esc}
   <#else>
     ${vrtx.getMsg("shared-text.no-text-for-id")}
   </#if>
