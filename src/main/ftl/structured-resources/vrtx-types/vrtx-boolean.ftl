@@ -7,7 +7,7 @@
     <div class="vrtx-checkbox ${classes}">
       <div class="vrtx-checkbox-buttons">
         <input name="${inputFieldName}" id="${inputFieldName}-true" type="checkbox" value="true" <#if value == "true" > checked="checked" </#if> />
-        <label for="${inputFieldName}-true">${title}</label> <#if "${tooltip}" != ""><div class="tooltip">${tooltip}</div></#if>
+        <label for="${inputFieldName}-true">${title}</label> <#if "${tooltip}" != ""><div class="tooltip">${tooltip?no_esc}</div></#if>
       </div>
     </div>
   <#else>
@@ -15,7 +15,7 @@
       <#local value = defaultValue />
     </#if>
     <div class="vrtx-radio ${classes}"> 
-      <label>${title}</label><#if "${tooltip}" != ""><div class="tooltip">${tooltip}</div></#if>
+      <label>${title}</label><#if "${tooltip}" != ""><div class="tooltip">${tooltip?no_esc}</div></#if>
       <div class="vrtx-radio-buttons">
         <input name="${inputFieldName}" id="${inputFieldName}-true" class="vrtx-radio-buttons-true" type="radio" value="true" <#if value == "true" > checked="checked" </#if> />
         <label for="${inputFieldName}-true">${description.getVocabularyValue(locale,"true")}</label> 
