@@ -21,7 +21,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>${title}</title>
-  <#if jsURLs?exists>
+  <#if jsURLs?has_content>
     <#list jsURLs as jsURL>
       <script type="text/javascript" src="${jsURL}"></script>
     </#list>
@@ -34,29 +34,29 @@
 </#if>
   </div>
   
-<#if src?exists && inline>
+<#if src?has_content && inline>
   <a href="${src}"><img src="${src}" alt="" /></a>
 </#if>
 
-<#if description?exists >
+<#if description?has_content >
   <div id="vrtx-meta-description" class="vrtx-introduction">
-    ${description}
+    ${description?no_esc}
   </div>
 </#if>
 
-<#assign pixelHeight = vrtx.propValue(resource, "pixelHeight") />
-<#assign pixelWidth = vrtx.propValue(resource, "pixelWidth") />
+<#assign pixelHeight = vrtx.propValue(resource, "pixelHeight")! />
+<#assign pixelWidth = vrtx.propValue(resource, "pixelWidth")! />
 
 <h2>${vrtx.getMsg('imageAsHtml.source')}</h2>
 <p id="vrtx-image-view-link">
   <a href="${src}">${resource.name}</a>
-  <#if pixelHeight != "" && pixelWidth != "">
+  <#if pixelHeight?has_content  && pixelWidth?has_content>
     &nbsp;(${pixelWidth} x ${pixelHeight} px)
   </#if>
 </p>
 
-<#assign photographer = vrtx.propValue(resource, "photographer") />
-<#if photographer?exists && photographer != "">
+<#assign photographer = vrtx.propValue(resource, "photographer")! />
+<#if photographer?has_content>
   <h2>${vrtx.getMsg('imageAsHtml.byline')}</h2>
   <p>${photographer}</p> 
 </#if>
