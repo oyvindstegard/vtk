@@ -44,6 +44,7 @@ resourcetype frontpage {
         [def twoThirdsNoVerticalLine 0]
         
         [list boxes box]
+          [def type box.boxType]
           [def sizePlacement box.boxCssSizeAndPlacement]
           [def color box.boxCssColor]
           
@@ -68,13 +69,18 @@ resourcetype frontpage {
           [endif]
           
           [def count count + 1]
-          [if color = "grey-box"]
+          [if color = "grey-box"
+           || type = "grey-box-light" || type ~ "^grey-box-light " || type ~ " grey-box-light " || type ~ " grey-box-light$"
+           || type = "red"            || type ~ "^red "            || type ~ " red "            || type ~ " red$"]
             [def colored colored + 1]
             [def coloredOne 1]
           [endif]
           [if sizePlacement = "third-box-left third-box-double"
            || sizePlacement = "third-box-right third-box-double"]
             [def twoThirds 1]
+            [if type ~ "third-box-double-no-vertical-line"]
+              [def twoThirdsNoVerticalLine 1]
+            [endif]
           [endif]
         [endlist]
         
