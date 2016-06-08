@@ -181,8 +181,8 @@
   <#list resources as resourceEntry>
     <#assign resource = resourceEntry.propertySet />
     <#assign resourceTitle = vrtx.prop(resource, "title", "").getFormattedValue() />
-    <#assign introImageProp = vrtx.prop(resource, "picture", "")?default("") />
-    <#assign introImageAlt = vrtx.propValue(resource, "pictureAlt") />
+    <#assign introImageProp = vrtx.prop(resource, "picture", "")!"" />
+    <#assign introImageAlt = vrtx.propValue(resource, "pictureAlt")! />
     <div class="vrtx-resource" id="vrtx-result-${i}">
       <#if introImageProp != "">
       <a href="${resourceEntry.url}" class="vrtx-image">
@@ -206,7 +206,8 @@
       <#if introduction?has_content && !listing.hasDisplayPropDef("hide-introduction")>
         <div class="introduction">
           ${introduction}
-          <#assign hasBody = vrtx.propValue(resource, 'hasBodyContent') == 'true' />
+          <#assign bcontent = vrtx.propValue(resource, 'hasBodyContent')! />
+          <#assign hasBody =  bcontent?has_content && bcontent?markup_string == 'true' />
           <#if hasBody>
             <div class="vrtx-read-more">
               <a href="${resourceEntry.url}" class="more">
