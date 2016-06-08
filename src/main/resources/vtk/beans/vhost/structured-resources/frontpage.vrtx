@@ -35,11 +35,13 @@ resourcetype frontpage {
         [def containers #()]
         [def containers2 #()]
         [def containers3 #()]
+        [def containers4 #()]
         [def startIndex 0]
         [def colored 0]
         [def count 0]
         [def coloredOne 0]
         [def twoThirds 0]
+        [def twoThirdsNoVerticalLine 0]
         
         [list boxes box]
           [def sizePlacement box.boxCssSizeAndPlacement]
@@ -47,16 +49,19 @@ resourcetype frontpage {
           
           [if sizePlacement != "half-box-right"
            && sizePlacement != "third-box-middle"
-           && sizePlacement != "third-box-right"]
+           && sizePlacement != "third-box-right"
+           && sizePlacement != "third-box-right third-box-double"]
             [if startIndex > 0]
               [capture idx][val startIndex][endcapture]
-              [if count = colored]    [def containers containers.append(idx)]   [endif]
-              [if coloredOne > 0]     [def containers2 containers2.append(idx)] [endif]
-              [if twoThirds > 0]      [def containers3 containers3.append(idx)] [endif]
+              [if count = colored]             [def containers containers.append(idx)]   [endif]
+              [if coloredOne > 0]              [def containers2 containers2.append(idx)] [endif]
+              [if twoThirds > 0]               [def containers3 containers3.append(idx)] [endif]
+              [if twoThirdsNoVerticalLine > 0] [def containers4 containers4.append(idx)] [endif]
               [def colored 0]
               [def count 0]
               [def coloredOne 0]
               [def twoThirds 0]
+              [def twoThirdsNoVerticalLine 0]
             [endif]
             [def index _index + 1]
             [def startIndex index]
@@ -67,17 +72,18 @@ resourcetype frontpage {
             [def colored colored + 1]
             [def coloredOne 1]
           [endif]
-          [if sizePlacement = "two-thirds-left third-box-double"
-           || sizePlacement = "two-thirds-right third-box-double"]
+          [if sizePlacement = "third-box-left third-box-double"
+           || sizePlacement = "third-box-right third-box-double"]
             [def twoThirds 1]
           [endif]
         [endlist]
         
         [if startIndex > 0]
           [capture idx][val startIndex][endcapture]
-          [if count = colored]    [def containers containers.append(idx)]   [endif]
-          [if coloredOne > 0]     [def containers2 containers2.append(idx)] [endif]
-          [if twoThirds > 0]      [def containers3 containers3.append(idx)] [endif]
+          [if count = colored]             [def containers containers.append(idx)]   [endif]
+          [if coloredOne > 0]              [def containers2 containers2.append(idx)] [endif]
+          [if twoThirds > 0]               [def containers3 containers3.append(idx)] [endif]
+          [if twoThirdsNoVerticalLine > 0] [def containers4 containers4.append(idx)] [endif]
         [endif]
         
         [def openedGridContainer "false"]
@@ -132,17 +138,20 @@ resourcetype frontpage {
           
           [if sizePlacement != "half-box-right"
            && sizePlacement != "third-box-middle"
-           && sizePlacement != "third-box-right"]
+           && sizePlacement != "third-box-right"
+           && sizePlacement != "third-box-right third-box-double"]
             [if openedGridContainer = "true"]
                 </div>
               </div>
               [def openedGridContainer "false"]
             [endif]
+            
             [def number number + ""]
-            <div class="grid-container[list containers idx][if number = idx] row-all-colored[endif][endlist][list containers2 idx][if number = idx] row-one-colored[endif][endlist][list containers3 idx][if number = idx] row-two-thirds[endif][endlist]">
+            
+            <div class="grid-container[list containers idx][if number = idx] row-all-colored[endif][endlist][list containers2 idx][if number = idx] row-one-colored[endif][endlist][list containers3 idx][if number = idx] row-thirds-double[endif][endlist][list containers4 idx][if number = idx] row-thirds-double-no-vertical-line[endif][endlist]">
               <div class="row">
-        
-              [def openedGridContainer "true"]
+              
+            [def openedGridContainer "true"]
           [endif]
 
           [if cssClasses != null && cssClasses != ""]
