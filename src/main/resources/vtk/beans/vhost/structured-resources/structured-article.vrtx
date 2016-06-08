@@ -87,14 +87,18 @@ resourcetype structured-article : structured-document {
           <div id="vrtx-main-content" class="vrtx-hide-additional-content-true">
         [endif]
             [call "comp:link-other-language"]
-            <h1>[call "comp:title"]</h1>
-            [call "comp:introduction"]
-            [def theHidePicture document.properties.hidePicture]
-            [if theHidePicture = "false" || theHidePicture = null]
-              [call "comp:introduction-image"]
-            [endif]
-            [call "resource:media-player"]
-            [call "json:field" {"select":"content"}]
+            
+            <div id="vrtx-main-user">
+              <h1>[call "comp:title"]</h1>
+              [call "comp:introduction"]
+              [def theHidePicture document.properties.hidePicture]
+              [if theHidePicture = "false" || theHidePicture = null]
+                [call "comp:introduction-image"]
+              [endif]
+              [call "resource:media-player"]
+              [call "json:field" {"select":"content"}]
+            </div>
+            
             [call "comp:related-content-in-main-column"]
             [call "resource:tags"]
             [call "comp:author"]
