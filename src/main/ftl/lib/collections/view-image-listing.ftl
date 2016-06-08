@@ -92,7 +92,7 @@
               <#local description = vrtx.propValue(image, 'image-description')! />
               <div class="vrtx-image-description">
                 <#if description?has_content>
-                  <@vrtx.flattenHtml value=description escape=false />
+                  <@vrtx.flattenHtml value=description?markup_string escape=false />
                 </#if>
               </div>
 
@@ -109,7 +109,7 @@
   <#local images = imageListing.entries />
   <#if (images?size > 0)>
     <div class="vrtx-image-listing-include" id="vrtx-image-listing-include-${unique}">
-      <#local activeImage = "" />
+
       <#if RequestParameters['actimg']?exists>
         <#local activeImage = RequestParameters['actimg'] />
       </#if>
@@ -149,10 +149,10 @@
             <#-- ${vrtx.relativeLinkConstructor(url, 'displayThumbnailService')} is no good! -->
             <td class="vrtx-table-image"><a href="${url}?vrtx=view-as-webpage"><img src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt="" /></a></td>
             <td class="vrtx-table-title"><a href="${url}?vrtx=view-as-webpage">${title}</a></td>
-            <#local description = vrtx.propValue(image, 'image-description') />
+            <#local description = vrtx.propValue(image, 'image-description')! />
             <td class="vrtx-table-description">
               <#if description?has_content>
-                <@vrtx.flattenHtml value=description escape=false />
+                <@vrtx.flattenHtml value=description?markup_string escape=false />
               </#if>
             </td>
             <#local width = vrtx.propValue(image, 'pixelWidth') />
@@ -160,8 +160,8 @@
             <td class="vrtx-table-dimensions-width">${width} px</td>
             <td class="vrtx-table-dimensions-height">${height} px</td>
             <#local contentLength = vrtx.propValue(image, 'contentLength') />
-            <td class="vrtx-table-size"><@vrtx.calculateResourceSizeToKB contentLength?number /></td>
-            <#local photographer = vrtx.propValue(image, "photographer") />
+            <td class="vrtx-table-size"><@vrtx.calculateResourceSizeToKB (contentLength?markup_string)?number /></td>
+            <#local photographer = vrtx.propValue(image, "photographer")!"" />
             <td class="vrtx-table-photo">${photographer}</td>
             <#local creationTime = vrtx.propValue(image, 'creationTime', 'short', '') />
             <td class="vrtx-table-creation-time">${creationTime}</td>
