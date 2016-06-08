@@ -4,8 +4,9 @@
 
 <#macro displayEvents collection hideNumberOfComments=false displayMoreURLs=false considerDisplayType=true >
 
-  <#local displayType = vrtx.propValue(collection, 'display-type', '', 'el') />
-  <#if considerDisplayType && displayType = 'calendar'>
+  <#local displayType = vrtx.propValue(collection, 'display-type', '', 'el')! />
+
+  <#if considerDisplayType && displayType?has_content && displayType?markup_string = 'calendar'>
     <@displayCalendar collection hideNumberOfComments displayMoreURLs />
   <#elseif searchComponents?has_content>
     <#list searchComponents as searchComponent>
@@ -72,9 +73,9 @@
       <@vrtx.displayLinkOtherLang collection />
       <#local title = vrtx.propValue(collection, "title", "flattened") />
       <h1>${title}</h1>
-      <#local introduction = vrtx.getIntroduction(collection) />
-      <#local introductionImage = vrtx.propValue(collection, "picture") />
-      <#if introduction?has_content || introductionImage != "">
+      <#local introduction = vrtx.getIntroduction(collection)! />
+      <#local introductionImage = vrtx.propValue(collection, "picture")! />
+      <#if introduction?has_content || introductionImage?has_content>
         <div class="vrtx-introduction">
           <#-- Image -->
           <@viewutils.displayImage collection />
@@ -169,7 +170,7 @@
     <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
     <#if additionalContent?has_content>
     <div id="vrtx-related-content">
-    <@vrtx.invokeComponentRefs additionalContent />
+    <@vrtx.invokeComponentRefs additionalContent?markup_string />
    </div>
   </#if>
   </#if>
@@ -192,13 +193,13 @@
 
   <div class="vrtx-resource vevent">
     <#if introImg?has_content && !parent.hasDisplayPropDef("hide-introduction-image")>
-      <#local introImgURI = vrtx.propValue(event, 'picture') />
+      <#local introImgURI = vrtx.propValue(event, 'picture')?markup_string />
       <#if introImgURI?exists>
-			<#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
-	  <#else>
-			<#local thumbnail = "" />
-	  </#if>
-	  <#local introImgAlt = vrtx.propValue(event, 'pictureAlt') />
+	<#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
+      <#else>
+	<#local thumbnail = "" />
+      </#if>
+      <#local introImgAlt = vrtx.propValue(event, 'pictureAlt')! />
       <a class="vrtx-image" href="${eventEntry.url}">
         <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
       </a>
@@ -217,8 +218,8 @@
       </div>
     </#if>
 
-    <#local hasBody = vrtx.propValue(event, 'hasBodyContent') == 'true' />
-    <#if displayMoreURLs && hasBody>
+    <#local hasBody = vrtx.propValue(event, 'hasBodyContent')! />
+    <#if displayMoreURLs && hasBody?has_content>
       <div class="vrtx-read-more">
         <a href="${eventEntry.url}" class="more" title="${title}">
           <@vrtx.msg code="viewCollectionListing.readMore" />

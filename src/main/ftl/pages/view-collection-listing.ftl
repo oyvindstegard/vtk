@@ -85,7 +85,8 @@
   <#assign page = page?default(1) />
 
   <#assign eventListingDisplayType = vrtx.propValue(resource, 'display-type', '', 'el')! />
-  <#assign isEventCalendarListing = (eventListingDisplayType == 'calendar') />
+  <#assign isEventCalendarListing = (eventListingDisplayType?has_content 
+    && eventListingDisplayType?markup_string == 'calendar') />
   
   <#if isEventCalendarListing>
     <div id="vrtx-calendar-listing">

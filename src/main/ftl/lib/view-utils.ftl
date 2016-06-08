@@ -90,53 +90,51 @@
 -->
 <#macro displayTimeAndPlace resource title hideEndDate=false hideLocation=false hideNumberOfComments=false>
   
-  <#local start = vrtx.propValue(resource, "start-date") />
-  <#local startiso8601 = vrtx.propValue(resource, "start-date", "iso-8601") />
-  <#local startshort = vrtx.propValue(resource, "start-date", "short") />
-  <#local end = vrtx.propValue(resource, "end-date") />
-  <#local endiso8601 = vrtx.propValue(resource, "end-date", "iso-8601") />
-  <#local endshort = vrtx.propValue(resource, "end-date", "short") />
-  <#local endhoursminutes = vrtx.propValue(resource, "end-date", "hours-minutes") />
-  <#local location = vrtx.propValue(resource, "location") />
-  <#local mapurl = vrtx.propValue(resource, "mapurl") />
+  <#local start = vrtx.propValue(resource, "start-date")! />
+  <#local startiso8601 = vrtx.propValue(resource, "start-date", "iso-8601")! />
+  <#local startshort = vrtx.propValue(resource, "start-date", "short")! />
+  <#local end = vrtx.propValue(resource, "end-date")! />
+  <#local endiso8601 = vrtx.propValue(resource, "end-date", "iso-8601")! />
+  <#local endshort = vrtx.propValue(resource, "end-date", "short")! />
+  <#local endhoursminutes = vrtx.propValue(resource, "end-date", "hours-minutes")! />
+  <#local location = vrtx.propValue(resource, "location")! />
+  <#local mapurl = vrtx.propValue(resource, "mapurl")! />
   
-  <#local isostarthour = "" />
-  <#if startiso8601 != "" >
-    <#local isostarthour = startiso8601?substring(11, 16) />
+  <#if startiso8601?has_content>
+    <#local isostarthour = startiso8601?markup_string?substring(11, 16) />
   </#if>
   
-  <#local isoendhour = "" />
-  <#if endiso8601 != "" >
-    <#local isoendhour = endiso8601?substring(11, 16) />
+  <#if endiso8601?has_content>
+    <#local isoendhour = endiso8601?markup_string?substring(11, 16) />
   </#if>
   <#local locationMsgCode = "event.time" />
-  <#if location != "" && !hideLocation><#t/>
+  <#if location?has_content && !hideLocation><#t/>
     <#local locationMsgCode = "event.time-and-place" />
   </#if>
   <span class="time-and-place"><@vrtx.msg code=locationMsgCode />:</span>
   <span class="summary" style="display:none;">${title}</span>
-  <#if start != "">
+  <#if start?has_content>
     <abbr class="dtstart" title="${startiso8601}">
-    <#if isostarthour != "00:00">
+    <#if isostarthour?has_content && isostarthour != "00:00">
       ${start}<#t/>
     <#else>
       ${startshort}<#t/>
     </#if>
     </abbr><#t/>
   </#if>
-  <#if end != "" && !hideEndDate>
-    <#if startshort == endshort>
-      <#if isoendhour != "00:00">
+  <#if end?has_content && !hideEndDate>
+    <#if startshort?markup_string == endshort?markup_string>
+      <#if isoendhour?has_content && isoendhour != "00:00">
         <#t /> - <abbr class="dtend" title="${endiso8601}">${endhoursminutes}</abbr><#rt />
       </#if>
     <#else>
-      <#if start == "">
+      <#if start?has_content>
         (<@vrtx.msg code="event.ends" />) 
       <#else>
         - 
       </#if>
       <abbr class="dtend" title="${endiso8601}">
-      <#if isoendhour != "00:00">
+      <#if  isoendhour?has_content && isoendhour != "00:00">
         ${end}<#t/>
       <#else>
         ${endshort}<#t/>
@@ -144,9 +142,9 @@
       </abbr><#t/>
     </#if>
   </#if>
-  <#if location != "" && !hideLocation><#t/>,
+  <#if location?has_content && !hideLocation><#t/>,
     <span class="location">
-    <#if mapurl == "">
+    <#if !mapurl?has_content>
       ${location}
     <#else>
       <a href="${mapurl}">${location}</a>
@@ -158,7 +156,7 @@
   <#local currentDate = constructor("java.util.Date") />
   <#local isValidStartDate = validateStartDate(resource, currentDate)?string == 'true' />
   
-  <#local numberOfComments = vrtx.prop(resource, "numberOfComments") />
+  <#local numberOfComments = vrtx.prop(resource, "numberOfComments")! />
   <#if numberOfComments?has_content || isValidStartDate>	
     <div class="vrtx-number-of-comments-add-event-container">
   </#if>
@@ -200,7 +198,7 @@
 </#function>
 
 <#macro displayNumberOfComments resource locale  >
-  <#local numberOfComments = vrtx.prop(resource, "numberOfComments") />
+  <#local numberOfComments = vrtx.prop(resource, "numberOfComments")! />
   <#if numberOfComments?has_content >
     <#assign uri = vrtx.getUri(resource) />
     <a href="${uri}#comments" class="vrtx-number-of-comments">
