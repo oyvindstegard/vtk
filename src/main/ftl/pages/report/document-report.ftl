@@ -92,9 +92,9 @@
           <#assign url = report.viewURLs[res_index] />
         </#if>
         <#if report.reportname != "unpublished">
-          <#assign published = vrtx.propValue(res, 'published') />
+          <#assign published = vrtx.propValue(res, 'published')! />
           <#assign publishedStatus = vrtx.getMsg("report.yes", "Yes")>
-          <#if published = "false">
+          <#if published?has_content && published?markup_string = "false">
             <#assign publishedStatus = vrtx.getMsg("report.no", "No")>
           </#if>
         </#if>

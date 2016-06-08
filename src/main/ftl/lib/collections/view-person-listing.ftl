@@ -63,12 +63,12 @@
             <span>${position}</span>
           </td>
           <td class="vrtx-person-listing-phone">
-            <#if phonenumbers != "" >
+            <#if phonenumbers?has_content>
               <#list phonenumbers?split(",") as phone>
                 <span>${phone}</span>
               </#list>
             </#if>
-            <#if mobilenumbers != "" >
+            <#if mobilenumbers?has_content>
               <#list mobilenumbers?split(",") as mobile>
                 <span>${mobile}</span>
               </#list>
@@ -78,7 +78,7 @@
             </#if>
           </td>
           <td class="vrtx-person-listing-email">
-            <#if emails != "" >
+            <#if emails?has_content>
               <#list emails?split(",") as email>
                 <#if (email?string?length > 25) >
                   <#if email?string?contains('@') >
@@ -96,7 +96,7 @@
           <td class="vrtx-person-listing-tags">
             <#local tagsList = tags?split(",")>
             <#local tagsNr = 0 />
-            <#if tags != "">
+            <#if tagsList?has_content>
               <#list tagsList as tag>
                 <#local tagUrl = "?vrtx=tags&tag=" + tag?trim + "&resource-type=" + person.getResourceType() />
                 <#local sortingParams = personListing.getRequestSortOrderParams() />

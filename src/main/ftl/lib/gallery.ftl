@@ -44,13 +44,13 @@
   
   <#list images as imageEntry>
     <#local image = imageEntry.propertySet />
-    <#local description = vrtx.propValue(image, 'image-description')!""?replace("'", "&#39;")! />
-    <#local title = vrtx.propValue(image, 'title')!""?replace("'", "&#39;")?string />
+    <#local description = vrtx.propValue(image, 'image-description')! />
+    <#local title = vrtx.propValue(image, 'title')! />
     <#local width = vrtx.propValue(image, 'pixelWidth')! />
     <#local height = vrtx.propValue(image, 'pixelHeight')! />
     <#local fullWidth = vrtx.propValue(image, 'pixelWidth')! />
     <#local fullHeight = vrtx.propValue(image, 'pixelHeight')! />
-    <#local photographer = vrtx.propValue(image, "photographer")!""?replace("'", "&#39;") />
+    <#local photographer = vrtx.propValue(image, "photographer")! />
     
     <#if count % 4 == 0 && count % 5 == 0>
       <li class="vrtx-thumb-last vrtx-thumb-last-four vrtx-thumb-last-five">
@@ -68,47 +68,47 @@
       <li>
     </#if>
     
-    <#assign showTitle = false />
-    <#if (image.name != title?markup_string && title != "")>
-      <#assign showTitle = true />
+    <#local showTitle = false />
+    <#if (title?has_content && image.name != title?markup_string)>
+      <#local showTitle = true />
     </#if>
     
-    <#if photographer != "">
-      <#local description = description + " &lt;p&gt;${vrtx.getMsg('imageAsHtml.byline')}: " + photographer + ".&lt;/p&gt;" />
+    <#if photographer?has_content>
+      <#local description = description + " <p>${vrtx.getMsg('imageAsHtml.byline')}: " + photographer + "</p>" />
     </#if>
 
     <#if description?has_content><#local flattenedDescription><@vrtx.flattenHtml value=description?markup_string /></#local>
     <#else><#local flattenedDescription = ""></#if>
 
-    <#assign url = imageEntry.url />
-	<#if imageListing != "">
-	   <#if ((activeImage == "" && imageEntry_index == 0) || (activeImage != "" && activeImage == url)) >
-	     <a href="${url}" class="active">
-	       <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
-	       <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()?split("?")[0]}" alt='${flattenedDescription}' /></span>
-	   <#else>
-	     <a href="${url}">
-	       <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
-	   </#if>
-	 <#else>
-	   <#assign finalFolderUrl = vrtx.relativeLinkConstructor(folderUrl, 'viewService') />
-	   <#if !finalFolderUrl?ends_with("/")>
-	     <#assign finalFolderUrl = finalFolderUrl + "/" /> 
-	   </#if>
-	   <#if (imageEntry_index == 0) >
-          <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery" class="active">
-            <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
-            <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()}" alt='${flattenedDescription}' /></span>
-       <#else>
-         <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery">
-            <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> /> 
-       </#if>
-	 </#if> 
-	      <script type="text/javascript"><!--
-	        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]}'<#else>'${url.protocolRelativeURL()}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${flattenedDescription}', title: <#if showTitle>'${title?js_string}'<#else>''</#if>});
-	      // -->
-	      </script>
-	    </a>    
+    <#local url = imageEntry.url />
+    <#if imageListing != "">
+      <#if ((activeImage == "" && imageEntry_index == 0) || (activeImage != "" && activeImage == url)) >
+	<a href="${url}" class="active">
+	  <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
+	  <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()?split("?")[0]}" alt='${flattenedDescription}' /></span>
+      <#else>
+	  <a href="${url}">
+	    <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
+      </#if>
+    <#else>
+      <#local finalFolderUrl = vrtx.relativeLinkConstructor(folderUrl, 'viewService') />
+      <#if !finalFolderUrl?ends_with("/")>
+	<#local finalFolderUrl = finalFolderUrl + "/" /> 
+      </#if>
+      <#if (imageEntry_index == 0) >
+        <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery" class="active">
+          <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
+          <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()}" alt='${flattenedDescription}' /></span>
+      <#else>
+          <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery">
+          <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> /> 
+      </#if>
+    </#if> 
+    <script type="text/javascript"><!--
+        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]}'<#else>'${url.protocolRelativeURL()}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${flattenedDescription}', title: <#if showTitle>'${title}'<#else>''</#if>});
+     // -->
+    </script>
+    </a>    
       </li>
     <#local count = count+1 />
   </#list>
