@@ -182,12 +182,12 @@
   <#local event = eventEntry.propertySet />
   <#local locale = springMacroRequestContext.getLocale() />
 
-  <#local title = vrtx.propValue(event, 'title') />
-  <#local introImg = vrtx.prop(event, 'picture')  />
-  <#local intro = vrtx.prop(event, 'introduction')  />
-  <#local location  = vrtx.prop(event, 'location')  />
-  <#local caption = vrtx.propValue(event, 'caption')  />
-  <#local endDate = vrtx.prop(event, 'end-date') />
+  <#local title = vrtx.propValue(event, 'title')! />
+  <#local introImg = vrtx.prop(event, 'picture')!  />
+  <#local intro = vrtx.prop(event, 'introduction')!  />
+  <#local location  = vrtx.prop(event, 'location')!  />
+  <#local caption = vrtx.propValue(event, 'caption')!  />
+  <#local endDate = vrtx.prop(event, 'end-date')! />
   <#local hideEndDate = !endDate?has_content || parent.hasDisplayPropDef("hide-end-date") />
   <#local hideLocation = !location?has_content || parent.hasDisplayPropDef("hide-location") />
 

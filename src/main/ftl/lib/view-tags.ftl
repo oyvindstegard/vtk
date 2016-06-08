@@ -186,7 +186,7 @@
     <div class="vrtx-resource" id="vrtx-result-${i}">
       <#if introImageProp != "">
       <a href="${resourceEntry.url}" class="vrtx-image">
-        <#assign src = vrtx.propValue(resource, 'picture', 'thumbnail') />
+        <#assign src = vrtx.propValue(resource, 'picture', 'thumbnail')! />
         <img src="${src}" alt="${introImageAlt}" />
       </a>
       </#if>
@@ -194,7 +194,7 @@
         <a href="${resourceEntry.url}" class="vrtx-title"> ${resourceTitle}</a>
       </div>
 
-      <#local publishDate = vrtx.propValue(resource, 'publish-date') />
+      <#local publishDate = vrtx.propValue(resource, 'publish-date')! />
       <#if publishDate?has_content>
         <div class="publish-date">
           <@vrtx.localizeMessage code="viewCollectionListing.publishedDate"
@@ -202,7 +202,7 @@
         </div>
       </#if>
 
-      <#local introduction = vrtx.getIntroduction(resource) />
+      <#local introduction = vrtx.getIntroduction(resource)! />
       <#if introduction?has_content && !listing.hasDisplayPropDef("hide-introduction")>
         <div class="introduction">
           ${introduction}

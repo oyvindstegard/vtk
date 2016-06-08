@@ -206,12 +206,12 @@
 <#macro displayAboutPropShortcut privilegeName matchPrivilegeName propName onlyCollection=false capFirst=false pre="" post="">
   <#if privilegeName = matchPrivilegeName>
     <#local resource = resourceContext.currentResource />
-    <#local propVal = vrtx.propValue(resource, propName) />
-    <#local editLinkText = vrtx.getMsg("permissions.privilege.${privilegeName}.${propName}.edit") />
-    <#local viewLinkText = vrtx.getMsg("permissions.privilege.${privilegeName}.${propName}.view") />
+    <#local propVal = vrtx.propValue(resource, propName)! />
+    <#local editLinkText = vrtx.getMsg("permissions.privilege.${privilegeName}.${propName}.edit")?markup_string />
+    <#local viewLinkText = vrtx.getMsg("permissions.privilege.${privilegeName}.${propName}.view")?markup_string />
     
     <#if (!onlyCollection || resource.isCollection()) && aclInfo.aclEditURLs[privilegeName]??>
-      ${pre}<a href="?name=${propName}&vrtx=admin&mode=about"><#if !capFirst>${editLinkText}<#else>${editLinkText?cap_first}</#if></a>${post}
+      ${pre?no_esc}<a href="?name=${propName}&vrtx=admin&mode=about"><#if !capFirst>${editLinkText}<#else>${editLinkText?cap_first}</#if></a>${post?no_esc}
     <#elseif propVal?has_content>
       ${pre}<#if !capFirst>${viewLinkText}: ${propVal}<#else>${viewLinkText?cap_first}: ${propVal}</#if>${post}
     </#if>
