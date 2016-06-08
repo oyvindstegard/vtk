@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#if !fckeditorBase?exists>
@@ -13,10 +14,10 @@
  -->
 <#macro declareEditor>
   <#if !__editorDeclared?exists>
-   	<script type="text/javascript" src="${jsBaseURL?html}/../jquery/include-jquery.js"></script>
-  	<script type="text/javascript" src="${jsBaseURL?html}/editor.js"></script>
-  	<script type="text/javascript" src="${fckeditorBase.url?html}/ckeditor.js"></script>
- 	 <script type="text/javascript" src="${fckeditorBase.url?html}/adapters/jquery.js"></script>
+   	<script type="text/javascript" src="${jsBaseURL}/../jquery/include-jquery.js"></script>
+  	<script type="text/javascript" src="${jsBaseURL}/editor.js"></script>
+  	<script type="text/javascript" src="${fckeditorBase.url}/ckeditor.js"></script>
+ 	 <script type="text/javascript" src="${fckeditorBase.url}/adapters/jquery.js"></script>
     <#assign __editorDeclared = true />
   </#if>
 </#macro>

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#--
   - File: gallery.ftl
@@ -44,13 +44,13 @@
   
   <#list images as imageEntry>
     <#local image = imageEntry.propertySet />
-    <#local description = vrtx.propValue(image, 'image-description')?html?replace("'", "&#39;") />
-    <#local title = vrtx.propValue(image, 'title')?html?replace("'", "&#39;") />
+    <#local description = vrtx.propValue(image, 'image-description')?replace("'", "&#39;") />
+    <#local title = vrtx.propValue(image, 'title')?replace("'", "&#39;") />
     <#local width = vrtx.propValue(image, 'pixelWidth') />
     <#local height = vrtx.propValue(image, 'pixelHeight') />
     <#local fullWidth = vrtx.propValue(image, 'pixelWidth') />
     <#local fullHeight = vrtx.propValue(image, 'pixelHeight') />
-    <#local photographer = vrtx.propValue(image, "photographer")?html?replace("'", "&#39;") />
+    <#local photographer = vrtx.propValue(image, "photographer")?replace("'", "&#39;") />
     
     <#if count % 4 == 0 && count % 5 == 0>
       <li class="vrtx-thumb-last vrtx-thumb-last-four vrtx-thumb-last-five">
@@ -80,12 +80,12 @@
     <#assign url = imageEntry.url />
 	<#if imageListing != "">
 	   <#if ((activeImage == "" && imageEntry_index == 0) || (activeImage != "" && activeImage == url)) >
-	     <a href="${url?html}" class="active">
-	       <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()?html}?vrtx=thumbnail" alt='${description}' <#if showTitle>title="${title}"</#if> />
-	       <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()?split("?")[0]?html}" alt='${description}' /></span>
+	     <a href="${url}" class="active">
+	       <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${description}' <#if showTitle>title="${title}"</#if> />
+	       <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()?split("?")[0]}" alt='${description}' /></span>
 	   <#else>
-	     <a href="${url?html}">
-	       <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()?html}?vrtx=thumbnail" alt='${description}' <#if showTitle>title="${title}"</#if> />
+	     <a href="${url}">
+	       <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${description}' <#if showTitle>title="${title}"</#if> />
 	   </#if>
 	 <#else>
 	   <#assign finalFolderUrl = vrtx.relativeLinkConstructor(folderUrl, 'viewService') />
@@ -93,16 +93,16 @@
 	     <#assign finalFolderUrl = finalFolderUrl + "/" /> 
 	   </#if>
 	   <#if (imageEntry_index == 0) >
-          <a href="${finalFolderUrl}?actimg=${url?html}&amp;display=gallery" class="active">
-            <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()?html}?vrtx=thumbnail" alt='${description}' <#if showTitle>title="${title}"</#if> />
-            <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()?html}" alt='${description}' /></span>
+          <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery" class="active">
+            <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${description}' <#if showTitle>title="${title}"</#if> />
+            <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()}" alt='${description}' /></span>
        <#else>
-         <a href="${finalFolderUrl}?actimg=${url?html}&amp;display=gallery">
-            <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()?html}?vrtx=thumbnail" alt='${description}' <#if showTitle>title="${title}"</#if> /> 
+         <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery">
+            <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${description}' <#if showTitle>title="${title}"</#if> /> 
        </#if>
 	 </#if> 
 	      <script type="text/javascript"><!--
-	        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]?html}'<#else>'${url.protocolRelativeURL()?html}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${description?js_string}', title: <#if showTitle>'${title?js_string}'<#else>''</#if>});
+	        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]}'<#else>'${url.protocolRelativeURL()}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${description?js_string}', title: <#if showTitle>'${title?js_string}'<#else>''</#if>});
 	      // -->
 	      </script>
 	    </a>    

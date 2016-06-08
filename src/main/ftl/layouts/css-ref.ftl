@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: css-ref.ftl
   - 
@@ -11,4 +11,4 @@
 <#if !url?exists>
   <#stop "Missing 'url' in model"/>
 </#if>
-<link rel="stylesheet" type="text/css" href="${url?html}" />
+<link rel="stylesheet" type="text/css" href="${url}" />

@@ -38,7 +38,7 @@ import java.io.InputStream;
 
 import org.junit.Before;
 import org.junit.Test;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 
 public class HtmlDigesterTest {
 
@@ -49,7 +49,7 @@ public class HtmlDigesterTest {
     public void init() throws IOException {
         this.htmlDigester = new HtmlDigester();
         InputStream in = this.getClass().getResourceAsStream("test-html401strict.html");
-        this.testHtml = StreamUtil.streamToString(in);
+        this.testHtml = IO.readString(in).perform();
     }
 
     @Test

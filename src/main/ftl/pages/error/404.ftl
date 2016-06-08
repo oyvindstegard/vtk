@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -10,7 +9,7 @@
 <h1>404 - Page does not exist</h1>
 
 <p>
-The web page <strong>${resourceContext.currentURI?html?if_exists}</strong>
+The web page <strong>${resourceContext.currentURI?if_exists}</strong>
 that you seek cannot be found on this web site. Either the link that
 you have used is wrong, or the page is outdated or moved to another
 location.

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#-- XXX: remove hard-coded 'authTarget' parameter: -->
@@ -9,4 +9,4 @@
 <#else>
   <#assign url = url + "?authTarget=http" />
 </#if>
-<a href="${url?html}"><@vrtx.msg code="manage.leaveManageMode" default="Leave admin" /></a>
+<a href="${url}"><@vrtx.msg code="manage.leaveManageMode" default="Leave admin" /></a>

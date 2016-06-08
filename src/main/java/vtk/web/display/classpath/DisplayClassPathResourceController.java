@@ -55,7 +55,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.LastModified;
 import vtk.repository.Path;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.repository.MimeHelper;
 import vtk.util.web.LinkTypesPrefixes;
 import vtk.web.RequestContext;
@@ -147,7 +147,7 @@ public class DisplayClassPathResourceController implements Controller, LastModif
             }
 
             if ("GET".equals(request.getMethod())) {
-                StreamUtil.pipe(inStream, response.getOutputStream(), 4096, true);
+                IO.copy(inStream, response.getOutputStream()).perform();
             }
 
             if (this.logger.isDebugEnabled()) {

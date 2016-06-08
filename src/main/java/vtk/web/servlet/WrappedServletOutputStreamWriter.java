@@ -32,248 +32,272 @@ package vtk.web.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
+import java.nio.charset.Charset;
 
 /**
  * A writer for a {@link WrappedServletOutputStream}.
- * 
  */
 public class WrappedServletOutputStreamWriter extends PrintWriter {
     private WrappedServletOutputStream stream;
+    private Charset charset;
     private Object error = null;
         
-
     public WrappedServletOutputStreamWriter(WrappedServletOutputStream stream) {
         super(stream);
         this.stream = stream;
+        this.charset = Charset.forName(stream.getCharacterEncoding());
     }
         
-
+    @Override
     public boolean checkError() {
         return this.error == null;
     }
         
-
+    @Override
     public void close() {
     }
         
-
+    @Override
     public void flush() {
     }
         
-
+    @Override
     public void print(boolean b) {
         try {
-            this.stream.print(b);
-        } catch (IOException e) {
-            this.error = e;
+            stream.print(b);
+        }
+        catch (IOException e) {
+            error = e;
         }
     }
         
-
+    @Override
     public void print(char c) {
         try {
             this.stream.print(c);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void print(char[] s) {
         try {
-            this.stream.print(new String(s));
-        } catch (IOException e) {
+            stream.print(new String(s));
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
-        
 
+    @Override
     public void print(double d) {
         try {
-            this.stream.print(d);
-        } catch (IOException e) {
+            stream.print(d);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void print(float f) {
         try {
-            this.stream.print(f);
-        } catch (IOException e) {
+            stream.print(f);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void print(int i) {
         try {
-            this.stream.print(i);
-        } catch (IOException e) {
+            stream.print(i);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
-        
 
+    @Override
     public void print(long l) {
         try {
-            this.stream.print(l);
-        } catch (IOException e) {
+            stream.print(l);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void print(Object obj) {
         try {
-            this.stream.print(obj.toString());
-        } catch (IOException e) {
+            stream.print(obj.toString());
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void print(String s) {
         try {
-            this.stream.print(s);
-        } catch (IOException e) {
+            stream.print(s);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void println() {
         try {
-            this.stream.println();
-        } catch (IOException e) {
+            stream.println();
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-        
+    @Override
     public void println(boolean x) {
         try {
-            this.stream.println(x);
-        } catch (IOException e) {
+            stream.println(x);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void println(char x) {
         try {
-            this.stream.println(x);
-        } catch (IOException e) {
+            stream.println(x);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void println(char[] x) {
         try {
-            this.stream.println(new String(x));
-        } catch (IOException e) {
+            stream.println(new String(x));
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void println(double x) {
         try {
-            this.stream.println(x);
-        } catch (IOException e) {
+            stream.println(x);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-        
+    @Override
     public void println(float x) {
         try {
-            this.stream.println(x);
-        } catch (IOException e) {
+            stream.println(x);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-        
+    @Override
     public void println(int x) {
         try {
-            this.stream.println(x);
-        } catch (IOException e) {
+            stream.println(x);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-        
+    @Override
     public void println(long x) {
         try {
-            this.stream.println(x);
-        } catch (IOException e) {
+            stream.println(x);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void println(Object x) {
         try {
-            this.stream.println(x.toString());
-        } catch (IOException e) {
+            stream.println(x.toString());
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void println(String x) {
         try {
-            this.stream.println(x);
-        } catch (IOException e) {
+            stream.println(x);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-
+    @Override
     public void write(char[] buf) {
         try {
-            this.stream.print(new String(buf));
-        } catch (IOException e) {
+            stream.print(new String(buf));
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-        
+    @Override
     public void write(char[] buf,  int off,  int len) {
         try {
-            this.stream.print(new String(buf, off, len));
-        } catch (IOException e) {
+            stream.print(new String(buf, off, len));
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-        
+    @Override
     public void write(int c) {
         try {
-            this.stream.write(c);
-        } catch (IOException e) {
+            stream.write(c);
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }
         
-        
+    @Override
     public void write(String s) {
         try {
-            this.stream.write(s.getBytes(this.stream.getCharacterEncoding()));
-        } catch (IOException e) {
+            stream.write(s.getBytes(charset));
+        }
+        catch (IOException e) {
             this.error = e;
         }
-            
     }
         
-        
+    @Override
     public void write(String s, int off, int len) {
         try {
-            this.stream.write(s.getBytes(this.stream.getCharacterEncoding()), off, len);
-        } catch (IOException e) {
+            s = s.substring(off, off + len);
+            stream.write(s.getBytes(charset));
+        }
+        catch (IOException e) {
             this.error = e;
         }
     }

@@ -50,7 +50,7 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyType;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
@@ -98,13 +98,13 @@ public class DisplayThumbnailController implements Controller, LastModified {
             } else if ("audio".equals(resourceType)) {
                 InputStream in = getClass().getResourceAsStream(ADUIO_LOGO);
                 response.setContentType(AUDIO_LOGO_CONTENT_TYPE);
-                StreamUtil.pipe(in, response.getOutputStream());
+                IO.copy(in, response.getOutputStream()).perform();
             } else if (type.isOfType("video")) { // We want placeholder for all kinds of video types.
                 // Avoid caching placeholder thumbnail for videos, because a thumbnail will likely be made.
                 setNoCache(response);
                 InputStream in = getClass().getResourceAsStream(VIDEO_LOGO);
                 response.setContentType(VIDEO_LOGO_CONTENT_TYPE);
-                StreamUtil.pipe(in, response.getOutputStream());
+                IO.copy(in, response.getOutputStream()).perform();
             } else {
                 // Do not cache empty response.
                 setNoCache(response);
@@ -116,7 +116,7 @@ public class DisplayThumbnailController implements Controller, LastModified {
             response.setContentType(mimetype);
             int length = (int) binaryStream.getLength();
             response.setContentLength(length);
-            StreamUtil.pipe(binaryStream.getStream(), response.getOutputStream(), length, true);
+            IO.copy(binaryStream.getStream(), response.getOutputStream()).perform();
         }
 
         return null;

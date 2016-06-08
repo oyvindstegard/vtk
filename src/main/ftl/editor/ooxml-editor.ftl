@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: ooxml-editor.ftl
   -
@@ -53,16 +53,16 @@
     
     <div id="vrtx-open-webdav-wrapper">
       <h3>${vrtx.getMsg('editor.ooxml.ie-edit')}</h3>
-      <a id="vrtx-open-webdav" class="vrtx-button" href="${webdavUrl?html}"><@vrtx.msg code="tabs.editorService" /> <@vrtx.msg code="editor.ooxml.ie-edit-in" /> ${resourceTypeName}</a>
+      <a id="vrtx-open-webdav" class="vrtx-button" href="${webdavUrl}"><@vrtx.msg code="tabs.editorService" /> <@vrtx.msg code="editor.ooxml.ie-edit-in" /> ${resourceTypeName}</a>
     </div>
     
     <h3>${vrtx.getMsg('editor.ooxml.step-by-step')}</h3>
     
     <ol class="vrtx-help-step-by-step">
       <li>${vrtx.getMsg('editor.ooxml.step-by-step.mark-webdav')}<br />
-         <span class="vrtx-help-step-by-step-url">${webdavUrl?html}</span>
+         <span class="vrtx-help-step-by-step-url">${webdavUrl}</span>
       </li>
-      <li>Start <span class='vrtx-help-step-by-step-cmd'>${resourceTypeName?html}</span></li>
+      <li>Start <span class='vrtx-help-step-by-step-cmd'>${resourceTypeName}</span></li>
       <li id="vrtx-edit-win-mac">
           <span id="vrtx-edit-win">${vrtx.getMsg('editor.ooxml.step-by-step.win')}</span>
           <span id="vrtx-edit-mac">${vrtx.getMsg('editor.ooxml.step-by-step.mac')}</span>

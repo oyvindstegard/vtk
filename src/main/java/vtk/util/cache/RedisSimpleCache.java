@@ -58,12 +58,12 @@ public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     @Override
     public void put(K key, V value) {
         if (key == null) return;
-        try {
+        try (Jedis jedis = pool.getResource()) {
             byte[] bkey = (prefix + key.toString()).getBytes("utf-8");
             ByteArrayOutputStream valueStream = new ByteArrayOutputStream();
             ObjectOutputStream oout = new ObjectOutputStream(valueStream);
             oout.writeObject(value);
-            Jedis jedis = pool.getResource();
+            
             if (timeoutSeconds > 0) {
                 jedis.setex(bkey, timeoutSeconds, valueStream.toByteArray());
             }
@@ -95,7 +95,7 @@ public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
         }
         catch (IOException|ClassNotFoundException e) {
             throw new RuntimeException(e);
-        }        
+        }
     }
 
     @Override

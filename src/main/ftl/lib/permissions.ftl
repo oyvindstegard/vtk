@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: permissions.ftl
   - 
@@ -130,7 +130,7 @@
       <#if group_index &lt; groups?size - 1>,<#t/></#if>
     </#list>
     <#if aclInfo.aclEditURLs[privilegeName]?exists>
-      &nbsp;<a class="vrtx-button-small full-ajax" href="${aclInfo.aclEditURLs[privilegeName]?html}"><@vrtx.msg code="permissions.privilege.edit" default="edit" /></a>&nbsp;&nbsp;
+      &nbsp;<a class="vrtx-button-small full-ajax" href="${aclInfo.aclEditURLs[privilegeName]}"><@vrtx.msg code="permissions.privilege.edit" default="edit" /></a>&nbsp;&nbsp;
     </#if>
     <@displayAboutPropShortcut privilegeName "read-write-unpublished" "editorial-contacts" true true "- " />
   <#else>
@@ -140,7 +140,7 @@
       <@vrtx.msg code="permissions.not.assigned" default="Not assigned" /> <#t/>
     </#if>
     <#if aclInfo.aclEditURLs[privilegeName]?exists>
-      &nbsp;<a class="vrtx-button-small full-ajax" href="${aclInfo.aclEditURLs[privilegeName]?html}"><@vrtx.msg code="permissions.privilege.edit" default="edit" /></a>&nbsp;&nbsp;
+      &nbsp;<a class="vrtx-button-small full-ajax" href="${aclInfo.aclEditURLs[privilegeName]}"><@vrtx.msg code="permissions.privilege.edit" default="edit" /></a>&nbsp;&nbsp;
     </#if>
   </#if>
 </#macro>
@@ -172,7 +172,7 @@
 
   <h3>${privilegeHeading}</h3>
   
-  <form class="aclEdit" action="${submitUrl?html}" method="post">
+  <form class="aclEdit" action="${submitUrl}" method="post">
     <@spring.bind formName + ".shortcuts" />
     <@listShortcuts privilegeName privilegeHeading spring.status.value />
     <ul class="principalList" id="principalList">
@@ -250,7 +250,7 @@
                 </#if>
               
                 <#-- Remove -->
-                &nbsp;<input class="removePermission" name="remove${capitalizedType}.${groupOrUser.name?html}" type="submit" value="<@vrtx.msg code='permissions.remove' default='remove' />" />
+                &nbsp;<input class="removePermission" name="remove${capitalizedType}.${groupOrUser.name}" type="submit" value="<@vrtx.msg code='permissions.remove' default='remove' />" />
               </#compress>
             </li>
           </#list>
@@ -293,7 +293,7 @@
       
       <#-- Add -->
       <span class="add${capitalizedType}">
-        <input class="vrtx-textfield" type="text" id="${spring.status.expression}" name="${spring.status.expression}" value="${value?html}" />
+        <input class="vrtx-textfield" type="text" id="${spring.status.expression}" name="${spring.status.expression}" value="${value}" />
 
         <#if type == "user">
           <@spring.bind formName + ".ac_userNames" />
@@ -301,7 +301,7 @@
           <#if errorsExist>
             <#assign value = spring.status.value />
           </#if>
-          <input type="hidden" id="ac_userNames" name="ac_userNames" value="${value?html}" />
+          <input type="hidden" id="ac_userNames" name="ac_userNames" value="${value}" />
         </#if>
         <input class="vrtx-button add${capitalizedType}Button" type="submit" name="add${capitalizedType}Action"
                value="<@vrtx.msg code="permissions.add${capitalizedType}" default="Add ${capitalizedType}"/>" />

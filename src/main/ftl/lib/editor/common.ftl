@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: common.ftl
   -
@@ -9,16 +9,16 @@
 <#import "../vtk.ftl" as vrtx />
 
 <#macro addCkScripts>
-  <link rel="stylesheet" type="text/css" href="${webResources?html}/jquery/plugins/jquery.autocomplete.css" />
-  <link rel="stylesheet" type="text/css" href="${webResources?html}/js/autocomplete/autocomplete.override.css" />
-  <script type="text/javascript" src="${fckeditorBase.url?html}/ckeditor.js"></script>
-  <script type="text/javascript" src="${webResources?html}/js/plugins/mustache.js"></script>
-  <script type="text/javascript" src="${jsBaseURL?html}/vrtx-accordions.js"></script>
-  <script type="text/javascript" src="${jsBaseURL?html}/editor.js"></script>
-  <script type="text/javascript" src="${fckeditorBase.url?html}/adapters/jquery.js"></script>
-  <script type='text/javascript' src='${webResources?html}/jquery/plugins/jquery.autocomplete.js'></script>
-  <script type='text/javascript' src='${webResources?html}/js/autocomplete/autocomplete.js'></script>
-  <script type='text/javascript' src='${webResources?html}/js/autocomplete/autocomplete-permissions.js'></script>
+  <link rel="stylesheet" type="text/css" href="${webResources}/jquery/plugins/jquery.autocomplete.css" />
+  <link rel="stylesheet" type="text/css" href="${webResources}/js/autocomplete/autocomplete.override.css" />
+  <script type="text/javascript" src="${fckeditorBase.url}/ckeditor.js"></script>
+  <script type="text/javascript" src="${webResources}/js/plugins/mustache.js"></script>
+  <script type="text/javascript" src="${jsBaseURL}/vrtx-accordions.js"></script>
+  <script type="text/javascript" src="${jsBaseURL}/editor.js"></script>
+  <script type="text/javascript" src="${fckeditorBase.url}/adapters/jquery.js"></script>
+  <script type='text/javascript' src='${webResources}/jquery/plugins/jquery.autocomplete.js'></script>
+  <script type='text/javascript' src='${webResources}/js/autocomplete/autocomplete.js'></script>
+  <script type='text/javascript' src='${webResources}/js/autocomplete/autocomplete-permissions.js'></script>
 </#macro>
 
 <#macro addCommonScripts language oldEditor=false>
@@ -39,9 +39,9 @@
     };
 	vrtxAdmin.multipleFormGroupingPaths = {
 	  <#if fckeditorBase??>
-	  baseBrowserURL: "${fckeditorBase.url?html}",
+	  baseBrowserURL: "${fckeditorBase.url}",
 	  baseFolderURL: "${baseFolder}",
-	  baseDocURL: "${fckeditorBase.documentURL?html}",
+	  baseDocURL: "${fckeditorBase.documentURL}",
 	  basePath: "${fckBrowse.url.pathRepresentation}"
 	  </#if>
 	};
@@ -54,15 +54,15 @@
   
   <#if oldEditor>
     <!-- JQuery UI (used for old datepicker) -->
-    <script type="text/javascript" src="${webResources?html}/jquery/plugins/ui/jquery-ui-${jQueryUiVersion}.custom/js/jquery-ui-${jQueryUiVersion}.custom.min.js"></script>
+    <script type="text/javascript" src="${webResources}/jquery/plugins/ui/jquery-ui-${jQueryUiVersion}.custom/js/jquery-ui-${jQueryUiVersion}.custom.min.js"></script>
     <#if language = "no">
-      <script type="text/javascript" src="${webResources?html}/jquery/plugins/ui/jquery-ui-${jQueryUiVersion}.custom/js/jquery.ui.datepicker-no.js"></script>
+      <script type="text/javascript" src="${webResources}/jquery/plugins/ui/jquery-ui-${jQueryUiVersion}.custom/js/jquery.ui.datepicker-no.js"></script>
     <#elseif language = "nn">
-      <script type="text/javascript" src="${webResources?html}/jquery/plugins/ui/jquery-ui-${jQueryUiVersion}.custom/js/jquery.ui.datepicker-nn.js"></script>
+      <script type="text/javascript" src="${webResources}/jquery/plugins/ui/jquery-ui-${jQueryUiVersion}.custom/js/jquery.ui.datepicker-nn.js"></script>
     </#if>
-    <script type="text/javascript" src="${jsBaseURL?html}/datepicker/datepicker-admin-old.js"></script>
+    <script type="text/javascript" src="${jsBaseURL}/datepicker/datepicker-admin-old.js"></script>
   <#else>
-    <script type="text/javascript" src="${jsBaseURL?html}/datepicker/vrtx-datepicker.js"></script>
+    <script type="text/javascript" src="${jsBaseURL}/datepicker/vrtx-datepicker.js"></script>
   </#if>
 </#macro>
 

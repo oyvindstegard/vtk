@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#assign upscopedHost = "" />
@@ -6,7 +6,7 @@
   <#assign upscopedHost = "not-upscoped-host" />
 </#if> -->
 
-<#assign language = vrtx.getMsg("eventListing.calendar.lang", "en") />
+<#assign language = vrtx.getMsg("eventListing.calendar.lang", "en")?markup_string />
 
 <div id="line-top"<#if upscopedHost != ""> class="${upscopedHost}"</#if>>
   <#if upscopedHost == "">

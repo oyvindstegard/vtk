@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/spring.ftl" as spring />
 
 <#--
@@ -18,8 +19,8 @@
 
 <#function getUri resource>
   <#assign uri = resource.URI />
-  <#assign solrUri = vrtx.propValue(resource, "solr.url") />
-  <#if solrUri?exists && solrUri?has_content>
+  <#assign solrUri = vrtx.propValue(resource, "solr.url")! />
+  <#if solrUri?? && solrUri?has_content>
     <#assign uri = solrUri>
   </#if>
   <#return uri />
@@ -34,7 +35,11 @@
   <#assign constructor = "freemarker.template.utility.ObjectConstructor"?new() />
   <#assign localeProp = vrtx.propValue(resource, 'contentLocale') />
   <#if localeProp?exists && localeProp?has_content>
-    <#return constructor("java.util.Locale", localeProp) />
+    <#if localeProp?is_markup_output>
+      <#return constructor("java.util.Locale", localeProp?markup_string) />
+    <#else>
+      <#return constructor("java.util.Locale", localeProp) />
+    </#if>
   </#if>
 
   <#assign solrResource = vrtx.propValue(resource, 'solr.isSolrResource') />
@@ -53,13 +58,13 @@
 <#-- XXX: remove this when properties 'introduction' and 'description'
      are merged: -->
 <#function getIntroduction resource>
-  <#local introduction = vrtx.propValue(resource, "introduction") />
+  <#local introduction = vrtx.propValue(resource, "introduction")! />
   <#local resourceType = resource.resourceType />
   <#if !introduction?has_content && resourceType != 'collection' 
        && resourceType != 'event-listing' && resourceType != 'article-listing' >
-    <#local introduction = vrtx.propValue(resource, "description", "", "content") />
+    <#local introduction = vrtx.propValue(resource, "description", "", "content")! />
   </#if>
-  <#return introduction />
+  <#if introduction?has_content><#return introduction /></#if>
 </#function>
 
 
@@ -67,9 +72,9 @@
   <#local localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext, locale) />
     <#if escape>
-      ${localizer.msg?html}
-    <#else>
       ${localizer.msg}
+    <#else>
+      ${localizer.msg?no_esc}
     </#if>
 </#macro>
 
@@ -90,7 +95,7 @@
   <#compress>
     <#local localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-    ${localizer.msg?html}
+    ${localizer.msg}
   </#compress>
 </#macro>
 
@@ -119,7 +124,7 @@
   <#compress>
     <#local localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-  ${localizer.msg}
+  ${localizer.msg?no_esc}
   </#compress>
 </#macro>
 
@@ -139,7 +144,7 @@
 <#function getMsg code default=code args=[] >
     <#assign localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-  <#return localizer.msg/>
+    <#return localizer.msg?no_esc />
 </#function>
 
 
@@ -225,7 +230,7 @@
   <#compress>
     <#if VRTX_HTML_UTIL?exists>
       <#if escape>
-        ${VRTX_HTML_UTIL.flatten(value)?html}
+        ${VRTX_HTML_UTIL.flatten(value)}
       <#else>
         ${VRTX_HTML_UTIL.flatten(value)}
       </#if>
@@ -249,7 +254,7 @@
 <#macro linkResolveFilter value baseURL requestURL protocolRelative=false>
   <#compress>
     <#if VRTX_HTML_UTIL?exists>
-      ${VRTX_HTML_UTIL.linkResolveFilter(value, baseURL, requestURL, protocolRelative).getStringRepresentation()}
+      ${VRTX_HTML_UTIL.linkResolveFilter(value, baseURL, requestURL, protocolRelative).getStringRepresentation()?no_esc}
     <#else>
       Undefined
     </#if>
@@ -292,7 +297,7 @@
 <#macro invokeComponentRefs html>
   <#local frag = VRTX_HTML_UTIL.parseFragment(html) />
   ${frag.filter(VRTX_DECORATING_NODE_FILTER)}
-  ${frag.stringRepresentation}
+  ${frag.stringRepresentation?no_esc}
 </#macro>
 
 
@@ -310,6 +315,7 @@
 <#macro limit nchars elide=false>
   <#compress>
     <#local val><#nested /></#local>
+    <#if val?is_markup_output><#local val = val?markup_string /></#if>
     <#if val?length &lt; nchars>
       ${val}
     <#else>
@@ -336,6 +342,7 @@
 <#macro breakSpecificChar nchars splitClass="comment-author-part" char="">
   <#compress>
     <#local val><#nested /></#local>
+    <#local val = val?markup_string />
     <#if val?length &lt; nchars>
       ${val}
     <#else>
@@ -382,7 +389,7 @@
         <#local more = true />
         <#break />
       </#if>
-      <li>${file?split("/")?last?html}</li>
+      <li>${file?split("/")?last}</li>
     </#list>
     </ul>
     <#if more>
@@ -413,37 +420,39 @@
 </#function>
 
 <#function prop resource propName prefix=''>
-  <#local prop = getProp(resource, propName, prefix)>
-  <#if !prop?has_content>
-    <#local prop = getProp(resource, propName, 'resource')>
+  <#local prop = getProp(resource, propName, prefix)!>
+  <#if !(prop?has_content)>
+    <#local prop = getProp(resource, propName, 'resource')!>
   </#if>
-  <#return prop />
+  <#if prop?has_content><#return prop /></#if>
 </#function>
 
 <#function getProp resource name prefix=''>
-  <#local def = '' />
-  <#if VRTX_RESOURCE_TYPE_TREE?exists>
+  <#if VRTX_RESOURCE_TYPE_TREE??>
     <#if prefix == "">
-      <#if VRTX_RESOURCE_TYPE_TREE.getPropertyDefinitionByPrefix(nullArg, name)?exists>
-        <#local def = VRTX_RESOURCE_TYPE_TREE.getPropertyDefinitionByPrefix(nullArg, name) />
+      <#if VRTX_RESOURCE_TYPE_TREE.getPropertyDefinitionByPrefix(nullArg, name)??>
+        <#local def = VRTX_RESOURCE_TYPE_TREE.getPropertyDefinitionByPrefix(nullArg, name)! />
       </#if>
     <#else>
       <#if VRTX_RESOURCE_TYPE_TREE.getPropertyDefinitionByPrefix(prefix, name)?exists>
-        <#local def = VRTX_RESOURCE_TYPE_TREE.getPropertyDefinitionByPrefix(prefix, name) />
+        <#local def = VRTX_RESOURCE_TYPE_TREE.getPropertyDefinitionByPrefix(prefix, name)! />
       </#if>
     </#if>
+    <#if def?? && resource.getProperty(def)??>
+      <#return resource.getProperty(def) />
+    </#if>
   </#if>
-  <#if def = ''><#return '' /></#if>
-  <#if !resource.getProperty(def)?exists><#return '' /></#if>
-  <#return resource.getProperty(def) />
 </#function>
 
-<#function propValue resource name format='long' prefix=''>
-  <#local propVal = getPropValue(resource, name, format, prefix) />
-  <#if !propVal?has_content>
+<#function propValue resource name format='long' prefix=''>  
+  <#if getPropValue(resource, name, format, prefix)??>
+    <#local propVal = getPropValue(resource, name, format, prefix) />
+  <#elseif getPropValue(resource, name, format, 'resource')??>
     <#local propVal = getPropValue(resource, name, format, 'resource') />
   </#if>
-  <#return propVal />
+  <#if propVal??>
+    <#return propVal?no_esc />
+  </#if>
 </#function>
 
 <#--
@@ -466,7 +475,6 @@
 </#function>
 
 <#function getPropValue resource name format='long' prefix=''>
-  <#local def = '' />
   <#if VRTX_RESOURCE_TYPE_TREE?exists>
     <#if prefix == "">
       <#if VRTX_RESOURCE_TYPE_TREE.getPropertyDefinitionByPrefix(nullArg, name)?exists>
@@ -478,31 +486,27 @@
       </#if>
     </#if>
   </#if>
-  <#local locale = springMacroRequestContext.getLocale() />
-  <#if def = ''><#return '' /></#if>
-  <#if !resource.getProperty(def)?exists>
-    <#return '' />
-  </#if>
-  <#local prop= resource.getProperty(def) />
-  <#local type = prop.definition.type />
-  
-  <#if type != 'IMAGE_REF'>
-    <#return prop.getFormattedValue(format, locale) />
-  <#else>
-  
-    <#-- Hack for relative imagerefs, make sure it doesn't mess up anything else (attempt/recover) -->
-    <#attempt>
-      <#local imageRef = prop.getStringValue() />
-      <#if !imageRef?starts_with("/") && !imageRef?starts_with("http://") && !imageRef?starts_with("https://")>
-        <#local imageRef = resource.URI.getParent().expand(imageRef) />
-        <#local hackedProp = def.createProperty(imageRef.toString())>
-        <#return hackedProp.getFormattedValue(format, locale) />
+  <#if def??>
+    <#local locale = springMacroRequestContext.getLocale() />
+    <#if resource.getProperty(def)??>
+      <#local prop = resource.getProperty(def) />
+      <#if def.type != 'IMAGE_REF'>
+        <#return prop.getFormattedValue(format, locale) />
+      <#else>
+        <#-- Hack for relative imagerefs, make sure it doesn't mess up anything else (attempt/recover) -->
+        <#attempt>
+          <#local imageRef = prop.getStringValue() />
+          <#if !imageRef?starts_with("/") && !imageRef?starts_with("http://") && !imageRef?starts_with("https://")>
+            <#local imageRef = resource.URI.getParent().expand(imageRef) />
+            <#local hackedProp = def.createProperty(imageRef.toString())>
+            <#return hackedProp.getFormattedValue(format, locale) />
+          </#if>
+        <#recover>
+        </#attempt>
+        <#return prop.getFormattedValue(format, locale) />
       </#if>
-    <#recover></#recover>
-    <#return prop.getFormattedValue(format, locale) />
-    
+    </#if>
   </#if>
-  
 </#function>
 
 <#function fixRelativeMediaFile uri uriOrPath>
@@ -516,29 +520,22 @@
 
 
 <#function propResource resource propName prefix="">
-  <#local prop = resource.getPropertyByPrefix(prefix, propName)?default("") />
-  
-  <#if prop != "">
+  <#local prop = resource.getPropertyByPrefix(prefix, propName)!>
+  <#return prop />
+  <#if prop??>
     <#local def = prop.definition />
     <#local type = def.type />
     <#if type = 'IMAGE_REF'>
-      <#return resource.getPropResource(def)?default("") />
+      <#return resource.getPropResource(def)! />
     </#if>
   </#if>
-  <#return "" />
 </#function>
 
 <#function getMetadata metadata key multiple=false>
   <#if multiple = true>
-    <#if metadata.getValues(key)?exists>
-      <#return metadata.getValues(key) />
-    </#if>
+    <#return metadata.getValues(key)! />
   </#if>
-  <#assign value = "" />
-  <#if metadata.getValue(key)?exists>
-    <#assign value = metadata.getValue(key) />
-  </#if>
-  <#return value />
+  <#return metadata.getValue(key)! />
 </#function>
 
 
@@ -551,10 +548,10 @@
 -->
 <#macro displayUserPrincipal principal>
   <#compress>
-    <#if principal.URL?exists>
-      <a class="user-principal" title="${principal.name?html}" href="${principal.URL?html}">${principal.description?html}</a>
+    <#if (principal.URL)??>
+      <a class="user-principal" title="${principal.name}" href="${principal.URL}">${principal.description}</a>
     <#else>
-      ${principal.name?html}
+      ${principal.name}
     </#if>
   </#compress>
 </#macro>
@@ -569,10 +566,10 @@
 -->
 <#macro displayGroupPrincipal principal>
   <#compress>
-    <#if principal.URL?exists>
-      <a class="group-principal" title="${principal.description?html}" href="${principal.URL?html}">${principal.name?html}</a>
+    <#if (principal.URL)??>
+      <a class="group-principal" title="${principal.description}" href="${principal.URL}">${principal.name}</a>
     <#else>
-      ${principal.name?html}
+      ${principal.name}
     </#if>
   </#compress>
 </#macro>
@@ -585,9 +582,9 @@
  * @param place The name for this place
 -->
 <#macro cssPlaceholder place>
-  <#if cssRegistry?exists && place?exists>
+  <#if cssRegistry?? && place??>
     <#list cssRegistry.getMedia(place) as cssURL>
-      <link rel="stylesheet" href="${cssURL?html}" type="text/css" />
+      <link rel="stylesheet" href="${cssURL}" type="text/css" />
     </#list>
   </#if>
 </#macro>
@@ -601,7 +598,7 @@
  * @param place The name for this place
 -->
 <#macro javascriptPlaceholder place>
-  <#if javascriptRegistry?exists && place?exists>
+  <#if javascriptRegistry?? && place??>
     <#list javascriptRegistry.getMedia(place) as jsURL>
       <script type="text/javascript" src="${jsURL}"></script>
     </#list>
@@ -693,7 +690,7 @@
 
 
 <#--
- * resourceContentTypeToIconResolver
+ * recoverableResourceToIconResolver
  *
  * Resolves icon based on resource contentType
  * RecoverableResource does not support propValue to get obsoleted and therefore we use this extra macro temporarily.
@@ -730,13 +727,13 @@
     <#if resource.resourceType??>
       <#local iconText = resource.resourceType />
     </#if>
-    <#local contentType = propValue(resource, "contentType") />
-    <#if iconText = "file" && contentType?has_content>
-      <#local iconText = resourceContentTypeToIconResolver(contentType) />
+    <#local contentType = propValue(resource, "contentType")! />
+    <#if iconText = "file" && contentType??>
+      <#local iconText = resourceContentTypeToIconResolver(contentType?markup_string) />
     </#if>
-    <#if resource.published?exists >
-        <#local unpublished = propValue(resource, 'unpublishedCollection')>
-        <#if unpublished?has_content || !resource.published>
+    <#if resource.published?? >
+        <#local unpublishedColl = propValue(resource, 'unpublishedCollection')??>
+        <#if unpublishedColl || !resource.published>
             <#local iconText = iconText + " unpublished">
         </#if>
     </#if>
@@ -807,8 +804,8 @@
 
 
 <#macro displayLinkOtherLang resource>
-  <#assign linkOtherLanguage = vrtx.propValue(resource, "linkOtherLanguage") />
-  <#if linkOtherLanguage?has_content>
-    <a id="vrtx-change-language-link" href="${linkOtherLanguage?html}"><@vrtx.msg code="link-other-language" /><span class="offscreen-screenreader"> <@vrtx.msg code="link-other-language.offscreen" /></span></a>
+  <#assign linkOtherLanguage = vrtx.propValue(resource, "linkOtherLanguage")! />
+  <#if linkOtherLanguage??>
+    <a id="vrtx-change-language-link" href="${linkOtherLanguage}"><@vrtx.msg code="link-other-language" /><span class="offscreen-screenreader"> <@vrtx.msg code="link-other-language.offscreen" /></span></a>
   </#if>
 </#macro>

@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: openid-auth-form.ftl
   - 
@@ -20,7 +19,7 @@
   <body>
 
     <h1>Log in</h1>
-    <form action="${resourceReference?html}" method="POST">
+    <form action="${resourceReference}" method="POST">
       Log in using OpenID: <input type="text" name="openid_identifier" />
       <input type="submit" value="OK" />
     </form>

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: editor.ftl
   - 
@@ -24,7 +24,7 @@
 
     <@vrtx.cssPlaceholder place="editor:head" />
     
-    <#assign language = vrtx.getMsg("eventListing.calendar.lang", "en") />
+    <#assign language = vrtx.getMsg("eventListing.calendar.lang", "en")?markup_string />
     <#assign isCollection = resource.resource.collection />
     <#assign simpleHTML = resource.resourceType = 'xhtml10trans' || resource.resourceType = 'html' />
     <#assign isImage = resource.contentType?exists && resource.contentType?starts_with("image/") />
@@ -37,9 +37,9 @@
     <#global baseFolder = "/" />
     <#if resourceContext.parentURI?exists>
       <#if isCollection>
-        <#global baseFolder = resourceContext.currentURI?html />
+        <#global baseFolder = resourceContext.currentURI />
       <#else>
-        <#global baseFolder = resourceContext.parentURI?html />
+        <#global baseFolder = resourceContext.parentURI />
       </#if>
     </#if>
     
@@ -154,22 +154,22 @@
       // CKEditor CSS
       var cssFileList = [<#if fckEditorAreaCSSURL?exists>
                            <#list fckEditorAreaCSSURL as cssURL>
-                             "${cssURL?html}" <#if cssURL_has_next>,</#if>
+                             "${cssURL}" <#if cssURL_has_next>,</#if>
                            </#list>
                          </#if>]; 
      
     //-->
     </script>
     
-    <script type="text/javascript" src="${jsBaseURL?html}/collectionlisting/manually-approve.js"></script>
+    <script type="text/javascript" src="${jsBaseURL}/collectionlisting/manually-approve.js"></script>
 
     <@editor.addCommonScripts language true />
 
     <#if isImage>
       <!--[if lte IE 8]>
-        <script type="text/javascript" src="${jsBaseURL?html}/image-editor/excanvas.compiled.js"></script>
+        <script type="text/javascript" src="${jsBaseURL}/image-editor/excanvas.compiled.js"></script>
       <![endif]-->
-      <script type="text/javascript" src="${jsBaseURL?html}/image-editor/editor.js"></script>
+      <script type="text/javascript" src="${jsBaseURL}/image-editor/editor.js"></script>
       <script type="text/javascript"><!--  
         var startCropText = '<@vrtx.msg code="editor.image.start-crop" default="Start cropping" />';
         var cropText = '<@vrtx.msg code="editor.image.crop" default="Crop" />';
@@ -186,7 +186,7 @@
     </#if>
   </head>
   <body id="vrtx-editor">
-    <#assign header><@vrtx.msg code="editor.edit" args=[vrtx.resourceTypeName(resource)?lower_case] /></#assign>
+    <#assign header><@vrtx.msg code="editor.edit" args=[vrtx.resourceTypeName(resource)?markup_string?lower_case] /></#assign>
 
     <div id="vrtx-editor-title-submit-buttons">
       <div id="vrtx-editor-title-submit-buttons-inner-wrapper">
@@ -212,13 +212,13 @@
     <#if !resource.isCollection()>
       <#assign backupURL = vrtx.linkConstructor(".", 'copyBackupService') />
       <#assign backupViewURL = vrtx.relativeLinkConstructor("", 'viewService') />
-      <form id="backupForm" action="${backupURL?html}" method="post" accept-charset="UTF-8">
+      <form id="backupForm" action="${backupURL}" method="post" accept-charset="UTF-8">
         <@vrtx.csrfPreventionToken url=backupURL />
-        <input type="hidden" name="uri" value="${backupViewURL?html}" />
+        <input type="hidden" name="uri" value="${backupViewURL}" />
       </form>
     </#if>
     <#assign editURL = vrtx.linkConstructor("", '') />
-    <form action="${editURL?html}" method="post" id="editor">
+    <form action="${editURL}" method="post" id="editor">
       <div class="properties"<#if isImage> id="image-properties"</#if>>
         <@propsForm resource.editProperties />
       </div>
@@ -226,7 +226,7 @@
       <#if (resource.content)?exists>
         <div class="html-content">
           <label class="resource.content" for="resource.content"><@vrtx.msg code="editor.content" /></label> 
-          <textarea name="resource.content" rows="7" cols="60" id="resource.content">${resource.bodyAsString?html}</textarea>
+          <textarea name="resource.content" rows="7" cols="60" id="resource.content">${resource.bodyAsString}</textarea>
           <@editor.createEditor  'resource.content' true false simpleHTML />
         </div>
       </#if>
@@ -318,7 +318,7 @@
           </#if>
         </#local>
       <#else>
-        <#local localizedName = propDef.getLocalizedName(locale) />
+        <#local localizedName = propDef.getLocalizedName(locale)?no_esc />
       </#if>
       
       <#local value = resource.getValue(propDef) />
@@ -344,11 +344,11 @@
       
       <#if type = 'HTML' && name != 'userTitle' && name != 'title' && name != 'caption'>
 
-        <textarea id="resource.${name}" name="resource.${name}" rows="7" cols="60">${value?html}</textarea>
+        <textarea id="resource.${name}" name="resource.${name}" rows="7" cols="60">${value}</textarea>
         <@editor.createEditor  'resource.${name}' false false simpleHTML />
         
       <#elseif type = 'HTML' && name == 'caption'>
-        <textarea id="resource.${name}" name="resource.${name}" rows="7" cols="60">${value?html}</textarea>
+        <textarea id="resource.${name}" name="resource.${name}" rows="7" cols="60">${value}</textarea>
         <@editor.createEditor 'resource.${name}' false true />
         </div><#-- On the fly div STOP caption -->
 
@@ -357,21 +357,21 @@
 
         <#-- Except for employee listing, which has a default generated title based on areacode -->
         <#if value = '' && name='userTitle' && resource.resourceType != 'employee-listing'>
-          <#local value = resource.title?html />
+          <#local value = resource.title />
         </#if>
-          <input <#if name='userTitle'>class="vrtx-textfield-big"<#else>class="vrtx-textfield"</#if> type="text" id="resource.${name}" name="resource.${name}" value="${value?html}" size="32" />
+          <input <#if name='userTitle'>class="vrtx-textfield-big"<#else>class="vrtx-textfield"</#if> type="text" id="resource.${name}" name="resource.${name}" value="${value}" size="32" />
         <#if description != "">
           <span class="input-description">(${description})</span>
         </#if>
 
       <#elseif name = 'media'>
-        <input class="vrtx-textfield" type="text" id="resource.${name}"  name="resource.${name}" value="${value?html}" />
-        <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url?html}', '${baseFolder}',
+        <input class="vrtx-textfield" type="text" id="resource.${name}"  name="resource.${name}" value="${value}" />
+        <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url}', '${baseFolder}',
                 '${fckBrowse.url.pathRepresentation}', 'Media');"><@vrtx.msg code="editor.browseMediaFiles"/></button>
                 
       <#elseif name = 'linkOtherLanguage'>
-        <input class="vrtx-textfield" type="text" id="resource.${name}"  name="resource.${name}" value="${value?html}" />
-        <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url?html}', '${baseFolder}',
+        <input class="vrtx-textfield" type="text" id="resource.${name}"  name="resource.${name}" value="${value}" />
+        <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url}', '${baseFolder}',
                 '${fckBrowse.url.pathRepresentation}', 'File');"><@vrtx.msg code="editor.browseMediaFiles"/></button>
         
       <#elseif type = 'IMAGE_REF'>
@@ -379,8 +379,8 @@
         <#if name == "picture">
         <div class="picture-and-caption">
           <div class="input-and-button-container">
-            <input type="text" class="vrtx-textfield preview-image-inputfield" id="resource.${name}" name="resource.${name}" value="${value?html}" />
-            <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url?html}', '${baseFolder}',
+            <input type="text" class="vrtx-textfield preview-image-inputfield" id="resource.${name}" name="resource.${name}" value="${value}" />
+            <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url}', '${baseFolder}',
                                                                '${fckBrowse.url.pathRepresentation}');"><@vrtx.msg code="editor.browseImages"/></button>
           </div>
           <div id="resource.${name}.preview">
@@ -395,7 +395,7 @@
                 </#if> 
               </#if>
               <#if thumbnail != ''>
-                <img src="${thumbnail?html}" alt="preview" />
+                <img src="${thumbnail}" alt="preview" />
               <#else>
                 <img src="" alt="preview" />
               </#if>
@@ -405,8 +405,8 @@
         
           <div class="image-ref vrtx-image-ref.${name}">
             <div class="input-and-button-container.${name}">
-              <input type="text" class="vrtx-textfield preview-image-inputfield" id="resource.${name}" name="resource.${name}" value="${value?html}" />
-              <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url?html}', '${baseFolder}',
+              <input type="text" class="vrtx-textfield preview-image-inputfield" id="resource.${name}" name="resource.${name}" value="${value}" />
+              <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url}', '${baseFolder}',
                                                                  '${fckBrowse.url.pathRepresentation}');"><@vrtx.msg code="editor.browseImages"/></button>
             </div>
             <div id="resource.${name}.preview">
@@ -421,7 +421,7 @@
                   </#if> 
                 </#if>
                 <#if thumbnail != ''>
-                  <img src="${thumbnail?html}" alt="preview" />
+                  <img src="${thumbnail}" alt="preview" />
                 <#else>
                   <img src="" alt="preview" />
                 </#if>
@@ -465,11 +465,11 @@
             <#if type = 'BOOLEAN' && !displayLabel>
               <div class="vrtx-checkbox-square">
                 <#if value == allowedValues[0]>
-                  <input name="resource.${name}" id="resource.${name}.${allowedValues[0]?html}" type="checkbox" value="${allowedValues[0]?html}" checked="checked" />
+                  <input name="resource.${name}" id="resource.${name}.${allowedValues[0]}" type="checkbox" value="${allowedValues[0]}" checked="checked" />
                 <#else>
-                  <input name="resource.${name}" id="resource.${name}.${allowedValues[0]?html}" type="checkbox" value="${allowedValues[0]?html}" />
+                  <input name="resource.${name}" id="resource.${name}.${allowedValues[0]}" type="checkbox" value="${allowedValues[0]}" />
                 </#if>
-                <label class="resource.${name}" for="resource.${name}.${allowedValues[0]?html}">${localizedName}</label>
+                <label class="resource.${name}" for="resource.${name}.${allowedValues[0]}">${localizedName}</label>
                 <#-- HACKS 2012 start -->
                 <#-- Tooltip for aggregation and manually approve -->
                 <#if name = "display-aggregation" || name = "display-manually-approved">
@@ -479,11 +479,11 @@
               </div>
             <#else>
               <div class="vrtx-checkbox-square">
-                <label class="resource.${name}">${allowedValues[0]?html}</label>
+                <label class="resource.${name}">${allowedValues[0]}</label>
                 <#if value == allowedValues[0]>
-                  <input name="resource.${name}" id="resource.${name}.${allowedValues[0]?html}" type="checkbox" value="${allowedValues[0]?html}" checked="checked" />
+                  <input name="resource.${name}" id="resource.${name}.${allowedValues[0]}" type="checkbox" value="${allowedValues[0]}" checked="checked" />
                 <#else>
-                  <input name="resource.${name}" id="resource.${name}.${allowedValues[0]?html}" type="checkbox" value="${allowedValues[0]?html}" />
+                  <input name="resource.${name}" id="resource.${name}.${allowedValues[0]}" type="checkbox" value="${allowedValues[0]}" />
                 </#if>
               </div>
             </#if>
@@ -502,14 +502,14 @@
                 <#local nullValue = 'unspecified' />
               </#recover>
                 
-                <option value="">${nullValue?html}</option>
+                <option value="">${nullValue}</option>
               </#if>
               <#list allowedValues as v>
                 <#local localized = propDef.getValueFormatter().valueToString(v, 'localized', springMacroRequestContext.getLocale()) />
                 <#if v == value>
-                  <option selected="selected" value="${v?html}">${localized?html}</option>
+                  <option selected="selected" value="${v}">${localized}</option>
                 <#else>
-                  <option value="${v?html}">${localized?html}</option>
+                  <option value="${v}">${localized}</option>
                 </#if>
               </#list>
             </select>
@@ -519,14 +519,14 @@
             <option value="">${vrtx.getMsg("default.unspecified")}</option>
             <#list sharedTextIdentificators as identificator>
               <#if identificator == value>
-                <option selected="selected" value="${identificator?html}">${identificator?html}</option>
+                <option selected="selected" value="${identificator}">${identificator}</option>
               <#else>
-                <option value="${identificator?html}">${identificator?html}</option>
+                <option value="${identificator}">${identificator}</option>
               </#if>
             </#list>
           </select>
         <#else>
-          <input class="vrtx-textfield<#if multiple> vrtx-multiple</#if>" type="text" id="resource.${name}" name="resource.${name}" value="${value?html}" size="32" />
+          <input class="vrtx-textfield<#if multiple> vrtx-multiple</#if>" type="text" id="resource.${name}" name="resource.${name}" value="${value}" size="32" />
     
           <#if name = 'recursive-listing-subfolders'>
             <label class="tooltip">${vrtx.getMsg("editor.recursive-listing.featured-articles.hint")}</label>
@@ -562,10 +562,10 @@
     <div class="vrtx-radio-button">
       <#if !(resource.getProperty(propDef))?exists>
         <input name="resource.${name}" id="resource.${name}.unspecified" type="radio" value="" checked="checked" />
-        <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue?html}</label>
+        <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
       <#else>
         <input name="resource.${name}" id="resource.${name}.unspecified" type="radio" value="" />
-        <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue?html}</label>
+        <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
       </#if>
     </div>
   </#if>
@@ -579,11 +579,11 @@
     </#if>
     <div class="vrtx-radio-button">
       <#if v == value>
-        <input name="resource.${name}" id="resource.${name}.${v?html}" type="radio" value="${v?html}" checked="checked" />
-        <label class="resource.${name}" for="resource.${name}.${v?html}">${localized?html}</label>
+        <input name="resource.${name}" id="resource.${name}.${v}" type="radio" value="${v}" checked="checked" />
+        <label class="resource.${name}" for="resource.${name}.${v}">${localized}</label>
       <#else>
-        <input name="resource.${name}" id="resource.${name}.${v?html}" type="radio" value="${v?html}" />
-        <label class="resource.${name}" for="resource.${name}.${v?html}">${localized?html}</label>
+        <input name="resource.${name}" id="resource.${name}.${v}" type="radio" value="${v}" />
+        <label class="resource.${name}" for="resource.${name}.${v}">${localized}</label>
       </#if>
       <#if name = "recursive-listing" && v = "true">
           <abbr tabindex="0" class="tooltips" title="${vrtx.getMsg('editor.recursive-listing.info')}"></abbr>
@@ -610,10 +610,10 @@
         </#if>
         
         <#assign url = helpURL />
-        <#if .vars[propKey]?exists>
-          <#assign url = .vars[propKey] />
+        <#if .vars[propKey?markup_string]?exists>
+          <#assign url = .vars[propKey?markup_string] />
         </#if>
-        <a href="${url?html}" target="_blank" class="help-link"><@vrtx.msg code="manage.help.editing" default="Help in editing" /></a>
+        <a href="${url}" target="_blank" class="help-link"><@vrtx.msg code="manage.help.editing" default="Help in editing" /></a>
       </li>
     </ul>
   </div>

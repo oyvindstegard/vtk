@@ -41,7 +41,7 @@ import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertyEvaluationContext.Type;
 import vtk.repository.resourcetype.PropertyEvaluator;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.repository.MimeHelper;
 import vtk.util.text.Json;
 
@@ -88,8 +88,7 @@ public class ContentTypeEvaluator implements PropertyEvaluator {
                 try {
                     // Peek in content:
                     InputStream inputStream = ctx.getContent().getContentInputStream();
-                    byte[] buffer = StreamUtil.readInputStream(inputStream, this.regexpChunkSize);
-                    String chunk = new String(buffer, this.peekCharacterEncoding.name());
+                    String chunk = IO.readString(inputStream, peekCharacterEncoding.name()).limit(regexpChunkSize).perform();
                     Map<Pattern, String> mapping = this.contentPeekRegexps.get(resourceContentType);
                     for (Pattern pattern: mapping.keySet()) {
                         Matcher m = pattern.matcher(chunk);

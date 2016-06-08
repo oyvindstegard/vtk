@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -21,7 +21,7 @@
       </#list>
     </#if>
 
-    <title>${collection.title?html}<#if collectionSpecificValues?exists && collectionSpecificValues.currentUrl?exists> (${vrtx.getMsg("listing-filters.title.discontinued")})</#if></title>
+    <title>${collection.title}<#if collectionSpecificValues?exists && collectionSpecificValues.currentUrl?exists> (${vrtx.getMsg("listing-filters.title.discontinued")})</#if></title>
 
     <#if page?has_content>
       <#if "${page}" != "1"><meta name="robots" content="noindex, follow"/></#if>
@@ -36,17 +36,17 @@
     </#if>
   
     <@vrtx.displayLinkOtherLang collection />
-    <h1>${collection.title?html}<#if collectionSpecificValues?exists && collectionSpecificValues.currentUrl?exists> (${vrtx.getMsg("listing-filters.title.discontinued")})</#if></h1>
+    <h1>${collection.title}<#if collectionSpecificValues?exists && collectionSpecificValues.currentUrl?exists> (${vrtx.getMsg("listing-filters.title.discontinued")})</#if></h1>
     <#if showSubfolderMenu?exists>
       <div class="vrtx-subfolder-menu">
         <#if showSubfolderMenu.resultSets?has_content>
-          <div class="menu-title"><#if showSubfolderTitle?exists>${showSubfolderTitle?html}<#else>${vrtx.getMsg("viewCollectionListing.subareas")}</#if></div>
+          <div class="menu-title"><#if showSubfolderTitle?exists>${showSubfolderTitle}<#else>${vrtx.getMsg("viewCollectionListing.subareas")}</#if></div>
           <#assign currentCount = 1 />
           <#list showSubfolderMenu.resultSets as resultSet>
-            <ul class="resultset-${currentCount?html}">
+            <ul class="resultset-${currentCount}">
               <#list resultSet.itemsSorted as item>
                 <#if item.url?exists && item.label?exists>
-                  <li><a href="${item.url?html}">${item.label?html}</a></li>
+                  <li><a href="${item.url}">${item.label}</a></li>
                 </#if>
               </#list>
             </ul>
@@ -59,7 +59,7 @@
     <#if filters?exists>
       <div id="vrtx-listing-filters" class="vrtx-listing-filters-${filters?size}-col<#if showSubfolderMenu?exists> vrtx-listing-filters-collapsed</#if>">
         <script type="text/javascript"><!--
-          var listingFilters = [<#list filters?keys as filterKey>"${filterKey?html}"<#if filterKey_has_next>, </#if></#list>];
+          var listingFilters = [<#list filters?keys as filterKey>"${filterKey}"<#if filterKey_has_next>, </#if></#list>];
         // -->
         </script>
         <#list filters?keys as filterKey>

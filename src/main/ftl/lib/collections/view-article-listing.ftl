@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -27,34 +27,34 @@
           <#-- The actual resource we are displaying -->
           <#local entryPropSet = entry.propertySet />
 
-          <#local locale = vrtx.getLocale(entryPropSet) />
-          <#local title = vrtx.propValue(entryPropSet, 'title') />
-          <#local introImg  = vrtx.prop(entryPropSet, 'picture')  />
-          <#local intro  = vrtx.prop(entryPropSet, 'introduction')  />
-          <#local caption = vrtx.propValue(entryPropSet, 'caption')  />
-          <#local publishDateProp = vrtx.prop(entryPropSet, 'publish-date') />
-          <#local hidePublishDate = vrtx.prop(entryPropSet, 'hide-published-date') />
+          <#local locale = vrtx.getLocale(entryPropSet)! />
+          <#local title = vrtx.propValue(entryPropSet, 'title')! />
+          <#local introImg  = vrtx.prop(entryPropSet, 'picture')!  />
+          <#local intro  = vrtx.prop(entryPropSet, 'introduction')!  />
+          <#local caption = vrtx.propValue(entryPropSet, 'caption')!  />
+          <#local publishDateProp = vrtx.prop(entryPropSet, 'publish-date')! />
+          <#local hidePublishDate = vrtx.prop(entryPropSet, 'hide-published-date')! />
 
           <#local articleType = "vrtx-default-article" />
           <#if articles.name == "articleListing.featuredArticles">
             <#local articleType = "vrtx-featured-article" />
           </#if>
           <div id="vrtx-result-${i}" class="vrtx-resource ${articleType}<#if listingView == "2columns"> ${articleType}-<#if i % 2 == 0>right<#else>left</#if></#if><#if listingView == "2columns+prio"> ${articleType}-<#if ((i+1) % 2 == 0)>right<#else>left</#if></#if>">
-          <#local introImgURI = vrtx.propValue(entryPropSet, 'picture') />
-           <#if introImgURI?exists>
-    		 <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
+          <#local introImgURI = vrtx.propValue(entryPropSet, 'picture')! />
+           <#if introImgURI?has_content>
+    	     <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI?markup_string, 'displayThumbnailService') />
     	   <#else>
     	     <#local thumbnail = "" />
-   		   </#if>
+   	   </#if>
            <#if introImg?has_content && !articles.hasDisplayPropDef("hide-introduction-image")>
-             <#local introImgAlt = vrtx.propValue(entryPropSet, 'pictureAlt') />
-             <a class="vrtx-image" href="${entry.url?html}">
-               <img src="${thumbnail?html}" alt="<#if introImgAlt?has_content>${introImgAlt?html}</#if>" />
+             <#local introImgAlt = vrtx.propValue(entryPropSet, 'pictureAlt')! />
+             <a class="vrtx-image" href="${entry.url}">
+               <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
              </a>
            </#if>
 
             <div class="vrtx-title">
-            <a class="vrtx-title" href="${entry.url?html}">${title?html}</a></div>
+            <a class="vrtx-title" href="${entry.url}">${title}</a></div>
             <#if publishDateProp?has_content && !articles.hasDisplayPropDef("hide-published-date")>
               <div class="published-date">
                 <span class="published-date-prefix">
@@ -65,7 +65,7 @@
             </#if>
 
             <#if hideNumberOfComments?exists && !hideNumberOfComments >
-               <#local numberOfComments = vrtx.prop(entryPropSet, "numberOfComments") />
+               <#local numberOfComments = vrtx.prop(entryPropSet, "numberOfComments")! />
                <#if numberOfComments?has_content >
                  <div class="vrtx-number-of-comments-add-event-container">
                    <@viewutils.displayNumberOfComments entryPropSet locale />
@@ -77,10 +77,10 @@
               <div class="description introduction"><@vrtx.linkResolveFilter intro.value entry.url requestURL /> </div>
             </#if>
 
-            <#local hasBody = vrtx.propValue(entryPropSet, 'hasBodyContent') == 'true' />
+            <#local hasBody = vrtx.propValue(entryPropSet, 'hasBodyContent')?markup_string == 'true' />
             <#if displayMoreURLs && hasBody>
             <div class="vrtx-read-more">
-              <a href="${entry.url?html}" class="more">
+              <a href="${entry.url}" class="more">
                 <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
               </a>
             </div>

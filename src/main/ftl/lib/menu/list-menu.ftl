@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: list-menu.ftl
   - 
@@ -65,7 +65,7 @@
                     <#include "/actions/list-menu.${item.label}.ftl" />
                   <#recover>
 
-                  ${prepend}<a id="${item.label}" href="${item.url?html}">${item.title}</a>${append}
+                  ${prepend}<a id="${item.label}" href="${item.url}">${item.title}</a>${append}
           
                   </#attempt>
               </li>

@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: plaintext-edit.ftl
   - 
@@ -21,7 +20,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>Plain text edit</title>
-  <script type="text/javascript" src="${md5jsURL?html}"></script>
+  <script type="text/javascript" src="${md5jsURL}"></script>
   <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.hotkeys.js"></script> 
   <script type="text/javascript"><!--
   
@@ -61,13 +60,13 @@
   
     <#assign backupURL = vrtx.linkConstructor(".", 'copyBackupService') />
     <#assign backupViewURL = vrtx.relativeLinkConstructor("", 'viewService') />
-    <form id="backupForm" action="${backupURL?html}" method="post" accept-charset="UTF-8">
+    <form id="backupForm" action="${backupURL}" method="post" accept-charset="UTF-8">
       <@vrtx.csrfPreventionToken url=backupURL />
-      <input type="hidden" name="uri" value="${backupViewURL?html}" />
+      <input type="hidden" name="uri" value="${backupViewURL}" />
     </form>
   
     <form id="editor" action="${plaintextEditForm.submitURL}" method="post">
-      <textarea id="foo" name="content" rows="30" cols="80">${plaintextEditForm.content?html}</textarea>
+      <textarea id="foo" name="content" rows="30" cols="80">${plaintextEditForm.content?no_esc}</textarea>
       <div class="vrtx-edit-plaintext-submit-buttons submitButtons">
         <input class="vrtx-button vrtx-save-button" type="submit" id="saveViewAction" name="saveViewAction" value="<@vrtx.msg code="plaintextEditForm.saveAndView" default="Save and view"/>" />
         <input class="vrtx-focus-button vrtx-save-button" type="submit" id="saveAction" name="saveAction" value="<@vrtx.msg code="plaintextEditForm.save" default="Save"/>" />
@@ -75,7 +74,7 @@
         <#if plaintextEditForm.tooltips?exists>
           <#list plaintextEditForm.tooltips as tooltip>
            <div class="contextual-help">
-             <a href="javascript:void(0);" onclick="javascript:open('${tooltip.url?html}', 'componentList', 'width=650, height=450, resizable=yes, right=0, top=0, screenX=0, screenY=0, scrollbars=yes');">
+             <a href="javascript:void(0);" onclick="javascript:open('${tooltip.url}', 'componentList', 'width=650, height=450, resizable=yes, right=0, top=0, screenX=0, screenY=0, scrollbars=yes');">
                <@vrtx.msg code=tooltip.messageKey default=tooltip.messageKey/>
              </a>
            </div>

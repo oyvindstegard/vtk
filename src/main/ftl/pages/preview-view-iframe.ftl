@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: preview-view-iframe.ftl
   - 
@@ -32,7 +31,6 @@
   -   title
   -
   -->
-
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#if !resourceReference?exists>
@@ -89,7 +87,7 @@
         
         $("body").prepend('<span id="vrtx-link-check-spinner" aria-busy="true"><@vrtx.msg code="linkcheck.spinner" default="Checking links..."/></span>');
         
-        var linkCheckURL = '${linkcheck.URL?html}';
+        var linkCheckURL = '${linkcheck.URL}';
         var authTarget = '${authTarget}';
         var href = location.href;
         linkCheckURL = (authTarget === "https" && linkCheckURL.match(/^http:\/\//)) ? linkCheckURL.replace("http://", "https://") : linkCheckURL;
@@ -127,7 +125,7 @@
 
     <div id="previewViewIframeWrapper">
       <iframe title="${vrtx.getMsg("iframe.title.preview")}" class="previewView" name="previewViewIframe" id="previewViewIframe" src="${url}" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0" style="overflow:visible; width:100%; ">
-        ${vrtx.getMsg("iframe.not-supported")} ${vrtx.getMsg("iframe.not-supported.title-prefix")} "${vrtx.getMsg("iframe.title.preview")}". <@vrtx.msg code="iframe.not-supported.link" args=[resourceReference?html] />
+        ${vrtx.getMsg("iframe.not-supported")} ${vrtx.getMsg("iframe.not-supported.title-prefix")} "${vrtx.getMsg("iframe.title.preview")}". <@vrtx.msg code="iframe.not-supported.link" args=[resourceReference] />
       </iframe>
     </div>
   </body>

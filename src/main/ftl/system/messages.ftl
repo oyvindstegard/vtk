@@ -1,15 +1,15 @@
-<#ftl strip_whitespace=true />
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#assign requestContext = resourceContext.requestContext />
 
 <#list requestContext.errorMessages as msg>
-  <div class="errormessage ${msg.identifier?html}">
-    ${msg.title?html}
+  <div class="errormessage ${msg.identifier}">
+    ${msg.title}
     <#if (msg.messages)?exists>
       <ul class="errors">
         <#list msg.messages as subMsg>
-          <li>${subMsg?html}</li>
+          <li>${subMsg}</li>
         </#list>
       </ul>
     </#if>
@@ -17,12 +17,12 @@
 </#list>
 
 <#list requestContext.infoMessages as msg>
-  <div class="infomessage ${msg.identifier?html}">
-    ${msg.title?html}
+  <div class="infomessage ${msg.identifier}">
+    ${msg.title?no_esc}
     <#if msg.messages?has_content>
       <ul class="infoitems">
         <#list msg.messages as subMsg>
-          <li>${subMsg?html}</li>
+          <li>${subMsg}</li>
         </#list>
       </ul>
     </#if>

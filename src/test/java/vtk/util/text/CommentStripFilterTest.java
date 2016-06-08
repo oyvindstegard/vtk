@@ -40,7 +40,7 @@ import org.json.simple.parser.ParseException;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 
 /**
  *
@@ -60,7 +60,7 @@ public class CommentStripFilterTest {
     @Before
     public void setUp() throws IOException {
         InputStream is = getClass().getResourceAsStream(JSON_TEST_RESOURCE);
-        jsonTestText = StreamUtil.streamToString(is, "utf-8");
+        jsonTestText = IO.readString(is, "utf-8").perform();
     }
     
     @Test

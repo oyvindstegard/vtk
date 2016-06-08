@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
 
@@ -30,7 +30,7 @@
 
 <@spring.bind "trashcan.trashCanObjects" />
 <@spring.bind "trashcan.submitURL" />
-<form class="trashcan" action="${spring.status.value?html}" method="post">
+<form class="trashcan" action="${spring.status.value}" method="post">
   <table id="directory-listing" class="trash-can-listing">
   
     <@spring.bind "trashcan.sortLinks" />
@@ -64,14 +64,14 @@
           <#else>
             <tr class="${rowType} <@vrtx.recoverableResourceToIconResolver rr />${firstLast}">
           </#if>
-              <td class="vrtx-trash-can-name name trash"><span class="vrtx-trash-can-name-text">${rr.name?html}</span></td>
+              <td class="vrtx-trash-can-name name trash"><span class="vrtx-trash-can-name-text">${rr.name}</span></td>
               <td class="checkbox">
                 <@spring.bind "trashcan.trashCanObjects[${tco_index}].selectedForRecovery" />
                 <#assign checked = "" />
                 <#if spring.status.value?string = 'true' >
-                  <input type="checkbox" name="${spring.status.expression}" title="${rr.name?html}" value="true" checked="checked" />
+                  <input type="checkbox" name="${spring.status.expression}" title="${rr.name}" value="true" checked="checked" />
                 <#else>
-                  <input type="checkbox" name="${spring.status.expression}" title="${rr.name?html}" value="true" />
+                  <input type="checkbox" name="${spring.status.expression}" title="${rr.name}" value="true" />
                 </#if>
               </td>
               <td class="vrtx-trash-can-deleted-by">${rr.deletedBy}</td>
@@ -111,7 +111,7 @@
   <#else>
     <th scope="col" id="vrtx-${code}">
   </#if>
-    <a href="${sortLink.url?html}" id="${id}">
+    <a href="${sortLink.url}" id="${id}">
       <@vrtx.msg code="${code}" default="${id}" />
     </a>
   </th>

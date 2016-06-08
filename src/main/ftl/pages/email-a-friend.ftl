@@ -1,6 +1,6 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=false>
 <#--
-  - File: email-approval.ftl
+  - File: email-a-friend.ftl
   - 
   - Description: Displays a send to approval form.
   -
@@ -29,7 +29,7 @@
   <meta name="robots" content="noindex" />
  </head>
  <body class="forms-new">
-   <#assign closeURI = resourceContext.currentURI?split("?")[0]?html />
+   <#assign closeURI = resourceContext.currentURI?split("?")[0] />
  
    <#if mailResponse?has_content && mailResponse = "OK">
      <p><@vrtx.msg code="email.form.success" args=[emailSentTo] /></p>
@@ -44,7 +44,7 @@
        <label for="emailTo"><@vrtx.msg code="email.form.to" default="Send e-mail to" /></label>
        <div class="vrtx-textfield">
          <#if emailSavedTo?exists && emailSavedTo?has_content>
-           <input type="text" id="emailTo" name="emailTo" value="${emailSavedTo?html}" />
+           <input type="text" id="emailTo" name="emailTo" value="${emailSavedTo}" />
          <#else>
            <input type="text" id="emailTo" name="emailTo" value="" />
          </#if>
@@ -54,7 +54,7 @@
        <label for="emailFrom"><@vrtx.msg code="email.form.from" default="Your e-mail address" /></label>
        <div class="vrtx-textfield">
          <#if emailSavedFrom?exists && emailSavedFrom?has_content>
-           <input type="text" id="emailFrom" name="emailFrom" value="${emailSavedFrom?html}" />
+           <input type="text" id="emailFrom" name="emailFrom" value="${emailSavedFrom}" />
          <#else>
            <input type="text" id="emailFrom" name="emailFrom" value="" />
          </#if>
@@ -62,7 +62,7 @@
        
        <label for="yourComment"><@vrtx.msg code="email.form.yourcomment" default="Your comment" /></label>
        <#if yourSavedComment?exists && yourSavedComment?has_content>
-         <textarea class="round-corners" rows="6" cols="10" id="yourComment" name="yourComment">${yourSavedComment?html}</textarea>
+         <textarea class="round-corners" rows="6" cols="10" id="yourComment" name="yourComment">${yourSavedComment}</textarea>
        <#else>
          <textarea class="round-corners" rows="6" cols="10" id="yourComment" name="yourComment" value=""></textarea>
        </#if>

@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
  * alternativeViewCheckbox
  *
@@ -9,11 +8,10 @@
  * @param isAlternativeView - if alternative name exists as a parameter in request
  *
 -->
-
 <#macro alternativeViewCheckbox alternativeName alternativeLabelText isAlternativeView=false>
-  <div id="is-${alternativeName?html}-view" class="vrtx-checkbox vrtx-report-alternative-view-switch">
-    <input name="${alternativeName?html}" id="is-${alternativeName?html}" type="checkbox" <#if isAlternativeView>checked="checked"</#if> />
-    <label for="is-${alternativeName?html}"><@vrtx.msg code=alternativeLabelText /></label>
+  <div id="is-${alternativeName}-view" class="vrtx-checkbox vrtx-report-alternative-view-switch">
+    <input name="${alternativeName}" id="is-${alternativeName}" type="checkbox" <#if isAlternativeView>checked="checked"</#if> />
+    <label for="is-${alternativeName}"><@vrtx.msg code=alternativeLabelText /></label>
   </div>
 </#macro>
 
@@ -35,7 +33,7 @@
                     <span><@vrtx.msg code="report.${report.reportname}.filters.${filterKey}.${filterOpt.name}" /></span>
                 <#else>
                   <li id="${filterID}">
-                    <a href="${filterOpt.URL?html}"><@vrtx.msg code="report.${report.reportname}.filters.${filterKey}.${filterOpt.name}" /></a>
+                    <a href="${filterOpt.URL}"><@vrtx.msg code="report.${report.reportname}.filters.${filterKey}.${filterOpt.name}" /></a>
                 </#if>
                   </li>
               </#list>

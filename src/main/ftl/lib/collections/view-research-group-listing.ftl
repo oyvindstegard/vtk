@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "../vtk.ftl" as vrtx />
 
 <#macro displayResearchGroupsAlphabetical researchGroupListing>
@@ -8,7 +8,7 @@
         <ul>
 		      <#list alpthabeticalOrdredResult[key] as researchGroup>
 			      <#local title = vrtx.propValue(researchGroup.propertySet, 'title') />
-			      <li><a href="${researchGroup.url?html}">${title}</a></li>
+			      <li><a href="${researchGroup.url}">${title}</a></li>
 		      </#list>
 		    </ul>
 	  </li>
@@ -23,7 +23,7 @@
   <#if (researchGroups?size > 0) >
     <div id="${researchGroupListing.name}" class="vrtx-resources vrtx-research-groups ${researchGroupListing.name}">
       <#if researchGroupListing.title?exists && researchGroupListing.offset == 0>
-        <h2>${researchGroupListing.title?html}</h2>
+        <h2>${researchGroupListing.title}</h2>
       </#if>
       <#local locale = springMacroRequestContext.getLocale() />
 
@@ -45,12 +45,12 @@
 	    	  <#local thumbnail = "" />
 	   	    </#if>
 	   	    <#local introImgAlt = vrtx.propValue(researchGroup, 'pictureAlt') />
-            <a class="vrtx-image" href="${researchGroupEntry.url?html}">
-              <img src="${thumbnail?html}" alt="<#if introImgAlt?has_content>${introImgAlt?html}</#if>" />
+            <a class="vrtx-image" href="${researchGroupEntry.url}">
+              <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
             </a>
           </#if>
           <div class="vrtx-title">
-            <a class="vrtx-title summary" href="${researchGroupEntry.url?html}">${title?html}</a>
+            <a class="vrtx-title summary" href="${researchGroupEntry.url}">${title}</a>
 	      </div>
           <#if intro?has_content && researchGroupListing.hasDisplayPropDef("hide-introduction")>
             <div class="description introduction">
@@ -58,7 +58,7 @@
             </div>
           </#if>
           <div class="vrtx-read-more">
-            <a href="${researchGroupEntry.url?html}" class="more">
+            <a href="${researchGroupEntry.url}" class="more">
               <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
             </a>
           </div>

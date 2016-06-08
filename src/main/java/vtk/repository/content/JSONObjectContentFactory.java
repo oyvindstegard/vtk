@@ -32,7 +32,6 @@ package vtk.repository.content;
 
 import java.io.InputStream;
 
-import vtk.util.io.StreamUtil;
 import vtk.util.io.BoundedInputStream;
 import vtk.util.text.Json;
 

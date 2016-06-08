@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: tabs.ftl
   - 
@@ -19,12 +19,13 @@
       <#if tab.url?exists>
         <#if tab.active>
           <li class="current activeTab ${tab.label}">
-            <a id="${tab.label}" href="${tab.url?html}" title="<@vrtx.msg code="describe.${tab.label}" default="${tab.title}"/>">${tab.title}</a>
+            <a id="${tab.label}" href="${tab.url}" title="<@vrtx.msg code="describe.${tab.label}" default="${tab.title}"/>">${tab.title}</a>
           </li>
         <#else>
-          <li class="${tab.label}"><a id="${tab.label}" href="${tab.url?html}" title="<@vrtx.msg code="describe.${tab.label}" default="${tab.title}"/>">${tab.title}</a></li>
+          <li class="${tab.label}"><a id="${tab.label}" href="${tab.url}" title="<@vrtx.msg code="describe.${tab.label}" default="${tab.title}"/>">${tab.title?no_esc}</a></li>
         </#if>
       </#if>
     </#list>
   </ul>
 </div>
+

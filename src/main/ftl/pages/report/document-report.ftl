@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -15,9 +15,9 @@
     <div class="vrtx-report-nav">
       <div class="back">
         <#if report.backURL?exists>
-          <a href="${report.backURL?html}" ><@vrtx.msg code="report.${report.backURLname}" default="Back" /></a>
+          <a href="${report.backURL}" ><@vrtx.msg code="report.${report.backURLname}" default="Back" /></a>
         <#else>
-          <a href="${serviceURL?html}" ><@vrtx.msg code="report.back" default="Back" /></a>
+          <a href="${serviceURL}" ><@vrtx.msg code="report.back" default="Back" /></a>
         </#if>
       </div>
     </div>
@@ -25,16 +25,16 @@
       <@vrtx.msg code="report.${report.reportname}" />
 
       <#if (report.form)?exists>
-        <form action="${(report.form.action)?html}" method="get">
+        <form action="${(report.form.action)}" method="get">
           <#list report.form.inputs as input>
-            <input name="${(input.name)?default('')?html}" type="${(input.type)?default('')?html}"
-                   value="${(input.value)?default('')?html}" />
+            <input name="${(input.name)?default('')}" type="${(input.type)?default('')}"
+                   value="${(input.value)?default('')}" />
           </#list>
         </form>
       </#if>
 
       <#if !report.specificCollectionReporter??>
-        <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" /> ...</a>
+        <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL}"><@vrtx.msg code="report.view-other-link" default="View other folder" /> ...</a>
       </#if>
     </h2>
   
@@ -117,8 +117,8 @@
           </#if>
           
           <tr class="${rowType} <@vrtx.resourceToIconResolver res /> ${isCollection}${firstLast}">
-            <td class="vrtx-report-name"><a href="${url?html}">${title?html}</a></td>
-            <td class="vrtx-report-last-modified">${lastModifiedTime?html}</td>
+            <td class="vrtx-report-name"><a href="${url}">${title}</a></td>
+            <td class="vrtx-report-last-modified">${lastModifiedTime}</td>
             <td class="vrtx-report-last-modified-by">
               <#assign modifiedBy = vrtx.prop(res, 'modifiedBy').principalValue />
               <#if principalDocuments?? && principalDocuments[modifiedBy.name]??>
@@ -140,11 +140,11 @@
               <#else>
                 <#assign permissionClass = "allowed-for-all" />
               </#if>
-              <span class="${permissionClass}<#if hasTooltip> permission-tooltips</#if>"><#if hasTooltip><a href='javascript:void(0);' title='${report.permissionTooltips[res_index]}'></#if>${isReadRestricted?html}<#if hasTooltip></a></#if></span>
+              <span class="${permissionClass}<#if hasTooltip> permission-tooltips</#if>"><#if hasTooltip><a href='javascript:void(0);' title='${report.permissionTooltips[res_index]}'></#if>${isReadRestricted}<#if hasTooltip></a></#if></span>
               <#if !report.isInheritedAcl[res_index]><span class="own-permission">&bull;</span></#if>
             </td>
             <#if report.reportname != "unpublished">
-              <td class="vrtx-report-published">${publishedStatus?html}</td>
+              <td class="vrtx-report-published">${publishedStatus}</td>
             </#if>
           </tr>
         </#list>
@@ -166,10 +166,10 @@
   <#macro displayPaging>
     <span class="vrtx-report-paging">
       <#if report.prev?exists>
-        <a href="${report.prev?html}" class="prev">
-        <@vrtx.msg code="report.prev-page" default="Previous page" /></a><#if report.next?exists><a href="${report.next?html}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a></#if>
+        <a href="${report.prev}" class="prev">
+        <@vrtx.msg code="report.prev-page" default="Previous page" /></a><#if report.next?exists><a href="${report.next}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a></#if>
       <#elseif report.next?exists>
-        <a href="${report.next?html}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a>
+        <a href="${report.next}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a>
       </#if>
     </span>
   </#macro>

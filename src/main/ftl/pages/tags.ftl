@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: tags.ftl
   - 
@@ -18,21 +17,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   
-  <title>${title?html}
+  <title>${title}
     <#if page?has_content>
-      <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page?html}</#if>
+      <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page}</#if>
     </#if>
   </title>
   
   <#if cssURLs??>
     <#list cssURLs as cssUrl>
-       <link href="${cssUrl?html}" type="text/css" rel="stylesheet" />
+       <link href="${cssUrl}" type="text/css" rel="stylesheet" />
     </#list>
   </#if>
   
   <#if alternativeRepresentations??>
     <#list alternativeRepresentations as alt>
-      <link rel="alternate" type="${alt.contentType?html}" title="${alt.title?html}" href="${alt.url?html}" />
+      <link rel="alternate" type="${alt.contentType}" title="${alt.title}" href="${alt.url}" />
     </#list>
   </#if>
  
@@ -42,9 +41,9 @@
 
 <body id="vrtx-tagview">
 
-  <h1>${title?html}
+  <h1>${title}
     <#if page?has_content>
-      <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page?html}</#if>
+      <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page}</#if>
     </#if>
   </h1>
   
@@ -56,14 +55,14 @@
     <#elseif searchComponents??>
       <@tags.displayTagListing searchComponents />
     <#else>
-      <p>${vrtx.getMsg("tags.notFound")} <span class="italic">${tag?html}</span>.</p>
+      <p>${vrtx.getMsg("tags.notFound")} <span class="italic">${tag}</span>.</p>
     </#if>
   </#if>
 
   <#if scopeUp??>
     <div class="vrtx-tags-scope-up vrtx-has-tags-scope">
       <ul>
-        <li><a href="${scopeUp.url?html}">${scopeUp.title?html}</a></li>
+        <li><a href="${scopeUp.url}">${scopeUp.title}</a></li>
       </ul>
     </div>
   </#if>

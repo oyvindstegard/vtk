@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -23,7 +23,7 @@
           <ul class="vrtx-primary-reporters first">
           <#list primaryReporters as reporter>
             <li class="${reporter.name}">
-              <a href="${reporter.url?html}">
+              <a href="${reporter.url}">
                 <span class="vrtx-primary-reporters-title"><@vrtx.msg code="report.${reporter.name}" default="${reporter.name}" /></span>
                 <img class="vrtx-primary-reporters-image" src="/vrtx/__vrtx/static-resources/themes/default/images/report-${reporter.name}.gif" alt="" />
                 <span class="vrtx-primary-reporters-info"><@vrtx.msg code="report.primaries.info.${reporter.name}" default="${reporter.name}" /></span>
@@ -41,7 +41,7 @@
   	      <h3 class="vrtx-reporters-title"><@vrtx.msg code="report.heading.others" default="Other reports" /></h3>
           <ul class="vrtx-reporters">
           <#list reporters as reporter>
-            <li class="${reporter.name}"><a href="${reporter.url?html}"><@vrtx.msg code="report.${reporter.name}" default="${reporter.name}" /></a></li>
+            <li class="${reporter.name}"><a href="${reporter.url}"><@vrtx.msg code="report.${reporter.name}" default="${reporter.name}" /></a></li>
           </#list>
   	      </ul>
   	    </#if>

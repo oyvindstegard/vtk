@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: display-diff.ftl
   - 
@@ -21,7 +21,7 @@
     <#assign revBStandardTitle = vrtx.getMsg("versions.table.entry.name", "Version ${revisionB?lower_case}", [revisionB])/>
     <#assign revATitle = vrtx.getMsg("versions.title.named-version.${revisionA?lower_case}", revAStandardTitle)?lower_case/>
     <#assign revBTitle = vrtx.getMsg("versions.title.named-version.${revisionB?lower_case}", revBStandardTitle)?lower_case/>
-    <title><@vrtx.msg code="versions.diff.title" args=[revATitle?html, revBTitle?html] default="Changes in ${revATitle?html} compared to ${revBTitle?html}"/>${" - " + title?html}</title>
+    <title><@vrtx.msg code="versions.diff.title" args=[revATitle, revBTitle] default="Changes in ${revATitle} compared to ${revBTitle}"/>${" - " + title}</title>
     <#if cssURLs?exists>
       <#list cssURLs as cssURL>
         <link rel="stylesheet" href="${cssURL}" type="text/css" />
@@ -40,11 +40,11 @@
     <#-- 
     <div id="vrtx-sticky-header">
       <div id="vrtx-sticky-header-inner">
-        <span id="diff-header"><@vrtx.msg code="versions.table.title" default="Version" /> ${revisionBDetails.name?html}</span>
+        <span id="diff-header"><@vrtx.msg code="versions.table.title" default="Version" /> ${revisionBDetails.name}</span>
         <span id="diff-show-changes-info-nav">
           <span id="diff-show-changes-info">
           <span id="diff-info">
-            <@vrtx.msg code="proptype.name.modifiedBy" default="Modified by" /> <span id="diff-info-modified-by">${revisionBDetails.principal.description?html}</span>, <@vrtx.date value=revisionBDetails.timestamp format="longlong" />
+            <@vrtx.msg code="proptype.name.modifiedBy" default="Modified by" /> <span id="diff-info-modified-by">${revisionBDetails.principal.description}</span>, <@vrtx.date value=revisionBDetails.timestamp format="longlong" />
           </span>
           <#if original?exists>
             <form id="diff-show-changes-form" action="" method="get">

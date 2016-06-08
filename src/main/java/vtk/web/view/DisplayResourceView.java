@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.view.AbstractView;
 import vtk.repository.Resource;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.repository.ContentTypeHelper;
 import vtk.web.InvalidModelException;
 import vtk.web.referencedata.ReferenceDataProvider;
@@ -216,14 +216,14 @@ public class DisplayResourceView extends AbstractView
             if (logger.isDebugEnabled()) {
                 logger.debug("Writing range: " + range.from + "-" + range.to);
             }
-            bytesWritten = StreamUtil.pipe(
-                    resourceStream, response.getOutputStream(), 
-                    range.from, nbytes,
-                    this.streamBufferSize, true);
+            bytesWritten = IO.copy(resourceStream, response.getOutputStream())
+                            .offset(range.from).limit(nbytes)
+                            .bufferSize(this.streamBufferSize)
+                            .perform();
         } else {
-            bytesWritten = StreamUtil.pipe(
-                    resourceStream, response.getOutputStream(), 
-                    this.streamBufferSize, true);
+            bytesWritten = IO.copy(resourceStream, response.getOutputStream())
+                    .bufferSize(this.streamBufferSize).perform();
+                    
         }
         response.flushBuffer();
         

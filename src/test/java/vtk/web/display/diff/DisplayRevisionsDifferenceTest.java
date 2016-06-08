@@ -40,8 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.Ignore;
 import org.junit.Test;
-import vtk.util.io.StreamUtil;
+
 import org.xml.sax.InputSource;
+import vtk.util.io.IO;
 
 /*
  * Test the difference computing library for visually displayed changes.
@@ -130,7 +131,7 @@ public class DisplayRevisionsDifferenceTest {
     }
 
     private String fileContent(String filename) throws IOException {
-        return StreamUtil.streamToString(getClass().getResourceAsStream(filename));
+        return IO.readString(getClass().getResourceAsStream(filename)).perform();
     }
   
     private String diffHtml(String contentA, String contentB) throws Exception {

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: actions.ftl
   - 
@@ -37,7 +37,7 @@
     <#assign actionURL = vrtx.linkConstructor(resourceContext.parentURI, 'manageService') />
   </#if>
 
-  <form method="post" action="${actionURL?html}" name="${parentOp}-single-form">
+  <form method="post" action="${actionURL}" name="${parentOp}-single-form">
     <@vrtx.csrfPreventionToken url=actionURL />
     <input type="hidden" name="action" value="${parentOp}"  />
     <input type="hidden" name="${resourceContext.currentURI}" />

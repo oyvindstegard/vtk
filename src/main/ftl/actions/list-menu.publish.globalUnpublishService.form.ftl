@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=false>
 <#attempt>
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />

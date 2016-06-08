@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: collectionlisting.ftl
   - 
@@ -48,47 +48,47 @@
       </#if>
       <#switch item>
         <#case "last-modified">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.lastModified" default="Last Modified"/></a>
           <#break>
 
         <#case "locked">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.locked" default="Locked (by)"/></a>
           <#break>
 
         <#case "content-type">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.contentType" default="Content Type"/></a>
           <#break>
             
         <#case "resource-type">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.resourceType" default="Resource Type"/></a>
           <#break>
 
         <#case "owner">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.owner" default="Owner"/></a>
           <#break>
             
         <#case "permissions">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.permissions" default="Permissions"/></a>
           <#break>
             
         <#case "published">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="publish.permission.state" default="Status"/></a>
           <#break>
 
         <#case "content-length">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.size" default="Size"/></a>
           <#break>
 
         <#case "name">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.${item}" default="${item?cap_first}"/></a>
           <#if withForm>
             </th><th scope="col" class="checkbox">
@@ -96,12 +96,12 @@
           <#break>
             
         <#case "title">
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.resourceTitle" default="Title"/></a>
           <#break>
 
         <#default>
-          <a href="${collectionListing.sortByLinks[item]?html}" id="${item}">
+          <a href="${collectionListing.sortByLinks[item]}" id="${item}">
             <@vrtx.msg code="collectionListing.${item}" default="${item?cap_first}"/></a>
       </#switch>
       </th>
@@ -149,7 +149,7 @@
           </#if>
       
           <#if item = "published">
-            <#assign published = vrtx.propValue(child, "published") />
+            <#assign published = vrtx.propValue(child, "published")?markup_string />
           </#if>
          
       
@@ -163,13 +163,13 @@
               <#case "name">
                 <#if collectionListing.browsingLinks[child_index]?exists>
                   <#local resourceTypeName = vrtx.resourceTypeName(child) />
-                  <a href="${collectionListing.browsingLinks[child_index]?html}" title="${resourceTypeName}">
+                  <a href="${collectionListing.browsingLinks[child_index]}" title="${resourceTypeName}">
                     <span class="authorizedListedResource">
                       ${child.name}
                     </span>
                   </a>
                   <#if withForm>
-                    </td><td class="checkbox"><input name="${child.URI?html}" type="checkbox" />
+                    </td><td class="checkbox"><input name="${child.URI}" type="checkbox" />
                   </#if>
                 <#else>
                   <span class="unauthorizedListedResource-wrapper">
@@ -178,7 +178,7 @@
                     </span>
                   </span>
                   <#if withForm>
-                    </td><td class="checkbox"><input name="${child.URI?html}" type="checkbox" />
+                    </td><td class="checkbox"><input name="${child.URI}" type="checkbox" />
                   </#if> 
                 </#if>
                 <#break>
@@ -255,7 +255,7 @@
             <#else>
               <#assign titleMsg = vrtx.getMsg("confirm-delete.title.file") />
             </#if>
-      	    (&nbsp;<a href="${collectionListing.childLinks[child_index][item]?html}"
+      	    (&nbsp;<a href="${collectionListing.childLinks[child_index][item]}"
       	              title="${titleMsg}">${actionName}</a>&nbsp;)
 	      </#if>
         </td>
@@ -280,10 +280,10 @@
   <div id="collectionListing.submit">
     <#list submitActions?keys as actionName>
       <input type="submit"
-             value="${actionName?html}"
-             id="collectionListing.action.${actionName?html}"
+             value="${actionName}"
+             id="collectionListing.action.${actionName}"
              name="action"
-             title="${submitActions[actionName]?html}" />
+             title="${submitActions[actionName]}" />
     </#list>
   </div>
   </form>

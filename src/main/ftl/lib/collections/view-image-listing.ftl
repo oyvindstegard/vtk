@@ -1,9 +1,9 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "../vtk.ftl" as vrtx />
 <#import "/lib/gallery.ftl" as gallery />
 
 <#macro addScripts collection>
-  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl') />
+  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl')! />
   <#if displayTypeParam?exists>
     <#local listingType = displayTypeParam />
   </#if>
@@ -39,7 +39,7 @@
 </#macro>
 
 <#macro displayImages imageListing collection>
-  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl') />
+  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl')! />
   <#if displayTypeParam?exists>
     <#local listingType = displayTypeParam />
   </#if>
@@ -61,7 +61,7 @@
       <#assign count = 1 />
       <#list images as imageEntry>
         <#local image = imageEntry.propertySet />
-        <#local title = vrtx.propValue(image, 'title')?html />
+        <#local title = vrtx.propValue(image, 'title') />
         <#if count % 4 == 0 && count % 5 == 0>
           <li class="vrtx-image-entry last last-four last-five">
         <#elseif count % 4 == 0>
@@ -72,18 +72,18 @@
           <li class="vrtx-image-entry">
         </#if>
             <div class="vrtx-image-container">
-              <a href="${imageEntry.url?html}?vrtx=view-as-webpage">
+              <a href="${imageEntry.url}?vrtx=view-as-webpage">
                 <#-- ${vrtx.relativeLinkConstructor(imageEntry.url, 'displayThumbnailService')} is no good! -->
-                <img src="${imageEntry.url.protocolRelativeURL()?html}?vrtx=thumbnail" title="${title}" alt="" />
+                <img src="${imageEntry.url.protocolRelativeURL()}?vrtx=thumbnail" title="${title}" alt="" />
               </a>
             </div>
 
             <div class="vrtx-image-info">
               <div class="vrtx-image-title">
-                <#if (title?string?length > 20) >
-                  <a href="${imageEntry.url?html}?vrtx=view-as-webpage">${title?substring(0, 20)} ...</a>
+                <#if (title?markup_string?length > 20) >
+                  <a href="${imageEntry.url}?vrtx=view-as-webpage">${title?markup_string?substring(0, 20)} ...</a>
                 <#else>
-                  <a href="${imageEntry.url?html}?vrtx=view-as-webpage">${title}</a>
+                  <a href="${imageEntry.url}?vrtx=view-as-webpage">${title}</a>
                 </#if>
               </div>
               
@@ -92,7 +92,7 @@
                 ${creationTime}
               </div>
 
-              <#local description = vrtx.propValue(image, 'image-description')?html />
+              <#local description = vrtx.propValue(image, 'image-description')! />
               <div class="vrtx-image-description">
                 <#if description?has_content>
                   <@vrtx.flattenHtml value=description escape=false />
@@ -148,11 +148,11 @@
           <#local image = imageEntry.propertySet />
           <#assign url = imageEntry.url />
           <tr>
-            <#local title = vrtx.propValue(image, 'title')?html />
+            <#local title = vrtx.propValue(image, 'title') />
             <#-- ${vrtx.relativeLinkConstructor(url, 'displayThumbnailService')} is no good! -->
-            <td class="vrtx-table-image"><a href="${url?html}?vrtx=view-as-webpage"><img src="${url.protocolRelativeURL()?html}?vrtx=thumbnail" alt="" /></a></td>
-            <td class="vrtx-table-title"><a href="${url?html}?vrtx=view-as-webpage">${title}</a></td>
-            <#local description = vrtx.propValue(image, 'image-description')?html />
+            <td class="vrtx-table-image"><a href="${url}?vrtx=view-as-webpage"><img src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt="" /></a></td>
+            <td class="vrtx-table-title"><a href="${url}?vrtx=view-as-webpage">${title}</a></td>
+            <#local description = vrtx.propValue(image, 'image-description') />
             <td class="vrtx-table-description">
               <#if description?has_content>
                 <@vrtx.flattenHtml value=description escape=false />

@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: manage-link.ftl
   - 
@@ -25,5 +25,5 @@
 
   <#-- Display nothing -->
 <#else>
-  <a id="vrtx-manage-url" class="vrtx-manage-url" href="${manageLink.url?html}">${manageLink.title}</a>
+  <a id="vrtx-manage-url" class="vrtx-manage-url" href="${manageLink.url}">${manageLink.title}</a>
 </#if>

@@ -36,7 +36,7 @@ import java.net.URLConnection;
 
 import vtk.text.html.HtmlPage;
 import vtk.util.cache.loaders.URLConnectionCacheLoader;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.text.TextUtils;
 
 
@@ -81,10 +81,10 @@ public class URLObjectLoader extends URLConnectionCacheLoader<URLObject> {
 
         InputStream stream = connection.getInputStream();
         byte[] buf;
-        if (this.maxLength > 0) {
-            buf = StreamUtil.readInputStream(stream, this.maxLength);
+        if (maxLength > 0) {
+            buf = IO.read(stream).limit(maxLength).perform();
         } else {
-            buf = StreamUtil.readInputStream(stream);
+            buf = IO.read(stream).perform();
         }
         String content = new String(buf, charset);
         return new URLObject(content, contentType, charset);

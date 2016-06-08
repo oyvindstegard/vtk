@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: preview-admin-iframe.ftl
   - 
@@ -15,7 +14,6 @@
   -   title
   -
   -->
-
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#if !resourceReference?exists>
@@ -60,7 +58,7 @@
 
     <#if workingCopy?exists>
       <div class="tabMessage-big">
-        <@vrtx.rawMsg code="preview.workingCopyMsg" args=[versioning.currentVersionURL?html] />
+        <@vrtx.rawMsg code="preview.workingCopyMsg" args=[versioning.currentVersionURL] />
       </div>
     </#if>
     
@@ -116,8 +114,8 @@
       <a href='javascript:void(0);' id='preview-mode-mobile-rotate-hv'>${vrtx.getMsg("preview.actions.mobile.rotate")}</a>
       <span id="previewIframeMobileBg"></span>
       <div id="previewIframeInnerWrapper">
-        <iframe title="${vrtx.getMsg("iframe.title.preview")}" class="preview" name="previewIframe" id="previewIframe" src="${url}" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0" style="overflow:visible; width:100%; ">
-          ${vrtx.getMsg("iframe.not-supported")} ${vrtx.getMsg("iframe.not-supported.title-prefix")} "${vrtx.getMsg("iframe.title.preview")}". <@vrtx.msg code="iframe.not-supported.link" args=[resourceReference?html] />
+        <iframe title="${vrtx.getMsg("iframe.title.preview")}" class="preview" name="previewIframe" id="previewIframe" src="${url?no_esc}" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0" style="overflow:visible; width:100%; ">
+          ${vrtx.getMsg("iframe.not-supported")} ${vrtx.getMsg("iframe.not-supported.title-prefix")} "${vrtx.getMsg("iframe.title.preview")}". <@vrtx.msg code="iframe.not-supported.link" args=[resourceReference] />
         </iframe>
       </div>
     </div>

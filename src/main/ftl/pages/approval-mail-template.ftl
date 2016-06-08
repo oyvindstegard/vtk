@@ -1,7 +1,8 @@
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#if resourceDetail?? && resourceDetail.hasWorkingCopy?? && resourceDetail.hasWorkingCopy>
-  <p><a href="${uri?html}">${uri?html}</a> is changed. The change must be approved before it becomes visible on the web page.</p>
+  <p><a href="${uri}">${uri}</a> is changed. The change must be approved before it becomes visible on the web page.</p>
 <#else>
-  <p><a href="${uri?html}">${uri?html}</a> is ready to be published. The publishing must be approved before the resource becomes visible on the web page:</p>
+  <p><a href="${uri}">${uri}</a> is ready to be published. The publishing must be approved before the resource becomes visible on the web page:</p>
 </#if>
 
 <#if comment?has_content>

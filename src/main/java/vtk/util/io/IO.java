@@ -749,7 +749,7 @@ public abstract class IO {
      * <em>do not rely on persistence</em> after you have discarded the reference
      * to the temporary file.
      */
-    public static final class TempFile {
+    public static final class TempFile implements AutoCloseable {
         private final File file;
         private final boolean truncated;
         
@@ -812,6 +812,11 @@ public abstract class IO {
         public String toString() {
             return IO.TempFile.class.getSimpleName() + "{file : " + this.file 
                                                     + ", truncated : " + this.truncated + "}";
+        }
+
+        @Override
+        public void close() throws Exception {
+            delete();
         }
 
     }

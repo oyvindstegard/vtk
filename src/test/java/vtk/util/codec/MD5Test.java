@@ -34,9 +34,9 @@ import java.io.ByteArrayInputStream;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
+import vtk.util.io.IO;
 import vtk.util.io.NullOutputStream;
 
-import vtk.util.io.StreamUtil;
 
 public class MD5Test {
 
@@ -55,7 +55,7 @@ public class MD5Test {
         String s = "bar";
         byte[] buf = s.getBytes();
         MD5.MD5InputStream is = MD5.wrap(new ByteArrayInputStream(buf));
-        StreamUtil.pipe(is, NullOutputStream.INSTANCE);
+        IO.copy(is, NullOutputStream.INSTANCE).perform();
         
         String sum1 = MD5.md5sum(new ByteArrayInputStream(buf));
         String sum2 = MD5.md5sum(buf);

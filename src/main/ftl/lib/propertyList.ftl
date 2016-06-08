@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=false>
 
 <#--
   - File: propertyList.ftl
@@ -257,11 +257,8 @@
       ${name}:
     </th>
     <td class="value">
-      <#if prefix?is_string>
-        ${prefix}
-      </#if>
       ${value}
-      <#if editURL != "">
+      <#if editURL??>
         ${editURL}
       </#if>
     </td>
@@ -384,9 +381,6 @@
         <#assign valueItem=defaultItem />
         <#assign prefix = vrtx.getMsg(msgPrefix + ".unset", "") />
       </#if>
-      <#if prefix == "">
-        <#assign prefix=false />
-      </#if>
     </#if>
 
   <#local value>
@@ -421,7 +415,7 @@
     <#else>
       <#local defaultNotSet><@vrtx.msg code="resource.property.unset" default="Not set" /></#local>
       <#local label>
-        <@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet}" />
+        <@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet?markup_string}" />
       </#local>
       ${label}
     </#if>
@@ -485,7 +479,7 @@
                <label for="${alternative}">${label}</label>
             <#else>
               <#local defaultNotSet><@vrtx.msg code="resource.property.unset" default="Not set" /></#local>
-              <#local label><@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet}" /></#local>
+              <#local label><@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet?markup_string}" /></#local>
                 <input id="unset" type="radio" name="value" value=""
                            <#if !form.value?has_content>checked</#if> />
                   <label for="unset">${label}</label>
@@ -505,7 +499,7 @@
               <option value="${alternative}" <#if form.value?has_content && form.value = alternative>selected="true"</#if> label="${label}">${label}</option>
             <#else>
               <#local defaultNotSet><@vrtx.msg code="resource.property.unset" default="Not set" /></#local>
-              <#local label><@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet}" /></#local>
+              <#local label><@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet?markup_string}" /></#local>
               <option id="unset" value="" <#if !form.value?has_content>selected="true"</#if> label="${label}">${label}</option>
             </#if>
           </#list>
@@ -632,8 +626,8 @@
       </#if>
     </#local>
      &nbsp;<a class="vrtx-button-small" href="${item.toggleURL?html}">${label}</a>
-  <#elseif item.editURL?exists>
-     &nbsp;<a class="vrtx-button-small" href="${item.editURL?html}"><@vrtx.msg code="propertyEditor.edit" default="edit" /></a>
+  <#elseif item.editURL?exists><#noautoesc>
+     &nbsp;<a class="vrtx-button-small" href="${item.editURL?html}"><@vrtx.msg code="propertyEditor.edit" default="edit" /></a></#noautoesc>
   </#if>
 </#macro>
 

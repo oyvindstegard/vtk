@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: copy-move-warning.ftl
   - 
@@ -8,7 +7,6 @@
   - 
   - Required model data:
 -->
-
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
 
@@ -38,7 +36,7 @@
   </#if>
 </div>
 
-<#if action = "move-resources"><#assign formURL = move.url?html /><#else><#assign formURL = copy.url?html /></#if>
+<#if action = "move-resources"><#assign formURL = move.url /><#else><#assign formURL = copy.url /></#if>
 
 <form name="vrtx-confirm-copy-move" id="vrtx-confirm-copy-move" action="${formURL}" method="post">
   <div class="submitButtons">

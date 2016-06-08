@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#attempt>
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
@@ -6,7 +6,7 @@
 
 <#if command?exists && !command.done>
   <div class="globalmenu expandedForm">
-    <form name="manage.createArchiveService" id="manage.createArchiveService-form" action="${command.submitURL?html}" method="post">
+    <form name="manage.createArchiveService" id="manage.createArchiveService-form" action="${command.submitURL}" method="post">
       <h3 class="nonul"><@vrtx.msg code="actions.createArchive" default="Create archive"/>:</h3>
       <@spring.bind "command.name" /> 
       <@actionsLib.genErrorMessages spring.status.errorMessages />

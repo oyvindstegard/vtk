@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
@@ -12,6 +13,7 @@
   </head>
   <body>
     <h1>${vrtx.getMsg('publishing.published.false.title', 'This webpage is not published')}</h1>
-    <p>${vrtx.getMsg('publishing.published.false.desc', 'To see this webpage you have to manage the page', ['${manageLink.url?html}'])}.<p>
+    <p>${vrtx.getMsg('publishing.published.false.desc', 'To see this webpage you have to manage the page', [manageLink.url])?no_esc}.<p>
+
   </body>
 </html>

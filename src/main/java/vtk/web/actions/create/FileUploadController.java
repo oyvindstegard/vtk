@@ -50,7 +50,7 @@ import org.springframework.web.servlet.ModelAndView;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
@@ -169,7 +169,7 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
 
             // Iterate input stream. We can only safely consume the data once.
             FileItemIterator iter = upload.getItemIterator(request);
-            Map<Path, StreamUtil.TempFile> fileMap = new LinkedHashMap<>();
+            Map<Path, IO.TempFile> fileMap = new LinkedHashMap<>();
             while (iter.hasNext()) {
                 FileItemStream uploadItem = iter.next();
                 if (!uploadItem.isFormField()) {
@@ -178,22 +178,22 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
                     if (!shouldOverwriteExisting) { // Overwrite decided by user
                         if (repository.exists(token, itemPath)) {
                             // Clean up already created temporary files
-                            for (StreamUtil.TempFile t: fileMap.values()) {
+                            for (IO.TempFile t: fileMap.values()) {
                                 t.delete();
                             }
                             errors.rejectValue("file", "manage.upload.resource.exists", "A resource of this name already exists");
                             return new ModelAndView(getFormView(), model);
                         }
                     }
-                    StreamUtil.TempFile tmpFile = StreamUtil.streamToTempFile(uploadItem.openStream(), this.tempDir);
+                    IO.TempFile tmpFile = IO.tempFile(uploadItem.openStream(), tempDir).perform();
                     fileMap.put(itemPath, tmpFile);
                 }
             }
 
             // Write files
-            for (Map.Entry<Path,StreamUtil.TempFile> entry: fileMap.entrySet()) {
+            for (Map.Entry<Path,IO.TempFile> entry: fileMap.entrySet()) {
                 Path path = entry.getKey();
-                StreamUtil.TempFile tempFile = entry.getValue();
+                IO.TempFile tempFile = entry.getValue();
                 if (logger.isDebugEnabled()) {
                     logger.debug("Uploaded resource will be: " + path);
                 }
@@ -201,14 +201,14 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
                     if (repository.exists(token, path)) {
                         repository.delete(token, path, false);
                     }
-                    repository.createDocument(token, path, tempFile.getFileInputStream());
+                    repository.createDocument(token, path, tempFile.inputStream());
                     tempFile.delete();
                 }
                 catch (Exception e) {
                     logger.warn("Caught exception while performing file upload", e);
 
                     // Clean now to free up temp files faster
-                    for (StreamUtil.TempFile t : fileMap.values()) {
+                    for (IO.TempFile t : fileMap.values()) {
                         t.delete();
                     }
                     errors.rejectValue("file", "manage.upload.error",

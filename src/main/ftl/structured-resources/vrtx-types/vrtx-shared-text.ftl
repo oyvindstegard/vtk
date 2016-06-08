@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
 <#macro printPropertyEditView title inputFieldName value="" tooltip="" classes="" inputFieldSize=20 valuemap="" dropdown=false defaultValue="">
@@ -11,7 +11,7 @@
       <select name="${inputFieldName}" id="${inputFieldName}">
           <option value="" <#if value=="">selected="selected"</#if>><@vrtx.msg code="shared-text.no-shared-text" default="No shared text" /></option>
           <#list sharedTextProps[inputFieldName]?keys as y >
-            <option value="${sharedTextProps[inputFieldName][y]['id']?html}" <#if value==sharedTextProps[inputFieldName][y]['id']>selected="selected"</#if>>${sharedTextProps[inputFieldName][y]['title']?html}</option>
+            <option value="${sharedTextProps[inputFieldName][y]['id']}" <#if value==sharedTextProps[inputFieldName][y]['id']>selected="selected"</#if>>${sharedTextProps[inputFieldName][y]['title']}</option>
           </#list>
 	  </select>
 	  <div id="${inputFieldName}Descriptions">

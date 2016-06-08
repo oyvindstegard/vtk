@@ -1,16 +1,16 @@
-<#ftl strip_whitespace=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#if cssURLs?exists>
   <#list cssURLs as cssURL>
-    <link rel="stylesheet" href="${cssURL?html}" type="text/css" />
+    <link rel="stylesheet" href="${cssURL}" type="text/css" />
   </#list>
 </#if>
 <#if serviceCssURLs?exists>
   <#list serviceCssURLs as cssURL>
-    <link rel="stylesheet" href="${cssURL?html}" type="text/css" />
+    <link rel="stylesheet" href="${cssURL}" type="text/css" />
   </#list>
 </#if>
 <#if printCssURLs?exists>
   <#list printCssURLs as cssURL>
-    <link rel="stylesheet" href="${cssURL?html}" type="text/css" media="print" />
+    <link rel="stylesheet" href="${cssURL}" type="text/css" media="print" />
   </#list>
 </#if>

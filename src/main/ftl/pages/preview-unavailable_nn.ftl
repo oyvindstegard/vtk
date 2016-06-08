@@ -1,5 +1,4 @@
-<#ftl strip_whitespace=true>
-
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: preview-unavailable_nn.ftl
   - 
@@ -13,7 +12,6 @@
   -   title
   -
   -->
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -21,7 +19,7 @@
   </head>
   <body>
     <p class="previewUnavailable">Innholdet kan ikke forh&aring;ndsvisast innenfor "Administrasjon av webdokumenter".<br /><br /> 
-    Men du kan sj&aring; p&aring; eller lasta dokumentet p&aring; webadressen:<br><a href="${resourceDetail.viewURL?html}">${resourceDetail.viewURL?html}</a></p>
+    Men du kan sj&aring; p&aring; eller lasta dokumentet p&aring; webadressen:<br><a href="${resourceDetail.viewURL}">${resourceDetail.viewURL}</a></p>
   </body>
 </html>
 

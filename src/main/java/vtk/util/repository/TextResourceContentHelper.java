@@ -48,7 +48,7 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.util.io.StreamUtil;
+import vtk.util.io.IO;
 import vtk.util.text.HtmlExtractUtil;
 
 
@@ -148,7 +148,7 @@ public class TextResourceContentHelper {
         throws Exception {
         InputStream is = this.repository.getInputStream(
             token, resource.getURI(), false);
-        byte[] bytes = StreamUtil.readInputStream(is);
+        byte[] bytes = IO.read(is).perform();
         String encoding = resource.getCharacterEncoding();
         if (encoding == null) encoding = HtmlExtractUtil.getCharacterEncodingFromBody(bytes);
         if (encoding == null) encoding = this.defaultCharacterEncoding;
@@ -163,7 +163,7 @@ public class TextResourceContentHelper {
 
         InputStream is = this.repository.getInputStream(token, resource.getURI(),
                                                    false);
-        byte[] bytes = StreamUtil.readInputStream(is);
+        byte[] bytes = IO.read(is).perform();
         String encoding = resource.getCharacterEncoding();
         if (encoding == null) encoding = this.defaultCharacterEncoding;
         String content = new String(bytes, encoding);
