@@ -207,8 +207,8 @@
   <#if privilegeName = matchPrivilegeName>
     <#local resource = resourceContext.currentResource />
     <#local propVal = vrtx.propValue(resource, propName)! />
-    <#local editLinkText = vrtx.getMsg("permissions.privilege.${privilegeName}.${propName}.edit")?markup_string />
-    <#local viewLinkText = vrtx.getMsg("permissions.privilege.${privilegeName}.${propName}.view")?markup_string />
+    <#local editLinkText = vrtx.getMsg("permissions.privilege.${privilegeName}.${propName}.edit") />
+    <#local viewLinkText = vrtx.getMsg("permissions.privilege.${privilegeName}.${propName}.view") />
     
     <#if (!onlyCollection || resource.isCollection()) && aclInfo.aclEditURLs[privilegeName]??>
       ${pre?no_esc}<a href="?name=${propName}&vrtx=admin&mode=about"><#if !capFirst>${editLinkText}<#else>${editLinkText?cap_first}</#if></a>${post?no_esc}

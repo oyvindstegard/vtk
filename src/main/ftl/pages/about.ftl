@@ -40,9 +40,7 @@
 
   <div class="resourceInfo">
   <h2>
-    <@vrtx.msg
-       code="resource.metadata.about.${resource.resourceType}"
-       default=defaultHeader?markup_string />
+    <@vrtx.msg code="resource.metadata.about.${resource.resourceType}" default=defaultHeader />
   </h2>
 
   <table id="vrtx-resourceInfoMain" class="resourceInfo">
@@ -339,7 +337,7 @@
         ${prefix}
       </#if>
       <#compress>
-      <#local l=vrtx.resourceLanguage()?markup_string />
+      <#local l=vrtx.resourceLanguage() />
       
       <#if .vars['aboutItems'][propName].property?exists && .vars['aboutItems'][propName].property.inherited>
           <@vrtx.msg "resource.property.unset" "Not set"/>, <@vrtx.msg "language.inherits" "inherits"/> ${l?lower_case}

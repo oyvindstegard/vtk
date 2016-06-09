@@ -30,9 +30,7 @@
 
     <div class="resourceInfo permissions">
       <h2>
-        <@vrtx.msg
-           code="permissions.header.${resource.resourceType}"
-           default=defaultHeader?markup_string />
+        <@vrtx.msg code="permissions.header.${resource.resourceType}" default=defaultHeader />
       </h2>
       
       <script type="text/javascript"><!--
@@ -81,7 +79,7 @@
      	</div>
       <#elseif !resourceContext.currentResource.inheritedAcl>
       	<div id="permissions-inheritance">
-      	  <@vrtx.msg code="permissions.notInherited.${resource.resourceType}" default="${defaultNotInherited?markup_string}" />
+      	  <@vrtx.msg code="permissions.notInherited.${resource.resourceType}" default=defaultNotInherited />
       	</div>
       </#if>	
       

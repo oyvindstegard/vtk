@@ -24,7 +24,8 @@
 
     <@vrtx.cssPlaceholder place="editor:head" />
     
-    <#assign language = vrtx.getMsg("eventListing.calendar.lang", "en")?markup_string />
+
+    <#assign language = vrtx.getMsg("eventListing.calendar.lang", "en") />
     <#assign isCollection = resource.resource.collection />
     <#assign simpleHTML = resource.resourceType = 'xhtml10trans' || resource.resourceType = 'html' />
     <#assign isImage = resource.contentType?exists && resource.contentType?starts_with("image/") />
@@ -186,7 +187,7 @@
     </#if>
   </head>
   <body id="vrtx-editor">
-    <#assign header><@vrtx.msg code="editor.edit" args=[vrtx.resourceTypeName(resource)?markup_string?lower_case] /></#assign>
+    <#assign header><@vrtx.msg code="editor.edit" args=[vrtx.resourceTypeName(resource)?lower_case] /></#assign>
 
     <div id="vrtx-editor-title-submit-buttons">
       <div id="vrtx-editor-title-submit-buttons-inner-wrapper">

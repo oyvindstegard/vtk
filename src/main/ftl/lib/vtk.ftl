@@ -141,7 +141,7 @@
 <#function getMsg code default=code args=[] >
     <#assign localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-    <#return localizer.msg?no_esc />
+    <#return localizer.msg />
 </#function>
 
 

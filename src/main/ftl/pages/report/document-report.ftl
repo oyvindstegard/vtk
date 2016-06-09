@@ -94,7 +94,7 @@
         <#if report.reportname != "unpublished">
           <#assign published = vrtx.propValue(res, 'published')! />
           <#assign publishedStatus = vrtx.getMsg("report.yes", "Yes")>
-          <#if published?has_content && published?markup_string = "false">
+          <#if published?has_content && published = "false">
             <#assign publishedStatus = vrtx.getMsg("report.no", "No")>
           </#if>
         </#if>
