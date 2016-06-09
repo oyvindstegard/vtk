@@ -36,7 +36,7 @@
 <#import "/lib/collections/view-message-listing.ftl" as messages />
 
 <#assign resource = collection />
-<#assign title = vrtx.propValue(resource, 'title') />
+<#assign title = vrtx.propValue(resource, 'title')!'' />
 <#if overriddenTitle?has_content>
   <#assign title = overriddenTitle />
 </#if>
@@ -168,21 +168,21 @@
         <#if collection.resourceType = 'person-listing'>
           <@persons.displayPersons searchComponent title />
         <#elseif collection.resourceType = 'project-listing'>
-          <#assign listingType = vrtx.propValue(collection, 'display-type', '', 'prl') />
+          <#assign listingType = vrtx.propValue(collection, 'display-type', '', 'prl')!'' />
           <#if listingType = "alphabetical" >
             <@projects.displayProjectsAlphabetical searchComponent />
           <#else>
             <@projects.displayProjects searchComponent />
           </#if>
         <#elseif collection.resourceType = 'master-listing'>
-          <#assign listingType = vrtx.propValue(collection, 'display-type', '', 'master') />
+          <#assign listingType = vrtx.propValue(collection, 'display-type', '', 'master')!'' />
           <#if (listingType = "alphabetical" || overrideListingType??) && alpthabeticalOrdredResult??>
             <@master.displayMastersAlphabetical searchComponent />
           <#else>
             <@master.displayTable searchComponent collection />
           </#if>
         <#elseif collection.resourceType = 'research-group-listing'>
-          <#assign listingType = vrtx.propValue(collection, 'display-type', '', 'rg') />
+          <#assign listingType = vrtx.propValue(collection, 'display-type', '', 'rg')!'' />
           <#if listingType = "alphabetical" >
             <@groups.displayResearchGroupsAlphabetical searchComponent />
           <#else>

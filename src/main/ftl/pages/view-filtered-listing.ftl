@@ -29,7 +29,7 @@
   </head>
   <body id="vrtx-${collection.resourceType}">
   
-    <#assign additionalContent = vrtx.propValue(collection, "additionalContents") />
+    <#assign additionalContent = vrtx.propValue(collection, "additionalContents")! />
     <#if additionalContent?has_content>
       <div id="vrtx-content">
         <div id="vrtx-main-content">
@@ -116,7 +116,7 @@
             <#list result as res>
               <#assign title = vrtx.propValue(res, 'title') />
               <#assign uri = vrtx.getUri(res) />
-              <li><a href="${uri}">${title}</a></li>
+              <li><#if title?has_content && uri?has_content><a href="${uri}">${title}</a></#if></li>
             </#list>
           </ul>
         </#if>

@@ -224,12 +224,15 @@
  *
 -->
 <#macro flattenHtml value escape=true>
+  <#if value?is_markup_output>
+    <#local value = value?markup_string />
+  </#if>
   <#compress>
     <#if VRTX_HTML_UTIL?exists>
       <#if escape>
         ${VRTX_HTML_UTIL.flatten(value)}
       <#else>
-        ${VRTX_HTML_UTIL.flatten(value)}
+        ${VRTX_HTML_UTIL.flatten(value)?no_esc}
       </#if>
     <#else>
       Undefined
