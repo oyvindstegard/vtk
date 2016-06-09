@@ -50,12 +50,15 @@
         </#if>
       </#if>
 
+      <#assign intro = vrtx.propValue(resource, "introduction")! />
+      <#if intro?has_content>
       <div class="vrtx-introduction">
-        ${(vrtx.propValue(resource, "introduction")!"")?no_esc}
+        ${intro}
       </div>
+      </#if>
     </div>
   </div>
-  <#if jsURLs?exists>
+  <#if jsURLs?has_content>
     <#list jsURLs as jsURL>
       <script type="text/javascript" src="${jsURL}"></script>
     </#list>
