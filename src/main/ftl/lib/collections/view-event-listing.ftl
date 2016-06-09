@@ -6,7 +6,7 @@
 
   <#local displayType = vrtx.propValue(collection, 'display-type', '', 'el')! />
 
-  <#if considerDisplayType && displayType?has_content && displayType?markup_string = 'calendar'>
+  <#if considerDisplayType && displayType?has_content && displayType = 'calendar'>
     <@displayCalendar collection hideNumberOfComments displayMoreURLs />
   <#elseif searchComponents?has_content>
     <#list searchComponents as searchComponent>
@@ -170,7 +170,7 @@
     <#local additionalContent = vrtx.propValue(collection, "additionalContents")! />
     <#if additionalContent?has_content>
     <div id="vrtx-related-content">
-    <@vrtx.invokeComponentRefs additionalContent?markup_string />
+    <@vrtx.invokeComponentRefs additionalContent />
    </div>
   </#if>
   </#if>
@@ -193,8 +193,8 @@
 
   <div class="vrtx-resource vevent">
     <#if introImg?has_content && !parent.hasDisplayPropDef("hide-introduction-image")>
-      <#local introImgURI = vrtx.propValue(event, 'picture')?markup_string />
-      <#if introImgURI?exists>
+      <#local introImgURI = vrtx.propValue(event, 'picture')! />
+      <#if introImgURI?has_content>
 	<#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
       <#else>
 	<#local thumbnail = "" />

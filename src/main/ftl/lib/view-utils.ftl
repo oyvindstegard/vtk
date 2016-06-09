@@ -101,11 +101,11 @@
   <#local mapurl = vrtx.propValue(resource, "mapurl")! />
   
   <#if startiso8601?has_content>
-    <#local isostarthour = startiso8601?markup_string?substring(11, 16) />
+    <#local isostarthour = startiso8601?substring(11, 16) />
   </#if>
   
   <#if endiso8601?has_content>
-    <#local isoendhour = endiso8601?markup_string?substring(11, 16) />
+    <#local isoendhour = endiso8601?substring(11, 16) />
   </#if>
   <#local locationMsgCode = "event.time" />
   <#if location?has_content && !hideLocation><#t/>
@@ -123,7 +123,7 @@
     </abbr><#t/>
   </#if>
   <#if end?has_content && !hideEndDate>
-    <#if startshort?markup_string == endshort?markup_string>
+    <#if startshort == endshort>
       <#if isoendhour?has_content && isoendhour != "00:00">
         <#t /> - <abbr class="dtend" title="${endiso8601}">${endhoursminutes}</abbr><#rt />
       </#if>

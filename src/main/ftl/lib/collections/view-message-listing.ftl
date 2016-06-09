@@ -101,7 +101,7 @@
             <#if messageIntro?has_content>
               ${messageIntro?no_esc}
               <#local isTruncated = vrtx.propValue(message, "isTruncated", "", "")! />
-              <#if isTruncated?has_content && isTruncated?markup_string == 'true'>
+              <#if isTruncated?has_content && isTruncated == 'true'>
                 <div class="vrtx-read-more">
                   <a href="${messageEntry.url}" class="more">
                     <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />

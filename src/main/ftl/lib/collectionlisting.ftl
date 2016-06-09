@@ -149,7 +149,7 @@
           </#if>
       
           <#if item = "published">
-            <#assign published = vrtx.propValue(child, "published")?markup_string />
+            <#assign published = vrtx.propValue(child, "published") />
           </#if>
          
       

@@ -69,7 +69,7 @@
     </#if>
     
     <#local showTitle = false />
-    <#if (title?has_content && image.name != title?markup_string)>
+    <#if (title?has_content && image.name != title)>
       <#local showTitle = true />
     </#if>
     
@@ -77,7 +77,7 @@
       <#local description = description + " <p>${vrtx.getMsg('imageAsHtml.byline')}: " + photographer + "</p>" />
     </#if>
 
-    <#if description?has_content><#local flattenedDescription><@vrtx.flattenHtml value=description?markup_string /></#local>
+    <#if description?has_content><#local flattenedDescription><@vrtx.flattenHtml value=description /></#local>
     <#else><#local flattenedDescription = ""></#if>
 
     <#local url = imageEntry.url />

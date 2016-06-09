@@ -13,9 +13,9 @@
   
   <#-- Split in thirds -->
   <#if split = "thirds">
-    <#assign tagElementsSize = tagElements?size />
+    <#local tagElementsSize = tagElements?size />
     <#if (limit > 0 && tagElementsSize > limit)>
-      <#assign tagElementsSize = limit />
+      <#local tagElementsSize = limit />
     </#if>
     <#local colOneCount = vrtx.getEvenlyColumnDistribution(tagElementsSize, 1, 3) />
     <#local colTwoCount = vrtx.getEvenlyColumnDistribution(tagElementsSize, 2, 3) />
@@ -44,9 +44,9 @@
     </ul>
   <#-- Split in fourths -->
   <#elseif split = "fourths">
-    <#assign tagElementsSize = tagElements?size />
+    <#local tagElementsSize = tagElements?size />
     <#if (limit > 0 && tagElementsSize > limit)>
-      <#assign tagElementsSize = limit />
+      <#local tagElementsSize = limit />
     </#if>
     <#local colOneCount = vrtx.getEvenlyColumnDistribution(tagElementsSize, 1, 4) />
     <#local colTwoCount = vrtx.getEvenlyColumnDistribution(tagElementsSize, 2, 4) />
@@ -175,18 +175,18 @@
 
 <#macro displayCommonTagListing listing>
   
-  <#assign resources = listing.entries />
-  <#assign i = 1 />
+  <#local resources = listing.entries />
+  <#local i = 1 />
 
   <#list resources as resourceEntry>
-    <#assign resource = resourceEntry.propertySet />
-    <#assign resourceTitle = vrtx.prop(resource, "title", "").getFormattedValue() />
-    <#assign introImageProp = vrtx.prop(resource, "picture", "")!"" />
-    <#assign introImageAlt = vrtx.propValue(resource, "pictureAlt")! />
+    <#local resource = resourceEntry.propertySet />
+    <#local resourceTitle = vrtx.prop(resource, "title", "").getFormattedValue() />
+    <#local introImageProp = vrtx.prop(resource, "picture", "")!"" />
+    <#local introImageAlt = vrtx.propValue(resource, "pictureAlt")! />
     <div class="vrtx-resource" id="vrtx-result-${i}">
       <#if introImageProp != "">
       <a href="${resourceEntry.url}" class="vrtx-image">
-        <#assign src = vrtx.propValue(resource, 'picture', 'thumbnail')! />
+        <#local src = vrtx.propValue(resource, 'picture', 'thumbnail')! />
         <img src="${src}" alt="${introImageAlt}" />
       </a>
       </#if>
@@ -206,8 +206,7 @@
       <#if introduction?has_content && !listing.hasDisplayPropDef("hide-introduction")>
         <div class="introduction">
           ${introduction}
-          <#assign bcontent = vrtx.propValue(resource, 'hasBodyContent')! />
-          <#assign hasBody =  bcontent?has_content && bcontent?markup_string == 'true' />
+          <#local hasBody = (vrtx.propValue(resource, 'hasBodyContent')!'false') == 'true' />
           <#if hasBody>
             <div class="vrtx-read-more">
               <a href="${resourceEntry.url}" class="more">
@@ -218,7 +217,7 @@
         </div>
       </#if>
     </div>
-    <#assign i = i + 1 />
+    <#local i = i + 1 />
   </#list>
   
 </#macro>

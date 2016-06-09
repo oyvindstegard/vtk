@@ -203,7 +203,7 @@
       </p>
     </#if>
   <#else>
-    <p id="vrtx-report-broken-links-info"><@vrtx.msg code="report.${report.reportname}.info.web-pages.none-found" /> ${linkTypeLocalization?lower_case}.<span class="vrtx-report-broken-links-info-number">&nbsp;</span></p>
+    <p id="vrtx-report-broken-links-info"><@vrtx.msg code="report.${report.reportname}.info.web-pages.none-found" /> ${linkTypeLocalization?markup_string?lower_case}.<span class="vrtx-report-broken-links-info-number">&nbsp;</span></p>
   </#if>
 
   <#macro displayPaging>

@@ -33,19 +33,16 @@
   </#if>
 
   <#assign constructor = "freemarker.template.utility.ObjectConstructor"?new() />
-  <#assign localeProp = vrtx.propValue(resource, 'contentLocale') />
-  <#if localeProp?exists && localeProp?has_content>
-    <#if localeProp?is_markup_output>
-      <#return constructor("java.util.Locale", localeProp?markup_string) />
-    <#else>
-      <#return constructor("java.util.Locale", localeProp) />
-    </#if>
+  <#assign localeProp = vrtx.propValue(resource, 'contentLocale')! />
+  <#if localeProp?has_content>
+    <#return constructor("java.util.Locale", localeProp) />
   </#if>
 
-  <#assign solrResource = vrtx.propValue(resource, 'solr.isSolrResource') />
-  <#if solrResource?exists>
-    <#local lang = vrtx.propValue(resource, 'solr.lang') />
-    <#if lang?exists && lang?has_content>
+  <#-- XXX: Move to Vortex -->
+  <#assign solrResource = vrtx.propValue(resource, 'solr.isSolrResource')! />
+  <#if solrResource?has_content>
+    <#local lang = vrtx.propValue(resource, 'solr.lang')! />
+    <#if lang?has_content>
       <#return constructor("java.util.Locale", lang) />
     </#if>
   </#if>
@@ -342,7 +339,7 @@
 <#macro breakSpecificChar nchars splitClass="comment-author-part" char="">
   <#compress>
     <#local val><#nested /></#local>
-    <#local val = val?markup_string />
+    <#if val?is_markup_output><#local val = val?markup_string /></#if>
     <#if val?length &lt; nchars>
       ${val}
     <#else>
@@ -451,7 +448,8 @@
     <#local propVal = getPropValue(resource, name, format, 'resource') />
   </#if>
   <#if propVal??>
-    <#return propVal?no_esc />
+    <#if propVal?is_markup_output><#local propVal = propVal?markup_string /></#if>
+    <#return propVal />
   </#if>
 </#function>
 
@@ -729,7 +727,7 @@
     </#if>
     <#local contentType = propValue(resource, "contentType")! />
     <#if iconText = "file" && contentType??>
-      <#local iconText = resourceContentTypeToIconResolver(contentType?markup_string) />
+      <#local iconText = resourceContentTypeToIconResolver(contentType) />
     </#if>
     <#if resource.published?? >
         <#local unpublishedColl = propValue(resource, 'unpublishedCollection')??>

@@ -86,7 +86,7 @@
 
   <#assign eventListingDisplayType = vrtx.propValue(resource, 'display-type', '', 'el')! />
   <#assign isEventCalendarListing = (eventListingDisplayType?has_content 
-    && eventListingDisplayType?markup_string == 'calendar') />
+    && eventListingDisplayType == 'calendar') />
   
   <#if isEventCalendarListing>
     <div id="vrtx-calendar-listing">
@@ -143,7 +143,7 @@
   <#assign additionalContentPersonListing = vrtx.propValue(resource, "additionalContent", "", "pl")! />
   <#if additionalContentPersonListing?has_content>
     <div class="vrtx-additional-content">
-      <@vrtx.invokeComponentRefs additionalContentPersonListing?markup_string />
+      <@vrtx.invokeComponentRefs additionalContentPersonListing />
     </div>
   </#if>
 
@@ -220,7 +220,7 @@
           </#if>
           <#if additionalContent?has_content>
             <div id="vrtx-related-content">
-              <@vrtx.invokeComponentRefs additionalContent?markup_string />
+              <@vrtx.invokeComponentRefs additionalContent />
             </div>
           </#if>
         </div>

@@ -3,16 +3,12 @@
 <#import "/lib/gallery.ftl" as gallery />
 
 <#macro addScripts collection>
-  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl')! />
-  <#if displayTypeParam?has_content><#local listingType = displayTypeParam /></#if>
-  
   <#--
     Default listing chosen, no particular listing type given.
     Set it to "list" to retrieve proper scripts
-  -->
-  <#if !listingType?has_content><#local listingType = "list" /></#if>
-
-  <#if listingType?is_markup_output><#local listingType = listingType?markup_string /></#if>
+    -->
+  <#local listingType = vrtx.propValue(collection, 'display-type', '', 'imgl')!'list' />
+  <#if displayTypeParam?has_content><#local listingType = displayTypeParam /></#if>
   
   <#if cssURLs?exists>
     <@addScriptURLs "css" "common" cssURLs />
@@ -77,8 +73,8 @@
 
             <div class="vrtx-image-info">
               <div class="vrtx-image-title">
-                <#if (title?markup_string?length > 20) >
-                  <a href="${imageEntry.url}?vrtx=view-as-webpage">${title?markup_string?substring(0, 20)} ...</a>
+                <#if (title?length > 20) >
+                  <a href="${imageEntry.url}?vrtx=view-as-webpage">${title?substring(0, 20)} ...</a>
                 <#else>
                   <a href="${imageEntry.url}?vrtx=view-as-webpage">${title}</a>
                 </#if>
@@ -92,7 +88,7 @@
               <#local description = vrtx.propValue(image, 'image-description')! />
               <div class="vrtx-image-description">
                 <#if description?has_content>
-                  <@vrtx.flattenHtml value=description?markup_string escape=false />
+                  <@vrtx.flattenHtml value=description escape=false />
                 </#if>
               </div>
 
@@ -152,15 +148,15 @@
             <#local description = vrtx.propValue(image, 'image-description')! />
             <td class="vrtx-table-description">
               <#if description?has_content>
-                <@vrtx.flattenHtml value=description?markup_string escape=false />
+                <@vrtx.flattenHtml value=description escape=false />
               </#if>
             </td>
-            <#local width = vrtx.propValue(image, 'pixelWidth') />
-            <#local height = vrtx.propValue(image, 'pixelHeight') />
-            <td class="vrtx-table-dimensions-width">${width} px</td>
-            <td class="vrtx-table-dimensions-height">${height} px</td>
+            <#local width = vrtx.propValue(image, 'pixelWidth')! />
+            <#local height = vrtx.propValue(image, 'pixelHeight')! />
+            <td class="vrtx-table-dimensions-width"><#if width?has_content>${width} px</#if></td>
+            <td class="vrtx-table-dimensions-height"><#if height?has_content>${height} px</#if></td>
             <#local contentLength = vrtx.propValue(image, 'contentLength') />
-            <td class="vrtx-table-size"><@vrtx.calculateResourceSizeToKB (contentLength?markup_string)?number /></td>
+            <td class="vrtx-table-size"><@vrtx.calculateResourceSizeToKB (contentLength)?number /></td>
             <#local photographer = vrtx.propValue(image, "photographer")!"" />
             <td class="vrtx-table-photo">${photographer}</td>
             <#local creationTime = vrtx.propValue(image, 'creationTime', 'short', '') />

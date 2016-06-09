@@ -42,7 +42,7 @@
           <div id="vrtx-result-${i}" class="vrtx-resource ${articleType}<#if listingView == "2columns"> ${articleType}-<#if i % 2 == 0>right<#else>left</#if></#if><#if listingView == "2columns+prio"> ${articleType}-<#if ((i+1) % 2 == 0)>right<#else>left</#if></#if>">
           <#local introImgURI = vrtx.propValue(entryPropSet, 'picture')! />
            <#if introImgURI?has_content>
-    	     <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI?markup_string, 'displayThumbnailService') />
+    	     <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
     	   <#else>
     	     <#local thumbnail = "" />
    	   </#if>
@@ -77,7 +77,7 @@
               <div class="description introduction"><@vrtx.linkResolveFilter intro.value entry.url requestURL /> </div>
             </#if>
 
-            <#local hasBody = vrtx.propValue(entryPropSet, 'hasBodyContent')?markup_string == 'true' />
+            <#local hasBody = vrtx.propValue(entryPropSet, 'hasBodyContent') == 'true' />
             <#if displayMoreURLs && hasBody>
             <div class="vrtx-read-more">
               <a href="${entry.url}" class="more">
