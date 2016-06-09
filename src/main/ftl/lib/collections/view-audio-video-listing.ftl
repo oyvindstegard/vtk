@@ -68,8 +68,8 @@
                 <img src="/vrtx/__vrtx/static-resources/themes/default/icons/audio-icon.png" alt="" />
               </a>
             <#elseif vrtx.isOfType("video", r.resourceType)>
-              <#local posterImgURI = vrtx.propValue(r, 'poster-image') />
-	      <#if posterImgURI?exists && posterImgURI != "">
+              <#local posterImgURI = vrtx.propValue(r, 'poster-image')! />
+	      <#if posterImgURI?has_content>
 	    	<#local thumbnail =  vrtx.relativeLinkConstructor(posterImgURI, 'displayThumbnailService') />
 	      <#else>
 	    	<#local thumbnail =  vrtx.relativeLinkConstructor(r.URI, 'displayThumbnailService') />
@@ -82,7 +82,7 @@
           
           <div class="vrtx-image-info">
             <div class="vrtx-image-title">
-              <a class="vrtx-title" href="${entry.url}">${vrtx.propValue(r, "title", "", "")}</a>
+              <a class="vrtx-title" href="${entry.url}">${vrtx.propValue(r, "title", "", "")!''}</a>
             </div>
 
 	    <#local duration = vrtx.propValue(r, "duration")! />
