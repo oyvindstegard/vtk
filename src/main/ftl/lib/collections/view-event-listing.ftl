@@ -81,7 +81,7 @@
           <@viewutils.displayImage collection />
           <#-- Introduction -->
           <#if introduction?has_content>
-            ${introduction}
+            ${introduction?no_esc}
           </#if>
         </div>
       </#if>

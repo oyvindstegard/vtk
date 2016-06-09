@@ -51,7 +51,7 @@
       </#if>
 
       <div class="vrtx-introduction">
-        ${vrtx.propValue(resource, "introduction")!""}
+        ${(vrtx.propValue(resource, "introduction")!"")?no_esc}
       </div>
     </div>
   </div>

@@ -16,7 +16,7 @@
 <#macro displayIntroduction resource>
   <#local introduction = vrtx.propValue(resource, "introduction") />
   <#if introduction != "">
-    <div class="vrtx-introduction">${introduction}</div>
+    <div class="vrtx-introduction">${introduction?no_esc}</div>
   </#if>
 </#macro>
 

@@ -1,4 +1,5 @@
 <#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
+<#-- XXX: move to Vortex -->
 <#import "../vtk.ftl" as vrtx />
 
 <#macro displayResearchGroupsAlphabetical researchGroupListing>
@@ -31,20 +32,20 @@
 
        <#local researchGroup = researchGroupEntry.propertySet />
 
-        <#local title = vrtx.propValue(researchGroup, 'title') />
-        <#local introImg = vrtx.prop(researchGroup, 'picture')  />
-        <#local intro = vrtx.prop(researchGroup, 'introduction')  />
-        <#local caption = vrtx.propValue(researchGroup, 'caption')  />
+        <#local title = vrtx.propValue(researchGroup, 'title')! />
+        <#local introImg = vrtx.prop(researchGroup, 'picture')!  />
+        <#local intro = vrtx.prop(researchGroup, 'introduction')!  />
+        <#local caption = vrtx.propValue(researchGroup, 'caption')!  />
 
         <div class="vrtx-resource vrtx-research-group">
           <#if introImg?has_content >
-            <#local introImgURI = vrtx.propValue(researchGroup, 'picture') />
-	        <#if introImgURI?exists>
+            <#local introImgURI = vrtx.propValue(researchGroup, 'picture')! />
+	        <#if introImgURI?has_content>
 	          <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
 	        <#else>
 	    	  <#local thumbnail = "" />
 	   	    </#if>
-	   	    <#local introImgAlt = vrtx.propValue(researchGroup, 'pictureAlt') />
+	   	    <#local introImgAlt = vrtx.propValue(researchGroup, 'pictureAlt')! />
             <a class="vrtx-image" href="${researchGroupEntry.url}">
               <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
             </a>
