@@ -99,15 +99,11 @@
      
     <#-- Output the form if it exists -->
     <#if displayForms && menu.activeItem?exists>
-      <#include "/actions/list-menu.${menu.activeItem.label}.form.ftl" />
       <#attempt>
+        <#include "/actions/list-menu.${menu.activeItem.label}.form.ftl" />
       <#recover>
         <#-- Do nothing -->
       </#attempt>
     </#if>
   </#if>
-</#macro>
-
-<#macro listItem>
-
 </#macro>

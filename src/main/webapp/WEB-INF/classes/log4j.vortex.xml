@@ -48,6 +48,7 @@
   <logger name="vtk.web.decorating"><level value="info" /></logger>
 
   <logger name="freemarker"><level value="fatal" /></logger>
+  <logger name="org.springframework.ui.freemarker"><level value="error" /></logger>
   <logger name="org.springframework"><level value="warn" /></logger>
   <logger name="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"><level value="info" /></logger>
 
