@@ -61,7 +61,7 @@
       </#if>
     </div>
 
-    <local lastModified = vrtx.propValue(entryPropSet, "lastModified", "long") />
+    <#local lastModified = vrtx.propValue(entryPropSet, "lastModified", "long")! />
 
     <#if lastModified?has_content && !collectionListing.hasDisplayPropDef("hide-last-modified")>
       <#assign val>
