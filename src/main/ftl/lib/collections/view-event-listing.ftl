@@ -218,8 +218,8 @@
       </div>
     </#if>
 
-    <#local hasBody = vrtx.propValue(event, 'hasBodyContent')! />
-    <#if displayMoreURLs && hasBody?has_content>
+    <#local hasBody = vrtx.propValue(event, 'hasBodyContent')!'true' />
+    <#if displayMoreURLs && hasBody == 'true'>
       <div class="vrtx-read-more">
         <a href="${eventEntry.url}" class="more" title="${title}">
           <@vrtx.msg code="viewCollectionListing.readMore" />
