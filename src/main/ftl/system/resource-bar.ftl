@@ -86,7 +86,7 @@
         <#if resource.URI == '/'>
           ${repositoryID}
         <#else>
-          ${resource.title}
+          ${resource.name}
         </#if>
       </#compress></h1>
       <#if browseURL?exists && editField?exists><#-- TODO: fix this hack for browse -->
