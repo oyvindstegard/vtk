@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: error-detail.ftl
   - 
@@ -11,7 +12,6 @@
   -   debug (produces stack traces)
   -
   -->
-
 
 <#-- Print exception detail and stack trace if debug is set: -->
   <h1 class="errorHeader">${error.errorDescription}</h1>

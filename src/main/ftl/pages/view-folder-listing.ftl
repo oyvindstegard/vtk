@@ -1,6 +1,6 @@
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/layouts/subfolder-menu.ftl" as subfolder />
-
 
 <#assign resource = collection />
 <#assign title = vrtx.propValue(resource, "title") />

@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: pages/embed-media-player.ftl
   - 
@@ -5,7 +6,7 @@
   - 
   - This template requires "mediaResource" in model data and is not meant for display
   - of non-local media.
-  -->
+-->
 
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/layouts/media-player.ftl" as mediaPlayer />

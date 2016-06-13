@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <div id="vrtx-webdavmessage" class="infomessage webdavmessage">
   Gjennom <a href="http://en.wikipedia.org/wiki/WebDAV">WebDAV</a> kan du få denne mappen tilgjengelig ved å koble til webadressen 
   som du nå står på <a href="http://www.uio.no/tjenester/it/web/vortex/hjelp/montere-omrade/">som et nettverksted i Windows</a>, 
