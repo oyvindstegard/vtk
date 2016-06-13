@@ -36,8 +36,10 @@
     <#if compactView> <#-- XXX: use feed-component instead (but need to avoid another search)? -->
       <li class="item-${i}">
         <a class="item-title" href="${messageEntry.url}">${title}</a>
-        <#local publishDateProp = vrtx.prop(message, 'publish-date') />
+        <#local publishDateProp = vrtx.prop(message, 'publish-date')! />
+        <#if publishDateProp?has_content>
         <span class="published-date"><@vrtx.date value=publishDateProp.dateValue format='long' locale=locale /></span>
+        </#if>
       </li>
       
     <#else>
@@ -64,7 +66,7 @@
               <#local publishDateProp = vrtx.prop(message, 'publish-date')! />
               <@vrtx.date value=publishDateProp.dateValue format='long' locale=locale />
             </span>
-            <#local numberOfComments = vrtx.prop(message, "numberOfComments") />
+            <#local numberOfComments = vrtx.prop(message, "numberOfComments")! />
             <#if numberOfComments?has_content >
               <span class="vrtx-message-line-number-of-comments">
                 <@viewutils.displayNumberOfComments message locale />
@@ -85,8 +87,10 @@
             <span class="published-date-prefix">
               <@vrtx.localizeMessage code="viewCollectionListing.publishedDate" default="" args=[] locale=locale />
             </span>
-            <#local publishDateProp = vrtx.prop(message, 'publish-date') />
+            <#local publishDateProp = vrtx.prop(message, 'publish-date')! />
+            <#if publishDateProp?has_content>
             <@vrtx.date value=publishDateProp.dateValue format='long' locale=locale />
+            </#if>
           </div>
 
           <#local numberOfComments = vrtx.prop(message, "numberOfComments")! />
