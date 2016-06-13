@@ -11,7 +11,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>${title?html}</title>
+  <title>${title}</title>
   <#if cssURLs?exists>
     <#list cssURLs as cssURL>
       <link rel="stylesheet" href="${cssURL}" type="text/css" />
@@ -26,7 +26,7 @@
 <body id="vrtx-folder-listing">
   <div id="vrtx-content">
     <div id="vrtx-main-content">
-      <h1>${title?html}</h1>
+      <h1>${title}</h1>
 
       <#if subFolderMenu?exists && subFolderMenu.size &gt; 0>
         <#assign "counter2" = 0>

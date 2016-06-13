@@ -11,7 +11,7 @@
     </#if>
     <#global baseFolder = "/" />
     <#if resourceContext.parentURI?exists>
-      <#global baseFolder = resourceContext.currentURI?html />
+      <#global baseFolder = resourceContext.currentURI />
     </#if>
     <!--[if lt IE 9]>
       <style type="text/css">
@@ -37,7 +37,7 @@
         browse: "${vrtx.getMsg('editor.browseImages')}"
       };
       vrtxAdmin.multipleFormGroupingPaths = {
-        baseBrowserURL: "${fckeditorBase.url?html}",
+        baseBrowserURL: "${fckeditorBase.url}",
         baseFolderURL: "${baseFolder}",
         basePath: "${fckBrowse.url.pathRepresentation}"
       };
@@ -59,11 +59,11 @@
   <div class="resourceInfo">
     <div class="vrtx-report-nav">
       <div class="back">
-        <a href="${serviceURL?html}" ><@vrtx.msg code="report.back" default="Back" /></a>
+        <a href="${serviceURL}" ><@vrtx.msg code="report.back" default="Back" /></a>
       </div>
     </div>
     <h2><@vrtx.msg code="report.${report.reportname}.title" /> ${linkTypeLocalization?lower_case} <@vrtx.msg code="report.${report.reportname}.postfix" default="ordered by subfolders" />
-    <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL?html}"><@vrtx.msg code="report.view-other-link" default="View other folder" />...</a></h2>
+    <a id="vrtx-report-view-other" title="${vrtx.getMsg('manage.choose-location.choose-collection')}" href="${viewReportServiceURL}"><@vrtx.msg code="report.view-other-link" default="View other folder" />...</a></h2>
   </div>
 
   <@generateFilters report.filters />
@@ -108,8 +108,8 @@
 
             <tr class="${rowType}${firstLast}">
               <td class="vrtx-report-broken-links-collection">
-                <a href="${report.map[uri].url?html}">${report.map[uri].title?html}</a>
-                <span>${uri?html}</span>
+                <a href="${report.map[uri].url}">${report.map[uri].title}</a>
+                <span>${uri}</span>
               </td>
               <td class="vrtx-report-broken-links-collection-document-count">
                 ${report.map[uri].documentCount}
@@ -149,7 +149,7 @@
                     <span><@vrtx.msg code="report.broken-links.filters.${filterKey}.${filterOpt.name}" /></span>
                 <#else>
                   <li id="${filterID}">
-                    <a href="${filterOpt.URL?html}"><@vrtx.msg code="report.broken-links.filters.${filterKey}.${filterOpt.name}" /></a>
+                    <a href="${filterOpt.URL}"><@vrtx.msg code="report.broken-links.filters.${filterKey}.${filterOpt.name}" /></a>
                 </#if>
                   </li>
               </#list>
@@ -164,15 +164,15 @@
     <#if report.prev?exists || report.next?exists>
       <span class="vrtx-report-paging">
         <#if report.prev?exists>
-          <a href="${report.prev?html}" class="prev">
-          <@vrtx.msg code="report.prev-page" default="Previous page" /></a><#if report.next?exists><a href="${report.next?html}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a></#if>
+          <a href="${report.prev}" class="prev">
+          <@vrtx.msg code="report.prev-page" default="Previous page" /></a><#if report.next?exists><a href="${report.next}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a></#if>
         <#elseif report.next?exists>
-          <a href="${report.next?html}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a>
+          <a href="${report.next}" class="next"><@vrtx.msg code="report.next-page" default="Next page" /></a>
         </#if>
       </span>
     </#if>
     <#if report.brokenLinksToTsvReportService?exists>
-      <a id="vrtx-report-broken-links-tsv" href="${report.brokenLinksToTsvReportService?html}">
+      <a id="vrtx-report-broken-links-tsv" href="${report.brokenLinksToTsvReportService}">
         <@vrtx.msg code="report.${report.reportname}.tsv-file" default="Download as tab-separated file" />
       </a>
     </#if>

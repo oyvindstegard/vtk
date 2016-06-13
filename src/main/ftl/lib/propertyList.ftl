@@ -389,7 +389,7 @@
         ${valueItem.property.getFormattedValue("localized", springMacroRequestContext.locale)}
       <#elseif valueItem.definition.multiple>
         <#list valueItem.property.values as val>
-          ${val?html}<#if val_has_next>, </#if>
+          ${val}<#if val_has_next>, </#if>
         </#list>
         <#if valueItem.property.values?size &lt; 0>
         </#if>
@@ -397,9 +397,9 @@
         <#-- type principal -->
         <#if valueItem.definition.type = "PRINCIPAL">
           <#if valueItem.property.principalValue.URL?exists>
-            <a href="${valueItem.property.principalValue.URL?html}">${valueItem.property.principalValue.name?html}</a>
+            <a href="${valueItem.property.principalValue.URL}">${valueItem.property.principalValue.name}</a>
           <#else>
-            ${valueItem.property.principalValue.name?html}
+            ${valueItem.property.principalValue.name}
           </#if>
         <#-- type date -->
         <#elseif valueItem.definition.type = "DATE" || valueItem.definition.type = "TIMESTAMP">
@@ -465,7 +465,7 @@
     <#local formErrorWrapper = resolveMacro(formErrorWrapperMacro) />
 
     <@editWrapper item>
-    <form id="propertyForm" action="${form.submitURL?html}" method="post">
+    <form id="propertyForm" action="${form.submitURL}" method="post">
       <@formWrapper item>
         <#-- Display radio buttons for a value set of 2: -->
 
@@ -525,9 +525,9 @@
           <#local value>
             <#compress>
             <#if formValue != "">
-              ${formValue?html}
+              ${formValue}
             <#elseif form.value?exists>
-              ${form.value?html}
+              ${form.value}
             <#elseif !defaultItem?is_boolean>
               ${defaultItem.property.value?string}
             </#if>
@@ -563,7 +563,7 @@
       <#if spring.status.errorCodes?size &gt; 0>
         <@formErrorsWrapper>
           <#list spring.status.errorCodes as error> 
-            <@formErrorWrapper>${error?html}</@formErrorWrapper>
+            <@formErrorWrapper>${error}</@formErrorWrapper>
           </#list>
         </@formErrorsWrapper>
       </#if>
@@ -625,9 +625,9 @@
            code="${msgPrefix}.toggle.unset" default="${defaultToggle}" />
       </#if>
     </#local>
-     &nbsp;<a class="vrtx-button-small" href="${item.toggleURL?html}">${label}</a>
+     &nbsp;<a class="vrtx-button-small" href="${item.toggleURL}">${label}</a>
   <#elseif item.editURL?exists><#noautoesc>
-     &nbsp;<a class="vrtx-button-small" href="${item.editURL?html}"><@vrtx.msg code="propertyEditor.edit" default="edit" /></a></#noautoesc>
+     &nbsp;<a class="vrtx-button-small" href="${item.editURL}"><@vrtx.msg code="propertyEditor.edit" default="edit" /></a></#noautoesc>
   </#if>
 </#macro>
 

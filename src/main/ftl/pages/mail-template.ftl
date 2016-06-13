@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <p>Hi!</p>
 
 <p>${site} has an article I believe you will find interesting:</p>
@@ -8,7 +9,7 @@
 <pre>${comment}</pre>
 </#if>
 
-<p>Read the entire article here: <a href="${uri?html}">${uri?html}</a></p>
+<p>Read the entire article here: <a href="${uri}">${uri}</a></p>
 
 <p>Best regards, ${mailFrom}</p>
 
