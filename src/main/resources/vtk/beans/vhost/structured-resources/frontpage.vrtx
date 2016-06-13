@@ -69,6 +69,7 @@ resourcetype frontpage {
           [endif]
           
           [def count count + 1]
+          
           [if color = "grey-box"
            || type = "grey-box-light" || type ~ "^grey-box-light " || type ~ " grey-box-light " || type ~ " grey-box-light$"
            || type = "red"            || type ~ "^red "            || type ~ " red "            || type ~ " red$"]
