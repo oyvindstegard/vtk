@@ -14,8 +14,8 @@
  * @param resource The resource to display introduction from
 -->
 <#macro displayIntroduction resource>
-  <#local introduction = vrtx.propValue(resource, "introduction") />
-  <#if introduction != "">
+  <#local introduction = vrtx.propValue(resource, "introduction")! />
+  <#if introduction?has_content>
     <div class="vrtx-introduction">${introduction?no_esc}</div>
   </#if>
 </#macro>
@@ -39,7 +39,7 @@
     <#else>
 
       <#if displayAsThumbnail>
-        <#local introductionImage = vrtx.propValue(resource, "picture", "thumbnail") />
+        <#local introductionImage = vrtx.propValue(resource, "picture", "thumbnail")!'' />
       </#if>
 
       <#local pixelWidth = imageRes.getValueByName("pixelWidth")!"" />

@@ -43,30 +43,29 @@
     <#list projects as projectEntry>
 
       <#local project = projectEntry.propertySet />
-      <#local title = vrtx.propValue(project, 'title') />
-      <#local introImg = vrtx.prop(project, 'picture')  />
-      <#local intro = vrtx.prop(project, 'introduction')  />
-      <#local caption = vrtx.propValue(project, 'caption')  />
+      <#local title = vrtx.propValue(project, 'title')! />
+      <#local introImg = vrtx.prop(project, 'picture')!  />
+      <#local intro = vrtx.prop(project, 'introduction')!  />
+      <#local caption = vrtx.propValue(project, 'caption')!  />
 
       <div class="vrtx-resource vrtx-project">
-        <#if introImg?has_content >
-          <#local src = vrtx.propValue(project, 'picture', 'thumbnail') />
-          <#local introImgURI = vrtx.propValue(project, 'picture') />
-          <#if introImgURI?exists>
+        <#if introImg?has_content>
+          <#local introImgURI = vrtx.propValue(project, 'picture')! />
+          <#if introImgURI?has_content>
           <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
-    	 	<#else>
-    			<#local thumbnail = "" />
-   		   	</#if>
-   		   	<#local introImgAlt = vrtx.propValue(project, 'pictureAlt') />
-            <a class="vrtx-image" href="${projectEntry.url}">
-              <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
-            </a>
+    	  <#else>
+    	    <#local thumbnail = "" />
+   	  </#if>
+   	  <#local introImgAlt = vrtx.propValue(project, 'pictureAlt')! />
+          <a class="vrtx-image" href="${projectEntry.url}">
+            <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
+          </a>
           </#if>
           <div class="vrtx-title">
             <a class="vrtx-title summary" href="${projectEntry.url}">${title}</a>
-			    </div>
-        	<#if intro?has_content && projectListing.hasDisplayPropDef("hide-introduction")>
-        	  <div class="description introduction"><@vrtx.linkResolveFilter intro.value projectEntry.url requestURL /></div>
+	  </div>
+          <#if intro?has_content && projectListing.hasDisplayPropDef("hide-introduction")>
+            <div class="description introduction"><@vrtx.linkResolveFilter intro.value projectEntry.url requestURL /></div>
           </#if>
           <div class="vrtx-read-more">
             <a href="${projectEntry.url}" class="more">

@@ -102,7 +102,7 @@
         <tbody>
         <#assign brokenLinksSize = report.result?size />
         <#list report.result as item>
-          <#assign title = vrtx.propValue(item, 'title') />
+          <#assign title = vrtx.propValue(item, 'title')!'' />
           <#assign url = "" />
           <#assign timestamp = "" />
           <#if report.viewURLs[item_index]?exists>
@@ -117,7 +117,7 @@
               <#assign timestamp = linkCheck['timestamp'] />
             </#if>
           </#if>
-          <#assign linkStatus = vrtx.propValue(item, 'link-status') />
+          <#assign linkStatus = vrtx.propValue(item, 'link-status')!'' />
 
           <#assign rowType = "odd" />
           <#if (item_index % 2 == 0) >
@@ -132,8 +132,6 @@
           <#elseif (item_index == (brokenLinksSize - 1))>
             <#assign firstLast = " last" />
           </#if>
-          
-          <#assign lastModified = vrtx.propValue(item, 'lastModified') />
           
           <#assign brokenLinksList>
             <#assign onlyCount = false />

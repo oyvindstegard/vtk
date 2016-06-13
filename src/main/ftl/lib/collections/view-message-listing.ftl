@@ -30,7 +30,7 @@
     <#local title = vrtx.propValue(message, "title") />
 
     <#if !title?has_content>
-      <#local title = vrtx.propValue(message, "solr.name") />
+      <#local title = vrtx.propValue(message, "solr.name")!'' />
     </#if>
 
     <#if compactView> <#-- XXX: use feed-component instead (but need to avoid another search)? -->
@@ -53,15 +53,15 @@
         </div>
 
         <#if componentView>
-          <#local messageIntro = vrtx.propValue(message, "listingDisplayedMessage", "", "") />
-          <#if messageIntro??>
+          <#local messageIntro = vrtx.propValue(message, "listingDisplayedMessage", "", "")! />
+          <#if messageIntro?has_content>
             <div class="description introduction">
               <@vrtx.linkResolveFilter messageIntro messageEntry.url requestURL />
              </div>
           </#if>
           <div class="vrtx-message-line">
             <span class="vrtx-message-line-publish-date">
-              <#local publishDateProp = vrtx.prop(message, 'publish-date') />
+              <#local publishDateProp = vrtx.prop(message, 'publish-date')! />
               <@vrtx.date value=publishDateProp.dateValue format='long' locale=locale />
             </span>
             <#local numberOfComments = vrtx.prop(message, "numberOfComments") />
@@ -71,8 +71,8 @@
               </span>
             </#if>
           </div>
-          <#local isTruncated = vrtx.propValue(message, "isTruncated", "", "") />
-          <#if isTruncated?exists && isTruncated = 'true'>
+          <#local isTruncated = vrtx.propValue(message, "isTruncated", "", "")!'false' />
+          <#if isTruncated?has_content && isTruncated = 'true'>
             <div class="vrtx-read-more">
               <a href="${messageEntry.url}" class="more">
                 <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />

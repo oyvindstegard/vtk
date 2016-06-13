@@ -34,8 +34,8 @@
 </html>
 
 <#macro dateTimeInput propName id>
-    <#local dateValue = vrtx.propValue(resource, propName, "iso-8601-short") />
-    <#local timeValue = vrtx.propValue(resource, propName, "hours-minutes") />
+    <#local dateValue = vrtx.propValue(resource, propName, "iso-8601-short")! />
+    <#local timeValue = vrtx.propValue(resource, propName, "hours-minutes")! />
     <#local dateTimeValue = "" />
     <#if dateValue?has_content && timeValue?has_content >
         <#local dateTimeValue = dateValue + " " + timeValue />

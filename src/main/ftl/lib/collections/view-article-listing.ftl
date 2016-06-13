@@ -77,7 +77,7 @@
               <div class="description introduction"><@vrtx.linkResolveFilter intro.value entry.url requestURL /> </div>
             </#if>
 
-            <#local hasBody = vrtx.propValue(entryPropSet, 'hasBodyContent') == 'true' />
+            <#local hasBody = (vrtx.propValue(entryPropSet, 'hasBodyContent')!'') == 'true' />
             <#if displayMoreURLs && hasBody>
             <div class="vrtx-read-more">
               <a href="${entry.url}" class="more">

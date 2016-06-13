@@ -43,9 +43,9 @@
     </#if> 
       
     <div class="vrtx-title">
-      <#assign title = vrtx.propValue(entryPropSet, "title", "", "") />
+      <#assign title = vrtx.propValue(entryPropSet, "title", "", "")! />
       <#if !title?has_content>
-        <#assign title = vrtx.propValue(entryPropSet, "solr.name", "", "") />
+        <#assign title = vrtx.propValue(entryPropSet, "solr.name", "", "")!"" />
       </#if>
       <a class="vrtx-title vrtx-title-link" href="${linkURL}">${title}</a>
 
@@ -81,7 +81,7 @@
       <#else>
         <div class="lastModified">
           <@vrtx.msg code="viewCollectionListing.lastModified" args=[lastModified] />
-          ${vrtx.propValue(entryPropSet, 'modifiedBy', 'link')}
+          ${vrtx.propValue(entryPropSet, 'modifiedBy', 'link')!''}
         </div>
       </#if>
     </#if>

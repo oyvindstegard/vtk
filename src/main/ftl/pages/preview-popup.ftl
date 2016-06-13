@@ -100,8 +100,8 @@
       <#assign url = url + "&revision=WORKING_COPY" />
       <div id="vrtx-preview-message-box">${vrtx.getMsg('preview.popup.working-copy')}</div>
     <#else>
-      <#assign published = vrtx.propValue(resourceContext.currentResource, "published") />
-      <#if !published?exists || published = "false">
+      <#assign published = vrtx.propValue(resourceContext.currentResource, "published")! />
+      <#if !published?has_content || published = "false">
         <div id="vrtx-preview-message-box">${vrtx.getMsg('preview.popup.unpublised')}</div>
       </#if>
     </#if>

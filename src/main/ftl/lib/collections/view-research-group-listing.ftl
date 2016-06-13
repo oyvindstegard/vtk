@@ -4,16 +4,16 @@
 
 <#macro displayResearchGroupsAlphabetical researchGroupListing>
   <#list alpthabeticalOrdredResult?keys as key >
-	<ul class="vrtx-alphabetical-research-group-listing">
+    <ul class="vrtx-alphabetical-research-group-listing">
       <li>${key}
         <ul>
-		      <#list alpthabeticalOrdredResult[key] as researchGroup>
-			      <#local title = vrtx.propValue(researchGroup.propertySet, 'title') />
-			      <li><a href="${researchGroup.url}">${title}</a></li>
-		      </#list>
-		    </ul>
-	  </li>
+	  <#list alpthabeticalOrdredResult[key] as researchGroup>
+	    <#local title = vrtx.propValue(researchGroup.propertySet, 'title')!'' />
+	    <li><a href="${researchGroup.url}">${title}</a></li>
+	  </#list>
 	</ul>
+      </li>
+    </ul>
   </#list>
 </#macro>
 
@@ -30,7 +30,7 @@
 
       <#list researchGroups as researchGroupEntry>
 
-       <#local researchGroup = researchGroupEntry.propertySet />
+        <#local researchGroup = researchGroupEntry.propertySet />
 
         <#local title = vrtx.propValue(researchGroup, 'title')! />
         <#local introImg = vrtx.prop(researchGroup, 'picture')!  />
@@ -40,19 +40,19 @@
         <div class="vrtx-resource vrtx-research-group">
           <#if introImg?has_content >
             <#local introImgURI = vrtx.propValue(researchGroup, 'picture')! />
-	        <#if introImgURI?has_content>
-	          <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
-	        <#else>
-	    	  <#local thumbnail = "" />
-	   	    </#if>
-	   	    <#local introImgAlt = vrtx.propValue(researchGroup, 'pictureAlt')! />
+	    <#if introImgURI?has_content>
+	      <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />
+	    <#else>
+	      <#local thumbnail = "" />
+	    </#if>
+	    <#local introImgAlt = vrtx.propValue(researchGroup, 'pictureAlt')! />
             <a class="vrtx-image" href="${researchGroupEntry.url}">
               <img src="${thumbnail}" alt="<#if introImgAlt?has_content>${introImgAlt}</#if>" />
             </a>
           </#if>
           <div class="vrtx-title">
             <a class="vrtx-title summary" href="${researchGroupEntry.url}">${title}</a>
-	      </div>
+	  </div>
           <#if intro?has_content && researchGroupListing.hasDisplayPropDef("hide-introduction")>
             <div class="description introduction">
               <@vrtx.linkResolveFilter intro.value researchGroupEntry.url requestURL />
