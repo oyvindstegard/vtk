@@ -28,7 +28,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package vtk.util.mail;
 
 import java.util.HashMap;
@@ -42,22 +41,27 @@ import vtk.web.RequestContext;
 import vtk.web.referencedata.provider.ResourceDetailProvider;
 import vtk.web.servlet.BufferedResponse;
 
-
 public class MailTemplateProvider {
 
     private View view;
     private ResourceDetailProvider resourceDetailProvider;
-    
+
     public String generateMailBody(String title, String url, String mailFrom,
             String comment, String userAgentViewport, String site) throws Exception {
+        return generateMailBody(title, url, mailFrom, null, comment, userAgentViewport, site);
+    }
 
-        Map<String, Object> model = new HashMap<String, Object>();
+    public String generateMailBody(String title, String url, String mailFrom, String replyTo,
+            String comment, String userAgentViewport, String site) throws Exception {
+
+        Map<String, Object> model = new HashMap<>();
         model.put("title", title);
         model.put("mailFrom", mailFrom);
         model.put("comment", comment);
         model.put("userAgentViewport", userAgentViewport);
         model.put("site", site);
         model.put("uri", url);
+        model.put("replyTo", replyTo);
 
         BufferedResponse response = new BufferedResponse();
 
@@ -68,7 +72,7 @@ public class MailTemplateProvider {
             resourceDetailProvider.referenceData(model, request);
         }
 
-        this.view.render(model, request, response);
+        view.render(model, request, response);
         String mailMessage = response.getContentString();
         return mailMessage;
     }
@@ -81,7 +85,7 @@ public class MailTemplateProvider {
     public void setResourceDetailProvider(ResourceDetailProvider resourceDetailProvider) {
         this.resourceDetailProvider = resourceDetailProvider;
     }
-    
+
     public ResourceDetailProvider getResourceDetailProvider() {
         return this.resourceDetailProvider;
     }
