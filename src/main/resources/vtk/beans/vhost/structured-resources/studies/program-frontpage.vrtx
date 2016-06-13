@@ -264,7 +264,7 @@ resourcetype program-frontpage : program-document {
     },
 
     program-type {
-      en : ("halvtaar" = "1/2-year", "aarsenhet" = "One-year programme", "bachelor" = "bachelor's", "ettoghalvt-aarig-master" = "master's - 1 1/2-years", "to-aarig-master" = "master's - 2 years", "fem-aarig-master" = "master's - 5 years", "erfaringsbasert-master" = "master's - experience based", "profesjon" = "programme of professional study", "phd" = "Doctoral degree - Ph.d."),
+      en : ("halvtaar" = "1/2-year", "aarsenhet" = "one-year programme", "bachelor" = "bachelor's", "ettoghalvt-aarig-master" = "master's - 1 1/2-years", "to-aarig-master" = "master's - 2 years", "fem-aarig-master" = "master's - 5 years", "erfaringsbasert-master" = "master's - experience based", "profesjon" = "programme of professional study", "phd" = "Doctoral degree - Ph.d."),
       no : ("halvtaar" = "1/2 år", "aarsenhet" = "årsenhet", "bachelor" = "bachelor", "ettoghalvt-aarig-master" = "master - halvannet år", "to-aarig-master" = "master - to år", "fem-aarig-master" = "master - 5 år", "erfaringsbasert-master" = "master - erfaringsbasert", "profesjon" = "profesjonsstudium", "phd" = "Doktorgrad - Ph.d."),
       nn : ("halvtaar" = "1/2 år", "aarsenhet" = "årseining", "bachelor" = "bachelor", "ettoghalvt-aarig-master" = "master - halvanna år", "to-aarig-master" = "master - to år", "fem-aarig-master" = "master - 5 år", "erfaringsbasert-master" = "master - erfaringsbasert", "profesjon" = "profesjonsstudium", "phd" = "Doktorgrad - Ph.d.")
     },
