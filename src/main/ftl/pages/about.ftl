@@ -198,6 +198,7 @@
       </#if>
   </table>
 
+  <#-- XXX: Move to Vortex -->
   <#if urchinStats?exists || urchinStatsRestricted?exists>
     <h3 id="resourceVisitHeader"><@vrtx.msg code="resource.metadata.about.visit" default="Visit count"/></h3>
   </#if>
@@ -226,7 +227,7 @@
     <script type="text/javascript"><!--
       $(function() {
         $("<div id='vrtx-resource-visit-wrapper'><span id='urchin-loading'></span></div>").insertAfter("#resourceVisitHeader"); 
-        vrtxAdmin.serverFacade.getText("${urchinStats}", {
+        vrtxAdmin.serverFacade.getText("${urchinStats?no_esc}", {
           success: function (results, status, resp) {
             $("#vrtx-resource-visit-wrapper").html(results);
           }
