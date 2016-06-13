@@ -40,7 +40,7 @@
     <property name="namespace" ref="decorating.includeNamespace" />
     <property name="name" value="number-of-resources" />
     <property name="view" ref="decorator.numberOfResources.view" />
-    <property name="description" value="Counts the total number of resources, optionally under a provided forlder reference." />
+    <property name="description" value="Counts the total number of resources, optionally under a provided folder reference." />
     <property name="exposedParameters">
       <set>
         <value>resource-type</value>
