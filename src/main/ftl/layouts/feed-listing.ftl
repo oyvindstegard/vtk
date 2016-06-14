@@ -125,9 +125,9 @@
 
   <#if element = "picture" && conf.itemPicture?exists && imageMap[entry]?exists && imageMap[entry]?has_content >
     <#if href != ''>
-     <a class="vrtx-image" href="${href}">${imageMap[entry]?string}</a>
+     <a class="vrtx-image" href="${href}">${imageMap[entry]?string?no_esc}</a>
     <#else>
-      ${imageMap[entry]?string}
+      ${imageMap[entry]?string?no_esc}
     </#if>
   </#if>
 </#macro>
