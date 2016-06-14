@@ -110,7 +110,7 @@
               <td class="vrtx-table-students">
                 <#-- XXX: JSON, is there another way to do this (never used ?is_hash before) -->
                 <#local students = vrtx.prop(master, 'students')! />
-                <#if students?? && students?is_hash>
+                <#if students?has_content && students?is_hash>
                   <#local studentsObj = students.getValues() />
 		  <#local count = 1 />
 		  <#local size = studentsObj?size />
