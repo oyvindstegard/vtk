@@ -264,6 +264,9 @@ resourcetype frontpage {
                 [def cssClasses concat(cssClasses, "vrtx-additional-content-last")]
               [endif]
 
+              <div class="grid-container">
+              <div class="row">
+              
               [if cssClasses != null && cssClasses != ""]
                 <div class="vrtx-frontpage-box [val cssClasses]" id="vrtx-additional-content-[val number]">
               [else]
@@ -301,6 +304,9 @@ resourcetype frontpage {
                   [endif]
                   </div>
                 [endif]
+              </div>
+              
+              </div>
               </div>
             [endlist]
           [if main-content = "false"]
@@ -391,7 +397,6 @@ resourcetype frontpage {
       [endif]
       ##
     }
-
   }
 
   view {
@@ -402,9 +407,12 @@ resourcetype frontpage {
         [call "comp:css-link"]
         <title>[call "comp:title"]</title>
       </head>
-      <body id="vrtx-frontpage">
-        [def document structured-document()]
-        [def theShowAdditionalContent document.properties.showAdditionalContent]
+      
+      [def document structured-document()]
+      [def theShowAdditionalContent document.properties.showAdditionalContent]
+      [def boxesAdditionalContent document.properties.additional-content]
+      
+      <body id="vrtx-frontpage"[if (theShowAdditionalContent = "true" || theShowAdditionalContent = null) && boxesAdditionalContent != null][else] class="vrtx-frontpage-full-width"[endif]>
         [if theShowAdditionalContent = "true" || theShowAdditionalContent = null]
           <div id="vrtx-content">
         [else]
