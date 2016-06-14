@@ -46,8 +46,10 @@ public class HtmlAttributesComponent extends AbstractDecoratorComponent {
 
     protected static final String PARAMETER_SELECT = "select";
     private static final String PARAMETER_EXCLUDE = "exclude";
+    private static final String PARAMETER_VALUE_ONLY = "value-only";
     private static final String PARAMETER_EXCLUDE_DESC = "Comma-separated list of attribute names to exclude";
     private static final String PARAMETER_SELECT_DESC = "The element for which to select attributes";
+    private static final String PARAMETER_VALUE_ONLY_DESC = "If one attribute it's possible to select only its value";
     
     private String elementPath;
     private String exclude;
@@ -68,6 +70,7 @@ public class HtmlAttributesComponent extends AbstractDecoratorComponent {
         Map<String, String> map = new HashMap<String, String>();
         map.put(PARAMETER_SELECT, PARAMETER_SELECT_DESC);
         map.put(PARAMETER_EXCLUDE, PARAMETER_EXCLUDE_DESC);
+        map.put(PARAMETER_VALUE_ONLY, PARAMETER_VALUE_ONLY_DESC);
         return map;
     }
 
@@ -95,6 +98,9 @@ public class HtmlAttributesComponent extends AbstractDecoratorComponent {
                 excludedAttributes.add(splitValues[i]);
             }
         }
+        String valueOnly = request.getStringParameter(PARAMETER_VALUE_ONLY);
+        boolean useValueOnly = valueOnly != null && "true".equals(valueOnly) && (element.getAttributes().length - excludedAttributes.size() == 1);
+        
         Writer out = response.getWriter();
         StringBuilder sb = new StringBuilder();
         for (HtmlAttribute htmlAttribute: element.getAttributes()) {
@@ -102,10 +108,10 @@ public class HtmlAttributesComponent extends AbstractDecoratorComponent {
                 continue;
             }
             if (htmlAttribute.hasValue()) {
-                sb.append(" ").append(htmlAttribute.getName()).append("=");
-                sb.append(htmlAttribute.isSingleQuotes() ? "'" : "\"");
+                if(!useValueOnly) sb.append(" ").append(htmlAttribute.getName()).append("=");
+                if(!useValueOnly) sb.append(htmlAttribute.isSingleQuotes() ? "'" : "\"");
                 sb.append(htmlAttribute.getValue());
-                sb.append(htmlAttribute.isSingleQuotes() ? "'" : "\"");
+                if(!useValueOnly) sb.append(htmlAttribute.isSingleQuotes() ? "'" : "\"");
             }
         }
         out.write(sb.toString());
