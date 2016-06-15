@@ -53,7 +53,7 @@
       <#assign intro = vrtx.propValue(resource, "introduction")! />
       <#if intro?has_content>
       <div class="vrtx-introduction">
-        ${intro}
+        ${intro?no_esc}
       </div>
       </#if>
     </div>
