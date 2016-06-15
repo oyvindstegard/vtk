@@ -514,20 +514,6 @@
           <outputEncoding>utf-8</outputEncoding>
         </configuration>
       </plugin>
-      <!--
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-eclipse-plugin</artifactId>
-        <version>2.10</version>
-        <configuration>
-          <downloadSources>true</downloadSources>
-          <projectnatures>
-            <java.lang.String>org.springframework.ide.eclipse.core.springnature</java.lang.String>
-            <java.lang.String>org.eclipse.jdt.core.javanature</java.lang.String>
-          </projectnatures>
-        </configuration>
-      </plugin>
-      -->
       
       <!-- Surefire -->
       <plugin>
