@@ -44,14 +44,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
-import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
 import vtk.repository.Repository.Depth;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.security.AuthenticationException;
 import vtk.security.Principal;
 import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
@@ -60,24 +58,34 @@ import vtk.web.service.Service;
 import vtk.web.service.URL;
 
 public class SimpleStructuredEditor implements Controller {
-
-    public static final String ACTION_PARAMETER_VALUE_CANCEL = "cancel";
-    public static final String ACTION_PARAMETER_VALUE_DELETE = "delete";
-    public static final String ACTION_PARAMETER_VALUE_NEW = "new";
-    public static final String ACTION_PARAMETER_VALUE_UPDATE = "update";
-
     private static final String TITLE_PARAMETER = "title";
+    private static final String ACTION_PARAMETER_VALUE_CANCEL = "cancel";
+    private static final String ACTION_PARAMETER_VALUE_DELETE = "delete";
+    private static final String ACTION_PARAMETER_VALUE_NEW = "new";
+    private static final String ACTION_PARAMETER_VALUE_UPDATE = "update";
+    private static final String ACTION_PARAMETER_VALUE_SAVE = "save";
+
+    private String resourceType;
+    private String[] properties = { };
     private String viewName;
     private PropertyTypeDefinition publishDatePropDef;
     private Service viewService;
-
-    private String resourceType = "structured-message";
-    private String[] properties = { "message", TITLE_PARAMETER };
+    private String defaultName;
+    
+    public SimpleStructuredEditor(String resourceType, String[] editProperties, 
+            String viewName, PropertyTypeDefinition publishDatePropDef, Service viewService, 
+            String defaultName) {
+        this.resourceType = resourceType;
+        this.properties = editProperties;
+        this.viewName = viewName;
+        this.viewService = viewService;
+        this.publishDatePropDef = publishDatePropDef;
+        this.defaultName = defaultName;
+    }
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
@@ -94,37 +102,44 @@ public class SimpleStructuredEditor implements Controller {
                 repository.unlock(token, uri, null);
                 setRedirect(response, currentResource.isCollection() ? uri : uri.getParent(), null, null);
                 return null;
-            } else if (request.getParameter(ACTION_PARAMETER_VALUE_DELETE) != null) {
+            }
+            else if (request.getParameter(ACTION_PARAMETER_VALUE_DELETE) != null) {
                 // This is going to be replaced later
                 repository.unlock(token, uri, null);
                 repository.delete(token, uri, true);
                 setRedirect(response, uri.getParent(), uri, ACTION_PARAMETER_VALUE_DELETE);
                 return null;
-            } else if (currentResource.isCollection() && request.getParameter("save") != null) {
+            }
+            else if (currentResource.isCollection() && 
+                    request.getParameter(ACTION_PARAMETER_VALUE_SAVE) != null) {
                 Path newUri = createNewDocument(request, repository, token, uri);
                 setRedirect(response, uri, newUri, ACTION_PARAMETER_VALUE_NEW);
                 return null;
-            } else if (resourceType.equals(currentResource.getResourceType()) && request.getParameter("save") != null) {
+            }
+            else if (resourceType.equals(currentResource.getResourceType()) && 
+                    request.getParameter(ACTION_PARAMETER_VALUE_SAVE) != null) {
                 updateDocument(request, token, repository, uri);
                 repository.unlock(token, uri, null);
                 setRedirect(response, uri.getParent(), uri, ACTION_PARAMETER_VALUE_UPDATE);
                 return null;
             }
-        } else if (resourceType.equals(currentResource.getResourceType())) {
+        }
+        else if (resourceType.equals(currentResource.getResourceType())) {
             // Edit some document
             Principal principal = requestContext.getPrincipal();
             repository.lock(token, uri, principal.getQualifiedName(), Depth.ZERO, 600, null);
             InputStream stream = repository.getInputStream(token, uri, false);
             Json.MapContainer document = Json.parseToContainer(stream).asObject();
             model.put("properties", document.get("properties"));
-        } else {
+        }
+        else {
             model.put("isNew", true);
         }
         return new ModelAndView(viewName, model);
     }
 
-    private void setRedirect(HttpServletResponse response, Path collection, Path document, String action)
-            throws IOException, Exception {
+    private void setRedirect(HttpServletResponse response, Path collection, 
+            Path document, String action) throws IOException, Exception {
         response.addIntHeader("Refresh", 0);
 
         URL url = viewService.constructURL(collection);
@@ -135,13 +150,13 @@ public class SimpleStructuredEditor implements Controller {
         response.sendRedirect(url.toString());
     }
 
-    @SuppressWarnings("unchecked")
-    private void updateDocument(HttpServletRequest request, String token, Repository repository, Path uri)
-            throws Exception, UnsupportedEncodingException {
+    private void updateDocument(HttpServletRequest request, String token, 
+            Repository repository, Path uri) throws Exception, UnsupportedEncodingException {
 
         InputStream stream = repository.getInputStream(token, uri, false);
         Json.MapContainer document = Json.parseToContainer(stream).asObject();
         
+        @SuppressWarnings("unchecked")
         Map<String, String> propertyValues = (Map<String, String>) document.get("properties");
         for (String propertyName : properties) {
             propertyValues.put(propertyName, request.getParameter(propertyName));
@@ -149,16 +164,15 @@ public class SimpleStructuredEditor implements Controller {
         document.put("properties", propertyValues);
         String str = JsonStreamer.toJson(document);
         InputStream is = new ByteArrayInputStream(str.getBytes("UTF-8"));
-        
         repository.storeContent(token, uri, is);
     }
 
-    private Path createNewDocument(HttpServletRequest request, Repository repository, String token, Path uri)
-            throws Exception {
+    private Path createNewDocument(HttpServletRequest request, Repository repository, 
+            String token, Path uri) throws Exception {
         Json.MapContainer document = new Json.MapContainer();
         document.put("resourcetype", resourceType);
         
-        Map<String, String> propertyValues = new HashMap<String, String>();
+        Map<String, String> propertyValues = new HashMap<>();
         for (String propertyName : properties) {
             propertyValues.put(propertyName, request.getParameter(propertyName));
         }
@@ -172,12 +186,15 @@ public class SimpleStructuredEditor implements Controller {
         return newUri;
     }
 
-    private Path generateFilename(HttpServletRequest request, Repository repository, String token, Path uri)
-            throws AuthorizationException, AuthenticationException, Exception {
+    private Path generateFilename(HttpServletRequest request, Repository repository, 
+            String token, Path uri) throws Exception {
 
-        String name = "message";
-        if (request.getParameter(TITLE_PARAMETER) != null && !"".equals(request.getParameter(TITLE_PARAMETER))) {
+        String name = defaultName;
+        if (request.getParameter(TITLE_PARAMETER) != null 
+                && !"".equals(request.getParameter(TITLE_PARAMETER))) {
             name = request.getParameter(TITLE_PARAMETER).toLowerCase();
+            // XXX: Generalize
+            // See config: createResource.nameReplacementMap
             name = name.replace("æ", "ae").replace("ø", "o").replace("å", "aa");
             name = name.replaceAll("[^A-Za-z0-9 ]", "");
             name = name.replaceAll(" ", "-");
@@ -195,25 +212,13 @@ public class SimpleStructuredEditor implements Controller {
     }
 
     private void publishResource(Resource resource, String token, Repository repository) throws Exception {
-        Property publishDateProp = resource.getProperty(this.publishDatePropDef);
+        Property publishDateProp = resource.getProperty(publishDatePropDef);
         if (publishDateProp == null) {
-            publishDateProp = this.publishDatePropDef.createProperty();
+            publishDateProp = publishDatePropDef.createProperty();
             resource.addProperty(publishDateProp);
         }
         publishDateProp.setDateValue(Calendar.getInstance().getTime());
         repository.store(token, resource);
-    }
-
-    public void setViewName(String viewName) {
-        this.viewName = viewName;
-    }
-
-    public void setPublishDatePropDef(PropertyTypeDefinition publishDatePropDef) {
-        this.publishDatePropDef = publishDatePropDef;
-    }
-
-    public void setViewService(Service viewService) {
-        this.viewService = viewService;
     }
 
 }

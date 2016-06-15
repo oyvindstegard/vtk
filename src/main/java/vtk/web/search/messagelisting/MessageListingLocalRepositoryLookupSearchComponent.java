@@ -43,7 +43,6 @@ import vtk.repository.search.ConfigurablePropertySelect;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.ResultSetImpl;
 import vtk.repository.search.Sorting;
-import vtk.resourcemanagement.edit.SimpleStructuredEditor;
 import vtk.web.RequestContext;
 import vtk.web.search.collectionlisting.CollectionListingSearchComponent;
 
@@ -53,6 +52,8 @@ import vtk.web.search.collectionlisting.CollectionListingSearchComponent;
  * local repository for current changes that might yet not be visible in index
  * due to write delay. Lookup is performed depending on a given action (request
  * parameter).
+ * 
+ * XXX: Move to Vortex
  */
 public class MessageListingLocalRepositoryLookupSearchComponent extends CollectionListingSearchComponent {
 
@@ -101,9 +102,9 @@ public class MessageListingLocalRepositoryLookupSearchComponent extends Collecti
         // set due to delayed update of index -> specifically update/add
         // altered/new resource to result set.
         if (resource != null) {
-            if (SimpleStructuredEditor.ACTION_PARAMETER_VALUE_NEW.equals(actionParameter)) {
+            if ("new".equals(actionParameter)) {
                 this.addToResultSet(result, resource);
-            } else if (SimpleStructuredEditor.ACTION_PARAMETER_VALUE_UPDATE.equals(actionParameter)) {
+            } else if ("update".equals(actionParameter)) {
                 this.updateResultSet(result, resource);
             }
         }

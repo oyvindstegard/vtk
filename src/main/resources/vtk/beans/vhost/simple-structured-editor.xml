@@ -20,9 +20,17 @@
   </bean>
 
   <bean id="messageEditorHandler" class="vtk.resourcemanagement.edit.SimpleStructuredEditor">
-    <property name="viewName" value="messageEditorHandler.view" />
-    <property name="publishDatePropDef" ref="publishDatePropDef" />
-    <property name="viewService" ref="viewService" />
+    <constructor-arg name="resourceType" value="structured-message" />
+    <constructor-arg name="editProperties">
+      <list>
+        <value>message</value>
+        <value>title</value>
+      </list>
+    </constructor-arg>
+    <constructor-arg name="viewName" value="messageEditorHandler.view" />
+    <constructor-arg name="publishDatePropDef" ref="publishDatePropDef" />
+    <constructor-arg name="viewService" ref="viewService" />
+    <constructor-arg name="defaultName" value="message" />
   </bean>
 
   <bean id="messageEditorHandler.viewResolver" parent="viewResolver">
