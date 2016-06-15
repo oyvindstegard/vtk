@@ -100,11 +100,6 @@ public class Application  {
         StandardRequestFilter filter = new StandardRequestFilter();
         registration.setFilter(filter);
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        if (handleXForward()) {
-            filter.setxForwardedFor(".*");
-            filter.setxForwardedProto("X-Forwarded-Proto");
-            filter.setxForwardedPort("X-Forwarded-Port");
-        }
         registration.setDispatcherTypes(EnumSet.allOf(DispatcherType.class));
         return registration;
     }
@@ -127,13 +122,10 @@ public class Application  {
         JettyEmbeddedServletContainerFactory factory =
                 new JettyEmbeddedServletContainerFactory();
 
-
         factory.setAddress(InetAddress.getByName(listenAddrs[0].addr));
         factory.setPort(listenAddrs[0].port);
 
-        // Supports X-Forwarded-For and X-Forwarded-Proto, 
-        // but not X-Forwarded-Port (or RFC 7239):
-        //factory.setUseForwardHeaders(handleXForward());
+        factory.setUseForwardHeaders(handleXForward());
 
         factory.addServerCustomizers(new JettyServerCustomizer() {
             @Override
