@@ -58,7 +58,7 @@
 
     <#if workingCopy?exists>
       <div class="tabMessage-big">
-        <@vrtx.rawMsg code="preview.workingCopyMsg" args=[versioning.currentVersionURL] />
+        <@vrtx.msg code="preview.workingCopyMsg" args=[versioning.currentVersionURL] escape=false />
       </div>
     </#if>
     
@@ -81,6 +81,7 @@
     </#if>
     
     <#if url?contains("?")>
+      <#-- xxx: fix URL -->
       <#assign url = url + "&amp;" + previewViewParameter />
     <#else>
       <#assign url = url + "?" + previewViewParameter />

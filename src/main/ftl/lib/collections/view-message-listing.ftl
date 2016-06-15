@@ -77,7 +77,7 @@
           <#if isTruncated?has_content && isTruncated = 'true'>
             <div class="vrtx-read-more">
               <a href="${messageEntry.url}" class="more">
-                <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
+                <@vrtx.msg code="viewCollectionListing.readMore" default="" args=[] locale=locale />
               </a>
             </div>
           </#if> 
@@ -85,7 +85,7 @@
         <#else>
           <div class="published-date">
             <span class="published-date-prefix">
-              <@vrtx.localizeMessage code="viewCollectionListing.publishedDate" default="" args=[] locale=locale />
+              <@vrtx.msg code="viewCollectionListing.publishedDate" default="" args=[] locale=locale />
             </span>
             <#local publishDateProp = vrtx.prop(message, 'publish-date')! />
             <#if publishDateProp?has_content>
@@ -108,7 +108,7 @@
               <#if isTruncated?has_content && isTruncated == 'true'>
                 <div class="vrtx-read-more">
                   <a href="${messageEntry.url}" class="more">
-                    <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
+                    <@vrtx.msg code="viewCollectionListing.readMore" default="" args=[] locale=locale />
                   </a>
                 </div>
               </#if>

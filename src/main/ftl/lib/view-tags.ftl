@@ -197,7 +197,7 @@
       <#local publishDate = vrtx.propValue(resource, 'publish-date')! />
       <#if publishDate?has_content>
         <div class="publish-date">
-          <@vrtx.localizeMessage code="viewCollectionListing.publishedDate"
+          <@vrtx.msg code="viewCollectionListing.publishedDate"
              default="" args=[] locale=locale />${publishDate}
         </div>
       </#if>
@@ -210,7 +210,7 @@
           <#if hasBody>
             <div class="vrtx-read-more">
               <a href="${resourceEntry.url}" class="more">
-                <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
+                <@vrtx.msg code="viewCollectionListing.readMore" default="" args=[] locale=locale />
               </a>
             </div>
           </#if>

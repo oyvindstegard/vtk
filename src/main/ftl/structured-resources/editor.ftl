@@ -116,7 +116,7 @@
   
   <#if form.workingCopy>
     <div class="tabMessage-big">
-      <@vrtx.rawMsg code="editor.workingCopyMsg" args=[versioning.currentVersionURL] />
+      <@vrtx.msg code="editor.workingCopyMsg" args=[versioning.currentVersionURL] escape=false />
     </div>
   </#if>
 

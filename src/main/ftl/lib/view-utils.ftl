@@ -203,9 +203,9 @@
     <#assign uri = vrtx.getUri(resource) />
     <a href="${uri}#comments" class="vrtx-number-of-comments">
     <#if numberOfComments.intValue?number &gt; 1>
-      <@vrtx.localizeMessage code="viewCollectionListing.numberOfComments" default="" args=[numberOfComments.intValue] locale=locale />
+      <@vrtx.msg code="viewCollectionListing.numberOfComments" default="" args=[numberOfComments.intValue] locale=locale />
     <#else>
-      <@vrtx.localizeMessage code="viewCollectionListing.numberOfCommentsSingle" default="" args=[] locale=locale />
+      <@vrtx.msg code="viewCollectionListing.numberOfCommentsSingle" default="" args=[] locale=locale />
     </#if>
     </a>
   </#if>

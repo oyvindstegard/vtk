@@ -58,7 +58,7 @@
             <#if publishDateProp?has_content && !articles.hasDisplayPropDef("hide-published-date")>
               <div class="published-date">
                 <span class="published-date-prefix">
-                  <@vrtx.localizeMessage code="viewCollectionListing.publishedDate" default="" args=[] locale=locale />
+                  <@vrtx.msg code="viewCollectionListing.publishedDate" default="" args=[] locale=locale />
                 </span>
                 <@vrtx.date value=publishDateProp.dateValue format='long' locale=locale />
               </div>
@@ -81,7 +81,7 @@
             <#if displayMoreURLs && hasBody>
             <div class="vrtx-read-more">
               <a href="${entry.url}" class="more">
-                <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
+                <@vrtx.msg code="viewCollectionListing.readMore" default="" args=[] locale=locale />
               </a>
             </div>
             </#if>

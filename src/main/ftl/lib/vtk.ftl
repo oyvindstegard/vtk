@@ -65,34 +65,25 @@
 </#function>
 
 
-<#macro localizeMessage code default args=nullArg locale=springMacroRequestContext.getLocale() escape=true >
-  <#local localizer =
-    "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext, locale) />
-    <#if escape>
-      ${localizer.msg}
-    <#else>
-      ${localizer.msg?no_esc}
-    </#if>
-</#macro>
-
-
 <#--
  * msg
  *
- * Get a localized, html-escaped message from the spring RequestContext. 
- * Example: <@vrtx.msg code="my.message.key" default="My default message" args="['my param']"
+ * Get a localized message from the spring RequestContext. 
+ * Example: <@vrtx.msg code="my.message.key" default="My default message" args="['my param']" />
  *
  * @param code the code of the localized message
  * @param default (optional - set to code if not specified) the default message if the localized message did not
- *        exist for the currently selected locale.
+ *        exist for the given locale.
  * @param args (optional) arguments for the message
+ * @param locale (optional) the locale with which to look up the message. Defaults to the request locale.
+ * @param escape (optional) whether to HTML-escape the message before outputting it. Default is true.
  *
 -->
-<#macro msg code default=code args=[] >
+<#macro msg code default=code args=[] locale=springMacroRequestContext.getLocale() escape=true>
   <#compress>
     <#local localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-    ${localizer.msg}
+    <#if escape>${localizer.msg}<#else>${localizer.msg?no_esc}</#if>
   </#compress>
 </#macro>
 
@@ -106,39 +97,19 @@
 
 
 <#--
- * rawMsg
- *
- * Get a localized, unescaped message from the spring RequestContext. 
- * Example: <@vrtx.rawMsg code="my.message.key" default="My default message" args="['my param']"
- *
- * @param code the code of the localized message
- * @param default the default message if the localized message did not
- *        exist for the currently selected locale.
- * @param args (optional) arguments for the message
- *
--->
-<#macro rawMsg code default=code args=[] >
-  <#compress>
-    <#local localizer =
-    "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-  ${localizer.msg?no_esc}
-  </#compress>
-</#macro>
-
-
-<#--
  * getMsg
  *
- * Same as the macro 'rawMsg', but returns a value instead of printing it.
+ * Same as the macro 'msg' with escape=false, but returns a value instead of printing it.
  * Example: <#assign msg = vrtx.getMsg("my.message.key", "My default message", ['my param']) />
  *
  * @param code the code of the localized message
  * @param default the default message if the localized message did not
  *        exist for the currently selected locale.
  * @param args (optional) arguments for the message
+ * @param locale (optional) the locale to use when looking up the message
  *
 -->
-<#function getMsg code default=code args=[] >
+<#function getMsg code default=code args=[] locale=springMacroRequestContext.getLocale()>
     <#assign localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
     <#return localizer.msg />

@@ -124,8 +124,8 @@
     <#elseif !principal?exists>
       <#assign completeLoginURL>${loginURL}&amp;anchor=comment-form</#assign>
       <#assign defaultMsg><a class="button" href="${completeLoginURL}"><span>Log in</span></a> to comment</#assign>
-      <div id="add-comment-login"><@vrtx.rawMsg code="commenting.not-logged-in" default=defaultMsg?markup_string args=[completeLoginURL?markup_string] /></div>
-      <div id="add-comment-webid"><@vrtx.rawMsg code="commenting.not-logged-in.webid" default="" /></div>
+      <div id="add-comment-login"><@vrtx.msg code="commenting.not-logged-in" default=defaultMsg?markup_string args=[completeLoginURL?markup_string] escape=false /></div>
+      <div id="add-comment-webid"><@vrtx.msg code="commenting.not-logged-in.webid" default="" escape=false /></div>
     <#elseif repositoryReadOnly>
        <p><@vrtx.msg code="commenting.read.only"
                     default="You cannot add comments because the system is currently in read only mode." /></p>
@@ -198,7 +198,7 @@
         </#assign>
         <input type="submit" id="submit-comment-button" name="save"
           value="<@vrtx.msg code='commenting.form.submit' default='Submit' />" />
-          (<@vrtx.rawMsg code="commenting.post.comment-as" default="as ${principal.description}" args=[principalStr?markup_string] />)
+          (<@vrtx.msg code="commenting.post.comment-as" default="as ${principal.description}" args=[principalStr?markup_string] escape=false/>)
         </div> 
       </form>
       <@ck.editorInTextarea textarea="comments-text" toolbar="AddComment" runOnLoad=false  />

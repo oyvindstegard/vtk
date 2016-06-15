@@ -54,9 +54,9 @@
         <#assign modifiedByStr = modifiedByStr?markup_string />
       </#if>
       <#assign modifiedStr>
-        <@vrtx.rawMsg code = "property.lastModifiedBy"
+        <@vrtx.msg code = "property.lastModifiedBy"
                    args = [ vrtx.getPropValue(resource, "lastModified", "longlong"), "${modifiedByStr}" ]
-                   default = "${resource.lastModified?date} by ${modifiedByStr}" />
+                   default = "${resource.lastModified?date} by ${modifiedByStr}" escape=false />
       </#assign>
 
       <@propList.defaultPropertyDisplay
@@ -73,9 +73,9 @@
         <#assign createdByStr = createdByStr?markup_string />
       </#if>
       <#assign createdByStr>
-        <@vrtx.rawMsg code = "property.createdBy"
+        <@vrtx.msg code = "property.createdBy"
                    args = [ vrtx.getPropValue(resource, "creationTime", "longlong"), "${createdByStr}" ]
-                   default = "${resource.creationTime?date} by ${createdByStr}" />
+                   default = "${resource.creationTime?date} by ${createdByStr}" escape=false />
       </#assign>
       <@propList.defaultPropertyDisplay
              propName = "creationTime"

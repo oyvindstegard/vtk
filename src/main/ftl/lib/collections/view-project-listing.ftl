@@ -69,7 +69,7 @@
           </#if>
           <div class="vrtx-read-more">
             <a href="${projectEntry.url}" class="more">
-              <@vrtx.localizeMessage code="viewCollectionListing.readMore" default="" args=[] locale=locale />
+              <@vrtx.msg code="viewCollectionListing.readMore" default="" args=[] locale=locale />
             </a>
           </div>
       </div>
