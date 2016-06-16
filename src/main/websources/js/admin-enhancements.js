@@ -2286,7 +2286,7 @@ function reAuthenticateRetokenizeForms(isEditorSave) {
           url: "./?vrtx=admin&service=reauthenticate",
           cache: false,
           complete: function (xhr, textStatus, errMsg) {
-            if(xhr.status === 0) {
+            if(xhr.status === 0 || xhr.status === 403) {
               setTimeout(self, timerDelay);
             } else {
               retokenizeFormsOpenSaveDialog(d2, isEditorSave);
