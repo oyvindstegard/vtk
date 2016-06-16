@@ -11,18 +11,12 @@ void execute(context, args, out) {
     java.text.DecimalFormat df = new java.text.DecimalFormat("0.00");
     listener = context.get("context").getBean("requestLoadListener");
 
-    msg = "Application startup: " + 
-        new java.util.Date(context.get("context").getStartupDate());
-    out.println(msg);
+    out.println("Application startup: " + 
+                new java.util.Date(context.get("context").getStartupDate()));
 
-    msg = "Request load (avg reqs per second): " +
-        df.format((float) listener.getLoad(60)/60) + " (1m), " +
-        df.format((float) listener.getLoad(600)/600) + " (10m), " +
-        df.format((float) listener.getLoad(3600)/3600) + " (1h)";
-    out.println(msg);
+    metrics = context.get("context").getBean("metrics.registry").getMetrics();
 
-    msg = "Total requests served: " +
-        context.get("context").getBean("requestLoadListener").getTotalRequests();
-    out.println(msg);
-    
+    out.println("Total requests: " + metrics.get("requests.handled").getCount());
+    out.println("Failed requests: " + metrics.get("requests.failed").getCount());
+    out.println("Active requests: " + metrics.get("requests.active").getCount());
 }
