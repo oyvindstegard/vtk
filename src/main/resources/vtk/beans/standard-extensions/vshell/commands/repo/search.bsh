@@ -24,6 +24,7 @@ void execute(context, args, out) {
     directionArg = args.get("direction");
 
     parser = queryParserFactory.getParser();
+    query = null;
     try {
         query = parser.parse(queryExp);
     } 
