@@ -72,8 +72,7 @@ resourcetype frontpage {
               [def noMarginBottom 0]
               [def hidden 0]
             [endif]
-            [def index _index + 1]
-            [def startIndex index]
+            [def startIndex _index + 1]
           [endif]
           
           [def count count + 1]
