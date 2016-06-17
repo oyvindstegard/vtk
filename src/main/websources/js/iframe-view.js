@@ -140,10 +140,11 @@ if (window != top) { // Obs IE bug: http://stackoverflow.com/questions/4850978/i
         
       case "print":
         var previewViewIframe = $("iframe#previewViewIframe");
-        var iframe = previewViewIframe[0];
-        var ifWin = iframe.contentWindow || iframe;
-        iframe.focus();
-        ifWin.print(); 
+        var previewViewIframeBody = previewViewIframe.find("body");
+        previewViewIframeBody.append("<div id='vrtx-print-invisible-helper' onclick='window.focus();window.print();'></div>");
+        var previewViewIframePrintHelper = previewViewIframeBody.find("#vrtx-print-invisible-helper");
+        previewViewIframePrintHelper.click();
+        previewViewIframePrintHelper.remove();
         break;    
         
       default:
