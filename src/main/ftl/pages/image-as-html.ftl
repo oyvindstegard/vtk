@@ -66,7 +66,7 @@
 <#if .vars[key]?exists && .vars[key]?trim != "">
   <h2>${vrtx.getMsg('imageAsHtml.copyright-info')}</h2>
   <#assign url = .vars[key] />
-  <p><#if url?exists>${url}</#if></p>
+  <p><#if url?exists>${url?no_esc}</#if></p>
 </#if>
 
 </body>
