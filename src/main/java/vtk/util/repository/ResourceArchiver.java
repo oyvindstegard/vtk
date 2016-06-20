@@ -149,11 +149,13 @@ public class ResourceArchiver {
                 addEntry(token, rootLevel, r, jo, listener, ignoreList, r.getURI());
                 jo.close();
                 out.close();
-            } finally {
+            }
+            finally {
                 if (tmp != null)
                     tmp.delete();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             // Logger the exception and throw it up the chain to break properly
             logger.error("An error occured while creating archive '" + r.getURI() + "'", e);
             throw e;
@@ -212,7 +214,8 @@ public class ResourceArchiver {
             if (entryPath.startsWith(commentPath)) {
                 try {
                     comments.add(getArchivedComment(jarIn, base));
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
                     logger.error("Could not handle comment in " + entryPath, t);
                 }
                 continue;
@@ -241,7 +244,8 @@ public class ResourceArchiver {
         for (Comment comment : comments) {
             try {
                 this.repository.addComment(token, comment);
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 logger.error("Could not add comment to resource '" + comment.getURI() + "': " + t.getMessage());
             }
         }
@@ -265,7 +269,8 @@ public class ResourceArchiver {
             StringBuilder content = commentContent.get(entryKey);
             if (content == null) {
                 commentContent.put(entryKey, new StringBuilder(entryLine.substring(entryLine.indexOf(":") + 1).trim()));
-            } else {
+            }
+            else {
                 content.append("\n" + entryLine);
             }
         }
@@ -369,7 +374,8 @@ public class ResourceArchiver {
                     addManifestEntry(token, fromLevel, child, out, ignoreList);
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             // We'll ignore resources that fail and continue. Logger broken
             // resources and handle them manually some other way later.
             logger.error("Error writing manifest entry for '" + path.toString() + "'\n", e);
@@ -397,7 +403,8 @@ public class ResourceArchiver {
             entry.append("name:").append(propDef.getName()).append(" ");
             if (propDef.getType() == PropertyType.Type.DATE || propDef.getType() == PropertyType.Type.TIMESTAMP) {
                 entry.append(property.getFormattedValue(dateFormat, null));
-            } else if (propDef.getType() != PropertyType.Type.BINARY) {
+            }
+            else if (propDef.getType() != PropertyType.Type.BINARY) {
                 entry.append(property.getFormattedValue());
             }
 
@@ -462,7 +469,8 @@ public class ResourceArchiver {
             if (count + delta >= 72) {
                 s.insert(i, "\n ");
                 count = 0;
-            } else {
+            }
+            else {
                 count += delta;
             }
             i++;
@@ -518,8 +526,8 @@ public class ResourceArchiver {
             for (Resource child : children) {
                 addEntry(token, fromLevel, child, jarOut, listener, ignoreList, baseResourceToArchivePath);
             }
-        } else {
-
+        }
+        else {
             try {
                 InputStream is = this.repository.getInputStream(token, r.getURI(), false);
                 BufferedInputStream bi = new BufferedInputStream(is);
@@ -535,11 +543,13 @@ public class ResourceArchiver {
                 // with comments
                 try {
                     archiveComments(token, r, jarOut, baseResourceToArchivePath);
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
                     logger.error("Could not archive comment for resource '" + r.getURI() + "': " + t.getMessage());
                 }
 
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 logger.error("Colud not archive content for resource '" + r.getURI() + "': " + t.getMessage());
             }
 
@@ -596,7 +606,8 @@ public class ResourceArchiver {
                 if (setProperty(resource, name, attributes, decode, sc, listener)) {
                     propsModified = true;
                 }
-            } else if (name.startsWith("X-vrtx-acl-")) {
+            }
+            else if (name.startsWith("X-vrtx-acl-")) {
                 acl = setAclEntry(resource.getURI(), acl, name, attributes, decode, legacyAcl, listener);
                 aclModified = true;
             }
@@ -604,7 +615,8 @@ public class ResourceArchiver {
         if (propsModified) {
             if (!sc.getAffectedProperties().isEmpty()) {
                 this.repository.store(token, resource, sc);
-            } else {
+            }
+            else {
                 this.repository.store(token, resource);
             }
         }
@@ -644,15 +656,23 @@ public class ResourceArchiver {
             format = dateFormat;
         }
 
-        if (propDef.isMultiple()) {
-            List<Value> values = new ArrayList<Value>();
-            String[] splitValues = rawValue.split(",");
-            for (String val : splitValues) {
-                values.add(valueFormatter.stringToValue(val.trim(), format, null));
+        try {
+            if (propDef.isMultiple()) {
+                List<Value> values = new ArrayList<Value>();
+                String[] splitValues = rawValue.split(",");
+                for (String val : splitValues) {
+                    values.add(valueFormatter.stringToValue(val.trim(), format, null));
+                }
+                prop.setValues(values.toArray(new Value[values.size()]));
             }
-            prop.setValues(values.toArray(new Value[values.size()]));
-        } else {
-            prop.setValue(valueFormatter.stringToValue(rawValue.trim(), format, null));
+            else {
+                prop.setValue(valueFormatter.stringToValue(rawValue.trim(), format, null));
+            }
+        }
+        catch (Throwable t) {
+            throw new RuntimeException(
+                    "Failed to set value(s) of property " + propDef + 
+                        " on " + resource + " to: " + rawValue, t);
         }
 
         if (propDef.isInheritable()) {
@@ -672,7 +692,8 @@ public class ResourceArchiver {
         int idx = "prefix:".length();
         if (valueString.charAt(idx) == ' ') {
             idx++;
-        } else {
+        }
+        else {
             int i = idx;
             while (valueString.charAt(i) != ' ') {
                 i++;
@@ -748,7 +769,8 @@ public class ResourceArchiver {
             case 'p':
                 try {
                     p = principalFactory.getPrincipal(principalName, Type.PSEUDO);
-                } catch (InvalidPrincipalException e) {
+                }
+                catch (InvalidPrincipalException e) {
                     // The pseudo principal doesn't exist, drop it
                 }
                 break;
@@ -762,10 +784,12 @@ public class ResourceArchiver {
             if (p != null) {
                 if (!this.repository.isBlacklisted(action, p)) {
                     acl = acl.addEntry(action, p);
-                } else {
+                }
+                else {
                     listener.warn(uri, "Invalid acl entry: " + p + ":" + action + ", skipping");
                 }
-            } else {
+            }
+            else {
                 listener.warn(uri, "Invalid principal: " + principalName + ", skipping");
             }
         }
@@ -775,7 +799,8 @@ public class ResourceArchiver {
     private boolean writeFile(String token, Path uri, ZipInputStream is) {
         try {
             this.repository.createDocument(token, uri, new PartialZipStream(is));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.error("Error writing resource '" + uri + "': " + e.getMessage());
             return false;
         }
