@@ -52,7 +52,7 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
         return matches(resource, principal, null);
     }
 
-
+    @Override
     public boolean matches(Resource resource, Principal principal, Content content) {
         // Could fallback to Resource.getInputStream instead,but that will not work in all cases when
         // this assertion is called from evaluation framework.
@@ -75,8 +75,10 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
             } catch (Throwable t) {
                 return false;
             }
-        } catch (Exception e) {
-            throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
+        }
+        catch (Exception e) {
+            throw new PropertyEvaluationException(
+                    "Unable to get JSON representation of content: " + resource, e);
         }
     }
 
@@ -85,6 +87,7 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
         this.resourceManager = resourceManager;
     }
     
+    @Override
     public String toString() {
         return "resource.content = <Valid JSON>";
     }
