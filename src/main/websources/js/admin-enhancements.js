@@ -2123,11 +2123,13 @@ VrtxAdmin.prototype.serverFacade = {
       cache: useCache,
       success: callbacks.success,
       error: function (xhr, textStatus) {
-        var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, true);
-        if(msg === "RE_AUTH" && !vrtxAdmin.ignoreAjaxErrors) {
-          reAuthenticateRetokenizeForms(false);
-        } else {
-          vrtxAdmin.displayErrorMsg(msg);
+        if (!reTryOnTemporaryFailure(xhr, textStatus, this)) {
+          var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, true);
+          if(msg === "RE_AUTH" && !vrtxAdmin.ignoreAjaxErrors) {
+            reAuthenticateRetokenizeForms(false);
+          } else {
+            vrtxAdmin.displayErrorMsg(msg);
+          }
         }
         if (callbacks.error) {
           callbacks.error(xhr, textStatus);
@@ -2159,11 +2161,13 @@ VrtxAdmin.prototype.serverFacade = {
       contentType: contentType,
       success: callbacks.success,
       error: function (xhr, textStatus) {
-        var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, true);
-        if(msg === "RE_AUTH" && !vrtxAdmin.ignoreAjaxErrors) {
-          reAuthenticateRetokenizeForms(false);
-        } else {
-          vrtxAdmin.displayErrorMsg(msg);
+        if (!reTryOnTemporaryFailure(xhr, textStatus, this)) {
+          var msg = vrtxAdmin.serverFacade.error(xhr, textStatus, true);
+          if(msg === "RE_AUTH" && !vrtxAdmin.ignoreAjaxErrors) {
+            reAuthenticateRetokenizeForms(false);
+          } else {
+            vrtxAdmin.displayErrorMsg(msg);
+          }
         }
         if (callbacks.error) {
           callbacks.error(xhr, textStatus);
@@ -2259,6 +2263,27 @@ VrtxAdmin.prototype.serverFacade = {
   },
   errorMessages: {} /* Populated with i18n in resource-bar.ftl */
 };
+
+function reTryOnTemporaryFailure(xhr, textStatus, request) {
+  var status = xhr.status;
+  if (textStatus === "timeout" || textStatus === "abort" || status === 502 || status === 503 || status === 504) {
+    var errorMessage = vrtxAdmin.serverFacade.error(xhr, textStatus, false);
+    var dialog = new VrtxHtmlDialog({
+        name: "retry-open",
+        title: vrtxAdmin.serverFacade.errorMessages.retryTitle,
+        html: errorMessage,
+        onOk: function () {
+          dialog.close();
+          $.ajax(request);
+        },
+        btnTextOk: vrtxAdmin.serverFacade.errorMessages.retryOK,
+        btnTextCancel: vrtxAdmin.serverFacade.errorMessages.retryCancel
+    });
+    dialog.open();
+    return true;
+  }
+  return false;
+}
 
 function reAuthenticateRetokenizeForms(isEditorSave) {
   // Open reauth dialog
