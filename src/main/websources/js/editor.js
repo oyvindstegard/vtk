@@ -284,9 +284,9 @@ VrtxEditor.prototype.richtextEditorFacade = {
       config.filebrowserImageBrowseUrl = opts.imageBrowseUrl;
       config.filebrowserFlashBrowseUrl = opts.flashBrowseUrl;
       if(opts.requiresStudyRefPlugin) {
-        config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax';	    
+        config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax,balloonpanel,a11ychecker';	    
       } else {
-        config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax'; 
+        config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax,balloonpanel,a11ychecker'; 
       }
       config.image2_alignClasses = [ 'image-left', 'image-center', 'image-right' ];
       config.image2_captionedClass = 'image-captioned';
@@ -552,9 +552,9 @@ vrtxEditor.richtextEditorFacade.toolbars.commentsToolbar = [
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
-  ['About', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'], ['Replace'], ['Link', 'Unlink', 'Anchor'],
+  ['PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'], ['Replace'], ['Link', 'Unlink', 'Anchor'],
   ['Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'Mathjax', 'SpecialChar'],
-  ['Maximize'], ['Source'], '/', ['Format'], 
+  ['Maximize'], ['A11ychecker', '-', 'Source'], '/', ['Format'], 
   ['Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'TextColor', '-', 'RemoveFormat'],
   ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote']
 ];
