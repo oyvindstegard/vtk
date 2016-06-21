@@ -25,6 +25,7 @@ var TARGET = config.target;
 
 var fileForTest = [
     config.testTarget + '/jquery/jquery.min.js',
+    config.testTarget + '/jquery/plugins/jquery.form.js',
     config.testTarget + '/js/frameworks/es5-shim-dejavu.js',
     config.testTarget + '/js/view-dropdown.js',
     config.testTarget + '/js/**/*.js',
@@ -117,9 +118,11 @@ gulp.task('test', ['test-dependencies'], function () {
 });
 
 gulp.task('test-browser', ['test-dependencies'], function () {
+    gulp.watch('themes/**/*.css', ['theme-copy-css'])
+    gulp.watch('js/**/*.js', ['js-copy']);
     return gulp.src(fileForTest)
         .pipe(watch(fileForTest))
-        .pipe(jasmineBrowser.specRunner({console: true}))
+        .pipe(jasmineBrowser.specRunner())
         .pipe(jasmineBrowser.server());
 });
 
