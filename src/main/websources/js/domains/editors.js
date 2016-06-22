@@ -254,8 +254,9 @@ function ajaxSave() {
     }
   }
 
-  var d = new VrtxLoadingDialog({title: ajaxSaveText});
-  d.open();
+
+  var loadingDialog = new VrtxLoadingDialog({title: ajaxSaveText});
+  loadingDialog.open();
 
   if (typeof vrtxImageEditor !== "undefined" && vrtxImageEditor.save) {
     vrtxImageEditor.save();
@@ -263,72 +264,75 @@ function ajaxSave() {
   if (typeof performSave !== "undefined") {
     performSave();
   }
-  
-  if(!isServerLastModifiedOlderThanClientLastModified(d)) return false;
-  
-  var extraData = {};
-  var skipForm = false;
-  if(typeof vrtxEditor !== "undefined" && vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
-    editorCourseSchedule.saveLastSession();
-    extraData = { "csrf-prevention-token": vrtxEditor.editorForm.find("input[name='csrf-prevention-token']").val(),
-                  "schedule-content": JSON.stringify(editorCourseSchedule.retrievedScheduleData)
-                };
-    skipForm = true;
-  }
-  
-  var futureFormAjax = $.Deferred();
-  if (typeof $.fn.ajaxSubmit !== "function") {
-    var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
-    getScriptFn(vrtxAdm.rootUrl + "/jquery/plugins/jquery.form.js").done(function() {
+
+  var lastModifiedFuture = isServerLastModifiedOlderThanClientLastModified(loadingDialog);
+  $.when(lastModifiedFuture).done(function () {
+    var extraData = {};
+    var skipForm = false;
+    if(typeof vrtxEditor !== "undefined" && vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
+      editorCourseSchedule.saveLastSession();
+      extraData = { "csrf-prevention-token": vrtxEditor.editorForm.find("input[name='csrf-prevention-token']").val(),
+                    "schedule-content": JSON.stringify(editorCourseSchedule.retrievedScheduleData)
+                  };
+      skipForm = true;
+    }
+
+
+    var futureFormAjax = $.Deferred();
+    if (typeof $.fn.ajaxSubmit !== "function") {
+      var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
+      getScriptFn(vrtxAdm.rootUrl + "/jquery/plugins/jquery.form.js").done(function() {
+        futureFormAjax.resolve();
+      }).fail(function(xhr, textStatus, errMsg) {
+        loadingDialog.close();
+        vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
+      });
+    } else {
       futureFormAjax.resolve();
-    }).fail(function(xhr, textStatus, errMsg) {
-      d.close();
-      vrtxAdm.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
-    });
-  } else {
-    futureFormAjax.resolve();
-  }
-  $.when(futureFormAjax).done(function() {
-    _$("#editor").ajaxSubmit({
-      data: extraData,
-      skipForm: skipForm,
-      success: function(results, status, xhr) { 
-        vrtxAdmin.clientLastModified = $($.parseHTML(results)).find("#resource-last-modified").text().split(",");
-        var endTime = new Date() - startTime;
-        var waitMinMs = 800;
-        if (endTime >= waitMinMs) { // Wait minimum 0.8s
-          d.close();
-          vrtxAdmin.asyncEditorSavedDeferred.resolve();
-        } else {
-          var waitMinTimer = setTimeout(function () {
-            d.close();
+    }
+    $.when(futureFormAjax).done(function() {
+      _$("#editor").ajaxSubmit({
+        data: extraData,
+        skipForm: skipForm,
+        success: function(results, status, xhr) {
+          vrtxAdmin.clientLastModified = $($.parseHTML(results)).find("#resource-last-modified").text().split(",");
+          var endTime = new Date() - startTime;
+          var waitMinMs = 800;
+          if (endTime >= waitMinMs) { // Wait minimum 0.8s
+            loadingDialog.close();
             vrtxAdmin.asyncEditorSavedDeferred.resolve();
-          }, Math.round(waitMinMs - endTime));
+          } else {
+            var waitMinTimer = setTimeout(function () {
+              loadingDialog.close();
+              vrtxAdmin.asyncEditorSavedDeferred.resolve();
+            }, Math.round(waitMinMs - endTime));
+          }
+          if(typeof vrtxEditor !== "undefined" && vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
+            editorCourseSchedule.saved(vrtxAdm.editorSaveButtonName === "updateViewAction");
+          }
+        },
+        error: function (xhr, textStatus, errMsg) {
+          if (!reTryOnTemporaryFailure(xhr, textStatus, this)) {
+            loadingDialog.close();
+            vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
+          }
         }
-        if(typeof vrtxEditor !== "undefined" && vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
-          editorCourseSchedule.saved(vrtxAdm.editorSaveButtonName === "updateViewAction");
-        }
-      },
-      error: function (xhr, textStatus, errMsg) {
-        d.close();
-        vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
-      }
-    });
-  });
+      });
+    }); // formAjax Done
+  }); // lastModified Done
 }
 
 function updateClientLastModifiedAlreadyRetrieved() {
   vrtxAdmin.clientLastModified = $("#resource-last-modified").text().split(",");
 }
 
-function isServerLastModifiedOlderThanClientLastModified(d) {
+function isServerLastModifiedOlderThanClientLastModified(loadingDialog) {
   var olderThanMs = 1000; // Ignore changes in 1 second to avoid most strange cases
-
-  var isOlder = true;
+  var future = $.Deferred();
   vrtxAdmin._$.ajax({
     type: "GET",
-    url: window.location.pathname + "?vrtx=admin&mode=about" + (gup("service", window.location.search) === "view" ? "&service=view" : ""),
-    async: false,
+    url: window.location.pathname + "?vrtx=admin&mode=about"
+      + (gup("service", window.location.search) === "view" ? "&service=view" : ""),
     cache: false,
     success: function (results, status, resp) {
       var parsedResults = $($.parseHTML(results));
@@ -336,18 +340,21 @@ function isServerLastModifiedOlderThanClientLastModified(d) {
       vrtxAdmin.serverLastModified = parsedResults.find("#resource-last-modified").text().split(",");
       vrtxAdmin.serverModifiedBy = parsedResults.find("#resource-last-modified-by").text();
       if(isServerLastModifiedNewerThanClientLastModified(olderThanMs)) {
-        d.close();
+        loadingDialog.close();
         vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, ["UPDATED_IN_BACKGROUND", ""]);
-        isOlder = false;
+        future.reject();
       }
+      future.resolve();
     },
     error: function (xhr, textStatus, errMsg) {
-      d.close();
-      vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
-      isOlder = false;
+      if (!reTryOnTemporaryFailure(xhr, textStatus, this)) {
+        loadingDialog.close();
+        vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
+        future.reject();
+      }
     }
   });
-  return isOlder;
+  return future;
 }
 
 function isServerLastModifiedNewerThanClientLastModified(olderThanMs) {

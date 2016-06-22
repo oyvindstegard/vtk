@@ -84,7 +84,10 @@
   }
   
   vrtxAdmin.serverFacade.errorMessages = {
-    title: "${vrtx.getMsg('ajaxError.title')}", 
+    title: "${vrtx.getMsg('ajaxError.title')}",
+    retryTitle: "${vrtx.getMsg('ajaxError.retry.title')}",
+    retryOK: "${vrtx.getMsg('ajaxError.retry.ok')}",
+    retryCancel: "${vrtx.getMsg('ajaxError.retry.cancel')}",
     general: "${vrtx.getMsg('ajaxError.general')}",
     timeout: "${vrtx.getMsg('ajaxError.timeout')}",
     abort: "${vrtx.getMsg('ajaxError.abort')}",
