@@ -463,7 +463,8 @@ public class PropertyImpl implements Cloneable, Property {
             if (!valuesList.contains(value)) {
                 ConstraintViolationException e = 
                     new ConstraintViolationException(
-                        "Value '" + value + "' not in list of allowed values for property '" + this);
+                        "Value '" + value + "' not in list of allowed values for property " + this 
+                        + ", definition: " + propertyTypeDefinition);
                 e.setStatusCode(ConstraintViolationException.NOT_IN_ALLOWED_VALUES);
                 throw e;
             }

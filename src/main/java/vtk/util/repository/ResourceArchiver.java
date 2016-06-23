@@ -612,15 +612,19 @@ public class ResourceArchiver {
                 aclModified = true;
             }
         }
-        if (propsModified) {
-            if (!sc.getAffectedProperties().isEmpty()) {
-                this.repository.store(token, resource, sc);
-            }
-            else {
-                this.repository.store(token, resource);
+        try {
+            if (propsModified) {
+                if (!sc.getAffectedProperties().isEmpty()) {
+                    this.repository.store(token, resource, sc);
+                }
+                else {
+                    this.repository.store(token, resource);
+                }
             }
         }
-
+        catch (Throwable t) {
+            throw new RuntimeException("Failed to store resource " + resource, t);
+        }
         if (!aclModified) {
             return;
         }
