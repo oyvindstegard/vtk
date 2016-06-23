@@ -31,18 +31,12 @@
 
 package vtk.repository.resourcetype.property;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.mutable.MutableInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
@@ -51,11 +45,10 @@ import vtk.repository.resourcetype.PropertyEvaluator;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
+import vtk.util.text.Json.ListContainer;
+import vtk.util.text.Json.MapContainer;
+import vtk.util.text.JsonStreamer;
 
-
-/**
- *
- */
 public class BrokenLinksCountEvaluator implements PropertyEvaluator {
 
     private PropertyTypeDefinition linkCheckPropDef;
@@ -71,22 +64,18 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator {
      */
     @Override
     public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
-
         Property linkCheckProp = ctx.getNewResource().getProperty(this.linkCheckPropDef);
         if (linkCheckProp == null) return false;
-
         // Link check prop only changes for system evaluation, so only evaluate if it does
         // not already exist or when system change:
         if (property.isValueInitialized() &&
                 ctx.getEvaluationType() != PropertyEvaluationContext.Type.SystemPropertiesChange) {
             return true;
         }
-        
+
         try {
-            InputStream is = linkCheckProp.getBinaryStream().getStream();
-            JSONObject json = (JSONObject)new JSONParser().parse(new InputStreamReader(is,"utf-8"));
-            is.close();
-            JSONArray brokenLinks = (JSONArray)json.get("brokenLinks");
+            MapContainer jsonValue = property.getJSONValue();
+            ListContainer brokenLinks = jsonValue.arrayValue("brokenLinks");
             if (brokenLinks == null || brokenLinks.isEmpty()) {
                 return false;
             }
@@ -106,7 +95,8 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator {
             }
             errorCount.write(property);
             return true;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.warn("Exception during evaluation", e);
             return false;
         }
@@ -125,7 +115,7 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator {
         }
         
         void write(Property prop) {
-            String jsonString = JSONValue.toJSONString(errorCount);
+            String jsonString = JsonStreamer.toJson(errorCount);
             prop.setValue(new Value(jsonString, PropertyType.Type.JSON));
         }
     }
