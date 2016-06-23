@@ -1,0 +1,166 @@
+resourcetype free-capacity-listing {
+
+  properties {
+    title : string overrides title,
+    introduction : simple_html,
+    term : string,
+    year : string,
+    teaching-language-all : boolean defaultvalue("true"),
+    content : html noextract,
+    end-date : datetime,
+    end-date-text : simple_html
+  }
+
+  edit-rules {
+    term (dropdown),
+    year (dropdown),
+    group facts (term, year, teaching-language-all) (after introduction)
+  }
+
+  view-components {
+
+    faculty-toc (courses) {
+      ##
+      [def faculty "undefined"]
+      <h2>[localized 'go-to-free-capacity-courses-for']</h2>
+      <div class="vrtx-free-capacity-toc">
+        <ul>
+          [list courses course]
+            [if course.get("faculty") != null && course.get("url") != null && course.get("code") != null && 
+                course.get("name") != null && course.get("credits") != null]
+              [if course.get("faculty") != faculty]
+                [def faculty course.get("faculty")]
+                [def faculty-toc replace(faculty, " ", "-")]
+                <li><a href="#[val faculty-toc]">[val faculty]</a></li>
+              [endif]
+            [endif]
+          [endlist]
+        </ul>
+      </div>
+      ##
+    }
+
+    list-courses (courses) {
+      ##
+      <div class="vrtx-free-capacity-courses">
+        [def faculty "undefined"]
+        [list courses course]
+          [if course.get("faculty") != null && course.get("url") != null && course.get("code") != null && 
+              course.get("name") != null && course.get("credits") != null]
+            [if course.get("faculty") != faculty]
+              [if ! _first]
+                </ul>
+              [endif]
+              [def faculty course.get("faculty")]
+              [def faculty-toc replace(faculty, " ", "-")]
+              <h2 id="[val faculty-toc]">[val faculty]</h2>
+              <ul>
+            [endif]
+            [def credits course.get("credits")]
+            [if credits - int(course.get("credits")) = 0]
+              [def credits int(course.get("credits"))]
+            [endif]
+            <li>
+              <a href="[val course.get("url")]">[val course.get("code")] - [val course.get("name")]</a> ([val credits] [localized 'credits'])
+            </li>
+            [if _last]
+              </ul>
+            [endif]
+          [endif]
+        [endlist]
+      </div>
+      ##
+    }
+
+  }
+
+  view {
+    ##
+    [def settings settings()]
+    [def document structured-document()]
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>[call "resource:property" {"id":"title"}]</title>
+      </head>
+      <body id="vrtx-free-capacity">
+        <h1>[call "resource:property" {"id":"title"}]</h1>
+        <div class="vrtx-introduction">[call "json:field" {"select":"introduction"}]</div>
+
+        [def ended "false"]
+        [if ended = "false"]
+          <div class="vrtx-content">[call "json:field" {"select":"content"}]</div>
+          <div class="vrtx-free-capacity-listing">
+            [if ! settings.services.freeCapacity]
+              <p>No external service available.</p>
+            [else]
+              [def freeCapacityURL replace(settings.services.freeCapacity,
+                                   "%y", document.properties.year)]
+              [def freeCapacityURL replace(freeCapacityURL,
+                                   "%t", document.properties.term)]
+
+              [def locale resource-locale()]
+              [def teaching-language-all document.properties.teaching-language-all]
+              [if teaching-language-all != null && teaching-language-all != "true"]
+                [def freeCapacityURL freeCapacityURL + "?teachingLanguage=english,english-by-need"]
+                [if locale != null && locale = "en"]
+                  [def freeCapacityURL freeCapacityURL + "&lang=en"]
+                [endif]
+              [else]
+                [if locale != null && locale = "en"]
+                  [def freeCapacityURL freeCapacityURL + "?lang=en"]
+                [endif]
+              [endif]
+
+              [def freeCapacityResponse free-capacity-as-json(freeCapacityURL)]
+
+              [if freeCapacityResponse.errorMessage]
+                <p>Unable to look up free capacity courses: [val freeCapacityURL]</p>
+                <p>Error message: [val freeCapacityResponse.errorMessage]</p>
+              [else]
+                [call "comp:faculty-toc" { "courses" : freeCapacityResponse.payload.courses }]
+                [call "comp:list-courses" { "courses" : freeCapacityResponse.payload.courses }]
+              [endif]
+            </div>
+          [endif]
+        [else]
+          <div class="vrtx-end-date-text">[call "json:field" {"select":"end-date-text"}]</div>
+        [endif]
+      </body>
+    </html>
+    ##
+  }
+
+  vocabulary {
+     term {
+       en : ("h" = "Autumn", "v" = "Spring"),
+       no : ("h" = "Høst", "v" = "Vår"),
+       nn : ("h" = "Haust", "v" = "Vår")
+     },
+     year {
+       en : ("16" = "2016", "17" = "2017", "18" = "2018", "19" = "2019", "20" = "2020"),
+       no : ("16" = "2016", "17" = "2017", "18" = "2018", "19" = "2019", "20" = "2020"),
+       nn : ("16" = "2016", "17" = "2017", "18" = "2018", "19" = "2019", "20" = "2020")
+     },
+     teaching-language-all {
+       en : ("true" = "All", "false" = "Only English"),
+       no : ("true" = "Alle", "false" = "Kun engelsk"),
+       nn : ("true" = "Alle", "false" = "Kun engelsk")
+     }
+  }
+
+  localization {
+    title : (en : "Title", no : "Tittel", nn : "Tittel"),
+    header : (en : "Edit listing of courses with free capacity", no : "Rediger listing av emner med ledige plasser", nn : "Rediger listing av emner med ledige plassar"),
+    introduction : (en : "Introduction", no : "Innledning", nn : "Innleiing"),
+    content : (en : "Content", no : "Innhold", nn : "Innhald"),
+    go-to-free-capacity-courses-for : (en : "Go to courses with free capacity at:", no : "Gå til emner med ledige plasser ved:", nn : "Gå til emner med ledige plassar ved:"),
+    facts : (en : "Criteria for listing of courses with free capacity", no : "Kriterier for listing av ledige emner", nn : "Kriterier for listing av ledige emner"),
+    term : (en : "Semester", no : "Semester", nn : "Semester"),
+    year : (en : "Year", no : "År", nn : "År"),
+    teaching-language-all : (en : "Teaching language", no : "Undervisningsspråk", nn : "Undervisningsspråk"),
+    credits : (en : "Credits", no : "Studiepoeng", nn : "Studiepoeng"),
+    end-date : (en : "End date", no : "Sluttdato", nn : "Sluttdato"),
+    end-date-text : (en : "Description when end date has passed", no : "Beskrivelse ved passert sluttdato", nn : "Beskriving ved passert sluttdato")
+  }
+}

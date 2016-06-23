@@ -31,5 +31,6 @@ include structured-resources/studies/course-group.vrtx
 include structured-resources/studies/semester-page.vrtx
 include structured-resources/studies/student-exchange-agreement.vrtx
 include structured-resources/studies/course-schedule.vrtx
+include structured-resources/studies/free-capacity.vrtx
 
 include structured-resources/publications/unit-publications.vrtx

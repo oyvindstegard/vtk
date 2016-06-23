@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, University of Oslo, Norway
+/* Copyright (c) 2014, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,30 +28,42 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.text.tl.expr;
+package vtk.util.cache.loaders;
 
-import vtk.text.tl.Context;
-import vtk.text.tl.Symbol;
+import java.io.InputStream;
+import java.net.URLConnection;
+import org.springframework.beans.factory.annotation.Required;
+import static vtk.repository.resourcetype.PropertyType.Type.JSON;
+import vtk.util.codec.Base64;
+import vtk.util.text.Json;
 
-public class ToIntFunction extends Function {
+/**
+ * Cache loader that provides {@link JSON} objects
+ */
+public class FreeCapacityJSONCacheLoader extends URLConnectionCacheLoader<Json.Container> {
 
-    public ToIntFunction(Symbol symbol) {
-        super(symbol, 1);
-    }
+    // XXX: limit not enforced, could use BoundedInputStream to apply limit while still
+    // parsing by stream. 
+    private final int maxLength = 1000000;
+    private String username;
+    private String password;
 
     @Override
-    public Object eval(Context ctx, Object... args) {
-        Object o = args[0];
-        if (o == null) {
-            throw new IllegalArgumentException("Argument is NULL");
-        }
-        if (o instanceof Integer) {
-            return o;
-        }
-        if (o instanceof Double) {
-            return ((Double) o).intValue();
-        }
-        return Integer.parseInt(o.toString());
+    protected Json.Container handleConnection(URLConnection connection) throws Exception {
+        String encoded = Base64.encode(username + ":" + password);
+        connection.setRequestProperty("Authorization", "Basic " + encoded);
+        InputStream stream = connection.getInputStream();
+        return Json.parseToContainer(stream);
+    }
+
+    @Required
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @Required
+    public void setPassword(String password) {
+        this.password = password;
     }
 
 }

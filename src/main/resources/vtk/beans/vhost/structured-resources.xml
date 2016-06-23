@@ -239,6 +239,7 @@
         <ref bean="templateLanguage.toLowerCaseFunction" />
         <ref bean="templateLanguage.toUpperCaseFunction" />
         <ref bean="templateLanguage.ceilFunction" />
+        <ref bean="templateLanguage.toIntFunction" />
         <ref bean="templateLanguage.replaceFunction" />
         <ref bean="decorating.requestContextFunction" />
         <ref bean="decorating.retrieveFunction" />
@@ -256,6 +257,7 @@
         <ref bean="structuredResources.settingsFunction" />
 
         <ref bean="structuredResources.urlJSONFunction" />
+        <ref bean="structuredResources.freeCapacityJSONFunction" />
       </set>
     </property>
   </bean>
@@ -308,6 +310,44 @@
   <bean id="structuredResources.jsonURLCacheLoader" class="vtk.util.cache.loaders.JSONCacheLoader">
     <property name="connectTimeoutSeconds" value="1" />
     <property name="readTimeoutSeconds" value="1" />
+  </bean>
+
+  <bean id="structuredResources.freeCapacityJSONFunction" class="vtk.resourcemanagement.view.tl.CacheLookupFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="free-capacity-as-json" />
+      </bean>
+    </constructor-arg>
+    <constructor-arg>
+      <ref bean="structuredResources.freeCapacityURLCache" />
+    </constructor-arg>
+  </bean>
+
+  <bean id="structuredResources.freeCapacityURLCache" class="vtk.util.cache.EhContentCache">
+    <constructor-arg name="cache">
+      <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="ehCacheManager" />
+        <property name="cacheName" value="${repositoryID}.freeCapacityURLCache"/>
+        <property name="maxElementsInMemory" value="10" />
+        <property name="maxElementsOnDisk" value="0" />
+        <property name="timeToIdle" value="0" />
+        <property name="timeToLive" value="600" />
+        <property name="cacheEntryFactory">
+          <bean class="vtk.util.cache.ContentCacheLoaderEhcacheAdapter">
+            <constructor-arg ref="structuredResources.freeCapacityURLCacheLoader" />
+          </bean>
+        </property>
+      </bean>
+    </constructor-arg>
+    <constructor-arg name="refreshIntervalSeconds" value="60" />
+    <constructor-arg name="asynchronousRefresh" value="true" />
+  </bean>
+
+  <bean id="structuredResources.freeCapacityURLCacheLoader" class="vtk.util.cache.loaders.FreeCapacityJSONCacheLoader">
+    <property name="connectTimeoutSeconds" value="1" />
+    <property name="readTimeoutSeconds" value="5" />
+    <property name="username" value="${uiows.service.course-schedule.username}" />
+    <property name="password" value="${uiows.service.course-schedule.password}" />
   </bean>
 
   <!--
