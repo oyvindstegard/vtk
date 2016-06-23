@@ -77,22 +77,22 @@ resourcetype frontpage {
           
           [def count count + 1]
           
-          [if color = "grey-box" || type ~ "grey-box-light" || (type ~ "red" && type ~ "uio-info-message")]
+          [if color = "grey-box" || type ~ ".*grey-box-light.*" || (type ~ ".*red.*" && type ~ ".*uio-info-message.*")]
             [def colored colored + 1]
             [def coloredOne 1]
           [endif]
           [if sizePlacement = "third-box-left third-box-double"
            || sizePlacement = "third-box-right third-box-double"]
             [def twoThirds 1]
-            [if type ~ "third-box-double-no-vertical-line"]
+            [if type ~ ".*third-box-double-no-vertical-line.*"]
               [def twoThirdsNoVerticalLine 1]
             [endif]
           [endif]
 
-          [if type ~ "no-margin-bottom"]
+          [if type ~ ".*no-margin-bottom.*"]
             [def noMarginBottom noMarginBottom + 1]
           [endif] 
-          [if type ~ "hide-box"]
+          [if type ~ ".*hide-box.*"]
             [def hidden hidden + 1]
           [endif]
         [endlist]
