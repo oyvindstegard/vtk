@@ -77,9 +77,7 @@ resourcetype frontpage {
           
           [def count count + 1]
           
-          [if color = "grey-box"
-           || type = "grey-box-light" || type ~ "^grey-box-light " || type ~ " grey-box-light " || type ~ " grey-box-light$"
-           || type = "red"            || type ~ "^red "            || type ~ " red "            || type ~ " red$"]
+          [if color = "grey-box" || type ~ "grey-box-light" || (type ~ "red" && type ~ "uio-info-message")]
             [def colored colored + 1]
             [def coloredOne 1]
           [endif]
@@ -91,10 +89,10 @@ resourcetype frontpage {
             [endif]
           [endif]
 
-          [if type = "no-margin-bottom" || type ~ "^no-margin-bottom " || type ~ " no-margin-bottom " || type ~ " no-margin-bottom$"]
+          [if type ~ "no-margin-bottom"]
             [def noMarginBottom noMarginBottom + 1]
           [endif] 
-          [if type = "hide-box" || type ~ "^hide-box " || type ~ " hide-box " || type ~ " hide-box$"]
+          [if type ~ "hide-box"]
             [def hidden hidden + 1]
           [endif]
         [endlist]
