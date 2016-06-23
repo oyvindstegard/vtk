@@ -71,30 +71,27 @@ public class MethodInvokingController implements Controller, InitializingBean {
     }
     
     public void afterPropertiesSet() {
-        if (this.targetObject == null) {
+        if (targetObject == null) {
             throw new BeanInitializationException(
                 "JavaBean property 'targetObject' not set");
         }
 
-        if (this.methodName == null) {
+        if (methodName == null) {
             throw new BeanInitializationException(
                 "JavaBean property 'targetMethod' not set");
         }
 
-        if (this.modelName == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'modelName' not set");
+        if (viewName != null) {
+            if (modelName == null) {
+                throw new BeanInitializationException(
+                        "JavaBean property 'modelName' not set");
+            }
         }
 
-        if (this.viewName == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'viewName' not set");
-        }
-
-        Class<?> clazz = this.targetObject.getClass();
+        Class<?> clazz = targetObject.getClass();
         Method[] methods = clazz.getMethods();
         for (int i = 0; i < methods.length; i++) {
-            if (this.methodName.equals(methods[i].getName())) {
+            if (methodName.equals(methods[i].getName())) {
                 // XXX: should check for overloaded methods
                 this.method = methods[i];
             }
@@ -102,14 +99,21 @@ public class MethodInvokingController implements Controller, InitializingBean {
     }
     
 
-
+    @Override
     public ModelAndView handleRequest(
         HttpServletRequest request, HttpServletResponse response) throws Exception {
-        Map<String, Object> model = new HashMap<String, Object>();
-        Object result = this.method.invoke(this.targetObject, new Object[0]);
-        model.put(this.modelName, result);
-        ModelAndView mv = new ModelAndView(this.viewName, model);
-        return mv;
+        Object result = method.invoke(targetObject, new Object[0]);
+        if (viewName != null) {
+            Map<String, Object> model = new HashMap<>();
+            model.put(modelName, result);
+            ModelAndView mv = new ModelAndView(viewName, model);
+            return mv;
+        }
+        response.setContentType("text/plain;charset=utf-8");
+        response.setCharacterEncoding("utf-8");
+        response.getWriter().write(result.toString());
+        response.flushBuffer();
+        return null;
     }
 }
 
