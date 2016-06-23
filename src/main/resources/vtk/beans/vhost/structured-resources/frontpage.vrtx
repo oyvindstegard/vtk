@@ -169,7 +169,7 @@ resourcetype frontpage {
             
             [def number number + ""]
             
-            <div class="grid-container[list containers idx][if number = idx] row-all-colored[endif][endlist][list containers2 idx][if number = idx] row-one-colored[endif][endlist][list containers3 idx][if number = idx] row-thirds-double[endif][endlist][list containers4 idx][if number = idx] row-thirds-double-no-vertical-line[endif][endlist][list containers5 idx][if number = idx] row-all-hidden-boxes[endif][endlist][list containers6 idx][if number = idx] row-all-no-margin-bottom[endif][endlist]">
+            <div class="grid-container[list containers idx][if number = idx] row-all-colored[endif][endlist][list containers2 idx][if number = idx] row-one-colored[endif][endlist][list containers3 idx][if number = idx] row-thirds-double[endif][endlist][list containers4 idx][if number = idx] row-thirds-double-no-vertical-line[endif][endlist][list containers5 idx][if number = idx] row-all-no-margin-bottom[endif][endlist][list containers6 idx][if number = idx] row-all-hidden-boxes[endif][endlist]">
               <div class="row">
               
             [def openedGridContainer "true"]
