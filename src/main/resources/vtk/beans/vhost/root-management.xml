@@ -318,4 +318,20 @@
     <property name="parameterName" value="read-only" />
   </bean>
 
+
+  <bean id="repository.displayResourceTypeTreeService" class="vtk.web.service.ServiceImpl">
+    <property name="order" value="-96000" />
+    <property name="assertions">
+      <bean class="vtk.web.service.RequestURIRegexpAssertion">
+        <property name="pattern" value="${resourceTypeTreeService.displayURL}" />
+      </bean>
+    </property>
+    <property name="handler" ref="repository.displayResourceTypeTreeController" />
+  </bean>
+
+  <bean id="repository.displayResourceTypeTreeController" class="vtk.web.display.MethodInvokingController">
+    <property name="targetObject" ref="resourceTypeTree" />
+    <property name="targetMethod" value="getResourceTypeTreeAsString" />
+  </bean>
+
 </beans>
