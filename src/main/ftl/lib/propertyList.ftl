@@ -251,13 +251,13 @@
  * @editURL (optional) the edit (possibly toggle) URL of the property
  * 
 -->
-<#macro defaultPropertyDisplay propName name value prefix=false editURL="">
+<#macro defaultPropertyDisplay propName name value prefix="" editURL="">
   <tr class="prop-${propName}">
     <th scope="row" class="key">
       ${name}:
     </th>
     <td class="value">
-      ${value}
+      ${prefix} ${value}
       <#if editURL??>
         ${editURL}
       </#if>
@@ -370,29 +370,27 @@
   <#local msgPrefix = localizationPrefix(item) />
   <#local name = vrtx.getMsg(msgPrefix, item.definition.name) />
   
-  <#assign valueItem=item />
+  <#local valueItem=item />
 
-  <#assign prefix=false />
-    <#if !defaultItem?is_boolean>
-      <#local msgPrefix = localizationPrefix(item) />
-      <#if item.property?exists && item.property.value == defaultItem.property.value>
-        <#assign prefix = vrtx.getMsg(msgPrefix + ".set", "") />
-      <#else>
-        <#assign valueItem=defaultItem />
-        <#assign prefix = vrtx.getMsg(msgPrefix + ".unset", "") />
-      </#if>
+  <#local prefix='' />
+  <#if !defaultItem?is_boolean>
+    <#local msgPrefix = localizationPrefix(item) />
+    <#if item.property?exists && item.property.value == defaultItem.property.value>
+      <#local prefix = vrtx.getMsg(msgPrefix + ".set", "") />
+    <#else>
+      <#local valueItem=defaultItem />
+      <#local prefix = vrtx.getMsg(msgPrefix + ".unset", "") />
     </#if>
+  </#if>
 
   <#local value>
-    <#if valueItem.property?exists>
-      <#if valueItem.definition.vocabulary?exists>
+    <#if (valueItem.property)?exists>
+      <#if (valueItem.definition.vocabulary)?exists>
         ${valueItem.property.getFormattedValue("localized", springMacroRequestContext.locale)}
       <#elseif valueItem.definition.multiple>
         <#list valueItem.property.values as val>
           ${val}<#if val_has_next>, </#if>
         </#list>
-        <#if valueItem.property.values?size &lt; 0>
-        </#if>
       <#else>
         <#-- type principal -->
         <#if valueItem.definition.type = "PRINCIPAL">
@@ -405,19 +403,13 @@
         <#elseif valueItem.definition.type = "DATE" || valueItem.definition.type = "TIMESTAMP">
           ${valueItem.property.dateValue?datetime?string.long}
         <#else>
-          <#local label>
-            <@vrtx.msg code="${msgPrefix}.value.${valueItem.property.value?string}"
-                       default="${valueItem.property.value}" />
-          </#local>
-          ${label}
+          <@vrtx.msg code=msgPrefix + ".value." + valueItem.property.value?string
+                     default=valueItem.property.value />
         </#if>
       </#if>
     <#else>
-      <#local defaultNotSet><@vrtx.msg code="resource.property.unset" default="Not set" /></#local>
-      <#local label>
-        <@vrtx.msg code="${msgPrefix}.unset" default="${defaultNotSet?markup_string}" />
-      </#local>
-      ${label}
+      <#local defaultNotSet = vrtx.getMsg("resource.property.unset","Not set") />
+      <@vrtx.msg code=msgPrefix + ".unset" default=defaultNotSet />
     </#if>
   </#local>
   <#local editURL>
