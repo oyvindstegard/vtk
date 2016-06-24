@@ -116,10 +116,13 @@ public class PropertyImpl implements Cloneable, Property {
             return false;
         }
         final PropertyImpl other = (PropertyImpl) obj;
-        if (this.propertyTypeDefinition != other.propertyTypeDefinition && (this.propertyTypeDefinition == null || !this.propertyTypeDefinition.equals(other.propertyTypeDefinition))) {
+        if (this.propertyTypeDefinition != other.propertyTypeDefinition 
+                && (this.propertyTypeDefinition == null || 
+                   !this.propertyTypeDefinition.equals(other.propertyTypeDefinition))) {
             return false;
         }
-        if (this.value != other.value && (this.value == null || !this.value.equals(other.value))) {
+        if (this.value != other.value && (
+                this.value == null || !this.value.equals(other.value))) {
             return false;
         }
         if (!Arrays.deepEquals(this.values, other.values)) {
@@ -134,20 +137,20 @@ public class PropertyImpl implements Cloneable, Property {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 13 * hash + (this.propertyTypeDefinition != null ? this.propertyTypeDefinition.hashCode() : 0);
-        hash = 13 * hash + (this.value != null ? this.value.hashCode() : 0);
-        hash = 13 * hash + Arrays.deepHashCode(this.values);
-        hash = 13 * hash + (this.inherited ? 1 : 0);
+        hash = 13 * hash + (this.propertyTypeDefinition != null ? 
+                propertyTypeDefinition.hashCode() : 0);
+        hash = 13 * hash + (value != null ? value.hashCode() : 0);
+        hash = 13 * hash + Arrays.deepHashCode(values);
+        hash = 13 * hash + (inherited ? 1 : 0);
         return hash;
     }
     
     @Override
     public Value getValue() {
-        if (this.propertyTypeDefinition.isMultiple()) {
+        if (propertyTypeDefinition.isMultiple()) {
             throw new IllegalOperationException("Property " + this + " is multi-value"); 
         }
-        
-        return this.value;
+        return value;
     }
 
     @Override
@@ -170,10 +173,9 @@ public class PropertyImpl implements Cloneable, Property {
      * @throws ValueFormatException in case of illegal value being set
      */
     public void setValue(Value value, boolean strictValidation) throws ValueFormatException {
-        if (this.propertyTypeDefinition.isMultiple()) {
+        if (propertyTypeDefinition.isMultiple()) {
             throw new ValueFormatException("Property " + this + " is multi-value");
         }
-        
         validateValue(value, strictValidation);
         this.value = value;
         this.inherited = false;
@@ -188,7 +190,7 @@ public class PropertyImpl implements Cloneable, Property {
      * @throws ValueFormatException  in case of illegal value being set
      */
     public void setValues(Value[] values, boolean strictValidation) throws ValueFormatException {
-        if (! this.propertyTypeDefinition.isMultiple()) {
+        if (!propertyTypeDefinition.isMultiple()) {
             throw new ValueFormatException("Property " + this + " is not multi-value");
         }
         
@@ -199,21 +201,26 @@ public class PropertyImpl implements Cloneable, Property {
     
     @Override
     public Value[] getValues() {
-        if (! this.propertyTypeDefinition.isMultiple()) {
-            throw new IllegalOperationException("Property " + this + " is not multi-value");
+        if (! propertyTypeDefinition.isMultiple()) {
+            throw new IllegalOperationException("Property " + this + " with type " 
+                    + getType()  + " is not multi-value");
         }
-        
-        return this.values;
+        return values;
     }
 
     @Override
     public Date getDateValue() throws IllegalOperationException {
-        if (this.value == null || (getType() != PropertyType.Type.TIMESTAMP
-                && getType() != PropertyType.Type.DATE)) {
-            throw new IllegalOperationException("Property " + this + " not of type Date");
+        if (value == null) {
+            throw new IllegalOperationException(
+                    "Cannot get Date value of property " + this + ": value is null");
+            
         }
-        
-        return this.value.getDateValue();
+        if (getType() != PropertyType.Type.TIMESTAMP
+                && getType() != PropertyType.Type.DATE) {
+            throw new IllegalOperationException("Property " + this 
+                        + " not of type Date: " + getType());
+        }
+        return value.getDateValue();
     }
 
     @Override
@@ -228,11 +235,11 @@ public class PropertyImpl implements Cloneable, Property {
 
     @Override
     public String getStringValue() throws IllegalOperationException {
-        if (this.propertyTypeDefinition.isMultiple()) {
+        if (propertyTypeDefinition.isMultiple()) {
             throw new IllegalOperationException("Property " + this + " is multi-valued");
         }
-        if (this.value == null) {
-            throw new IllegalOperationException("Property " + this + " has a null value");
+        if (value == null) {
+            throw new IllegalOperationException("Property " + this + " value is null");
         }
         
         switch (getType()) {
@@ -240,13 +247,14 @@ public class PropertyImpl implements Cloneable, Property {
         case HTML:
         case IMAGE_REF:
         case JSON:
-            return this.value.getStringValue();
+            return value.getStringValue();
         case BOOLEAN:
-            return String.valueOf(this.value.getBooleanValue());
+            return String.valueOf(value.getBooleanValue());
          
         default:
             // XXX this is inconsistent with the handling of BOOLEAN type above:
-            throw new IllegalOperationException("Property " + this + " not a string type");
+            throw new IllegalOperationException("Property " + this 
+                    + " not a string type: " + getType());
         }
     }
     
@@ -264,10 +272,16 @@ public class PropertyImpl implements Cloneable, Property {
 
     @Override
     public long getLongValue() throws IllegalOperationException {
-        if (this.value == null || getType() != PropertyType.Type.LONG) {
-            throw new IllegalOperationException("Property " + this + " not of type Long");
+        if (value == null) {
+            throw new IllegalOperationException(
+                    "Cannot get long value of property " + this + ": value is null");
+            
         }
-        return this.value.getLongValue();
+        if (getType() != PropertyType.Type.LONG) {
+            throw new IllegalOperationException("Property " + this 
+                    + " not of type Long: " + getType());
+        }
+        return value.getLongValue();
     }
 
     @Override
@@ -278,18 +292,30 @@ public class PropertyImpl implements Cloneable, Property {
 
     @Override
     public int getIntValue() throws IllegalOperationException {
-        if (this.value == null || getType() != PropertyType.Type.INT) {
-            throw new IllegalOperationException("Property " + this + " not of type Integer");
+        if (value == null) {
+            throw new IllegalOperationException(
+                    "Cannot get int value of property " + this + ": value is null");
+            
         }
-        return this.value.getIntValue();
+        if (getType() != PropertyType.Type.INT) {
+            throw new IllegalOperationException("Property " + this 
+                    + " not of type Integer: " + getType());
+        }
+        return value.getIntValue();
     }
         
     @Override
     public boolean getBooleanValue() throws IllegalOperationException {
-        if (this.value == null || getType() != PropertyType.Type.BOOLEAN) {
-            throw new IllegalOperationException("Property " + this + " not of type Boolean");
+        if (value == null) {
+            throw new IllegalOperationException(
+                    "Cannot get Boolean value of property " + this + ": value is null");
+            
         }
-        return this.value.getBooleanValue();
+        if (getType() != PropertyType.Type.BOOLEAN) {
+            throw new IllegalOperationException("Property " + this 
+                    + " not of type Boolean: " + getType());
+        }
+        return value.getBooleanValue();
     }
 
     @Override
@@ -300,10 +326,15 @@ public class PropertyImpl implements Cloneable, Property {
     
     @Override
     public Json.MapContainer getJSONValue() throws IllegalOperationException {
-        if (this.value == null || getType() != PropertyType.Type.JSON) {
-            throw new IllegalOperationException("Property " + this + " not of type JSON");
+        if (value == null) {
+            throw new IllegalOperationException(
+                    "Cannot get JSON value of property " + this + ": value is null");
         }
-        return this.value.getJSONValue();
+        if (getType() != PropertyType.Type.JSON) {
+            throw new IllegalOperationException("Property " + this 
+                    + " not of type JSON: " + getType());
+        }
+        return value.getJSONValue();
     }
     
     @Override
@@ -313,20 +344,25 @@ public class PropertyImpl implements Cloneable, Property {
 
     @Override
     public Principal getPrincipalValue() throws IllegalOperationException {
-        if (this.value == null || getType() != PropertyType.Type.PRINCIPAL) {
-            throw new IllegalOperationException("Property " + this + " not of type Principal");
+        if (value == null) {
+            throw new IllegalOperationException(
+                    "Cannot get Principal value of property " + this + ": value is null");
         }
-        return this.value.getPrincipalValue();
+        if (getType() != PropertyType.Type.PRINCIPAL) {
+            throw new IllegalOperationException("Property " + this 
+                    + " not of type Principal: " + getType());
+        }
+        return value.getPrincipalValue();
     }
     
     @Override
     public Type getType() {
-        return this.propertyTypeDefinition.getType();
+        return propertyTypeDefinition.getType();
     }
     
     @Override
     public PropertyTypeDefinition getDefinition() {
-        return this.propertyTypeDefinition;
+        return propertyTypeDefinition;
     }
     
     @Override
@@ -362,7 +398,7 @@ public class PropertyImpl implements Cloneable, Property {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(this.getClass().getName()).append(": ");
+        sb.append(getClass().getSimpleName()).append(": ");
         sb.append("[ ").append(this.getDefinition().getNamespace());
         sb.append(":").append(this.getDefinition().getName());
         if (this.propertyTypeDefinition.isMultiple()) {
@@ -457,7 +493,7 @@ public class PropertyImpl implements Cloneable, Property {
             }
         }
         
-        Vocabulary<Value> vocabulary = this.propertyTypeDefinition.getVocabulary();
+        Vocabulary<Value> vocabulary = propertyTypeDefinition.getVocabulary();
         if (strictValidation && vocabulary != null && vocabulary.getAllowedValues() != null) {
             List<Value> valuesList = Arrays.asList(vocabulary.getAllowedValues());
             if (!valuesList.contains(value)) {
@@ -478,14 +514,14 @@ public class PropertyImpl implements Cloneable, Property {
     
     @Override
     public boolean isValueInitialized() {
-        if (this.propertyTypeDefinition.isMultiple()) {
-            if (this.values == null) return false;
+        if (propertyTypeDefinition.isMultiple()) {
+            if (values == null) return false;
             for (Value v : this.values) {
                 if (v == null) return false;
             }
             return true;
         }
-        return this.value != null;
+        return value != null;
     }
 
     @Override
@@ -496,19 +532,19 @@ public class PropertyImpl implements Cloneable, Property {
     @Override
     public String getFormattedValue(String format, Locale locale) {
 
-        if (!this.propertyTypeDefinition.isMultiple()) {
-            return this.propertyTypeDefinition.getValueFormatter().valueToString(this.value, format, locale);
+        if (!propertyTypeDefinition.isMultiple()) {
+            return propertyTypeDefinition.getValueFormatter().valueToString(value, format, locale);
         }
 
-        ValueFormatter formatter = this.propertyTypeDefinition.getValueFormatter();
-        ValueSeparator separator = this.propertyTypeDefinition.getValueSeparator(format);
+        ValueFormatter formatter = propertyTypeDefinition.getValueFormatter();
+        ValueSeparator separator = propertyTypeDefinition.getValueSeparator(format);
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < this.values.length; i++) {
-            Value value = this.values[i];
+        for (int i = 0; i < values.length; i++) {
+            Value value = values[i];
             sb.append(formatter.valueToString(value, format, locale));
-            if (i < this.values.length - 2) {
+            if (i < values.length - 2) {
                 sb.append(separator.getIntermediateSeparator(value, locale));
-            } else if (i == this.values.length - 2) {
+            } else if (i == values.length - 2) {
                 sb.append(separator.getFinalSeparator(value, locale));
             }
         }
@@ -522,33 +558,33 @@ public class PropertyImpl implements Cloneable, Property {
                 throw new IllegalArgumentException("JSON property requires application/json content type.");
             }
         } else if (getType() != PropertyType.Type.BINARY) {
-            throw new IllegalArgumentException("Property " + this + " not of type BINARY or JSON");
+            throw new IllegalArgumentException("Property " + this + " not of type BINARY or JSON: " + getType());
         }
         setValue(new Value(buffer, contentType, getType()));
     }
 
     @Override
     public ContentStream getBinaryStream() throws IllegalOperationException {
-        if (this.value == null || (getType() != Type.BINARY && getType() != Type.JSON)) {
-            throw new IllegalOperationException("Property " + this + " not of type BINARY or JSON, or property is multi-value");
+        if (value == null || (getType() != Type.BINARY && getType() != Type.JSON)) {
+            throw new IllegalOperationException("Property " + this + " not of type BINARY or JSON, or property is multi-value: " + getType());
         }
-        return this.value.getBinaryValue().getContentStream();
+        return value.getBinaryValue().getContentStream();
     }
 
     @Override
     public String getBinaryContentType() throws IllegalOperationException {
-        if (this.value == null || (getType() != Type.BINARY && getType() != Type.JSON)) {
-            throw new IllegalOperationException("Property " + this + " not of type BINARY or JSON, or property is multi-value");
+        if (value == null || (getType() != Type.BINARY && getType() != Type.JSON)) {
+            throw new IllegalOperationException("Property " + this + " not of type BINARY or JSON, or property is multi-value: " + getType());
         }
         if (getType() == Type.JSON) {
             return "application/json";
         }
-        return this.value.getBinaryValue().getContentType();
+        return value.getBinaryValue().getContentType();
     }
     
     @Override
     public boolean isInherited() {
-        return this.inherited;
+        return inherited;
     }
     
     public void setInherited(boolean inherited) {
