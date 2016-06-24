@@ -113,7 +113,7 @@
       </div>
       <span class="vrtx-comment-background-hook-1"></span>
     </div>
-    <#assign rowclass><#if rowclass="even">odd<#else>even</#if></#assign>
+    <#if rowclass="even"><#assign rowclass="odd" /><#else><#assign rowclass="even" /></#if>
   </#list>
   
   <div class="add-comment" id="comment-form">
