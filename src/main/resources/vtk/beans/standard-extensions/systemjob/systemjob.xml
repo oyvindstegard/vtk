@@ -64,6 +64,14 @@
     <property name="imageHeightPropDef" ref="mediaHeightPropDef" />
     <property name="imageWidthPropDef" ref="mediaWidthPropDef" />
   </bean>
+  <bean parent="cluster.component">
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="repository.systemjob.imageMetadataJob"/>
+      </bean>
+    </property>
+  </bean>
+
 
 
   <!-- Resource publisher periodic job -->
@@ -86,6 +94,13 @@
       <list>
         <value>published</value>
       </list>
+    </property>
+  </bean>
+  <bean parent="cluster.component">
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="repository.systemjob.publisher"/>
+      </bean>
     </property>
   </bean>
 
@@ -116,6 +131,13 @@
       <bean class="vtk.repository.systemjob.ChangedUriReferencesPathSelector">
         <constructor-arg name="hrefsPropDef" ref="hrefsPropDef" />
         <constructor-arg name="searcher" ref="systemIndexSearcher" />
+      </bean>
+    </property>
+  </bean>
+  <bean parent="cluster.component">
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="repository.systemjob.linkcheck.referencingResources"/>
       </bean>
     </property>
   </bean>
@@ -157,6 +179,13 @@
           <value>lastModified ASC</value>
         </property>
         <property name="limit" value="${systemjob.linkcheck.batch}" />
+      </bean>
+    </property>
+  </bean>
+  <bean parent="cluster.component">
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="repository.systemjob.linkcheck.recent"/>
       </bean>
     </property>
   </bean>
@@ -203,6 +232,13 @@
             </bean>
           </list>
         </constructor-arg>
+      </bean>
+    </property>
+  </bean>
+  <bean parent="cluster.component">
+    <property name="arguments">
+      <bean class="vtk.cluster.AsyncClusterAware">
+        <constructor-arg ref="repository.systemjob.linkcheck"/>
       </bean>
     </property>
   </bean>
