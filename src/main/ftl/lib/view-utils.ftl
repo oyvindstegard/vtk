@@ -34,7 +34,7 @@
   
   <#if introductionImage??>
   
-    <#if imageRes??>
+    <#if !imageRes?has_content>
       <img class="vrtx-introduction-image" src="${introductionImage}" alt="${introductionImageAlt}" />
     <#else>
 
@@ -42,28 +42,28 @@
         <#local introductionImage = vrtx.propValue(resource, "picture", "thumbnail")!'' />
       </#if>
 
-      <#local pixelWidth = imageRes.getValueByName("pixelWidth")!"" />
-      <#local photographer = imageRes.getValueByName("photographer")!"" />
+      <#local pixelWidth = (imageRes.getValueByName("pixelWidth"))! />
+      <#local photographer = (imageRes.getValueByName("photographer"))! />
         
       <#local style="" />
-      <#if pixelWidth != "">
-        <#local style = "width:" + pixelWidth+ "px;" />
+      <#if pixelWidth?has_content>
+        <#local style = "width:" + pixelWidth + "px;" />
       </#if>
         
-      <#if caption != ""><#-- Caption is set -->
+      <#if caption?has_content><#-- Caption is set -->
         <div class="vrtx-introduction-image" <#if style?has_content>style="${style}"</#if>>
 	  <img src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt}</#if>" />
           <div class="vrtx-imagetext">
-            <div class="vrtx-imagedescription">${caption}</div>
+            <div class="vrtx-imagedescription">${caption?no_esc}</div>
             <span class="vrtx-photo">
-              <#if photographer != ""><#-- Image authors is set -->
+              <#if photographer?has_content><#-- Image authors is set -->
                 <span class="vrtx-photo-prefix"><@vrtx.msg code="article.photoprefix" />: </span>${photographer}
               </#if>
             </span>
           </div>
         </div>
       <#else>
-        <#if photographer != ""><#-- No caption but image author set -->
+        <#if photographer?has_content><#-- No caption but image author set -->
           <div class="vrtx-introduction-image" <#if style?has_content>style="${style}"</#if>>
             <img src="${introductionImage}" alt="<#if introductionImageAlt?has_content>${introductionImageAlt}</#if>" />
             <div class="vrtx-imagetext">
