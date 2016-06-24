@@ -74,7 +74,12 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator {
         }
 
         try {
-            MapContainer jsonValue = property.getJSONValue();
+            MapContainer jsonValue = property.isValueInitialized() ? 
+                property.getJSONValue() : new MapContainer();
+            if (!jsonValue.containsKey("brokenLinks")) {
+                jsonValue.put("brokenLinks", new ListContainer());
+            }
+
             ListContainer brokenLinks = jsonValue.arrayValue("brokenLinks");
             if (brokenLinks == null || brokenLinks.isEmpty()) {
                 return false;
@@ -97,7 +102,7 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator {
             return true;
         }
         catch (Exception e) {
-            logger.warn("Exception during evaluation", e);
+            logger.warn("Exception while evaluating resource " + ctx.getNewResource(), e);
             return false;
         }
     }
