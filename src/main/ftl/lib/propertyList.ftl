@@ -1,4 +1,4 @@
-<#ftl strip_whitespace=true output_format="HTML" auto_esc=false>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 
 <#--
   - File: propertyList.ftl
