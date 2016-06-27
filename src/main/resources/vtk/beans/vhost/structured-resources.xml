@@ -240,6 +240,8 @@
         <ref bean="templateLanguage.toUpperCaseFunction" />
         <ref bean="templateLanguage.ceilFunction" />
         <ref bean="templateLanguage.toIntFunction" />
+        <ref bean="templateLanguage.dateCompareFunction" />
+        <ref bean="templateLanguage.dateFormatFunction" />
         <ref bean="templateLanguage.replaceFunction" />
         <ref bean="decorating.requestContextFunction" />
         <ref bean="decorating.retrieveFunction" />

@@ -18,6 +18,22 @@
     </constructor-arg>
   </bean>
 
+  <bean id="templateLanguage.dateCompareFunction" class="vtk.text.tl.expr.DateCompareFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg  value="dateCompare" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
+  <bean id="templateLanguage.dateFormatFunction" class="vtk.text.tl.expr.DateFormatFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg  value="dateFormat" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
   <bean id="templateLanguage.concatFunction" class="vtk.text.tl.expr.Concat">
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">

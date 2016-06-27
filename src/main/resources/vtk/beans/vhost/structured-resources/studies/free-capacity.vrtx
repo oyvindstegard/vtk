@@ -22,20 +22,26 @@ resourcetype free-capacity-listing {
     faculty-toc (courses) {
       ##
       [def faculty "undefined"]
-      <h2>[localized 'go-to-free-capacity-courses-for']</h2>
+      [def first "true"]
       <div class="vrtx-free-capacity-toc">
-        <ul>
-          [list courses course]
-            [if course.get("faculty") != null && course.get("url") != null && course.get("code") != null && 
-                course.get("name") != null && course.get("credits") != null]
-              [if course.get("faculty") != faculty]
-                [def faculty course.get("faculty")]
-                [def faculty-toc replace(faculty, " ", "-")]
-                <li><a href="#[val faculty-toc]">[val faculty]</a></li>
-              [endif]
+        [list courses course]
+          [if course.get("faculty") != null && course.get("url") != null && course.get("code") != null &&
+              course.get("name") != null && course.get("credits") != null]
+            [if first = "true"]
+              [def first "false"]
+              <h2>[localized 'go-to-free-capacity-courses-for']</h2>
+              <ul>
             [endif]
-          [endlist]
-        </ul>
+            [if course.get("faculty") != faculty]
+              [def faculty course.get("faculty")]
+              [def faculty-toc toLowerCase(replace(faculty, " ", "-"))]
+              <li><a href="#[val faculty-toc]">[val faculty]</a></li>
+            [endif]
+            [if _last && first = "false"]
+              </ul>
+            [endif]
+          [endif]
+        [endlist]
       </div>
       ##
     }
@@ -52,7 +58,7 @@ resourcetype free-capacity-listing {
                 </ul>
               [endif]
               [def faculty course.get("faculty")]
-              [def faculty-toc replace(faculty, " ", "-")]
+              [def faculty-toc toLowerCase(replace(faculty, " ", "-"))]
               <h2 id="[val faculty-toc]">[val faculty]</h2>
               <ul>
             [endif]
@@ -63,12 +69,23 @@ resourcetype free-capacity-listing {
             <li>
               <a href="[val course.get("url")]">[val course.get("code")] - [val course.get("name")]</a> ([val credits] [localized 'credits'])
             </li>
-            [if _last]
-              </ul>
-            [endif]
+          [endif]
+          [if _last && faculty != "undefined"]
+            </ul>
           [endif]
         [endlist]
       </div>
+      ##
+    }
+
+    vrtx-date-info (timestamp) {
+      ##
+      [if timestamp != null]
+        [def locale resource-locale()]
+        <div class="vrtx-date-info">
+          <span class="last-updated-label">[localized "last-updated"]</span> <span class="last-updated">[val dateFormat(timestamp, "yyyy-MM-dd'T'HH:mm:ss.SSSX", locale)]</span>
+        </div>
+      [endif]
       ##
     }
 
@@ -87,8 +104,9 @@ resourcetype free-capacity-listing {
         <h1>[call "resource:property" {"id":"title"}]</h1>
         <div class="vrtx-introduction">[call "json:field" {"select":"introduction"}]</div>
 
-        [def ended "false"]
-        [if ended = "false"]
+        [if document.properties.end-date = null || document.properties.end-date = ""]
+          <p>End date must be set to list courses with free capacity.</p>
+        [elseif dateCompare(document.properties.end-date, "now") > 0]
           <div class="vrtx-content">[call "json:field" {"select":"content"}]</div>
           <div class="vrtx-free-capacity-listing">
             [if ! settings.services.freeCapacity]
@@ -120,6 +138,7 @@ resourcetype free-capacity-listing {
               [else]
                 [call "comp:faculty-toc" { "courses" : freeCapacityResponse.payload.courses }]
                 [call "comp:list-courses" { "courses" : freeCapacityResponse.payload.courses }]
+                [call "comp:vrtx-date-info" { "timestamp" : freeCapacityResponse.payload.timestamp }]
               [endif]
             </div>
           [endif]
@@ -159,7 +178,8 @@ resourcetype free-capacity-listing {
     term : (en : "Semester", no : "Semester", nn : "Semester"),
     year : (en : "Year", no : "År", nn : "År"),
     teaching-language-all : (en : "Teaching language", no : "Undervisningsspråk", nn : "Undervisningsspråk"),
-    credits : (en : "Credits", no : "Studiepoeng", nn : "Studiepoeng"),
+    credits : (en : "credits", no : "studiepoeng", nn : "studiepoeng"),
+    last-updated : (en : "Last updated", no : "Sist oppdatert", nn: "Sist oppdatert"),
     end-date : (en : "End date", no : "Sluttdato", nn : "Sluttdato"),
     end-date-text : (en : "Description when end date has passed", no : "Beskrivelse ved passert sluttdato", nn : "Beskriving ved passert sluttdato")
   }
