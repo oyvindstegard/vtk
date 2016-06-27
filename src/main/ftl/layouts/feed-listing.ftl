@@ -119,7 +119,7 @@
   
   <#if element = "description" && conf.itemDescription?exists && descriptionNoImage[entry]?exists && descriptionNoImage[entry]?has_content>
     <div class="item-description">
-       ${descriptionNoImage[entry]?string}
+       ${descriptionNoImage[entry]?string?no_esc}
     </div>
   </#if>
 
