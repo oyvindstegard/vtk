@@ -33,6 +33,7 @@ package vtk.web.service;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.util.StringUtils;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
@@ -65,14 +66,13 @@ public class RequestProtocolAssertion implements Assertion {
         }
         
         this.protocols = StringUtils.tokenizeToStringArray(protocol, ", ");
-        if (this.protocols.length == 0) {
+        if (protocols.length == 0) {
             throw new IllegalArgumentException(
                 "Unable to find protocol in argument: '" + protocol + "'");
         }
-
-        for (int i = 0; i < this.protocols.length; i++) {
-            if (PROTO_HTTP.equals(this.protocols[i]) || PROTO_HTTPS.equals(this.protocols[i])
-                || PROTO_ANY.equals(this.protocols[i])) {
+        for (String proto: protocols) {
+            if (PROTO_HTTP.equals(proto) || PROTO_HTTPS.equals(proto)
+                || PROTO_ANY.equals(proto)) {
                 continue;
             }
             throw new IllegalArgumentException("Illegal protocol value: '" + protocol + "'");
@@ -89,19 +89,19 @@ public class RequestProtocolAssertion implements Assertion {
         if (assertion instanceof RequestProtocolAssertion) {
             boolean conflict = true;
 
-           for (int i = 0; i < this.protocols.length; i++) {
-               if (PROTO_ANY.equals(this.protocols[i])) {
+           for (String proto: protocols) {
+               if (PROTO_ANY.equals(proto)) {
                     conflict = false;
                     break;
                 }
                 String[] otherProtocols = ((RequestProtocolAssertion)assertion).protocols;
-                for (int j = 0; j < otherProtocols.length; j++) {
-                    if (PROTO_ANY.equals(otherProtocols[j])) {
+                for (String otherProto: otherProtocols) {
+                    if (PROTO_ANY.equals(otherProto)) {
                         conflict = false;
                         break;
                     }
 
-                    if (this.protocols[i].equals(otherProtocols[j])) {
+                    if (proto.equals(otherProto)) {
                         conflict = false;
                         break;
                     }
@@ -115,22 +115,31 @@ public class RequestProtocolAssertion implements Assertion {
     @Override
     public void processURL(URL url) {
         RequestContext requestContext = RequestContext.getRequestContext();
-        if (requestContext != null && this.preferRequestProtocol) {
-
+        if (requestContext != null && preferRequestProtocol) {
             String requestProtocol = getProtocol(requestContext.getServletRequest());
 
-            for (int i = 0; i < this.protocols.length; i++) {
-
-                if (this.protocols[i].equals(requestProtocol)) {
+            for (String proto: protocols) {
+                if (PROTO_ANY.equals(proto)) {
                     url.setProtocol(requestProtocol);
+                    break;
+                }
+                if (PROTO_HTTPS.equals(requestProtocol)) {
+                    // We are already on https, so stay there
+                    url.setProtocol(PROTO_HTTPS);
+                    break;
+                }
+                if (proto.equals(requestProtocol)) {
+                    url.setProtocol(requestProtocol);
+                    break;
                 }
             }
-        } else {
+        }
+        else {
             boolean set = false;
-            for (int i = 0; i < this.protocols.length; i++) {
+            for (String proto: protocols) {
 
-                if (!PROTO_ANY.equals(this.protocols[i])) {
-                    url.setProtocol(this.protocols[i]);
+                if (!PROTO_ANY.equals(proto)) {
+                    url.setProtocol(proto);
                     set = true;
                     break;
                 }
@@ -162,12 +171,15 @@ public class RequestProtocolAssertion implements Assertion {
 
         String requestProtocol = getProtocol(request);
 
-        for (int i = 0; i < this.protocols.length; i++) {
-            if (PROTO_ANY.equals(this.protocols[i])) {
+        for (String proto: protocols) {
+            if (PROTO_ANY.equals(proto)) {
                 return true;
             }
-
-            if (this.protocols[i].equals(requestProtocol)) {
+            if (preferRequestProtocol && PROTO_HTTPS.equals(requestProtocol)) {
+                // We are on https, so allow it
+                return true;
+            }
+            if (proto.equals(requestProtocol)) {
                 return true;
             }
         }
@@ -179,9 +191,9 @@ public class RequestProtocolAssertion implements Assertion {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("request.protocol in (");
-        for (int i = 0; i < this.protocols.length; i++) {
-            sb.append(this.protocols[i]);
-            if (i < this.protocols.length - 1) sb.append(", ");
+        for (int i = 0; i < protocols.length; i++) {
+            sb.append(protocols[i]);
+            if (i < protocols.length - 1) sb.append(", ");
         }
         sb.append(")");
         return sb.toString();

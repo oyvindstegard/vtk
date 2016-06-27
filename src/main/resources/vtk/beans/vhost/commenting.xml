@@ -8,6 +8,7 @@
       <list>
         <ref bean="commenting.requestParameterIsAddComment" />
         <ref bean="commenting.isPostRequest" />
+        <ref bean="commenting.postProtocol" />
         <ref bean="commenting.commentsAllowed" />
         <ref bean="commenting.commentsEnabled" />
       </list>
@@ -25,6 +26,7 @@
     <property name="assertions">
       <list>
         <ref bean="commenting.isPostRequest" />
+        <ref bean="commenting.postProtocol" />
         <ref bean="commenting.requestParameterIsDeleteComment" />
         <ref bean="commenting.hasDeletePermission" />
       </list>
@@ -42,6 +44,7 @@
     <property name="assertions">
       <list>
         <ref bean="commenting.isPostRequest" />
+        <ref bean="commenting.postProtocol" />
         <ref bean="commenting.requestParameterIsDeleteAllComments" />
         <ref bean="commenting.hasDeletePermission" />
       </list>
@@ -210,6 +213,11 @@
         <value>POST</value>
       </set>
     </property>
+  </bean>
+
+  <bean id="commenting.postProtocol" class="vtk.web.service.RequestProtocolAssertion">
+    <property name="protocol" value="${webProtocol}" />
+    <property name="preferRequestProtocol" value="true" />
   </bean>
 
   <bean id="commenting.commentsEnabled"
