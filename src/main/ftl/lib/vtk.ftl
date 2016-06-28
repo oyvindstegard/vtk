@@ -772,7 +772,7 @@
 
 <#macro displayLinkOtherLang resource>
   <#assign linkOtherLanguage = vrtx.propValue(resource, "linkOtherLanguage")! />
-  <#if linkOtherLanguage??>
+  <#if linkOtherLanguage?has_content>
     <a id="vrtx-change-language-link" href="${linkOtherLanguage}"><@vrtx.msg code="link-other-language" /><span class="offscreen-screenreader"> <@vrtx.msg code="link-other-language.offscreen" /></span></a>
   </#if>
 </#macro>
