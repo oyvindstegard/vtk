@@ -218,9 +218,9 @@
               <#case "permissions">
                 <#assign hasTooltip = collectionListing.permissionTooltips[child_index]?exists />
                 <#if restricted != "restricted" >
-                  <span class="allowed-for-all<#if hasTooltip> permission-tooltips</#if>"><#if hasTooltip><a href='javascript:void(0);' title='${collectionListing.permissionTooltips[child_index]}'></#if>${vrtx.getMsg("collectionListing.permissions.readAll")}<#if hasTooltip></a></#if></span>
+                  <span class="allowed-for-all<#if hasTooltip> permission-tooltips</#if>"><#if hasTooltip><a href='javascript:void(0);' title='${collectionListing.permissionTooltips[child_index]?no_esc}'></#if>${vrtx.getMsg("collectionListing.permissions.readAll")}<#if hasTooltip></a></#if></span>
                 <#else>
-                  <span class="restricted<#if hasTooltip> permission-tooltips</#if>"><#if hasTooltip><a href='javascript:void(0);' title='${collectionListing.permissionTooltips[child_index]}'></#if>${vrtx.getMsg("collectionListing.permissions.restricted")}<#if hasTooltip></a></#if></span>
+                  <span class="restricted<#if hasTooltip> permission-tooltips</#if>"><#if hasTooltip><a href='javascript:void(0);' title='${collectionListing.permissionTooltips[child_index]?no_esc}'></#if>${vrtx.getMsg("collectionListing.permissions.restricted")}<#if hasTooltip></a></#if></span>
                 </#if>
                 <#if !child.isInheritedAcl()><span class="own-permission">&bull;</span></#if>
                 <#break>
