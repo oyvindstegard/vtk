@@ -52,9 +52,8 @@
    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/reports/broken-links.js"></script>
   </head>
   <body id="vrtx-report-broken-links">
-  <#assign linkTypeLocalization>
-    <@vrtx.msg code="report.broken-links.filters.link-type.${report.linkType}" />
-  </#assign>
+    <#assign linkTypeLocalization = vrtx.getMsg("report.broken-links.filters.link-type." + report.linkType) />
+
 
   <div class="resourceInfo">
     <div class="vrtx-report-nav">
