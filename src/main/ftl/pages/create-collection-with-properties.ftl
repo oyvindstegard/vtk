@@ -24,7 +24,7 @@
           Value: <input type="text" name="propertyValue" />
         </fieldset>
       </#assign>
-      <#assign js_property_input = property_input?js_string />
+      <#assign js_property_input = property_input?markup_string?js_string />
 
       <div id="property-inputs">
       ${property_input}
