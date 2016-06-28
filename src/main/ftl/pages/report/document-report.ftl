@@ -140,7 +140,7 @@
               <#else>
                 <#assign permissionClass = "allowed-for-all" />
               </#if>
-              <span class="${permissionClass}<#if hasTooltip> permission-tooltips</#if>"><#if hasTooltip><a href='javascript:void(0);' title='${report.permissionTooltips[res_index]}'></#if>${isReadRestricted}<#if hasTooltip></a></#if></span>
+              <span class="${permissionClass}<#if hasTooltip> permission-tooltips</#if>"><#if hasTooltip><a href='javascript:void(0);' title='${report.permissionTooltips[res_index]?no_esc}'></#if>${isReadRestricted}<#if hasTooltip></a></#if></span>
               <#if !report.isInheritedAcl[res_index]><span class="own-permission">&bull;</span></#if>
             </td>
             <#if report.reportname != "unpublished">
