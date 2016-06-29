@@ -130,7 +130,7 @@
 
       <#if conf.eventDescription>
         <div class="vrtx-event-component-introduction">
-          ${intro}
+          ${intro?no_esc}
         </div>
       </#if>
     </div>
@@ -224,7 +224,7 @@
 
     <#if conf.eventDescription>
       <div class="vrtx-event-component-introduction">
-        ${intro}
+        ${intro?no_esc}
       </div>
     </#if>
   </div>
