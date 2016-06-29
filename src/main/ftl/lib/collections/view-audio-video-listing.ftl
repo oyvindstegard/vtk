@@ -102,21 +102,21 @@
 	    <#local videoDescription = vrtx.propValue(r, "video-description")! />
             <#if videoDescription?has_content>
               <div class="video-description">
-                ${videoDescription}
+                ${videoDescription?no_esc}
               </div>
             </#if>
 
 	    <#local audioDescription = vrtx.propValue(r, "audio-description")! />
             <#if audioDescription?has_content>
               <div class="audio-description">
-                ${audioDescription}
+                ${audioDescription?no_esc}
               </div>
             </#if>
 
             <#local introduction = vrtx.getIntroduction(r)! />
             <#if introduction?has_content && !collectionListing.hasDisplayPropDef("hide-introduction")>
               <div class="introduction">
-                ${introduction}
+                ${introduction?no_esc}
               </div>
             </#if>
 

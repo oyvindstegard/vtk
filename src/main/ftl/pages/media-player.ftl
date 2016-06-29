@@ -27,7 +27,7 @@
 
 <#if description?exists >
   <div id="vrtx-meta-description">
-    ${description}
+    ${description?no_esc}
   </div>
 </#if>
 
