@@ -247,6 +247,9 @@
         <value>vrtxPreviewUnpublished</value>
       </set>
     </property>
+    <!-- Plain view service requires restricted protocol, and forwarding should honour
+         that for the service being forwarded to as well. -->
+    <property name="preserveRequestProtocol" value="true"/>
     <property name="requestParameters">
       <map>
         <entry key="x-prevent-decorating" value="true" />

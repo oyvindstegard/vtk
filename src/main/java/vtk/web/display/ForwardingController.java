@@ -49,6 +49,16 @@ import vtk.web.service.URL;
 import vtk.web.servlet.ConfigurableRequestWrapper;
 import vtk.web.servlet.VTKServlet;
 
+/**
+ * Internal forward of a request to a configurable service, on the same URI
+ * as the original request.
+ * 
+ * <p>Configurable addition of extra headers, preservation of original request parameters
+ * and addition of extra request parameters and/or attributes.
+ * 
+ * <p>The protocol of the original request URL is preserved if {@link #setPreserveRequestProtocol(boolean) }
+ * is set to <code>true</code>.
+ */
 public class ForwardingController implements Controller, ServletContextAware {
 
     private ServletContext servletContext;
@@ -58,6 +68,7 @@ public class ForwardingController implements Controller, ServletContextAware {
     private Map<String, Object> requestAttributes;
     private Map<String, String> requestParameters;
     private Set<String> preservedRequestParameters;
+    private boolean preserveRequestProtocol = false;
     
     @Override
     public ModelAndView handleRequest(HttpServletRequest request,
@@ -66,7 +77,11 @@ public class ForwardingController implements Controller, ServletContextAware {
         Path uri = requestContext.getResourceURI();
         URL requestedURL = requestContext.getRequestURL();
         URL dispatchURL = this.service.constructURL(uri).setCollection(requestedURL.isCollection());
-
+        
+        if (this.preserveRequestProtocol) {
+            dispatchURL.setProtocol(requestedURL.getProtocol());
+        }
+        
         if (this.preservedRequestParameters != null) {
             for (String name: this.preservedRequestParameters) {
                 List<String> values = requestedURL.getParameters(name);
@@ -124,5 +139,14 @@ public class ForwardingController implements Controller, ServletContextAware {
     
     public void setPreservedRequestParameters(Set<String> preservedRequestParameters) {
         this.preservedRequestParameters = preservedRequestParameters;
+    }
+    
+    /**
+     * @param val set to <code>true</code> to preseve the protocol of the
+     * request being forwarded. This will override the protocol in URL constructed
+     * for the target service.
+     */
+    public void setPreserveRequestProtocol(boolean val) {
+        this.preserveRequestProtocol = val;
     }
 }
