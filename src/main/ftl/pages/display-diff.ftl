@@ -66,7 +66,7 @@
     </div> -->
       
     <#if content?has_content>
-      ${content}
+      ${content?no_esc}
     </#if>
   </body>
 </html>
