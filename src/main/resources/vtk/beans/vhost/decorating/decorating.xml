@@ -225,6 +225,10 @@
           <property name="parameterName" value="x-decorating-mode" />
           <property name="parameterValue" value="plain" />
         </bean>
+        <bean class="vtk.web.service.RequestProtocolAssertion">
+          <property name="protocol" value="${webProtocolRestricted}" />
+          <property name="preferRequestProtocol" value="false" />
+        </bean>
       </list>
     </property>
     <property name="handler" ref="decorating.plainViewHandler" />
