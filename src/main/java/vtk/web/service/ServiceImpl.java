@@ -180,6 +180,9 @@ public class ServiceImpl implements Service, BeanNameAware {
             }
             s = s.getParent();
         }
+        // XXX This is theoretically unsafe without "this.accumulatedUrlPostProcessors" being declared volatile.
+        //     (Due to instruction reordering, the instance var update may be seen by other threads before the list
+        //      construction has actually finished.)
         this.accumulatedUrlPostProcessors = allPostProcessors;
         return allPostProcessors;
     }
@@ -302,7 +305,7 @@ public class ServiceImpl implements Service, BeanNameAware {
         for (Assertion assertion: getAllAssertions()) {
             assertion.processURL(urlObject);
         }
-       
+
         postProcess(urlObject, null);
         
         return urlObject;
