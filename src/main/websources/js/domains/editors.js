@@ -312,8 +312,8 @@ function ajaxSave() {
           }
         },
         error: function (xhr, textStatus, errMsg) {
+          loadingDialog.close();
           if (!reTryOnTemporaryFailure(xhr, textStatus, this)) {
-            loadingDialog.close();
             vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
           }
         }
@@ -347,8 +347,8 @@ function isServerLastModifiedOlderThanClientLastModified(loadingDialog) {
       future.resolve();
     },
     error: function (xhr, textStatus, errMsg) {
+      loadingDialog.close();
       if (!reTryOnTemporaryFailure(xhr, textStatus, this)) {
-        loadingDialog.close();
         vrtxAdmin.asyncEditorSavedDeferred.rejectWith(this, [xhr, textStatus]);
         future.reject();
       }
