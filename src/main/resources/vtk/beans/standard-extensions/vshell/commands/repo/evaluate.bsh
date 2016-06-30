@@ -69,6 +69,7 @@ void execute(context, args, out) {
 
                 content = coll ? null : new ContentImpl(propset.getURI(), contentStore, contentRegistry);
 
+                evaluated = null;
                 try {
                     evaluated = helper.contentModification(orig, orig.getOwner(), content);
                 }
