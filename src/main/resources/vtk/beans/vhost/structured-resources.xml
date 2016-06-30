@@ -348,8 +348,8 @@
   <bean id="structuredResources.freeCapacityURLCacheLoader" class="vtk.util.cache.loaders.FreeCapacityJSONCacheLoader">
     <property name="connectTimeoutSeconds" value="1" />
     <property name="readTimeoutSeconds" value="5" />
-    <property name="username" value="${uiows.service.course-schedule.username}" />
-    <property name="password" value="${uiows.service.course-schedule.password}" />
+    <property name="username" value="${uiows.service.free-capacity.username}" />
+    <property name="password" value="${uiows.service.free-capacity.password}" />
   </bean>
 
   <!--
