@@ -161,7 +161,7 @@
       <script type="text/javascript">
       <!--
         $(document).ready(function() {
-          eventListingCalendar(${allowedDates}, '${activeDate}', '${dayHasPlannedEventsTitle}', '${dayHasNoPlannedEventsTitle}', '${language}');
+          eventListingCalendar(${allowedDates?no_esc}, '${activeDate}', '${dayHasPlannedEventsTitle}', '${dayHasNoPlannedEventsTitle}', '${language}');
         });
       // -->
       </script>
