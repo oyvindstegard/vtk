@@ -47,7 +47,7 @@
         <label><@vrtx.msg code="email.form.text" default="E-mail text" /></label>
         <div id="emailBody">
           <strong>${emailSubject}</strong>
-          ${emailBody}
+          ${emailBody?no_esc}
         </div>
       </#if>
        
