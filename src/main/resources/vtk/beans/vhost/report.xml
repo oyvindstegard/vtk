@@ -626,6 +626,7 @@
         <value>vtk.i18n.report.report</value>
       </list>
     </property>
+    <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
 </beans>
