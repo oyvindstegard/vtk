@@ -45,6 +45,7 @@ public class EnumerationValueSeparator implements ValueSeparator {
     public EnumerationValueSeparator(String messageSourceBaseName) {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasename(messageSourceBaseName);
+        messageSource.setFallbackToSystemLocale(false);
 
         this.messageSource = messageSource;
     }
