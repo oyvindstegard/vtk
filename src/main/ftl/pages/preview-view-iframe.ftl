@@ -83,7 +83,7 @@
      $('iframe').load(function() {
         $(this).contents().find("a, form").attr("target", "vrtx-preview-window");
 
-        <#if visualizeBrokenLinks?exists && visualizeBrokenLinks = 'true'> 
+        <#if visualizeBrokenLinks?has_content && visualizeBrokenLinks = 'true'> 
         
         $("body").prepend('<span id="vrtx-link-check-spinner" aria-busy="true"><@vrtx.msg code="linkcheck.spinner" default="Checking links..."/></span>');
         
@@ -116,11 +116,11 @@
 
     <#assign url = resourceReference />
     <#if url?contains("?")>
-      <#assign url = url + "&amp;link-check=" + visualizeBrokenLinks?default('false')
-               + "&amp;" + previewRefreshParameter + "=" + dateStr + "&amp;authTarget=" + authTarget />
+      <#assign url = url + "&link-check=" + visualizeBrokenLinks?default('false')
+               + "&" + previewRefreshParameter + "=" + dateStr + "&authTarget=" + authTarget />
     <#else>
-      <#assign url = url + "?" + "&amp;link-check=" + visualizeBrokenLinks?default('false')
-               + "&amp;" + previewRefreshParameter + "=" + dateStr + "&amp;authTarget=" + authTarget />
+      <#assign url = url + "?" + "link-check=" + visualizeBrokenLinks?default('false')
+               + "&" + previewRefreshParameter + "=" + dateStr + "&authTarget=" + authTarget />
     </#if>
 
     <div id="previewViewIframeWrapper">
