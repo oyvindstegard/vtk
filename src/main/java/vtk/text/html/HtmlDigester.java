@@ -33,6 +33,7 @@ package vtk.text.html;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +45,7 @@ import org.apache.commons.lang.StringUtils;
 import org.w3c.tidy.Tidy;
 
 import com.googlecode.htmlcompressor.compressor.HtmlCompressor;
-import java.io.PrintWriter;
+
 import vtk.util.io.NullOutputStream;
 
 /**
@@ -175,13 +176,13 @@ public class HtmlDigester {
     }
 
     private String sanitizeTruncated(String truncated) {
-
+        
         // XXX Setup/configuration? Add tags without attributes... e.g. <li
         // style...>? Print body only?
         Tidy tidy = new Tidy();
         tidy.setPrintBodyOnly(true);
         tidy.setQuiet(true);
-        tidy.setOnlyErrors(true);
+        tidy.setOnlyErrors(false);
         tidy.setShowWarnings(false);
         tidy.setErrout(new PrintWriter(NullOutputStream.INSTANCE));
         tidy.setMakeClean(true);
