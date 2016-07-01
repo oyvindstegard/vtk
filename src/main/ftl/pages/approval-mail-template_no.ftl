@@ -11,4 +11,4 @@
 </#if>
 
 <#t /><p>Mer om hvordan du godkjenner:<br/><#t />
-<#t /><a href="http://www.uio.no/tjenester/it/web/vortex/hjelp/admin/rettigheter/godkjenning/">http://www.uio.no/tjenester/it/web/vortex/hjelp/admin/rettigheter/godkjenning/</a></p><#t />
+<#t /><a href="http://www.uio.no/for-ansatte/arbeidsstotte/profil/nettarbeid/veiledninger/rettigheter/godkjenning/">http://www.uio.no/for-ansatte/arbeidsstotte/profil/nettarbeid/veiledninger/rettigheter/godkjenning/</a></p><#t />
