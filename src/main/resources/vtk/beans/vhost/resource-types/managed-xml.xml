@@ -83,6 +83,7 @@
         <value>vtk.i18n.xmlprops</value>
       </list>
     </property>
+    <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
   <bean id="managedXmlTitlePropertyEvaluator"

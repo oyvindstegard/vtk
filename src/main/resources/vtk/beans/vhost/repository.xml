@@ -211,6 +211,7 @@
 
   <bean id="repository.typeLocalizationMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
     <property name="basename" value="vtk.i18n.resource-types" />
+    <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
   <bean id="contentRepresentationRegistry" class="vtk.repository.content.ContentRepresentationRegistry" />

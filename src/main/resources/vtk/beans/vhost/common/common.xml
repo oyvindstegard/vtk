@@ -13,6 +13,7 @@
         <value>vtk.i18n.messages</value>
       </list>
     </property>
+    <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
   <bean id="localeTranslationMap" class="org.springframework.beans.factory.config.MapFactoryBean">

@@ -10,6 +10,7 @@
         <value>vtk.i18n.decorator-components</value>
       </list>
     </property>
+    <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
   <bean id="decorating.documentNamespace" class="java.lang.String">

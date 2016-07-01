@@ -67,6 +67,7 @@
         <value>vtk.i18n.trash-can.trash-can</value>
       </list>
     </property>
+    <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
 </beans>

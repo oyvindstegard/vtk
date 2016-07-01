@@ -139,6 +139,7 @@
         <value>vtk.i18n.xmledit</value>
       </list>
     </property>
+    <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
 

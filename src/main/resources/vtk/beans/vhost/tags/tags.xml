@@ -214,6 +214,7 @@
         <value>vtk.i18n.tags</value>
       </list>
     </property>
+    <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
 </beans>

@@ -368,6 +368,7 @@
         <value>vtk.i18n.publish.publish</value>
       </list>
     </property>
+    <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
   <bean id="unpublishedCollectionPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
