@@ -31,16 +31,12 @@
 
 package vtk.repository.resourcetype.property;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.mutable.MutableInt;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -51,6 +47,8 @@ import vtk.repository.resourcetype.PropertyEvaluator;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
+import vtk.util.text.Json.MapContainer;
+import vtk.util.text.JsonStreamer;
 
 
 /**
@@ -83,13 +81,10 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator {
         }
         
         try {
-            InputStream is = linkCheckProp.getBinaryStream().getStream();
-            JSONObject json = (JSONObject) new JSONParser().parse(new InputStreamReader(is,"utf-8"));
-            is.close();
-            JSONArray brokenLinks = (JSONArray) json.get("brokenLinks");
-            if (brokenLinks == null || brokenLinks.isEmpty()) {
-                return false;
-            }
+            MapContainer linkCheck = linkCheckProp.getJSONValue();
+            List<Object> brokenLinks = linkCheck
+                    .optArrayValue("brokenLinks", Collections.emptyList());
+            if (brokenLinks.isEmpty()) return false;
             
             ErrorCount errorCount = new ErrorCount();
             for (Object o: brokenLinks) {
@@ -108,7 +103,8 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator {
             return true;
         }
         catch (Exception e) {
-            logger.warn("Exception during evaluation of broken links count for " 
+            logger.warn("Exception during evaluation of " 
+                    + property.getDefinition().getName() + " for " 
                     + ctx.getNewResource(), e);
             return false;
         }
@@ -127,7 +123,7 @@ public class BrokenLinksCountEvaluator implements PropertyEvaluator {
         }
         
         void write(Property prop) {
-            String jsonString = JSONValue.toJSONString(errorCount);
+            String jsonString = JsonStreamer.toJson(errorCount);
             prop.setValue(new Value(jsonString, PropertyType.Type.JSON));
         }
     }
