@@ -50,9 +50,9 @@ import vtk.web.RequestContext;
 
 public class DisplayMarkdownView implements View {
     
-    private static final int MARKDOWN_EXTENSIONS = Extensions.HARDWRAPS 
-            | Extensions.FENCED_CODE_BLOCKS | Extensions.AUTOLINKS | Extensions.TABLES
-            | Extensions.DEFINITIONS;
+    private static final int MARKDOWN_EXTENSIONS = 
+            Extensions.FENCED_CODE_BLOCKS | Extensions.AUTOLINKS 
+            | Extensions.TABLES | Extensions.DEFINITIONS;
 
     @Override
     public String getContentType() {
