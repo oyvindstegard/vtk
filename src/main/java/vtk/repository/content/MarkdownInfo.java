@@ -30,7 +30,7 @@
  */
 package vtk.repository.content;
 
-public final class MarkdownInfo extends HtmlInfo {
+public final class MarkdownInfo {
     public final String title;
     public final String summary;
     
