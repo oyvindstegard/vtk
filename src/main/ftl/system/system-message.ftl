@@ -3,7 +3,7 @@
 <#if systemInfoMessage?exists && systemInfoMessage?has_content>
   <div id="system-message-wrapper">
     <div class="system-message">
-      <div class="system-message-text">${systemInfoMessage}</div>
+      <div class="system-message-text">${systemInfoMessage?no_esc}</div>
     </div>
   </div>
 </#if>
