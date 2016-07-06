@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="markdown.displayService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="displayResourceService" />
+    <property name="assertions">
+      <list>
+        <ref bean="markdown.contentTypeAssertion" />
+      </list>
+    </property>
+    <property name="handler" ref="markdown.displayHandler" />
+  </bean>
+
+  <bean id="markdown.previewService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="previewService" />
+    <property name="order" value="0" />
+    <property name="assertions" ref="markdown.contentTypeAssertion" />
+    <property name="handler" ref="markdown.previewHandler" />
+  </bean>
+
+  <bean id="markdown.displayHandler"
+    class="vtk.web.display.file.ResourceAwareParameterizableViewController">
+    <property name="viewName" value="markdown.view" />
+  </bean>
+
+  <bean id="markdown.previewHandler" parent="abstractPreviewIframe">
+    <property name="service" ref="displayResourceService" />
+    <property name="viewName" value="previewAdminIframe" />
+  </bean>
+
+  <bean id="markdown.viewResolver" parent="decoratorViewResolver">
+    <property name="views">
+      <map>
+        <entry key="markdown.view" value-ref="markdown.view" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="markdown.view" class="vtk.web.display.DisplayMarkdownView" />
+
+</beans>
