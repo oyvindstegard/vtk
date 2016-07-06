@@ -72,6 +72,7 @@
   <import resource="create-from-drop-down.xml" />
   <import resource="manually-approve-resources.xml" />
 
+  <import resource="display-markdown.xml" />
 
   <import resource="link-check.xml" />
 

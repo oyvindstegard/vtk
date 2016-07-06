@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="markdown.contentFactory" class="vtk.repository.content.MarkdownInfoContentFactory" />
+
+  <bean id="markdown.resourceTypeDefinition"
+        class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
+    <property name="name" value="markdown"/>
+    <property name="namespace" ref="DEFAULT_NAMESPACE" />
+    <property name="parentTypeDefinition" ref="textResourceTypeDefinition" />
+    <property name="assertions">
+      <list>
+        <ref bean="markdown.contentTypeAssertion" />
+      </list>
+    </property>
+    <property name="propertyTypeDefinitions">
+      <list>
+        <ref bean="markdown.titlePropDef" />
+        <ref bean="markdown.overriddenTitlePropDef" />
+        <!--ref bean="markdown.summaryPropDef" /-->
+      </list>
+    </property>
+  </bean>
+
+  <bean id="markdown.contentTypeAssertion" 
+        class="vtk.web.service.ResourceContentTypeRegexpAssertion">
+    <property name="pattern" value="text/markdown" />
+  </bean>
+
+  <bean id="markdown.titlePropDef"
+        class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="markdownTitle" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="false" />
+    <property name="propertyEvaluator" ref="markdown.titlePropertyEvaluator" />
+  </bean>
+
+  <bean id="markdown.titlePropertyEvaluator"
+        class="vtk.repository.resourcetype.property.MarkdownPropertyEvaluator">
+    <constructor-arg name="field" value="title" />
+  </bean>
+
+  <bean id="markdown.overriddenTitlePropDef"
+        class="vtk.repository.resourcetype.OverridingPropertyTypeDefinitionImpl">
+    <property name="overriddenPropDef" ref="titlePropDef" />
+    <property name="propertyEvaluator" ref="markdown.overriddenTitlePropertyEvaluator" />
+  </bean>
+
+  <bean id="markdown.overriddenTitlePropertyEvaluator" parent="titleEvaluator">
+    <property name="fallbackTitlePropDef" ref="markdown.titlePropDef"/>
+  </bean>
+
+  <!--
+  <bean id="markdown.summaryPropDef"
+        class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="markdownSummary" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="false" />
+    <property name="propertyEvaluator" ref="markdown.summaryPropertyEvaluator" />
+  </bean>
+
+  <bean id="markdown.summaryPropertyEvaluator"
+        class="vtk.repository.resourcetype.property.MarkdownPropertyEvaluator">
+    <constructor-arg name="field" value="summary" />
+  </bean>
+  -->
+
+</beans>

@@ -603,6 +603,12 @@
       </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>org.pegdown</groupId>
+      <artifactId>pegdown</artifactId>
+      <version>1.6.0</version>
+    </dependency>
+
     <!-- OpenID -->
     <dependency>
       <groupId>org.openid4java</groupId>
