@@ -31,7 +31,6 @@
 package vtk.web.display;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.time.Duration;
 import java.util.Map;
 
@@ -84,10 +83,7 @@ public class DisplayMarkdownView implements View {
             response.setContentType(getContentType());
             response.setContentLength(output.length);
             
-            OutputStream out = response.getOutputStream();
-            out.write(output);
-            out.flush();
-            out.close();
+            IO.write(output, response.getOutputStream()).perform();
         }
     }
 
