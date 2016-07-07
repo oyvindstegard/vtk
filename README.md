@@ -1,4 +1,6 @@
-# Installation
+# VTK CMS
+
+## Installation
 
 To set up a minimal version of the VTK CMS the following steps
 are necessary:
@@ -43,7 +45,8 @@ are necessary:
 8. Create `folder-templates`, `document-templates` and set up simple
    decorating in repository:
 
-## Folder templates:
+### Folder templates:
+
 ```
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/folder-templates/
@@ -69,7 +72,8 @@ EOF
 )
 ```
 
-## Document templates:
+### Document templates:
+
 ```
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/doc-templates/
@@ -93,7 +97,8 @@ EOF
 )
 ```
 
-## Decorating:
+### Decorating:
+
 ```
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/decorating/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/decorating/templates/
