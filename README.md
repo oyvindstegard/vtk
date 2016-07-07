@@ -1,19 +1,21 @@
-To set up a minimal version of the Vortikal server the following steps
+# Installation
+
+To set up a minimal version of the VTK CMS the following steps
 are necessary:
 
 1. Download and install Maven 3
    ( http://maven.apache.org/download.html )
 
 2. Create a database using the DDL in the
-   'src/main/sql/postgresql-schema.sql' (currently only PostgreSQL is
+   `src/main/sql/postgresql-schema.sql` (currently only PostgreSQL is
    supported, but HSQLDB has also been known to work in the past). The
-   current PostgreSQL usage requires the language 'plpgsql' to be
+   current PostgreSQL usage requires the language `plpgsql` to be
    installed in the database which can be installed with the following
-   command 'createlang plpgsql <database>'.
+   command `createlang plpgsql <database>`.
 
 3. Set up the configuration. Configuration should be placed in the
-   files ~/.vtk.properties and ~/.vrtx.properties
-
+   files `~/.vtk.properties` and `~/.vrtx.properties`
+```
    indexStorageRootPath = [an empty directory for storing indices]
    jdbcUsername = [your JDBC user]
    jdbcPassword = [your JDBC password]
@@ -21,28 +23,28 @@ are necessary:
    repositoryTrashCanDirectory = [an empty directory for storing "deleted" files]
    repositoryRevisionDirectory = [an empty directory for storing file revisions]
    databaseURL = [your JDBC URL, e.g. jdbc:postgresql:my-user>]
-  
-4. Run the command 'mvn jetty:run' (standing in the project
+```  
+4. Run the command `mvn jetty:run` (standing in the project
    directory). 
 
 5. You should now be able to access the web service on
-   http:localhost:9322/ and the WebDAV service on
+   http://localhost:9322/ and the WebDAV service on
    http://localhost:9321/. 
    
-   Log in as 'root@localhost:fish' or user 'user@localhost:pw'.
+   Log in as `root@localhost:fish` or user `user@localhost:pw`.
 
 6. See the default configuration file
-   'src/main/resources/vtk/beans/vtk.properties' for
+   `src/main/resources/vtk/beans/vtk.properties` for
    descriptions of the various configuration settings.
 
 7. Custom bean definitions and overriding can be placed in the file
-   ~/.vrtx-context.xml (loaded if it exists).
+   `~/.vrtx-context.xml` (loaded if it exists).
 
-8. Create folder-templates, document-templates and set up simple
+8. Create `folder-templates`, `document-templates` and set up simple
    decorating in repository:
 
-#### Folder templates:
-
+## Folder templates:
+```
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/folder-templates/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/folder-templates/types/
@@ -65,10 +67,10 @@ curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/folder-templates
 / = types
 EOF
 )
+```
 
-
-#### Document templates:
-
+## Document templates:
+```
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/doc-templates/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/doc-templates/types/
@@ -89,9 +91,10 @@ curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/doc-templates/co
 / = types
 EOF
 )
+```
 
-#### Decorating:
-
+## Decorating:
+```
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/decorating/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/decorating/templates/
 curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/decorating/templates/simple.html \
@@ -123,19 +126,21 @@ curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/decorating/confi
 /vrtx/decorating = NONE
 EOF
 )
+```
 
-NOTE ON JBOSS
+## NOTE ON JBOSS
 
 For determining the master node in a JBoss cluster a singleton service is used.
 This special service is started by the file:
 
-src/main/resources/META-INF/services/org.jboss.msc.service.ServiceActivator
+`src/main/resources/META-INF/services/org.jboss.msc.service.ServiceActivator`
 
 The JBoss management code for singleton requires OSGi, and this breaks normal
-jetty:run, so we have defined a special profile in pom.xml for it. Build with:
-
+`jetty:run`, so we have defined a special profile in `pom.xml` for it. Build with:
+```
 mvn -Dcontainer=jboss clean compile war:war
-
-When running, include the following (e.g. as an import in ~/vrtx-context.xml)
-
+```
+When running, include the following (e.g. as an import in `~/vrtx-context.xml`)
+```
 /vtk/beans/standard-extensions/cluster/cluster.jboss.xml
+```
