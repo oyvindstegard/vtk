@@ -18,7 +18,7 @@
 <#assign location = vrtx.propValue(resource, "location")! />
 <#assign title = vrtx.propValue(resource, "title")! />
 
-<#if start?has_content && end?has_content && location?has_content && title?has_content>
+<#if start?has_content || end?has_content || location?has_content>
   <div class="vevent">
     <#t /><@viewutils.displayTimeAndPlace resource title false false true />
   </div>
