@@ -205,7 +205,7 @@
       <#local introduction = vrtx.getIntroduction(resource)! />
       <#if introduction?has_content && !listing.hasDisplayPropDef("hide-introduction")>
         <div class="introduction">
-          ${introduction}
+          ${introduction?no_esc}
           <#local hasBody = (vrtx.propValue(resource, 'hasBodyContent')!'false') == 'true' />
           <#if hasBody>
             <div class="vrtx-read-more">
