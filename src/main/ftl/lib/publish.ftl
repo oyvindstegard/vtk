@@ -13,18 +13,18 @@
     <span class="<#if notPublished >unpublished<#else>published</#if>">
       <#if propResource?has_content && propResource.inherited >
         <#if resource.published >
-          ${vrtx.getMsg("publish.unpublished.published")}
+          ${vrtx.getMsg("publish.unpublished.published")?no_esc}
         <#else> 
-          ${vrtx.getMsg("publish.unpublished.unpublishedCollection")}
+          ${vrtx.getMsg("publish.unpublished.unpublishedCollection")?no_esc}
         </#if>
       <#elseif propResource?has_content && !propParent?has_content>  
-        ${vrtx.getMsg("publish.permission.unpublished")}
+        ${vrtx.getMsg("publish.permission.unpublished")?no_esc}
       <#elseif propParent?has_content >
-        ${vrtx.getMsg("publish.unpublished.unpublishedCollection")}
+        ${vrtx.getMsg("publish.unpublished.unpublishedCollection")?no_esc}
       <#elseif resource.published>
-        ${vrtx.getMsg("publish.permission.published")}
+        ${vrtx.getMsg("publish.permission.published")?no_esc}
       <#else>
-        ${vrtx.getMsg("publish.permission.unpublished")}
+        ${vrtx.getMsg("publish.permission.unpublished")?no_esc}
       </#if>
     </span>
     <#local resourceType = "resource">
