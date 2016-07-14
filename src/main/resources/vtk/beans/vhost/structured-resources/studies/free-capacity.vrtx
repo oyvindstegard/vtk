@@ -55,23 +55,33 @@ resourcetype free-capacity-listing {
               course.get("name") != null && course.get("credits") != null]
             [if course.get("faculty") != faculty]
               [if ! _first]
-                </ul>
+                </tbody>
+                </table>
               [endif]
               [def faculty course.get("faculty")]
               [def faculty-toc toLowerCase(replace(faculty, " ", "-"))]
               <h2 id="[val faculty-toc]">[val faculty]</h2>
-              <ul>
+              <table id="vrtx-free-capacity-[val faculty]-results" class="vrtx-study-results-table minimal">
+                <thead>
+                  <tr>
+                    <th scope="col" id="vrtx-free-capacity-course-description-name">[localized 'course']</th>
+                    <th scope="col" id="vrtx-free-capacity-course-description-credits">[localized 'credits']</th>
+                  </tr>
+                </thead>
+                <tbody>
             [endif]
             [def credits course.get("credits")]
             [if credits - int(course.get("credits")) = 0]
               [def credits int(course.get("credits"))]
             [endif]
-            <li>
-              <a href="[val course.get("url")]">[val course.get("code")] - [val course.get("name")]</a> ([val credits] [localized 'credits'])
-            </li>
+            <tr>
+              <td class="vrtx-free-capacity-course-description-name"><a href="[val course.get("url")]">[val course.get("code")] - [val course.get("name")]</a></td>
+              <td class="vrtx-free-capacity-course-description-credits">[val credits]</td>
+            </tr>
           [endif]
           [if _last && faculty != "undefined"]
-            </ul>
+            </tbody>
+            </table>
           [endif]
         [endlist]
       </div>
@@ -178,7 +188,8 @@ resourcetype free-capacity-listing {
     term : (en : "Semester", no : "Semester", nn : "Semester"),
     year : (en : "Year", no : "År", nn : "År"),
     teaching-language-all : (en : "Teaching language", no : "Undervisningsspråk", nn : "Undervisningsspråk"),
-    credits : (en : "credits", no : "studiepoeng", nn : "studiepoeng"),
+    credits : (en : "Credits", no : "Studiepoeng", nn : "Studiepoeng"),
+    course : (en : "Course", no : "Emne", nn : "Emne"),
     last-updated : (en : "Last updated", no : "Sist oppdatert", nn: "Sist oppdatert"),
     end-date : (en : "End date", no : "Sluttdato", nn : "Sluttdato"),
     end-date-text : (en : "Description when end date has passed", no : "Beskrivelse ved passert sluttdato", nn : "Beskriving ved passert sluttdato")
