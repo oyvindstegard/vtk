@@ -34,6 +34,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -57,7 +58,8 @@ public class SharedTextComponent extends ViewRenderingDecoratorComponent {
         if (StringUtils.isBlank(propName)) {
             return;
         }
-
+        model.put("id", propName);
+        
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = SecurityContext.getSecurityContext().getToken();
