@@ -26,7 +26,7 @@
 
       <#assign classes = getEdithintClasses(elem) />
 
-      <#if sharedTextProps?? & sharedTextProps[elem.name]?exists>
+      <#if sharedTextProps?? && sharedTextProps[elem.name]?exists>
         <#if  (sharedTextProps[elem.name]?size > 0) >
               <@vrtxSharedText.printPropertyEditView
                 title=localizedTitle
@@ -40,7 +40,7 @@
                 defaultValue=elem.getDefaultValue()
               />
         <#else>
-            <p>Kunne ikke laste fellestekst</p>
+            <p>Unable to load shared text '${elem.name}'</p>
         </#if>
       <#else>
         <@vrtxString.printPropertyEditView
