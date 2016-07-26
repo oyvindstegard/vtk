@@ -4,8 +4,8 @@
   <#if sharedText?has_content>
     ${sharedText?no_esc}
   <#else>
-    ${vrtx.getMsg("shared-text.no-text-for-id")}
+    ${vrtx.getMsg("shared-text.no-text-for-id", "No snippet exists for ID " + id, [id])}
   </#if>
 <#elseif !nullProp??>
-  ${vrtx.getMsg("shared-text.id-does-not-exist")}
+  ${vrtx.getMsg("shared-text.id-does-not-exist", "No such snippet ID: " + id, [id])}
 </#if>
