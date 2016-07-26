@@ -31,7 +31,6 @@ resourcetype course-description {
     opptak-og-adgang-text-field : html noextract,
     opptak-og-adgang : string,
     ikke-privatist-text-field : html noextract,
-    ikke-privatist : string,
 
     obligatoriske-forkunnskaper-text-field : html noextract,
     obligatoriske-forkunnskaper : string,
@@ -102,9 +101,7 @@ resourcetype course-description {
 
     opptak-og-adgang (class[vrtx-shared-text],
                       attribute[vrtx-shared-text-path:/vrtx/fellestekst/emne]),
-    ikke-privatist (class[vrtx-shared-text],
-                    attribute[vrtx-shared-text-path:/vrtx/fellestekst/emne]),
-    group opptak-og-adgang-group (opptak-og-adgang, opptak-og-adgang-text-field, ikke-privatist, ikke-privatist-text-field) vertical,
+    group opptak-og-adgang-group (opptak-og-adgang, opptak-og-adgang-text-field, ikke-privatist-text-field) vertical,
 
     obligatoriske-forkunnskaper (class[vrtx-shared-text],
                                  attribute[vrtx-shared-text-path:/vrtx/fellestekst/emne]),
@@ -392,9 +389,8 @@ resourcetype course-description {
       [endif]
       [def opptak-og-adgang document.properties.opptak-og-adgang]
       [def opptak-og-adgang-text-field document.properties.opptak-og-adgang-text-field]
-      [def ikke-privatist document.properties.ikke-privatist]
       [def ikke-privatist-text-field document.properties.ikke-privatist-text-field]
-      [if (opptak-og-adgang-text-field != null && opptak-og-adgang-text-field != "") || (opptak-og-adgang != null && opptak-og-adgang != "") || (ikke-privatist-text-field != null && ikke-privatist-text-field != "") || (ikke-privatist != null && ikke-privatist != "")]
+      [if (opptak-og-adgang-text-field != null && opptak-og-adgang-text-field != "") || (opptak-og-adgang != null && opptak-og-adgang != "") || (ikke-privatist-text-field != null && ikke-privatist-text-field != "")]
         <li><a href="#admission">[localized 'opptak-og-adgang-group']</a></li>
         [def count count + 1]
       [endif]
@@ -485,16 +481,14 @@ resourcetype course-description {
       [endif]
       [def opptak-og-adgang document.properties.opptak-og-adgang]
       [def opptak-og-adgang-text-field document.properties.opptak-og-adgang-text-field]
-      [def ikke-privatist document.properties.ikke-privatist]
       [def ikke-privatist-text-field document.properties.ikke-privatist-text-field]
-      [if (opptak-og-adgang-text-field != null && opptak-og-adgang-text-field != "") || (opptak-og-adgang != null && opptak-og-adgang != "") || (ikke-privatist-text-field != null && ikke-privatist-text-field != "") || (ikke-privatist != null && ikke-privatist != "")]
+      [if (opptak-og-adgang-text-field != null && opptak-og-adgang-text-field != "") || (opptak-og-adgang != null && opptak-og-adgang != "") || (ikke-privatist-text-field != null && ikke-privatist-text-field != "")]
         <div id="admission">
           <h2>[localized 'opptak-og-adgang-group']</h2>
           [call "include:shared-text" {"propName":"opptak-og-adgang"}]
           [if opptak-og-adgang-text-field != null && opptak-og-adgang-text-field != ""]
             [val opptak-og-adgang-text-field # unescaped]
           [endif]
-          [call "include:shared-text" {"propName":"ikke-privatist"}]
           [if ikke-privatist-text-field != null && ikke-privatist-text-field != ""]
             [val ikke-privatist-text-field # unescaped]
           [endif]
@@ -891,7 +885,6 @@ resourcetype course-description {
     opptak-og-adgang : (en : "Admission shared text", no : "Opptak og adgangsregulering fellestekst", nn : "Opptak og tilgangsavgrensing fellestekst"),
     opptak-og-adgang-group : (en : "Admission", no : "Opptak og adgangsregulering", nn : "Opptak og tilgangsavgrensing"),
     ikke-privatist-text-field : (en : "External candidates text", no : "Privatist fritekst", nn : "Privatist fritekst"),
-    ikke-privatist : (en : "External candidates shared text", no : "Privatist fellestekst", nn : "Privatist fellestekst"),
 
     obligatoriske-forkunnskaper-text-field : (en : "Formal prerequisite knowledge text", no : "Obligatoriske forkunnskaper fritekst", nn : "Obligatoriske forkunnskapar fritekst"),
     obligatoriske-forkunnskaper : (en : "Formal prerequisite knowledge shared text", no : "Obligatoriske forkunnskaper fellestekst", nn : "Obligatoriske forkunnskapar fellestekst"),
