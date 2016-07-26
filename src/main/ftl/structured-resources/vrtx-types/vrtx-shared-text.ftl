@@ -24,7 +24,7 @@
     	    </#if>
     	    <#if sharedTextProps[inputFieldName][y]['description-' + language]?exists>
     	      <div class="${sharedTextProps[inputFieldName][y]['id']} shared-text-description">
-    	        ${sharedTextProps[inputFieldName][y]['description-' + language]}
+    	        ${(sharedTextProps[inputFieldName][y]['description-' + language])?no_esc}
               </div>
     	    <#else>
     	      <div class="${sharedTextProps[inputFieldName][y]['id']} shared-text-description unavailable">
