@@ -116,8 +116,8 @@
         </h1>
         <#if page == 1>
           <#-- Introduction and image -->
-          <!-- #assign introduction = vrtx.getIntroduction(resource) /-->
-          <#assign introduction = vrtx.prop(resource, "introduction")! />
+          <#assign introduction = vrtx.getIntroduction(resource)! />
+          <#-- assign introduction = vrtx.prop(resource, "introduction")! /-->
           <#assign introductionImage = vrtx.propValue(resource, "picture")! />
           <#if !viewOngoingProjectsLink?exists &&
           (introduction?has_content || introductionImage?has_content)>
@@ -126,7 +126,7 @@
       	      <@viewutils.displayImage resource />
               <#-- Introduction -->
               <#if introduction?has_content>
-                ${introduction.stringValue?no_esc}
+                ${introduction?no_esc}
               </#if>
             </div>
           </#if>

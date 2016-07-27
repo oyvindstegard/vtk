@@ -56,6 +56,12 @@
      are merged: -->
 <#function getIntroduction resource>
   <#local introduction = vrtx.propValue(resource, "introduction")! />
+  <#local resourceType = resource.resourceType />
+  <#-- XXX: either remove description from here, or maybe escape description only, or even change definition of 'description' property -->
+  <#if !introduction?has_content && resourceType != 'collection' 
+       && resourceType != 'event-listing' && resourceType != 'article-listing' >
+    <#local introduction = vrtx.propValue(resource, "description", "", "content")! />
+  </#if>
   <#if introduction?has_content><#return introduction /></#if>
 </#function>
 
@@ -107,7 +113,7 @@
 <#function getMsg code default=code args=[] locale=springMacroRequestContext.getLocale()>
     <#assign localizer =
     "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-    <#return localizer.msg />
+    <#return localizer.msg  />
 </#function>
 
 
