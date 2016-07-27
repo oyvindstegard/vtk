@@ -30,6 +30,8 @@
  */
 package vtk.repository.resourcetype.property;
 
+import java.util.Optional;
+
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.resourcetype.PropertyEvaluator;
@@ -38,26 +40,23 @@ import vtk.repository.resourcetype.Value;
 /**
  * Property evaluator that always evaluates to the same, fixed value.
  *
- * <p>Configurable JavaBean properties:
- * <ul>
- *   <li><code>value</code> - the {@link Value} to evaluate to
- * </ul>
+ * <p>Takes a single {@link Value} object as constructor argument, which is the value
+ * that will be set in the property. If <code>null</code>, the property will instead be 
+ * removed from the resource.</p>
  */
 public class FixedValuePropertyEvaluator implements PropertyEvaluator {
 
-    private Value value;
-
-    public Value getValue() {
-        return this.value;
-    }
-
-    public void setValue(Value value) {
-        this.value = value;
-    }
+    private Optional<Value> value = Optional.empty();
     
-    public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
+    public FixedValuePropertyEvaluator(Value value) {
+        this.value = Optional.ofNullable(value);
+    }
 
-        property.setValue(this.value);
+    public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
+        if (!value.isPresent()) {
+            return false;
+        }
+        property.setValue(value.get());
         return true;
     }
 }
