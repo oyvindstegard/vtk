@@ -105,7 +105,10 @@ public class MarkdownInfoContentFactory implements ContentFactory<MarkdownInfo> 
                 case "p":
                 case "div":
                     if (summary == null) {
-                        summary = element.getContent();
+                        String s = element.getContent();
+                        if (s != null && s.trim().length() > 0) {
+                            summary = element.getContent();
+                        }
                     }
                     break;
                 default:

@@ -30,51 +30,67 @@
  */
 package vtk.repository.resourcetype.property;
 
+import java.util.Optional;
+
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertyEvaluationContext.Type;
 import vtk.repository.content.MarkdownInfo;
+import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.PropertyEvaluator;
 
-public class MarkdownPropertyEvaluator implements PropertyEvaluator {
+public class MarkdownPropertyEvaluator implements LatePropertyEvaluator {
     private final String field;
+    private Optional<PropertyEvaluator> fallbackEvaluator = Optional.empty();
     
     public MarkdownPropertyEvaluator(String field) {
+        this(field, null);
+    }
+    
+    public MarkdownPropertyEvaluator(String field, PropertyEvaluator fallbackEvaluator) {
         this.field = field;
+        this.fallbackEvaluator = Optional.ofNullable(fallbackEvaluator);
     }
 
     @Override
     public boolean evaluate(Property property, PropertyEvaluationContext ctx)
             throws PropertyEvaluationException {
-
-        if (ctx.getContent() == null) {
-            return false;
+        
+        boolean exists = ctx.getOriginalResource().getProperty(property.getDefinition()) != null;
+        
+        if (fallbackEvaluator.isPresent()) {
+            exists = fallbackEvaluator.get().evaluate(property, ctx);
         }
-        if (ctx.getEvaluationType() != Type.ContentChange && ctx.getEvaluationType() != Type.Create) {
-            boolean exists = ctx.getOriginalResource().getProperty(property.getDefinition()) != null;
+        
+        if (ctx.getContent() == null) {
+            return exists;
+        }
+        if (ctx.getEvaluationType() != Type.ContentChange 
+                && ctx.getEvaluationType() != Type.Create) {
             return exists; 
         }
         try{
-            MarkdownInfo info = ctx.getContent().getContentRepresentation(MarkdownInfo.class);
+            MarkdownInfo info = ctx.getContent()
+                    .getContentRepresentation(MarkdownInfo.class);
             switch (field) {
             case "title":
                 if (info.title != null) {
                     property.setStringValue(info.title);
                     return true;
                 }
-                return false;
+                return exists;
             case "summary":
                 if (info.summary != null) {
                     property.setStringValue(info.summary);
                     return true;
                 }
-                return false;
+                return exists;
             default:
-                return false;
+                return exists;
             }
         }
         catch (Throwable t) {
-            return false;
+            return exists;
         }
     }
 }
