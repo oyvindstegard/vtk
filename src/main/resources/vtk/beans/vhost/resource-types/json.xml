@@ -33,13 +33,13 @@
 
   <bean id="jsonGuessedCharacterEncodingEvaluator"
         class="vtk.repository.resourcetype.property.FixedValuePropertyEvaluator">
-    <property name="value">
+    <constructor-arg name="value">
       <bean class="vtk.repository.resourcetype.Value">
         <constructor-arg type="java.lang.String"
                          value="utf-8" />
         <constructor-arg ref="TYPE_STRING" />
       </bean>
-    </property>
+    </constructor-arg>
   </bean>
 
   <bean id="jsonOverriddenCharacterEncodingPropDef"

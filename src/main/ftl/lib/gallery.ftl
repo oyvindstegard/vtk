@@ -30,8 +30,8 @@
   </script>
   <div class="vrtx-image-listing-include-container-pure-css">
     <div class="vrtx-image-listing-include-container-nav-pure-css">
-      <a class="prev" href="#" title="${vrtx.getMsg('imageListing.previous.prefix')}&nbsp;${vrtx.getMsg('previous')}"><span class="prev-transparent-block"></span></a>
-      <a class="next" href="#" title="${vrtx.getMsg('next')}&nbsp;${vrtx.getMsg('imageListing.next.postfix')}"><span class="next-transparent-block"></span></a>
+      <a class="prev" href="#" title="${vrtx.getMsg('imageListing.previous.prefix')?no_esc}&nbsp;${vrtx.getMsg('previous')}"><span class="prev-transparent-block"></span></a>
+      <a class="next" href="#" title="${vrtx.getMsg('next')}&nbsp;${vrtx.getMsg('imageListing.next.postfix')?no_esc}"><span class="next-transparent-block"></span></a>
     </div>
   </div>
 </#macro>
@@ -79,6 +79,7 @@
 
     <#if description?has_content><#local flattenedDescription><@vrtx.flattenHtml value=description /></#local>
     <#else><#local flattenedDescription = ""></#if>
+    <#if flattenedDescription?is_markup_output><#local flattenedDescription = flattenedDescription?markup_string /></#if>
 
     <#local url = imageEntry.url />
     <#if imageListing != "">
@@ -105,7 +106,7 @@
       </#if>
     </#if> 
     <script type="text/javascript"><!--
-        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]}'<#else>'${url.protocolRelativeURL()}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${flattenedDescription}', title: <#if showTitle>'${title}'<#else>''</#if>});
+        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]}'<#else>'${url.protocolRelativeURL()}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${flattenedDescription?js_string}', title: <#if showTitle>'${title}'<#else>''</#if>});
      // -->
     </script>
     </a>    

@@ -71,6 +71,7 @@ public class SharedTextComponent extends ViewRenderingDecoratorComponent {
             model.put("nullProp", true);
             return;
         }
+        model.put("id", propName + ":" + prop.getStringValue());
 
         String sharedText = sharedTextResolver.resolveSharedText(resource, prop);
 
