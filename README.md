@@ -131,6 +131,11 @@ curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/decorating/confi
 /vrtx/decorating = NONE
 EOF
 )
+curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/decorating/title-config.txt \
+     -H 'Content-Type: text/plain' --data-binary @<(cat << EOF
+
+EOF
+)
 ```
 
 ## NOTE ON JBOSS
