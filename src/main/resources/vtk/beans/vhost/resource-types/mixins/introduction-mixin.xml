@@ -17,7 +17,7 @@
     </property>
   </bean>  
 
-  <bean id="introductionPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+  <bean id="introductionPropDef" class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl" parent="abstractPropDef">
     <property name="name" value="introduction"/>
     <property name="type" value="HTML"/>
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE"/>
