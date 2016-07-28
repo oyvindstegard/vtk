@@ -83,7 +83,7 @@
 
     <#local url = imageEntry.url />
     <#if imageListing != "">
-      <#if ((activeImage == "" && imageEntry_index == 0) || (activeImage != "" && activeImage == url)) >
+      <#if ((activeImage == "" && imageEntry_index == 0) || (activeImage != "" && activeImage == url) || (activeImage != "" && activeImage == url.path)) >
 	<a href="${url}" class="active">
 	  <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
 	  <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()?split("?")[0]}" alt='${flattenedDescription}' /></span>
