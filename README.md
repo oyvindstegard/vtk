@@ -31,9 +31,8 @@ are necessary:
 
 5. You should now be able to access the web service on
    http://localhost:9322/ and the WebDAV service on
-   http://localhost:9321/. 
-   
-   Log in as `root@localhost:fish` or user `user@localhost:pw`.
+   http://localhost:9321/. Log in as `root@localhost:fish` or user
+   `user@localhost:pw`.
 
 6. See the default configuration file
    `src/main/resources/vtk/beans/vtk.properties` for
