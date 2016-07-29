@@ -23,6 +23,7 @@
   <import resource="text.xml" />
   <import resource="php.xml" />
   <import resource="markdown.xml" />
+  <import resource="markdownGFM.xml" />
   <import resource="html.xml" />
   <import resource="xml.xml" />
   <import resource="managed-xml.xml" />
