@@ -214,15 +214,8 @@
     <property name="fallbackToSystemLocale" value="false" />
   </bean>
 
+  <!-- Picks up ContentFactory implementations from bean context: -->
   <bean id="contentRepresentationRegistry" class="vtk.repository.content.ContentRepresentationRegistry" />
-
-  <bean id="jdomContentFactory" class="vtk.repository.content.JDOMContentFactory" />
-
-  <bean id="audioFileContentFactory" class="vtk.repository.content.AudioFileContentFactory" />
-
-  <bean id="htmlInfoContentFactory" class="vtk.repository.content.HtmlInfoContentFactory" />
-
-  <bean id="jsonObjectContentFactory" class="vtk.repository.content.JSONObjectContentFactory" />
 
   <bean id="authorizationManager" class="vtk.repository.AuthorizationManager">
     <property name="principalManager" ref="principalManager" />

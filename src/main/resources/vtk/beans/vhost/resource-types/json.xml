@@ -2,6 +2,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
+  <bean id="jsonObjectContentFactory" class="vtk.repository.content.JSONObjectContentFactory" />
+
   <import resource="mixins/structured-resource-mixin.xml"/>
 
   <bean id="json.resourceType" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
@@ -33,13 +35,13 @@
 
   <bean id="jsonGuessedCharacterEncodingEvaluator"
         class="vtk.repository.resourcetype.property.FixedValuePropertyEvaluator">
-    <property name="value">
+    <constructor-arg name="value">
       <bean class="vtk.repository.resourcetype.Value">
         <constructor-arg type="java.lang.String"
                          value="utf-8" />
         <constructor-arg ref="TYPE_STRING" />
       </bean>
-    </property>
+    </constructor-arg>
   </bean>
 
   <bean id="jsonOverriddenCharacterEncodingPropDef"

@@ -43,5 +43,10 @@ public class HtmlTextImpl implements HtmlText {
         return this.content;
     }
     
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + content + ")";
+    }
+    
     
 }
