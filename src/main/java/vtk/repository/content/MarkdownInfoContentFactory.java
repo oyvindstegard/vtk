@@ -44,6 +44,25 @@ import vtk.text.html.HtmlPageParser;
 import vtk.util.io.IO;
 
 public class MarkdownInfoContentFactory implements ContentFactory<MarkdownInfo> {
+	
+    // Duplicated in DisplayMarkdowView.java 
+    private static final int MARKDOWN_EXTENSIONS = 
+            Extensions.FENCED_CODE_BLOCKS | Extensions.AUTOLINKS 
+            | Extensions.TABLES | Extensions.DEFINITIONS | Extensions.ATXHEADERSPACE 
+            | Extensions.STRIKETHROUGH | Extensions.RELAXEDHRULES;
+
+    // Duplicated in DisplayMarkdowView.java 
+    private static final int MARKDOWN_EXTENSIONS_GFM = MARKDOWN_EXTENSIONS | Extensions.HARDWRAPS | Extensions.TASKLISTITEMS;
+    
+    private static final String SUBTYPE_GFM = "GFM";
+    
+    private int markdownExtensions = MARKDOWN_EXTENSIONS;
+
+    public MarkdownInfoContentFactory(String markdownSubtype) {
+        if (markdownSubtype.equals(SUBTYPE_GFM)) {
+        	markdownExtensions = MARKDOWN_EXTENSIONS_GFM;
+        }
+    }
     
     @Override
     public Class<MarkdownInfo> getRepresentationType() {
@@ -54,7 +73,8 @@ public class MarkdownInfoContentFactory implements ContentFactory<MarkdownInfo> 
     public MarkdownInfo getContentRepresentation(InputStream content) 
             throws Exception {
         long timeout = Duration.ofMillis(1000).toMillis();
-        PegDownProcessor processor = new PegDownProcessor(Extensions.NONE, timeout);
+        
+        PegDownProcessor processor = new PegDownProcessor(markdownExtensions, timeout);
         String input = IO.readString(content, "utf-8").perform();
         String output = processor.markdownToHtml(input);
         
