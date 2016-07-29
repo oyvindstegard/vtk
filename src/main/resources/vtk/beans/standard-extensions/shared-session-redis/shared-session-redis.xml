@@ -36,14 +36,13 @@
   </bean>
 
   <!-- Override -->
-  <!--
+  <!-- XXX: Move -->
   <bean id="feide.requestIdStore" class="vtk.util.cache.RedisSimpleCache">
     <constructor-arg name="jedisPool" ref="redis.pool" />
     <constructor-arg name="prefix" value="vrtx:feide:${redis.namespace}:requestIdStore:" />
     <constructor-arg name="timeoutSeconds" value="1800" />
     <constructor-arg name="updateTimeouts" value="false" />
   </bean>
-  -->
 
   <!-- Override -->
   <bean id="tokenManagerCache" class="vtk.util.cache.RedisSimpleCache">
