@@ -130,7 +130,7 @@
                 </#if>
               <#else>
                 <#assign modifiedByNameLink = vrtx.propValue(res, 'modifiedBy', 'link') />
-                ${modifiedByNameLink}
+                ${modifiedByNameLink?no_esc}
               </#if>
             </td>
             <td class="vrtx-report-permissions permissions">
