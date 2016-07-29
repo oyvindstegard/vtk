@@ -14,9 +14,14 @@ are necessary:
    current PostgreSQL usage requires the language `plpgsql` to be
    installed in the database which can be installed with the following
    command `createlang plpgsql <database>`.
+   
+    Depending on how you set up the database, you may need to grant the necessary
+   privileges to your JDBC user 
+   (e.g. `src/main/sql/grant_to_vrtx.sql` for a jdbc user vrtx).
 
 3. Set up the configuration. Configuration should be placed in the
-   files `~/.vtk.properties` and `~/.vrtx.properties`
+   files `~/.vtk.properties` and `~/.vrtx.properties` 
+   (also work as regular non-hidden files).
 ```
    indexStorageRootPath = [an empty directory for storing indices]
    jdbcUsername = [your JDBC user]
@@ -33,7 +38,7 @@ are necessary:
    http://localhost:9322/ and the WebDAV service on
    http://localhost:9321/. 
    
-   Log in as `root@localhost:fish` or user `user@localhost:pw`.
+    Log in as `root@localhost:fish` or user `user@localhost:pw`.
 
 6. See the default configuration file
    `src/main/resources/vtk/beans/vtk.properties` for
