@@ -3,13 +3,12 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <bean id="markdown.contentFactory" class="vtk.repository.content.MarkdownInfoContentFactory">
-      <constructor-arg name= "markdownSubtype" type="java.lang.String" value="STANDARD" />
+    <constructor-arg name= "markdownSubtype" type="java.lang.String" value="GFM" />      
   </bean>
-  
 
-  <bean id="markdown.resourceTypeDefinition"
+  <bean id="markdownGFM.resourceTypeDefinition"
         class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
-    <property name="name" value="markdown"/>
+    <property name="name" value="markdownGFM"/>
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="parentTypeDefinition" ref="textResourceTypeDefinition" />
     <property name="mixinTypeDefinitions">
@@ -19,41 +18,41 @@
     </property>
     <property name="assertions">
       <list>
-        <ref bean="markdown.contentTypeAssertion" />
+        <ref bean="markdownGFM.contentTypeAssertion" />
       </list>
     </property>
     <property name="propertyTypeDefinitions">
       <list>
-        <ref bean="markdown.titlePropDef" />
-        <ref bean="markdown.introductionPropDef" />
+        <ref bean="markdownGFM.titlePropDef" />
+        <ref bean="markdownGFM.introductionPropDef" />
       </list>
     </property>
   </bean>
 
-  <bean id="markdown.contentTypeAssertion" 
+  <bean id="markdownGFM.contentTypeAssertion" 
         class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="text/markdown" />
+    <property name="pattern" value="text/markdown.GFM" />
   </bean>
 
-  <bean id="markdown.titlePropDef"
+  <bean id="markdownGFM.titlePropDef"
         class="vtk.repository.resourcetype.OverridingPropertyTypeDefinitionImpl">
     <property name="overriddenPropDef" ref="titlePropDef" />
-    <property name="propertyEvaluator" ref="markdown.titlePropertyEvaluator" />
+    <property name="propertyEvaluator" ref="markdownGFM.titlePropertyEvaluator" />
   </bean>
 
-  <bean id="markdown.titlePropertyEvaluator"
+  <bean id="markdownGFM.titlePropertyEvaluator"
         class="vtk.repository.resourcetype.property.MarkdownPropertyEvaluator">
     <constructor-arg name="field" value="title" />
     <constructor-arg name="fallbackEvaluator" ref="titleEvaluator" />
   </bean>
 
-  <bean id="markdown.introductionPropDef"
+  <bean id="markdownGFM.introductionPropDef"
         class="vtk.repository.resourcetype.OverridingPropertyTypeDefinitionImpl">
     <property name="overriddenPropDef" ref="introductionPropDef" />
-    <property name="propertyEvaluator" ref="markdown.introductionPropertyEvaluator" />
+    <property name="propertyEvaluator" ref="markdownGFM.introductionPropertyEvaluator" />
   </bean>
   
-  <bean id="markdown.introductionPropertyEvaluator"
+  <bean id="markdownGFM.introductionPropertyEvaluator"
         class="vtk.repository.resourcetype.property.MarkdownPropertyEvaluator">
     <constructor-arg name="field" value="summary" />
     <constructor-arg name="fallbackEvaluator">

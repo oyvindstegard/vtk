@@ -2,11 +2,16 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
+  <bean id="markdown.combinedContentTypeAssertion" 
+        class="vtk.web.service.ResourceContentTypeRegexpAssertion">
+    <property name="pattern" value="text/(markdown|markdown.GFM)" />
+  </bean>
+
   <bean id="markdown.displayService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="displayResourceService" />
     <property name="assertions">
       <list>
-        <ref bean="markdown.contentTypeAssertion" />
+        <ref bean="markdown.combinedContentTypeAssertion" />
       </list>
     </property>
     <property name="handler" ref="markdown.displayHandler" />
@@ -15,7 +20,7 @@
   <bean id="markdown.previewService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="previewService" />
     <property name="order" value="0" />
-    <property name="assertions" ref="markdown.contentTypeAssertion" />
+    <property name="assertions" ref="markdown.combinedContentTypeAssertion" />
     <property name="handler" ref="markdown.previewHandler" />
   </bean>
 

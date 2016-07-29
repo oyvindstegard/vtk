@@ -49,14 +49,20 @@ import vtk.web.RequestContext;
 
 public class DisplayMarkdownView implements View {
     
+    // Duplicated in MarkdownInfoContentFactory.java 
     private static final int MARKDOWN_EXTENSIONS = 
             Extensions.FENCED_CODE_BLOCKS | Extensions.AUTOLINKS 
-            | Extensions.TABLES | Extensions.DEFINITIONS;
+            | Extensions.TABLES | Extensions.DEFINITIONS | Extensions.ATXHEADERSPACE 
+            | Extensions.STRIKETHROUGH | Extensions.RELAXEDHRULES;
+
+    // Duplicated in MarkdownInfoContentFactory.java 
+    private static final int MARKDOWN_EXTENSIONS_GFM = MARKDOWN_EXTENSIONS | Extensions.HARDWRAPS | Extensions.TASKLISTITEMS;
+
+    private static final String CONTENT_TYPE_MARKDOWN_GFM = "text/markdown.GFM";
 
     @Override
     public String getContentType() {
         return "text/html;charset=utf-8";
-
     }
 
     @Override
@@ -68,11 +74,16 @@ public class DisplayMarkdownView implements View {
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Resource resource = repository.retrieve(token, uri, true);
+        
+        int markdownExtensions = MARKDOWN_EXTENSIONS;
+        if (resource.getContentType().equals(CONTENT_TYPE_MARKDOWN_GFM)) {
+        	markdownExtensions = MARKDOWN_EXTENSIONS_GFM;
+        }
 
         try (InputStream inputStream = repository.getInputStream(token, uri, true)) {
 
             long timeout = Duration.ofMillis(2000).toMillis();
-            PegDownProcessor processor = new PegDownProcessor(MARKDOWN_EXTENSIONS, timeout);
+            PegDownProcessor processor = new PegDownProcessor(markdownExtensions, timeout);
             String input = IO.readString(inputStream, "utf-8").perform();
             
             byte[] output = ("<!DOCTYPE html>\n<html>\n<head>\n<title>" 
