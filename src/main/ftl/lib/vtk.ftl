@@ -317,7 +317,7 @@
         <#local cut_index = val?index_of(char) />
         <#local newVal = "<span class='${splitClass}-one'>" + val?substring(0, cut_index) + "</span>" />
         <#local newVal = newVal + "<span class='${splitClass}-two'>" + val?substring(cut_index, val?length) + "</span>" />
-        ${newVal}
+        ${newVal?no_esc}
       <#else>
         <@splitParts val "" splitClass cut_index 0 />
       </#if>
@@ -333,7 +333,7 @@
      <@splitParts val newVal splitClass cut_index nr+1 />
    <#else>
      <#local newVal = newVal + "<span class='${splitClass}-split'>" + val?substring(start, val?length) + "</span>" />
-     ${newVal}   
+     ${newVal?no_esc}   
    </#if>
 </#macro>
 
