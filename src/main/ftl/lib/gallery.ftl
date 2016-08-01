@@ -106,7 +106,7 @@
       </#if>
     </#if> 
     <script type="text/javascript"><!--
-        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]}'<#else>'${url.protocolRelativeURL()}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${flattenedDescription?js_string}', title: <#if showTitle>'${title}'<#else>''</#if>});
+        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]}'<#else>'${url.protocolRelativeURL()}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${description?js_string}', title: <#if showTitle>'${title}'<#else>''</#if>});
      // -->
     </script>
     </a>    
