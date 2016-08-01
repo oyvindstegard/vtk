@@ -84,12 +84,12 @@
     <#local url = imageEntry.url />
     <#if imageListing != "">
       <#if ((activeImage == "" && imageEntry_index == 0) || (activeImage != "" && activeImage == url) || (activeImage != "" && activeImage == url.path)) >
-	<a href="${url}" class="active">
-	  <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
-	  <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()?split("?")[0]}" alt='${flattenedDescription}' /></span>
+	    <a href="${url}" class="active">
+	      <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
+	      <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()?split("?")[0]}" alt='${flattenedDescription}' /></span>
       <#else>
-	  <a href="${url}">
-	    <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
+	    <a href="${url}">
+	      <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
       </#if>
     <#else>
       <#local finalFolderUrl = vrtx.relativeLinkConstructor(folderUrl, 'viewService') />
@@ -106,7 +106,7 @@
       </#if>
     </#if> 
     <script type="text/javascript"><!--
-        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]}'<#else>'${url.protocolRelativeURL()}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${description?js_string}', title: <#if showTitle>'${title}'<#else>''</#if>});
+        imageUrlsToBePrefetched.push({url: <#if imageListing != "">'${url.protocolRelativeURL()?split("?")[0]}'<#else>'${url.protocolRelativeURL()}'</#if>, width: '${width}', height: '${height}', fullWidth: '${fullWidth}', fullHeight: '${fullHeight}', alt: '${flattenedDescription?js_string}', desc: '${description?js_string}', title: <#if showTitle>'${title}'<#else>''</#if>});
      // -->
     </script>
     </a>    
