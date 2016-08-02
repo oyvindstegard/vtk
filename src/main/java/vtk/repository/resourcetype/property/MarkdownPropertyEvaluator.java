@@ -36,18 +36,23 @@ import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertyEvaluationContext.Type;
 import vtk.repository.content.MarkdownInfo;
+import vtk.repository.content.MarkdownGFMInfo;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.PropertyEvaluator;
 
 public class MarkdownPropertyEvaluator implements LatePropertyEvaluator {
+    private static final String SUBTYPE_GFM = "GFM";
+
+	private final String markdownSubtype;
     private final String field;
     private Optional<PropertyEvaluator> fallbackEvaluator = Optional.empty();
     
-    public MarkdownPropertyEvaluator(String field) {
-        this(field, null);
+    public MarkdownPropertyEvaluator(String markdownSubtype, String field) {
+        this(markdownSubtype, field, null);
     }
     
-    public MarkdownPropertyEvaluator(String field, PropertyEvaluator fallbackEvaluator) {
+    public MarkdownPropertyEvaluator(String markdownSubtype, String field, PropertyEvaluator fallbackEvaluator) {
+        this.markdownSubtype = markdownSubtype;    	
         this.field = field;
         this.fallbackEvaluator = Optional.ofNullable(fallbackEvaluator);
     }
@@ -70,8 +75,14 @@ public class MarkdownPropertyEvaluator implements LatePropertyEvaluator {
             return exists; 
         }
         try{
-            MarkdownInfo info = ctx.getContent()
-                    .getContentRepresentation(MarkdownInfo.class);
+        	MarkdownInfo info;
+            if (markdownSubtype.equals(SUBTYPE_GFM)) {
+            	info = ctx.getContent()
+                        .getContentRepresentation(MarkdownGFMInfo.class);
+            } else {
+                info = ctx.getContent()
+                        .getContentRepresentation(MarkdownInfo.class);
+            }
             switch (field) {
             case "title":
                 if (info.title != null) {
@@ -87,7 +98,7 @@ public class MarkdownPropertyEvaluator implements LatePropertyEvaluator {
                 return exists;
             default:
                 return exists;
-            }
+            }            
         }
         catch (Throwable t) {
             return exists;

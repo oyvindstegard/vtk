@@ -2,9 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <bean id="markdown.contentFactory" class="vtk.repository.content.MarkdownInfoContentFactory">
-    <constructor-arg name= "markdownSubtype" type="java.lang.String" value="GFM" />      
-  </bean>
+  <bean id="markdownGFM.contentFactory" class="vtk.repository.content.MarkdownGFMInfoContentFactory" />
 
   <bean id="markdownGFM.resourceTypeDefinition"
         class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
@@ -42,6 +40,7 @@
 
   <bean id="markdownGFM.titlePropertyEvaluator"
         class="vtk.repository.resourcetype.property.MarkdownPropertyEvaluator">
+    <constructor-arg name= "markdownSubtype" type="java.lang.String" value="GFM" />
     <constructor-arg name="field" value="title" />
     <constructor-arg name="fallbackEvaluator" ref="titleEvaluator" />
   </bean>
@@ -54,6 +53,7 @@
   
   <bean id="markdownGFM.introductionPropertyEvaluator"
         class="vtk.repository.resourcetype.property.MarkdownPropertyEvaluator">
+    <constructor-arg name= "markdownSubtype" type="java.lang.String" value="GFM" />
     <constructor-arg name="field" value="summary" />
     <constructor-arg name="fallbackEvaluator">
       <bean class="vtk.repository.resourcetype.property.FixedValuePropertyEvaluator">
