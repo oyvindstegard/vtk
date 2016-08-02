@@ -32,18 +32,18 @@ package vtk.repository.content;
 
 import java.io.InputStream;
 
-public class MarkdownInfoContentFactory extends MarkdownAbstractContentFactory implements ContentFactory<MarkdownInfo> {
-	    
+public class MarkdownGFMInfoContentFactory extends MarkdownAbstractContentFactory implements ContentFactory<MarkdownGFMInfo> {
+	            
     @Override
-    public Class<MarkdownInfo> getRepresentationType() {
-        return MarkdownInfo.class;
+    public Class<MarkdownGFMInfo> getRepresentationType() {
+        return MarkdownGFMInfo.class;
     }
 
     @Override
-    public MarkdownInfo getContentRepresentation(InputStream content) 
+    public MarkdownGFMInfo getContentRepresentation(InputStream content) 
             throws Exception {
-    	InfoCollector collector = getInfoCollector(MARKDOWN_EXTENSIONS, content);
-        return new MarkdownInfo(collector.getHeader(), collector.getSummary());
+    	InfoCollector collector = getInfoCollector(MARKDOWN_EXTENSIONS_GFM, content);
+        return new MarkdownGFMInfo(collector.getHeader(), collector.getSummary());
     }
         
 }
