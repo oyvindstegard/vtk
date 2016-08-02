@@ -197,6 +197,13 @@ p.image-center {
   margin-right: auto;
 }
 
+/* VTK-4311 - avoid centered image overlaps floated image above */
+.image-center {
+  width: 100%;
+  float: left;
+  clear: left;
+}
+
 /* Study table */
 
 .vrtx-courseplan-table { 
