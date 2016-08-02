@@ -339,13 +339,16 @@
 
       // HTML unescape and encode quotes in alt and title if not already encoded
       var alt = dims.alt;
+      var desc = dims.desc;
       var title = dims.title;
       images[src].alt = alt !== "" ? $("<div/>").html(alt).text().replace(/\'/g, "&#39;") : null;
+      images[src].desc = desc !== "" ? $("<div/>").html(desc).text().replace(/\'/g, "&#39;") : null;
       images[src].title = title !== "" ? $("<div/>").html(title).text().replace(/\'/g, "&#39;") : null;
+      
       // Add description
-      var desc = "";
+      desc = "";
       if (images[src].title) desc += "<p class='" + container.substring(1) + "-title'>" + images[src].title + "</p>";
-      if (images[src].alt)   desc += images[src].alt;
+      if (images[src].desc)  desc += images[src].desc;
       images[src].desc = desc;
     }
 
