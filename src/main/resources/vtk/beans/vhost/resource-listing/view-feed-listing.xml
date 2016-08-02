@@ -52,6 +52,7 @@
         <value>structured-article</value>
         <value>structured-event</value>
         <value>structured-project</value>
+        <value>research-group</value>
         <value>audio</value>
         <value>video</value>
       </list>
