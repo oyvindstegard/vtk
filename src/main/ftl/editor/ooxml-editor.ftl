@@ -49,7 +49,7 @@
     <#assign document = vrtx.getMsg("resourcetype.name.structured-document") />
     <#assign webdavUrl = vrtx.linkConstructor(resource.URI, 'webdavService') />
     
-    <h2><@vrtx.msg code="tabs.editorService" /> ${document?lower_case}</h2>
+    <h2><@vrtx.msg code="tabs.editService" /> ${document?lower_case}</h2>
     
     <div id="vrtx-open-webdav-wrapper">
       <h3>${vrtx.getMsg('editor.ooxml.ie-edit')}</h3>
@@ -64,10 +64,10 @@
       </li>
       <li>Start <span class='vrtx-help-step-by-step-cmd'>${resourceTypeName}</span></li>
       <li id="vrtx-edit-win-mac">
-          <span id="vrtx-edit-win">${vrtx.getMsg('editor.ooxml.step-by-step.win')}</span>
-          <span id="vrtx-edit-mac">${vrtx.getMsg('editor.ooxml.step-by-step.mac')}</span>
+          <span id="vrtx-edit-win">${vrtx.getMsg('editor.ooxml.step-by-step.win')?no_esc}</span>
+          <span id="vrtx-edit-mac">${vrtx.getMsg('editor.ooxml.step-by-step.mac')?no_esc}</span>
       </li>
-      <li>${vrtx.getMsg('editor.ooxml.step-by-step.paste-webdav')}</li>
+      <li>${vrtx.getMsg('editor.ooxml.step-by-step.paste-webdav')?no_esc}</li>
     </ol>
     
   </body>
