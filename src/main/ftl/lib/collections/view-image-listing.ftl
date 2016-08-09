@@ -88,7 +88,7 @@
               <#local description = vrtx.propValue(image, 'image-description')! />
               <div class="vrtx-image-description">
                 <#if description?has_content>
-                  <@vrtx.flattenHtml value=description escape=false />
+                  ${description?no_esc}
                 </#if>
               </div>
 
@@ -148,7 +148,7 @@
             <#local description = vrtx.propValue(image, 'image-description')! />
             <td class="vrtx-table-description">
               <#if description?has_content>
-                <@vrtx.flattenHtml value=description escape=false />
+                ${description?no_esc}
               </#if>
             </td>
             <#local width = vrtx.propValue(image, 'pixelWidth')! />
