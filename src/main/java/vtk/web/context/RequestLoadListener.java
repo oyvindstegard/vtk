@@ -117,7 +117,7 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
 
     private static final class MetricsHandler {
         private final MetricRegistry registry;
-        private final Counter requests;
+        private final Meter requests;
         private final Meter errors;
         private final Meter authenticated;
         private final Histogram processing;
@@ -126,14 +126,14 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
 
         public MetricsHandler(MetricRegistry registry) {
             this.registry = registry;
-            this.requests = registry.counter("requests.handled");
+            this.requests = registry.meter("requests.processed");
             this.errors = registry.meter("requests.failed");
             this.authenticated = registry.meter("requests.authenticated");
             this.processing = registry.histogram("requests.processing.time");
         }
 
         public void event(VrtxEvent event) {
-            requests.inc();
+            requests.mark();
             processing.update(event.processingTimeMillis);
             if (event.failure) {
                 errors.mark();
