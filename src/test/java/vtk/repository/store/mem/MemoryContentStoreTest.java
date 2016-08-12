@@ -31,8 +31,8 @@
 package vtk.repository.store.mem;
 
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
+
 import vtk.repository.store.AbstractContentStoreTest;
 import vtk.repository.store.ContentStore;
 
@@ -43,7 +43,6 @@ public class MemoryContentStoreTest extends AbstractContentStoreTest {
 
     @Before
     public void setUp() throws Exception {
-        BasicConfigurator.configure();
         this.store = new MemoryContentStore();
     }
 

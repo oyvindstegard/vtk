@@ -301,8 +301,8 @@
           <contextXml>src/conf/jetty/jetty-context.xml</contextXml>
           <systemProperties>
             <systemProperty>
-              <name>log4j.configuration</name>
-              <value>log4j.vortex.xml</value>
+              <name>log4j.configurationFile</name>
+              <value>log4j2.vortex.xml</value>
             </systemProperty>
             <systemProperty>
               <name>javax.xml.transform.TransformerFactory</name>
@@ -538,6 +538,7 @@
       </plugin>
     </plugins>
   </build>
+
   <dependencies>
 
     <dependency>
@@ -594,11 +595,19 @@
         <!-- Exclude some slf4j libs -->
         <exclusion>
           <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
           <artifactId>jcl-over-slf4j</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>log4j-over-slf4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jul-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -677,6 +686,7 @@
       <version>2.0.54-beta</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
@@ -947,41 +957,36 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Logging (SLF4J API is used in the application) -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.7.21</version>
       <scope>compile</scope>
     </dependency>
-    <!-- Because Spring uses commons-logging: -->
+
+    <!-- JCL over SLF4J (Spring uses JCL): -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
       <version>1.7.21</version>
       <scope>runtime</scope>
     </dependency>
-    <!-- Provide slf4j code with log4j2 output: -->
-    <!--
+
+    <!-- SLF4J over Log4j 2 (implementation) -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
-      <version>2.5</version>
+      <version>2.6.2</version>
       <scope>runtime</scope>
     </dependency>
+
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>2.5</version>
-      <scope>runtime</scope>
+      <version>2.6.2</version>
     </dependency>
-    -->
-    <!-- Provide slf4j code with log4j-output: -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.21</version>
-      <scope>runtime</scope>
-    </dependency>
+
     <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr-runtime</artifactId>

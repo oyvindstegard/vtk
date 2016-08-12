@@ -30,6 +30,10 @@
  */
 package vtk.repository.store.fs;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -37,10 +41,8 @@ import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Random;
 
-import org.apache.log4j.BasicConfigurator;
 import org.junit.After;
 import org.junit.Before;
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 import vtk.repository.Path;
@@ -56,7 +58,6 @@ public class FileSystemContentStoreTest extends AbstractContentStoreTest {
 
     @Before
     public void setUp() throws Exception {
-        BasicConfigurator.configure();
         this.storeDir = System.getProperty("java.io.tmpdir") + "/contentStore" + getRandomIntAsString();
         
         File storeDirFile = new File(this.storeDir);

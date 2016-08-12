@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.BasicConfigurator;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.junit.Test;
@@ -65,10 +64,6 @@ import vtk.security.roles.RoleManager;
 
 public class AuthorizationManagerTest {
     
-    static {
-        BasicConfigurator.configure();
-    }
-
     @Test
     public void test01() throws Exception {
         TestHarness harness = new TestHarness("auth-manager-test01.json");
