@@ -35,8 +35,8 @@ import java.util.Optional;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertyEvaluationContext.Type;
-import vtk.repository.content.MarkdownInfo;
 import vtk.repository.content.MarkdownGFMInfo;
+import vtk.repository.content.MarkdownInfo;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.PropertyEvaluator;
 
@@ -62,24 +62,33 @@ public class MarkdownPropertyEvaluator implements LatePropertyEvaluator {
             throws PropertyEvaluationException {
         
         boolean exists = ctx.getOriginalResource().getProperty(property.getDefinition()) != null;
-        
         if (fallbackEvaluator.isPresent()) {
             exists = fallbackEvaluator.get().evaluate(property, ctx);
+        }
+        
+        if (ctx.getEvaluationType() == Type.NameChange) {
+            if (exists) {
+                property.setValue(ctx.getOriginalResource()
+                        .getProperty(property.getDefinition()).getValue());
+            }
+            return exists;
+        }
+        else if (ctx.getEvaluationType() != Type.ContentChange 
+                && ctx.getEvaluationType() != Type.Create) {
+            return exists; 
         }
         
         if (ctx.getContent() == null) {
             return exists;
         }
-        if (ctx.getEvaluationType() != Type.ContentChange 
-                && ctx.getEvaluationType() != Type.Create) {
-            return exists; 
-        }
-        try{
-        	MarkdownInfo info;
+        
+        try {
+            MarkdownInfo info;
             if (markdownSubtype.equals(SUBTYPE_GFM)) {
             	info = ctx.getContent()
-                        .getContentRepresentation(MarkdownGFMInfo.class);
-            } else {
+            	        .getContentRepresentation(MarkdownGFMInfo.class);
+            }
+            else {
                 info = ctx.getContent()
                         .getContentRepresentation(MarkdownInfo.class);
             }
