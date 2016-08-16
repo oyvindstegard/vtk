@@ -360,6 +360,8 @@
             </goals>
             <phase>process-resources</phase>
             <configuration>
+              <srcdir>${basedir}/src/main/websources</srcdir>
+              <outputdir>${project.build.directory}/classes/web</outputdir>
               <arguments>${frontend.build.args}</arguments>
             </configuration>
           </execution>
