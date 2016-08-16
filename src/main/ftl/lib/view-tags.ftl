@@ -198,7 +198,7 @@
       <#if publishDate?has_content>
         <div class="publish-date">
           <@vrtx.msg code="viewCollectionListing.publishedDate"
-             default="" args=[] locale=locale />${publishDate}
+             default="" args=[] locale=locale /> ${publishDate}
         </div>
       </#if>
 
