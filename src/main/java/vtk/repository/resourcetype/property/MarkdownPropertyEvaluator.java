@@ -35,7 +35,6 @@ import java.util.Optional;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertyEvaluationContext.Type;
-import vtk.repository.content.MarkdownGFMInfo;
 import vtk.repository.content.MarkdownInfo;
 import vtk.repository.content.MarkdownGFMInfo;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
