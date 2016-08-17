@@ -128,13 +128,13 @@
         <#t /> - <abbr class="dtend" title="${endiso8601}">${endhoursminutes}</abbr><#rt />
       </#if>
     <#else>
-      <#if start?has_content>
+      <#if !start?has_content>
         (<@vrtx.msg code="event.ends" />) 
       <#else>
         - 
       </#if>
       <abbr class="dtend" title="${endiso8601}">
-      <#if  isoendhour?has_content && isoendhour != "00:00">
+      <#if isoendhour?has_content && isoendhour != "00:00">
         ${end}<#t/>
       <#else>
         ${endshort}<#t/>
