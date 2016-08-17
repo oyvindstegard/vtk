@@ -41,18 +41,19 @@ import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.PropertyEvaluator;
 
 public class MarkdownPropertyEvaluator implements LatePropertyEvaluator {
+
     private static final String SUBTYPE_GFM = "GFM";
 
-	private final String markdownSubtype;
+    private final String markdownSubtype;
     private final String field;
     private Optional<PropertyEvaluator> fallbackEvaluator = Optional.empty();
-    
+
     public MarkdownPropertyEvaluator(String markdownSubtype, String field) {
         this(markdownSubtype, field, null);
     }
-    
+
     public MarkdownPropertyEvaluator(String markdownSubtype, String field, PropertyEvaluator fallbackEvaluator) {
-        this.markdownSubtype = markdownSubtype;    	
+        this.markdownSubtype = markdownSubtype;
         this.field = field;
         this.fallbackEvaluator = Optional.ofNullable(fallbackEvaluator);
     }
@@ -60,56 +61,50 @@ public class MarkdownPropertyEvaluator implements LatePropertyEvaluator {
     @Override
     public boolean evaluate(Property property, PropertyEvaluationContext ctx)
             throws PropertyEvaluationException {
-        
+
         boolean exists = ctx.getOriginalResource().getProperty(property.getDefinition()) != null;
         if (fallbackEvaluator.isPresent()) {
             exists = fallbackEvaluator.get().evaluate(property, ctx);
         }
-        
+
         if (ctx.getEvaluationType() == Type.NameChange) {
             if (exists) {
-                property.setValue(ctx.getOriginalResource()
-                        .getProperty(property.getDefinition()).getValue());
+                property.setValue(ctx.getOriginalResource().getProperty(property.getDefinition()).getValue());
             }
             return exists;
-        }
-        else if (ctx.getEvaluationType() != Type.ContentChange 
+        } else if (ctx.getEvaluationType() != Type.ContentChange
                 && ctx.getEvaluationType() != Type.Create) {
-            return exists; 
+            return exists;
         }
-        
+
         if (ctx.getContent() == null) {
             return exists;
         }
-        
+
         try {
             MarkdownInfo info;
             if (markdownSubtype.equals(SUBTYPE_GFM)) {
-            	info = ctx.getContent()
-            	        .getContentRepresentation(MarkdownGFMInfo.class);
-            }
-            else {
-                info = ctx.getContent()
-                        .getContentRepresentation(MarkdownInfo.class);
+                info = ctx.getContent().getContentRepresentation(MarkdownGFMInfo.class);
+            } else {
+                info = ctx.getContent().getContentRepresentation(MarkdownInfo.class);
             }
             switch (field) {
-            case "title":
-                if (info.title != null) {
-                    property.setStringValue(info.title);
-                    return true;
-                }
-                return exists;
-            case "summary":
-                if (info.summary != null) {
-                    property.setStringValue(info.summary);
-                    return true;
-                }
-                return exists;
-            default:
-                return exists;
-            }            
-        }
-        catch (Throwable t) {
+                case "title":
+                    if (info.title != null) {
+                        property.setStringValue(info.title);
+                        return true;
+                    }
+                    return exists;
+                case "summary":
+                    if (info.summary != null) {
+                        property.setStringValue(info.summary);
+                        return true;
+                    }
+                    return exists;
+                default:
+                    return exists;
+            }
+        } catch (Throwable t) {
             return exists;
         }
     }
