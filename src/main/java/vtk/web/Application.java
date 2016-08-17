@@ -56,8 +56,6 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.ServerPropertiesAutoConfiguration;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
@@ -65,7 +63,6 @@ import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -76,11 +73,6 @@ import vtk.web.filter.StandardRequestFilter;
 import vtk.web.servlet.VTKServlet;
 
 @EnableWebMvc
-@Import({
-    AopAutoConfiguration.class,
-    AopAutoConfiguration.JdkDynamicAutoProxyConfiguration.class,
-    ServerPropertiesAutoConfiguration.class
-})
 public class Application  {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String GRACEFUL_ARG = "--graceful";
