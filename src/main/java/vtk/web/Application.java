@@ -57,7 +57,6 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.DispatcherServletAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ServerPropertiesAutoConfiguration;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
@@ -80,7 +79,6 @@ import vtk.web.servlet.VTKServlet;
 @Import({
     AopAutoConfiguration.class,
     AopAutoConfiguration.JdkDynamicAutoProxyConfiguration.class,
-    DispatcherServletAutoConfiguration.class,
     ServerPropertiesAutoConfiguration.class
 })
 public class Application  {
