@@ -76,7 +76,7 @@
         <#else>
           <span class="vrtx-daily-events-date-day">${currentDay}</span>
         </#if>
-        <span class="vrtx-daily-events-date-month"><@vrtx.date value=startdate format='MMM' />.</span>
+        <span class="vrtx-daily-events-date-month"><@vrtx.date value=startdate format='MMM.' /></span>
       </div>
     </#if>
 
@@ -103,14 +103,11 @@
       <div class="vrtx-event-component-misc">
         <#if conf.dateIcon && showTime && conf.showDate>
           <span class="vrtx-event-component-start-time">
-            <@vrtx.date value=startdate format='HH:mm' /><#if conf.showLocation && location?has_content>,</#if>
+            <@vrtx.date value=startdate format='hours-minutes' /><#if conf.showLocation && location?has_content>,</#if>
           </span>
         <#elseif showTime && conf.showDate>
           <span class="vrtx-event-component-start-time">
-            <@vrtx.date value=startdate format='dd' />.
-            <@vrtx.date value=startdate format='MMM' />.
-            <@vrtx.date value=startdate format='yyyy' />
-            <@vrtx.date value=startdate format='HH:mm' /><#if conf.showLocation && location?has_content>,</#if>
+            <@vrtx.date value=startdate format='long' /><#if conf.showLocation && location?has_content>,</#if>
           </span>
         </#if>
 

@@ -105,7 +105,7 @@
               <#else>
                 <span class="vrtx-daily-events-date-day">${currentDay}</span>
               </#if>
-              <span class="vrtx-daily-events-date-month"><@vrtx.date value=groupedEvents.day format='MMM' />.</span>
+              <span class="vrtx-daily-events-date-month"><@vrtx.date value=groupedEvents.day format='MMM.' /></span>
             </div>
             <div class="vrtx-daily-event">
               <#local eventListing = groupedEvents.events />
