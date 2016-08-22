@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
@@ -56,6 +57,7 @@ public final class MenuGenerator {
     private Service viewService;
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition hiddenPropDef;
+	private PropertyTypeDefinition sortDirectionPropDef;
     private PropertyTypeDefinition importancePropDef;
     private ResourceTypeDefinition collectionResourceType;
     private PropertyTypeDefinition navigationTitlePropDef;
@@ -231,7 +233,11 @@ public final class MenuGenerator {
         return hiddenPropDef;
     }
 
-    public PropertyTypeDefinition getImportancePropDef() {
+	public PropertyTypeDefinition getSortDirectionPropDef() {
+		return sortDirectionPropDef;
+	}
+
+	public PropertyTypeDefinition getImportancePropDef() {
         return importancePropDef;
     }
 
@@ -258,7 +264,12 @@ public final class MenuGenerator {
         this.hiddenPropDef = hiddenPropDef;
     }
 
-    @Required
+	@Required
+	public void setSortDirectionPropDef(PropertyTypeDefinition sortDirectionPropDef) {
+		this.sortDirectionPropDef = sortDirectionPropDef;
+	}
+
+	@Required
     public void setImportancePropDef(PropertyTypeDefinition importancePropDef) {
         this.importancePropDef = importancePropDef;
     }

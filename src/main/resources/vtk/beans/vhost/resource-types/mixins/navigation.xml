@@ -19,6 +19,7 @@
     <property name="sourceList">
       <list>
         <ref bean="hiddenPropDef" />
+        <ref bean="sortDirectionPropDef" />
         <ref bean="importancePropDef" />
       </list>
     </property>
@@ -34,6 +35,38 @@
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <property name="type" value="BOOLEAN" />
         <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-hidden" />
+        <property name="values">
+          <list>
+            <bean class="vtk.repository.resourcetype.Value">
+              <constructor-arg type="boolean">
+                <value>true</value>
+              </constructor-arg>
+            </bean>
+          </list>
+        </property>
+      </bean>
+    </property>
+    <property name="metadata">
+      <map>
+        <entry key="editingHints">
+          <map>
+            <entry key="radio" value="true" />
+          </map>
+        </entry>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="sortDirectionPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
+    parent="abstractPropDef">
+    <property name="name" value="sortdirection" />
+    <property name="type" value="BOOLEAN" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <property name="type" value="BOOLEAN" />
+        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-sortdirection" />
         <property name="values">
           <list>
             <bean class="vtk.repository.resourcetype.Value">
