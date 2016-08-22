@@ -34,6 +34,7 @@
         </bean>
       </list>
     </property>
+    <property name="searchSorting" ref="audioVideoListing.searchSorting" />
     <property name="hideableProperties">
       <list>
         <ref bean="collection.hideIntroductionPropDef" />
@@ -52,6 +53,24 @@
         <value>video-description</value>
         <value>audio-description</value>
       </list>
+    </property>
+  </bean>
+
+  <bean id="audioVideoListing.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+    <property name="sortPropDef" ref="audioVideoListing.sortingPropDef" />
+    <property name="sortOrderPropDefPointers">
+      <list>
+        <value>title</value>
+      </list>
+    </property>
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
+    <property name="defaultSortOrder" ref="SORT_ORDER.ASC" />
+    <property name="sortOrderMapping">
+      <map>
+        <entry key="publish-date" value-ref="SORT_ORDER.DESC" />
+        <entry key="title" value-ref="SORT_ORDER.ASC" />
+        <entry key="name" value-ref="SORT_ORDER.ASC" />
+      </map>
     </property>
   </bean>
 

@@ -763,7 +763,7 @@
             <ref bean="collection.recursiveListingSubfoldersPropDef" />
             <ref bean="displayAggregationPropDef" />
             <ref bean="aggregationPropDef" />
-            <ref bean="collection.sortingPropDef" />
+            <ref bean="audioVideoListing.sortingPropDef" />
             <ref bean="linkOtherLanguagePropDef" />
           </list>
         </constructor-arg>
