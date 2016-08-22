@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
@@ -232,7 +233,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         if (childNames != null) {
             items = sortSpecifiedOrder(childNames, nameItemMap);
         } else {
-            items = sortDefaultOrder(items, menuRequest.getLocale());
+            items = sortByOrder(items, menuRequest.getLocale(), true);
         }
 
         // Insert parent first in list
@@ -382,10 +383,16 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         return result;
     }
 
-    protected List<MenuItem<PropertySet>> sortDefaultOrder(List<MenuItem<PropertySet>> items, Locale locale) {
+	protected List<MenuItem<PropertySet>> sortByOrder(List<MenuItem<PropertySet>> items, Locale locale, boolean ascendingSort) {
         PropertyTypeDefinition navigationTitlePropDef = this.menuGenerator.getNavigationTitlePropDef();
-        PropertyTypeDefinition importancePropDef = this.menuGenerator.getImportancePropDef();
-        Collections.sort(items, new ListMenuComparator(locale, importancePropDef, navigationTitlePropDef));
+		PropertyTypeDefinition importancePropDef = this.menuGenerator.getImportancePropDef();
+		
+		ListMenuComparator listmenuComparator = new ListMenuComparator(locale, importancePropDef,
+				navigationTitlePropDef);
+		if (!ascendingSort) {
+			listmenuComparator.setAscending(false);
+		}
+		Collections.sort(items, listmenuComparator);
         return items;
     }
 
@@ -460,7 +467,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
                 item.setActive(true);
             }
         }
-        items = sortDefaultOrder(items, menuRequest.getLocale());
+        items = sortByOrder(items, menuRequest.getLocale(), true);
         ListMenu<PropertySet> submenu = new ListMenu<PropertySet>();
         submenu.addAllItems(items);
         return submenu;

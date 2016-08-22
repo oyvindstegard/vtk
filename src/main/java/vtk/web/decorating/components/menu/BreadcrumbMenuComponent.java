@@ -75,6 +75,8 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
         int maxSiblings = getIntegerGreaterThanZero(PARAMETER_MAX_NUMBER_OF_SIBLINGS, request,
                 DEFAULT_NUMBER_OF_SIBLINGS);
 
+		boolean ascendingSort = true;
+
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
@@ -106,7 +108,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
 
         if (!currentResource.isCollection()) {
             try {
-                currentResource = repository.retrieve(token, uri.getParent(), true);
+				currentResource = repository.retrieve(token, uri.getParent(), true);
             } catch (AuthorizationException e) {
                 model.put("breadcrumb", breadCrumbElements);
                 return;
@@ -151,8 +153,11 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
             }
         }
 
-        menuItemList = sortDefaultOrder(menuItemList, request.getLocale());
+		if (currentResource.getProperty(menuGenerator.getSortDirectionPropDef()) != null) {
+			ascendingSort = false;
+		}
 
+		menuItemList = sortByOrder(menuItemList, request.getLocale(), ascendingSort);
         model.put("breadcrumb", breadCrumbElements);
         model.put("children", menuItemList);
         model.put("markedurl", markedUrl);
@@ -204,11 +209,13 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
                 return menuItems;
             }
         }
+
         for (Resource r : resources) {
             // Filtering:
             if (!r.isCollection()) {
                 continue;
             }
+
             if (r.getProperty(menuGenerator.getHiddenPropDef()) != null && !r.getURI().equals(currentResource.getURI())) {
                 continue;
             }

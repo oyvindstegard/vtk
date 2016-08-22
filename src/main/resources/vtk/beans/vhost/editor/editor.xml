@@ -614,8 +614,9 @@
             <ref bean="introductionImageAltPropDef" />
             <ref bean="introductionImageCaptionPropDef" />
             <ref bean="navigationTitlePropDef" />
-            <ref bean="importancePropDef" />
             <ref bean="hiddenPropDef" />
+            <ref bean="sortDirectionPropDef" />
+            <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
             <ref bean="collection.recursiveListingSubfoldersPropDef" />

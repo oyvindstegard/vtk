@@ -129,4 +129,8 @@ public class ListMenuComparator implements Comparator<MenuItem<PropertySet>> {
         }
         return collator.compare(value2, value1);
     }
+
+	public void setAscending(boolean ascending) {
+		this.ascending = ascending;
+	}
 }
