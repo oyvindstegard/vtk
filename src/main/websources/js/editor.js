@@ -540,11 +540,13 @@ VrtxEditor.prototype.richtextEditorFacade = {
 /* Toolbars */
 
 vrtxEditor.richtextEditorFacade.toolbars.inlineToolbar = [
-  ['Source', 'PasteText', 'Link', 'Unlink', 'Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'SpecialChar']
+  ['PasteText', 'Link', 'Unlink', 'Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'SpecialChar'], 
+  ['A11ychecker', '-', 'Source']
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.withoutSubSuperToolbar = [
-  ['Source', 'PasteText', 'Link', 'Unlink', 'Bold', 'Italic', 'Strike', 'SpecialChar']
+  ['PasteText', 'Link', 'Unlink', 'Bold', 'Italic', 'Strike', 'SpecialChar'],
+  ['A11ychecker', '-', 'Source']
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.commentsToolbar = [
@@ -560,27 +562,31 @@ vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.studyToolbar = [
-  ['Source', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
+  ['PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
    'RemoveFormat', '-', 'Link', 'Unlink', 'Studyreferencecomponent', 'Anchor',
    'Image', 'MediaEmbed', 'CreateDiv', 'Table', 'Studytable', 'HorizontalRule', 'SpecialChar'],
+  ['A11ychecker', '-', 'Source'],
   ['Format', 'Bold', 'Italic', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Maximize']
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.studyRefToolbar = [
-  ['Source', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
+  ['PasteText', 'PasteFromWord', '-', 'Undo', 'Redo', '-', 'Replace',
    'RemoveFormat', '-', 'Link', 'Unlink', 'Studyreferencecomponent', 'Anchor',
    'Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'SpecialChar'],
+  ['A11ychecker', '-', 'Source'],
   ['Format', 'Bold', 'Italic', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Maximize']
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.messageToolbar = [
-  ['Source', 'PasteText', 'Bold', 'Italic', 'Strike', 'RemoveFormat', '-', 'Undo', 'Redo', '-', 'Link',
-   'Unlink', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent']
+  ['PasteText', 'Bold', 'Italic', 'Strike', 'RemoveFormat', '-', 'Undo', 'Redo', '-', 'Link',
+   'Unlink', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent'],
+   ['A11ychecker', '-', 'Source']
 ];
 
 vrtxEditor.richtextEditorFacade.toolbars.resourcesTextToolbar = [
-  ['Source', 'PasteText', 'Bold', 'Italic', 'Strike', '-', 'Undo', 'Redo', '-', 'Link',
-   'Unlink', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent']
+  ['PasteText', 'Bold', 'Italic', 'Strike', '-', 'Undo', 'Redo', '-', 'Link',
+   'Unlink', 'Subscript', 'Superscript', 'NumberedList', 'BulletedList', 'Outdent', 'Indent'],
+   ['A11ychecker', '-', 'Source']
 ];
 
 /* Div containers */
