@@ -298,6 +298,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
         config.format_tags = 'p;h2;h3;h4;h5;h6;pre;div';
       }    
     } else {
+      config.extraPlugins = 'a11ychecker'; 
       config.removePlugins = 'elementspath';
     }
     
