@@ -2,13 +2,13 @@
  *  Vortex - Editor - Common
  *
  *  ToC:
- * 
+ *
  *  1. General
  *  2. Dimensions and explicit settings
  *  3. CK
  *
  */
- 
+
 @import "base";
 
 /*-----------------------------------------*\
@@ -433,7 +433,17 @@ div.description textarea {
 /* Image and caption */
 
 div.caption textarea {
-  @include wh(352px !important, 107px);
+  @include wh(371px !important, 107px);
+}
+
+div.introImageAndCaption .caption,
+div#vrtx-resource\.picture .caption {
+  width: 395px;
+}
+
+div.introImageAndCaption iframe,
+div#vrtx-resource\.picture iframe {
+  width: 371px !important;
 }
 
 .introImageAndCaption .header,
@@ -470,18 +480,8 @@ div.introImageAndCaption .vrtx-image-ref {
   margin-top: 0px;
 }
 
-div.introImageAndCaption .caption,
-div#vrtx-resource\.picture .caption {
-  width: 355px; 
-}
-
-div.introImageAndCaption iframe,
-div#vrtx-resource\.picture iframe {
-  width: 331px !important;
-}
-
 div.introImageAndCaption .hidePicture .vrtx-radio-buttons label {
-  display: inline !important; 
+  display: inline !important;
 }
 
 div.introImageAndCaption .hidePicture .vrtx-radio-buttons label:after {
@@ -605,7 +605,7 @@ div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
   @include borderRadius(0px !important);
   box-shadow: none !important;
   background: #ededed !important;
-  
+
   .cke_inner {
     padding: 10px !important;
     background: #ededed !important;
@@ -666,7 +666,7 @@ div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
   .vrtx-button,
   #editor-help-menu a {
     font: normal 13px/1.3 Arial, sans-serif !important;
-    cursor: pointer !important;  
+    cursor: pointer !important;
   }
   #editor-help-menu {
     padding-left: 10px;
