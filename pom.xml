@@ -125,9 +125,10 @@
     <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     <checkstyle.config.location>src/main/checkstyle/checkstyle.xml</checkstyle.config.location>
     <java.version>1.8</java.version>
-    <spring.version>4.3.0.RELEASE</spring.version>
+    <spring.version>4.3.2.RELEASE</spring.version>
     <spring.boot.version>1.4.0.RELEASE</spring.boot.version>
-    <jetty.version>9.3.9.v20160517</jetty.version>
+    <akka.version>2.4.9</akka.version>
+    <jetty.version>9.3.11.v20160721</jetty.version>
     <frontend.build.args>default --production</frontend.build.args>
   </properties>
 
@@ -724,7 +725,7 @@
     <dependency>
       <groupId>org.springframework.session</groupId>
       <artifactId>spring-session-data-redis</artifactId>
-      <version>1.2.0.RELEASE</version>
+      <version>1.2.1.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -830,32 +831,32 @@
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-slf4j_2.11</artifactId>
-      <version>2.4.7</version>
+      <version>${akka.version}</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-cluster_2.11</artifactId>
-      <version>2.4.7</version>
+      <version>${akka.version}</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-cluster-tools_2.11</artifactId>
-      <version>2.4.7</version>
+      <version>${akka.version}</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-distributed-data-experimental_2.11</artifactId>
-      <version>2.4.7</version>
+      <version>${akka.version}</version>
     </dependency>
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>2.5.2</version><!-- (match version in spring-session-data-redis) -->
+      <version>2.8.1</version><!-- (match version in spring-session-data-redis) -->
     </dependency>
     <dependency>
       <groupId>org.mybatis</groupId>
       <artifactId>mybatis</artifactId>
-      <version>3.4.0</version>
+      <version>3.4.1</version>
     </dependency>
     <dependency>
       <groupId>org.mybatis</groupId>
