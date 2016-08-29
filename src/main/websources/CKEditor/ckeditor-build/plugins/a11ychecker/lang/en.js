@@ -24,5 +24,5 @@ CKEDITOR.plugins.setLang( 'a11ychecker', 'en', {
 	quickFixButton: 'Quick fix',
 	quickFixButtonTitle: 'Quick fix this issue',
 	navigationCounter: 'Issue {current} of {total} ({testability})',
-	noIssuesMessage: 'The document does not contain any accessibility issues.'
+	noIssuesMessage: 'This text area does not contain any accessibility issues.'
 } );
