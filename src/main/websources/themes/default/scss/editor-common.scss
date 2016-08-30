@@ -359,17 +359,34 @@ div.manually-approve-from table input {
   width: 513px;
 }
 
-div.additionalContent,
-div.introduction,
-div.image-description,
-div.video-description,
-div.audio-description,
-div.description {
-  width: 547px;
+div.content textarea,
+div.content-study textarea {
+  width: 100%;
 }
 
-div.additionalContent iframe {
-  height: 150px !important;
+div.content textarea {
+  height: 300px;
+}
+
+div.additionalContent,
+div.additionalContents,
+div.relatedContent,
+div.selectedPublications,
+div.related-content,
+div.contactInfo,
+div.responsibilities {
+  textarea {
+    height: 160px;
+    width: 100%;
+  }
+}
+
+div.additionalContent {
+  width: 547px;
+
+  iframe {
+    height: 150px !important;
+  }
 }
 
 div.introduction,
@@ -378,56 +395,15 @@ div.video-description,
 div.audio-description,
 div.description {
   margin-bottom: 20px;
-}
+  width: 547px;
 
-div.introduction textarea,
-div.image-description textarea,
-div.video-description textarea,
-div.audio-description textarea,
-div.description textarea {
-  height: 120px;
-}
-
-div.content textarea,
-div.content-study textarea,
-div.additionalContents textarea,
-div.additionalContent textarea,
-div.relatedContent textarea,
-div.selectedPublications textarea,
-div.related-content textarea,
-div.contactInfo textarea,
-div.responsibilities textarea {
-  width: 100%;
-}
-
-div.content textarea {
-  height: 300px;
-}
-
-div.additionalContents textarea,
-div.additionalContent textarea,
-div.relatedContent textarea,
-div.selectedPublications textarea,
-div.related-content textarea,
-div.contactInfo textarea,
-div.responsibilities textarea {
-  height: 160px;
-}
-
-div.introduction iframe,
-div.image-description iframe,
-div.video-description iframe,
-div.audio-description iframe,
-div.description iframe {
-  width: 522px !important;
-}
-
-div.introduction textarea,
-div.image-description textarea,
-div.video-description textarea,
-div.audio-description textarea,
-div.description textarea {
-  width: 543px !important;
+  iframe {
+    width: 522px !important;
+  }
+  textarea {
+    width: 543px !important;
+    height: 120px;
+  }
 }
 
 /* Image and caption */
@@ -436,14 +412,14 @@ div.caption textarea {
   @include wh(371px !important, 107px);
 }
 
-div.introImageAndCaption .caption,
-div#vrtx-resource\.picture .caption {
-  width: 395px;
-}
-
-div.introImageAndCaption iframe,
-div#vrtx-resource\.picture iframe {
-  width: 371px !important;
+div.introImageAndCaption,
+div#vrtx-resource\.picture {
+  caption {
+    width: 395px;
+  }
+  iframe {
+    width: 371px !important;
+  }
 }
 
 .introImageAndCaption .header,
@@ -480,23 +456,25 @@ div.introImageAndCaption .vrtx-image-ref {
   margin-top: 0px;
 }
 
-div.introImageAndCaption .hidePicture .vrtx-radio-buttons label {
-  display: inline !important;
-}
+div.introImageAndCaption .hidePicture {
+  .vrtx-radio-buttons label {
+    display: inline !important;
 
-div.introImageAndCaption .hidePicture .vrtx-radio-buttons label:after {
-  display: block !important;
-  content: ".";
-  visibility: hidden;
-  height: 7px;
-}
+    &:after {
+      display: block !important;
+      content: ".";
+      visibility: hidden;
+      height: 7px;
+    }
 
-div.introImageAndCaption .hidePicture .vrtx-radio-buttons label:last-child:after {
-  height: 15px;
-}
+    &:last-child:after {
+      height: 15px;
+    }
+  }
 
-div.introImageAndCaption .hidePicture > label {
-  white-space: nowrap;
+  > label {
+    white-space: nowrap;
+  }
 }
 
 div#vrtx-resource\.linkOtherLanguage .vrtx-textfield,
@@ -526,11 +504,10 @@ div#vrtx-resource\.picture .pictureAlt {
 div.introImageAndCaption .hidePicture,
 div#vrtx-resource\.picture .hidePicture {
   margin-top: 20px;
-}
 
-div.introImageAndCaption .hidePicture + .pictureAlt,
-div#vrtx-resource\.picture .hidePicture + .pictureAlt {
-  margin-top: 0px;
+  + .pictureAlt {
+    margin-top: 0px;
+  }
 }
 
 .pictureAlt input {
