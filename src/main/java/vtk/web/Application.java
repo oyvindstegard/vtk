@@ -65,14 +65,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import vtk.cluster.AkkaClusterManager;
 import vtk.util.Version;
 import vtk.web.filter.StandardRequestFilter;
 import vtk.web.servlet.VTKServlet;
 
-@EnableWebMvc
 public class Application  {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String GRACEFUL_ARG = "--graceful";
@@ -271,14 +269,6 @@ public class Application  {
                     }})
                 .collect(Collectors.toList());
         return result;
-        //        File home = new File(System.getProperty("user.home"));
-        //
-        //        if (new File(home.getCanonicalPath() + File.separator + ".vrtx-context.xml").exists()) {
-        //            params.add("file://${user.home}/.vrtx-context.xml");
-        //        }
-        //        if (new File(home.getCanonicalPath() + File.separator + ".vrtx.xml").exists()) {
-        //            params.add("file://${user.home}/.vrtx.xml");
-        //        }
     }
 
 
