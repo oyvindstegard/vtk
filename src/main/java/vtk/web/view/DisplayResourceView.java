@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.view.AbstractView;
+
 import vtk.repository.Resource;
 import vtk.util.io.IO;
 import vtk.util.repository.ContentTypeHelper;
@@ -107,16 +108,24 @@ public class DisplayResourceView extends AbstractView
         this.supportRangeRequests = supportRangeRequests;
     }
 
+    @Override
     @SuppressWarnings("rawtypes")
     public void renderMergedOutputModel(Map model, HttpServletRequest request,
                                         HttpServletResponse response) throws Exception {
         Resource resource = getResource(model, request, response);
-        
-        Range range = this.supportRangeRequests ? 
-                getRangeHeader(request, resource) : null;
-        request.setAttribute(Range.class.getName(), range);
-        setHeaders(resource, model, request, response);
 
+        try {
+            Range range = this.supportRangeRequests ? 
+                    getRangeHeader(request, resource) : null;
+            request.setAttribute(Range.class.getName(), range);
+        }
+        catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return ;
+        }
+
+        setHeaders(resource, model, request, response);
+        
         if ("HEAD".equals(request.getMethod())) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Request is HEAD, not writing content");
@@ -189,7 +198,8 @@ public class DisplayResourceView extends AbstractView
             setHeader(response, "Content-Range", "bytes " + range.from + "-" 
                     + range.to + "/" + resource.getContentLength());
             setHeader(response, "Content-Length", String.valueOf(range.to - range.from + 1));
-        } else {
+        }
+        else {
             setStatus(response, HttpServletResponse.SC_OK);
             setContentLengthHeader(resource, model, request, response);
         }
@@ -220,7 +230,8 @@ public class DisplayResourceView extends AbstractView
                             .offset(range.from).limit(nbytes)
                             .bufferSize(this.streamBufferSize)
                             .perform();
-        } else {
+        }
+        else {
             bytesWritten = IO.copy(resourceStream, response.getOutputStream())
                     .bufferSize(this.streamBufferSize).perform();
                     
@@ -271,7 +282,8 @@ public class DisplayResourceView extends AbstractView
             // is perfectly legal, although a single space is
             // preferred.
             contentType = " " + resource.getContentType();
-        } else if (ContentTypeHelper.isTextContentType(resource.getContentType())
+        }
+        else if (ContentTypeHelper.isTextContentType(resource.getContentType())
                    && resource.getCharacterEncoding() != null) {
             contentType = resource.getContentType() + ";charset="
                 + resource.getCharacterEncoding();
@@ -302,6 +314,7 @@ public class DisplayResourceView extends AbstractView
         public Range(long from, long to) {
             this.from = from; this.to = to;
         }
+        @Override
         public String toString() {
             return "Range: " + from + ":" + to;
         }
@@ -322,9 +335,11 @@ public class DisplayResourceView extends AbstractView
             char c = hdr.charAt(i);
             if (c == '-') {
                 cur = toStr;
-            } else if (c < '0' || c > '9') {
+            }
+            else if (c < '0' || c > '9') {
                 return null;
-            } else {
+            }
+            else {
                 cur.append(c);
             }
         }
