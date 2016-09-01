@@ -84,7 +84,7 @@
                 </#if>
               <#else>
                 <#assign modifiedByNameLink = vrtx.propValue(entryPropSet, 'modifiedBy', 'link') />
-                ${modifiedByNameLink}
+                ${modifiedByNameLink?no_esc}
               </#if>
             </td>
             <td class="vrtx-collection-listing-last-modified last-col">${lastModifiedTime}</td>

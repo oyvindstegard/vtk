@@ -81,7 +81,7 @@
       <#else>
         <div class="lastModified">
           <@vrtx.msg code="viewCollectionListing.lastModified" args=[lastModified] />
-          ${vrtx.propValue(entryPropSet, 'modifiedBy', 'link')!''}
+          ${vrtx.propValue(entryPropSet, 'modifiedBy', 'link')?no_esc!''}
         </div>
       </#if>
     </#if>
