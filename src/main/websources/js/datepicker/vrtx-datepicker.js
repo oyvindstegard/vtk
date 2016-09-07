@@ -1,8 +1,8 @@
 /*
  *  VrtxDatepicker - facade to jQuery UI datepicker (by USIT/GPL|GUAN)
- *  
+ *
  *  API: http://api.jqueryui.com/datepicker/
- *  
+ *
  *  * Requires Dejavu OOP library
  *  * Requires but Lazy-loads jQuery UI library (if not defined) on open
  *  * Lazy-loads jQuery UI language file if language matches on open (and not empty string or 'en')
@@ -31,7 +31,7 @@ var VrtxDatepicker = dejavu.Class.declare({
   $constants: {
     contentsDefaultSelector: "#contents",
     timeDate: "date",
-    timeHours: "hours",  
+    timeHours: "hours",
     timeMinutes: "minutes",
     timeMaxLengths: {
       date: 10,
@@ -44,15 +44,15 @@ var VrtxDatepicker = dejavu.Class.declare({
     var datepick = this;
     datepick.__opts = opts;
     datepick.__opts.contents = $(opts.selector || this.$static.contentsDefaultSelector);
-    
+
     // TODO: rootUrl and jQueryUiVersion should be retrieved from Vortex config/properties somehow
     var rootUrl = "/vrtx/__vrtx/static-resources";
     var jQueryUiVersion = "1.10.4";
-    
+
     var futureUi = $.Deferred();
-    
+
     var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
-    
+
     if (typeof $.ui === "undefined") {
       getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery-ui-" + jQueryUiVersion + ".custom.min.js").done(function () {
         futureUi.resolve();
@@ -64,11 +64,11 @@ var VrtxDatepicker = dejavu.Class.declare({
       var futureDatepickerLang = $.Deferred();
       if (opts.language != "" && opts.language != "en" && !$.datepicker.regional[opts.language]) {
         getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery.ui.datepicker-" + opts.language + ".js").done(function() {
-          futureDatepickerLang.resolve(); 
+          futureDatepickerLang.resolve();
           $.datepicker.setDefaults($.datepicker.regional[opts.language]);
         });
       } else {
-        futureDatepickerLang.resolve(); 
+        futureDatepickerLang.resolve();
       }
       $.when(futureDatepickerLang).done(function() {
         datepick.initFields(datepick.__opts.contents.find(".date"));
@@ -95,7 +95,7 @@ var VrtxDatepicker = dejavu.Class.declare({
     } else {
       var elem = $("#" + fieldName);
     }
-  
+
     if (elem.length) {
       hours = this.__extractHoursFromDate(elem[0].value);
       minutes = this.__extractMinutesFromDate(elem[0].value)
@@ -109,7 +109,7 @@ var VrtxDatepicker = dejavu.Class.declare({
     elem.after(dateField + hoursField + "<span class='vrtx-time-seperator'>:</span>" + minutesField);
     $("#" + fieldName + "-" + this.$static.timeDate).datepicker({
       dateFormat: 'yy-mm-dd',
-      /* fix buggy IE focus functionality: 
+      /* fix buggy IE focus functionality:
        * http://www.objectpartners.com/2012/06/18/jquery-ui-datepicker-ie-focus-fix/ */
       fixFocusIE: false,
       /* blur needed to correctly handle placeholder text */
@@ -122,7 +122,7 @@ var VrtxDatepicker = dejavu.Class.declare({
         this.focus();
       },
       beforeShow: function(input, inst) {
-        var result = $.browser.msie ? !this.fixFocusIE : true;
+        var result = /.*(msie|rv:11|edge).*/.test(navigator.userAgent.toLowerCase()) ? !this.fixFocusIE : true;
         this.fixFocusIE = false;
         return result;
       }
@@ -130,7 +130,7 @@ var VrtxDatepicker = dejavu.Class.declare({
   },
   __initDefaultEndDates: function() {
     var datepick = this;
-    
+
     var startDateElm = this.__opts.contents.find("#start-date-date");
     var endDateElm = this.__opts.contents.find("#end-date-date");
     if (startDateElm.length && endDateElm.length) {
@@ -139,7 +139,7 @@ var VrtxDatepicker = dejavu.Class.declare({
       }
       this.__opts.contents.on("change", "#start-date-date, #end-date-date", function () {
         datepick.__setDefaultEndDate(startDateElm, endDateElm);
-      }); 
+      });
     }
   },
   __setDefaultEndDate: function(startDateElm, endDateElm) {
@@ -151,7 +151,7 @@ var VrtxDatepicker = dejavu.Class.declare({
   },
   __initTimeHelp: function() {
     var datepick = this;
-    
+
     datepick.__opts.contents.on("change", ".vrtx-" + datepick.$static.timeHours, function () {
       var hh = $(this);
       var mm = hh.nextAll(".vrtx-" + datepick.$static.timeMinutes).filter(":first"); // Relative to
@@ -229,7 +229,7 @@ var VrtxDatepicker = dejavu.Class.declare({
       var date = $("#" + fieldName + "-" + this.$static.timeDate)[0];
 
       var savedVal = "";
-    
+
       if (date && date.value.toString().length) {
         savedVal = date.value;
         if (hours && hours.value.toString().length) {
