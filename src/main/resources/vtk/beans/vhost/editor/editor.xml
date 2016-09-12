@@ -615,7 +615,7 @@
             <ref bean="introductionImageCaptionPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
@@ -635,6 +635,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.personResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -653,7 +654,7 @@
             <ref bean="personListing.additionalContentPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="displayAggregationPropDef" />
@@ -663,6 +664,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.projectResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -679,7 +681,7 @@
             <ref bean="introductionImageCaptionPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="displayAggregationPropDef" />
@@ -691,6 +693,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.researchGroupResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -707,7 +710,7 @@
             <ref bean="introductionImageCaptionPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="displayAggregationPropDef" />
@@ -719,6 +722,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.imageListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -732,7 +736,7 @@
             <ref bean="introductionPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
@@ -746,6 +750,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.audioVideoListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -762,7 +767,7 @@
             <ref bean="introductionImageCaptionPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
@@ -775,6 +780,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.articleListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -791,7 +797,7 @@
             <ref bean="introductionImageCaptionPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="articleListing.listingViewPropDef" />
@@ -814,6 +820,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.folderListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -830,7 +837,7 @@
             <ref bean="introductionImageAltPropDef" />
             <ref bean="introductionImageCaptionPropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
@@ -841,6 +848,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.messageListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -854,7 +862,7 @@
             <ref bean="introductionPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
@@ -866,6 +874,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.blogListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -882,7 +891,7 @@
             <ref bean="introductionImageCaptionPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
@@ -893,6 +902,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
   <bean id="editor.eventListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">
@@ -909,7 +919,7 @@
             <ref bean="introductionImageCaptionPropDef" />
             <ref bean="navigationTitlePropDef" />
             <ref bean="hiddenPropDef" />
-            <ref bean="sortDirectionPropDef" />
+            <ref bean="sortDescendingPropDef" />
             <ref bean="importancePropDef" />
             <ref bean="pageLimitPropDef" />
             <ref bean="collection.recursiveListingPropDef" />
@@ -932,6 +942,7 @@
         </constructor-arg>
       </bean>
     </property>
+    <property name="allowInheritablePropertiesStore" value="true" />
   </bean>
 
 </beans>

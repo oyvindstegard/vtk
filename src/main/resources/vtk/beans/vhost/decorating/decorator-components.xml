@@ -633,7 +633,7 @@
   <bean id="decorating.menuGenerator" class="vtk.web.decorating.components.menu.MenuGenerator">
     <property name="titlePropDef" ref="titlePropDef" />
     <property name="hiddenPropDef" ref="hiddenPropDef" />
-    <property name="sortDirectionPropDef" ref="sortDirectionPropDef" />
+    <property name="sortDescendingPropDef" ref="sortDescendingPropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
     <property name="importancePropDef" ref="importancePropDef" />
     <property name="collectionResourceType" ref="collectionResourceTypeDefinition" />

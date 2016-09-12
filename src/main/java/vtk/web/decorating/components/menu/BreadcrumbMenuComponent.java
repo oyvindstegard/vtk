@@ -153,8 +153,10 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
             }
         }
 
-		if (currentResource.getProperty(menuGenerator.getSortDirectionPropDef()) != null) {
-			ascendingSort = false;
+		if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()) != null) {
+			if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()).getBooleanValue()) {
+				ascendingSort = false;
+			}
 		}
 
 		menuItemList = sortByOrder(menuItemList, request.getLocale(), ascendingSort);

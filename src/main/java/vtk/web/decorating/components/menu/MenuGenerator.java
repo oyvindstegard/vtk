@@ -57,7 +57,7 @@ public final class MenuGenerator {
     private Service viewService;
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition hiddenPropDef;
-	private PropertyTypeDefinition sortDirectionPropDef;
+	private PropertyTypeDefinition sortDescendingPropDef;
     private PropertyTypeDefinition importancePropDef;
     private ResourceTypeDefinition collectionResourceType;
     private PropertyTypeDefinition navigationTitlePropDef;
@@ -233,8 +233,8 @@ public final class MenuGenerator {
         return hiddenPropDef;
     }
 
-	public PropertyTypeDefinition getSortDirectionPropDef() {
-		return sortDirectionPropDef;
+	public PropertyTypeDefinition getSortDescendingPropDef() {
+		return sortDescendingPropDef;
 	}
 
 	public PropertyTypeDefinition getImportancePropDef() {
@@ -265,8 +265,8 @@ public final class MenuGenerator {
     }
 
 	@Required
-	public void setSortDirectionPropDef(PropertyTypeDefinition sortDirectionPropDef) {
-		this.sortDirectionPropDef = sortDirectionPropDef;
+	public void setSortDescendingPropDef(PropertyTypeDefinition sortDescendingPropDef) {
+		this.sortDescendingPropDef = sortDescendingPropDef;
 	}
 
 	@Required

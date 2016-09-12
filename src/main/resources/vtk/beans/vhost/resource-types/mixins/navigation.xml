@@ -19,7 +19,7 @@
     <property name="sourceList">
       <list>
         <ref bean="hiddenPropDef" />
-        <ref bean="sortDirectionPropDef" />
+        <ref bean="sortDescendingPropDef" />
         <ref bean="importancePropDef" />
       </list>
     </property>
@@ -57,27 +57,33 @@
     </property>
   </bean>
 
-  <bean id="sortDirectionPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
+  <bean id="sortDescendingPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
     parent="abstractPropDef">
-    <property name="name" value="sortdirection" />
+    <property name="name" value="sortdescending" />
+    <property name="inheritable" value="true" />    
     <property name="type" value="BOOLEAN" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <property name="type" value="BOOLEAN" />
-        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-sortdirection" />
+        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-sortdescending" />        
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
+             <bean class="vtk.repository.resourcetype.Value">
+              <constructor-arg type="boolean">
+                <value>false</value>
+              </constructor-arg>
+            </bean>
+             <bean class="vtk.repository.resourcetype.Value">
               <constructor-arg type="boolean">
                 <value>true</value>
               </constructor-arg>
-            </bean>
+            </bean>          
           </list>
-        </property>
+        </property>        
       </bean>
-    </property>
+    </property>    
     <property name="metadata">
       <map>
         <entry key="editingHints">
@@ -86,7 +92,7 @@
           </map>
         </entry>
       </map>
-    </property>
+    </property>        
   </bean>
 
   <bean id="importancePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
