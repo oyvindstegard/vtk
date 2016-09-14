@@ -133,6 +133,7 @@
     <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="principalFactory" ref="principalFactory" />
     <property name="valueFactory" ref="valueFactory" />
+    <property name="repositoryId" value="${repositoryID}" />
   </bean>
 
   <bean id="repository.fsContentStore" class="vtk.repository.store.fs.FileSystemContentStore">
@@ -145,7 +146,6 @@
         parent="repository.abstractSqlMapDao">
     <property name="sqlMaps" ref="repository.statementMappings" />
     <property name="sqlMapDataAccessor" ref="repository.sqlMapDao" />
-    <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="principalFactory" ref="principalFactory" />
   </bean>
 

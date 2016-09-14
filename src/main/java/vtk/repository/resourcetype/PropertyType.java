@@ -101,6 +101,7 @@ public final class PropertyType {
     /*
      * Special properties
      */
+    public static final String EXTERNAL_ID_PROP_NAME = "externalId";
     public static final String COLLECTION_PROP_NAME = "collection";
     public static final String OWNER_PROP_NAME = "owner";
     public static final String CREATIONTIME_PROP_NAME = "creationTime";
@@ -119,6 +120,7 @@ public final class PropertyType {
     
     public static final Set<String> SPECIAL_PROPERTIES_SET =
         Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+            EXTERNAL_ID_PROP_NAME,    
             COLLECTION_PROP_NAME,
             OWNER_PROP_NAME,
             CREATIONTIME_PROP_NAME,

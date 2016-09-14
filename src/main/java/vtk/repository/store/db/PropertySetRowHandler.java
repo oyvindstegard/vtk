@@ -32,7 +32,6 @@ package vtk.repository.store.db;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -46,14 +45,10 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 
 import vtk.repository.Acl;
-import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySetImpl;
-import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.BufferedBinaryValue;
-import vtk.repository.resourcetype.PropertyType;
-import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.store.PropertySetHandler;
 import vtk.repository.store.db.SqlDaoUtils.PropHolder;
 import vtk.security.Principal;
@@ -77,14 +72,11 @@ class PropertySetRowHandler implements ResultHandler {
     protected Integer currentId = null;
     protected List<Map<String, Object>> rowValueBuffer = new ArrayList<>();
 
-    private final ResourceTypeTree resourceTypeTree;
-    private final ResourceTypeMapper resourceTypeMapper;
     private final SqlMapIndexDao indexDao;
     private final SqlSession sqlSession;
     private final PrincipalFactory principalFactory;
     
-    private final Map<Integer, Acl> aclCache
-            = new LinkedHashMap<Integer, Acl>() {
+    private final Map<Integer, Acl> aclCache = new LinkedHashMap<Integer, Acl>() {
         @Override
         protected boolean removeEldestEntry(Entry<Integer, Acl> eldest) {
             return size() > 2000;
@@ -99,16 +91,11 @@ class PropertySetRowHandler implements ResultHandler {
         }
     };
     
-    public PropertySetRowHandler(PropertySetHandler clientHandler,
-                                 ResourceTypeTree resourceTypeTree,
-                                 PrincipalFactory principalFactory,
-                                 SqlMapIndexDao indexDao,
-                                 SqlSession sqlSession) {
+    public PropertySetRowHandler(PropertySetHandler clientHandler, PrincipalFactory principalFactory, 
+            SqlMapIndexDao indexDao, SqlSession sqlSession) {
         this.clientHandler = clientHandler;
-        this.resourceTypeTree = resourceTypeTree;
         this.principalFactory = principalFactory;
         this.indexDao = indexDao;
-        this.resourceTypeMapper = new ResourceTypeMapper(resourceTypeTree);
         this.sqlSession = sqlSession;
     }
     
@@ -193,147 +180,20 @@ class PropertySetRowHandler implements ResultHandler {
         Path uri = (Path) firstRow.get("uri");
         propertySet.setUri(uri);
         
-        // Standard props found in vortex_resource table:
-        populateStandardProperties(firstRow, propertySet);
+        // Standard props found in vortex_resource table.
+        // Populating these is delegated to default data accessor code:
+        this.indexDao.populateStandardProperties(propertySet, firstRow);
         
         // Add any inherited properties
         populateInheritedProperties(propertySet);
         
         // Add extra props set directly on node last, to allow override of any inherited props:
-        populateExtraProperties(rowBuffer, propertySet);
+        populateExtraProperties(propertySet, rowBuffer);
         
         return propertySet;
     }
     
-    protected void populateStandardProperties(Map<String, Object> row, PropertySetImpl propertySet) {
-
-        // ID
-        propertySet.setID(((Integer)row.get("id")));
-        
-        // isCollection
-        boolean collection = "Y".equals(row.get("isCollection"));
-        PropertyTypeDefinition propDef = 
-            this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.COLLECTION_PROP_NAME);
-        Property prop = propDef.createProperty(collection);
-        propertySet.addProperty(prop);
-        
-        // createdBy
-        Principal createdBy = getPrincipal((String)row.get("createdBy"), Principal.Type.USER);
-        propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.CREATEDBY_PROP_NAME);
-        prop = propDef.createProperty(createdBy);
-        propertySet.addProperty(prop);
-
-        // creationTime 
-        propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.CREATIONTIME_PROP_NAME);
-        prop = propDef.createProperty((Date)row.get("creationTime"));
-        propertySet.addProperty(prop);
-
-        // owner
-        Principal principal = getPrincipal((String)row.get("owner"), Principal.Type.USER);
-        propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.OWNER_PROP_NAME);
-        prop = propDef.createProperty(principal);
-        propertySet.addProperty(prop);
-
-        // contentType
-        String string = (String)row.get("contentType");
-        if (string != null) {
-            propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                    Namespace.DEFAULT_NAMESPACE, PropertyType.CONTENTTYPE_PROP_NAME);
-            prop = propDef.createProperty(string);
-            propertySet.addProperty(prop);
-        }
-        
-        // characterEncoding
-        string = (String)row.get("characterEncoding");
-        if (string != null) {
-            propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                    Namespace.DEFAULT_NAMESPACE, PropertyType.CHARACTERENCODING_PROP_NAME);
-            prop = propDef.createProperty(string);
-            propertySet.addProperty(prop);
-        }
-        
-        // guessedCharacterEncoding
-        string = (String)row.get("guessedCharacterEncoding");
-        if (string != null) {
-            propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                    Namespace.DEFAULT_NAMESPACE, PropertyType.CHARACTERENCODING_GUESSED_PROP_NAME);
-            prop = propDef.createProperty(string);
-            propertySet.addProperty(prop);
-        }
-        
-        // userSpecifiedCharacterEncoding
-        string = (String)row.get("userSpecifiedCharacterEncoding");
-        if (string != null) {
-            propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                    Namespace.DEFAULT_NAMESPACE, PropertyType.CHARACTERENCODING_USER_SPECIFIED_PROP_NAME);
-            prop = propDef.createProperty(string);
-            propertySet.addProperty(prop);
-        }
-        
-        // lastModified
-        propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.LASTMODIFIED_PROP_NAME);
-        prop = propDef.createProperty((Date)row.get("lastModified"));
-        propertySet.addProperty(prop);
-
-        // modifiedBy
-        principal = getPrincipal((String)row.get("modifiedBy"), Principal.Type.USER);
-        propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.MODIFIEDBY_PROP_NAME);
-        prop = propDef.createProperty(principal);
-        propertySet.addProperty(prop);
-
-        // contentLastModified
-        propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.CONTENTLASTMODIFIED_PROP_NAME);
-        prop = propDef.createProperty((Date)row.get("contentLastModified"));
-        propertySet.addProperty(prop);
-
-        // contentModifiedBy
-        principal = getPrincipal((String)row.get("contentModifiedBy"), Principal.Type.USER);
-        propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.CONTENTMODIFIEDBY_PROP_NAME);
-        prop = propDef.createProperty(principal);
-        propertySet.addProperty(prop);
-
-        // propertiesLastModified
-        propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.PROPERTIESLASTMODIFIED_PROP_NAME);
-        prop = propDef.createProperty((Date)row.get("propertiesLastModified"));
-        propertySet.addProperty(prop);
-
-        // propertiesModifiedBy
-        principal = getPrincipal((String)row.get("propertiesModifiedBy"), Principal.Type.USER);
-        propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                Namespace.DEFAULT_NAMESPACE, PropertyType.PROPERTIESMODIFIEDBY_PROP_NAME);
-        prop = propDef.createProperty(principal);
-        propertySet.addProperty(prop);
-        
-        if (!collection) {
-            Long contentLength = (Long)row.get("contentLength");
-            propDef = this.resourceTypeTree.getPropertyTypeDefinition(
-                    Namespace.DEFAULT_NAMESPACE, PropertyType.CONTENTLENGTH_PROP_NAME);
-            prop = propDef.createProperty(contentLength);
-            propertySet.addProperty(prop);
-        }
-        
-        String type = (String)row.get("resourceType");
-        propertySet.setResourceType(resourceTypeMapper.resolveResourceType(type));
-        
-        Integer aclInheritedFrom = (Integer)row.get("aclInheritedFrom");
-        if (aclInheritedFrom == null) {
-            propertySet.setAclInheritedFrom(PropertySetImpl.NULL_RESOURCE_ID);
-        } else {
-            propertySet.setAclInheritedFrom(aclInheritedFrom.intValue());
-        }
-    }
-    
-    private void populateExtraProperties(List<Map<String, Object>> rowBuffer, 
-                                           PropertySetImpl propertySet) {
+    private void populateExtraProperties(PropertySetImpl propertySet, List<Map<String, Object>> rowBuffer) {
         
         Map<PropHolder, List<Object>> propMap = new HashMap<>();
 

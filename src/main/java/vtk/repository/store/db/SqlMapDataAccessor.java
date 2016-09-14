@@ -94,6 +94,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private boolean optimizedAclCopySupported = false;
+    private String repositoryId;
     
     @Override
     public boolean validate() {
@@ -1206,10 +1207,19 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             r.addProperty(property);
         }
     }
+    
+    private String makeExternalId(int internalId) {
+        return repositoryId + "_" + internalId;
+    }
 
-    private void populateStandardProperties(ResourceImpl resourceImpl, Map<String, ?> resourceMap) {
+    void populateStandardProperties(PropertySetImpl resourceImpl, Map<String, ?> resourceMap) {
 
+        // Internal resource id
         resourceImpl.setID(((Number) resourceMap.get("id")).intValue());
+        
+        // External resource id property
+        resourceImpl.addProperty(createProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.EXTERNAL_ID_PROP_NAME, 
+                makeExternalId(resourceImpl.getID())));
 
         boolean collection = "Y".equals(resourceMap.get("isCollection"));
         resourceImpl.addProperty(createProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.COLLECTION_PROP_NAME, Boolean
@@ -1273,8 +1283,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         if (!collection) {
             long contentLength = ((Number) resourceMap.get("contentLength")).longValue();
-            resourceImpl.addProperty(createProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.CONTENTLENGTH_PROP_NAME,
-                    new Long(contentLength)));
+            resourceImpl.addProperty(createProperty(Namespace.DEFAULT_NAMESPACE, PropertyType.CONTENTLENGTH_PROP_NAME, contentLength));
         }
 
         String type = (String) resourceMap.get("resourceType");
@@ -1282,10 +1291,10 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         Integer aclInheritedFrom = (Integer) resourceMap.get("aclInheritedFrom");
         if (aclInheritedFrom == null) {
-            aclInheritedFrom = new Integer(-1);
+            aclInheritedFrom = PropertySetImpl.NULL_RESOURCE_ID;
         }
 
-        resourceImpl.setAclInheritedFrom(aclInheritedFrom.intValue());
+        resourceImpl.setAclInheritedFrom(aclInheritedFrom);
     }
     
 
@@ -1477,6 +1486,11 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         } else {
             prop.setValue(values[0]);
         }
+    }
+
+    @Required
+    public void setRepositoryId(String repositoryId) {
+        this.repositoryId = repositoryId;
     }
 
     @SuppressWarnings("serial")
