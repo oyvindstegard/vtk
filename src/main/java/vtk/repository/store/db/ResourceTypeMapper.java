@@ -192,7 +192,8 @@ public final class ResourceTypeMapper {
         "/file/text/xml-resource/managed-xml/studieretning",
         "/file/text/xml-resource/managed-xml/treaty",
         "/file/text/xml-resource/managed-xml/utvekslingsavtale",
-        "/file/video"
+        "/file/video",
+        "/file/video/videoref"
     };
     
     private static final Map<String, Path> legacyMappings = new HashMap<String, Path>() {{
