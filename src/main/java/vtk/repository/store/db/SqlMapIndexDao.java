@@ -44,7 +44,7 @@ import org.springframework.dao.DataAccessException;
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.Property;
-import vtk.repository.ResourceTypeTree;
+import vtk.repository.PropertySetImpl;
 import vtk.repository.store.IndexDao;
 import vtk.repository.store.PropertySetHandler;
 import vtk.repository.store.db.SqlMapDataAccessor.AclHolder;
@@ -60,8 +60,6 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
 
     private static final Logger LOG = LoggerFactory.getLogger(SqlMapIndexDao.class);
     
-    private ResourceTypeTree resourceTypeTree;
-
     private PrincipalFactory principalFactory;
     
     private SqlMapDataAccessor sqlMapDataAccessor;
@@ -75,7 +73,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         String statementId = getSqlMap("orderedPropertySetIteration");
 
         PropertySetRowHandler rowHandler = 
-            new PropertySetRowHandler(handler, this.resourceTypeTree, 
+            new PropertySetRowHandler(handler, 
                     this.principalFactory, this, client);
 
         client.select(statementId, rowHandler);
@@ -91,8 +89,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
 
         String statementId = getSqlMap("orderedPropertySetIterationWithStartUri");
 
-        PropertySetRowHandler rowHandler = new PropertySetRowHandler(handler,
-                this.resourceTypeTree, this.principalFactory, this, client);
+        PropertySetRowHandler rowHandler = new PropertySetRowHandler(handler, this.principalFactory, this, client);
 
         Map<String, Object> parameters = new HashMap<>();
 
@@ -145,8 +142,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
 
         String statement = getSqlMap("orderedPropertySetIterationForUris");
 
-        PropertySetRowHandler rowHandler = new PropertySetRowHandler(handler,
-                this.resourceTypeTree, this.principalFactory, this, client);
+        PropertySetRowHandler rowHandler = new PropertySetRowHandler(handler, this.principalFactory, this, client);
         
         client.select(statement, sessionID, rowHandler);
         
@@ -163,6 +159,10 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         parameterMap.put("uris", paths);
         
         return getSqlSession().selectList(sqlMap, parameterMap);
+    }
+    
+    void populateStandardProperties(PropertySetImpl propertySet, Map<String, ?> row) {
+        sqlMapDataAccessor.populateStandardProperties(propertySet, row);
     }
     
     /**
@@ -202,11 +202,6 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
         this.sqlMapDataAccessor = sqlMapDataAccessor;
     }
     
-    @Required
-    public void setResourceTypeTree(ResourceTypeTree resourceTypeTree) {
-        this.resourceTypeTree = resourceTypeTree;
-    }
-
     @Required
     public void setPrincipalFactory(PrincipalFactory principalFactory) {
         this.principalFactory = principalFactory;

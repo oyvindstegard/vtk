@@ -37,6 +37,7 @@
         <ref bean="modifiedByPropDef" />
         <ref bean="userTitlePropDef" />
         <ref bean="titlePropDef" />
+        <ref bean="externalIdPropDef" />
 
         <ref bean="contentLocalePropDef" /><!-- Inheritable -->
         <ref bean="commentsEnabledPropDef" /><!-- Inheritable -->
@@ -119,6 +120,13 @@
     <property name="valueFormatter" ref="htmlFormatter" />
   </bean>
 
+  <!-- Value is generated internally by repository. -->  
+  <bean id="externalIdPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="externalId" />
+    <property name="type" value="STRING" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="true" />
+  </bean>
 
   <bean id="createdByPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
     <property name="name" value="createdBy" />
