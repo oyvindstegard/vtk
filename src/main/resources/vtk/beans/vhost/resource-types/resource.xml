@@ -125,8 +125,8 @@
     <property name="name" value="externalId" />
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
-    <property name="mandatory" value="true" />
-  </bean>
+    <property name="mandatory" value="false" />
+  </bean>    
 
   <bean id="createdByPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
     <property name="name" value="createdBy" />
