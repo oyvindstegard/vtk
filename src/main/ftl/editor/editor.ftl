@@ -572,9 +572,6 @@
         <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
       <#else>
         <input name="resource.${name}" id="resource.${name}.unspecified" type="radio" value="" />
-        <#if name = "sortdescending">
-        	<#local nullValue = nullValue + " " + vrtx.getMsg("editor.sortdescending.inherited")>			
-		</#if>        	
         <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
       </#if>
     </div>
@@ -589,6 +586,9 @@
     </#if>
     <div class="vrtx-radio-button">
       <#if v == value>
+        <#if name = "sortdescending" && resource.getProperty(propDef).isInherited()>
+			<#local localized = localized + " (" + vrtx.getMsg("resource.property.inherited") + ")"/>
+		</#if>	
         <input name="resource.${name}" id="resource.${name}.${v}" type="radio" value="${v}" checked="checked" />
         <label class="resource.${name}" for="resource.${name}.${v}">${localized}</label>
       <#else>
