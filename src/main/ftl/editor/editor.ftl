@@ -325,9 +325,11 @@
       <#local value = resource.getValue(propDef) />
       <#local description = propDef.getDescription(locale)?default("") />
 
+
+
       <#local type = propDef.type />
       <#local error = resource.getError(propDef)?default('') />
-
+	  
       <#local useRadioButtons = false />
       <#if ((propDef.metadata.editingHints.radio)?exists)>
         <#local useRadioButtons = true />
@@ -560,12 +562,19 @@
     <#recover>
       <#local nullValue = 'unspecified' />
     </#recover>
-    <div class="vrtx-radio-button">
+	
+    <div class="vrtx-radio-button">          
       <#if !(resource.getProperty(propDef))?exists>
         <input name="resource.${name}" id="resource.${name}.unspecified" type="radio" value="" checked="checked" />
+        <#if name = "sortdescending">
+			<#local nullValue = nullValue + " " + vrtx.getMsg("editor.sortdescending.default")>
+		</#if>			        
         <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
       <#else>
         <input name="resource.${name}" id="resource.${name}.unspecified" type="radio" value="" />
+        <#if name = "sortdescending">
+        	<#local nullValue = nullValue + " " + vrtx.getMsg("editor.sortdescending.inherited")>			
+		</#if>        	
         <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
       </#if>
     </div>
