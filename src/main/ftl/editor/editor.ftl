@@ -562,20 +562,25 @@
     <#recover>
       <#local nullValue = 'unspecified' />
     </#recover>
-	
-    <div class="vrtx-radio-button">          
+		 
+	<#if name = "sortdescending"> 
+		<#local nullValue = nullValue + " " + vrtx.getMsg("editor.sortdescending.default")>	
+		<#if resource.getProperty(propDef)?? && resource.getProperty(propDef).isInherited()>
+			<#return>
+		</#if>    
+	</#if>
+ 
+	<div class="vrtx-radio-button">            
       <#if !(resource.getProperty(propDef))?exists>
         <input name="resource.${name}" id="resource.${name}.unspecified" type="radio" value="" checked="checked" />
-        <#if name = "sortdescending">
-			<#local nullValue = nullValue + " " + vrtx.getMsg("editor.sortdescending.default")>
-		</#if>			        
         <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
       <#else>
         <input name="resource.${name}" id="resource.${name}.unspecified" type="radio" value="" />
         <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
       </#if>
     </div>
-  </#if>
+	</#if>	
+
 </#macro>
 
 <#macro displayAllowedValuesAsRadioButtons propDef name allowedValues value >
