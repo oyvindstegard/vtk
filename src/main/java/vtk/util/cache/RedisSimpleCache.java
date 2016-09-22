@@ -38,16 +38,16 @@ import java.io.ObjectOutputStream;
 import java.util.Set;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import redis.clients.util.Pool;
 
 public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     
-    private JedisPool pool;
+    private Pool<Jedis> pool;
     private String prefix;
     private int timeoutSeconds;
     private boolean updateTimeouts;
     
-    public RedisSimpleCache(JedisPool jedisPool, String prefix, 
+    public RedisSimpleCache(Pool<Jedis> jedisPool, String prefix, 
             int timeoutSeconds, boolean updateTimeouts) {
         this.pool = jedisPool;
         this.prefix = prefix;

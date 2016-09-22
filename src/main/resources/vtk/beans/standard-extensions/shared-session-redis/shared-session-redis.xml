@@ -18,6 +18,13 @@
   </bean>
 
 
+  <bean id="redis.connectionFactory" 
+        class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+    <constructor-arg name="poolConfig" ref="redis.pool.config" />
+    <property name="hostName" value="${redis.host}" />
+    <property name="port" value="${redis.port}" />
+  </bean>
+
   <!-- Override -->
   <bean id="saml.ieCookieStore.cache" class="vtk.util.cache.RedisSimpleCache">
     <constructor-arg name="jedisPool" ref="redis.pool" />
@@ -65,13 +72,7 @@
   <!-- Override -->
   <bean id="spring.sessionRepository" 
         class="org.springframework.session.data.redis.RedisOperationsSessionRepository">
-    <constructor-arg name="redisConnectionFactory">
-      <bean class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
-        <constructor-arg name="poolConfig" ref="redis.pool.config" />
-        <property name="hostName" value="${redis.host}" />
-        <property name="port" value="${redis.port}" />
-      </bean>
-    </constructor-arg>
+    <constructor-arg name="redisConnectionFactory" ref="redis.connectionFactory" />
     <property name="redisKeyNamespace" value="${redis.namespace}" />
   </bean>
 

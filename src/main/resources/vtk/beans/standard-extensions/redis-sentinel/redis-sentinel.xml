@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="redis.sentinel.nodeSet" class="vtk.context.CSVSetFactoryBean">
+    <property name="csvList" value="${redis.sentinel.nodes}" />
+  </bean>
+
+  <bean id="redis.sentinelConfig" class="org.springframework.data.redis.connection.RedisSentinelConfiguration">
+    <constructor-arg name="master" value="${redis.sentinel.masterName}" />
+    <constructor-arg name="sentinelHostAndPorts" ref="redis.sentinel.nodeSet" />
+  </bean>
+
+  <!-- Override -->
+  <bean id="redis.pool" class="redis.clients.jedis.JedisSentinelPool">
+    <constructor-arg name="masterName" value="${redis.sentinel.masterName}" />
+    <constructor-arg name="sentinels" ref="redis.sentinel.nodeSet" />
+    <constructor-arg name="poolConfig" ref="redis.pool.config" />
+  </bean>
+
+  <!-- Override -->
+  <bean id="redis.connectionFactory" 
+        class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+    <constructor-arg name="sentinelConfig" ref="redis.sentinelConfig" />
+    <constructor-arg name="poolConfig" ref="redis.pool.config" />
+  </bean>
+
+</beans>
