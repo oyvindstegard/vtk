@@ -111,33 +111,25 @@
     </property>
   </bean>
 
-  <bean id="vrtxParameterIsFeedOrRss" class="vtk.web.service.OrAssertion">
+  <bean id="audioVideoListing.feedService" parent="collectionListing.feedService">
+    <property name="parent" ref="collectionListing.feedService" />
+    <property name="order" value="-3" />
     <property name="assertions">
       <list>
-        <ref bean="vrtxParameterIsFeedAssertion" />
+        <ref bean="resourceIsAudioVideoListing" />
         <ref bean="vrtxParameterIsRssAssertion" />
       </list>
     </property>
+    <property name="handler" ref="audioVideoListing.rssFeedHandler" />
   </bean>
 
-  <bean id="audioVideoListing.feedService" parent="collectionListing.feedService">
+  <bean id="audioVideoListing.atomFeedService" parent="collectionListing.feedService">
     <property name="parent" ref="collectionListing.feedService" />
     <property name="order" value="-2" />
     <property name="assertions">
       <list>
         <ref bean="resourceIsAudioVideoListing" />
         <ref bean="vrtxParameterIsAnyFeed" />
-      </list>
-    </property>
-    <property name="handler" ref="audioVideoListing.rssFeedHandler" />
-  </bean>
-
-  <bean id="audioVideoListing.atomFeedService" class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="audioVideoListing.feedService" />
-    <property name="assertions">
-      <list>
-        <ref bean="resourceIsAudioVideoListing" />
-        <ref bean="vrtxParameterIsAtomAssertion" />
       </list>
     </property>
     <property name="handler" ref="audioVideoListing.atomFeedHandler" />
@@ -171,6 +163,8 @@
     </property>
     <property name="audioHtmlDescriptionPropDef" ref="audioHtmlDescriptionPropDef" />
     <property name="videoHtmlDescriptionPropDef" ref="videoHtmlDescriptionPropDef" />
+    <property name="posterImagePropDef" ref="posterImagePropDef" />
+    <property name="thumbnailService" ref="displayThumbnailService" />
   </bean>
 
   <!-- Videos with hidden download link is not to be shown in feeds for audio and video listing -->

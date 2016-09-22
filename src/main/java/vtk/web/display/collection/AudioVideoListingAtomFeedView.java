@@ -41,6 +41,7 @@ import org.apache.abdera.model.Link;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import vtk.repository.Path;
 
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
@@ -49,18 +50,25 @@ import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatter;
+import vtk.text.html.HtmlUtil;
 import vtk.web.RequestContext;
 import vtk.web.display.feed.ListingFeedView;
+import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class AudioVideoListingAtomFeedView extends ListingFeedView {
 
     private final Logger logger = LoggerFactory.getLogger(AudioVideoListingAtomFeedView.class);
 
+    private final String VIDEOREF_TYPE = "videoref";
+
     private PropertyTypeDefinition videoHtmlDescriptionPropDef;
     private PropertyTypeDefinition audioHtmlDescriptionPropDef;
+    private PropertyTypeDefinition posterImagePropDef;
+    private Service thumbnailService;
 
     @Override
-    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Map<String, ?> model, 
+    protected void addPropertySetAsFeedEntry(HttpServletRequest request, Map<String, ?> model,
             Feed feed, PropertySet result) {
 
         RequestContext requestContext = RequestContext.getRequestContext();
@@ -88,13 +96,41 @@ public class AudioVideoListingAtomFeedView extends ListingFeedView {
             mediaLink.setMimeType(mediaResource.getContentType());
             entry.addLink(mediaLink);
 
-            // Item description
+            // Item poster image link to summary
+            StringBuilder summary = new StringBuilder();
+            String posterImageString = null;
+            Property posterImageProp = result.getProperty(posterImagePropDef);
+            if (posterImageProp != null) {
+                posterImageString = posterImageProp.getStringValue();
+                if (!posterImageString.startsWith("/") && !posterImageString.startsWith("https://")
+                        && !posterImageString.startsWith("https://")) {
+                    try {
+                        Path posterPath = result.getURI().getParent().expand(posterImageString);
+                        posterImageString = viewService.constructLink(posterPath);
+                    } catch (Throwable t) {
+                    }
+                } else if (URL.isRelativeURL(posterImageString)) {
+                    posterImageString = viewService.constructLink(Path.fromString(posterImageString));
+                }
+            } else if (result.getResourceType().equals(VIDEOREF_TYPE)) {
+                // We can assume that a videoref will always have a thumbnail
+                posterImageString = thumbnailService.constructLink(result.getURI());
+            }
+            if (posterImageString != null) {
+                summary.append("<img src=\"").append(HtmlUtil.encodeBasicEntities(posterImageString)).append("\"/>");
+            }
+
+            // Item description to summary
             Property introductionProp = result.getProperty(videoHtmlDescriptionPropDef);
             if (introductionProp == null) {
                 introductionProp = result.getProperty(audioHtmlDescriptionPropDef);
             }
             if (introductionProp != null) {
-                entry.setSummaryAsXhtml(introductionProp.getStringValue());
+                summary.append(introductionProp.getStringValue());
+            }
+
+            if (summary.length() > 0) {
+                entry.setSummaryAsXhtml(summary.toString());
             }
 
             Property publishDate = getPublishDate(result);
@@ -141,6 +177,16 @@ public class AudioVideoListingAtomFeedView extends ListingFeedView {
     @Required
     public void setAudioHtmlDescriptionPropDef(PropertyTypeDefinition audioHtmlDescriptionPropDef) {
         this.audioHtmlDescriptionPropDef = audioHtmlDescriptionPropDef;
+    }
+
+    @Required
+    public void setPosterImagePropDef(PropertyTypeDefinition posterImagePropDef) {
+        this.posterImagePropDef = posterImagePropDef;
+    }
+
+    @Required
+    public void setThumbnailService(Service thumbnailService) {
+        this.thumbnailService = thumbnailService;
     }
 
 }
