@@ -531,8 +531,8 @@
           <reuseForks>true</reuseForks>
           <systemProperties>
             <property>
-              <name>log4j.configuration</name>
-              <value>log4j.test.xml</value>
+              <name>log4j.configurationFile</name>
+              <value>log4j2.test.xml</value>
             </property>
           </systemProperties>
           <excludes>

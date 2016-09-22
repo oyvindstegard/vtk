@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+<!-- Log4j2 test configuration -->
+  <Appenders>
+
+    <!-- Regular console appender: -->
+    <Console name="stdout" target="SYSTEM_OUT">
+      <PatternLayout pattern="%t [%c{2}] %-5p - %m%n"/>
+    </Console>
+
+    <!-- Async appender that forwards to console appender: -->
+    <!--
+    <Console name="console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%t [%c{2}] %-5p - %m%n"/>
+    </Console>
+    <Async name="stdout">
+      <AppenderRef ref="console" />
+    </Async>
+    -->
+  </Appenders>
+
+  <Loggers>
+
+    <Logger name="vtk.web.servlet.VTKServlet.Request" level="debug" additivity="false">
+      <AppenderRef ref="stdout"/>
+    </Logger>
+
+    <Logger name="com.ibatis" level="info" />
+    <Logger name="java.sql" level="info" />
+    <Logger name="org.apache.commons.dbcp" level="info" />
+    <Logger name="org.hsqldb" level="info" />
+    
+    <!-- Silence warning noise during test -->
+    <Logger name="vtk.scheduling.SimpleMethodInvokingTriggerBean" level="fatal" />
+    <Logger name="vtk.scheduling.TaskManager" level="fatal" />
+        
+    <Root level="warn">
+      <AppenderRef ref="stdout"/>
+    </Root>
+
+  </Loggers>
+
+</Configuration>
