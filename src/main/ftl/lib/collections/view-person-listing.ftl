@@ -98,7 +98,8 @@
             <#local tagsNr = 0 />
             <#if tagsList?has_content>
               <#list tagsList as tag>
-                <#local tagUrl = "?vrtx=tags&tag=" + tag?trim + "&resource-type=" + person.getResourceType() />
+                <#local tagUrl = "?vrtx=tags&tag=" + tag?trim?url('utf-8') 
+                + "&resource-type=" + person.getResourceType() />
                 <#local sortingParams = personListing.getRequestSortOrderParams() />
                 <#if sortingParams?has_content>
                   <#local tagUrl = tagUrl + "&" + sortingParams />

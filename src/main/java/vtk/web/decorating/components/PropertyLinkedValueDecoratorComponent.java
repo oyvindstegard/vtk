@@ -30,6 +30,7 @@
  */
 package vtk.web.decorating.components;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,6 +103,12 @@ public class PropertyLinkedValueDecoratorComponent extends ViewRenderingDecorato
             }
         } else {
             String value = prop.getValue().getStringValue();
+            try {
+                value = java.net.URLEncoder.encode(value, "utf-8");
+            }
+            catch (UnsupportedEncodingException e) {
+                throw new Error("utf-8 not supported");
+            }
             urlList.add(getUrl(value, serviceURL, requestContext.getRequestURL(), request.getLocale()));
             valueList.add(value);
         }
@@ -111,7 +118,6 @@ public class PropertyLinkedValueDecoratorComponent extends ViewRenderingDecorato
         if (value == null) {
             throw new IllegalArgumentException("Value is NULL");
         }
-
         String serviceURLpattern = null;
         value = Matcher.quoteReplacement(value);
         if (serviceUrl == null) {
