@@ -22,10 +22,7 @@ public class SimpleMethodInvokingTriggerBeanTest {
     private boolean triggered;
     private StringBuffer errors;
     private final String threadName = "test-trigger-thread";
-    private final Object[] args = new Object[]{
-            "test-arg-1",
-            new Integer(100)
-    };
+    private final Object[] args = new Object[]{"test-arg-1", 100};
 
     @Before
     public void setUp() throws Exception {
