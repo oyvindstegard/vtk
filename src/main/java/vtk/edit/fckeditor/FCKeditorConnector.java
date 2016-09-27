@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.support.RequestContextUtils;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -68,6 +69,7 @@ public class FCKeditorConnector implements Controller {
     private String browseViewName;
     private String uploadStatusViewName;
     private int maxUploadSize = 1000000;
+    private File tempDir = new File(System.getProperty("java.io.tmpdir"));
     private boolean downcaseNames = false;
     private Map<String, String> replaceNameChars;
 
@@ -85,6 +87,20 @@ public class FCKeditorConnector implements Controller {
     public void setUploadStatusViewName(String uploadStatusViewName) {
         this.uploadStatusViewName = uploadStatusViewName;
     }
+    
+    public void setTempDir(String tempDir) {
+        File tmp = new File(tempDir);
+        if (!tmp.exists()) {
+            throw new IllegalArgumentException(
+                    "Unable to set tempDir: directory does not exist: " + tempDir);
+        }
+        if (!tmp.isDirectory()) {
+            throw new IllegalArgumentException(
+                    "Unable to set tempDir: not a directory: " + tempDir);
+        }
+        this.tempDir = tmp;
+    }
+    
 
     public void setMaxUploadSize(int maxUploadSize) {
         if (maxUploadSize <= 0) {
@@ -212,8 +228,7 @@ public class FCKeditorConnector implements Controller {
     private ModelAndView uploadFile(FCKeditorFileBrowserCommand command, RequestContext requestContext) {
         Map<String, Object> model = new HashMap<String, Object>();
 
-        FileItemFactory factory = new DiskFileItemFactory(this.maxUploadSize, new File(System
-                .getProperty("java.io.tmpdir")));
+        FileItemFactory factory = new DiskFileItemFactory(maxUploadSize, tempDir);
         ServletFileUpload upload = new ServletFileUpload(factory);
         HttpServletRequest request = requestContext.getServletRequest();
         Repository repository = requestContext.getRepository();
