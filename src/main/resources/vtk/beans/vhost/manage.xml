@@ -920,7 +920,7 @@
     <property name="commandName" value="uploadForm" />
     <property name="downcaseNames" value="true" />
     <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
-    <property name="tempDir" value="${repository.tempDir}" />
+    <property name="tempDir" value="${upload.tempDir}" />
   </bean>
 
   <bean id="manage.unlockResourceHandler" class="vtk.web.actions.lock.UnlockResourceController">

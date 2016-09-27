@@ -260,7 +260,7 @@
       <bean class="vtk.edit.fckeditor.FCKeditorConnector">
         <property name="viewService" ref="viewService" />
         <property name="browseViewName" value="editor.browseView" />
-        <property name="tempDir" value="${repository.tempDir}" />
+        <property name="tempDir" value="${editor.tempDir}" />
         <property name="uploadStatusViewName" value="editor.uploadStatusView" />
         <property name="downcaseNames" value="true" />
         <property name="replaceNameChars" ref="createResource.nameReplacementMap" />

@@ -31,7 +31,7 @@
 
   <bean id="system.csrfPreventionHandler"
         class="vtk.security.web.CSRFPreventionHandler">
-    <property name="tempDir" value="${repository.tempDir}" />
+    <property name="tempDir" value="${upload.tempDir}" />
     <property name="maxUploadSize" value="${upload.maxFileSize}" />
   </bean>
 

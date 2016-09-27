@@ -232,7 +232,7 @@
   <bean id="repository.archiver" class="vtk.util.repository.ResourceArchiver">
     <property name="repository" ref="repository" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="tempDir" value="${repository.tempDir}" />
+    <property name="tempDir" value="${archiver.tempDir}" />
     <property name="principalFactory" ref="principalFactory" />
     <property name="legacyPrincipalMappings" ref="repository.archiver.legacyPrincipalMappings" />
     <property name="legacyActionMappings" ref="repository.archiver.legacyActionMappings" />

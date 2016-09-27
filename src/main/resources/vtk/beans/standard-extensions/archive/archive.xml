@@ -50,7 +50,7 @@
         class="vtk.web.actions.convert.CreateArchiveAction">
     <property name="repository" ref="repository" />
     <property name="archiver" ref="repository.archiver" />
-    <property name="tempDir" value="${repository.tempDir}" />
+    <property name="tempDir" value="${archiver.tempDir}" />
   </bean>
   
   <bean id="manage.expandArchiveService" class="vtk.web.service.ServiceImpl">
