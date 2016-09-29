@@ -334,12 +334,26 @@ public class Application  {
         }
 
         public static HostPort forString(String str) {
+            str = str.trim();
             try {
-                int idx = str.indexOf(':');
-                if (idx == -1)
+                
+                int portIdx = str.lastIndexOf(':');
+                if (portIdx == -1)
                     throw new IllegalArgumentException("Expected ':' in input string");
-                String host = str.substring(0, idx);
-                int port = Integer.parseInt(str.substring(idx + 1));
+                
+                if (str.startsWith("[")) {
+                    // IPv6: [addr]:port
+                    int i = str.indexOf("]");
+                    if (i == -1) {
+                        throw new IllegalArgumentException(
+                                "Expected closing ']' in input string");
+                    }
+                    str = str.replace("\\[", "");
+                    str = str.replace("\\]", "");
+                }
+                
+                String host = str.substring(0, portIdx);
+                int port = Integer.parseInt(str.substring(portIdx + 1));
                 return new HostPort(host, port);
             }
             catch (Exception e) {
