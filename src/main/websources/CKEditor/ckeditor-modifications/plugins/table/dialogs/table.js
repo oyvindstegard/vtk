@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @license Copyright (c) 2003-2013, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.html or http://ckeditor.com/license
  */
@@ -18,44 +18,51 @@
 	    selectedTable.removeAttribute("align");
 	  if ( selectedTable.getAttribute("border") )
 	    selectedTable.removeAttribute("border");
-	    
+
 	  var id = this.id;
 	  if ( !data.info )
 		data.info = {};
 	  data.info[ id ] = this.getValue();
 	};
-		
-    function addBooleanStyleClass(field, clsField, clsName, clsSetCondition) { // Used for 'no-border' class
+
+  function addBorderStyleClass(field, clsField, clsName, clsSetCondition) { // Used for 'no-border' class
 	  if(clsField) {
 	    addStyleClass(clsField, clsName, "(\\s+)?" + clsName.replace("-", "\\-"), field.getValue() == clsSetCondition)
 	  }
-    }
-    
-    function addDropdownStyleClass(field, clsField, clsType) { // Used for 'align-<left|center|right>' classes
+  }
+
+  function addAlignStyleClass(field, clsField, clsType) { // Used for 'align-<left|center|right>' classes
 	  if(clsField) {
 	    var clsName = field.getValue();
 	    addStyleClass(clsField, clsName, "(\\s+)?" + clsType + "\\-\\w+", clsName != "");
 	  }
-    }
-    
-    function addStyleClass(clsField, clsName, regexStr, addCondition) {
-      var classesVal = clsField.getValue();
-      var regex = new RegExp(regexStr, "gi");
-      
-      if(addCondition) {
-        if(classesVal != "") {
-          if(classesVal.indexOf(clsName) === -1) {
-            classesVal = classesVal.replace(regex, "");
-		    classesVal = classesVal.replace(/[\s+]$/, "") + " " + clsName;
-		  }
+  }
+
+  function addVerticalStyleClass(field, clsField, cls) {
+	  if(clsField) {
+	    var clsName = field.getValue();
+	    addStyleClass(clsField, "vertical", "(\\s+)?" + cls, (clsName === "both" || clsName === "col"));
+	  }
+  }
+
+  function addStyleClass(clsField, clsName, regexStr, addCondition) {
+    var classesVal = clsField.getValue();
+    var regex = new RegExp(regexStr, "gi");
+
+    if(addCondition) {
+      if(classesVal != "") {
+        if(classesVal.indexOf(clsName) === -1) {
+          classesVal = classesVal.replace(regex, "");
+	    		classesVal = classesVal.replace(/[\s+]$/, "") + " " + clsName;
+		  	}
 	    } else {
-		  classesVal = clsName;
+		    classesVal = clsName;
 	    }
-      } else {
-        classesVal = classesVal.replace(regex, "");
-      }
-	  clsField.setValue(classesVal.replace(/^[\s+]/, "").replace(/[\s+]$/, ""));
+    } else {
+      classesVal = classesVal.replace(regex, "");
     }
+    clsField.setValue(classesVal.replace(/^[\s+]/, "").replace(/[\s+]$/, ""));
+  }
 
 	function tableColumns( table ) {
 		var cols = 0,
@@ -341,6 +348,10 @@
 								[ editor.lang.table.headersColumn, 'col' ],
 								[ editor.lang.table.headersBoth, 'both' ]
 								],
+							onChange: function() {
+						      var classes = this.getDialog().getContentElement( 'advanced', 'advCSSClasses' );
+							  addVerticalStyleClass(this, classes, "vertical");
+						    },
 							setup: function( selectedTable ) {
 								// Fill in the headers field.
 								var dialog = this.getDialog();
@@ -374,7 +385,7 @@
 							// validate: CKEDITOR.dialog.validate[ 'number' ]( editor.lang.table.invalidBorder ),
 							onChange: function() {
 							  var classes = this.getDialog().getContentElement( 'advanced', 'advCSSClasses' );
-							  addBooleanStyleClass(this, classes, "no-border", false);
+							  addBorderStyleClass(this, classes, "no-border", false);
 						    },
 							setup: function( selectedTable ) {
 							  var borderOld = "";
@@ -406,7 +417,7 @@
 								],
 						    onChange: function() {
 						      var classes = this.getDialog().getContentElement( 'advanced', 'advCSSClasses' );
-							  addDropdownStyleClass(this, classes, "align");
+							  addAlignStyleClass(this, classes, "align");
 							},
 							setup: function( selectedTable ) {
 							  var alignOld = "";
@@ -420,7 +431,7 @@
 							  } else if(alignOld == "right" || selectedTable.hasClass("align-right")) {
 							    this.setValue("align-right");
 							  }
-							  
+
 							  if(selectedTable.getAttribute("align")) {
 							    var field = this;
 							    setTimeout(function() {
@@ -449,8 +460,8 @@
 								title: editor.lang.common.cssLengthTooltip,
 								// Smarter default table width. (#9600)
 								// 'default': editor.filter.check( 'table{width}' ) ? ( editable.getSize( 'width' ) < 500 ? '100%' : 500 ) : 0,
-								'default' : '100%',								
-								
+								'default' : '100%',
+
 								// validate: CKEDITOR.dialog.validate.cssLength( editor.lang.common.invalidCssLength.replace( '%1', editor.lang.common.width ) ),
 								onChange: function() {
 									var styles = this.getDialog().getContentElement( 'advanced', 'advStyles' );
