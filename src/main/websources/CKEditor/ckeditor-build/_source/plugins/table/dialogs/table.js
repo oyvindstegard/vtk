@@ -25,23 +25,23 @@
 	  data.info[ id ] = this.getValue();
 	};
 
-  function addBorderStyleClass(field, clsField, clsName, clsSetCondition) { // Used for 'no-border' class
+  function addBorderStyleClass(field, clsField, cls) { // 'no-border'
 	  if(clsField) {
-	    addStyleClass(clsField, clsName, "(\\s+)?" + clsName.replace("-", "\\-"), field.getValue() == clsSetCondition)
+	    addStyleClass(clsField, cls, "(\\s+)?" + cls.replace("-", "\\-"), field.getValue() == false)
 	  }
   }
 
-  function addAlignStyleClass(field, clsField, clsType) { // Used for 'align-<left|center|right>' classes
+  function addAlignStyleClass(field, clsField, clsType) { // 'align-<left|center|right>'
 	  if(clsField) {
 	    var clsName = field.getValue();
 	    addStyleClass(clsField, clsName, "(\\s+)?" + clsType + "\\-\\w+", clsName != "");
 	  }
   }
 
-  function addVerticalStyleClass(field, clsField, cls) {
+  function addVerticalStyleClass(field, clsField, cls) { // 'vertical'
 	  if(clsField) {
 	    var clsName = field.getValue();
-	    addStyleClass(clsField, "vertical", "(\\s+)?" + cls, (clsName === "both" || clsName === "col"));
+	    addStyleClass(clsField, cls, "(\\s+)?" + cls, (clsName === "both" || clsName === "col"));
 	  }
   }
 
@@ -385,7 +385,7 @@
 							// validate: CKEDITOR.dialog.validate[ 'number' ]( editor.lang.table.invalidBorder ),
 							onChange: function() {
 							  var classes = this.getDialog().getContentElement( 'advanced', 'advCSSClasses' );
-							  addBorderStyleClass(this, classes, "no-border", false);
+							  addBorderStyleClass(this, classes, "no-border");
 						    },
 							setup: function( selectedTable ) {
 							  var borderOld = "";
