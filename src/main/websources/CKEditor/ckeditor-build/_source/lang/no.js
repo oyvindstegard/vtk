@@ -752,7 +752,7 @@ CKEDITOR.lang['no'] =
 
 	studyreferencecomponent :
 	{
-		title		: 'Sett inn referansekomponent for studieløp',
+		title		: 'Sett inn lenke til emner, program, osv.',
 		errormessage	: 'Du må skrive inn en verdi',
 		valuefield	: 'Verdi'
 	}

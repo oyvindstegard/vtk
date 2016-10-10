@@ -752,7 +752,7 @@ CKEDITOR.lang['en'] =
 
 	studyreferencecomponent :
 	{
-		title		: 'Insert reference component for studies',
+		title		: 'Link to courses, programmes, etc.',
 		errormessage	: 'You have to enter a value',
 		valuefield	: 'Value'
 	}
