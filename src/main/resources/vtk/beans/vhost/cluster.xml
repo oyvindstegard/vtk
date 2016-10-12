@@ -14,7 +14,7 @@
     <constructor-arg value="4"/>
     <constructor-arg>
       <bean class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
-        <property name="threadNamePrefix" value="async-cluster-message-"/>
+        <property name="threadNamePrefix" value="cluster-to-app-message-"/>
       </bean>
     </constructor-arg>
   </bean>
@@ -35,6 +35,7 @@
   
   <bean parent="cluster.componentRegistration">
     <property name="component" ref="authorizationManager"/>
+    <property name="async" value="false"/>
   </bean>
 
   <bean parent="cluster.componentRegistration">
