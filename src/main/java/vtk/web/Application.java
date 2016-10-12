@@ -161,22 +161,10 @@ public class Application  {
         params.add(Application.class);
 
         SpringApplication app = new SpringApplication(params.toArray(new Object[params.size()]));
-        app.addInitializers(new ApplicationContextInitializer<ConfigurableApplicationContext>() {
-
-            @Override
-            public void initialize(
-                    ConfigurableApplicationContext applicationContext) {
-
-                applicationContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
-
-                    @Override
-                    public void postProcessBeanFactory(
-                            ConfigurableListableBeanFactory beanFactory)
-                                    throws BeansException {
-                        beanFactory.registerSingleton("vtk.configLocations", propertiesFiles());
-                    }
-                });
-            }
+        app.addInitializers((ApplicationContextInitializer<ConfigurableApplicationContext>) (ConfigurableApplicationContext applicationContext) -> {
+            applicationContext.addBeanFactoryPostProcessor((ConfigurableListableBeanFactory beanFactory) -> {
+                beanFactory.registerSingleton("vtk.configLocations", propertiesFiles());
+            });
         });
 
         app.setBanner(banner());
