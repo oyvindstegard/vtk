@@ -163,6 +163,9 @@
     <property name="targetObject" ref="decorating.userDefinedComponentResolver" />
     <property name="method" value="refresh" />
   </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="decorating.userDefinedComponentResolver.refreshTrigger"/>
+  </bean>
 
   <bean name="decorating.userDefinedComponentLibrary.collections" class="vtk.context.JSONFactoryBean">
     <constructor-arg value="${decorating.userDefinedComponentLibrary.collections}" />

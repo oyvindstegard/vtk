@@ -46,6 +46,9 @@
     <property name="targetObject" ref="localPrincipals" />
     <property name="method" value="load" />
   </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="localPrincipalsRefreshTrigger"/>
+  </bean>
 
 
 

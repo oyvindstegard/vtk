@@ -64,12 +64,9 @@
     <property name="imageHeightPropDef" ref="mediaHeightPropDef" />
     <property name="imageWidthPropDef" ref="mediaWidthPropDef" />
   </bean>
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="repository.systemjob.imageMetadataJob"/>
-      </bean>
-    </property>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="repository.systemjob.imageMetadataJob"/>
+    <property name="async" value="false" /><!-- No need for async, only records role changes without any blocking. -->
   </bean>
 
 
@@ -96,12 +93,9 @@
       </list>
     </property>
   </bean>
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="repository.systemjob.publisher"/>
-      </bean>
-    </property>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="repository.systemjob.publisher"/>
+    <property name="async" value="false" /><!-- No need for async, only records role changes without any blocking. -->
   </bean>
 
 
@@ -134,12 +128,9 @@
       </bean>
     </property>
   </bean>
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="repository.systemjob.linkcheck.referencingResources"/>
-      </bean>
-    </property>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="repository.systemjob.linkcheck.referencingResources"/>
+    <property name="async" value="false" /><!-- No need for async, only records role changes without any blocking. -->
   </bean>
 
 
@@ -182,12 +173,9 @@
       </bean>
     </property>
   </bean>
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="repository.systemjob.linkcheck.recent"/>
-      </bean>
-    </property>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="repository.systemjob.linkcheck.recent"/>
+    <property name="async" value="false" /><!-- No need for async, only records role changes without any blocking. -->
   </bean>
 
   <!-- Broken link check job (regular intervals) -->
@@ -235,12 +223,9 @@
       </bean>
     </property>
   </bean>
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="repository.systemjob.linkcheck"/>
-      </bean>
-    </property>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="repository.systemjob.linkcheck"/>
+    <property name="async" value="false" /><!-- No need for async, only records role changes without any blocking. -->
   </bean>
 
 
@@ -264,6 +249,9 @@
         </property>
       </bean>
     </property>
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="repository.systemjob.linkcheck.blacklist.refreshTrigger"/>
   </bean>
 
 </beans>

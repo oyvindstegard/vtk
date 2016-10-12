@@ -559,6 +559,9 @@
     <property name="targetObject" ref="ssl.configurationPropertiesFile" />
     <property name="method" value="load" />
   </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="ssl.templateConfigRefreshTrigger"/>
+  </bean>
 
   <!-- Canonical URL constructor -->
   <bean id="canonicalUrlConstructor" class="vtk.web.service.CanonicalUrlConstructorImpl">

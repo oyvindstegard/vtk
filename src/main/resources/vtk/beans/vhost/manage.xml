@@ -963,6 +963,9 @@
     <property name="targetObject" ref="defaultDocumentTemplates" />
     <property name="method" value="refresh" />
   </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="documentTemplatesRefreshTrigger"/>
+  </bean>
 
   <bean id="createResource.nameReplacementMap" class="java.util.HashMap">
     <constructor-arg>

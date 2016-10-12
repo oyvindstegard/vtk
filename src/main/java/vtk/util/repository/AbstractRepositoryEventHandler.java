@@ -50,12 +50,20 @@ import vtk.repository.event.RepositoryEvent;
 public abstract class AbstractRepositoryEventHandler
     implements ApplicationListener<RepositoryEvent> {
 
-    private  ExecutorService executorService = null;
+    private ExecutorService executorService = null;
 
-    public AbstractRepositoryEventHandler() {
-        this(true);
-    }
-
+    /**
+     * Constructor with setting for private async execution of the event handler
+     * method.
+     *
+     * <p>Event handlers that will never block or execute long running/heavy
+     * operations generally do not need async handling.
+     *
+     * @param async whether to create a dedicated thread for handling events, if
+     * <code>true</code> then a dedicated thread is created and used to execute
+     * the event handler method, otherwise the event handler executes in the
+     * thread that caused the repository event to be published.
+     */
     public AbstractRepositoryEventHandler(boolean async) {
         if (async) {
             executorService = Executors.newSingleThreadExecutor(r ->

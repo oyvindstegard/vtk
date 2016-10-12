@@ -78,6 +78,9 @@
     <property name="targetObject" ref="templates.documentTemplatesConfiguration" />
     <property name="method" value="load" />
   </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="templates.documentTemplatesConfigRefreshTrigger"/>
+  </bean>
 
   <bean id="templates.folderTemplatesConfigRefreshTrigger"
         class="vtk.util.repository.MethodInvokingRepositoryEventTrigger">
@@ -85,6 +88,9 @@
     <property name="uri" value="${templates.folderTemplatesConfigFile}" />
     <property name="targetObject" ref="templates.folderTemplatesConfiguration" />
     <property name="method" value="load" />
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="templates.folderTemplatesConfigRefreshTrigger"/>
   </bean>
 
 </beans>

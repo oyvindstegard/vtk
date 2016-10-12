@@ -71,6 +71,9 @@
       </bean>
     </property>
   </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="visualProfileAspect.configRefreshTrigger"/>
+  </bean>
 
 
   <bean id="visualProfileAspect.configFile.notEmptyAssertion"

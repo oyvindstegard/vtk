@@ -31,7 +31,6 @@
 package vtk.cluster;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,15 +42,14 @@ import org.slf4j.LoggerFactory;
  */
 public class AsyncClusterAware implements ClusterAware {
     private final ClusterAware underlyingClusterAware;
-    private final ExecutorService executorService;
     private final Logger log;
+    private final ExecutorService executorService;
 
-    public AsyncClusterAware(ClusterAware underlying) {
+    public AsyncClusterAware(ExecutorService executorService, ClusterAware underlying) {
         this.underlyingClusterAware = underlying;
         this.log = LoggerFactory.getLogger(
             getClass().getName() + "." + underlying.getClass().getSimpleName());
-        this.executorService = Executors.newSingleThreadExecutor(
-            r -> new Thread(r, toString()));
+        this.executorService = executorService;
     }
 
     @Override
@@ -59,6 +57,7 @@ public class AsyncClusterAware implements ClusterAware {
         return getClass().getSimpleName() + "(" + underlyingClusterAware + ")";
     }
 
+    @Override
     public void clusterContext(ClusterContext context) {
         executorService.submit(() -> {
             try {
@@ -69,6 +68,7 @@ public class AsyncClusterAware implements ClusterAware {
         });
     }
 
+    @Override
     public void roleChange(ClusterRole role) {
         executorService.submit(() -> {
             try {
@@ -79,6 +79,7 @@ public class AsyncClusterAware implements ClusterAware {
         });
     }
 
+    @Override
     public void clusterMessage(Object message) {
         executorService.submit(() -> {
             try {
