@@ -7,13 +7,6 @@
        application context initialization. -->
   <bean id="cluster.components" class="java.util.ArrayList" />
 
-  <!-- TODO: remove: -->
-  <bean id="cluster.component" class="org.springframework.beans.factory.config.MethodInvokingBean"
-        abstract="true">
-    <property name="targetObject" ref="cluster.components" />
-    <property name="targetMethod" value="add" />
-  </bean>
-
   <!-- Common thread pool for asynchronous dispatching of messages from cluster to app. -->
   <bean id="cluster.asyncMessageExecutorService" class="java.util.concurrent.Executors"
         factory-method="newFixedThreadPool"
@@ -26,6 +19,7 @@
     </constructor-arg>
   </bean>
 
+  <!-- Abstract bean which should be used to register ClusterAware components throughout the bean context. -->
   <bean id="cluster.componentRegistration" class="vtk.cluster.ClusterComponentRegistration" abstract="true">
     <constructor-arg ref="cluster.asyncMessageExecutorService"/>
     <constructor-arg ref="cluster.components" />
