@@ -261,7 +261,6 @@ public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEven
             catch (Throwable t) {
                 logger.warn("Failed to invoke method " + tm.method
                         + " on object " + tm.target, t);
-                return; // XXX in the case of multipleInvocations, should we be returning here ? At least decide and possibly make behaviour configurable.
             }
         }
     }
