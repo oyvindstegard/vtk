@@ -77,7 +77,7 @@ public class ChangedUriReferencesPathSelector
     
     private PropertyTypeDefinition hrefsPropDef;
     protected Searcher searcher;
-    private int mainQueryLimit = 100;
+    private int mainQueryLimit = 200;
     private final BlockingQueue<Path> queue = new ArrayBlockingQueue<>(100);
     
     public ChangedUriReferencesPathSelector(PropertyTypeDefinition hrefsPropDef,
@@ -145,19 +145,19 @@ public class ChangedUriReferencesPathSelector
         
         for (Path uri: uris) {
             // Root-relative and full URLs:
-            String term = "*" + uri.toString().replaceAll(" ", "\\") + "*"; // XXX: should be `..replaceAll(" ", "\\ ") ..` ?
+            String term = "*" + uri.toString().replaceAll(" ", "\\ ") + "*";
             PropertyWildcardQuery hrefQuery = new PropertyWildcardQuery(hrefsPropDef, term, TermOperator.EQ);
             hrefQuery.setComplexValueAttributeSpecifier("links.url");
             query.add(hrefQuery);
 
             if (!uri.isRoot()) {
                 // Relative references:
-                term = "*" + uri.getName().replaceAll(" ", "\\") + "*";     // XXX: should be `..replaceAll(" ", "\\ ") ..` ?
+                term = "*" + uri.getName().replaceAll(" ", "\\ ") + "*";
                 AndQuery andQuery = new AndQuery();
                 hrefQuery = new PropertyWildcardQuery(hrefsPropDef, term, TermOperator.EQ);
                 hrefQuery.setComplexValueAttributeSpecifier("links.url");
                 andQuery.add(hrefQuery);
-                andQuery.add(new UriPrefixQuery(uri.getParent().toString().replaceAll(" ", "\\")));
+                andQuery.add(new UriPrefixQuery(uri.getParent().toString().replaceAll(" ", "\\ ")));
                 andQuery.add(new UriDepthQuery(uri.getDepth()));
                 query.add(andQuery);
             }
