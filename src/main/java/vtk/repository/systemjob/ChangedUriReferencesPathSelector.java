@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, University of Oslo, Norway
+/* Copyright (c) 2015,2016 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,11 @@
  */
 package vtk.repository.systemjob;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
@@ -61,25 +63,31 @@ import vtk.util.repository.AbstractRepositoryEventHandler;
 
 /**
  * Repository event handler that captures URI name space operations 
- * and stores these events in an in-memory queue, such that they 
- * are made available to the periodic link checking system job 
- * (by implementing the {@link  PathSelector} interface).
+ * and stores the URIs of these events in a limited in-memory queue.
+ *
+ * <p>This event handler is also a {@code PathSelector} for use by system jobs,
+ * where it will select URIs of resources which have URLs that reference the
+ * URIs stored in its internal queue.
+ *
+ * <p>Depending on repository write load, events will be discarded without
+ * being processed if the queue limit is exceeded.
  */
 public class ChangedUriReferencesPathSelector 
     extends AbstractRepositoryEventHandler implements PathSelector {
     
     private PropertyTypeDefinition hrefsPropDef;
     protected Searcher searcher;
-    private int mainQueryLimit = 100;
-    private UriQueue queue = new UriQueue(100);
+    private int mainQueryLimit = 200;
+    private final BlockingQueue<Path> queue = new ArrayBlockingQueue<>(100);
     
     public ChangedUriReferencesPathSelector(PropertyTypeDefinition hrefsPropDef,
             Searcher searcher) {
-        super();
+        // No need for async because event handler only adds to a concurrent queue
+        // in a non-blocking fashion
+        super(false);
         this.hrefsPropDef = hrefsPropDef;
         this.searcher = searcher;
     }
-
     
     @Override
     public void handleEvent(RepositoryEvent event) {
@@ -88,27 +96,37 @@ public class ChangedUriReferencesPathSelector
                     (ResourceModificationEvent) event;
             if (modEvent.getOriginal().isPublished() != 
                     modEvent.getResource().isPublished()) {
-                queue.add(modEvent.getOriginal().getURI());
+                queue.offer(modEvent.getOriginal().getURI());
             }
         }
         else if (event instanceof ResourceDeletionEvent) {
-            queue.add(((ResourceDeletionEvent) event).getResource().getURI());
+            queue.offer(((ResourceDeletionEvent) event).getResource().getURI());
         }
         else if (event instanceof ResourceCreationEvent) {
-            queue.add(((ResourceCreationEvent) event).getResource().getURI());
+            queue.offer(((ResourceCreationEvent) event).getResource().getURI());
         }
         else if (event instanceof ResourceMovedEvent) {
-            queue.add(((ResourceMovedEvent) event).getFrom().getURI());
-            queue.add(((ResourceMovedEvent) event).getResource().getURI());
+            queue.offer(((ResourceMovedEvent) event).getFrom().getURI());
+            queue.offer(((ResourceMovedEvent) event).getResource().getURI());
         }
     }
-    
+
+    /**
+     * Select paths of resources that reference URIs recently subjected to namespace
+     * changes or change in published-status.
+     *
+     * @param repository
+     * @param context
+     * @param callback
+     * @throws Exception
+     */
     @Override
     public void selectWithCallback(Repository repository,
             SystemChangeContext context, PathSelectCallback callback)
                     throws Exception {
-        
-        List<Path> uris = queue.dequeueAll();
+
+        List<Path> uris = new ArrayList<>(100);
+        queue.drainTo(uris);
         
         Search mainSearch = referencingSearch(context, uris);
         final String token = SecurityContext.exists() ? 
@@ -127,19 +145,19 @@ public class ChangedUriReferencesPathSelector
         
         for (Path uri: uris) {
             // Root-relative and full URLs:
-            String term = "*" + uri.toString().replaceAll(" ", "\\") + "*";
+            String term = "*" + uri.toString().replaceAll(" ", "\\ ") + "*";
             PropertyWildcardQuery hrefQuery = new PropertyWildcardQuery(hrefsPropDef, term, TermOperator.EQ);
             hrefQuery.setComplexValueAttributeSpecifier("links.url");
             query.add(hrefQuery);
 
             if (!uri.isRoot()) {
                 // Relative references:
-                term = "*" + uri.getName().replaceAll(" ", "\\") + "*";
+                term = "*" + uri.getName().replaceAll(" ", "\\ ") + "*";
                 AndQuery andQuery = new AndQuery();
                 hrefQuery = new PropertyWildcardQuery(hrefsPropDef, term, TermOperator.EQ);
                 hrefQuery.setComplexValueAttributeSpecifier("links.url");
                 andQuery.add(hrefQuery);
-                andQuery.add(new UriPrefixQuery(uri.getParent().toString().replaceAll(" ", "\\")));
+                andQuery.add(new UriPrefixQuery(uri.getParent().toString().replaceAll(" ", "\\ ")));
                 andQuery.add(new UriDepthQuery(uri.getDepth()));
                 query.add(andQuery);
             }
@@ -155,32 +173,6 @@ public class ChangedUriReferencesPathSelector
         search.clearAllFilterFlags();
         search.setPropertySelect(PropertySelect.NONE);
         return search;
-    }
-
-
-    private static class UriQueue {
-        private int limit;
-        private LinkedList<Path> elements = new LinkedList<>();
-        public UriQueue(int limit) {
-            this.limit = limit;
-        }
-
-        public boolean add(Path path) {
-            synchronized(elements) {
-                boolean result = elements.add(path);
-                if (result) while (elements.size() > limit) elements.remove();
-                return result;
-            }
-        }
-        
-        public List<Path> dequeueAll() {
-            synchronized(elements) {
-                if (elements.size() == 0) return Collections.emptyList();
-                List<Path> result = elements;
-                elements = new LinkedList<>();
-                return result;
-            }
-        }
     }
     
 }

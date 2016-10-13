@@ -87,20 +87,19 @@
     <property name="lazyInit" value="false" />
   </bean>
 
-  <bean id="decorating.templateConfigPropsRefreshTrigger"
-        class="vtk.util.repository.MethodInvokingRepositoryEventTrigger">
-    <property name="repository" ref="repository" />
-    <property name="uri" value="${decorating.templateConfigFile}" />
-    <property name="targetObject" ref="decorating.configurationPropertiesFile" />
-    <property name="method" value="load" />
-  </bean>
-
   <bean id="decorating.templateConfigRefreshTrigger"
         class="vtk.util.repository.MethodInvokingRepositoryEventTrigger">
     <property name="repository" ref="repository" />
     <property name="uri" value="${decorating.templateConfigFile}" />
-    <property name="targetObject" ref="decorating.decorationResolver" />
-    <property name="method" value="loadConfig" />
+    <property name="multipleInvocations">
+      <map>
+        <entry key-ref="decorating.decorationResolver" value="loadConfig" />
+        <entry key-ref="decorating.configurationPropertiesFile" value="load" />
+      </map>
+    </property>
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="decorating.templateConfigRefreshTrigger"/>
   </bean>
 
   <bean id="decorating.templateManager" class="vtk.web.decorating.CollectionTemplateManager">
@@ -116,6 +115,9 @@
     <property name="uriPattern" value="${decorating.templatesCollection}/.*\.(html|template|tmp)$" />
     <property name="targetObject" ref="decorating.templateManager" />
     <property name="method" value="load" />
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="decorating.templateCollectionRefreshTrigger"/>
   </bean>
 
 
@@ -412,6 +414,9 @@
     <property name="uri" value="${decorating.titleResolver.config}" />
     <property name="targetObject" ref="decorating.titleResolver" />
     <property name="method" value="loadConfig" />
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="decorating.titleResolver.configRefreshTrigger"/>
   </bean>
 
 </beans>

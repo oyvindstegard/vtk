@@ -7,42 +7,39 @@
        application context initialization. -->
   <bean id="cluster.components" class="java.util.ArrayList" />
 
-  <bean id="cluster.component" class="org.springframework.beans.factory.config.MethodInvokingBean"
-        abstract="true">
-    <property name="targetObject" ref="cluster.components" />
-    <property name="targetMethod" value="add" />
+  <!-- Common thread pool for asynchronous dispatching of messages from cluster to app. -->
+  <bean id="cluster.asyncMessageExecutorService" class="java.util.concurrent.Executors"
+        factory-method="newFixedThreadPool"
+        destroy-method="shutdownNow">
+    <constructor-arg value="4"/>
+    <constructor-arg>
+      <bean class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
+        <property name="threadNamePrefix" value="cluster-to-app-message-"/>
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="systemIndex"/>
-      </bean>
-    </property>
+  <!-- Abstract bean which should be used to register ClusterAware components throughout the bean context. -->
+  <bean id="cluster.componentRegistration" class="vtk.cluster.ClusterComponentRegistration" abstract="true">
+    <constructor-arg ref="cluster.asyncMessageExecutorService"/>
+    <constructor-arg ref="cluster.components" />
   </bean>
 
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="secondarySystemIndex"/>
-      </bean>
-    </property>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="systemIndex" />
+  </bean>
+
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="secondarySystemIndex"/>
   </bean>
   
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="authorizationManager"/>
-      </bean>
-    </property>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="authorizationManager"/>
+    <property name="async" value="false"/>
   </bean>
 
-  <bean parent="cluster.component">
-    <property name="arguments">
-      <bean class="vtk.cluster.AsyncClusterAware">
-        <constructor-arg ref="repository.lockingCacheControlWrapper"/>
-      </bean>
-    </property>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="repository.lockingCacheControlWrapper"/>
   </bean>
 
   <!-- Default no-op cluster manager bean. -->  
@@ -74,8 +71,9 @@
 
   <bean id="cluster.statusController" class="vtk.web.ClusterStatus" />
   
-  <bean parent="cluster.component">
-    <property name="arguments" ref="cluster.statusController" />
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="cluster.statusController" />
+    <property name="async" value="false" />
   </bean>
 
 </beans>

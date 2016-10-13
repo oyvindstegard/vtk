@@ -1,4 +1,4 @@
-/* Copyright (c) 2005, University of Oslo, Norway
+/* Copyright (c) 2005,2016 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -61,9 +62,9 @@ import vtk.repository.event.ResourceMovedEvent;
  *  
  */
 public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEventHandler 
-    implements InitializingBean, ClusterAware {
+    implements InitializingBean, BeanNameAware, ClusterAware {
 
-    private static Logger logger = LoggerFactory.getLogger(MethodInvokingRepositoryEventTrigger.class);
+    private final Logger logger = LoggerFactory.getLogger(MethodInvokingRepositoryEventTrigger.class);
 
     private Repository repository;
     private Path uri;
@@ -74,10 +75,15 @@ public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEven
     private LinkedHashMap<Object, String> multipleInvocations;
     private List<TargetAndMethod> methodInvocations;
 
+    // Cluster related fields
+    private String beanId;
     private Optional<ClusterRole> clusterRole = Optional.empty();
-
     private Optional<ClusterContext> clusterContext = Optional.empty();
-    
+
+    public MethodInvokingRepositoryEventTrigger() {
+        super(true);
+    }
+
     @Required
     public void setRepository(Repository repository)  {
         this.repository = repository;
@@ -125,13 +131,6 @@ public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEven
     public void roleChange(ClusterRole role) {
         this.clusterRole = Optional.of(role);
     }
-
-    @Override
-    public void clusterMessage(Object message) throws Exception {
-        if ((message instanceof InvokeMessage) && !masterNode()) {
-            invoke();
-        }
-    }
     
     @Override
     public void afterPropertiesSet() {
@@ -173,6 +172,31 @@ public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEven
         methodInvocations.add(new TargetAndMethod(target, m));
     }
 
+
+    @Override
+    public void clusterMessage(Object message) throws Exception {
+        if (message instanceof InvokeMessage
+                && beanId.equals(((InvokeMessage)message).triggerBeanId)) {
+            // Only invoke if the message comes from an instance of this
+            // trigger on another cluster node.
+            invoke();
+        }
+    }
+
+    /**
+     * Receive events from the repository. These events are typically only generated
+     * for write operations, and so normally only occur on the node that is currently MASTER.
+     *
+     * <p>But in certain cases, they also can occur on slaves, since root role has write
+     * permissions even on such nodes, and perhaps in the critical moment of MASTER/SLAVE
+     * role switching.
+     *
+     * <p>In any case we propagate such repository events to "partner triggers" on the
+     * other nodes, so that we ensure the configured invocations take place. Normally, it is
+     * better with one triggering too much, rather than losing trigger events.
+     *
+     * @param event
+     */
     @Override
     public void handleEvent(RepositoryEvent event) {
         
@@ -185,18 +209,19 @@ public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEven
 
         if (checkEvent(event, resourceURI)) {
             invoke();
-            if (masterNode()) {
-                
-            }
+            invokeTriggerOnOtherNodes();
         }
         if (event instanceof ResourceMovedEvent) {
             resourceURI = ((ResourceMovedEvent) event).getFrom().getURI();
             if (checkEvent(event, resourceURI)) {
                 invoke();
+                invokeTriggerOnOtherNodes();
             }
         }
     }
-    
+
+    // Check if the event applies to this trigger, based on configured URI
+    // and/or URI patterns
     private boolean checkEvent(RepositoryEvent event, Path resourceURI) {
         if (uri != null) {
             if (((event instanceof ResourceDeletionEvent)
@@ -208,7 +233,7 @@ public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEven
             else if (uri.equals(resourceURI)) {
                 return true;
             }
-        } 
+        }
         else if (uriPatterns != null) {
             for (Pattern uriPattern: uriPatterns) {
                 Matcher matcher = uriPattern.matcher(resourceURI.toString());
@@ -219,6 +244,10 @@ public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEven
         }
         return false;
     }
+
+    private void invokeTriggerOnOtherNodes() {
+        clusterContext.ifPresent(ctx -> ctx.clusterMessage(new InvokeMessage(beanId)));
+    }
     
     private void invoke() {
         for (TargetAndMethod tm: methodInvocations) {
@@ -228,28 +257,29 @@ public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEven
             }
             try {
                 tm.method.invoke(tm.target, new Object[0]);
-                
-                if (masterNode()) {
-                    clusterContext.ifPresent(ctx -> ctx.clusterMessage(InvokeMessage));
-                }
             }
             catch (Throwable t) {
                 logger.warn("Failed to invoke method " + tm.method
                         + " on object " + tm.target, t);
-                return;
             }
         }
     }
 
-    private boolean masterNode() {
-        return !clusterRole.isPresent() || clusterRole.get() == ClusterRole.MASTER;
+    @Override
+    public void setBeanName(String beanId) {
+        this.beanId = beanId;
     }
 
-    private static class InvokeMessage implements Serializable {
+    private static final class InvokeMessage implements Serializable {
         private static final long serialVersionUID = 3634433934600061048L;
+
+        final String triggerBeanId;
+
+        InvokeMessage(String triggerBeanId) {
+            this.triggerBeanId = triggerBeanId;
+        }
     }
-    private static final InvokeMessage InvokeMessage = new InvokeMessage();
-    
+
 
     private static final class TargetAndMethod {
         public final Object target;
@@ -260,5 +290,11 @@ public class MethodInvokingRepositoryEventTrigger extends AbstractRepositoryEven
             this.method = m;
         }
     }
+
+    @Override
+    public String toString() {
+        return "MethodInvokingRepositoryEventTrigger{" + "beanId=" + beanId + '}';
+    }
+
 }
 

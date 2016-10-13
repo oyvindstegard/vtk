@@ -52,8 +52,9 @@ public class DefaultClusterManager implements ApplicationListener<ContextRefresh
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent e) {
+        final ClusterContext clusterContext = new ClusterContext(){};
         for (ClusterAware component: clusterComponents) {
-            component.clusterContext(new ClusterContext(){});
+            component.clusterContext(clusterContext);
             component.roleChange(ClusterRole.MASTER);
         }
     }
