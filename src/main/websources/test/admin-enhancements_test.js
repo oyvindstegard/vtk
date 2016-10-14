@@ -45,3 +45,46 @@ describe("Test Admin Ajax features", function () {
 
 });
 
+describe("Test Admin general", function () {
+  var inputElm = null;
+
+  beforeEach(function () {
+    var form = '<input id="sandbox" type="text" />';
+    $("body").append(form);
+    inputElm = $("#sandbox")
+  });
+
+  afterEach(function () {
+    inputElm.remove();
+  });
+
+  describe("inputUpdateEngine", function () {
+
+    it("substitution should return correct string in supervisor id field", function () {
+      inputElm.val("#FOO BAR #TESTpiLoT");
+
+      vrtxAdmin.inputUpdateEngine.update({
+        input: inputElm,
+        substitutions: {
+          "#": "",
+          " ": "-"
+        },
+        toLowerCase: false
+      });
+
+      expect(inputElm.val()).toBe('FOO-BAR-TESTpiLoT');
+    });
+
+    it("substitution should return correct string in create document/folder", function () {
+      inputElm.val("#FØø %BÅR, #TÆSTpiLoT?");
+
+      vrtxAdmin.inputUpdateEngine.update({
+        input: inputElm,
+        toLowerCase: true
+      });
+
+      expect(inputElm.val()).toBe('foo-bar-testpilot');
+    });
+  });
+
+});
