@@ -136,7 +136,9 @@ resourcetype structured-project {
       [if contactinfo != null]
         <div class="vrtx-project-contactinfo vrtx-frontpage-box">
           <h2>[localized "contactInfoView"]</h2>
-          [val contactinfo # unescaped]
+          <div class="vrtx-box-content">
+            [val contactinfo # unescaped]
+          </div>
         </div>
       [endif]
       ##
@@ -149,18 +151,22 @@ resourcetype structured-project {
         [def document structured-document()]
         [def feeds document.properties.rssFeeds]
         [if feeds != null]
-          [list feeds feed]
-            [def thetitle feed.rssTitle]
-            [def theurl feed.rssUrl]
+          <div class="vrtx-frontpage-box">
+            <div class="vrtx-box-content">
+              [list feeds feed]
+                [def thetitle feed.rssTitle]
+                [def theurl feed.rssUrl]
               
-            [if theurl != null && theurl != ""]
-              [if thetitle != null && thetitle != ""]
-                [call "include:feed"  {"url":theurl, "override-feed-title":thetitle, "feed-title":true, "max-messages":3, "include-if-empty":false}]
-              [else]
-                [call "include:feed" {"url":theurl, "feed-title":true, "max-messages":3, "include-if-empty":false}]
-              [endif]
-            [endif]
-          [endlist]
+                [if theurl != null && theurl != ""]
+                  [if thetitle != null && thetitle != ""]
+                    [call "include:feed"  {"url":theurl, "override-feed-title":thetitle, "feed-title":true, "max-messages":3, "include-if-empty":false}]
+                  [else]
+                    [call "include:feed" {"url":theurl, "feed-title":true, "max-messages":3, "include-if-empty":false}]
+                  [endif]
+                [endif]
+              [endlist]
+            </div>
+          </div>
         [endif]
       [endif]
       ##
