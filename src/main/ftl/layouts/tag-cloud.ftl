@@ -16,7 +16,7 @@
 <#macro createTagCloud title=false>
   <#if tagElements?exists && tagElements?size &gt; 0>
     <#if title>
-	  <h3><@vrtx.msg code="decorating.tags" /></h3>
+	  <span class="vrtx-tag-cloud-title"><@vrtx.msg code="decorating.tags" /></span>
 	</#if>
 	<ul class="vrtx-tag-cloud">
 	  <#list tagElements as element>
