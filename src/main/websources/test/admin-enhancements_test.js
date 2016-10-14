@@ -46,19 +46,19 @@ describe("Test Admin Ajax features", function () {
 });
 
 describe("Test Admin general", function () {
-  var inputElm = null;
-
-  beforeEach(function () {
-    var form = '<input id="sandbox" type="text" />';
-    $("body").append(form);
-    inputElm = $("#sandbox")
-  });
-
-  afterEach(function () {
-    inputElm.remove();
-  });
 
   describe("inputUpdateEngine", function () {
+    var inputElm = null;
+
+    beforeEach(function () {
+      var form = '<input id="sandbox" type="text" />';
+      $("body").append(form);
+      inputElm = $("#sandbox")
+    });
+
+    afterEach(function () {
+      inputElm.remove();
+    });
 
     it("substitution should return correct string in supervisor id field", function () {
       inputElm.val("#FOO BAR #TESTpiLoT");
@@ -86,5 +86,4 @@ describe("Test Admin general", function () {
       expect(inputElm.val()).toBe('foo-bar-testpilot');
     });
   });
-
 });
