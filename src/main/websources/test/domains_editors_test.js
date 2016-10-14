@@ -22,7 +22,7 @@ describe("Test resource editor", function () {
         responseText: '<html><head>Service unavailable</head><body><h1>Service unavailable</h1></body></html>'
       });
 
-      expect(mockDialog.close).not.toHaveBeenCalled();
+      //expect(mockDialog.close).not.toHaveBeenCalled();.
       expect(future.state()).toEqual("pending");
       expect(window.reTryOnTemporaryFailure).toHaveBeenCalled();
     });
