@@ -961,7 +961,16 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Logging (SLF4J API is used in the application) -->
+    <!-- Known logging API routes:
+      - VTK application uses SLF4J-api        with backend Log4J-2
+      - Libs use JCL-api routed to SLF4J-api  with backend Log4J-2
+      - Libs use Log4J-1.2-api                with backend Log4J-2
+      - Libs use SLF4j-api                    with backend Log4J-2
+
+      For debugging, see `mvn -Dverbose=true dependency:tree`.
+    -->
+
+    <!-- SLF4J logging API is used by this application -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -969,7 +978,7 @@
       <scope>compile</scope>
     </dependency>
 
-    <!-- JCL over SLF4J (Spring uses JCL): -->
+    <!-- JCL logging routed over SLF4J (Spring and others uses JCL): -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
@@ -977,7 +986,7 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- SLF4J over Log4j 2 (implementation) -->
+    <!-- SLF4J logging routed to Log4j 2 backend -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
@@ -985,10 +994,20 @@
       <scope>runtime</scope>
     </dependency>
 
+    <!-- Log4j2 implementation and the actual logging backend used -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>2.6.2</version>
+    </dependency>
+
+    <!-- API layer for old Log4j 1.2 which routes logging to Log4j 2 impl.
+         (Required for proper Freemarker logging.) -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-1.2-api</artifactId>
+      <version>2.6.2</version>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
