@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009,2016 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,6 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.RepositoryContentEvaluationAssertion;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.Content;
-import vtk.repository.resourcetype.property.PropertyEvaluationException;
 import vtk.security.Principal;
 import vtk.util.text.Json;
 
@@ -53,14 +52,14 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
 //    private Repository repository;
 //    private String token;
     private String expression;
-    private Set<String> expectedValues = new HashSet<String>();
+    private Set<String> expectedValues = new HashSet<>();
 
     public JSONObjectSelectAssertion createAssertion(String expression) {
         return createAssertion(expression, (String) null);
     }
 
     public JSONObjectSelectAssertion createAssertion(String expression, String expectedValue) {
-        Set<String> expectedValues = new HashSet<String>();
+        Set<String> expectedValues = new HashSet<>();
         if (expectedValue != null) {
             expectedValues.add(expectedValue);
         }
@@ -74,23 +73,18 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
         return assertion;
     }
     
-    
-    
+    @Override
     public boolean matches(Resource resource, Principal principal) {
         return matches(resource, principal, null);
     }
     
+    @Override
     public boolean matches(Resource resource, Principal principal, Content content) {
         if (content == null) return false;
         if (resource.isCollection()) return false;
         
         try {
-            Json.MapContainer object; 
-            try {
-                object = content.getContentRepresentation(Json.MapContainer.class);
-            } catch (Exception e) {
-                throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
-            }
+            Json.MapContainer object = content.getContentRepresentation(Json.MapContainer.class);
             
             Object o = Json.select(object, this.expression);
             if (this.expectedValues == null || this.expectedValues.isEmpty()) {
@@ -103,10 +97,11 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
 
         } catch (Exception e) {
             return false;
-        }        
+        }
     }
 
-    @Required public void setExpression(String expression) {
+    @Required
+    public void setExpression(String expression) {
         this.expression = expression;
     }
     
@@ -122,16 +117,17 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
     }
     
     public void setExpectedValue(String value) {
-        this.expectedValues = new HashSet<String>();
+        this.expectedValues = new HashSet<>();
         this.expectedValues.add(value);
     }
     
     public void addExpectedValue(String value) {
-        Set<String> expectedValues = new HashSet<String>(this.expectedValues);
+        Set<String> expectedValues = new HashSet<>(this.expectedValues);
         expectedValues.add(value);
         this.expectedValues = Collections.unmodifiableSet(expectedValues);
     }
     
+    @Override
     public String toString() {
         return "content.json." + this.expression + " in " + this.expectedValues;
     }
