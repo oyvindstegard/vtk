@@ -79,7 +79,7 @@ function keepAliveEditors() {
 
   var keepAliveEditorsTimer = setInterval(function() {
 
-    if(if(typeof CKEDITOR !== "undefined" && typeof vrtxEditor !== "undefined") {
+    if(typeof CKEDITOR !== "undefined" && typeof vrtxEditor !== "undefined") {
       vrtxEditor.richtextEditorFacade.updateInstances();
     }
     var hasUnsavedChanges = unsavedChangesInEditor();
