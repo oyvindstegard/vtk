@@ -44,12 +44,33 @@
     <property name="viewUnauthenticatedParameter" value="x-prevent-decorating"/>
   </bean>
   
-  <bean id="globalHeaders" class="java.util.HashMap">
-    <constructor-arg>
+  <bean id="vtk.globalHeaders.provider" class="vtk.web.filter.TemplateHeaderProvider">
+    <constructor-arg name="headers">
       <map>
         <entry key="${versionHeader.name}" value="${versionHeader.value}" />
       </map>
     </constructor-arg>
+    <constructor-arg name="referenceDataProviders" ref="vtk.globalHeaders.referenceDataProviders" />
+    <constructor-arg name="order" value="0" />
+  </bean>
+
+  <bean parent="defaultResponseFilters.builder">
+    <property name="arguments" ref="vtk.globalHeaders.provider" />
+  </bean>
+
+  <!-- Builders for header reference data providers: -->
+  <bean id="vtk.globalHeaders.referenceDataProviders" class="java.util.ArrayList" />
+  <bean id="vtk.globalHeaders.referenceDataProvider" 
+        class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="vtk.globalHeaders.referenceDataProviders" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+  <bean parent="vtk.globalHeaders.referenceDataProvider">
+    <property name="arguments">
+      <bean class="vtk.web.referencedata.provider.FrameworkVersionProvider" />
+    </property>
   </bean>
 
   <bean id="services" class="vtk.beans.factory.BeansListingFactoryBean">

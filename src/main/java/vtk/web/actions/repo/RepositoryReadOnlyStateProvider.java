@@ -35,6 +35,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.AuthorizationManager;
 import vtk.web.referencedata.ReferenceDataProvider;
 
@@ -48,6 +49,7 @@ public class RepositoryReadOnlyStateProvider implements ReferenceDataProvider {
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
         model.put("globalReadOnly", this.authorizationManager.isReadOnly());
+        model.put("globalReadOnlyMode", this.authorizationManager.isReadOnly() ? "ro": "rw");
         model.put("readOnlyRoots", this.authorizationManager.getReadOnlyRoots());
     }
 

@@ -76,4 +76,8 @@
     <property name="async" value="false" />
   </bean>
 
+  <bean parent="vtk.globalHeaders.referenceDataProvider">
+    <property name="arguments" ref="cluster.statusController" />
+  </bean>
+
 </beans>

@@ -30,6 +30,7 @@
  */
 package vtk.web;
 
+import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,8 +43,9 @@ import vtk.cluster.ClusterAware;
 import vtk.cluster.ClusterRole;
 import vtk.repository.Path;
 import vtk.util.text.JsonStreamer;
+import vtk.web.referencedata.ReferenceDataProvider;
 
-public class ClusterStatus implements Controller, ClusterAware {
+public class ClusterStatus implements Controller, ReferenceDataProvider, ClusterAware {
     
     private Optional<ClusterRole> role = Optional.empty();
     private boolean draining = false;
@@ -96,6 +98,14 @@ public class ClusterStatus implements Controller, ClusterAware {
             break;
         }
         return null;
+    }
+
+    @Override
+    public void referenceData(Map<String, Object> model,
+            HttpServletRequest request) throws Exception {
+        
+        model.put("clusterRole", 
+                role.map(r -> r.name().toLowerCase()).orElse("unset"));
     }
 
 }
