@@ -172,7 +172,7 @@ resourcetype structured-project {
       ##
     }
     
-    vrtx-date-info{
+    vrtx-date-info {
       ##
       [resource-props "."]
       [if publish-date != null]
