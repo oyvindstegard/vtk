@@ -56,8 +56,7 @@ import vtk.web.RequestContext.TraversalCallback;
  *   the property exists on the resource.
  * </ul>
  */
-public class ResourcePropertyAssertion
-  extends AbstractRepositoryAssertion {
+public class ResourcePropertyAssertion extends AbstractRepositoryAssertion {
 
     private Namespace namespace;
     private String name;

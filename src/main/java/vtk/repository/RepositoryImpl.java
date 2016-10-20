@@ -1176,7 +1176,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 } catch (UnsupportedContentException uce) {
                     // Fallback-process the content, as typehandler did not accept it.
                     ContentStream cs = uce.getContentStream();
-                    this.contentStore.storeContent(uri, cs.getStream());
+                    this.contentStore.storeContent(uri, cs.getStream(),
+                                                   p -> getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                     // Run through type evaluation
                     newResource = this.resourceHelper.create(principal, newResource, false, getDefaultContent(newResource));
                     
@@ -1187,7 +1188,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
                 this.contentStore.storeContent(uri, inStream, 
                                                p -> getPrincipal(token), TOKEN_REFRESH_PROGRESS_INTERVAL);
                 // Run through type evaluation
-                newResource = this.resourceHelper.create(principal, newResource, false, getContent(newResource));
+                newResource = this.resourceHelper.create(principal, newResource, false, getDefaultContent(newResource));
             }
                     
             // Store new resource

@@ -110,7 +110,7 @@ public class TypeHandlerHooksHelper implements ApplicationContextAware, Initiali
         Map<String, TypeHandlerHooks> typeHandlerBeans
                 = this.context.getBeansOfType(TypeHandlerHooks.class, false, false);
 
-        List<TypeHandlerHooks> hooksList = new ArrayList<TypeHandlerHooks>(typeHandlerBeans.values());
+        List<TypeHandlerHooks> hooksList = new ArrayList<>(typeHandlerBeans.values());
         if (!hooksList.isEmpty()) {
             logger.info("Registered TypeHandlerHooks extension(s): " + hooksList);
         }
