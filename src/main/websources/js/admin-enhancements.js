@@ -123,8 +123,8 @@ function VrtxAdmin() {
   /* Editor keep alive */
   this.editorIsDead = false;
   this.editorLastInteraction = +new Date();
-  this.editorCheckLastInteraction = 3*1000;
-  this.editorKeepAlive = 5*1000; // 2h
+  this.editorCheckLastInteraction = 60*1000;
+  this.editorKeepAlive = 120*60*1000; // 2h
   this.editorDeadMsgGiven = false;
 
   /* Upload */
