@@ -122,6 +122,7 @@ public final class Json {
      * @param input
      * @return a data structure built on {@link MapContainer} and {@link ListContainer}
      * as container types.
+     * @throws ClassCastException if the JSON data is an uncontained primitive value (neither object nor array).
      */
     public static Container parseToContainer(String input) {
         try {
@@ -138,6 +139,7 @@ public final class Json {
      * @return a data structure built on {@link MapContainer} and {@link ListContainer}
      * as container types.
      * @throws IOException 
+     * @throws ClassCastException if the JSON data is an uncontained primitive value (neither object nor array).
      */
     public static Container parseToContainer(Reader input) throws IOException {
         return (Container)parseInternal(input, true);
@@ -149,6 +151,7 @@ public final class Json {
      * @return a data structure built on {@link MapContainer} and {@link ListContainer}
      * as container types.
      * @throws IOException 
+     * @throws ClassCastException if the JSON data is an uncontained primitive value (neither object nor array).
      */
     public static Container parseToContainer(InputStream input) throws IOException {
         Reader reader = new BufferedReader(new InputStreamReader(input, "utf-8"));

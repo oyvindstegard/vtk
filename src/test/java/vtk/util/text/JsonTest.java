@@ -356,7 +356,30 @@ public class JsonTest {
         assertTrue(wrapped.get("list") instanceof ListContainer);
         assertTrue(((List<?>)wrapped.get("list")).get(1) instanceof MapContainer);
     }
-    
+
+    @Test
+    public void uncontainedPrimitiveValue() {
+        assertEquals(true, Json.parse("true"));
+    }
+
+    @Test(expected = ClassCastException.class)
+    public void uncontainedPrimitiveValueToContainer() {
+        Json.parseToContainer("true");
+    }
+
+    @Test
+    public void uncontainedPrimitiveValueAsEvents() throws IOException {
+        Json.ParseEvents p = Json.parseAsEvents("\"an uncontained value\"");
+
+        context.checking(new Expectations(){{
+            oneOf(jsonHandler).beginJson(); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).primitive("an uncontained value"); will(returnValue(true)); inSequence(jsonHandlerSeq);
+            oneOf(jsonHandler).endJson(); inSequence(jsonHandlerSeq);
+        }});
+
+        p.begin(jsonHandler);
+    }
+
     @Test
     public void parseAsEvents() throws IOException {
         
