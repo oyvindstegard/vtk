@@ -85,7 +85,7 @@ function keepAliveEditors() {
     var hasUnsavedChanges = unsavedChangesInEditor();
     console.log("HAS UNSAVED CHANGES " + hasUnsavedChanges);
 
-    if(!hasUnsavedChanges) {
+    if(!hasUnsavedChanges) { // Not has changes
       vrtxAdmin.editorIsDead = (+new Date() - vrtxAdmin.editorLastInteraction) >= vrtxAdmin.editorKeepAlive;
 
       if(vrtxAdmin.editorIsDead && !vrtxAdmin.editorDeadMsgGiven) {
@@ -101,13 +101,17 @@ function keepAliveEditors() {
           onOk: function() {
             location.reload();
           },
-          onClose: function() {
-            console.log("CLOSE");
+          onCancel: function() {
             $("#cancelAction, #cancel").click();
+          },
+          onClose: function() {
+            vrtxAdmin.editorDeadMsgGiven = false;
           }
         });
         d.open();
       }
+    } else { // Has changes (keep pinging)
+      vrtxAdmin.editorIsDead = false;
     }
   }, vrtxAdmin.editorCheckLastInteraction);
 
