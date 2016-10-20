@@ -83,7 +83,6 @@ function keepAliveEditors() {
       vrtxEditor.richtextEditorFacade.updateInstances();
     }
     var hasUnsavedChanges = unsavedChangesInEditor();
-    console.log("HAS UNSAVED CHANGES " + hasUnsavedChanges);
 
     if(!hasUnsavedChanges) { // Not has changes
       vrtxAdmin.editorIsDead = (+new Date() - vrtxAdmin.editorLastInteraction) >= vrtxAdmin.editorKeepAlive;
