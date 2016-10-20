@@ -159,9 +159,9 @@ resourcetype structured-project {
               
                 [if theurl != null && theurl != ""]
                   [if thetitle != null && thetitle != ""]
-                    [call "include:feed"  {"url":theurl, "override-feed-title":thetitle, "feed-title":true, "max-messages":3, "include-if-empty":false}]
+                    [call "include:feed" { "url": theurl, "override-feed-title":t hetitle, "feed-title": true, "max-messages": 3, "include-if-empty": false}]
                   [else]
-                    [call "include:feed" {"url":theurl, "feed-title":true, "max-messages":3, "include-if-empty":false}]
+                    [call "include:feed" { "url": theurl, "feed-title": true, "max-messages": 3, "include-if-empty": false}]
                   [endif]
                 [endif]
               [endlist]
