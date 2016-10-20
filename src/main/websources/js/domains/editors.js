@@ -1,10 +1,10 @@
 /*
  * Editors Save - have functionality for saving in a copy
  */
- 
+
 $.when(vrtxAdmin.domainsIsReady).done(function() {
   var vrtxAdm = vrtxAdmin, _$ = vrtxAdm._$;
-  
+
   switch (vrtxAdm.bodyId) {
     case "vrtx-editor":
     case "vrtx-edit-plaintext":
@@ -15,9 +15,9 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
     case "vrtx-edit-plaintext":
     case "vrtx-visual-profile":
       if (_$("form#editor").length) {
-      
+
         displaySystemGoingDownMessage();
-        
+
         // Dropdowns
         if(!isEmbedded) {
           vrtxAdm.dropdownPlain("#editor-help-menu");
@@ -31,7 +31,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         vrtxAdm.cachedDoc.bind('keydown', 'ctrl+s meta+s', $.debounce(150, true, function (e) {
           ctrlSEventHandler(_$, e);
         }));
-    
+
         // Save
         eventListen(vrtxAdm.cachedAppContent, "click", ".vrtx-save-button", function (ref) {
           var link = _$(ref);
@@ -43,7 +43,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
           ajaxSave();
           _$.when(vrtxAdm.asyncEditorSavedDeferred).done(function () {
             vrtxAdm.removeMsg("error");
-            
+
             // Redirect after save
             if(vrtxAdm.editorSaveIsRedirectPreview) {
               if(typeof vrtxEditor !== "undefined") vrtxEditor.needToConfirm = false;
@@ -70,45 +70,53 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
   }
 });
 
-/* 
+/*
  * Every 30s check time since last interaction,
  * and don't send ping() requests after 30 minutes without interaction
- * 
+ *
  */
 function keepAliveEditors() {
 
   var keepAliveEditorsTimer = setInterval(function() {
-  
-    vrtxAdmin.editorIsDead = (+new Date() - vrtxAdmin.editorLastInteraction) >= vrtxAdmin.editorKeepAlive;
-    
-    if(vrtxAdmin.editorIsDead && !vrtxAdmin.editorDeadMsgGiven) {
-      var d = new VrtxHtmlDialog({
-        title: vrtxAdmin.messages.editor.timedOut.title,
-        html: vrtxAdmin.messages.editor.timedOut.msg,
-        btnTextOk: vrtxAdmin.messages.editor.timedOut.ok,
-        btnTextCancel: cancelI18n,
-        width: 400,
-        onOpen: function() {
-          vrtxAdmin.editorDeadMsgGiven = true;
-        },
-        onOk: function() {
-          $(".vrtx-focus-button.vrtx-save-button").click();
-        },
-        onClose: function() {
-          vrtxAdmin.editorDeadMsgGiven = false;
-        }
-      });
-      d.open();
+
+    if(if(typeof CKEDITOR !== "undefined" && typeof vrtxEditor !== "undefined") {
+      vrtxEditor.richtextEditorFacade.updateInstances();
     }
-    
+    var hasUnsavedChanges = unsavedChangesInEditor();
+    console.log("HAS UNSAVED CHANGES " + hasUnsavedChanges);
+
+    if(!hasUnsavedChanges) {
+      vrtxAdmin.editorIsDead = (+new Date() - vrtxAdmin.editorLastInteraction) >= vrtxAdmin.editorKeepAlive;
+
+      if(vrtxAdmin.editorIsDead && !vrtxAdmin.editorDeadMsgGiven) {
+        var d = new VrtxHtmlDialog({
+          title: vrtxAdmin.messages.editor.timedOut.title,
+          html: vrtxAdmin.messages.editor.timedOut.msg,
+          btnTextOk: vrtxAdmin.messages.editor.timedOut.ok,
+          btnTextCancel: cancelI18n,
+          width: 400,
+          onOpen: function() {
+            vrtxAdmin.editorDeadMsgGiven = true;
+          },
+          onOk: function() {
+            location.reload();
+          },
+          onClose: function() {
+            console.log("CLOSE");
+            $("#cancelAction, #cancel").click();
+          }
+        });
+        d.open();
+      }
+    }
   }, vrtxAdmin.editorCheckLastInteraction);
-  
+
   vrtxAdmin.cachedDoc.on("mousedown keypress", $.debounce(150, true, function (e) {
     vrtxAdmin.editorLastInteraction = +new Date();
   }));
 }
 
-/* 
+/*
  * Display system going down message when #server-going-down exists in admin-message (after 5s every 60s)
  *
  * Opt-in possible to set when it should start showing (comparison with server time each 60s)
@@ -117,16 +125,16 @@ function keepAliveEditors() {
 function displaySystemGoingDownMessage() {
   var systemGoingDownSelector = "#server-going-down";
   var serverNowSelector = "#server-now-time";
-  
+
   var systemGoingDownElm = $(systemGoingDownSelector);
   if(systemGoingDownElm.length) {
     var systemGoingDownWait = 5000;
     var systemGoingDownRepeatWait = 60000;
-    
+
     var systemGoingDownStartText = systemGoingDownElm.text();
     var hasSystemGoingDownStart = systemGoingDownStartText.length === 19;
     var systemGoingDownDialogStart = hasSystemGoingDownStart ? serverTimeFormatToClientTimeFormat(systemGoingDownStartText.split(",")) : null;
-    
+
     var displaySystemGoingDownMessage = function() {
       var serverNowTime = {};
       var hasCheckedServerNow = hasSystemGoingDownStart ? getTagAsyncDeferred(serverNowTime, serverNowSelector) : $.Deferred().resolve();
@@ -144,7 +152,7 @@ function displaySystemGoingDownMessage() {
               width: 420
             });
             systemGoingDownDialog.open();
-            
+
             var retriggerSystemGoingDownDialog = setTimeout(function() {
               var systemGoingDown = {};
               var hasSystemGoingDown = getTagAsyncDeferred(systemGoingDown, systemGoingDownSelector);
@@ -161,12 +169,12 @@ function displaySystemGoingDownMessage() {
         }
       });
     };
-    
+
     displaySystemGoingDownMessage();
   }
 }
 
-/* 
+/*
  * Retrieve element by reference (object) and return future
  *
  */
@@ -185,10 +193,10 @@ function getTagAsyncDeferred(obj, selector) {
 function handleAjaxSaveErrors(xhr, textStatus) {
   var vrtxAdm = vrtxAdmin,
   _$ = vrtxAdm._$;
-  
+
   if (xhr !== null) {
     /* Fail in performSave() for exceeding 1500 chars in intro/add.content is handled in editor.js with popup */
-    
+
     if(xhr === "UPDATED_IN_BACKGROUND") {
       var serverTime = serverTimeFormatToClientTimeFormat(vrtxAdmin.serverLastModified);
       var nowTime = serverTimeFormatToClientTimeFormat(vrtxAdmin.serverNowTime);
@@ -358,7 +366,7 @@ function isServerLastModifiedOlderThanClientLastModified(loadingDialog) {
 }
 
 function isServerLastModifiedNewerThanClientLastModified(olderThanMs) {
-  try {            
+  try {
     var serverTime = serverTimeFormatToClientTimeFormat(vrtxAdmin.serverLastModified);
     var clientTime = serverTimeFormatToClientTimeFormat(vrtxAdmin.clientLastModified);
     // If server last-modified is newer than client last-modified return true
@@ -368,7 +376,7 @@ function isServerLastModifiedNewerThanClientLastModified(olderThanMs) {
     return isNewer;
   } catch(ex) { // Parse error, return true (we don't know)
     vrtxAdmin.log({msg: ex});
-    return true; 
+    return true;
   }
 }
 
@@ -392,7 +400,7 @@ function ajaxSaveAsCopy() {
     d.open();
     return false;
   }
-  
+
   // POST create the copy
   var form = $("#backupForm");
   var url = form.attr("action");
@@ -406,7 +414,7 @@ function ajaxSaveAsCopy() {
     success: function (results, status, resp) {
       var copyUri = resp.getResponseHeader('Location');
       var copyEditUri = copyUri + window.location.search;
-      
+
       // GET editor for the copy to get token etc.
       _$.ajax({
         type: "GET",
