@@ -51,7 +51,7 @@
 .has-advanced-upload {
   position: relative;
   z-index: 0;
-  min-height: 300px;
+  min-height: 250px;
 
   #upload-overlay {
     top: 0;
@@ -62,19 +62,19 @@
 
   &.is-empty-collection {
     #upload-overlay {
-      background: #fff url('images/upload-drag.png') no-repeat center center;
+      background: #fff url('images/upload-drag.png') no-repeat 50% 30px;
       position: absolute;
     }
   }
   &.is-dragover {
     #upload-overlay {
-      background: #fff url('images/upload-drop.png') no-repeat center center;
+      background: #fff url('images/upload-drop.png') no-repeat 50% 30px;
       position: absolute;
     }
 
     &:not(.is-empty-collection) {
       #upload-overlay {
-        opacity: 0.6;
+        background-color: rgba(220, 220, 220, 0.6);
       }
     }
   }
