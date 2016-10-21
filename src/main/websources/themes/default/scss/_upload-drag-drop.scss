@@ -1,0 +1,71 @@
+/*
+ * Vortex - Upload - Drag and drop
+ *
+ */
+
+@import "base";
+
+.hidden-upload-wrapper {
+  display: none;
+}
+
+.has-advanced-upload {
+  position: relative;
+  z-index: 0;
+  min-height: 250px;
+
+  #upload-overlay {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+  }
+  #upload-overlay-icon {
+    position: absolute;
+    top: 30px;
+    left: 42%;
+    @include wh(189px,189px);
+  }
+  #upload-overlay-icon-text {
+    display: none;
+    width: 100%;
+    font-size: 1.2em;
+    color: #666;
+    max-width: 80px;
+    margin: 115px auto 0;
+    text-align: center;
+  }
+
+  &.is-empty-collection {
+    #upload-overlay {
+      position: absolute;
+    }
+    #upload-overlay-icon {
+      position: absolute;
+      background: transparent url('images/upload-drag.png') no-repeat 0 0;
+    }
+    #upload-overlay-icon-text {
+      display: block;
+    }
+  }
+  &.is-dragover {
+    #upload-overlay {
+      position: absolute;
+    }
+    #upload-overlay-icon {
+      position: absolute;
+      background: transparent url('images/upload-drop.png') no-repeat 0 0;
+    }
+    #upload-overlay-icon-text {
+      color: #fff;
+      display: block;
+    }
+
+    &:not(.is-empty-collection) {
+      #upload-overlay {
+        background-color: rgba(220, 220, 220, 0.6);
+      }
+    }
+  }
+}

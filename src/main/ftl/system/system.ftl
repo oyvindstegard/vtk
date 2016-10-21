@@ -32,7 +32,9 @@
         title: '${vrtx.getMsg("uploading.existing.title")}',
         skip: '${vrtx.getMsg("uploading.existing.skip")}',
         overwrite: '${vrtx.getMsg("uploading.existing.overwrite")}'
-      }
+      },
+      drag: '${vrtx.getMsg("uploading.drag")}',
+      drop: '${vrtx.getMsg("uploading.drop")}'
     },
     deleting: {
       inprogress: '${vrtx.getMsg("deleting.in-progress")}'
