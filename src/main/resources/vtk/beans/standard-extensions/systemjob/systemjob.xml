@@ -116,6 +116,7 @@
     <property name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
     <property name="affectedPropDefPointers">
       <list>
+        <value>resource::hrefs</value>
         <value>resource::link-check</value>
         <value>resource::broken-links-count</value>
         <value>resource::link-status</value>
@@ -151,6 +152,7 @@
     <property name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
     <property name="affectedPropDefPointers">
       <list>
+        <value>resource::hrefs</value>
         <value>resource::link-check</value>
         <value>resource::broken-links-count</value>
         <value>resource::link-status</value>
@@ -196,6 +198,7 @@
 
     <property name="affectedPropDefPointers">
       <list>
+        <value>resource::hrefs</value>
         <value>resource::link-check</value>
         <value>resource::broken-links-count</value>
         <value>resource::link-status</value>

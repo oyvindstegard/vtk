@@ -49,14 +49,19 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.AuthorizationException;
 import vtk.repository.ContentStream;
 import vtk.repository.Lock;
+import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.Repository;
 import vtk.repository.Repository.Depth;
 import vtk.repository.Resource;
 import vtk.repository.ResourceLockedException;
+import vtk.repository.ResourceNotFoundException;
 import vtk.repository.SystemChangeContext;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.util.text.Json;
+import vtk.util.text.Json.ListContainer;
+import vtk.util.text.Json.MapContainer;
 import vtk.util.text.JsonBuilder;
 import vtk.util.web.LinkTypesPrefixes;
 import vtk.web.display.linkcheck.LinkChecker;
@@ -97,13 +102,20 @@ public class LinkCheckJob extends AbstractResourceJob {
 
     @Override
     protected void executeForResource(Resource resource, ExecutionContext ctx) throws Exception {
-        Property prop = linkCheck(resource, ctx.getSystemChangeContext());
-        if (prop != null) {
-            resource.addProperty(prop);
+        Property hrefsProp = resolveHrefIDs(resource, ctx);
+        if (hrefsProp == null) {
+            resource.removeProperty(hrefsPropDef);
         }
         else {
+            resource.addProperty(hrefsProp);
+        }
+        Property prop = linkCheck(resource, ctx.getSystemChangeContext());
+        if (prop == null) {
             // Delete any old stale value
             resource.removeProperty(linkCheckPropDef);
+        }
+        else {
+            resource.addProperty(prop);
         }
         UpdateBatch b = (UpdateBatch)ctx.getAttribute("UpdateBatch");
         b.add(resource);
@@ -115,6 +127,64 @@ public class LinkCheckJob extends AbstractResourceJob {
         b.flush();
     }
 
+    private Property resolveHrefIDs(final Resource resource, ExecutionContext ctx)
+            throws InterruptedException {
+        Property hrefsProp = resource.getProperty(hrefsPropDef);
+        if (hrefsProp == null) return null;
+        
+        MapContainer jsonValue = hrefsProp.getJSONValue();
+        final URL base = urlConstructor.canonicalUrl(resource).setImmutable();
+        
+        if (jsonValue.containsKey("links")) {
+            ListContainer links = jsonValue.arrayValue("links");
+            for (int i = 0; i < links.size(); i++) {
+                MapContainer hrefObj = links.objectValue(i);
+
+                if (hrefObj.containsKey("vrtxid")) {
+                    continue;
+                }
+                
+                if (hrefObj.containsKey("url")) {
+                    String href = (String) hrefObj.get("url");
+                    URL url = null;
+                    
+                    try {
+                        url = base.relativeURL(href);
+                    }
+                    catch (Exception e) {
+                        logger.debug("Failed to create URL from string: " 
+                                + href + ", base: " + base, e);
+                        continue;
+                    }
+                    // Is the URL "local" (i.e. can we expect to find it in the repository)?
+                    if (url.getHost().equals(base.getHost())) {
+                        try {
+                            Resource r = ctx.getRepository().
+                                    retrieve(ctx.getToken(), url.getPath(), false);
+                            Property idProp = r.getProperty(
+                                    Namespace.DEFAULT_NAMESPACE, 
+                                    PropertyType.EXTERNAL_ID_PROP_NAME);
+                            if (idProp != null) {
+                                hrefObj.put("vrtxid", idProp.getStringValue());
+                            }
+                        }
+                        catch (ResourceNotFoundException e) {
+                            logger.debug("Resource " + href 
+                                    + " (linked from " + resource.getURI() + ") not found");
+                        }
+                        catch (Exception e) {
+                            logger.info("Failed to retrieve resource " + url.getPath(), e);
+                            continue;
+                        }
+                    }
+                }
+            }
+            hrefsProp.setJSONValue(jsonValue);
+        }
+        return hrefsProp;
+    }
+    
+    
     private Property linkCheck(final Resource resource, final SystemChangeContext context)
             throws InterruptedException {
 
@@ -414,8 +484,7 @@ public class LinkCheckJob extends AbstractResourceJob {
 
         public void flush() {
             if (updateList.size() > 0) {
-                logger.info("Attempting to store " + updateList.size() + " resources");
-                logger.info("Attempting to store " + updateList);
+                logger.info("Attempting to store " + updateList.size() + " resources: " + updateList);
             }
             if (locking) {
                 flushWithLocking();
