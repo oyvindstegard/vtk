@@ -265,14 +265,20 @@
     <property name="viewName" value="repositoryReadOnly" />
   </bean>
 
+  <bean id="repositoryReadOnlyStateProvider" class="vtk.web.actions.repo.RepositoryReadOnlyStateProvider">
+    <property name="authorizationManager" ref="authorizationManager" />
+  </bean>
+  <bean parent="vtk.globalHeaders.referenceDataProvider">
+    <property name="arguments" ref="repositoryReadOnlyStateProvider" />
+  </bean>
+
+
   <bean id="repositoryReadOnlyView" parent="freemarkerView">
     <property name="url" value="pages/root/repository-read-only.ftl" />
     <property name="referenceDataProviders">
       <list>
         <ref bean="resourceContextProvider" />
-        <bean class="vtk.web.actions.repo.RepositoryReadOnlyStateProvider">
-          <property name="authorizationManager" ref="authorizationManager" />
-        </bean>
+        <ref bean="repositoryReadOnlyStateProvider" />
         <bean class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
           <property name="service" ref="setRepositoryReadOnlyService" />
           <property name="modelName" value="setReadOnlyUrl" />
