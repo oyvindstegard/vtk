@@ -49,7 +49,7 @@ $.fn.ajaxSubmit = function(options) {
 		log('ajaxSubmit: skipping submit process - no element selected');
 		return this;
 	}
-	
+
 	var method, action, url, $form = this;
 
 	if (typeof options == 'function') {
@@ -91,7 +91,7 @@ $.fn.ajaxSubmit = function(options) {
 	if ( traditional === undefined ) {
 		traditional = $.ajaxSettings.traditional;
 	}
-	
+
 	// USIT added: possible to skip form serializing and use extraData onlyy
 	var qx,n,v,a = (!options.skipForm ? this.formToArray(options.semantic) : []);
 	if (options.data) {
@@ -115,7 +115,7 @@ $.fn.ajaxSubmit = function(options) {
 	var q = $.param(a, traditional);
 	if (qx) {
 		q = ( q ? (q + '&' + qx) : qx );
-	}	
+	}
 	if (options.type.toUpperCase() == 'GET') {
 		options.url += (options.url.indexOf('?') >= 0 ? '&' : '?') + q;
 		options.data = null;  // data is null for 'get'
@@ -123,7 +123,7 @@ $.fn.ajaxSubmit = function(options) {
 	else {
 		options.data = q; // data is the query string for 'post'
 	}
-	
+
 	var callbacks = [];
 	if (options.resetForm) {
 		callbacks.push(function() { $form.resetForm(); });
@@ -145,7 +145,7 @@ $.fn.ajaxSubmit = function(options) {
 	}
 
 	options.success = function(data, status, xhr) { // jQuery 1.4+ passes xhr as 3rd arg
-		var context = options.context || options;	// jQuery 1.4+ supports scope context 
+		var context = options.context || options;	// jQuery 1.4+ supports scope context
 		for (var i=0, max=callbacks.length; i < max; i++) {
 			callbacks[i].apply(context, [data, status, xhr || $form, $form]);
 		}
@@ -153,18 +153,21 @@ $.fn.ajaxSubmit = function(options) {
 
 	// are there files to upload?
 	var fileInputs = $('input:file:enabled[value]', this); // [value] (issue #113)
-	var hasFileInputs = fileInputs.length > 0;
+	var hasFileInputs = fileInputs.length > 0 || vrtxAdmin.droppedFilesHasBeenChecked;
 	var mp = 'multipart/form-data';
 	var multipart = ($form.attr('enctype') == mp || $form.attr('encoding') == mp);
+  log("hasFileInputs :" + hasFileInputs);
 
-	var fileAPI = !!(hasFileInputs && fileInputs.get(0).files && window.FormData);
+  // USIT added: check drag-and-dropped files
+	var fileAPI = !!((hasFileInputs && (typeof vrtxAdmin.droppedFiles === "object" || fileInputs.get(0).files)) && window.FormData);
 	log("fileAPI :" + fileAPI);
 	var shouldUseFrame = (hasFileInputs || multipart) && !fileAPI;
+	log("shouldUseFrame :" + shouldUseFrame);
 
-    // USIT added: name of clicked button
-    if(typeof vrtxAdmin !== "undefined" && vrtxAdmin.editorSaveButtonName != "") {
-      options.data += "&" + vrtxAdmin.editorSaveButtonName;
-    }
+  // USIT added: name of clicked button
+  if(typeof vrtxAdmin !== "undefined" && vrtxAdmin.editorSaveButtonName != "") {
+    options.data += "&" + vrtxAdmin.editorSaveButtonName;
+  }
 
 	// options.iframe allows user to force iframe mode
 	// 06-NOV-09: now defaulting to iframe mode if file input is detected
@@ -192,6 +195,16 @@ $.fn.ajaxSubmit = function(options) {
 	 this.trigger('form-submit-notify', [this, options]);
 	 return this;
 
+  // USIT added: possible to skip uploading files
+	function checkIfSkipFile(formdata, name, file) {
+		if(typeof vrtxAdmin !== "undefined" && vrtxAdmin.uploadCopyMoveSkippedFiles[file.name]) {
+			vrtxAdmin.log({msg: "Skip: " + file.name});
+		} else {
+			formdata.append(name, file);
+			vrtxAdmin.log({msg: "Upload and overwrite: " + file.name});
+		}
+	}
+
 	 // XMLHttpRequest Level 2 file uploads (big hat tip to francois2metz)
 	function fileUploadXhr(a) {
 		var formdata = new FormData();
@@ -202,19 +215,21 @@ $.fn.ajaxSubmit = function(options) {
 			formdata.append(a[i].name, a[i].value);
 		}
 
-		$form.find('input:file:enabled').each(function(){
-			var name = $(this).attr('name'), files = this.files;
-			if (name) {
-				for (var i=0; i < files.length; i++)
-				  // USIT added: possible to skip uploading files
-				  if(typeof vrtxAdmin !== "undefined" && vrtxAdmin.uploadCopyMoveSkippedFiles[files[i].name]) {
-				    vrtxAdmin.log({msg: "Skip: " + files[i].name}); 
-				  } else {
-				    formdata.append(name, files[i]);
-				    vrtxAdmin.log({msg: "Upload and overwrite: " + files[i].name});
+    // USIT added: drag and drop + possible to skip uploading files
+		if(typeof vrtxAdmin.droppedFiles === "object") {
+			$.each(vrtxAdmin.droppedFiles, function( i, val ) {
+				checkIfSkipFile(formdata, "file", val);
+			});
+		} else {
+			$form.find('input:file:enabled').each(function(){
+				var name = $(this).attr('name'), files = this.files;
+				if (name) {
+					for (var i=0; i < files.length; i++) {
+					  checkIfSkipFile(formdata, name, files[i]);
 				  }
-			}
-		});
+				}
+			});
+		}
 
 		if (options.extraData) {
 			for (var k in options.extraData)
@@ -229,7 +244,7 @@ $.fn.ajaxSubmit = function(options) {
 			cache: false,
 			type: 'POST'
 		});
-		
+
 	  // USIT added (from newest jquery.form.js): fix for upload progress
 	  if (options.uploadProgress) {
             // workaround because jqXHR does not expose upload property
@@ -294,7 +309,7 @@ $.fn.ajaxSubmit = function(options) {
 			alert('Error: Form elements must not have name or id of "submit".');
 			return;
 		}
-		
+
 		s = $.extend(true, {}, $.ajaxSettings, options);
 		s.context = s.context || s;
 		id = 'jqFormIO' + (new Date().getTime());
@@ -366,7 +381,7 @@ $.fn.ajaxSubmit = function(options) {
 				}
 			}
 		}
-		
+
 		var CLIENT_TIMEOUT_ABORT = 1;
 		var SERVER_ABORT = 2;
 
@@ -374,7 +389,7 @@ $.fn.ajaxSubmit = function(options) {
 			var doc = frame.contentWindow ? frame.contentWindow.document : frame.contentDocument ? frame.contentDocument : frame.document;
 			return doc;
 		}
-		
+
 		// Rails CSRF hack (thanks to Yvan Barthelemy)
 		var csrf_token = $('meta[name=csrf-token]').attr('content');
 		var csrf_param = $('meta[name=csrf-param]').attr('content');
@@ -409,7 +424,7 @@ $.fn.ajaxSubmit = function(options) {
 			if (s.timeout) {
 				timeoutHandle = setTimeout(function() { timedOut = true; cb(CLIENT_TIMEOUT_ABORT); }, s.timeout);
 			}
-			
+
 			// look for server aborts
 			function checkState() {
 				try {
@@ -917,7 +932,7 @@ $.fieldValue = function(el, successful) {
       val = val.replace(/<span style="font-size: 13.9200000762939px;">([^<]*)<\/span>/g, "$1", "");
       val = val.replace(/<(p|em|strong|s|ul|ol) style="font-size: 14px;">/g, "<$1>", "");
       val = val.replace(/<(p|em|strong|s|ul|ol) style="font-size: 13.9200000762939px;">/g, "<$1>", "");
-      
+
       // Replace <p> with <div> around Vortex components (VTK-3578)
       val = val.replace(/<p>([\s]*\${(?:include\:(?:events|feed|feeds|file|folder|image-listing|library-search|media-player|messages|number-of-resources|property|recent-comments|ref|resource-list|search-form|tag-cloud|tags|ub-mapping|unit-search-form|uri-menu)|resource\:(?:breadcrumb|email-friend|feedback|manage-url|property|share-at|subfolder-menu|tags|toc))[^}]*}[\s]*)<\/p>/g, "<div>$1</div>", "");
     } catch(err) {
@@ -1013,7 +1028,7 @@ $.fn.ajaxSubmit.debug = true;
 
 // helper fn for console logging
 function log() {
-	if (!$.fn.ajaxSubmit.debug) 
+	if (!$.fn.ajaxSubmit.debug)
 		return;
 	var msg = '[jquery.form] ' + Array.prototype.join.call(arguments,'');
 	if (window.console && window.console.log) {

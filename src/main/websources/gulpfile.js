@@ -66,6 +66,11 @@ gulp.task('jquery-copy', function () {
         .pipe(gulp.dest(TARGET + "/jquery"));
 });
 
+gulp.task('jquery-plugins-copy', function () {
+    return gulp.src('jquery/plugins/**')
+        .pipe(gulp.dest(TARGET + "/jquery/plugins"));
+});
+
 gulp.task('flash-copy', function () {
     return gulp.src('flash/**')
         .pipe(gulp.dest(TARGET + "/flash"));
@@ -91,6 +96,7 @@ gulp.task('watch', function () {
     gulp.watch('themes/default/scss/*.scss', ['theme-compile-sass']);
     gulp.watch('themes/**/*.css', ['theme-copy-css'])
     gulp.watch('js/**/*.js', ['js-copy']);
+    gulp.watch('jquery/**/*.js', ['jquery-plugins-copy', 'jquery-copy']);
 });
 
 gulp.task('clean', function () {
@@ -104,6 +110,7 @@ gulp.task('test-dependencies', function (callback) {
          [
             'js-copy',
             'js-copy-resources',
+            'jquery-plugins-copy',
             'jquery-copy',
             'ckeditor-copy'
          ],
@@ -134,6 +141,7 @@ gulp.task('default', function () {
         'theme-copy-resources',
         'js-copy',
         'js-copy-resources',
+        'jquery-plugins-copy',
         'jquery-copy',
         'ckeditor-copy',
         'flash-copy'

@@ -1,4 +1,4 @@
-/* 
+/*
  * File upload (JS progressive enhancement)
  *
  * Credits technique: http://www.quirksmode.org/dom/inputfile.html
@@ -40,6 +40,44 @@
   /* Transparent */
   opacity: 0;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)" !important;
+}
+
+/* Drag and drop */
+
+.hidden-upload-wrapper {
+  display: none;
+}
+
+.has-advanced-upload {
+  position: relative;
+  z-index: 0;
+  min-height: 300px;
+
+  #upload-overlay {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &.is-empty-collection {
+    #upload-overlay {
+      background: #fff url('images/upload-drag.png') no-repeat center center;
+      position: absolute;
+    }
+  }
+  &.is-dragover {
+    #upload-overlay {
+      background: #fff url('images/upload-drop.png') no-repeat center center;
+      position: absolute;
+    }
+
+    &:not(.is-empty-collection) {
+      #upload-overlay {
+        opacity: 0.6;
+      }
+    }
+  }
 }
 
 /* Upload dialog */
