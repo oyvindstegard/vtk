@@ -28,7 +28,7 @@
     @include wh(189px,189px);
   }
   #upload-overlay-icon-text {
-    display: block;
+    display: none;
     width: 100%;
     font-size: 1.2em;
     color: #666;
@@ -45,6 +45,9 @@
       position: absolute;
       background: transparent url('images/upload-drag.png') no-repeat 0 0;
     }
+    #upload-overlay-icon-text {
+      display: block;
+    }
   }
   &.is-dragover {
     #upload-overlay {
@@ -56,6 +59,7 @@
     }
     #upload-overlay-icon-text {
       color: #fff;
+      display: block;
     }
 
     &:not(.is-empty-collection) {
