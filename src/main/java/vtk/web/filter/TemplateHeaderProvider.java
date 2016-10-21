@@ -69,11 +69,9 @@ public class TemplateHeaderProvider implements ResponseFilter {
         
         final Map<String, Object> model = new HashMap<>();
         referenceDataProviders.forEach(provider -> {
-                try { System.out.println("__ref_data_p: " + provider);provider.referenceData(model, request); }
-                catch (Throwable t) {t.printStackTrace(System.out);}
+                try { provider.referenceData(model, request); }
+                catch (Throwable t) { }
             });
-        
-        System.out.println("__model: " + model);
         
         for (String name: headers.keySet()) {
             SimpleTemplate template = headers.get(name);
