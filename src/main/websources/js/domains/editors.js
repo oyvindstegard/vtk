@@ -85,8 +85,9 @@ function keepAliveEditors() {
     var hasUnsavedChanges = unsavedChangesInEditor();
 
     if(!hasUnsavedChanges) { // Not has changes
-      vrtxAdmin.editorIsDead = (+new Date() - vrtxAdmin.editorLastInteraction) >= vrtxAdmin.editorKeepAlive;
 
+      // Check that editor is not been interacted with for 2 hours (and dialog is not already open)
+      vrtxAdmin.editorIsDead = (+new Date() - vrtxAdmin.editorLastInteraction) >= vrtxAdmin.editorKeepAlive;
       if(vrtxAdmin.editorIsDead && !vrtxAdmin.editorDeadMsgGiven) {
         var d = new VrtxHtmlDialog({
           title: vrtxAdmin.messages.editor.timedOut.title,
@@ -109,11 +110,12 @@ function keepAliveEditors() {
         });
         d.open();
       }
-    } else { // Has changes (keep pinging)
+    } else { // Has changes (keep pinging every 30 minutes in ping.ftl)
       vrtxAdmin.editorIsDead = false;
     }
   }, vrtxAdmin.editorCheckLastInteraction);
 
+  // Save last interaction
   vrtxAdmin.cachedDoc.on("mousedown keypress", $.debounce(150, true, function (e) {
     vrtxAdmin.editorLastInteraction = +new Date();
   }));
