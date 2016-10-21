@@ -421,7 +421,7 @@ function setupDragAndDropUpload(selector) {
   var content = $(selector);
   content.addClass("has-advanced-upload");
 
-  content.append("<div id='upload-overlay' />");
+  content.append("<div id='upload-overlay'><span id='upload-overlay-icon'><span id='upload-overlay-icon-text'>" + vrtxAdmin.messages.upload.drag + "</span></span></div>");
 
   if($("#collectionlisting-empty").length) {
     content.addClass("is-empty-collection");
@@ -434,15 +434,11 @@ function setupDragAndDropUpload(selector) {
 
   content.on('dragover dragenter', function() {
     content.addClass('is-dragover');
-  });
-  $("#upload-overlay").on('dragover dragenter', function() {
-
-  });
-  content.on('dragleave dragend drop', function() {
-
+    $("#upload-overlay-icon-text").text(vrtxAdmin.messages.upload.drop);
   });
   $("#upload-overlay").on('dragleave dragend drop', function() {
     content.removeClass('is-dragover');
+    $("#upload-overlay-icon-text").text(vrtxAdmin.messages.upload.drag);
   });
   $("#upload-overlay").on('drop', function(e) {
     vrtxAdmin.droppedFiles = e.originalEvent.dataTransfer.files;
