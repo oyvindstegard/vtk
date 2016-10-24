@@ -443,17 +443,29 @@ function setupDragAndDropUpload(opts) {
   var uploadOverlayIconTextElm = $("#" + uploadOverlayIconText);
   var uploadOverlayTopElm = $("#" + uploadOverlayTop);
 
+  var preventLeave = 0;
+
   var dragPreventDefault = function(e) {
     e.preventDefault();
     e.stopPropagation();
   };
   var dragStart = function(e) {
+    e = e.originalEvent;
+    if(e.type === "dragenter" && e.target.id === "upload-overlay-top") {
+      preventLeave = +new Date();
+    }
     if(!content.hasClass("is-dragover")) {
       content.addClass('is-dragover');
       uploadOverlayIconTextElm.text(vrtxAdmin.messages.upload.drop);
     }
   };
   var dragComplete = function(e) {
+    var isUnknownLeave = e.originalEvent.clientX === 0 && e.originalEvent.clientY === 0;
+    if(isUnknownLeave && ((+new Date() - preventLeave) < 150)) {
+      preventLeave = 0;
+      return;
+    }
+
     if(content.hasClass("is-dragover")) {
       content.removeClass('is-dragover');
       uploadOverlayIconTextElm.text(vrtxAdmin.messages.upload.drag);
@@ -476,7 +488,7 @@ function setupDragAndDropUpload(opts) {
 
   content.on('drag dragstart dragend dragover dragenter dragleave drop', dragPreventDefault);
   content.on('dragenter dragover', dragStart);
-  uploadOverlayTopElm.on('dragenter dragover', dragStart);
+  uploadOverlayTopElm.on('dragenter dragover', dragStart); // When empty collection
   uploadOverlayTopElm.on('drag dragstart dragend dragover dragenter dragleave drop', dragPreventDefault);
   uploadOverlayTopElm.on('dragleave dragend drop', dragComplete);
   uploadOverlayTopElm.on('drop', drop);
