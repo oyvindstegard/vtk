@@ -12,20 +12,25 @@
 .has-advanced-upload {
   position: relative;
   z-index: 0;
-  min-height: 250px;
 
-  #upload-overlay {
+  #upload-overlay,
+  #upload-overlay-top {
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    @include wh(100%, 100%);
+  }
+  #upload-overlay,
+  #upload-overlay-icon,
+  #upload-overlay-icon-text {
+    z-index: 1;
+  }
+  #upload-overlay {
     background: #fff;
   }
   #upload-overlay-icon {
-    position: absolute;
     top: 30px;
     left: 42%;
-    @include wh(189px,189px);
+    @include wh(189px, 189px);
   }
   #upload-overlay-icon-text {
     display: none;
@@ -33,35 +38,36 @@
     font-size: 1.2em;
     color: #666;
     max-width: 80px;
-    margin: 115px auto 0;
+    margin: 115px auto 0 auto;
     text-align: center;
   }
+  #upload-overlay-top {
+    z-index: 10;
+  }
 
-  &.is-empty-collection {
-    #upload-overlay {
+  &.is-empty-collection,
+  &.is-dragover {
+    #upload-overlay-icon,
+    #upload-overlay,
+    #upload-overlay-top {
       position: absolute;
-    }
-    #upload-overlay-icon {
-      position: absolute;
-      background: transparent url('images/upload-drag.png') no-repeat 0 0;
     }
     #upload-overlay-icon-text {
       display: block;
     }
   }
-  &.is-dragover {
-    #upload-overlay {
-      position: absolute;
-    }
+  &.is-empty-collection {
     #upload-overlay-icon {
-      position: absolute;
+      background: transparent url('images/upload-drag.png') no-repeat 0 0;
+    }
+  }
+  &.is-dragover {
+    #upload-overlay-icon {
       background: transparent url('images/upload-drop.png') no-repeat 0 0;
     }
     #upload-overlay-icon-text {
       color: #fff;
-      display: block;
     }
-
     &:not(.is-empty-collection) {
       #upload-overlay {
         background-color: rgba(220, 220, 220, 0.6);

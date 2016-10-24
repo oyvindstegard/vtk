@@ -2,7 +2,7 @@
  * Vortex - Directorylisting
  *
  * Folder content, trash content and reports
- * 
+ *
  */
 
 @import "base";
@@ -14,6 +14,10 @@
   padding: 5px 0 0 0;
   border: 1px solid #d9d9d9;
   clear: left;
+}
+
+#vrtx-manage-collectionlisting #contents {
+  min-height: 250px;
 }
 
 #vrtx-report-documents #contents .vrtx-report {
@@ -32,7 +36,7 @@
 
   td {
     word-wrap: break-word;
-  
+
     span.own-permission {
       color: #999999;
       display: inline-block;
@@ -64,8 +68,8 @@
         background-color: $listingDropdownTipFocusBackgroundColor;
         border-top: 1px solid #c7dadf;
         border-bottom: 1px solid #c7dadf;
-       
-        &.permissions { 
+
+        &.permissions {
           a {
             border-bottom: 1px dotted #888;
           }
@@ -133,7 +137,7 @@
       padding: 0 0 8px 15px;
       text-align: left;
       white-space: nowrap;
-   
+
       &.checkbox                                  { width: 4%;  }
       &.permissions                               { width: 15%; }
       &#vrtx-trash-can\.deletedBy                 { width: 19%; }

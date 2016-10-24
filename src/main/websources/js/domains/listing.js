@@ -148,8 +148,12 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         }
       });
 
-      // Upload via Drag and drop
-      initDragAndDropUpload("#contents");
+      initDragAndDropUpload({
+        uploadSeviceSelector: "#fileUploadService",
+        contentSelector: "#contents",
+        formSelector: "form#fileUploadService-form",
+        isCollectionEmpty: $("#collectionlisting-empty").length
+      });
 
       break;
     case "vrtx-trash-can":
@@ -396,73 +400,96 @@ var isAdvancedUpload = function() {
   return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
 }();
 
-function initDragAndDropUpload(selector) {
+function initDragAndDropUpload(opts) {
   if(!isAdvancedUpload) return;
 
-  vrtxAdmin.serverFacade.getHtml($("#fileUploadService")[0].href, {
+  vrtxAdmin.serverFacade.getHtml($(opts.uploadSeviceSelector)[0].href, {
     success: function (results, status, resp) {
       vrtxAdmin.initFileUpload();
 
+      // Add upload form
       var html = $($.parseHTML(results)).find(".expandedForm.vrtx-admin-form");
       $("#active-tab").append(html);
-
       $("#active-tab").find(".expandedForm.vrtx-admin-form").addClass("hidden-upload-wrapper")
                       .removeClass("expandedForm vrtx-admin-form");
-      var hiddenUploadWrapper = $("#contents").find(".hidden-upload-wrapper");
 
-      setupDragAndDropUpload(selector);
+      setupDragAndDropUpload(opts);
     }
   });
 }
 
-function setupDragAndDropUpload(selector) {
+function setupDragAndDropUpload(opts) {
   if(!isAdvancedUpload) return;
 
-  var content = $(selector);
+  var content = $(opts.contentSelector);
   content.addClass("has-advanced-upload");
 
-  content.append("<div id='upload-overlay'><span id='upload-overlay-icon'><span id='upload-overlay-icon-text'>" + vrtxAdmin.messages.upload.drag + "</span></span></div>");
-
-  if($("#collectionlisting-empty").length) {
+  if(opts.isCollectionEmpty) {
     content.addClass("is-empty-collection");
   }
 
-  content.on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+  var uploadOverlay = "upload-overlay";
+  var uploadOverlayIcon = uploadOverlay + "-icon";
+  var uploadOverlayIconText = uploadOverlayIcon + "-text";
+  var uploadOverlayTop = uploadOverlay + "-top"; // Actual drop zone above graphical stuff
+  var uploadHtml = "<div id='" + uploadOverlay + "'><span id='" + uploadOverlayIcon + "'>" +
+                     "<span id='" + uploadOverlayIconText + "'>" + vrtxAdmin.messages.upload.drag + "</span>" +
+                   "</span></div>" +
+                   "<div id='" + uploadOverlayTop + "' />";
+  content.append(uploadHtml);
+
+  var uploadOverlayElm = $("#" + uploadOverlay);
+  var uploadOverlayIconElm = $("#" + uploadOverlayIcon);
+  var uploadOverlayIconTextElm = $("#" + uploadOverlayIconText);
+  var uploadOverlayTopElm = $("#" + uploadOverlayTop);
+
+  var dragPreventDefault = function(e) {
     e.preventDefault();
     e.stopPropagation();
-  });
-
-  content.on('dragover dragenter', function() {
-    content.addClass('is-dragover');
-    $("#upload-overlay-icon-text").text(vrtxAdmin.messages.upload.drop);
-  });
-  $("#upload-overlay").on('dragleave dragend drop', function() {
-    content.removeClass('is-dragover');
-    $("#upload-overlay-icon-text").text(vrtxAdmin.messages.upload.drag);
-  });
-  $("#upload-overlay").on('drop', function(e) {
+  };
+  var dragStart = function(e) {
+    if(!content.hasClass("is-dragover")) {
+      content.addClass('is-dragover');
+      uploadOverlayIconTextElm.text(vrtxAdmin.messages.upload.drop);
+    }
+  };
+  var dragComplete = function(e) {
+    if(content.hasClass("is-dragover")) {
+      content.removeClass('is-dragover');
+      uploadOverlayIconTextElm.text(vrtxAdmin.messages.upload.drag);
+    }
+  };
+  var drop = function(e) {
     vrtxAdmin.droppedFiles = e.originalEvent.dataTransfer.files;
 
-    var selector = "form#fileUploadService-form";
-    var form = $(selector);
-
+    var form = $(opts.formSelector);
     ajaxUpload({
-      selector: selector,
+      selector: opts.formSelector,
       form: form,
       link: form.find("input.vrtx-focus-button"),
-      updateSelectors: ["#contents"],
+      updateSelectors: [opts.contentSelector],
       errorContainer: "errorContainer",
       errorContainerInsertAfter: "h3",
       post: true
     });
-  });
+  };
+
+  content.on('drag dragstart dragend dragover dragenter dragleave drop', dragPreventDefault);
+  content.on('dragenter dragover', dragStart);
+  uploadOverlayTopElm.on('dragenter dragover', dragStart);
+  uploadOverlayTopElm.on('drag dragstart dragend dragover dragenter dragleave drop', dragPreventDefault);
+  uploadOverlayTopElm.on('dragleave dragend drop', dragComplete);
+  uploadOverlayTopElm.on('drop', drop);
 }
 
-function ajaxUpload(options) {
+function ajaxUpload(opts) {
   var vrtxAdm = vrtxAdmin,
-  _$ = vrtxAdm._$;
+      _$ = vrtxAdm._$;
 
-  var isDragAndDrop = typeof vrtxAdm.droppedFiles === "object";
+  opts.isDragAndDrop = typeof vrtxAdm.droppedFiles === "object";
+  var uploadCheckServiceSelector = "#fileUploadCheckService-form";
+  var existingFilenamesSelector = "#file-upload-existing-filenames";
+  var existingFilesnamesFixedSelector = "#file-upload-existing-filenames-fixed";
 
   var futureFormAjax = _$.Deferred();
   if (typeof _$.fn.ajaxSubmit !== "function") {
@@ -470,12 +497,13 @@ function ajaxUpload(options) {
     getScriptFn(vrtxAdm.rootUrl + "/jquery/plugins/jquery.form.js").done(function() {
       futureFormAjax.resolve();
     }).fail(function(xhr, textStatus, errMsg) {
-      var uploadingFailedD = new VrtxMsgDialog({ title: xhr.status + " " + vrtxAdm.serverFacade.errorMessages.uploadingFilesFailedTitle,
-                                                 msg: vrtxAdm.serverFacade.errorMessages.uploadingFilesFailed
-                                              });
-      uploadingFailedD.open();
-   	  if(options.funcAfterComplete) {
-        options.funcAfterComplete();
+      var dialogUploadingFailed = new VrtxMsgDialog({ title: xhr.status + " " + vrtxAdm.serverFacade.errorMessages.uploadingFilesFailedTitle,
+                                                      msg: vrtxAdm.serverFacade.errorMessages.uploadingFilesFailed
+                                                    });
+      dialogUploadingFailed.open();
+
+   	  if(opts.funcAfterComplete) {
+        opts.funcAfterComplete();
       }
     });
   } else {
@@ -486,38 +514,37 @@ function ajaxUpload(options) {
     var filePaths = "";
     var numberOfFiles = 0;
     var size = 0;
-    if (vrtxAdm.supportsFileList || isDragAndDrop) {
-      var files = !isDragAndDrop ? fileField[0].files : vrtxAdm.droppedFiles;
+    if (vrtxAdm.supportsFileList || opts.isDragAndDrop) {
+      var files = !opts.isDragAndDrop ? fileField[0].files : vrtxAdm.droppedFiles;
       for (var i = 0, numberOfFiles = files.length; i < numberOfFiles; i++) {
         filePaths += files[i].name + ",";
-        size += files[i].size;
+        // size += files[i].size;
       }
     } else {
       filePaths = fileField.val().substring(fileField.val().lastIndexOf("\\") + 1);
       numberOfFiles = 1;
     }
 
-    var checkForm = _$("#fileUploadCheckService-form");
+    var checkForm = _$(uploadCheckServiceSelector);
     var filenamesToCheckField = checkForm.find("input[name='filenamesToBeChecked']");
     if(!filenamesToCheckField.length) {
       checkForm.append("<input type='hidden' name='filenamesToBeChecked' value='" + filePaths + "' />");
     } else {
       filenamesToCheckField.val(filePaths);
     }
-    vrtxAdm.removeErrorContainers(options.form, options.errorContainerInsertAfter, options.errorContainer);
+    vrtxAdm.removeErrorContainers(opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
 
     checkForm.ajaxSubmit({
       success: function(results, status, xhr) {
         var result = _$.parseHTML(results);
-        var opts = options;
-        var existingFilenamesField = _$(result).find("#file-upload-existing-filenames");
+        var existingFilenamesField = _$(result).find(existingFilenamesSelector);
 
         if (!existingFilenamesField.length && vrtxAdm.hasErrorContainers(result, opts.errorContainer)) {
           vrtxAdm.displayErrorContainers(result, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
           vrtxAdmin.droppedFiles = null;
         } else {
           if(existingFilenamesField.length) {
-            var existingFilenamesFixedField = _$(result).find("#file-upload-existing-filenames-fixed");
+            var existingFilenamesFixedField = _$(result).find(existingFilesnamesFixedSelector);
             var existingFilenames = existingFilenamesField.text().split("#");
             var existingFilenamesFixed = existingFilenamesFixedField.text().split("#");
             userProcessExistingFiles({
@@ -529,26 +556,26 @@ function ajaxUpload(options) {
               },
               cancelFn: function() {
                 vrtxAdm.uploadCopyMoveSkippedFiles = {};
+                vrtxAdmin.droppedFiles = null;
 
-                if(!isDragAndDrop) {
+                var afterOut = function() {
+                  if(opts.funcAfterComplete) {
+                    opts.funcAfterComplete();
+                  }
+                };
+
+                if(!opts.isDragAndDrop) {
                   var animation = new VrtxAnimation({
                     elem: opts.form.parent(),
                     animationSpeed: opts.transitionSpeed,
                     easeIn: opts.transitionEasingSlideDown,
                     easeOut: opts.transitionEasingSlideUp,
-                    afterOut: function() {
-                      if(opts.funcAfterComplete) {
-                        opts.funcAfterComplete();
-                      }
-                    }
+                    afterOut: afterOut
                   });
                   animation.bottomUp();
                 } else {
-                  if(opts.funcAfterComplete) {
-                    opts.funcAfterComplete();
-                  }
+                  afterOut();
                 }
-                vrtxAdmin.droppedFiles = null;
               },
               isAllSkippedEqualComplete: false
             });
@@ -566,27 +593,33 @@ function ajaxUploadPerform(opts/*, size*/) {
   var vrtxAdm = vrtxAdmin,
   _$ = vrtxAdm._$;
 
-  var uploadingD = new VrtxLoadingDialog({title: vrtxAdm.messages.upload.inprogress});
-  uploadingD.open();
+  var dialogLoadingContentSelector = "#dialog-loading-content";
+  var dialogUploadingSelectorPrefix = "dialog-uploading";
 
-  if(typeof vrtxAdm.droppedFiles === "object") {
+  if(opts.isDragAndDrop) { // Extra flag so that uses FormData in jquery/plugins/jquery.form.js
     vrtxAdmin.droppedFilesHasBeenChecked = true;
   }
 
-  var dialogUploadingD = _$("#dialog-loading-content");
+  var dialogUploading = new VrtxLoadingDialog({title: vrtxAdm.messages.upload.inprogress});
+  dialogUploading.open();
+
+  var dialogUploadingElm = _$(dialogLoadingContentSelector);
+
   // Set role and ARIA on dialog
-  dialogUploadingD.attr("role", "progressbar");
-  dialogUploadingD.attr("aria-valuemin", "0");
-  dialogUploadingD.attr("aria-valuemax", "100");
-  dialogUploadingD.attr("aria-valuenow", "0");
-  dialogUploadingD.append(
-      "<div id='dialog-uploading-bar' /><div id='dialog-uploading-percent'>&nbsp;</div>"
-    + "<a id='dialog-uploading-focus' style='outline: none;' tabindex='-1' />"
-    + "<a id='dialog-uploading-abort' href='javascript:void(0);'>Avbryt</a>"
+  dialogUploadingElm.attr("role", "progressbar");
+  dialogUploadingElm.attr("aria-valuemin", "0");
+  dialogUploadingElm.attr("aria-valuemax", "100");
+  dialogUploadingElm.attr("aria-valuenow", "0");
+  dialogUploadingElm.append(
+      "<div id='" + dialogUploadingSelectorPrefix + "-bar' />" +
+      "<div id='" + dialogUploadingSelectorPrefix + "-percent'>&nbsp;</div>" +
+      "<a id='" + dialogUploadingSelectorPrefix + "-focus' style='outline: none;' tabindex='-1' />" +
+      "<a id='" + dialogUploadingSelectorPrefix + "-abort' href='javascript:void(0);'>Avbryt</a>"
   );
-  var dialogUploadingBar = dialogUploadingD.find("#dialog-uploading-bar");
+  var dialogUploadingBar = dialogUploadingElm.find("#" + dialogUploadingSelectorPrefix + "-bar");
+
   // Set focus on element before cancel link
-  var focusElm = dialogUploadingD.find("#dialog-uploading-focus");
+  var focusElm = dialogUploadingElm.find("#" + dialogUploadingSelectorPrefix + "-focus");
   if(focusElm.length) focusElm.focus();
   focusElm.keydown(function(e) {
     if (isKey(e, [vrtxAdm.keys.TAB])) {
@@ -596,24 +629,25 @@ function ajaxUploadPerform(opts/*, size*/) {
   });
 
   var uploadXhr = null;
-  var processesD = null;
+  var dialogProcessing = null;
   var processingAfterUpload = false;
 
   // Set form to overwrite-mode
   opts.form.append("<input type='hidden' name='overwrite' value='overwrite' />");
 
   opts.form.ajaxSubmit({
-    uploadProgress: function(event, position, total, percent) { // Show upload progress
-      _$("#dialog-uploading-percent").text(percent + "%");
+    uploadProgress: function(event, position, total, percent) {
+      _$("#" + dialogUploadingSelectorPrefix + "-percent").text(percent + "%");
       dialogUploadingBar.css("width", percent + "%");
-      dialogUploadingD.attr("aria-valuenow", percent);
+      dialogUploadingElm.attr("aria-valuenow", percent);
+
       if(percent >= 100 && !processingAfterUpload) {
         processingAfterUpload = true;
         var waitAndProcess = setTimeout(function() {
           if(processingAfterUpload) {
-            uploadingD.close();
-            processesD = new VrtxLoadingDialog({title: vrtxAdm.messages.upload.processes});
-            processesD.open();
+            dialogUploading.close();
+            dialogProcessing = new VrtxLoadingDialog({title: vrtxAdm.messages.upload.processes});
+            dialogProcessing.open();
           }
         }, vrtxAdm.uploadCompleteTimeoutBeforeProcessingDialog);
       }
@@ -623,36 +657,11 @@ function ajaxUploadPerform(opts/*, size*/) {
     },
     success: function(results, status, xhr) {
       dialogUploadingBar.css("width", "100%");
-      dialogUploadingD.attr("aria-valuenow", 100);
+      dialogUploadingElm.attr("aria-valuenow", 100);
 
       var result = _$.parseHTML(results);
-      vrtxAdm.uploadCopyMoveSkippedFiles = {};
 
-      if (vrtxAdm.hasErrorContainers(result, opts.errorContainer)) {
-        vrtxAdm.displayErrorContainers(result, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
-      } else if(typeof vrtxAdmin.droppedFiles !== "object") {
-        var animation = new VrtxAnimation({
-          elem: opts.form.parent(),
-          animationSpeed: opts.transitionSpeed,
-          easeIn: opts.transitionEasingSlideDown,
-          easeOut: opts.transitionEasingSlideUp,
-          afterOut: function(animation) {
-            if(opts.updateSelectors) {
-              for (var i = opts.updateSelectors.length; i--;) {
-               var outer = vrtxAdm.outerHTML(result, opts.updateSelectors[i]);
-                vrtxAdm.cachedBody.find(opts.updateSelectors[i]).replaceWith(outer);
-              }
-            }
-            if(typeof vrtxAdm.updateCollectionListingInteraction === "function") {
-              vrtxAdm.updateCollectionListingInteraction();
-            }
-            if (opts.funcComplete) {
-              opts.funcComplete();
-            }
-          }
-        });
-        animation.bottomUp();
-      } else {
+      var afterOut = function() {
         if(opts.updateSelectors) {
           for (var i = opts.updateSelectors.length; i--;) {
            var outer = vrtxAdm.outerHTML(result, opts.updateSelectors[i]);
@@ -665,32 +674,46 @@ function ajaxUploadPerform(opts/*, size*/) {
         if (opts.funcComplete) {
           opts.funcComplete();
         }
-      }
+      };
 
-      vrtxAdmin.droppedFiles = null;
-      vrtxAdmin.droppedFilesHasBeenChecked = null;
+      if (vrtxAdm.hasErrorContainers(result, opts.errorContainer)) {
+        vrtxAdm.displayErrorContainers(result, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
+      } else if(!opts.isDragAndDrop) {
+        var animation = new VrtxAnimation({
+          elem: opts.form.parent(),
+          animationSpeed: opts.transitionSpeed,
+          easeIn: opts.transitionEasingSlideDown,
+          easeOut: opts.transitionEasingSlideUp,
+          afterOut: afterOut
+        });
+        animation.bottomUp();
+      } else {
+        afterOut();
+      }
     },
     error: function (xhr, textStatus, errMsg) {
-      vrtxAdmin.droppedFiles = null;
-			vrtxAdmin.droppedFilesHasBeenChecked = null;
-
       if(uploadXhr === null) {
-        var uploadingFailedD = new VrtxMsgDialog({
+        var dialogUploadingFailed = new VrtxMsgDialog({
           title: xhr.status + " " + vrtxAdm.serverFacade.errorMessages.uploadingFilesFailedTitle,
           msg: vrtxAdm.serverFacade.errorMessages.uploadingFilesFailed
         });
-        uploadingFailedD.open();
+        dialogUploadingFailed.open();
+      }
+
+   	  if(opts.funcAfterComplete) {
+        opts.funcAfterComplete();
       }
     },
     complete: function (xhr, textStatus) {
+      vrtxAdm.uploadCopyMoveSkippedFiles = {};
+      vrtxAdm.droppedFiles = null;
+      vrtxAdm.droppedFilesHasBeenChecked = null;
+
       processingAfterUpload = false;
-      if(processesD !== null) {
-        processesD.close();
+      if(dialogProcessing !== null) {
+        dialogProcessing.close();
       } else {
-        uploadingD.close();
-      }
-	    if(opts.funcAfterComplete) {
-        opts.funcAfterComplete();
+        dialogUploading.close();
       }
     }
   });
@@ -699,17 +722,18 @@ function ajaxUploadPerform(opts/*, size*/) {
     if(uploadXhr !== null) {
       uploadXhr.abort();
     }
-    uploadingD.close();
+    dialogUploading.close();
     $(this).prev().removeClass("tab-visible");
+
   	if(opts.funcAfterComplete) {
       opts.funcAfterComplete();
     }
+
     e.stopPropagation();
     e.preventDefault();
   };
-
-  vrtxAdm.cachedDoc.off("click", "#dialog-uploading-abort", ajaxUploadAbort)
-                   .on("click", "#dialog-uploading-abort", ajaxUploadAbort);
+  vrtxAdm.cachedDoc.off("click", "#" + dialogUploadingSelectorPrefix + "-abort", ajaxUploadAbort)
+                   .on("click", "#" + dialogUploadingSelectorPrefix + "-abort", ajaxUploadAbort);
 }
 
 /*
@@ -962,7 +986,13 @@ VrtxAdmin.prototype.updateCollectionListingInteraction = function updateCollecti
     }
     vrtxAdm.cachedContent.find("input[type=submit]").hide();
   }
-  setupDragAndDropUpload("#contents");
+
+  setupDragAndDropUpload({
+    uploadSeviceSelector: "#fileUploadService",
+    contentSelector: "#contents",
+    formSelector: "form#fileUploadService-form",
+    isCollectionEmpty: $("#collectionlisting-empty").length
+  });
 };
 
 /**
