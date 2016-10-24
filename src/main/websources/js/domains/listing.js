@@ -477,7 +477,7 @@ function setupDragAndDropUpload(opts) {
 
   //uploadOverlayTopElm.on('dragenter dragover', dragStart);
   //uploadOverlayTopElm.on('drag dragstart dragend dragover dragenter dragleave drop', dragPreventDefault);
-  bodyElm.on('dragenter', dragStart);
+  $(document).on('dragenter', dragStart);
 
   uploadOverlayTopElm.on('dragleave dragend drop', dragComplete);
 
