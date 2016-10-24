@@ -6,7 +6,6 @@ resourcetype oppbygning {
     pictureAlt: string,
     caption : simple_html,
     content-study : html noextract,
-    gradsnavn : string,
     gradsnavn-no : string,
     gradsnavn-nn : string,
     gradsnavn-en : string,
@@ -23,8 +22,7 @@ resourcetype oppbygning {
     tittel (class[ui-helper-hidden])
     caption (size[small]),
     group introImageAndCaption (picture, caption, pictureAlt) (after introduction),
-    gradsnavn (class[vrtx-shared-text]),
-    group grader (gradsnavn, gradsnavn-no, gradsnavn-nn, gradsnavn-en, vitnemaal) (after content-study),
+    group grader (gradsnavn-no, gradsnavn-nn, gradsnavn-en, vitnemaal) (after content-study),
     vitnemaal (class[vrtx-shared-text]),
     vitnemaal (after gradsnavn-en),
     gradsnavn-no (after gradsnavn),
@@ -67,16 +65,12 @@ resourcetype oppbygning {
         [def grad-fri document.properties.gradsnavn-en]
       [endif]
       
-      [if (grad-fri != null && grad-fri != "") || (gradsnavn != null && gradsnavn != "") || (vitnemaal != null && vitnemaal != "")]
+      [if (grad-fri != null && grad-fri != "") || (vitnemaal != null && vitnemaal != "")]
         <h2>[localized 'grader']</h2>
       [endif]
       
       [if grad-fri != null && grad-fri != ""]
         [localized 'grade-description'] [val grad-fri]
-      [endif]
-      
-      [if gradsnavn != null && gradsnavn != ""]
-        [localized 'grade-description'] [call "include:shared-text" {"propName":"gradsnavn"}]
       [endif]
       ##
     }
@@ -202,7 +196,6 @@ resourcetype oppbygning {
     pictureAlt: (en: "Alternative text", no: "Alternativ tekst", nn : "Alternativ tekst"),
     caption : (en : "Image caption", no : "Bildetekst", nn : "Bilettekst"),
     photo-prefix : (en : "Photo", no : "Foto", nn : "Foto"),
-    gradsnavn : (en : "Name of degree (shared text)", no : "Gradsnavn (fellestekst)", nn : "Gradsnamn (fellestekst)"),
     gradsnavn-no : (en : "Name of degree (bokmål)", no : "Gradsnavn (bokmål)", nn : "Gradsnamn (bokmål)"),
     gradsnavn-nn : (en : "Name of degree (nynorsk)", no : "Gradsnavn (nynorsk)", nn : "Gradsnamn (nynorsk)"),
     gradsnavn-en : (en : "Name of degree (english)", no : "Gradsnavn (engelsk)", nn : "Gradsnamn (engelsk)"),
