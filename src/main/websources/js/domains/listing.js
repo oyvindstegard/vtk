@@ -443,7 +443,7 @@ function setupDragAndDropUpload(opts) {
   var uploadOverlayIconTextElm = $("#" + uploadOverlayIconText);
   var uploadOverlayTopElm = $("#" + uploadOverlayTop);
 
-  var preventLeave = 0;
+  var lastDragEnter = 0;
 
   var dragPreventDefault = function(e) {
     e.preventDefault();
@@ -451,8 +451,8 @@ function setupDragAndDropUpload(opts) {
   };
   var dragStart = function(e) {
     e = e.originalEvent;
-    if(e.type === "dragenter" && e.target.id === "upload-overlay-top") {
-      preventLeave = +new Date();
+    if(e.type === "dragenter" && e.target.id === "upload-overlay-top") { // Flashing fix
+      lastDragEnter = +new Date();
     }
     if(!content.hasClass("is-dragover")) {
       content.addClass('is-dragover');
@@ -461,8 +461,8 @@ function setupDragAndDropUpload(opts) {
   };
   var dragComplete = function(e) {
     var isUnknownLeave = e.originalEvent.clientX === 0 && e.originalEvent.clientY === 0;
-    if(isUnknownLeave && ((+new Date() - preventLeave) < 150)) {
-      preventLeave = 0;
+    if(isUnknownLeave && ((+new Date() - lastDragEnter) < 150)) { // Flashing fix
+      lastDragEnter = 0;
       return;
     }
 
