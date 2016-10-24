@@ -42,14 +42,15 @@
     text-align: center;
   }
   #upload-overlay-top {
-    z-index: 10;
+    z-index: 9999;
   }
 
   &.is-empty-collection,
   &.is-dragover {
+    min-height: 250px;
+
     #upload-overlay-icon,
-    #upload-overlay,
-    #upload-overlay-top {
+    #upload-overlay {
       position: absolute;
     }
     #upload-overlay-icon-text {
@@ -62,6 +63,9 @@
     }
   }
   &.is-dragover {
+    #upload-overlay-top {
+      position: fixed;
+    }
     #upload-overlay-icon {
       background: transparent url('images/upload-drop.png') no-repeat 0 0;
     }
