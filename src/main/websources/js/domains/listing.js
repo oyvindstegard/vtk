@@ -444,7 +444,6 @@ function setupDragAndDropUpload(opts) {
   var uploadOverlayTopElm = $("#" + uploadOverlayTop);
 
   var lastDragEnter = 0;
-
   var dragPreventDefault = function(e) {
     e.preventDefault();
     e.stopPropagation();
