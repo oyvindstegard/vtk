@@ -55,6 +55,7 @@
         <ref bean="linkStatusPropDef" />
         <ref bean="systemJobStatusPropDef" />
         <ref bean="sslMixedModePropDef" />
+        <ref bean="auditLogPropDef" />
       </list>
     </property>
   </bean>
@@ -409,5 +410,21 @@
     <property name="resourceManager" ref="structuredResources.resourceManager" />
     <property name="ssiDirectivesPropDef" ref="ssiDirectivesPropDef" />
   </bean>
+
+  <bean id="auditLogPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="audit-log" />
+    <property name="type" value="JSON" />
+    <property name="multiple" value="false" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="false" />
+    <property name="propertyEvaluator" ref="resourceAuditLogEvaluator" />
+    <property name="metadata">
+      <map>
+        <entry key="indexableJsonHint" value="true" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="resourceAuditLogEvaluator" class="vtk.repository.resourcetype.property.AuditLogEvaluator" />
 
 </beans>
