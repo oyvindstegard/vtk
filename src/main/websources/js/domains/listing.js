@@ -667,9 +667,7 @@ function ajaxUploadPerform(opts/*, size*/) {
             vrtxAdm.cachedBody.find(opts.updateSelectors[i]).replaceWith(outer);
           }
         }
-        if(typeof vrtxAdm.updateCollectionListingInteraction === "function") {
-          vrtxAdm.updateCollectionListingInteraction();
-        }
+        vrtxAdm.updateCollectionListingInteraction();
         if (opts.funcComplete) {
           opts.funcComplete();
         }
@@ -826,9 +824,7 @@ function resourcesCopyMove(resultElm, form, url, link) {
       after: function() {
         vrtxAdm.displayErrorMsg(resultElm.find(".errormessage").html());
         vrtxAdm.cachedContent.html(resultElm.find("#contents").html());
-        if(typeof vrtxAdm.updateCollectionListingInteraction === "function") {
-          vrtxAdm.updateCollectionListingInteraction();
-        }
+        vrtxAdm.updateCollectionListingInteraction();
         li.remove();
       }
     });
@@ -984,6 +980,12 @@ VrtxAdmin.prototype.updateCollectionListingInteraction = function updateCollecti
       vrtxAdm.cachedDirectoryListing.find("th.checkbox").append("<input type='checkbox' name='checkUncheckAll' />");
     }
     vrtxAdm.cachedContent.find("input[type=submit]").hide();
+  }
+
+  if($("tr#collectionlisting-empty").length) {
+    $("body").addClass("is-empty-collection");
+  } else {
+    $("body").removeClass("is-empty-collection");
   }
 
   setupDragAndDropUpload({

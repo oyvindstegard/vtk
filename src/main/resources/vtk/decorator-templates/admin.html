@@ -15,7 +15,7 @@
     ${document:element select=[html.head] exclude=[title]} 
     <title>${manage:title}</title>
   </head>
-  <body${document:element-attributes select=[html.body]} class="app-fluid forms-new"> 
+  <body${document:element-attributes select=[html.body] exclude=[class]} class="app-fluid forms-new ${document:element-attributes select=[html.body] exclude=[id] value-only=[true]}"> 
     <div id="app-head-wrapper">  
       ${manage:display-line-top}
       <div id="app-head">
