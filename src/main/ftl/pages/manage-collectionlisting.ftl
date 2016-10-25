@@ -17,7 +17,7 @@
 <head>
   <title>Manage: collection listing</title>
 </head>
-<body id="vrtx-manage-collectionlisting">
+<body id="vrtx-manage-collectionlisting" <#if (collectionListing?exists && collectionListing.children?size == 0)>class="is-empty-collection"</#if>>
   <#assign copyTitle = vrtx.getMsg("tabMenuRight.copyResourcesService") />
   <#assign moveTitle = vrtx.getMsg("tabMenuRight.moveResourcesService") />
   <#assign deleteTitle = vrtx.getMsg("tabMenuRight.deleteResourcesService") />

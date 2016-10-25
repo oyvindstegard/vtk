@@ -151,8 +151,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       initDragAndDropUpload({
         uploadSeviceSelector: "#fileUploadService",
         contentSelector: "#contents",
-        formSelector: "form#fileUploadService-form",
-        isCollectionEmpty: $("#collectionlisting-empty").length
+        formSelector: "form#fileUploadService-form"
       });
 
       break;
@@ -423,10 +422,6 @@ function setupDragAndDropUpload(opts) {
 
   var content = $(opts.contentSelector);
   content.addClass("has-advanced-upload");
-
-  if(opts.isCollectionEmpty) {
-    content.addClass("is-empty-collection");
-  }
 
   var uploadOverlay = "upload-overlay";
   var uploadOverlayIcon = uploadOverlay + "-icon";
@@ -994,8 +989,7 @@ VrtxAdmin.prototype.updateCollectionListingInteraction = function updateCollecti
   setupDragAndDropUpload({
     uploadSeviceSelector: "#fileUploadService",
     contentSelector: "#contents",
-    formSelector: "form#fileUploadService-form",
-    isCollectionEmpty: $("#collectionlisting-empty").length
+    formSelector: "form#fileUploadService-form"
   });
 };
 

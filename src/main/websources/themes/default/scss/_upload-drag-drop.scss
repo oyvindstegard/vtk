@@ -12,70 +12,74 @@
 .has-advanced-upload {
   position: relative;
   z-index: 0;
+}
 
-  #upload-overlay,
-  #upload-overlay-top {
-    top: 0;
-    left: 0;
-    @include wh(100%, 100%);
-  }
-  #upload-overlay,
+#upload-overlay,
+#upload-overlay-top {
+  top: 0;
+  left: 0;
+  @include wh(100%, 100%);
+}
+#upload-overlay,
+#upload-overlay-icon,
+#upload-overlay-icon-text {
+  z-index: 1;
+}
+#upload-overlay {
+  background: #fff;
+}
+#upload-overlay-icon {
+  top: 30px;
+  left: 42%;
+  @include wh(189px, 189px);
+}
+#upload-overlay-icon-text {
+  display: none;
+  width: 100%;
+  font-size: 1.2em;
+  color: #666;
+  max-width: 80px;
+  margin: 115px auto 0 auto;
+  text-align: center;
+}
+#upload-overlay-top {
+  z-index: 9999;
+}
+
+.is-empty-collection #contents,
+.is-dragover {
+  min-height: 250px;
+
   #upload-overlay-icon,
-  #upload-overlay-icon-text {
-    z-index: 1;
-  }
   #upload-overlay {
-    background: #fff;
+    position: absolute;
+  }
+  #upload-overlay-icon-text {
+    display: block;
+  }
+}
+
+.is-empty-collection #contents {
+  #upload-overlay-icon {
+    background: transparent url('images/upload-drag.png') no-repeat 0 0;
+  }
+}
+
+.is-empty-collection #contents.is-dragover,
+.is-dragover {
+  #upload-overlay-top {
+    position: fixed;
   }
   #upload-overlay-icon {
-    top: 30px;
-    left: 42%;
-    @include wh(189px, 189px);
+    background: transparent url('images/upload-drop.png') no-repeat 0 0;
   }
   #upload-overlay-icon-text {
-    display: none;
-    width: 100%;
-    font-size: 1.2em;
-    color: #666;
-    max-width: 80px;
-    margin: 115px auto 0 auto;
-    text-align: center;
+    color: #fff;
   }
-  #upload-overlay-top {
-    z-index: 9999;
-  }
+}
 
-  &.is-empty-collection,
-  &.is-dragover {
-    min-height: 250px;
-
-    #upload-overlay-icon,
-    #upload-overlay {
-      position: absolute;
-    }
-    #upload-overlay-icon-text {
-      display: block;
-    }
-  }
-  &.is-empty-collection {
-    #upload-overlay-icon {
-      background: transparent url('images/upload-drag.png') no-repeat 0 0;
-    }
-  }
-  &.is-dragover {
-    #upload-overlay-top {
-      position: fixed;
-    }
-    #upload-overlay-icon {
-      background: transparent url('images/upload-drop.png') no-repeat 0 0;
-    }
-    #upload-overlay-icon-text {
-      color: #fff;
-    }
-    &:not(.is-empty-collection) {
-      #upload-overlay {
-        background-color: rgba(220, 220, 220, 0.6);
-      }
-    }
+body:not(.is-empty-collection) {
+  #upload-overlay {
+    background-color: rgba(220, 220, 220, 0.6);
   }
 }
