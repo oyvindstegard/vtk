@@ -37,9 +37,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
               insertAfterOrReplaceClass: "#active-tab ul#tabMenuRight",
               nodeType: "div",
               focusElement: "input[type='text']",
-              funcComplete: function (p) {
-                createFuncComplete();
-              },
+              funcComplete: createFuncComplete,
               simultanSliding: true,
               transitionSpeed: speedCreationServices
             });
@@ -61,9 +59,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
                 insertAfterOrReplaceClass: "#active-tab ul#tabMenuRight",
                 nodeType: "div",
                 focusElement: "",
-                funcComplete: function (p) {
-                  vrtxAdm.initFileUpload();
-                },
+                funcComplete: vrtxAdm.initFileUpload,
                 simultanSliding: true
               });
               vrtxAdm.completeFormAsync({
@@ -75,6 +71,12 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
                 funcProceedCondition: ajaxUpload
               });
               vrtxAdm.initFileUpload(); // when error message
+
+              initDragAndDropUpload({
+                uploadSeviceSelector: "#fileUploadService",
+                contentSelector: "#contents",
+                formSelector: "form#fileUploadService-form"
+              });
             }
           }
       }
@@ -125,7 +127,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       });
 
       // Delete resources
-      var deletingD = null;
+      var dialogDelete = null;
       vrtxAdm.completeSimpleFormAsync({
         selector: "input#collectionListing\\.action\\.delete-resources",
         updateSelectors: ["#contents"],
@@ -133,31 +135,25 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         rowCheckedAnimateOut: true,
         minDelay: 800,
         fnBeforePost: function() {
-          deletingD = new VrtxLoadingDialog({title: vrtxAdm.messages.deleting.inprogress});
-          deletingD.open();
+          dialogDelete = new VrtxLoadingDialog({title: vrtxAdm.messages.deleting.inprogress});
+          dialogDelete.open();
         },
         fnCompleteInstant: function() {
-          deletingD.close();
+          dialogDelete.close();
         },
         fnComplete: function(resultElm) {
           vrtxAdm.displayErrorMsg(resultElm.find(".errormessage").html());
           vrtxAdm.updateCollectionListingInteraction();
         },
         fnError: function() {
-          deletingD.close();
+          dialogDelete.close();
         }
-      });
-
-      initDragAndDropUpload({
-        uploadSeviceSelector: "#fileUploadService",
-        contentSelector: "#contents",
-        formSelector: "form#fileUploadService-form"
       });
 
       break;
     case "vrtx-trash-can":
-      var deletingPermanentD = null;
-      var deletingPermanentEmptyFolder = false;
+      var dialogDeletePermanent = null;
+      var isDeletePermanentEmpty = false;
       vrtxAdm.completeSimpleFormAsync({
         selector: "input.deleteResourcePermanent",
         updateSelectors: ["#contents"],
@@ -165,26 +161,26 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         minDelay: 800,
         fnBeforePost: function(form, link) {
           if (vrtxAdm.trashcanCheckedFiles >= vrtxAdm.cachedContent.find("tbody tr").length) {
-            deletingPermanentEmptyFolder = true;
+            isDeletePermanentEmpty = true;
           }
           vrtxAdm.trashcanCheckedFiles = 0;
           startTime = new Date();
-          deletingPermanentD = new VrtxLoadingDialog({title: vrtxAdm.messages.deleting.inprogress});
-          deletingPermanentD.open();
+          dialogDeletePermanent = new VrtxLoadingDialog({title: vrtxAdm.messages.deleting.inprogress});
+          dialogDeletePermanent.open();
         },
         fnCompleteInstant: function() {
-          deletingPermanentD.close();
+          dialogDeletePermanent.close();
         },
         fnComplete: function(resultElm) {
           vrtxAdm.displayErrorMsg(resultElm.find(".errormessage").html());
           vrtxAdm.updateCollectionListingInteraction();
-          deletingPermanentD.close();
-          if(deletingPermanentEmptyFolder) { // Redirect on empty trash can
+          dialogDeletePermanent.close();
+          if(isDeletePermanentEmpty) { // Redirect on empty trash can
             window.location.href = "./?vrtx=admin";
           }
         },
         fnError: function() {
-          deletingPermanentD.close();
+          dialogDeletePermanent.close();
         }
       });
       break;
@@ -393,14 +389,8 @@ VrtxAdmin.prototype.initFileUpload = function initFileUpload() {
 };
 
 // Credits: https://css-tricks.com/drag-and-drop-file-uploading/
-
-var isAdvancedUpload = function() {
-  var div = document.createElement('div');
-  return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
-}();
-
 function initDragAndDropUpload(opts) {
-  if(!isAdvancedUpload) return;
+  if(!vrtxAdmin.uploadIsAdvanced) return;
 
   vrtxAdmin.serverFacade.getHtml($(opts.uploadSeviceSelector)[0].href, {
     success: function (results, status, resp) {
@@ -408,9 +398,9 @@ function initDragAndDropUpload(opts) {
 
       // Add upload form
       var html = $($.parseHTML(results)).find(".expandedForm.vrtx-admin-form");
-      $("#active-tab").append(html);
-      $("#active-tab").find(".expandedForm.vrtx-admin-form").addClass("hidden-upload-wrapper")
-                      .removeClass("expandedForm vrtx-admin-form");
+      vrtxAdmin.cachedActiveTab.append(html);
+      vrtxAdmin.cachedActiveTab.find(".expandedForm.vrtx-admin-form").addClass("hidden-upload-wrapper")
+                               .removeClass("expandedForm vrtx-admin-form");
 
       setupDragAndDropUpload(opts);
     }
@@ -418,7 +408,7 @@ function initDragAndDropUpload(opts) {
 }
 
 function setupDragAndDropUpload(opts) {
-  if(!isAdvancedUpload) return;
+  if(!vrtxAdmin.uploadIsAdvanced) return;
 
   var content = $(opts.contentSelector);
   content.addClass("has-advanced-upload");

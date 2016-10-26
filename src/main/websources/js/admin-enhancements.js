@@ -130,6 +130,10 @@ function VrtxAdmin() {
   /* Upload */
   this.uploadCopyMoveSkippedFiles = {};
   this.uploadCompleteTimeoutBeforeProcessingDialog = 2000; // 2s
+  this.uploadIsAdvanced = function() {
+    var div = document.createElement('div');
+    return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
+  }();
 
   /* Create and trashcan */
   this.createResourceReplaceTitle = true;

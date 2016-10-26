@@ -1,14 +1,14 @@
 /*
  * Permissions
- * 
+ *
  * Possible to set permissions for multiple users and groups on different levels:
  * read, write, admin/all etc.
- * 
+ *
  */
- 
+
 $.when(vrtxAdmin.domainsIsReady).done(function() {
   var vrtxAdm = vrtxAdmin, _$ = vrtxAdm._$;
-  
+
   switch (vrtxAdm.bodyId) {
     case "vrtx-permissions":
       var privilegiesPermissions = ["read", "read-write", "all"];
@@ -19,7 +19,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
           insertAfterOrReplaceClass: "div.permissions-" + privilegiesPermissions[i] + "-wrapper",
           isReplacing: true,
           nodeType: "div",
-          funcComplete: initPermissionForm,
+          funcComplete: setupPermissions,
           simultanSliding: false
         });
         vrtxAdm.completeFormAsync({
@@ -29,7 +29,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
                             "#resourceMenuRight"],
           errorContainer: "errorContainer",
           errorContainerInsertAfter: ".groups-wrapper",
-          funcProceedCondition: checkStillAdmin,
+          funcProceedCondition: isUserStillAdmin,
           funcComplete: function () {
             if (vrtxAdm.reloadFromServer) {
               window.location.reload(true);
@@ -49,7 +49,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
           insertAfterOrReplaceClass: "tr." + privilegiesPermissionsInTable[i],
           isReplacing: true,
           nodeType: "tr",
-          funcComplete: initPermissionForm,
+          funcComplete: setupPermissions,
           simultanSliding: true
         });
         vrtxAdm.completeFormAsync({
@@ -70,7 +70,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       vrtxAdm.completeSimpleFormAsync({
         selector: "input.removePermission",
         updateSelectors: [".principalList"],
-        fnComplete: initSimplifiedPermissionForm
+        fnComplete: setupPermissionsAutocomplete
       });
       vrtxAdm.completeSimpleFormAsync({
         selector: "span.addGroup input[type='submit']",
@@ -79,7 +79,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         errorContainerInsertAfter: ".groups-wrapper",
         fnComplete: function() {
           $("input#groupNames").val("");
-          initSimplifiedPermissionForm();
+          setupPermissionsAutocomplete();
         }
       });
       vrtxAdm.completeSimpleFormAsync({
@@ -89,58 +89,61 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         errorContainerInsertAfter: ".users-wrapper",
         fnComplete: function() {
           $("input#userNames").val("");
-          initSimplifiedPermissionForm();
+          setupPermissionsAutocomplete();
         }
       });
-      
-      var SUBMIT_SET_INHERITED_PERMISSIONS = false;
-      vrtxAdm.cachedDoc.on("click", "#permissions\\.toggleInheritance\\.submit", function (e) {
-        if (!SUBMIT_SET_INHERITED_PERMISSIONS && typeof confirmSetInheritedPermissionsMsg !== "undefined") {
-          var d = new VrtxConfirmDialog({
-            msg: confirmSetInheritedPermissionsMsg,
-            title: confirmSetInheritedPermissionsTitle,
-            onOk: function () {
-              SUBMIT_SET_INHERITED_PERMISSIONS = true;
-              $("#permissions\\.toggleInheritance\\.submit").trigger("click");
-            }
-          });
-          d.open();
-          e.stopPropagation();
-          e.preventDefault();
-        } else {
-          e.stopPropagation();
-        }
-      });
+
+      if(typeof confirmSetInheritedPermissionsMsg === "string") {
+        var toggledInheritancePermission = false;
+        vrtxAdm.cachedDoc.on("click", "#permissions\\.toggleInheritance\\.submit", function (e) {
+          if (!toggledInheritancePermission) {
+            var link = $(this);
+            var d = new VrtxConfirmDialog({
+              msg: confirmSetInheritedPermissionsMsg,
+              title: confirmSetInheritedPermissionsTitle,
+              onOk: function () {
+                toggledInheritancePermission = true;
+                link.trigger("click");
+              }
+            });
+            d.open();
+            e.stopPropagation();
+            e.preventDefault();
+          } else {
+            e.stopPropagation();
+          }
+        });
+      }
+
       break;
     default:
       break;
   }
 });
 
-function initPermissionForm(selectorClass) {
-  if (!$("." + selectorClass + " .aclEdit").length) return;
-  toggleConfigCustomPermissions(selectorClass);
-  interceptEnterKeyAndReroute("." + selectorClass + " .addUser input[type=text]", "." + selectorClass + " input.addUserButton", function(txt) {
-    txt.unautocomplete();
-  });
-  interceptEnterKeyAndReroute("." + selectorClass + " .addGroup input[type=text]", "." + selectorClass + " input.addGroupButton", function(txt) {
-    txt.unautocomplete();
-  });
-  initSimplifiedPermissionForm();
+function setupPermissions(selectorClass) {
+  var permissonElm = $("." + selectorClass);
+  if (!permissonElm.find(".aclEdit").length) return;
+
+  toggleConfigCustomPermissions(permissonElm);
+
+  listenerRerouteInputEnterToButton(permissonElm.find(".addUser input[type=text]"), permissonElm.find("input.addUserButton"));
+  listenerRerouteInputEnterToButton(permissonElm.find(".addGroup input[type=text]"), permissonElm.find("input.addGroupButton"));
+
+  setupPermissionsAutocomplete();
 }
 
-function initSimplifiedPermissionForm() {
-  permissionsAutocomplete('userNames', 'userNames', vrtxAdmin.permissionsAutocompleteParams, false);
-  splitAutocompleteSuggestion('userNames');
-  permissionsAutocomplete('groupNames', 'groupNames', vrtxAdmin.permissionsAutocompleteParams, false);
-}
+function toggleConfigCustomPermissions(permissonElm) {
+  var customSelector = "ul.shortcuts label[for=custom]";
+  var notCustomSelector = "ul.shortcuts label:not([for=custom])";
+  var principalListSelector = ".principalList";
 
-function toggleConfigCustomPermissions(selectorClass) {
-  var customInput = $("." + selectorClass + " ul.shortcuts label[for=custom] input");
-  if (!customInput.is(":checked") && customInput.length) {
-    $("." + selectorClass).find(".principalList").addClass("hidden");
+  var customToggle = permissonElm.find(customSelector + " input");
+  if (customToggle.length && !customToggle.is(":checked")) {
+    permissonElm.find(principalListSelector).addClass("hidden");
   }
-  var customConfigAnimation = new VrtxAnimation({
+
+  var anim = new VrtxAnimation({
     afterIn: function(animation) {
       animation.__opts.elem.removeClass("hidden");
     },
@@ -148,52 +151,57 @@ function toggleConfigCustomPermissions(selectorClass) {
       animation.__opts.elem.addClass("hidden");
     }
   });
-  vrtxAdmin.cachedAppContent.on("click", "." + selectorClass + " ul.shortcuts label[for=custom]", function (e) {
-    var elem = $(this).closest("form").find(".principalList.hidden");
-    customConfigAnimation.updateElem(elem);
-    customConfigAnimation.topDown();
+  permissonElm.on("click", customSelector, function (e) {
+    var elm = $(this).closest("form").find(principalListSelector + ".hidden");
+    anim.updateElem(elm);
+    anim.topDown();
     e.stopPropagation();
   });
-  vrtxAdmin.cachedAppContent.on("click", "." + selectorClass + " ul.shortcuts label:not([for=custom])", function (e) {
-    var elem = $(this).closest("form").find(".principalList:not(.hidden)");
-    customConfigAnimation.updateElem(elem);
-    customConfigAnimation.bottomUp();
+  permissonElm.on("click", notCustomSelector, function (e) {
+    var elm = $(this).closest("form").find(principalListSelector + ":not(.hidden)");
+    anim.updateElem(elm);
+    anim.bottomUp();
     e.stopPropagation();
   });
 }
 
-function checkStillAdmin(options) {
-  var stillAdmin = options.form.find(".still-admin").text();
+function setupPermissionsAutocomplete() {
+  permissionsAutocomplete('userNames', 'userNames', vrtxAdmin.permissionsAutocompleteParams, false);
+  splitAutocompleteSuggestion('userNames');
+  permissionsAutocomplete('groupNames', 'groupNames', vrtxAdmin.permissionsAutocompleteParams, false);
+}
+
+function listenerRerouteInputEnterToButton(input, btn) {
+  vrtxAdmin.cachedAppContent.on("keypress", input, function (e) {
+    if (isKey(e, [vrtxAdmin.keys.ENTER])) {
+      var inputElm = $(this);
+      if (inputElm.hasClass("blockSubmit")) { // Avoid submitting form in some browser when adding permissions. See: jquery/plugins/jquery.autocomplete.js
+        inputElm.removeClass("blockSubmit");
+      } else {
+        btn.click(); // click the associated button
+      }
+      inputElm.unautocomplete();
+      e.preventDefault();
+    }
+  });
+}
+
+function isUserStillAdmin(opts) {
   vrtxAdmin.reloadFromServer = false;
+  var stillAdmin = opts.form.find(".still-admin").text();
   if (stillAdmin === "false") {
     vrtxAdmin.reloadFromServer = true;
     var d = new VrtxConfirmDialog({
       msg: removeAdminPermissionsMsg,
       title: removeAdminPermissionsTitle,
       onOk: vrtxAdmin.completeFormAsyncPost,
-      onOkOpts: options,
+      onOkOpts: opts,
       onCancel: function () {
         vrtxAdmin.reloadFromServer = false;
       }
     });
     d.open();
   } else {
-    vrtxAdmin.completeFormAsyncPost(options);
+    vrtxAdmin.completeFormAsyncPost(opts);
   }
-}
-
-function interceptEnterKeyAndReroute(txt, btn, fnOnKeyPress) {
-  vrtxAdmin.cachedAppContent.on("keypress", txt, function (e) {
-    if (isKey(e, [vrtxAdmin.keys.ENTER])) {
-      if ($(this).hasClass("blockSubmit")) { // submit/rerouting can be blocked elsewhere on textfield
-        $(this).removeClass("blockSubmit");
-      } else {
-        $(btn).click(); // click the associated button
-      }
-      if(typeof fnOnKeyPress === "function") {
-        fnOnKeyPress($(this));
-      }
-      e.preventDefault();
-    }
-  });
 }
