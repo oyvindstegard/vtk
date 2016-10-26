@@ -32,6 +32,8 @@ function VrtxAdmin() {
    * @type object */
   this._$ = $;
 
+  this.url = window.location.href;
+
   // Browser info/capabilities: used for e.g. progressive enhancement and performance scaling based on knowledge of current JS-engine
   this.ua = window.navigator.userAgent.toLowerCase();
 

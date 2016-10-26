@@ -26,6 +26,7 @@
   
   vrtxAdmin.messages = {
     upload: {
+      browse: '${vrtx.getMsg("editor.browse")}',
       inprogress: '${vrtx.getMsg("uploading.in-progress")}',
       processes: '${vrtx.getMsg("uploading.processes")}',
       existing: {

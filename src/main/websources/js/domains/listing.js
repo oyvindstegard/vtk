@@ -349,8 +349,9 @@ VrtxAdmin.prototype.initFileUpload = function initFileUpload() {
   if (!form.length) return;
   var inputFile = form.find("#file");
 
-  _$("<input class='vrtx-textfield vrtx-file-upload' tabindex='-1' id='fake-file' type='text' /><a tabindex='-1' class='vrtx-button vrtx-file-upload'>Browse...</a>")
-    .insertAfter(inputFile);
+  var html = "<input class='vrtx-textfield vrtx-file-upload' tabindex='-1' id='fake-file' type='text' />" +
+             "<a tabindex='-1' class='vrtx-button vrtx-file-upload'>" + vrtxAdmin.messages.upload.browse + "</a>";
+  _$(html).insertAfter(inputFile);
 
   inputFile.change(function (e) {
     var filePath = _$(this).val();
@@ -392,19 +393,22 @@ VrtxAdmin.prototype.initFileUpload = function initFileUpload() {
 function initDragAndDropUpload(opts) {
   if(!vrtxAdmin.uploadIsAdvanced) return;
 
-  vrtxAdmin.serverFacade.getHtml($(opts.uploadSeviceSelector)[0].href, {
-    success: function (results, status, resp) {
-      vrtxAdmin.initFileUpload();
+  if(gup("action", vrtxAdmin.url) !== "upload-file") {
+    vrtxAdmin.serverFacade.getHtml($(opts.uploadSeviceSelector)[0].href, {
+      success: function (results, status, resp) {
+        vrtxAdmin.initFileUpload();
 
-      // Add upload form
-      var html = $($.parseHTML(results)).find(".expandedForm.vrtx-admin-form");
-      vrtxAdmin.cachedActiveTab.append(html);
-      vrtxAdmin.cachedActiveTab.find(".expandedForm.vrtx-admin-form").addClass("hidden-upload-wrapper")
-                               .removeClass("expandedForm vrtx-admin-form");
+        // Add upload form
+        var html = $($.parseHTML(results)).find(".expandedForm.vrtx-admin-form");
+        vrtxAdmin.cachedActiveTab.append(html);
+        vrtxAdmin.cachedActiveTab.find(".expandedForm.vrtx-admin-form:last-child").addClass("hidden-upload-wrapper");
 
-      setupDragAndDropUpload(opts);
-    }
-  });
+        setupDragAndDropUpload(opts);
+      }
+    });
+  } else {
+    setupDragAndDropUpload(opts);
+  }
 }
 
 function setupDragAndDropUpload(opts) {
