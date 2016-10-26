@@ -153,7 +153,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       break;
     case "vrtx-trash-can":
       var dialogDeletePermanent = null;
-      var isDeletePermanentEmpty = false;
+      var isTrashCanEmpty = false;
       vrtxAdm.completeSimpleFormAsync({
         selector: "input.deleteResourcePermanent",
         updateSelectors: ["#contents"],
@@ -161,7 +161,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
         minDelay: 800,
         fnBeforePost: function(form, link) {
           if (vrtxAdm.trashcanCheckedFiles >= vrtxAdm.cachedContent.find("tbody tr").length) {
-            isDeletePermanentEmpty = true;
+            isTrashCanEmpty = true;
           }
           vrtxAdm.trashcanCheckedFiles = 0;
           startTime = new Date();
@@ -175,7 +175,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
           vrtxAdm.displayErrorMsg(resultElm.find(".errormessage").html());
           vrtxAdm.updateCollectionListingInteraction();
           dialogDeletePermanent.close();
-          if(isDeletePermanentEmpty) { // Redirect on empty trash can
+          if(isTrashCanEmpty) { // Redirect on empty trash can
             window.location.href = "./?vrtx=admin";
           }
         },
@@ -972,7 +972,7 @@ VrtxAdmin.prototype.updateCollectionListingInteraction = function updateCollecti
     vrtxAdm.cachedContent.find("input[type=submit]").hide();
   }
 
-  if($("tr#collectionlisting-empty").length) {
+  if($("#vrtx-manage-collectionlisting tr#collectionlisting-empty").length) {
     $("body").addClass("is-empty-collection");
   } else {
     $("body").removeClass("is-empty-collection");
