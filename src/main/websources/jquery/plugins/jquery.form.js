@@ -151,15 +151,19 @@ $.fn.ajaxSubmit = function(options) {
 		}
 	};
 
+  // USIT added: check drag-and-dropped files
+	var isDragAndDroppedFiles = typeof vrtxAdmin.droppedFiles === "object" && vrtxAdmin.droppedFiles != null;
+	var isDragAndDroppedCheckedFiles = typeof vrtxAdmin.droppedFilesHasBeenChecked === "boolean" && vrtxAdmin.droppedFilesHasBeenChecked;
+
 	// are there files to upload?
 	var fileInputs = $('input:file:enabled[value]', this); // [value] (issue #113)
-	var hasFileInputs = fileInputs.length > 0 || vrtxAdmin.droppedFilesHasBeenChecked;
+	var hasFileInputs = fileInputs.length > 0 || isDragAndDroppedCheckedFiles;
 	var mp = 'multipart/form-data';
 	var multipart = ($form.attr('enctype') == mp || $form.attr('encoding') == mp);
   log("hasFileInputs :" + hasFileInputs);
 
   // USIT added: check drag-and-dropped files
-	var fileAPI = !!((hasFileInputs && (typeof vrtxAdmin.droppedFiles === "object" || fileInputs.get(0).files)) && window.FormData);
+	var fileAPI = !!((hasFileInputs && (isDragAndDroppedCheckedFiles || fileInputs.get(0).files)) && window.FormData);
 	log("fileAPI :" + fileAPI);
 	var shouldUseFrame = (hasFileInputs || multipart) && !fileAPI;
 	log("shouldUseFrame :" + shouldUseFrame);
@@ -216,7 +220,7 @@ $.fn.ajaxSubmit = function(options) {
 		}
 
     // USIT added: drag and drop + possible to skip uploading files
-		if(typeof vrtxAdmin.droppedFiles === "object") {
+		if(isDragAndDroppedFiles) {
 			$.each(vrtxAdmin.droppedFiles, function( i, val ) {
 				checkIfSkipFile(formdata, "file", val);
 			});

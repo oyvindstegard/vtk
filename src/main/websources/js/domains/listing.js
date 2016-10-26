@@ -53,25 +53,6 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
             if (vrtxAdm.isIOS5) { // TODO: feature detection
               _$("ul#tabMenuRight li." + tabMenuServices[i]).remove();
             } else {
-              vrtxAdm.getFormAsync({
-                selector: "ul#tabMenuRight a#" + tabMenuServices[i],
-                selectorClass: "vrtx-admin-form",
-                insertAfterOrReplaceClass: "#active-tab ul#tabMenuRight",
-                nodeType: "div",
-                focusElement: "",
-                funcComplete: vrtxAdm.initFileUpload,
-                simultanSliding: true
-              });
-              vrtxAdm.completeFormAsync({
-                selector: "form#" + tabMenuServices[i] + "-form input[type=submit]",
-                updateSelectors: ["#contents"],
-                errorContainer: "errorContainer",
-                errorContainerInsertAfter: "h3",
-                post: true,
-                funcProceedCondition: ajaxUpload
-              });
-              vrtxAdm.initFileUpload(); // when error message
-
               initDragAndDropUpload({
                 uploadSeviceSelector: "#fileUploadService",
                 contentSelector: "#contents",
@@ -345,6 +326,7 @@ function createFileNameChange(nameField) {
 VrtxAdmin.prototype.initFileUpload = function initFileUpload() {
   var vrtxAdm = vrtxAdmin,
     _$ = vrtxAdm._$;
+
   var form = _$("form[name=fileUploadService]");
   if (!form.length) return;
   var inputFile = form.find("#file");
@@ -391,22 +373,52 @@ VrtxAdmin.prototype.initFileUpload = function initFileUpload() {
 
 // Credits: https://css-tricks.com/drag-and-drop-file-uploading/
 function initDragAndDropUpload(opts) {
-  if(!vrtxAdmin.uploadIsAdvanced) return;
+  vrtxAdmin.getFormAsync({
+    selector: "ul#tabMenuRight a#fileUploadService",
+    selectorClass: "vrtx-admin-form",
+    insertAfterOrReplaceClass: "#active-tab ul#tabMenuRight",
+    useExistingHiddenMarkup: ".hidden-upload-wrapper",
+    nodeType: "div",
+    focusElement: "",
+    funcComplete: vrtxAdmin.initFileUpload,
+    simultanSliding: true
+  });
+  vrtxAdmin.completeFormAsync({
+    selector: "form#fileUploadService-form input[type=submit]",
+    updateSelectors: ["#contents"],
+    errorContainer: "errorContainer",
+    errorContainerInsertAfter: "h3",
+    post: true,
+    funcProceedCondition: ajaxUpload,
+    funcComplete: function() {
+      $(".expandedForm.vrtx-admin-form").remove();
+      $(vrtxAdmin.storedExistingHiddenMarkup).insertAfter("#active-tab ul#tabMenuRight");
+    }
+  });
 
-  if(gup("action", vrtxAdmin.url) !== "upload-file") {
+  var isUploadAction = $("#fileUploadService-form").length;
+
+  if(vrtxAdmin.uploadIsAdvanced && !isUploadAction) {
     vrtxAdmin.serverFacade.getHtml($(opts.uploadSeviceSelector)[0].href, {
       success: function (results, status, resp) {
-        vrtxAdmin.initFileUpload();
-
         // Add upload form
         var html = $($.parseHTML(results)).find(".expandedForm.vrtx-admin-form");
         vrtxAdmin.cachedActiveTab.append(html);
-        vrtxAdmin.cachedActiveTab.find(".expandedForm.vrtx-admin-form:last-child").addClass("hidden-upload-wrapper");
+        vrtxAdmin.initFileUpload();
+
+        vrtxAdmin.cachedActiveTab.find(".expandedForm.vrtx-admin-form:last-child")
+                                 .removeClass("expandedForm vrtx-admin-form")
+                                 .addClass("hidden-upload-wrapper");
 
         setupDragAndDropUpload(opts);
       }
     });
-  } else {
+  }
+  if(isUploadAction) {
+    vrtxAdmin.initFileUpload();
+    vrtxAdmin.storedExistingHiddenMarkup = $(".expandedForm.vrtx-admin-form").clone()
+                                             .removeClass("expandedForm vrtx-admin-form")
+                                             .addClass("hidden-upload-wrapper").remove();
     setupDragAndDropUpload(opts);
   }
 }
@@ -479,7 +491,7 @@ function ajaxUpload(opts) {
   var vrtxAdm = vrtxAdmin,
       _$ = vrtxAdm._$;
 
-  opts.isDragAndDrop = typeof vrtxAdm.droppedFiles === "object";
+  opts.isDragAndDrop = typeof vrtxAdm.droppedFiles === "object" && vrtxAdm.droppedFiles != null;
   var uploadCheckServiceSelector = "#fileUploadCheckService-form";
   var existingFilenamesSelector = "#file-upload-existing-filenames";
   var existingFilesnamesFixedSelector = "#file-upload-existing-filenames-fixed";

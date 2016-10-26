@@ -33,6 +33,9 @@ function VrtxAdmin() {
   this._$ = $;
 
   this.url = window.location.href;
+  this.rootUrl = "/vrtx/__vrtx/static-resources";
+  this.bodyId = "";
+  this.messages = {}; /* Populated with i18n in resource-bar.ftl */
 
   // Browser info/capabilities: used for e.g. progressive enhancement and performance scaling based on knowledge of current JS-engine
   this.ua = window.navigator.userAgent.toLowerCase();
@@ -152,15 +155,9 @@ function VrtxAdmin() {
     timeout: 300000 // 5min
   });
   this.runReadyLoad = true;
+  this.requiredScriptsLoaded = $.Deferred();
   this.domainsIsReady = $.Deferred();
   this.domainsInstantIsReady = $.Deferred();
-  this.bodyId = "";
-
-  this.requiredScriptsLoaded = null;
-
-  this.messages = {}; /* Populated with i18n in resource-bar.ftl */
-
-  this.rootUrl = "/vrtx/__vrtx/static-resources";
 }
 
 var vrtxAdmin = new VrtxAdmin();
@@ -253,7 +250,6 @@ vrtxAdmin._$(document).ready(function () {
   if (vrtxAdm.runReadyLoad === false) return;
 
   // Load required init components (animations and trees)
-  vrtxAdm.requiredScriptsLoaded = $.Deferred();
   vrtxAdm.loadScripts(["/js/vrtx-animation.js", "/js/vrtx-tree.js"], vrtxAdm.requiredScriptsLoaded);
   vrtxAdm.clientLastModified = $("#resource-last-modified").text().split(",");
 
@@ -1320,6 +1316,7 @@ VrtxAdmin.prototype.inputUpdateEngine = {
  * @param {object} opts Configuration
  * @param {string} opts.selector Selector for links that should retrieve a form async
  * @param {string} opts.selectorClass Selector for form
+  * @param {string} opts.useExistingHiddenMarkup Selector for existing hidden markup to store in vrtxAdmin
  * @param {string} opts.insertAfterOrReplaceClass Where to put the form
  * @param {boolean} opts.isReplacing Whether to replace instead of insert after
  * @param {string} opts.nodeType Node type that should be replaced or inserted
@@ -1503,6 +1500,7 @@ VrtxAdmin.prototype.addOriginalMarkup = function addOriginalMarkup(url, results,
  * @this {VrtxAdmin}
  * @param {object} opts Configuration
  * @param {string} selectorClass The selector for form
+ * @param {string} useExistingHiddenMarkup
  * @param {string} transitionSpeed Transition speed in ms
  * @param {string} transitionEasingSlideDown Transition easing algorithm for slideDown()
  * @param {string} transitionEasingSlideUp Transition easing algorithm for slideUp()
@@ -1525,6 +1523,10 @@ VrtxAdmin.prototype.addNewMarkup = function addNewMarkup(opts, form, link) {
   } else {
     _$(vrtxAdm.wrap(opts.nodeType, "expandedForm nodeType" + opts.nodeType + " " + opts.selectorClass, form))
       .insertAfter(inject);
+
+    if(opts.useExistingHiddenMarkup && $(opts.useExistingHiddenMarkup).length) {
+      vrtxAdm.storedExistingHiddenMarkup = $(opts.useExistingHiddenMarkup).remove();
+    }
   }
   if (opts.funcComplete) {
     opts.funcComplete(opts.selectorClass);
