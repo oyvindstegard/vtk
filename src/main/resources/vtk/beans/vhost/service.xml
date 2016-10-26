@@ -506,6 +506,10 @@
     <property name="handler" ref="isAuthorizedPrincipalServiceHandler" />
   </bean>
 
+  <bean id="isAuthorizedPrincipalServiceHandler" class="vtk.web.service.IsAuthorizedPrincipalService">
+    <property name="authorizationManager" ref="authorizationManager" />
+  </bean>
+
   <!-- **************** -->
   <!-- ASSERTIONS       -->
   <!-- **************** -->
