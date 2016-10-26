@@ -897,32 +897,38 @@ VrtxAdmin.prototype.collectionListingInteraction = function collectionListingInt
 
   // TODO: generalize dialog jQuery UI function with AJAX markup/text
   vrtxAdm.cachedDoc.on("click", "a.vrtx-copy-move-to-selected-folder-disclosed", function (e) {
-    var dialogTemplate = $("#vrtx-dialog-template-copy-move-content");
-    if (!dialogTemplate.length) {
-      vrtxAdm.serverFacade.getHtml(this.href, {
-        success: function (results, status, resp) {
-          vrtxAdm.cachedBody.append("<div id='vrtx-dialog-template-copy-move-content'>" + _$($.parseHTML(results)).find("#vrtx-dialog-template-content").html() + "</div>");
-          dialogTemplate = $("#vrtx-dialog-template-copy-move-content");
-          dialogTemplate.hide();
-          var d = new VrtxConfirmDialog({
-            msg: dialogTemplate.find(".vrtx-confirm-copy-move-explanation").text(),
-            title: dialogTemplate.find(".vrtx-confirm-copy-move-confirmation").text(),
-            onOk: function () {
-              dialogTemplate.find(".vrtx-focus-button").trigger("click");
-            }
-          });
-          d.open();
-        }
-      });
-    } else {
+    var selectorDialogTemplate = "#vrtx-dialog-template-copy-move-content";
+    var selectorTitle = ".vrtx-confirm-copy-move-confirmation";
+    var selectorMsg = ".vrtx-confirm-copy-move-explanation";
+
+    var dialogTemplate = $(selectorDialogTemplate);
+
+    var openCopyMoveConfirmDialog = function() {
       var d = new VrtxConfirmDialog({
-        msg: dialogTemplate.find(".vrtx-confirm-copy-move-explanation").text(),
-        title: dialogTemplate.find(".vrtx-confirm-copy-move-confirmation").text(),
+        msg: dialogTemplate.find(selectorMsg).text(),
+        title: dialogTemplate.find(selectorTitle).text(),
         onOk: function () {
           dialogTemplate.find(".vrtx-focus-button").trigger("click");
         }
       });
       d.open();
+    };
+
+    if (!dialogTemplate.length) {
+      vrtxAdm.serverFacade.getHtml(this.href, {
+        success: function (results, status, resp) {
+          var html = "<div id='" + selectorDialogTemplate.substring(1) + "'>" +
+                       _$($.parseHTML(results)).find("#vrtx-dialog-template-content").html() +
+                     "</div>";
+          vrtxAdm.cachedBody.append(html);
+
+          dialogTemplate = $(selectorDialogTemplate);
+          dialogTemplate.hide();
+          openCopyMoveConfirmDialog();
+        }
+      });
+    } else {
+      openCopyMoveConfirmDialog();
     }
     e.stopPropagation();
     e.preventDefault();
@@ -977,7 +983,6 @@ VrtxAdmin.prototype.updateCollectionListingInteraction = function updateCollecti
   } else {
     $("body").removeClass("is-empty-collection");
   }
-
   setupDragAndDropUpload({
     uploadSeviceSelector: "#fileUploadService",
     contentSelector: "#contents",
@@ -1048,7 +1053,10 @@ VrtxAdmin.prototype.placeCopyMoveButtonInActiveTab = function placeCopyMoveButto
   if (!btn.length) return;
   btn.hide();
   var li = vrtxAdm.cachedActiveTab.find("li." + options.service);
-  li.html("<a id='" + options.service + "' href='javascript:void(0);'>" + btn.attr('title') + "</a>");
+
+  var html = "<a id='" + options.service + "' href='javascript:void(0);'>" + btn.attr('title') + "</a>";
+  li.html(html);
+
   vrtxAdm.cachedActiveTab.find("#" + options.service).click(function (e) {
     if (!vrtxAdm.cachedDirectoryListing.find("td input[type=checkbox]:checked").length) {
       var d = new VrtxMsgDialog(options);
@@ -1074,7 +1082,9 @@ VrtxAdmin.prototype.placeDeleteButtonInActiveTab = function placeDeleteButtonInA
   if (!btn.length) return;
   btn.hide();
   var li = vrtxAdm.cachedActiveTab.find('li.deleteResourcesService');
-  li.html('<a id="deleteResourceService" href="javascript:void(0);">' + btn.attr('title') + '</a>');
+
+  var html = '<a id="deleteResourceService" href="javascript:void(0);">' + btn.attr('title') + '</a>';
+  li.html(html);
 
   vrtxAdm.cachedActiveTab.find('#deleteResourceService').click(function (e) {
     var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
@@ -1113,15 +1123,16 @@ VrtxAdmin.prototype.placePublishButtonInActiveTab = function placeDeleteButtonIn
   btn.hide();
   var li = vrtxAdm.cachedActiveTab.find('li.publishResourcesService');
   li.hide();
+
   var menu = li.closest("#tabMenuRight");
   var html = '<li class="more-menu">' +
-    '<div id="collection-more-menu">' +
-    '<span id="collection-more-menu-header">' + moreTitle + '</span>' +
-    '<ul><li><a id="publishTheResourcesService" href="javascript:void(0);">' + btn.attr('title') + '</a></li></ul>' +
-    '</div>' +
-    '</li>';
-
+               '<div id="collection-more-menu">' +
+                 '<span id="collection-more-menu-header">' + moreTitle + '</span>' +
+                 '<ul><li><a id="publishTheResourcesService" href="javascript:void(0);">' + btn.attr('title') + '</a></li></ul>' +
+               '</div>' +
+             '</li>';
   menu.append(html);
+
   $('#publishTheResourcesService').click(function (e) {
     var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
     var boxesSize = boxes.length;
@@ -1159,8 +1170,11 @@ VrtxAdmin.prototype.placeUnpublishButtonInActiveTab = function placeDeleteButton
   btn.hide();
   var li = vrtxAdm.cachedActiveTab.find('li.unpublishResourcesService');
   li.hide();
+
   var menu = li.closest("#tabMenuRight");
-  menu.find("#collection-more-menu ul").append('<li><a id="unpublishTheResourcesService" href="javascript:void(0);">' + btn.attr('title') + '</a></li>');
+  var html = '<li><a id="unpublishTheResourcesService" href="javascript:void(0);">' + btn.attr('title') + '</a></li>';
+  menu.find("#collection-more-menu ul").append(html);
+
   $('#unpublishTheResourcesService').click(function (e) {
     var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
     var boxesSize = boxes.length;
@@ -1196,8 +1210,14 @@ VrtxAdmin.prototype.placeRecoverButtonInActiveTab = function placeRecoverButtonI
   var btn = vrtxAdm.cachedAppContent.find('.recoverResource');
   if (!btn.length) return;
   btn.hide();
-  vrtxAdm.cachedActiveTab.prepend('<ul class="list-menu" id="tabMenuRight"><li class="recoverResourceService">' +
-    '<a id="recoverResourceService" href="javascript:void(0);">' + btn.attr('value') + '</a></li></ul>');
+
+  var html = '<ul class="list-menu" id="tabMenuRight">' +
+               '<li class="recoverResourceService">' +
+                 '<a id="recoverResourceService" href="javascript:void(0);">' + btn.attr('value') + '</a>' +
+               '</li>' +
+             '</ul>';
+  vrtxAdm.cachedActiveTab.prepend(html);
+
   vrtxAdm.cachedActiveTab.find("#recoverResourceService").click(function (e) {
     var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
     var boxesSize = boxes.length;
@@ -1225,8 +1245,12 @@ VrtxAdmin.prototype.placeDeletePermanentButtonInActiveTab = function placeDelete
   var btn = vrtxAdm.cachedAppContent.find('.deleteResourcePermanent');
   if (!btn.length) return;
   btn.hide();
-  vrtxAdm.cachedActiveTab.find("#tabMenuRight")
-    .append('<li class="deleteResourcePermanentService"><a id="deleteResourcePermanentService" href="javascript:void(0);">' + btn.attr('value') + '</a></li>');
+
+  var html = '<li class="deleteResourcePermanentService">' +
+               '<a id="deleteResourcePermanentService" href="javascript:void(0);">' + btn.attr('value') + '</a>' +
+             '</li>';
+  vrtxAdm.cachedActiveTab.find("#tabMenuRight").append(html);
+
   vrtxAdm.cachedActiveTab.find('#deleteResourcePermanentService').click(function (e) {
     var boxes = vrtxAdm.cachedDirectoryListing.find('td input[type=checkbox]:checked');
     var boxesSize = boxes.length;
@@ -1257,7 +1281,7 @@ VrtxAdmin.prototype.placeDeletePermanentButtonInActiveTab = function placeDelete
  * @param {array} boxes The items
  * @param {number} boxesSize The size of the boxes
  * @param {boolean} useTitle Use title- instead of name-attribute?
- * @return {string} The builded HTML
+ * @return {string} The built HTML
  */
 VrtxAdmin.prototype.buildFileList = function buildFileList(boxes, boxesSize, useTitle) {
   var boxesSizeExceedsTen = boxesSize > 10;
