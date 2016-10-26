@@ -934,6 +934,7 @@ $.fieldValue = function(el, successful) {
       val = val.replace(/<(p|em|strong|s|ul|ol) style="font-size: 13.9200000762939px;">/g, "<$1>", "");
 
       // Replace <p> with <div> around Vortex components (VTK-3578)
+      // XXX: this is way too specific (should be enough to check for '${whatever:component}'):
       val = val.replace(/<p>([\s]*\${(?:include\:(?:events|feed|feeds|file|folder|image-listing|library-search|media-player|messages|number-of-resources|property|recent-comments|ref|resource-list|search-form|tag-cloud|tags|ub-mapping|unit-search-form|uri-menu)|resource\:(?:breadcrumb|email-friend|feedback|manage-url|property|share-at|subfolder-menu|tags|toc))[^}]*}[\s]*)<\/p>/g, "<div>$1</div>", "");
     } catch(err) {
       vrtxAdmin.log({msg: err});
