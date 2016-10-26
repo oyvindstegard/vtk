@@ -1,10 +1,11 @@
 package vtk.web.service;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
@@ -17,73 +18,68 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.PrincipalImpl;
-import vtk.util.text.Json;
-import vtk.util.text.JsonStreamer;
 import vtk.web.RequestContext;
 
-public class IsAuthorizedPrincipalService implements Controller {
+public class IsAuthorizedPrincipalController implements Controller {
 
     private AuthorizationManager authorizationManager;
+    private String viewName;
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+        Map<String, Object> model = new HashMap<>();
+        Map<String, Object> body = new LinkedHashMap<>();
 
         RequestContext rc = RequestContext.getRequestContext();
         Repository repository = rc.getRepository();
         Resource resource = repository.retrieve(rc.getSecurityToken(), rc.getResourceURI(), true);
 
-        Json.MapContainer jsonResponse = new Json.MapContainer();
-        response.setContentType("application/json;charset=utf-8");
-
         String principalParam = request.getParameter("principal");
         String privilegeParam = request.getParameter("privilege");
         if (principalParam == null || privilegeParam == null) {
-            jsonResponse.put("errorMsg", "Both 'principal' and 'privilege' must be given as arguments.");
+            body.put("errorMsg", "Both 'principal' and 'privilege' must be given as arguments.");
 
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeResponse(JsonStreamer.toJson(jsonResponse), response);
-            return null;
+            model.put("json", body);
+            model.put("status", 400);
+            return new ModelAndView(viewName, model);
         }
 
         PrincipalImpl principal = new PrincipalImpl(principalParam, Principal.Type.USER);
 
         Privilege privilege;
         try {
-            privilege = Privilege.valueOf(privilegeParam);
+            privilege = Privilege.forName(privilegeParam.toLowerCase());
         } catch (IllegalArgumentException iae) {
             List<String> privilegeNames = new ArrayList<>();
             for (Privilege p : Privilege.values()) {
-                privilegeNames.add(p.name());
+                privilegeNames.add(p.getName());
             }
             Collections.sort(privilegeNames);
 
-            jsonResponse.put("errorMsg", "Privilege '" + privilegeParam + "' does not exist.");
-            Json.ListContainer validPrivilegeOptions = new Json.ListContainer();
-            for (String privilegeName : privilegeNames) {
-                validPrivilegeOptions.add(privilegeName);
-            }
-            jsonResponse.put("validOptions", validPrivilegeOptions);
+            body.put("errorMsg", "Privilege '" + privilegeParam + "' does not exist.");
+            body.put("validOptions", privilegeNames);
 
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeResponse(JsonStreamer.toJson(jsonResponse), response);
-            return null;
+            model.put("json", body);
+            model.put("status", 400);
+            return new ModelAndView(viewName, model);
         }
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        jsonResponse.put("isAuthorized", authorizationManager.authorize(principal, resource.getAcl(), privilege));
-        writeResponse(JsonStreamer.toJson(jsonResponse), response);
-        return null;
-    }
+        body.put("isAuthorized", authorizationManager.authorize(principal, resource.getAcl(), privilege));
 
-    private void writeResponse(String responseText, HttpServletResponse response) throws IOException {
-        try (PrintWriter writer = response.getWriter()) {
-            writer.write(responseText);
-        }
+        model.put("json", body);
+        model.put("status", 200);
+        return new ModelAndView(viewName, model);
     }
 
     @Required
     public void setAuthorizationManager(AuthorizationManager authorizationManager) {
         this.authorizationManager = authorizationManager;
+    }
+
+    @Required
+    public void setViewName(String viewName) {
+        this.viewName = viewName;
     }
 
 }
