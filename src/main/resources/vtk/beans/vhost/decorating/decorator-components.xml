@@ -783,6 +783,7 @@
   </bean>
 
   <!-- ######## Specialize where necessary ######## -->
+  <!-- XXX: move to Vortex -->
   <bean id="decorating.abstractSearchFormComponent" abstract="true"
     class="vtk.web.decorating.components.SearchFormComponent">
     <property name="namespace" ref="decorating.includeNamespace" />
