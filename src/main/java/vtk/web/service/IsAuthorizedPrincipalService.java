@@ -23,7 +23,7 @@ import vtk.web.RequestContext;
 
 public class IsAuthorizedPrincipalService implements Controller {
 
-    AuthorizationManager authorizationManager;
+    private AuthorizationManager authorizationManager;
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
