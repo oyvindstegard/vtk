@@ -492,6 +492,20 @@
     <property name="handler" ref="displayHTMLResourceHandler" />
   </bean>
 
+  <bean id="isAuthorizedPrincipalService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="viewService" />
+    <property name="order" value="-3" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="vrtx" />
+          <property name="parameterValue" value="is-authorized" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="isAuthorizedPrincipalServiceHandler" />
+  </bean>
+
   <!-- **************** -->
   <!-- ASSERTIONS       -->
   <!-- **************** -->
