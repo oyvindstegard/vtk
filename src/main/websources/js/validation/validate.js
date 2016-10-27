@@ -102,6 +102,8 @@ function validate() {
       } else {
         errorsElm.remove();
       }
+    } else {
+      errorsElm.remove();
     }
   };
   this.extractDateObj = function(dateTime) {
