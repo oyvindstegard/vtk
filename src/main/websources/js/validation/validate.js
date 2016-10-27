@@ -2,29 +2,79 @@ function validate() {
   this.isDebugMode = false,
   this.run = function() {
     // Vortex fields that needs validation
-    Validate.validate(".start-date", "DATE_RANGE");
-    Validate.validate(".end-date", "DATE_RANGE");
+    Validate.validate({ date: ".start-date" }, "TIME_HELP");
+    Validate.validate({ date: ".end-date" }, "TIME_HELP");
+    Validate.validate({ startDate: ".start-date",
+                        endDate: ".end-date" }, "DATE_RANGE");
   };
   this.validate = function(selector, type) {
     var vd = this;
-    
-    if(vd.isDebugMode) $(selector).css("border", "2px solid red");
+
+    if(vd.isDebugMode) $(selector.date).css("border", "2px solid red");
 
     switch (type) {
-      case "DATE_RANGE":
-        $(document).on("change", ".vrtx-hours", function () {
+      case "TIME_HELP":
+        $(document).on("change", selector.date + " .vrtx-hours", function () {
           var hh = $(this);
           var mm = hh.nextAll(".vrtx-minutes").filter(":first");
           vd.timeHelp(hh, mm);
         });
-        $(document).on("change", ".vrtx-minutes", function () {
+        $(document).on("change", selector.date + " .vrtx-minutes", function () {
           var mm = $(this);
           var hh = mm.prevAll(".vrtx-hours").filter(":first");
           vd.timeHelp(hh, mm);
         });
         break;
-      default:
+      case "DATE_RANGE":
+        $(document).on("focus", selector.endDate + " input[type='text']", function () {
+          var parent = $(this).closest(selector.endDate);
+          var isEndBlank = true;
+          parent.find("input[type='text']").filter(":visible").each(function() {
+            if(this.value != "") isEndBlank = false;
+          });
+          if(isEndBlank) {
+            var isStartBlank = false;
+            var startDateTime = parent.prev(selector.startDate);
+            startDateTime.find("input[type='text']").filter(":visible").each(function() {
+              if(this.value === "") isStartBlank = true;
+            });
+            if(!isStartBlank) {
+              var startDate = startDateTime.find(".vrtx-date");
+              var endDate = parent.find(".vrtx-date");
+              endDate.val(startDate.val());
 
+              var startHours = startDateTime.find(".vrtx-hours");
+              var startHoursVal = parseInt(startHours.val(), 10);
+              var endHours = parent.find(".vrtx-hours");
+              endHours.val((startHoursVal < 23 ? (startHoursVal + 1) : 23));
+
+              var startMinutes = startDateTime.find(".vrtx-minutes");
+              var startMinutesVal = startMinutes.val();
+              var endMinutes = parent.find(".vrtx-minutes");
+              endMinutes.val(startMinutesVal);
+            }
+          }
+        });
+        var currentStartDateVal = "";
+        $(document).on("focus", selector.startDate + " .vrtx-date", function () {
+          var startDate = $(this);
+          currentStartDateVal = startDate.val();
+        });
+        $(document).on("change", selector.startDate + " .vrtx-date", function () {
+          var parent = $(this).closest(selector.startDate);
+          var startDate = $(this);
+          var startDateVal = startDate.val();
+          var endDateTime = parent.next(selector.endDate);
+          var endDate = endDateTime.find(".vrtx-date");
+          var endDateVal = endDate.val();
+
+          if(currentStartDateVal === endDateVal && currentStartDateVal != "") {
+            currentStartDateVal = startDateVal;
+            endDate.val(currentStartDateVal);
+          }
+        });
+        break;
+      default:
     }
   };
   this.timeHelp = function(hh, mm) {
