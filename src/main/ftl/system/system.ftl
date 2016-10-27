@@ -82,6 +82,13 @@
         title: '${vrtx.getMsg("editor.timed-out.title")}',
         msg: '${vrtx.getMsg("editor.timed-out.msg")}',
         ok: '${vrtx.getMsg("editor.timed-out.ok")}'
+      },
+      validation: {
+        errors: {
+          dateTime: {
+            endBeforeStart: '${vrtx.getMsg("editor.validation.errors.date-time.end-before-start")}'
+          }
+        }
       }
     }
   }

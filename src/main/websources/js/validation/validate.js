@@ -91,8 +91,7 @@ function validate() {
 
     var container = startDateTime.closest(".timeAndPlace");
     var errorsElm = container.find("ul.errors");
-    var errorMsg = "Slutt-dato er før start-dato";
-    var errorHtml = "<ul class='errors'><li>" + errorMsg + "</li></ul>";
+    var errorHtml = "<ul class='errors'><li>" + vrtxAdmin.messages.editor.validation.errors.dateTime.endBeforeStart + "</li></ul>";
     if(startDateObj != null && endDateObj != null) {
       if(endDateObj < startDateObj) {
         if(errorsElm.length) {
