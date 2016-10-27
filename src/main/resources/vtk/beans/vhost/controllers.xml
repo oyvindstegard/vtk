@@ -40,5 +40,9 @@
     <property name="ignoreLastModifiedOnCollections" value="true" />
   </bean>
 
-  
+  <bean id="isAuthorizedPrincipalServiceHandler" class="vtk.web.service.IsAuthorizedPrincipalController">
+    <property name="authorizationManager" ref="authorizationManager" />
+    <property name="viewName" value="jsonView" />
+  </bean>
+
 </beans>

@@ -5,6 +5,7 @@
   <bean id="viewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
+        <entry key="jsonView" value-ref="jsonView" />
         <entry key="httpOptions" value-ref="httpOptionsView" />
         <entry key="collectionRedirect" value-ref="collectionRedirectView" />
         <entry key="redirect" value-ref="redirectView" />
@@ -31,10 +32,16 @@
 
   <!-- View definitions -->
 
+  <bean id="jsonView" class="vtk.web.view.JsonView">
+    <property name="modelKey" value="json" />
+    <property name="indentFactor" value="2" />
+    <property name="httpStatusKey" value="status" />
+  </bean>
+
   <bean id="displayResourceView"
         class="vtk.web.view.DisplayResourceView">
     <property name="supportRangeRequests" value="${displayResource.supportRangeRequests}" />
-  </bean> 
+  </bean>
 
   <bean id="httpOptionsView"
         class="vtk.web.view.StandardHttpView">
