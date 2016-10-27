@@ -427,6 +427,8 @@ function setupDragAndDropUpload(opts) {
   if(!vrtxAdmin.uploadIsAdvanced) return;
 
   var content = $(opts.contentSelector);
+  if(!content.length) return;
+
   content.addClass("has-advanced-upload");
 
   var uploadOverlay = "upload-overlay";
@@ -439,29 +441,38 @@ function setupDragAndDropUpload(opts) {
                    "<div id='" + uploadOverlayTop + "' />";
   content.append(uploadHtml);
 
-  var uploadOverlayElm = $("#" + uploadOverlay);
-  var uploadOverlayIconElm = $("#" + uploadOverlayIcon);
   var uploadOverlayIconTextElm = $("#" + uploadOverlayIconText);
   var uploadOverlayTopElm = $("#" + uploadOverlayTop);
 
   var dragPreventDefault = function(e) {
-    e.preventDefault();
     e.stopPropagation();
+    if (e.preventDefault) {
+      return e.preventDefault();
+    } else {
+      return e.returnValue = false;
+    }
   };
   var dragStart = function(e) {
     if(!content.hasClass("is-dragover")) {
       content.addClass('is-dragover');
       uploadOverlayIconTextElm.text(vrtxAdmin.messages.upload.drop);
+      var effect = "";
+      try {
+        effect = e.dataTransfer.effectAllowed;
+      } catch (err) {}
+      e.dataTransfer.dropEffect = 'copy';
     }
+    dragPreventDefault(e);
   };
   var dragComplete = function(e) {
     if(content.hasClass("is-dragover")) {
       content.removeClass('is-dragover');
       uploadOverlayIconTextElm.text(vrtxAdmin.messages.upload.drag);
     }
+    dragPreventDefault(e);
   };
   var drop = function(e) {
-    vrtxAdmin.droppedFiles = e.originalEvent.dataTransfer.files;
+    vrtxAdmin.droppedFiles = e.dataTransfer.files;
 
     var form = $(opts.formSelector);
     ajaxUpload({
@@ -473,18 +484,20 @@ function setupDragAndDropUpload(opts) {
       errorContainerInsertAfter: "h3",
       post: true
     });
+    dragComplete(e);
   };
-  var bodyElm = $("#vrtx-manage-collectionlisting");
 
-  //uploadOverlayTopElm.on('dragenter dragover', dragStart);
-  //uploadOverlayTopElm.on('drag dragstart dragend dragover dragenter dragleave drop', dragPreventDefault);
-  $(document).on('dragenter', dragStart);
+  var addListenerMulti = function(elm, s, fn) {
+    var evts = s.split(' ');
+    for (var i = 0, len = evts.length; i < len; i++) {
+      elm.addEventListener(evts[i], fn, false);
+    }
+  };
 
-  uploadOverlayTopElm.on('dragleave dragend drop', dragComplete);
-
-  uploadOverlayTopElm.on('drag dragstart dragend dragover dragenter dragleave drop', dragPreventDefault);
-  //bodyElm.on('dragleave dragend drop', dragComplete);
-  uploadOverlayTopElm.on('drop', drop);
+  addListenerMulti(document, 'dragenter', dragStart);
+  addListenerMulti(uploadOverlayTopElm[0], 'dragleave dragend', dragComplete);
+  addListenerMulti(uploadOverlayTopElm[0], 'drop', drop);
+  addListenerMulti(document, 'drag drop dragstart dragleave dragend dragover', dragPreventDefault);
 }
 
 function ajaxUpload(opts) {
