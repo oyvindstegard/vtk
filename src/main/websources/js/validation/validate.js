@@ -2,10 +2,12 @@ function validate() {
   this.isDebugMode = false,
   this.run = function() {
     // Vortex fields that needs validation
-    Validate.validate({ date: ".start-date" }, "TIME_HELP");
-    Validate.validate({ date: ".end-date" }, "TIME_HELP");
-    Validate.validate({ startDate: ".start-date",
-                        endDate: ".end-date" }, "DATE_RANGE");
+
+    // DATE RANGE
+    Validate.validate({ date: ".start-date", startDate: ".start-date", endDate: ".end-date" }, "TIME_HELP");
+    Validate.validate({ date: ".end-date", startDate: ".start-date", endDate: ".end-date" }, "TIME_HELP");
+    Validate.validate({ startDate: ".start-date", endDate: ".end-date" }, "DATE_RANGE");
+
   };
   this.validate = function(selector, type) {
     var vd = this;
@@ -18,11 +20,13 @@ function validate() {
           var hh = $(this);
           var mm = hh.nextAll(".vrtx-minutes").filter(":first");
           vd.timeHelp(hh, mm);
+          vd.checkRange(selector, vd);
         });
         $(document).on("change", selector.date + " .vrtx-minutes", function () {
           var mm = $(this);
           var hh = mm.prevAll(".vrtx-hours").filter(":first");
           vd.timeHelp(hh, mm);
+          vd.checkRange(selector, vd);
         });
         break;
       case "DATE_RANGE":
@@ -39,19 +43,16 @@ function validate() {
               if(this.value === "") isStartBlank = true;
             });
             if(!isStartBlank) {
-              var startDate = startDateTime.find(".vrtx-date");
               var endDate = parent.find(".vrtx-date");
-              endDate.val(startDate.val());
-
-              var startHours = startDateTime.find(".vrtx-hours");
-              var startHoursVal = parseInt(startHours.val(), 10);
               var endHours = parent.find(".vrtx-hours");
-              endHours.val((startHoursVal < 23 ? (startHoursVal + 1) : 23));
-
-              var startMinutes = startDateTime.find(".vrtx-minutes");
-              var startMinutesVal = startMinutes.val();
               var endMinutes = parent.find(".vrtx-minutes");
-              endMinutes.val(startMinutesVal);
+
+              var startDateObj = vd.extractDateObj(startDateTime);
+              startDateObj.setTime(startDateObj.getTime() + (1*60*60*1000)); // Add 1 hour
+
+              endDate.val(startDateObj.getFullYear() + "-" + (startDateObj.getMonth() + 1) + "-" + startDateObj.getDate());
+              endHours.val(vd.timePad(startDateObj.getHours()));
+              endMinutes.val(vd.timePad(startDateObj.getSeconds()));
             }
           }
         });
@@ -61,10 +62,10 @@ function validate() {
           currentStartDateVal = startDate.val();
         });
         $(document).on("change", selector.startDate + " .vrtx-date", function () {
-          var parent = $(this).closest(selector.startDate);
+          var startDateTime = $(this).closest(selector.startDate);
           var startDate = $(this);
           var startDateVal = startDate.val();
-          var endDateTime = parent.next(selector.endDate);
+          var endDateTime = startDateTime.next(selector.endDate);
           var endDate = endDateTime.find(".vrtx-date");
           var endDateVal = endDate.val();
 
@@ -72,10 +73,38 @@ function validate() {
             currentStartDateVal = startDateVal;
             endDate.val(currentStartDateVal);
           }
+          vd.checkRange(selector, vd);
+        });
+        $(document).on("change", selector.endDate + " .vrtx-date", function() {
+          vd.checkRange(selector, vd);
         });
         break;
       default:
     }
+  };
+  this.checkRange = function(selector, vd) {
+    var startDateTime = $(selector.startDate);
+    var endDateTime = $(selector.endDate);
+
+    var startDateObj = vd.extractDateObj(startDateTime);
+    var endDateObj = vd.extractDateObj(endDateTime);
+    if(startDateObj != null && endDateObj != null) {
+      if(endDateObj < startDateObj) {
+        console.log("FEIL");
+      }
+    }
+  };
+  this.extractDateObj = function(dateTime) {
+    var dateArr = dateTime.find(".vrtx-date").val().split("-");
+    if(dateArr.length !== 3) return null;
+
+    var hours = parseInt(dateTime.find(".vrtx-hours").val(), 10);
+    var minutes = parseInt(dateTime.find(".vrtx-minutes").val(), 10);
+
+    return new Date(parseInt(dateArr[0], 10), parseInt(dateArr[1], 10) - 1, parseInt(dateArr[2], 10), hours || 0, minutes || 0, 0, 0);
+  };
+  this.timePad = function(v) {
+    return v < 10 ? "0" + v : v;
   };
   this.timeHelp = function(hh, mm) {
     var hhVal = hh.val();
