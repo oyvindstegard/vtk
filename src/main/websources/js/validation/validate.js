@@ -88,16 +88,17 @@ function validate() {
 
     var startDateObj = vd.extractDateObj(startDateTime);
     var endDateObj = vd.extractDateObj(endDateTime);
-    if(startDateObj != null && endDateObj != null) {
-      var container = startDateTime.closest(".timeAndPlace");
-      var errorsElm = container.find("ul.errors");
-      var errorMsg = "Slutt-dato er før start-dato";
 
+    var container = startDateTime.closest(".timeAndPlace");
+    var errorsElm = container.find("ul.errors");
+    var errorMsg = "Slutt-dato er før start-dato";
+    var errorHtml = "<ul class='errors'><li>" + errorMsg + "</li></ul>";
+    if(startDateObj != null && endDateObj != null) {
       if(endDateObj < startDateObj) {
         if(errorsElm.length) {
-          errorsElm.find("li").text(errorMsg);
+          errorsElm.replaceWith(errorHtml);
         } else {
-          container.append("<ul class='errors'><li>" + errorMsg + "</li></ul>");
+          container.append(errorHtml);
         }
       } else {
         errorsElm.remove();
