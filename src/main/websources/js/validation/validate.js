@@ -89,8 +89,18 @@ function validate() {
     var startDateObj = vd.extractDateObj(startDateTime);
     var endDateObj = vd.extractDateObj(endDateTime);
     if(startDateObj != null && endDateObj != null) {
+      var container = startDateTime.closest(".timeAndPlace");
+      var errorsElm = container.find("ul.errors");
+      var errorMsg = "Slutt-dato er før start-dato";
+
       if(endDateObj < startDateObj) {
-        console.log("FEIL");
+        if(errorsElm.length) {
+          errorsElm.find("li").text(errorMsg);
+        } else {
+          container.append("<ul class='errors'><li>" + errorMsg + "</li></ul>");
+        }
+      } else {
+        errorsElm.remove();
       }
     }
   };

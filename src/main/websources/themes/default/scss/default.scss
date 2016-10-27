@@ -986,6 +986,15 @@ ul.errors li {
   color: $errorRestrictedTextColor;
 }
 
+form#editor ul.errors {
+  clear: both;
+  float: left;
+  width: 100%;
+  list-style: none;
+  margin: 10px 0 5px 0;
+  padding-left: 0;
+}
+
 table.resourceInfo,
 table.privilegeTable {
   border: 1px solid #d9d9d9;
