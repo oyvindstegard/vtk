@@ -45,7 +45,7 @@ public final class PropertyType {
     public enum Type {
         STRING,
         HTML,
-        IMAGE_REF,
+        IMAGE_REF,  // XXX: this should be renamed to simply "HREF", a generic link value of basic type STRING..
         INT, 
         LONG,
         TIMESTAMP, 
