@@ -37,15 +37,20 @@ public class IsAuthorizedPrincipalController implements Controller {
 
         String principalParam = request.getParameter("principal");
         String privilegeParam = request.getParameter("privilege");
-        if (principalParam == null || privilegeParam == null) {
-            body.put("errorMsg", "Both 'principal' and 'privilege' must be given as arguments.");
+        if (privilegeParam == null) {
+            body.put("errorMsg", "Parameter 'privilege' must be given as argument.");
 
             model.put("json", body);
             model.put("status", 400);
             return new ModelAndView(viewName, model);
         }
 
-        PrincipalImpl principal = new PrincipalImpl(principalParam, Principal.Type.USER);
+        Principal principal;
+        if (principalParam != null) {
+            principal = new PrincipalImpl(principalParam, Principal.Type.USER);
+        } else {
+            principal = rc.getPrincipal();
+        }
 
         Privilege privilege;
         try {
@@ -66,6 +71,8 @@ public class IsAuthorizedPrincipalController implements Controller {
         }
 
         body.put("isAuthorized", authorizationManager.authorize(principal, resource.getAcl(), privilege));
+        body.put("principal", principal != null ? principal.getQualifiedName(): null);
+        body.put("privilege", privilege.getName());
 
         model.put("json", body);
         model.put("status", 200);
