@@ -10,6 +10,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
     case "vrtx-edit-plaintext":
       if (_$("form#editor").length) {
         keepAliveEditors();
+        Validate.run();
       }
     case "vrtx-editor":
     case "vrtx-edit-plaintext":

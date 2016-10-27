@@ -25,6 +25,7 @@
       || (RequestParameters.mode?exists && RequestParameters.mode == "editor" &&
           RequestParameters.action?exists && RequestParameters.action == "edit")
       || (RequestParameters.mode?exists && RequestParameters.mode == "aspects")>
+  <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/validation/validate.js"></script>
   <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/domains/editors.js"></script>
 <#-- Permissions-->
 <#elseif (RequestParameters.mode?exists && RequestParameters.mode == "permissions")>

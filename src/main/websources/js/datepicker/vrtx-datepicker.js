@@ -19,9 +19,6 @@
  * __initField(name, selector)                   - Initialize field
  * __initDefaultEndDates()                       - Initialize default end dates
  * __setDefaultEndDate(startDateElm, endDateElm) - Set default end date
- * __initTimeHelp()                              - Initialize help for keeping time
- * __timeHelp(hh, mm)                            - Keeps time in range
- * __timeRangeHelp(val, max)                     - Helper for keeping time in range
  * __extractHoursFromDate(datetime)              - Extracts HH from date
  * __extractMinutesFromDate(datetime)            - Extracts MM from date
  */
@@ -72,7 +69,6 @@ var VrtxDatepicker = dejavu.Class.declare({
       }
       $.when(futureDatepickerLang).done(function() {
         datepick.initFields(datepick.__opts.contents.find(".date"));
-        datepick.__initTimeHelp();
         datepick.__initDefaultEndDates();
         if(opts.after) opts.after();
       });
@@ -148,45 +144,6 @@ var VrtxDatepicker = dejavu.Class.declare({
     if (endDate == "") {
       endDateElm.datepicker('option', 'defaultDate', startDate);
     }
-  },
-  __initTimeHelp: function() {
-    var datepick = this;
-
-    datepick.__opts.contents.on("change", ".vrtx-" + datepick.$static.timeHours, function () {
-      var hh = $(this);
-      var mm = hh.nextAll(".vrtx-" + datepick.$static.timeMinutes).filter(":first"); // Relative to
-      datepick.__timeHelp(hh, mm);
-    });
-    datepick.__opts.contents.on("change", ".vrtx-" + datepick.$static.timeMinutes, function () {
-      var mm = $(this);
-      var hh = mm.prevAll(".vrtx-" + datepick.$static.timeHours).filter(":first"); // Relative to
-      datepick.__timeHelp(hh, mm);
-    });
-  },
-  __timeHelp: function(hh, mm) {
-    var hhVal = hh.val();
-    var mmVal = mm.val();
-    if(hhVal.length || mmVal.length) {
-      var newHhVal = this.__timeRangeHelp(hhVal, 23);
-      var newMmVal = this.__timeRangeHelp(mmVal, 59);
-      if((newHhVal == "00" || newHhVal == "0") && (newMmVal == "00" || newMmVal == "0")) { // If all zeroes => remove time
-        hh.val("");
-        mm.val("");
-      } else {
-        if(hhVal != newHhVal) hh.val(newHhVal);
-        if(mmVal != newMmVal) mm.val(newMmVal);
-      }
-    }
-  },
-  __timeRangeHelp: function(val, max) {
-    var newVal = parseInt(val, 10);
-    if(isNaN(newVal) || newVal < 0) {
-      newVal = "00";
-    } else {
-      newVal = (newVal > max) ? "00" : newVal;
-      newVal = ((newVal < 10 && !newVal.length) ? "0" : "") + newVal;
-    }
-    return newVal;
   },
   __extractHoursFromDate: function(datetime) {
     var a = new String(datetime);
