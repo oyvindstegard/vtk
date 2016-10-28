@@ -50,7 +50,7 @@ function validate() {
               var startDateObj = vd.extractDateObj(startDateTime);
               startDateObj.setTime(startDateObj.getTime() + (1*60*60*1000)); // Add 1 hour
 
-              endDate.val(startDateObj.getFullYear() + "-" + (startDateObj.getMonth() + 1) + "-" + startDateObj.getDate());
+              endDate.val(startDateObj.getFullYear() + "-" + vd.timePad(startDateObj.getMonth() + 1) + "-" + vd.timePad(startDateObj.getDate()));
               endHours.val(vd.timePad(startDateObj.getHours()));
               endMinutes.val(vd.timePad(startDateObj.getSeconds()));
             }
