@@ -39,7 +39,6 @@ import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
@@ -52,34 +51,39 @@ public class SharedTextComponent extends ViewRenderingDecoratorComponent {
     @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
-
+        // "propName" OR "folder AND file AND key" is needed to find a shared text
         String propName = request.getStringParameter("propName");
+        String folder = request.getStringParameter("folder");
+        String file = request.getStringParameter("file");
+        String key = request.getStringParameter("key");
 
-        if (StringUtils.isBlank(propName)) {
-            return;
+        String sharedText = null;
+        if (!StringUtils.isBlank(propName)) {
+            Resource resource = getResource();
+            Property prop = resource.getProperty(Namespace.STRUCTURED_RESOURCE_NAMESPACE, propName);
+
+            if (prop != null) {
+                model.put("id", propName + ":" + prop.getStringValue());
+                sharedText = sharedTextResolver.resolveSharedText(resource, prop);
+            } else {
+                model.put("id", propName);
+                model.put("nullProp", true);
+            }
+        } else if (!StringUtils.isBlank(folder) && !StringUtils.isBlank(file) && !StringUtils.isBlank(key)) {
+            model.put("id", file + ":" + key);
+            sharedText = sharedTextResolver.resolveSharedText(getResource(), folder, file, key);
         }
-        model.put("id", propName);
-        
+
+        if (sharedText != null) {
+            model.put("sharedText", sharedText);
+        }
+    }
+
+    private Resource getResource() throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
-        String token = SecurityContext.getSecurityContext().getToken();
-        Resource resource = repository.retrieve(token, requestContext.getResourceURI(), true);
-
-        Property prop = resource.getProperty(Namespace.STRUCTURED_RESOURCE_NAMESPACE, propName);
-
-        if (prop == null) {
-            model.put("nullProp", true);
-            return;
-        }
-        model.put("id", propName + ":" + prop.getStringValue());
-
-        String sharedText = sharedTextResolver.resolveSharedText(resource, prop);
-
-        if (sharedText == null) {
-            return;
-        }
-
-        model.put("sharedText", sharedText);
+        String token = requestContext.getSecurityToken();
+        return repository.retrieve(token, requestContext.getResourceURI(), true);
     }
 
     @Required

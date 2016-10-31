@@ -56,23 +56,21 @@ import vtk.web.servlet.ResourceAwareLocaleResolver;
 
 /**
  * UiO specific.
- * 
+ *
  * For shared, common texts related to studies.
- * 
- * Resolves shared texts used to describe different aspects (properties) such as
- * "how to apply", "deadlines", "contact information" etc. in resource types.
- * 
- * By default, files containing shared texts are located under path
- * /vrtx/fellestekst/[propertyname].html. Shared text files are a specific
- * resource type "shared-text".
- * 
- * Shared text ability for a property in a resource type is specified by setting
- * the edithint "vrtx-shared-text" (see e.g. course-description.vrtx).
- * 
- * Edithints "vrtx-shared-text-path" and "vrtx-shared-text-file-name" can be
- * used to override default resolving from
+ *
+ * Resolves shared texts used to describe different aspects (properties) such as "how to apply", "deadlines", "contact
+ * information" etc. in resource types.
+ *
+ * By default, files containing shared texts are located under path /vrtx/fellestekst/[propertyname].html. Shared text
+ * files are a specific resource type "shared-text".
+ *
+ * Shared text ability for a property in a resource type is specified by setting the edithint "vrtx-shared-text" (see
+ * e.g. course-description.vrtx).
+ *
+ * Edithints "vrtx-shared-text-path" and "vrtx-shared-text-file-name" can be used to override default resolving from
  * /vrtx/fellestekst/[propertyname].html.
- * 
+ *
  */
 public class SharedTextResolver {
 
@@ -168,16 +166,24 @@ public class SharedTextResolver {
         Map<String, Json.MapContainer> resolvedsharedTexts = getSharedTextValues(resource.getResourceType(),
                 prop.getDefinition(), true);
 
-        if (resolvedsharedTexts == null || resolvedsharedTexts.isEmpty()) {
+        return resolveSharedText(resource, prop.getStringValue(), resolvedsharedTexts);
+    }
+
+    public String resolveSharedText(Resource resource, String sharedTextPath, String sharedTextFileName, String key) {
+        return resolveSharedText(resource, key, getSharedTextValuesMap(sharedTextPath, sharedTextFileName));
+    }
+
+    private String resolveSharedText(Resource resource, String key, Map<String, Json.MapContainer> resolvedSharedTexts) {
+
+        if (resolvedSharedTexts == null || resolvedSharedTexts.isEmpty()) {
             return null;
         }
 
-        String key = prop.getStringValue();
         Locale locale = localeResolver.resolveResourceLocale(resource);
         String localeString = locale.toString().toLowerCase();
 
         Json.MapContainer propSharedText;
-        if (!resolvedsharedTexts.containsKey(key) || (propSharedText = resolvedsharedTexts.get(key)) == null) {
+        if (!resolvedSharedTexts.containsKey(key) || (propSharedText = resolvedSharedTexts.get(key)) == null) {
             return null;
         }
 
@@ -199,7 +205,7 @@ public class SharedTextResolver {
 
     public Map<String, String> getLocalizedSharedTextValues(Locale locale, String docType, String propertyName) {
 
-        Map<String, String> sharedTextMap = new HashMap<String, String>();
+        Map<String, String> sharedTextMap = new HashMap<>();
 
         // Invalid path
         if (docType == null || propertyName == null) {
@@ -284,7 +290,7 @@ public class SharedTextResolver {
 
     private Json.MapContainer filterDescription(Json.MapContainer j) {
 
-        String[] list = { "description-no", "description-nn", "description-en" };
+        String[] list = {"description-no", "description-nn", "description-en"};
 
         for (String descriptionKey : list) {
             HtmlFragment fragment;
