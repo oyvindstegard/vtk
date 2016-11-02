@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009,2016 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -35,41 +35,39 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 import vtk.repository.index.IndexException;
-import vtk.repository.index.PropertySetIndex;
-import vtk.repository.store.IndexDao;
 
 /**
- * A stupid bean which starts a synchronous re-indexing of the configured
- * property set index at bean initialization time. 
- *
+ * A stupid bean which uses system index operation manager to perform reindexing
+ * at application startup.
  */
-public class ReindexAtStartupBean implements InitializingBean {
+public class ReindexAtStartupBean implements InitializingBean, ApplicationListener<ContextRefreshedEvent> {
     
-    private Logger logger = LoggerFactory.getLogger(ReindexAtStartupBean.class);
+    private final Logger logger = LoggerFactory.getLogger(ReindexAtStartupBean.class);
+
+    private IndexOperationManager indexOperationManager;
+    private boolean enabled = true;
+    private boolean afterInit = false;
     
-    private PropertySetIndex index;
-    private IndexDao indexDao;
-    private boolean enabled = false;
-    
+    @Override
     public void afterPropertiesSet() throws Exception {
-        if (!enabled) return;
+        if (!enabled || afterInit) return;
         
-        IndexOperationManager manager = new IndexOperationManagerImpl(this.index, 
-                                                                      this.indexDao);
-        logger.info("Starting synchronous re-indexing of index with ID '" 
-                + this.index.getId() + "' using IndexOperationManager ..");
-        manager.reindex(false);
-        if (manager.getLastReindexingException() != null) {
-            throw new BeanInitializationException("Re-indexing failed", 
-                                          manager.getLastReindexingException());
+        logger.info("Performing synchronous re-indexing of index with ID '"
+                + indexOperationManager.getManagedInstance().getId() + "' using IndexOperationManager ..");
+        indexOperationManager.reindex(false);
+        Exception e;
+        if ((e = indexOperationManager.getLastReindexingException()) != null) {
+            throw new BeanInitializationException("Re-indexing failed", e);
         }
         
         try {
             // Optimize index afterwords
             logger.info("Optimizing index ..");
-            manager.optimize();
+            indexOperationManager.optimize();
             logger.info("Optimization completed.");
         } catch (IndexException ie) {
             throw new BeanInitializationException("Optimizing index failed", ie);
@@ -78,19 +76,45 @@ public class ReindexAtStartupBean implements InitializingBean {
         logger.info("Re-indexing finished.");
     }
 
-    @Required
-    public void setIndex(PropertySetIndex index) {
-        this.index = index;
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        if (!enabled || !afterInit) return;
+
+        // Perform async reindexing after application init
+        logger.info("Starting asynchronous re-indexing of index with ID '"
+                + indexOperationManager.getManagedInstance().getId() + "' using IndexOperationManager ..");
+
+        indexOperationManager.reindex(true);
     }
 
     @Required
-    public void setIndexDao(IndexDao indexDao) {
-        this.indexDao = indexDao;
+    public void setIndexOperationManager(IndexOperationManager manager) {
+        this.indexOperationManager = manager;
     }
-    
-    @Required
+
+    /**
+     * Set whether this is enabled or not.
+     *
+     * <p>When disabled, nothing is done at all.
+     * @param enabled
+     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    /**
+     * Set whether reindexing should be done after context initialization or not.
+     *
+     * <p>When this is <code>false</code> (the default), reindexing is performed
+     * synchronously at startup and will delay the application initialization until
+     * the operation is finished. When <code>true</code>, the reindexing will
+     * be started asynchronously <em>after</em> the application context has finished
+     * initializing.
+     *
+     * @param afterInit
+     */
+    public void setAfterInit(boolean afterInit) {
+        this.afterInit = afterInit;
     }
 
 }

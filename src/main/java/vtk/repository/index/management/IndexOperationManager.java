@@ -36,62 +36,156 @@ import vtk.repository.index.PropertySetIndex;
 import vtk.repository.index.consistency.ConsistencyCheck;
 
 /**
- * Thin management wrapper for performing asynchronous maintenance operations on
- * an index instance and retrieving results at a later time.
- *   
- * @author oyviste
+ * Interface for high level index operation management.
  */
 public interface IndexOperationManager {
 
-    // id
+    /**
+     * Get the managed index instance.
+     * @return
+     */
     public PropertySetIndex getManagedInstance();
-    
-    // Locking
+
+    /**
+     * Set mutex lock on managed index instance.
+     *
+     * <p><em>Note that this should not be used before invoking other manager
+     * operations, as those operations will themselves perform locking internally.</em>
+     * @return
+     */
     public boolean lock();
-    
+
+    /**
+     * Remove mutex lock on managed index instance.
+     */
     public void unlock();
-    
+
+    /**
+     * Test if managed instance is currently mutex locked.
+     *
+     * <p>This method may block for a short time, but never indefinitely.
+     * @return
+     */
     public boolean isLocked();
     
-    // Close / re-initialize
+
+    /**
+     * Close the index.
+     * @throws IllegalStateException
+     */
     public void close() throws IllegalStateException;
-    
+
+    /**
+     * Reinitialize
+     * @throws IllegalStateException
+     */
     public void reinitialize() throws IllegalStateException;
-    
+
+    /**
+     * Test whether the managed instance is closed
+     * @return
+     */
     public boolean isClosed();
     
-    // Re-indexing
+    /**
+     * Start reindexing operation.
+     * @param asynchronous if operation should be started in a background thread
+     * @throws IllegalStateException if reindexing is already running, if consistency check is already running, if closed
+     */
     public void reindex(boolean asynchronous) throws IllegalStateException;
-    
+
+    /**
+     * Test whether reindexing is currently running.
+     * @return
+     */
     public boolean isReindexing();
-    
+
+    /**
+     * Optimize underlying index.
+     */
     public void optimize();
-    
+
+    /**
+     * Test whether the last reindexing completed normally
+     * @return
+     * @throws IllegalStateException
+     */
     public boolean lastReindexingCompletedNormally() throws IllegalStateException;
-    
+
+    /**
+     * Get last reindexing exception, if any.
+     * @return
+     */
     public Exception getLastReindexingException();
-    
+
+    /**
+     * Get completion time of last reindexing.
+     * @return
+     */
     public Date getLastReindexingCompletionTime();
-    
+
+    /**
+     * Test whether there are results from the latest reindexing operation.,
+     * @return
+     */
     public boolean hasReindexingResults();
-    
+
+    /**
+     * Clear results from the latest reindexing operation.
+     * @throws IllegalStateException
+     */
     public void clearLastReindexingResults() throws IllegalStateException;
-    
+
+    /**
+     * Get resource count for latest reindexing opertion.
+     * @return
+     * @throws IllegalStateException
+     */
     public int getLastReindexingResourceCount() throws IllegalStateException;
 
-    // Consistency check
+    /**
+     * Initiate a consistency check.
+     * @param asynchronous
+     * @throws IllegalStateException if reindexing is already running, if consistency check is already running, if closed
+     */
     public void checkConsistency(boolean asynchronous) throws IllegalStateException;
-    
+
+    /**
+     * Get result of last consistency check.
+     * @return
+     * @throws IllegalStateException
+     */
     public ConsistencyCheck getLastConsistencyCheck() throws IllegalStateException;
-    
+
+    /**
+     * Get error of last consistency check.
+     * @return
+     */
     public Exception getLastConsistencyCheckException();
-    
+
+    /**
+     * Time of last consistency check completion.
+     * @return
+     */
     public Date getLastConsistencyCheckCompletionTime();
-    
+
+    /**
+     * Query if last consistency check completed normally.
+     * @return
+     * @throws IllegalStateException
+     */
     public boolean lastConsistencyCheckCompletedNormally() throws IllegalStateException;
-    
+
+    /**
+     * Query if currently running consistency check.
+     * @return
+     */
     public boolean isCheckingConsistency();
-    
+
+    /**
+     * Clear results of last consistency check.
+     * @throws IllegalStateException
+     */
     public void clearLastConsistencyCheckResults() throws IllegalStateException;
-    
+
 }

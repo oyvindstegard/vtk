@@ -201,6 +201,11 @@ public class ConsistencyCheck {
                 if (++this.progressCount % 10000 == 0) {
                     LOG.info("Progress: " + this.progressCount + " property sets checked");
                 }
+
+                // Interrupt checking
+                if (Thread.interrupted()) {
+                    throw new IndexException("Interrupted during consistency check");
+                }
             }
         };
         
@@ -212,6 +217,11 @@ public class ConsistencyCheck {
             Path currentUri = indexUriIterator.next();
             if (! validURIs.contains(currentUri)) {
                 this.addError(new DanglingInconsistency(currentUri));
+            }
+
+            // Interrupt checking
+            if (Thread.interrupted()) {
+                throw new IndexException("Interrupted during consistency check");
             }
         }
     }

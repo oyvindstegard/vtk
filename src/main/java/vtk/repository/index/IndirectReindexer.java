@@ -56,10 +56,7 @@ public class IndirectReindexer implements PropertySetIndexReindexer {
     private final PropertySetIndex temporaryIndex;
     private static final Logger LOG = LoggerFactory.getLogger(IndirectReindexer.class);
     
-    public IndirectReindexer(PropertySetIndex targetIndex, 
-                             PropertySetIndex temporaryIndex,
-                             IndexDao indexDao) {
-        
+    public IndirectReindexer(PropertySetIndex targetIndex, PropertySetIndex temporaryIndex, IndexDao indexDao) {
         this.targetIndex = targetIndex;
         this.temporaryIndex = temporaryIndex;
         this.indexDao = indexDao;
@@ -79,7 +76,6 @@ public class IndirectReindexer implements PropertySetIndexReindexer {
             this.targetIndex.unlock();
             throw new IndexException("Failed to acquire exclusive write lock on temporary index '" 
                     + this.temporaryIndex.getId() + "'");
-            
         }
         
         // Start re-indexing to provided temporary index

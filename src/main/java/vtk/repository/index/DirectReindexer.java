@@ -30,16 +30,13 @@
  */
 package vtk.repository.index;
 
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vtk.repository.Acl;
 import vtk.repository.PropertySet;
-import vtk.repository.index.mapping.AclFields;
 import vtk.repository.store.IndexDao;
 import vtk.repository.store.PropertySetHandler;
-import vtk.security.Principal;
 
 /**
  * A simple re-indexer that works directly on the provided <code>PropertySetIndex</code> instance.
@@ -50,8 +47,8 @@ import vtk.security.Principal;
  */
 public class DirectReindexer implements PropertySetIndexReindexer {
 
-    private PropertySetIndex targetIndex;
-    private IndexDao indexDao;
+    private final PropertySetIndex targetIndex;
+    private final IndexDao indexDao;
     private final Logger logger = LoggerFactory.getLogger(DirectReindexer.class);
     
     public DirectReindexer(PropertySetIndex targetIndex, IndexDao indexDao) {
@@ -105,6 +102,14 @@ public class DirectReindexer implements PropertySetIndexReindexer {
             
             return handler.getCount();
         } catch (Exception e) {
+            // Unwrap if cause is an IndexException wrapped in callback-API-specific exception(s)
+            Throwable cause = e.getCause();
+            while (cause != null) {
+                if (cause instanceof IndexException) {
+                    throw (IndexException)cause;
+                }
+                cause = cause.getCause();
+            }
             logger.warn("Exception while re-indexing", e);
             throw new IndexException(e);
         }
@@ -127,6 +132,11 @@ public class DirectReindexer implements PropertySetIndexReindexer {
 
             if (++count % 10000 == 0) {
                 DirectReindexer.this.logger.info("Reindexing progress: " + count + " resources indexed.");
+            }
+
+            // Allow interrupting process
+            if (Thread.interrupted()) {
+                throw new IndexException("Thread interrupted during reindexing");
             }
         }
         

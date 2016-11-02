@@ -195,7 +195,7 @@ public interface PropertySetIndex {
     public void addIndexContents(PropertySetIndex index) throws IndexException;
     
     /**
-     * Obtain index mutex write lock.
+     * Set index mutex write lock.
      * 
      * @return <code>true</code> iff the lock was acquired, <code>false</code>
      *         otherwise.
@@ -205,7 +205,7 @@ public interface PropertySetIndex {
     public boolean lock();
     
     /**
-     * Try to obtain index mutex write lock.
+     * Try to set index mutex write lock.
      * 
      * @param timeout The number of milliseconds to wait before failing.
      * 
@@ -217,7 +217,7 @@ public interface PropertySetIndex {
     public boolean lock(long timeout);
     
     /**
-     * Release index mutex write lock.
+     * Unset index mutex write lock.
      * @throws IndexException
      */
     public void unlock();

@@ -102,6 +102,13 @@
     <property name="documentMapper" ref="documentMapper"/>
     <property name="closeAfterInit" value="true"/>
   </bean>
+
+  <!-- High level system index operation manager -->
+  <bean id="systemIndexOperationManager" class="vtk.repository.index.management.IndexOperationManagerImpl">
+    <constructor-arg><ref local="systemIndex"/></constructor-arg>
+    <constructor-arg><ref local="secondarySystemIndex"/></constructor-arg>
+    <constructor-arg><ref bean="repository.indexDao"/></constructor-arg>
+  </bean>
   
   <!-- Factory for building Lucene queries. -->
   <bean id="queryBuilder"
