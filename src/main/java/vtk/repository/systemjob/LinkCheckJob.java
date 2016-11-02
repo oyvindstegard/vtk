@@ -138,6 +138,13 @@ public class LinkCheckJob extends AbstractResourceJob {
         if (jsonValue.containsKey("links")) {
             ListContainer links = jsonValue.arrayValue("links");
             for (int i = 0; i < links.size(); i++) {
+                try {
+                    checkForInterrupt();
+                }
+                catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                
                 MapContainer hrefObj = links.objectValue(i);
 
                 if (hrefObj.containsKey("vrtxid")) {
