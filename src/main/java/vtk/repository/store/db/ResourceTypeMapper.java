@@ -143,6 +143,7 @@ public final class ResourceTypeMapper {
         "/file/text/json-resource/managed-json-resource/course-group",
         "/file/text/json-resource/managed-json-resource/course-schedule",
         "/file/text/json-resource/managed-json-resource/exam",
+        "/file/text/json-resource/managed-json-resource/exam-info",
         "/file/text/json-resource/managed-json-resource/external-work-listing",
         "/file/text/json-resource/managed-json-resource/featured-content",
         "/file/text/json-resource/managed-json-resource/frontpage",

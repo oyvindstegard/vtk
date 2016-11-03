@@ -1,0 +1,68 @@
+resourcetype exam-info {
+
+  properties {
+    tittel : string,
+    title : derived (tittel) eval ("exam"?localized) overrides title
+  }
+
+  edit-rules {
+    tittel (size[1]),
+    tittel (class[ui-helper-hidden]),
+    title (class[ui-helper-hidden])
+  }
+
+  view {
+    ##
+    [def settings settings()]
+    [def document structured-document()]
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>[call "resource:contextual-title-new"]</title>
+      </head>
+      <body id="vrtx-exam-info">
+        <div id="vrtx-content">
+          <div id="vrtx-main-content" class="vrtx-hide-additional-content-true">
+            <h1>[call "resource:property" {"id":"title"}]</h1>
+            
+            [if ! settings.services.examInfo]
+              <p>No external service available.</p>
+            [else]
+		      [def course-code document.properties.course-code]
+		      [def term resource-prop-obj-val(".", "semesterContext.semesterTerm")]
+		      [def year resource-prop-obj-val(".", "semesterContext.semesterYear")]
+		      [if year != null && year.length() = 4]
+		        [def year year.substring(2, 4)]
+		      [endif]
+		      
+		      [val course-code]
+		      [val term]
+		      [val year]
+            
+              [def url settings.services.examInfo]
+              [def resp url-as-json(url)]
+          
+              [if resp.errorMessage]
+                <p>Unable to look up exam info: [val url]</p>
+                <p>Error message: [val resp.errorMessage]</p>
+              [else]
+                <h2>[localized 'trekkfrist']</h2>
+                <p>[val resp.payload.exam.trekkfrist]</p>
+                [call "include:shared-text" {"folder": "/vrtx/fellestekst", "file": "eksamen", "key": "resultater"}]
+                [call "include:shared-text" {"folder": "/vrtx/fellestekst", "file": "eksamen", "key": "mer-om"}]
+              [endif]
+            [endif]
+          </div>
+        </div>
+      </body>
+    </html>
+    ##
+  }
+
+  localization {
+    exam : (en : "Examination: Time and place", no : "Eksamen: Tid og sted", nn : "Eksamen: Tid og stad"),
+    title : (en : "Title", no : "Tittel", nn : "Tittel"),
+    header : (en : "Edit exam", no : "Rediger eksamen", nn : "Rediger eksamen"),
+    trekkfrist : (en : "Trekkfrist", no : "Trekkfrist", nn : "Trekkfrist")
+  }
+}
