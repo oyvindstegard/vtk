@@ -45,11 +45,11 @@ import vtk.util.repository.ResourceSorter.Order;
 public class ListResourcesProvider {
 
     private Repository repository;
-    private org.springframework.web.servlet.support.RequestContext springRequestContext;
 
     public List<Resource> buildSearchAndPopulateResources(Path uri, String token, HttpServletRequest request) throws Exception {
 
-        this.springRequestContext = new org.springframework.web.servlet.support.RequestContext(request);
+        org.springframework.web.servlet.support.RequestContext springRequestContext
+                = new org.springframework.web.servlet.support.RequestContext(request);
 
         Resource[] resourcesArr = this.repository.listChildren(token, uri, false);
 
