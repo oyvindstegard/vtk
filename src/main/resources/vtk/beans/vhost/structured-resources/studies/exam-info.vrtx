@@ -11,6 +11,38 @@ resourcetype exam-info {
     title (class[ui-helper-hidden])
   }
 
+  view-components {
+
+    exam-part (part) {
+      ##
+      <h2>[val part.form]</h2>
+      [if part.datoEksamen]
+        <strong>Tid</strong>: [val part.datoEksamen] kl. [val part.klokkeslettEksamen] ([val part.varighetTimer] timer).
+      [endif]
+      [if part.datoInnlevering]
+        <strong>Utlevering av oppgaven:</strong> [part.datoInnlevering] kl. [part.klokkeslettInnlevering]
+      [endif]
+      [def rom part.rom]
+      [if rom]
+        <ul>
+        [list rom r]
+          <li><a href="https://www.google.no/maps/place/[val r.bygningskode]">[val r.romkode] [val r.bygningskode]</a></li>
+        [endlist]
+        </ul>
+      [endif]
+      [if part.datasystem]
+        <strong>Datasystem:</strong> [val part.datasystem]
+      [endif]
+      [if part.kommentar]
+        <strong>Merknad:</strong> [val part.kommentar]
+      [endif]
+      [if part.kunngjoring]
+        <strong>Kunngjøring:</strong> [val part.kunngjoring]
+      [endif]
+      ##
+    }
+  }
+
   view {
     ##
     [def settings settings()]
@@ -28,16 +60,12 @@ resourcetype exam-info {
             [if ! settings.services.examInfo]
               <p>No external service available.</p>
             [else]
-              [def course-code document.properties.course-code]
+              [def course-code resource-prop-obj-val(".", "courseContext.fs-course-code")]
               [def term resource-prop-obj-val(".", "semesterContext.semesterTerm")]
               [def year resource-prop-obj-val(".", "semesterContext.semesterYear")]
               [if year != null && year.length() = 4]
                 [def year year.substring(2, 4)]
               [endif]
-
-              [val course-code]
-              [val term]
-              [val year]
 
               [def url settings.services.examInfo]
               [def resp url-as-json(url)]
@@ -48,26 +76,30 @@ resourcetype exam-info {
               [else]
                 [def exam resp.payload]
                 [def ordninger exam.ordning]
-
-                <h2>[localized 'trekkfrist']</h2>
-                [if exam.ordning]
+                [if ordninger]
                   [list ordninger ordning]
-                    <p>[val ordning.trekkfrist]</p>
-                    [def eksamensdeler ordning.eksamensdel]
-                    [if eksamensdeler]
-                      [def count 1]
-                      [def len eksamensdeler.length()]
-                      [if len != 1]
+                    [if ordning]
+                      <h2>[localized 'trekkfrist']</h2>
+                      <p>[val ordning.trekkfrist]</p>
+
+                      [def eksamensdeler ordning.eksamensdel]
+                      [if eksamensdeler]
+
+                        [def len eksamensdeler.length()]
+                        [if len > 1]
+                          <h2>[localized 'ordning']</h2>
+                          <p>[val ordning.vurderingsordningnavn]</p>
+                        [endif]
+
+                        [list eksamensdeler p]
+                          [call "comp:exam-part" { "part" : p }]
+                        [endlist]
+                      [else]
                         <h2>[localized 'ordning']</h2>
                         <p>[val ordning.vurderingsordningnavn]</p>
+
+                        [call "comp:exam-part" { "part" : ordning }]
                       [endif]
-                      [list eksamensdeler eksamensdel]
-                        <h2>[val eksamensdel.form]</h2>
-                        [if eksamensdel.datoEksamen]
-                          <strong>Tid</strong>: [val eksamensdel.datoEksamen] kl. [val eksamensdel.klokkeslettEksamen] ([val eksamensdel.varighetTimer] timer).
-                        [endif]
-                        [def count count + 1]
-                      [endlist]
                     [endif]
                   [endlist]
                 [endif]
