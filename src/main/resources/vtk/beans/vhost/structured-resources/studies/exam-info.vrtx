@@ -17,27 +17,60 @@ resourcetype exam-info {
       ##
       <h2>[val part.form]</h2>
       [if part.datoEksamen]
-        <strong>Tid</strong>: [val part.datoEksamen] kl. [val part.klokkeslettEksamen] ([val part.varighetTimer] timer).
+        <p><strong>[localized 'time']:</strong> [val part.datoEksamen] kl. [val part.klokkeslettEksamen] ([val part.varighetTimer] timer).</p>
       [endif]
       [if part.datoInnlevering]
-        <strong>Utlevering av oppgaven:</strong> [part.datoInnlevering] kl. [part.klokkeslettInnlevering]
+        <p><strong>Utlevering av oppgaven:</strong> [part.datoInnlevering] kl. [part.klokkeslettInnlevering]</p>
       [endif]
       [def rom part.rom]
       [if rom]
+        <p><strong>[localized 'place']:</strong></p>
         <ul>
         [list rom r]
-          <li><a href="https://www.google.no/maps/place/[val r.bygningskode]">[val r.romkode] [val r.bygningskode]</a></li>
+          <li>
+            [if r.bygning]
+              <a href="https://www.google.no/maps/place/[val r.bygning]">[val r.rom] [val r.bygning]</a>
+            [elseif r.bygningskode]
+              <a href="https://www.google.no/maps/place/[val r.bygningskode]">[val r.romkode] [val r.bygningskode]</a>
+            [endif]
+          </li>
         [endlist]
         </ul>
       [endif]
       [if part.datasystem]
-        <strong>Datasystem:</strong> [val part.datasystem]
+        <p><strong>[localized 'system']:</strong> [val part.datasystem]</p>
       [endif]
       [if part.kommentar]
-        <strong>Merknad:</strong> [val part.kommentar]
+        <p><strong>[localized 'note']:</strong> [val part.kommentar]</p>
       [endif]
       [if part.kunngjoring]
-        <strong>Kunngjøring:</strong> [val part.kunngjoring]
+        <p><strong>[localized 'announcement']:</strong> [val part.kunngjoring]</p>
+      [endif]
+      ##
+    }
+
+    exam-ordning (ordning) {
+      ##
+      <h2>[localized 'trekkfrist']</h2>
+      <p>[val ordning.trekkfrist]</p>
+
+      [def eksamensdeler ordning.eksamensdel]
+      [if eksamensdeler]
+
+        [def len eksamensdeler.length()]
+        [if len > 1]
+          <h2>[localized 'ordning']</h2>
+          <p>[val ordning.vurderingsordningnavn]</p>
+        [endif]
+
+        [list eksamensdeler p]
+          [call "comp:exam-part" { "part" : p }]
+        [endlist]
+      [else]
+        <h2>[localized 'ordning']</h2>
+        <p>[val ordning.vurderingsordningnavn]</p>
+
+        [call "comp:exam-part" { "part" : ordning }]
       [endif]
       ##
     }
@@ -78,29 +111,7 @@ resourcetype exam-info {
                 [def ordninger exam.ordning]
                 [if ordninger]
                   [list ordninger ordning]
-                    [if ordning]
-                      <h2>[localized 'trekkfrist']</h2>
-                      <p>[val ordning.trekkfrist]</p>
-
-                      [def eksamensdeler ordning.eksamensdel]
-                      [if eksamensdeler]
-
-                        [def len eksamensdeler.length()]
-                        [if len > 1]
-                          <h2>[localized 'ordning']</h2>
-                          <p>[val ordning.vurderingsordningnavn]</p>
-                        [endif]
-
-                        [list eksamensdeler p]
-                          [call "comp:exam-part" { "part" : p }]
-                        [endlist]
-                      [else]
-                        <h2>[localized 'ordning']</h2>
-                        <p>[val ordning.vurderingsordningnavn]</p>
-
-                        [call "comp:exam-part" { "part" : ordning }]
-                      [endif]
-                    [endif]
+                    [call "comp:exam-ordning" { "ordning" : ordning }]
                   [endlist]
                 [endif]
               [endif]
@@ -117,6 +128,11 @@ resourcetype exam-info {
     title : (en : "Title", no : "Tittel", nn : "Tittel"),
     header : (en : "Edit exam", no : "Rediger eksamen", nn : "Rediger eksamen"),
     trekkfrist : (en : "Withdrawal deadline", no : "Trekkfrist", nn : "Trekkfrist"),
-    ordning : (en : "Exam form", no : "Eksamensordning", nn : "Eksamensordning")
+    ordning : (en : "Exam form", no : "Eksamensordning", nn : "Eksamensordning"),
+    time : (en : "Time", no : "Tid", nn : "Tid"),
+    place : (en : "Place", no : "Sted", nn : "Sted"),
+    system : (en : "Exam system", no : "Eksamenssystem", nn : "Eksamenssystem"),
+    note : (en : "Note", no : "Merknad", nn : "Merknad"),
+    announcement : (en : "Announcement", no : "Kunngjøring", nn : "Kunngjering")
   }
 }
