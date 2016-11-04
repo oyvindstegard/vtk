@@ -1,32 +1,32 @@
 import vtk.repository.index.*;
 
 getDescription() {
-    return "Operate on system index";
+    return "Reindex the repository system index";
 }
 
 getUsage() {
-    return "repo index <command:string>";
+    return "repo index reindex [async:boolean]";
 }
 
 void execute(context, args, out) {
-    command = args.get("command");    
-
-    if ("reindex".equals(command)) {
-      reindex(context, out);
-    } else {
-      out.println("Unknown command: " + command);
-      out.println("Supported commands:");
-      out.println("reindex - Run re-indexing on system index");
-    }
+    command = args.get("command");
+    reindex(context, "true".equals(args.get("async")), out);
 }
 
-void reindex(context, out) {
-   primaryIndex = context.get("context").getBean("systemIndex");
-   secondaryIndex = context.get("context").getBean("secondarySystemIndex");
-   indexDao = context.get("context").getBean("repository.indexDao");
-   
-   reindexer = new IndirectReindexer(primaryIndex, secondaryIndex, indexDao);
-   n = reindexer.run();
-   
-   out.println("Successfully re-indexed " + n + " resources.");
+void reindex(context, async, out) {
+   indexOperationManager = context.get("context").getBean("systemIndexOperationManager");
+   if (async) {
+        indexOperationManager.reindex(true);
+        out.println("Initiated asynchronous reindexing");
+   } else {
+        out.println("Starting reindexing ..");
+        indexOperationManager.reindex(false);
+        e = indexOperationManager.getLastReindexingException();
+        if (e != null) {
+            out.println("Reindexing failed: " + e.getMessage());
+            e.printStackTrace(out);
+        } else {
+            out.println("Successfully re-indexed " + indexOperationManager.getLastReindexingResourceCount() + " resources.");
+        }
+   }
 }
