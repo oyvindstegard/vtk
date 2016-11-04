@@ -24,32 +24,53 @@ resourcetype exam-info {
         <div id="vrtx-content">
           <div id="vrtx-main-content" class="vrtx-hide-additional-content-true">
             <h1>[call "resource:property" {"id":"title"}]</h1>
-            
+
             [if ! settings.services.examInfo]
               <p>No external service available.</p>
             [else]
-		      [def course-code document.properties.course-code]
-		      [def term resource-prop-obj-val(".", "semesterContext.semesterTerm")]
-		      [def year resource-prop-obj-val(".", "semesterContext.semesterYear")]
-		      [if year != null && year.length() = 4]
-		        [def year year.substring(2, 4)]
-		      [endif]
-		      
-		      [val course-code]
-		      [val term]
-		      [val year]
-            
+              [def course-code document.properties.course-code]
+              [def term resource-prop-obj-val(".", "semesterContext.semesterTerm")]
+              [def year resource-prop-obj-val(".", "semesterContext.semesterYear")]
+              [if year != null && year.length() = 4]
+                [def year year.substring(2, 4)]
+              [endif]
+
+              [val course-code]
+              [val term]
+              [val year]
+
               [def url settings.services.examInfo]
               [def resp url-as-json(url)]
-          
+
               [if resp.errorMessage]
                 <p>Unable to look up exam info: [val url]</p>
                 <p>Error message: [val resp.errorMessage]</p>
               [else]
+                [def exam resp.payload]
+                [def ordninger exam.ordning]
+
                 <h2>[localized 'trekkfrist']</h2>
-                <p>[val resp.payload.exam.trekkfrist]</p>
-                [call "include:shared-text" {"folder": "/vrtx/fellestekst", "file": "eksamen", "key": "resultater"}]
-                [call "include:shared-text" {"folder": "/vrtx/fellestekst", "file": "eksamen", "key": "mer-om"}]
+                [if exam.ordning]
+                  [list ordninger ordning]
+                    <p>[val ordning.trekkfrist]</p>
+                    [def eksamensdeler ordning.eksamensdel]
+                    [if eksamensdeler]
+                      [def count 1]
+                      [def len eksamensdeler.length()]
+                      [if len != 1]
+                        <h2>[localized 'ordning']</h2>
+                        <p>[val ordning.vurderingsordningnavn]</p>
+                      [endif]
+                      [list eksamensdeler eksamensdel]
+                        <h2>[val eksamensdel.form]</h2>
+                        [if eksamensdel.datoEksamen]
+                          <strong>Tid</strong>: [val eksamensdel.datoEksamen] kl. [val eksamensdel.klokkeslettEksamen] ([val eksamensdel.varighetTimer] timer).
+                        [endif]
+                        [def count count + 1]
+                      [endlist]
+                    [endif]
+                  [endlist]
+                [endif]
               [endif]
             [endif]
           </div>
@@ -63,6 +84,7 @@ resourcetype exam-info {
     exam : (en : "Examination: Time and place", no : "Eksamen: Tid og sted", nn : "Eksamen: Tid og stad"),
     title : (en : "Title", no : "Tittel", nn : "Tittel"),
     header : (en : "Edit exam", no : "Rediger eksamen", nn : "Rediger eksamen"),
-    trekkfrist : (en : "Trekkfrist", no : "Trekkfrist", nn : "Trekkfrist")
+    trekkfrist : (en : "Withdrawal deadline", no : "Trekkfrist", nn : "Trekkfrist"),
+    ordning : (en : "Exam form", no : "Eksamensordning", nn : "Eksamensordning")
   }
 }
