@@ -47,6 +47,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.LastModified;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.RepositoryException;
@@ -191,6 +192,10 @@ public class DisplayResourceController
         if (this.unsupportedResourceTypes.contains(resource.getContentType())) {
             return new ModelAndView(this.unsupportedResourceView);
         }
+
+		if (!resource.isPublished()) {
+			response.sendError(404);
+		}
 
         model.put("resource", resource);
 
