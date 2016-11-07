@@ -15,16 +15,16 @@ resourcetype exam-info {
 
     exam-part (part) {
       ##
-      <h2>[val part.form]</h2>
+      <h2>[val part.navn]</h2>
       [if part.datoEksamen]
-        <p><strong>[localized 'time']:</strong> [val part.datoEksamen] kl. [val part.klokkeslettEksamen] ([val part.varighetTimer] timer).</p>
+        <p><strong>[localized 'time']:</strong> [val part.datoEksamen] kl. [val part.klokkeslettEksamen][if part.varighetTimer] ([val part.varighetTimer] [localized 'time-hours'])[endif].</p>
       [endif]
       [if part.datoInnlevering]
-        <p><strong>Utlevering av oppgaven:</strong> [part.datoInnlevering] kl. [part.klokkeslettInnlevering]</p>
+        <p><strong>[localized 'give-in-deadline']:</strong> [val part.datoInnlevering] [localized 'time-prefix'] [val part.klokkeslettInnlevering]</p>
       [endif]
       [def rom part.rom]
       [if rom]
-        <p><strong>[localized 'place']:</strong></p>
+        <p><strong>[localized 'place']:</strong> [localized 'place-about'] <a href="//studentweb.uio.no/">StudentWeb</a>.</p>
         <ul>
         [list rom r]
           <li>
@@ -38,21 +38,30 @@ resourcetype exam-info {
         </ul>
       [endif]
       [if part.datasystem]
-        <p><strong>[localized 'system']:</strong> [val part.datasystem]</p>
+        <p><strong>[localized 'system']:</strong> [val part.datasystem] ..fellestekst..</p>
       [endif]
       [if part.kommentar]
-        <p><strong>[localized 'note']:</strong> [val part.kommentar]</p>
+        <p><strong>[localized 'notice']:</strong> [val part.kommentar]</p>
       [endif]
       [if part.kunngjoring]
         <p><strong>[localized 'announcement']:</strong> [val part.kunngjoring]</p>
+      [endif]
+      
+      [def deldager part.deldag]
+      [if deldager]
+        [list deldager deldag]
+          [call "comp:exam-part" { "part" : deldag }]
+        [endlist]
       [endif]
       ##
     }
 
     exam-ordning (ordning) {
       ##
-      <h2>[localized 'trekkfrist']</h2>
-      <p>[val ordning.trekkfrist]</p>
+      [if ordning.trekkfrist]
+        <h2>[localized 'trekkfrist']</h2>
+        <p>[val ordning.trekkfrist]</p>
+      [endif]
 
       [def eksamensdeler ordning.eksamensdel]
       [if eksamensdeler]
@@ -60,7 +69,7 @@ resourcetype exam-info {
         [def len eksamensdeler.length()]
         [if len > 1]
           <h2>[localized 'ordning']</h2>
-          <p>[val ordning.vurderingsordningnavn]</p>
+          <p>[val ordning.navn]</p>
         [endif]
 
         [list eksamensdeler p]
@@ -68,10 +77,14 @@ resourcetype exam-info {
         [endlist]
       [else]
         <h2>[localized 'ordning']</h2>
-        <p>[val ordning.vurderingsordningnavn]</p>
-
         [call "comp:exam-part" { "part" : ordning }]
       [endif]
+      
+      <h2>[localized 'results']</h2>
+      <p>..fellestekst..</p>
+      
+      <h2>[localized 'more-about']</h2>
+      <p>..fellestekst..</p>
       ##
     }
   }
@@ -130,14 +143,18 @@ resourcetype exam-info {
     trekkfrist : (en : "Deadline for withdrawing from the exam", no : "Trekkfrist", nn : "Trekkfrist"),
     ordning : (en : "Examination system", no : "Eksamensordning", nn : "Eksamensordning"),
     time : (en : "Time", no : "Tid", nn : "Tid"),
+    time-hours : (en : "hours", no : "timer", nn : "timer"),
+    time-prefix : (en : "at", no : "kl.", nn : "kl."),
     place : (en : "Place", no : "Sted", nn : "Sted"),
+    place-about : (en : "You will find your candidate number and information about where you will be sitting in",
+                   no : "Du finner kandidatnummeret ditt og informasjon om hvor du skal sitte i",
+                   nn : "Du finner kandidatnummeret ditt og informasjon om kvar du skal sitje i"),
     system : (en : "Exam system", no : "Eksamenssystem", nn : "Eksamenssystem"),
-    note : (en : "Note", no : "Merknad", nn : "Merknad"),
+    notice : (en : "Notice", no : "Merknad", nn : "Merknad"),
     announcement : (en : "Announcement of examination results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultatar"),
-    give-out-time: (en : "Give out of task", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
-    give-in-deadline: (en : "Deadling for give in", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
-    results: (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
-    more-about: (en : "More about the exam for this course", no : "Mer om eksamen for dette emnet", nn : "Meir om eksamen for dette emnet")
-    
+    give-out-time : (en : "Give out of task", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
+    give-in-deadline : (en : "Deadline for give in", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
+    results : (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
+    more-about : (en : "More about the exam for this course", no : "Mer om eksamen for dette emnet", nn : "Meir om eksamen for dette emnet")
   }
 }
