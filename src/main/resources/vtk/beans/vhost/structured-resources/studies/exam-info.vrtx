@@ -31,7 +31,7 @@ resourcetype exam-info {
             [if r.bygning]
               <a href="https://www.google.no/maps/place/[val r.bygning]">[val r.rom] [val r.bygning]</a>
             [elseif r.bygningskode]
-              <a href="https://www.google.no/maps/place/[val r.bygningskode]">[val r.romkode] [val r.bygningskode]</a>
+              [val r.romkode] [val r.bygningskode]
             [endif]
           </li>
         [endlist]
@@ -127,12 +127,17 @@ resourcetype exam-info {
     exam : (en : "Examination: Time and place", no : "Eksamen: Tid og sted", nn : "Eksamen: Tid og stad"),
     title : (en : "Title", no : "Tittel", nn : "Tittel"),
     header : (en : "Edit exam", no : "Rediger eksamen", nn : "Rediger eksamen"),
-    trekkfrist : (en : "Withdrawal deadline", no : "Trekkfrist", nn : "Trekkfrist"),
-    ordning : (en : "Exam form", no : "Eksamensordning", nn : "Eksamensordning"),
+    trekkfrist : (en : "Deadline for withdrawing from the exam", no : "Trekkfrist", nn : "Trekkfrist"),
+    ordning : (en : "Examination system", no : "Eksamensordning", nn : "Eksamensordning"),
     time : (en : "Time", no : "Tid", nn : "Tid"),
     place : (en : "Place", no : "Sted", nn : "Sted"),
     system : (en : "Exam system", no : "Eksamenssystem", nn : "Eksamenssystem"),
     note : (en : "Note", no : "Merknad", nn : "Merknad"),
-    announcement : (en : "Announcement", no : "Kunngjøring", nn : "Kunngjering")
+    announcement : (en : "Announcement of examination results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultatar"),
+    give-out-time: (en : "Give out of task", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
+    give-in-deadline: (en : "Deadling for give in", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
+    results: (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
+    more-about: (en : "More about the exam for this course", no : "Mer om eksamen for dette emnet", nn : "Meir om eksamen for dette emnet")
+    
   }
 }
