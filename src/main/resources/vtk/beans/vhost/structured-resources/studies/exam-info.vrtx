@@ -15,8 +15,8 @@ resourcetype exam-info {
   
     date-format(date) {
       ##
-      [def locale resource-locale()]
-      [val dateFormat(date, "yyyy-MM-dd", locale, "d. MMMM")]
+      [def dt to-date(date)]
+      [val dt # "full-month-short"]
       ##
     }
 
@@ -41,9 +41,14 @@ resourcetype exam-info {
         [list rom r]
           <li>
             [if r.bygning]
-              <a href="https://www.google.no/maps/place/[val r.bygning]">[val r.rom] [val r.bygning]</a>
+              [if r.url]
+                [def url r.url]
+              [else]
+                [def url concat("https://www.google.no/maps/place/", r.bygning)]
+              [endif]
+              <a href="[val url]">[if r.rom][val r.rom] [endif][val r.bygning]</a>
             [elseif r.bygningskode]
-              [val r.romkode] [val r.bygningskode]
+              [if r.romkode][val r.romkode] [endif][val r.bygningskode]
             [endif]
           </li>
         [endlist]
@@ -128,8 +133,18 @@ resourcetype exam-info {
               [if year != null && year.length() = 4]
                 [def year year.substring(2, 4)]
               [endif]
+              
+              [if year = null]
+                [def year "h16"]
+              [endif]
+              [if course-code = null]
+                [def course-code "INF1000"]
+              [endif]
 
               [def url settings.services.examInfo]
+              [def url replace(url, "%sem", year)]
+              [def url replace(url, "%course", course-code)]
+              
               [def resp url-as-json(url)]
 
               [if resp.errorMessage]

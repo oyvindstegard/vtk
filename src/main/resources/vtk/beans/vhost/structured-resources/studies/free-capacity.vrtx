@@ -93,7 +93,7 @@ resourcetype free-capacity-listing {
       [if timestamp != null]
         [def locale resource-locale()]
         <div class="vrtx-date-info">
-          <span class="last-updated-label">[localized "last-updated"]</span> <span class="last-updated">[val dateFormat(timestamp, "yyyy-MM-dd'T'HH:mm:ss.SSSX", locale, null)]</span>
+          <span class="last-updated-label">[localized "last-updated"]</span> <span class="last-updated">[val dateFormat(timestamp, "yyyy-MM-dd'T'HH:mm:ss.SSSX", locale)]</span>
         </div>
       [endif]
       ##
