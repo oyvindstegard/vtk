@@ -101,7 +101,7 @@ public class LinkStatusEvaluator implements LatePropertyEvaluator {
             }
 
             JSONArray arr = (JSONArray) brokenLinks;
-            Set<String> errors = new HashSet<String>();
+            Set<String> errors = new HashSet<>();
             errors.add("BROKEN_LINKS");
             for (Object o: arr) {
                 Map<?, ?> map = (Map<?, ?>) o;
@@ -113,14 +113,18 @@ public class LinkStatusEvaluator implements LatePropertyEvaluator {
                     }
                     errors.add("BROKEN_LINKS_" + type.toString());
                 }
+                if (map.containsKey("vrtxid")) {
+                    errors.add("TARGET_RELOCATED");
+                }
             }
-            List<Value> values = new ArrayList<Value>();
+            List<Value> values = new ArrayList<>();
             for (String s: errors) {
                 values.add(new Value(s, Type.STRING));
             }
             property.setValues(values.toArray(new Value[values.size()]));
             return true;
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             property.setValues(new Value[]{new Value("LINKCHECK_ERROR", Type.STRING)});
             return true;
         }

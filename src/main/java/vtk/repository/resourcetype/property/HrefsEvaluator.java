@@ -34,6 +34,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -86,27 +87,31 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
         final LinkCollector collector = new LinkCollector();
         boolean evaluateContent = true;
         try {
-            if (property.isValueInitialized()
-                    && ctx.getEvaluationType() != Type.ContentChange 
-                    && ctx.getEvaluationType() != Type.Create) {
+            if (ctx.getEvaluationType() != Type.ContentChange 
+                && ctx.getEvaluationType() != Type.Create) {
                 // Preserve existing content links, since this is not content change.
                 evaluateContent = false;
-                
-                Json.MapContainer map = property.getJSONValue();
-                Json.ListContainer arr = map.arrayValue("links");
-                
-                for (Object o: arr) {
-                    if (! (o instanceof Json.MapContainer)) {
-                        continue;
-                    }
+            } 
+            
+            if (property.isValueInitialized()) {
+                Json.MapContainer mmap = property.getJSONValue();
+                Json.ListContainer aarr = mmap.arrayValue("links");
+                for (Object o: aarr) {
+                    if (! (o instanceof Json.MapContainer)) continue;
                     Json.MapContainer obj = (Json.MapContainer) o;
                     String url = obj.stringValue("url");
                     String type = obj.stringValue("type");
-                    LinkSource source = LinkSource.valueOf(obj.stringValue("source"));
-                    if (source == LinkSource.CONTENT) {
-                        Link link = new Link(url, LinkType.valueOf(type), source);
-                        if (!collector.link(link)) {
-                            break;
+                    String vrtxid = obj.optStringValue("vrtxid", null);
+                    // Preserve existing (URL -> vrtxid) mappings
+                    if (vrtxid != null) collector.mapping(url, vrtxid);
+
+                    if (!evaluateContent) {
+                        LinkSource source = LinkSource.valueOf(obj.stringValue("source"));
+                        if (source == LinkSource.CONTENT) {
+                            Link link = new Link(url, LinkType.valueOf(type), source);
+                            if (!collector.link(link)) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -269,7 +274,12 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
     }
     
     private static class LinkCollector {
+        private Map<String, String> idMap = new HashMap<>();
         private final List<Link> links = new ArrayList<>();
+        
+        public void mapping(String url, String id) {
+            idMap.put(url, id);
+        }
 
         /**
          * Add a link. Links with URL size greather than {@link Property#MAX_STRING_LENGTH}
@@ -300,6 +310,9 @@ public class HrefsEvaluator implements LatePropertyEvaluator {
             for (Link l: links) {
                 Json.MapContainer object = new Json.MapContainer();
                 object.put("url", l.getURL());
+                if (idMap.containsKey(l.getURL())) {
+                    object.put("vrtxid", idMap.get(l.getURL()));
+                }
                 object.put("type", l.getType());
                 object.put("reltype", relType(l.getURL()));
                 object.put("source", l.getSource());
