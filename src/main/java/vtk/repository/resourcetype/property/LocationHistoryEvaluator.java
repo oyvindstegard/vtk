@@ -41,7 +41,8 @@ import vtk.repository.PropertyEvaluationContext.Type;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.util.text.Json;
 
-public class AuditLogEvaluator implements LatePropertyEvaluator {
+public class LocationHistoryEvaluator implements LatePropertyEvaluator {
+    private int MAX_ENTRIES = 100;
 
     @Override
     public boolean evaluate(Property property, PropertyEvaluationContext ctx)
@@ -55,12 +56,12 @@ public class AuditLogEvaluator implements LatePropertyEvaluator {
         List<Object> log = null;
         if (property.isValueInitialized()) {
             Json.MapContainer object = property.getJSONValue();
-            log = object.optArrayValue("events", new Json.ListContainer());
+            log = object.optArrayValue("locations", new Json.ListContainer());
         }
         if (log == null) log = new ArrayList<>();
         
         Json.MapContainer entry = new Json.MapContainer();
-        entry.put("type", ctx.getEvaluationType().toString());
+        //entry.put("type", ctx.getEvaluationType().toString());
         entry.put("principal", ctx.getPrincipal().getQualifiedName());
         entry.put("time", FastDateFormat.getInstance("yyyyMMdd HH:mm:ss").format(ctx.getTime()));
 
@@ -72,9 +73,12 @@ public class AuditLogEvaluator implements LatePropertyEvaluator {
                 break;
         }
         log.add(entry);
+        if (log.size() > MAX_ENTRIES) {
+            log.remove(0);
+        }
 
         Json.MapContainer value = new Json.MapContainer();
-        value.put("events", log);
+        value.put("locations", log);
         property.setJSONValue(value);
         return true;
     }
