@@ -12,16 +12,28 @@ resourcetype exam-info {
   }
 
   view-components {
-
-    exam-part (part) {
+  
+    date-format(date) {
       ##
-      <h2>[val part.navn]</h2>
+      [def locale resource-locale()]
+      [val dateFormat(date, "yyyy-MM-dd", locale, "d. MMMM")]
+      ##
+    }
+
+    exam-part (part, isSubPart) {
+      ##
+      [if isSubPart = "true"]<h3>[else]<h2>[endif]
+        [val part.navn]
+      [if isSubPart = "true"]</h3>[else]</h2>[endif]
+      
       [if part.datoEksamen]
-        <p><strong>[localized 'time']:</strong> [val part.datoEksamen] kl. [val part.klokkeslettEksamen][if part.varighetTimer] ([val part.varighetTimer] [localized 'time-hours'])[endif].</p>
+        <p><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.datoEksamen }][if part.klokkeslettEksamen] kl. [val part.klokkeslettEksamen][endif][if part.varighetTimer] ([val part.varighetTimer] [localized 'time-hours'])[endif].</p>
       [endif]
+      
       [if part.datoInnlevering]
-        <p><strong>[localized 'give-in-deadline']:</strong> [val part.datoInnlevering] [localized 'time-prefix'] [val part.klokkeslettInnlevering]</p>
+        <p><strong>[localized 'give-in-deadline']:</strong> [call "comp:date-format" { "date" : part.datoInnlevering }][if part.klokkeslettInnlevering] [localized 'time-prefix'] [val part.klokkeslettInnlevering][endif]</p>
       [endif]
+      
       [def rom part.rom]
       [if rom]
         <p><strong>[localized 'place']:</strong> [localized 'place-about'] <a href="//studentweb.uio.no/">StudentWeb</a>.</p>
@@ -37,12 +49,15 @@ resourcetype exam-info {
         [endlist]
         </ul>
       [endif]
+      
       [if part.datasystem]
         <p><strong>[localized 'system']:</strong> [val part.datasystem] ..fellestekst..</p>
       [endif]
+      
       [if part.kommentar]
         <p><strong>[localized 'notice']:</strong> [val part.kommentar]</p>
       [endif]
+      
       [if part.kunngjoring]
         <p><strong>[localized 'announcement']:</strong> [val part.kunngjoring]</p>
       [endif]
@@ -50,7 +65,7 @@ resourcetype exam-info {
       [def deldager part.deldag]
       [if deldager]
         [list deldager deldag]
-          [call "comp:exam-part" { "part" : deldag }]
+          [call "comp:exam-part" { "part" : deldag, "isSubPart": "true" }]
         [endlist]
       [endif]
       ##
@@ -60,7 +75,7 @@ resourcetype exam-info {
       ##
       [if ordning.trekkfrist]
         <h2>[localized 'trekkfrist']</h2>
-        <p>[val ordning.trekkfrist]</p>
+        <p>[call "comp:date-format" { "date" : ordning.trekkfrist }]</p>
       [endif]
 
       [def eksamensdeler ordning.eksamensdel]
@@ -73,11 +88,12 @@ resourcetype exam-info {
         [endif]
 
         [list eksamensdeler p]
-          [call "comp:exam-part" { "part" : p }]
+          [call "comp:exam-part" { "part" : p, "isSubPart": "false" }]
         [endlist]
       [else]
+      
         <h2>[localized 'ordning']</h2>
-        [call "comp:exam-part" { "part" : ordning }]
+        [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
       [endif]
       
       <h2>[localized 'results']</h2>

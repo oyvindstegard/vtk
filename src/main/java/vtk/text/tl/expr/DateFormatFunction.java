@@ -41,7 +41,7 @@ import vtk.text.tl.Symbol;
 public class DateFormatFunction extends Function {
 
     public DateFormatFunction(Symbol symbol) {
-        super(symbol, 3);
+        super(symbol, 4);
     }
 
     @Override
@@ -49,10 +49,11 @@ public class DateFormatFunction extends Function {
         Object o1 = args[0];
         Object o2 = args[1];
         Object o3 = args[2];
+        Object o4 = args[3];
         if (o1 == null || o2 == null || o3 == null) {
             throw new IllegalArgumentException("Argument is NULL");
         }
-        if (!(o1 instanceof String) || !(o2 instanceof String) || !(o3 instanceof String)) {
+        if (!(o1 instanceof String) || !(o2 instanceof String) || !(o3 instanceof String) || (o4 != null && !(o4 instanceof String))) {
             throw new IllegalArgumentException("Illegal argument type");
         }
 
@@ -64,10 +65,19 @@ public class DateFormatFunction extends Function {
         }
 
         FastDateFormat f;
+
         if (o3.equals("en")) {
-            f = FastDateFormat.getInstance("MMM d, yyyy hh:mm a", new Locale("en"));
+            if(o4 == null) {
+                f = FastDateFormat.getInstance("MMM d, yyyy hh:mm a", new Locale("en"));
+            } else {
+                f = FastDateFormat.getInstance((String) o4, new Locale("en"));
+            }
         } else {
-            f = FastDateFormat.getInstance("d. MMM. yyyy HH:mm", new Locale("no"));
+            if(o4 == null) {
+                f = FastDateFormat.getInstance("d. MMM. yyyy HH:mm", new Locale("no"));
+            } else {
+                f = FastDateFormat.getInstance((String) o4, new Locale("no"));
+            }
         }
 
         return f.format(d);
