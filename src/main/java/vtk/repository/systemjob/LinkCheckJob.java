@@ -61,6 +61,7 @@ import vtk.repository.ResourceNotFoundException;
 import vtk.repository.SystemChangeContext;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.PropertySelect;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.query.PropertyTermQuery;
@@ -443,6 +444,9 @@ public class LinkCheckJob extends AbstractResourceJob {
         Search search = new Search();
         search.setQuery(query);
         search.setLimit(1);
+        search.clearAllFilterFlags();
+        search.setSorting(null);
+        search.setPropertySelect(PropertySelect.NONE);
         ResultSet result = context.getRepository().search(context.getToken(), search);
         if (result.getTotalHits() == 0) {
             return Optional.empty();
