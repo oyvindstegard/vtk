@@ -134,21 +134,24 @@ resourcetype exam-info {
                 [def year year.substring(2, 4)]
               [endif]
               
+              [if term = null]
+                [def term "h"]
+              [endif]
               [if year = null]
-                [def year "h16"]
+                [def year "16"]
               [endif]
               [if course-code = null]
                 [def course-code "INF1000"]
               [endif]
 
-              [def url settings.services.examInfo]
-              [def url replace(url, "%sem", year)]
-              [def url replace(url, "%course", course-code)]
+              [def examInfoURL replace(settings.services.examInfo, "%term", term)]
+              [def examInfoURL replace(examInfoURL, "%sem", year)]
+              [def examInfoURL replace(examInfoURL, "%course", course-code)]
               
-              [def resp url-as-json(url)]
+              [def resp url-as-json(examInfoURL)]
 
               [if resp.errorMessage]
-                <p>Unable to look up exam info: [val url]</p>
+                <p>Unable to look up exam info: [val examInfoURL]</p>
                 <p>Error message: [val resp.errorMessage]</p>
               [else]
                 [def exam resp.payload]
