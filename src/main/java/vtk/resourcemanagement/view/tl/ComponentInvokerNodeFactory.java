@@ -169,7 +169,6 @@ public class ComponentInvokerNodeFactory implements DirectiveHandler {
                         return true;
                     }
                 }
-                
                 componentStack.push(component);
                 try {
                     Locale locale = ctx.getLocale();
