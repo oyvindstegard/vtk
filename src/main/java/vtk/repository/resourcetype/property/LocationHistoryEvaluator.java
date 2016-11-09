@@ -49,7 +49,7 @@ public class LocationHistoryEvaluator implements LatePropertyEvaluator {
             throws PropertyEvaluationException {
         
         boolean exists = ctx.getOriginalResource().getProperty(property.getDefinition()) != null;
-        if (ctx.getEvaluationType() == Type.SystemPropertiesChange) {
+        if (ctx.getEvaluationType() != Type.NameChange) {
             return exists;
         }
         
@@ -61,18 +61,12 @@ public class LocationHistoryEvaluator implements LatePropertyEvaluator {
         if (log == null) log = new ArrayList<>();
         
         Json.MapContainer entry = new Json.MapContainer();
-        //entry.put("type", ctx.getEvaluationType().toString());
         entry.put("principal", ctx.getPrincipal().getQualifiedName());
         entry.put("time", FastDateFormat.getInstance("yyyyMMdd HH:mm:ss").format(ctx.getTime()));
-
-        switch (ctx.getEvaluationType()) {
-            case NameChange:
-                entry = nameChangeInfo(entry, ctx);
-                break;
-            default:
-                break;
-        }
+        entry.put("from_uri", ctx.getOriginalResource().getURI());
+        entry.put("to_uri", ctx.getNewResource().getURI());
         log.add(entry);
+        
         if (log.size() > MAX_ENTRIES) {
             log.remove(0);
         }
@@ -83,10 +77,4 @@ public class LocationHistoryEvaluator implements LatePropertyEvaluator {
         return true;
     }
     
-    private Json.MapContainer nameChangeInfo(Json.MapContainer entry, PropertyEvaluationContext ctx) {
-        entry.put("from_uri", ctx.getOriginalResource().getURI());
-        entry.put("to_uri", ctx.getNewResource().getURI());
-        return entry;
-    }
-
 }
