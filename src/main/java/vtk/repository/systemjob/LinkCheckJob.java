@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,14 +50,26 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.AuthorizationException;
 import vtk.repository.ContentStream;
 import vtk.repository.Lock;
+import vtk.repository.Namespace;
+import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
 import vtk.repository.Repository.Depth;
 import vtk.repository.Resource;
 import vtk.repository.ResourceLockedException;
+import vtk.repository.ResourceNotFoundException;
 import vtk.repository.SystemChangeContext;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.PropertySelect;
+import vtk.repository.search.ResultSet;
+import vtk.repository.search.Search;
+import vtk.repository.search.query.PropertyTermQuery;
+import vtk.repository.search.query.Query;
+import vtk.repository.search.query.TermOperator;
 import vtk.util.text.Json;
+import vtk.util.text.Json.ListContainer;
+import vtk.util.text.Json.MapContainer;
 import vtk.util.text.JsonBuilder;
 import vtk.util.web.LinkTypesPrefixes;
 import vtk.web.display.linkcheck.LinkChecker;
@@ -66,7 +79,6 @@ import vtk.web.service.CanonicalUrlConstructor;
 import vtk.web.service.URL;
 
 public class LinkCheckJob extends AbstractResourceJob {
-    
     private PropertyTypeDefinition linkCheckPropDef;
     private PropertyTypeDefinition hrefsPropDef;
     private LinkChecker linkChecker;
@@ -97,13 +109,22 @@ public class LinkCheckJob extends AbstractResourceJob {
 
     @Override
     protected void executeForResource(Resource resource, ExecutionContext ctx) throws Exception {
-        Property prop = linkCheck(resource, ctx.getSystemChangeContext());
-        if (prop != null) {
-            resource.addProperty(prop);
+        logger.debug("Link check: " + resource.getURI());
+        Property hrefsProp = resolveHrefIDs(resource, ctx);
+        if (hrefsProp == null) {
+            resource.removeProperty(hrefsPropDef);
         }
         else {
+            resource.addProperty(hrefsProp);
+        }
+
+        Property prop = linkCheck(resource, ctx);
+        if (prop == null) {
             // Delete any old stale value
             resource.removeProperty(linkCheckPropDef);
+        }
+        else {
+            resource.addProperty(prop);
         }
         UpdateBatch b = (UpdateBatch)ctx.getAttribute("UpdateBatch");
         b.add(resource);
@@ -115,9 +136,78 @@ public class LinkCheckJob extends AbstractResourceJob {
         b.flush();
     }
 
-    private Property linkCheck(final Resource resource, final SystemChangeContext context)
+    private Property resolveHrefIDs(final Resource resource, ExecutionContext ctx)
+            throws InterruptedException {
+        Property hrefsProp = resource.getProperty(hrefsPropDef);
+        if (hrefsProp == null) {
+            return null;
+        }
+        
+        MapContainer jsonValue = hrefsProp.getJSONValue();
+        final URL base = urlConstructor.canonicalUrl(resource).setImmutable();
+
+        if (jsonValue == null || !jsonValue.containsKey("links")) {
+            return null;
+        }
+        
+        ListContainer links = jsonValue.arrayValue("links");
+        for (int i = 0; i < links.size(); i++) {
+            try {
+                checkForInterrupt();
+            }
+            catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            MapContainer hrefObj = links.objectValue(i);
+
+            if (hrefObj.containsKey("url")) {
+                String href = (String) hrefObj.get("url");
+                URL url = null;
+
+                try {
+                    url = base.relativeURL(href);
+                }
+                catch (Exception e) {
+                    logger.debug("Failed to create URL from string: " 
+                            + href + ", base: " + base, e);
+                    continue;
+                }
+                // Is the URL "local" (i.e. can we expect to find it in the repository)?
+                if (!url.getHost().equals(base.getHost())) {
+                    continue;
+                }
+                
+                try {
+                    Resource r = ctx.getRepository().
+                            retrieve(ctx.getToken(), url.getPath(), false);
+                    Property idProp = r.getProperty(
+                            Namespace.DEFAULT_NAMESPACE, 
+                            PropertyType.EXTERNAL_ID_PROP_NAME);
+                    if (idProp != null) {
+                        // Update vrtxid if the resource exists
+                        hrefObj.put("vrtxid", idProp.getStringValue());
+                    }
+                }
+                catch (ResourceNotFoundException e) {
+                    logger.debug("Resource " + href + " (referenced from " 
+                            + resource.getURI() + ") not found");
+                }
+                catch (Exception e) {
+                    logger.debug("Failed to retrieve resource " + url.getPath(), e);
+                    continue;
+                }
+            }
+            hrefsProp.setJSONValue(jsonValue);
+        }
+        return hrefsProp;
+    }
+    
+    
+    private Property linkCheck(final Resource resource, final ExecutionContext execContext)
             throws InterruptedException {
 
+        SystemChangeContext changeContext = execContext.getSystemChangeContext();
         Property hrefsProp = resource.getProperty(hrefsPropDef);
         if (hrefsProp == null) {
             return null;
@@ -126,7 +216,7 @@ public class LinkCheckJob extends AbstractResourceJob {
         Property linkCheckProp = resource.getProperty(linkCheckPropDef);
         
         final LinkCheckState state = LinkCheckState.create(linkCheckProp);
-        if (shouldResetState(state, resource, context)) {
+        if (shouldResetState(state, resource, changeContext)) {
             logger.debug("Reset link check state for " + resource.getURI());
             state.brokenLinks.clear();
             state.complete = false;
@@ -153,6 +243,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                 String field = null;
                 
                 String url = null;
+                String vrtxid = null;
                 String type = null;
 
                 @Override
@@ -167,11 +258,11 @@ public class LinkCheckJob extends AbstractResourceJob {
                 
                  @Override
                  public boolean beginMember(String key) throws IOException {
-                     if ("url".equals(key) || "type".equals(key)) {
-                         this.field = key;
+                     if ("url".equals(key) || "type".equals(key) || "vrtxid".equals(key)) {
+                         field = key;
                      }
                      else {
-                         this.field = null;
+                         field = null;
                      }
                      return true;
                  }
@@ -186,10 +277,13 @@ public class LinkCheckJob extends AbstractResourceJob {
                         return true;
                     }
                     if ("url".equals(field)) {
-                        this.url = v;
+                        url = v;
                     }
                     else if ("type".equals(field)){
-                        this.type = v;
+                        type = v;
+                    }
+                    else if ("vrtxid".equals(field)) {
+                        vrtxid = v;
                     }
                     return true;
                 }
@@ -197,24 +291,28 @@ public class LinkCheckJob extends AbstractResourceJob {
                 @Override
                 public boolean endObject() throws IOException {
                     if (n.getAndIncrement() < state.index) {
-                        this.field = this.url = this.type = null;
+                        field = url = type = null;
                         return true;
                     }
-                    if (this.url == null) {
-                        this.field = this.url = this.type = null;
+                    if (url == null) {
+                        field = url = type = null;
                         return true;
                     }
-                    if (!shouldCheck(this.url)) {
-                        this.field = this.url = this.type = null;
+                    if (!shouldCheck(url)) {
+                        field = url = type = null;
                         return true;
                     }
-                    if ("PROPERTY".equals(this.type)) {
-                        this.url = base.relativeURL(this.url).toString();
+                    if ("PROPERTY".equals(type)) {
+                        url = base.relativeURL(url).toString();
                     }
+
+                    boolean allowCached = base.getHost().equals(base.relativeURL(url).getHost()) ? 
+                            false : allowCachedResults;
+                    allowCached = false;
                     
                     LinkCheckRequest request = LinkCheckRequest.builder(url, base)
                             .sendReferrer(!resource.isReadRestricted())
-                            .allowCached(allowCachedResults)
+                            .allowCached(allowCached)
                             .build();
                     
                     LinkCheckResult result = linkChecker.validate(request);
@@ -224,12 +322,22 @@ public class LinkCheckJob extends AbstractResourceJob {
                         break;
                     default:
                         // Mark as broken
-                        Map<String, Object> m = new HashMap<>();
+                        Map<String, String> m = new HashMap<>();
                         m.put("link", url);
-                        if (this.type != null) {
+                        if (type != null) {
                             m.put("type", type);
                         }
                         m.put("status", result.getStatus().toString());
+                        
+                        if (vrtxid != null && base.getHost().equals(base.relativeURL(url).getHost())) {
+                            Optional<Path> relocated = findResourceByID(execContext, vrtxid);
+                            if (relocated.isPresent()) {
+                                logger.debug("URL " + url + " (referenced from " 
+                                        + resource.getURI() + ") has moved, "
+                                        + " vrtxid: " + vrtxid + " still valid");
+                                m.put("vrtxid", vrtxid);
+                            }
+                        }
                         state.brokenLinks.add(m);
                     }
                     if (state.brokenLinks.size() >= MAX_BROKEN_LINKS) {
@@ -245,7 +353,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                     catch (InterruptedException ie) {
                         throw new RuntimeException(ie);
                     }                   
-                    this.field = this.url = this.type = null;
+                    field = url = type = null;
                     return true;
                 }
 
@@ -254,7 +362,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                     return true;
                 }
             });
-            state.timestamp = context.getTimestampFormatted();
+            state.timestamp = changeContext.getTimestampFormatted();
             state.index = n.get();
             Property result = linkCheckPropDef.createProperty();
             state.write(result);
@@ -323,6 +431,27 @@ public class LinkCheckJob extends AbstractResourceJob {
         }
         
         return state.complete;
+    }
+    
+    private Optional<Path> findResourceByID(ExecutionContext context, String vrtxid) {
+
+        PropertyTypeDefinition idPropDef = context.getRepository()
+                .getTypeInfo("resource")
+                .getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, 
+                        PropertyType.EXTERNAL_ID_PROP_NAME);
+
+        Query query = new PropertyTermQuery(idPropDef, vrtxid, TermOperator.EQ);
+        Search search = new Search();
+        search.setQuery(query);
+        search.setLimit(1);
+        search.clearAllFilterFlags();
+        search.setSorting(null);
+        search.setPropertySelect(PropertySelect.NONE);
+        ResultSet result = context.getRepository().search(context.getToken(), search);
+        if (result.getTotalHits() == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(result.getResult(0).getURI());
     }
     
     public void refreshBlackList() {
@@ -414,8 +543,7 @@ public class LinkCheckJob extends AbstractResourceJob {
 
         public void flush() {
             if (updateList.size() > 0) {
-                logger.info("Attempting to store " + updateList.size() + " resources");
-                logger.info("Attempting to store " + updateList);
+                logger.debug("Attempting to store " + updateList.size() + " resources");
             }
             if (locking) {
                 flushWithLocking();
@@ -437,7 +565,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                     // repo as an attempt to modify). Still, it should be harmless, 
                     // since it will only be an ephemeral problem for props marked as affected
                     // in system change context.
-                    repository.store(token, r, context);
+                    r = repository.store(token, r, context);
                 }
                 catch (ResourceLockedException e) {
                     logger.warn("Resource " + r.getURI() + " was locked by another user, skipping");
@@ -454,7 +582,7 @@ public class LinkCheckJob extends AbstractResourceJob {
         }
 
         public void flushWithLocking() {
-            for (Resource r: this.updateList) {
+            for (Resource r: updateList) {
                 Lock lock = null;
                 try {
                     Resource resource = repository.lock(token, r.getURI(), 
@@ -492,7 +620,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                     }
                 }
             }
-            this.updateList.clear();
+            updateList.clear();
         }
     }
     
