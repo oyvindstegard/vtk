@@ -55,6 +55,7 @@
         <ref bean="linkStatusPropDef" />
         <ref bean="systemJobStatusPropDef" />
         <ref bean="sslMixedModePropDef" />
+        <ref bean="locationHistoryPropDef" />
       </list>
     </property>
   </bean>
@@ -409,5 +410,21 @@
     <property name="resourceManager" ref="structuredResources.resourceManager" />
     <property name="ssiDirectivesPropDef" ref="ssiDirectivesPropDef" />
   </bean>
+
+  <bean id="locationHistoryPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="location-history" />
+    <property name="type" value="JSON" />
+    <property name="multiple" value="false" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="false" />
+    <property name="propertyEvaluator" ref="locationHistoryEvaluator" />
+    <property name="metadata">
+      <map>
+        <entry key="indexableJsonHint" value="true" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="locationHistoryEvaluator" class="vtk.repository.resourcetype.property.LocationHistoryEvaluator" />
 
 </beans>
