@@ -66,13 +66,6 @@ resourcetype exam-info {
       [if part.kunngjoring]
         <p><strong>[localized 'announcement']:</strong> [val part.kunngjoring]</p>
       [endif]
-      
-      [def deldager part.deldag]
-      [if deldager]
-        [list deldager deldag]
-          [call "comp:exam-part" { "part" : deldag, "isSubPart": "true" }]
-        [endlist]
-      [endif]
       ##
     }
 
@@ -94,11 +87,25 @@ resourcetype exam-info {
 
         [list eksamensdeler p]
           [call "comp:exam-part" { "part" : p, "isSubPart": "false" }]
+          
+          [def deldager p.deldag]
+          [if deldager]
+            [list deldager deldag]
+              [call "comp:exam-part" { "part" : deldag, "isSubPart": "true" }]
+            [endlist]
+          [endif]
         [endlist]
       [else]
       
         <h2>[localized 'ordning']</h2>
         [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
+
+        [def deldager ordning.deldag]
+        [if deldager]
+          [list deldager deldag]
+            [call "comp:exam-part" { "part" : deldag, "isSubPart": "true" }]
+          [endlist]
+        [endif]
       [endif]
       
       <h2>[localized 'results']</h2>

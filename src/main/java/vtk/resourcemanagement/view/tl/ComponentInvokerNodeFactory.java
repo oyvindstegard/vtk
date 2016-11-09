@@ -163,14 +163,13 @@ public class ComponentInvokerNodeFactory implements DirectiveHandler {
                     servletRequest.setAttribute(COMPONENT_STACK_REQ_ATTR, componentStack);
                 }
 
-                /* VTK-4702: commented out because can't do a recursive call needed for parsing exam json data
                 for (DecoratorComponent c : componentStack) {
                     if (c == component) {
                         out.write("Component invocation loop detected: '" + c.getNamespace() + ":" + c.getName()+ "'");
                         return true;
                     }
                 }
-                */
+                
                 componentStack.push(component);
                 try {
                     Locale locale = ctx.getLocale();
