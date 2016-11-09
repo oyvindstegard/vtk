@@ -42,7 +42,7 @@ import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.util.text.Json;
 
 public class LocationHistoryEvaluator implements LatePropertyEvaluator {
-    private int MAX_ENTRIES = 100;
+    private static final int MAX_ENTRIES = 100;
 
     @Override
     public boolean evaluate(Property property, PropertyEvaluationContext ctx)
