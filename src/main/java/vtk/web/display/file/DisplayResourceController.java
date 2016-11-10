@@ -193,10 +193,6 @@ public class DisplayResourceController
             return new ModelAndView(this.unsupportedResourceView);
         }
 
-		if (!resource.isPublished()) {
-			response.sendError(404);
-		}
-
         model.put("resource", resource);
 
         if (!resource.isCollection()) {
