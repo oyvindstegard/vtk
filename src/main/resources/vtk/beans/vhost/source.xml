@@ -6,46 +6,31 @@
     <property name="parent" ref="viewService" />
     <property name="assertions">
       <list>
-        <ref bean="getSourceParameterAssertion" />
+        <ref bean="vrtxParameterIsSourceAssertion" />
         <ref bean="fileAssertion" />
         <ref bean="requiresReadPermissionAssertion" />
       </list>
     </property>
-    <property name="handler" ref="getSourceHandler" />
+    <property name="handler" ref="webdavGetHandler" />
   </bean>
 
-<bean id="getXmlSourceService" class="vtk.web.service.ServiceImpl">
+  <bean id="getXmlSourceService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-1" />
     <property name="parent" ref="viewService" />
     <property name="assertions">
       <list>
-        <ref bean="getSourceParameterAssertion" />
+        <ref bean="vrtxParameterIsSourceAssertion" />
         <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
           <property name="resourceTypeDefinition" ref="xmlResource" />
         </bean>
       </list>
     </property>
-    <property name="handler" ref="getSourceHandler" />
+    <property name="handler" ref="webdavGetHandler" />
   </bean>
 
-  <bean id="getSourceParameterAssertion" class="vtk.web.service.RequestParameterAssertion">
+  <bean id="vrtxParameterIsSourceAssertion" class="vtk.web.service.RequestParameterAssertion">
     <property name="parameterName" value="vrtx" />
     <property name="parameterValue" value="source" />
   </bean>
-
-  <bean id="getSourceHandler" class="vtk.web.display.file.DisplayResourceController">
-    <property name="viewName" value="getSourceDisplayResource" />
-    <property name="ignoreLastModified" value="true" />
-  </bean>
-
-  <bean id="getSourceViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="getSourceDisplayResource" value-ref="getSourceDisplayResourceView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="getSourceDisplayResourceView" class="vtk.web.view.DisplayResourceView" />
 
 </beans>
