@@ -2,7 +2,7 @@ resourcetype exam-info {
 
   properties {
     tittel : string,
-    title : derived (tittel) eval ("exam"?localized) overrides title
+    title : derived (tittel) eval ("exam"?localized + " " + "for"?localized + " " + "courseContext.fs-course-code"?contextual + " - " + "semesterContext.semesterTitle"?contextual) overrides title
   }
 
   edit-rules {
@@ -140,16 +140,6 @@ resourcetype exam-info {
               [if year != null && year.length() = 4]
                 [def year year.substring(2, 4)]
               [endif]
-              
-              [if term = null]
-                [def term "h"]
-              [endif]
-              [if year = null]
-                [def year "16"]
-              [endif]
-              [if course-code = null]
-                [def course-code "INF1000"]
-              [endif]
 
               [def examInfoURL replace(settings.services.examInfo, "%term", term)]
               [def examInfoURL replace(examInfoURL, "%sem", year)]
@@ -179,6 +169,7 @@ resourcetype exam-info {
 
   localization {
     exam : (en : "Examination: Time and place", no : "Eksamen: Tid og sted", nn : "Eksamen: Tid og stad"),
+    for : (en : "for", no : "for", nn : "for"),
     title : (en : "Title", no : "Tittel", nn : "Tittel"),
     header : (en : "Edit exam", no : "Rediger eksamen", nn : "Rediger eksamen"),
     trekkfrist : (en : "Deadline for withdrawing from the exam", no : "Trekkfrist", nn : "Trekkfrist"),
