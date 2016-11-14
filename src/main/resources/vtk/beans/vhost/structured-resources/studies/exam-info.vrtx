@@ -159,7 +159,7 @@ resourcetype exam-info {
               
                 [def resp url-as-json(examInfoURL)]
               [else]
-                [def resp {"errorMessage":"Missing context values for course or semester"}]
+                [def resp { "errorMessage": "Missing context values for course or semester" }]
               [endif]
 
               [if resp.errorMessage]
