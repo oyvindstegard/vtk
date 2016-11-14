@@ -27,16 +27,22 @@ resourcetype exam-info {
       [if isSubPart = "true"]</h3>[else]</h2>[endif]
       
       [if part.datoEksamen]
-        <p><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.datoEksamen }][if part.klokkeslettEksamen] kl. [val part.klokkeslettEksamen][endif][if part.varighetTimer] ([val part.varighetTimer] [localized 'time-hours'])[endif].</p>
+        [def hours part.varighetTimer]
+        [if hours != null && hours.length() = 3]
+          [def hours hours.substring(0, 1)]
+        [endif]
+        <p><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.datoEksamen }][if part.klokkeslettEksamen] [localized 'time-prefix'] [val part.klokkeslettEksamen][endif][if hours] ([val hours] [localized 'time-hours'])[endif].</p>
       [endif]
       
       [if part.datoInnlevering]
-        <p><strong>[localized 'give-in-deadline']:</strong> [call "comp:date-format" { "date" : part.datoInnlevering }][if part.klokkeslettInnlevering] [localized 'time-prefix'] [val part.klokkeslettInnlevering][endif]</p>
+        <p><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.datoInnlevering }][if part.klokkeslettInnlevering] [localized 'time-prefix'] [val part.klokkeslettInnlevering][endif]</p>
       [endif]
       
       [def rom part.rom]
+      [if part.datoEksamen || rom]
+        <p><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">StudentWeb</a>.</p>
+      [endif]
       [if rom]
-        <p><strong>[localized 'place']:</strong> [localized 'place-about'] <a href="//studentweb.uio.no/">StudentWeb</a>.</p>
         <ul>
         [list rom r]
           <li>
@@ -85,10 +91,10 @@ resourcetype exam-info {
           <p>[val ordning.navn]</p>
         [endif]
 
-        [list eksamensdeler p]
-          [call "comp:exam-part" { "part" : p, "isSubPart": "false" }]
+        [list eksamensdeler eksamensdel]
+          [call "comp:exam-part" { "part" : eksamensdel, "isSubPart": "false" }]
           
-          [def deldager p.deldag]
+          [def deldager eksamensdel.deldag]
           [if deldager]
             [list deldager deldag]
               [call "comp:exam-part" { "part" : deldag, "isSubPart": "true" }]
@@ -109,10 +115,10 @@ resourcetype exam-info {
       [endif]
       
       <h2>[localized 'results']</h2>
-      <p>..fellestekst..</p>
+      <p>[localized 'results-info'] <a href="//studentweb.uio.no/">StudentWeb</a> [localized 'results-info-part-two'].</p>
       
       <h2>[localized 'more-about']</h2>
-      <p>..fellestekst..</p>
+      <p>[localized 'more-about-info'] <a href="/">[localized 'more-about-info-course-pages-link']</a>.</p>
       ##
     }
   }
@@ -140,12 +146,18 @@ resourcetype exam-info {
               [if year != null && year.length() = 4]
                 [def year year.substring(2, 4)]
               [endif]
-
-              [def examInfoURL replace(settings.services.examInfo, "%term", term)]
-              [def examInfoURL replace(examInfoURL, "%sem", year)]
-              [def examInfoURL replace(examInfoURL, "%course", course-code)]
               
-              [def resp url-as-json(examInfoURL)]
+              [def examInfoURL settings.services.examInfo]
+              
+              [if course-code != null && term != null && year != null]
+                [def examInfoURL replace(examInfoURL, "%term", term)]
+                [def examInfoURL replace(examInfoURL, "%sem", year)]
+                [def examInfoURL replace(examInfoURL, "%course", course-code)]
+              
+                [def resp url-as-json(examInfoURL)]
+              [else]
+                [def resp {"errorMessage":"Missing context values for course or semester"}]
+              [endif]
 
               [if resp.errorMessage]
                 <p>Unable to look up exam info: [val examInfoURL]</p>
@@ -177,16 +189,26 @@ resourcetype exam-info {
     time : (en : "Time", no : "Tid", nn : "Tid"),
     time-hours : (en : "hours", no : "timer", nn : "timer"),
     time-prefix : (en : "at", no : "kl.", nn : "kl."),
-    place : (en : "Place", no : "Sted", nn : "Sted"),
-    place-about : (en : "You will find your candidate number and information about where you will be sitting in",
-                   no : "Du finner kandidatnummeret ditt og informasjon om hvor du skal sitte i",
-                   nn : "Du finner kandidatnummeret ditt og informasjon om kvar du skal sitje i"),
-    system : (en : "Exam system", no : "Eksamenssystem", nn : "Eksamenssystem"),
+    place : (en : "Place", no : "Sted", nn : "Stad"),
+    place-info : (en : "You will find your candidate number and information about where to sit in",
+                  no : "Du finner kandidatnummeret ditt og informasjon om hvor du skal sitte i",
+                  nn : "Du finner kandidatnummeret ditt og informasjon om kvar du skal sitje i"),
+    system : (en : "Examination system", no : "Eksamenssystem", nn : "Eksamenssystem"),
     notice : (en : "Notice", no : "Merknad", nn : "Merknad"),
     announcement : (en : "Announcement of examination results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultatar"),
-    give-out-time : (en : "Give out of task", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
-    give-in-deadline : (en : "Deadline for give in", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
+    task-disclosure : (en : "Disclosure of the task", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
+    task-deadline : (en : "Deadline", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
     results : (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
-    more-about : (en : "More about the exam for this course", no : "Mer om eksamen for dette emnet", nn : "Meir om eksamen for dette emnet")
+    results-info : (en : "You will find your examination results in StudentWeb",
+                    no : "Du finner eksamensresultatene dine i",
+                    nn : "Du finn eksamensresultatane dine i"),
+    results-info-part-two : (en : "within three weeks after the exam (eight weeks for master theses)",
+                             no : "senest tre uker etter eksamen (åtte uker for masteroppgaver)",
+                             nn : "seinast tre veker etter eksamen (åtte veker for masteroppgåver)"),
+    more-about : (en : "More about the exam for this course", no : "Mer om eksamen for dette emnet", nn : "Meir om eksamen for dette emnet"),
+    more-about-info : (en : "More information about the examination system, permitted aids and exam forms can be found at the bottom of the",
+                       no : "Mer informasjon om eksamensordningen, tillatte hjelpemidler og vurderingsformer finner du nederst på",
+                       nn : "Meir informasjon om eksamensordninga, tillatte hjelpemidler og vurderingsformar finn du nederst på"),
+    more-about-info-course-pages-link : (en : "course pages", no : "emnesidene", nn : "emnesidane")
   }
 }
