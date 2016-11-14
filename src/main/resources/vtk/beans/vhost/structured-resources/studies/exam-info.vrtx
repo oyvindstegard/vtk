@@ -121,7 +121,7 @@ resourcetype exam-info {
       <p>[localized 'results-info'] <a href="//studentweb.uio.no/">StudentWeb</a> [localized 'results-info-part-two'].</p>
       
       <h2>[localized 'more-about']</h2>
-      <p>[localized 'more-about-info'] <a href="/">[localized 'more-about-info-course-pages-link']</a>.</p>
+      <p>[localized 'more-about-info'] <a href="./../../#exam">[localized 'more-about-info-course-pages-link']</a>.</p>
       ##
     }
   }
