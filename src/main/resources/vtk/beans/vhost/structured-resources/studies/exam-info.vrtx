@@ -202,7 +202,7 @@ resourcetype exam-info {
     task-disclosure : (en : "Disclosure of the task", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
     task-deadline : (en : "Deadline", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
     results : (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
-    results-info : (en : "You will find your examination results in StudentWeb",
+    results-info : (en : "You will find your examination results in",
                     no : "Du finner eksamensresultatene dine i",
                     nn : "Du finn eksamensresultatane dine i"),
     results-info-part-two : (en : "within three weeks after the exam (eight weeks for master theses)",
