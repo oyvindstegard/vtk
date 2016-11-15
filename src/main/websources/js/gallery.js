@@ -214,7 +214,7 @@
       var description = "<div id='" + id + "-description' class='" + container.substring(1) + "-description" + (!images[src].desc ? " empty-description" : "") + "' style='display: none; width: " + Math.max(0, ((images[src].width - wrpDescriptionBorderPaddingWidth) + wrpContainerBorderPaddingWidth)) + "px'>" + 
                         images[src].desc + "<div class='toggle-fullscreen-container'><a href='javascript:void(0);' class='toggle-fullscreen minimized'>" + (isResponsive ? settings.i18n.showFullscreenResponsive : settings.i18n.showFullscreen) + "</a></div></div>";
       $($.parseHTML(description)).insertBefore(wrpThumbs);
-      wrpContainer.append("<a id='" + id + "' style='display: none' href='" + src + "' class='" + container.substring(1) + "-link'>" +
+      wrpContainer.append("<a id='" + id + "' style='display: none' href='" + src + "' tabindex='-1' class='" + container.substring(1) + "-link'>" +
                             "<img src='" + src + "' alt='" + images[src].alt + "' style='width: " + images[src][widthProp] + "px; height: " + images[src][heightProp] + "px;' />" +
                           "</a>");
     }

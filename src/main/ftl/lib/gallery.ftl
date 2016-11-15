@@ -30,8 +30,8 @@
   </script>
   <div class="vrtx-image-listing-include-container-pure-css">
     <div class="vrtx-image-listing-include-container-nav-pure-css">
-      <a class="prev" href="#" title="${vrtx.getMsg('imageListing.previous.prefix')?no_esc}&nbsp;${vrtx.getMsg('previous')}"><span class="prev-transparent-block"></span></a>
-      <a class="next" href="#" title="${vrtx.getMsg('next')}&nbsp;${vrtx.getMsg('imageListing.next.postfix')?no_esc}"><span class="next-transparent-block"></span></a>
+      <a class="prev" href="#" tabindex="-1" title="${vrtx.getMsg('imageListing.previous.prefix')?no_esc}&nbsp;${vrtx.getMsg('previous')}"><span class="prev-transparent-block"></span></a>
+      <a class="next" href="#" tabindex="-1" title="${vrtx.getMsg('next')}&nbsp;${vrtx.getMsg('imageListing.next.postfix')?no_esc}"><span class="next-transparent-block"></span></a>
     </div>
   </div>
 </#macro>
@@ -84,11 +84,11 @@
     <#local url = imageEntry.url />
     <#if imageListing != "">
       <#if ((activeImage == "" && imageEntry_index == 0) || (activeImage != "" && activeImage == url) || (activeImage != "" && activeImage == url.path)) >
-	    <a href="${url}" class="active">
+	    <a href="${url}" tabindex="-1" class="active">
 	      <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
 	      <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()?split("?")[0]}" alt='${flattenedDescription}' /></span>
       <#else>
-	    <a href="${url}">
+	    <a href="${url}" tabindex="-1">
 	      <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
       </#if>
     <#else>
@@ -97,11 +97,11 @@
 	<#local finalFolderUrl = finalFolderUrl + "/" /> 
       </#if>
       <#if (imageEntry_index == 0) >
-        <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery" class="active">
+        <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery" tabindex="-1" class="active">
           <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> />
           <span><img class="vrtx-full-image" src="${url.protocolRelativeURL()}" alt='${flattenedDescription}' /></span>
       <#else>
-          <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery">
+          <a href="${finalFolderUrl}?actimg=${url}&amp;display=gallery" tabindex="-1">
           <img class="vrtx-thumbnail-image" src="${url.protocolRelativeURL()}?vrtx=thumbnail" alt='${flattenedDescription}' <#if showTitle>title="${title}"</#if> /> 
       </#if>
     </#if> 
