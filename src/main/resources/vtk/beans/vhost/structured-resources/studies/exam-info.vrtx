@@ -88,12 +88,8 @@ resourcetype exam-info {
         [def isOrdningEksamensDel (ordning.datoEksamen != null || ordning.datoInnlevering != null)]
 
         [def len eksamensdeler.length()]
-        [if ((len > 1) || (len = 1 && isOrdningEksamensDel))]
+        [if len > 1]
           <h2>[localized 'ordning']</h2>
-          
-          [if ! isOrdningEksamensDel]
-            <p>[val ordning.navn]</p>
-          [endif]
         [endif]
       
         [if isOrdningEksamensDel]
@@ -145,7 +141,7 @@ resourcetype exam-info {
             <h1>[call "resource:property" {"id":"title"}]</h1>
 
             [if ! settings.services.examInfo]
-              <p>No external service available.</p>
+              <p>[localized 'external-service-unavailable'].</p>
             [else]
               [def course-code resource-prop-obj-val(".", "courseContext.fs-course-code")]
               [def term resource-prop-obj-val(".", "semesterContext.semesterTerm")]
@@ -167,8 +163,8 @@ resourcetype exam-info {
               [endif]
 
               [if resp.errorMessage]
-                <p>Unable to look up exam info: [val examInfoURL]</p>
-                <p>Error message: [val resp.errorMessage]</p>
+                <p>[localized 'lookup-unable']: [val examInfoURL]</p>
+                <p>[localized 'lookup-unable-error-msg']: [val resp.errorMessage]</p>
               [else]
                 [def exam resp.payload]
                 [def ordninger exam.ordning]
@@ -216,6 +212,9 @@ resourcetype exam-info {
     more-about-info : (en : "More information about the examination system, permitted aids and exam forms can be found at the bottom of the",
                        no : "Mer informasjon om eksamensordningen, tillatte hjelpemidler og vurderingsformer finner du nederst på",
                        nn : "Meir informasjon om eksamensordninga, tillatte hjelpemidler og vurderingsformar finn du nederst på"),
-    more-about-info-course-pages-link : (en : "course pages", no : "emnesidene", nn : "emnesidane")
+    more-about-info-course-pages-link : (en : "course pages", no : "emnesidene", nn : "emnesidane"),
+    lookup-unable : (en : "Unable to look up exam info", no : "Kunne ikke hente eksamensinfo", nn : "Kunne ikkje henta eksamensinfo"),
+    lookup-unable-error-msg : (en : "Error message", no : "Feilbeskjed", nn : "Feilbeskjed"),
+    external-service-unavailable : (en: "No external service available", no : "Ingen ekstern tjeneste tilgjengelig", nn : "Ingen ekstern teneste tilgjengeleg")
   }
 }
