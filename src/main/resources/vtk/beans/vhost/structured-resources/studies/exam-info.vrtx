@@ -88,8 +88,9 @@ resourcetype exam-info {
         [def isOrdningEksamensDel (ordning.datoEksamen != null || ordning.datoInnlevering != null)]
 
         [def len eksamensdeler.length()]
-        [if len > 1]
+        [if len > 1 && ! isOrdningEksamensDel]
           <h2>[localized 'ordning']</h2>
+          <p>[val ordning.navn]</p>
         [endif]
       
         [if isOrdningEksamensDel]
