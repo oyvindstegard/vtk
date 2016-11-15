@@ -39,7 +39,7 @@ resourcetype exam-info {
       [endif]
       
       [def rom part.rom]
-      [if part.datoEksamen || rom]
+      [if part.datoEksamen != null || rom != null]
         <p><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">StudentWeb</a>.</p>
       [endif]
       [if rom]
@@ -85,11 +85,19 @@ resourcetype exam-info {
 
       [def eksamensdeler ordning.eksamensdel]
       [if eksamensdeler]
+        [def isOrdningEksamensDel (ordning.datoEksamen != null || ordning.datoInnlevering != null)]
 
         [def len eksamensdeler.length()]
-        [if len > 1]
+        [if ((len > 1) || (len = 1 && isOrdningEksamensDel))]
           <h2>[localized 'ordning']</h2>
-          <p>[val ordning.navn]</p>
+          
+          [if ! isOrdningEksamensDel]
+            <p>[val ordning.navn]</p>
+          [endif]
+        [endif]
+      
+        [if isOrdningEksamensDel]
+          [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
         [endif]
 
         [list eksamensdeler eksamensdel]
@@ -103,8 +111,6 @@ resourcetype exam-info {
           [endif]
         [endlist]
       [else]
-      
-        <h2>[localized 'ordning']</h2>
         [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
 
         [def deldager ordning.deldag]
