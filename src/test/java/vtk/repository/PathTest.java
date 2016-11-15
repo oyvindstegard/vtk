@@ -30,13 +30,15 @@
  */
 package vtk.repository;
 
-import java.util.List;
-
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+
+import java.util.List;
+import java.util.function.Supplier;
+
 import org.junit.Test;
 
 public class PathTest {
@@ -65,7 +67,7 @@ public class PathTest {
     @Test
     public void paths() {
 
-        assertInvalid(null);
+        assertInvalid((String) null);
         assertInvalid("");
         assertInvalid(" ");
         assertInvalid("//");
@@ -183,6 +185,25 @@ public class PathTest {
         assertNull(p.expand("../../../../"));
         
         assertEquals(Path.fromString("/x"), p.expand("../../../x/."));
+        
+        p = Path.fromString("/a/b");
+        assertEquals(p, p.append(Path.ROOT));
+        assertEquals(p, Path.ROOT.append(p));
+        assertEquals(Path.fromString("/a/b/c"), p.append(Path.fromString("/c")));
+        assertEquals(Path.ROOT, Path.ROOT.append(Path.ROOT));
+
+        p = Path.fromString("/a/b/c.html");
+        p2 = Path.fromString("/");
+        assertEquals(p, p.right(p2));
+
+        p = Path.fromString("/a/b/c.html");
+        p2 = Path.fromString("/a/b");
+        assertEquals(Path.fromString("/c.html"), p.right(p2));
+        p2 = Path.fromString("/a/b/c.html");
+        assertEquals(Path.ROOT, p.right(p2));
+
+        assertInvalid(() -> Path.fromString("/a/b").right(Path.fromString("/d/e")));
+
     }
 
     @Test
@@ -234,6 +255,15 @@ public class PathTest {
 
     }
 
+    private void assertInvalid(Supplier<Path> fn) {
+        try {
+            Path path = fn.get();
+            fail("Invalid path constructed: '" + path + "'");
+        } catch (IllegalArgumentException e) {
+            // Expected
+        }
+    }
+    
     private void assertInvalid(String path) {
         try {
             Path.fromString(path);
@@ -249,6 +279,6 @@ public class PathTest {
             sb.append(str);
         }
         return sb.toString();
-    }    
+    }
 
 }
