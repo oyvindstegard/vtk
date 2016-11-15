@@ -62,10 +62,8 @@ resourcetype exam-info {
       [endif]
       
       [if part.datasystem]
-        <p><strong>[localized 'system']:</strong> [call "include:shared-text" { "folder": "/vrtx/fellestekst/eksamen",
-                                                                                "file": "system",
-                                                                                "key": part.datasystem
-                                                                              }]</p>
+        <p><strong>[localized 'system']:</strong></p>
+        [call "include:shared-text" { "folder": "/vrtx/fellestekst/eksamen", "file": "system", "key": part.datasystem }]
       [endif]
       
       [if part.kommentar]
