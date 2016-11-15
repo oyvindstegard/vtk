@@ -40,7 +40,13 @@
      ********************
 -->
 
-<#assign lastModified = resource.getLastModified() />
+<#if resource.collection>
+  <#-- VTK-4347 use propertiesLastModified as lastModified for collections.
+       This effectively ignores changes in collection children while editing. -->
+  <#assign lastModified = resource.propertiesLastModified>
+<#else>
+  <#assign lastModified = resource.lastModified>
+</#if>
 <#assign modifiedBy = resource.getModifiedBy() />
 <span id="server-now-time" class="hidden-server-info">${nowTime?string("yyyy")},${nowTime?string("MM")},${nowTime?string("dd")},${nowTime?string("HH")},${nowTime?string("mm")},${nowTime?string("ss")}</span>
 <span id="resource-last-modified" class="hidden-server-info">${lastModified?string("yyyy")},${lastModified?string("MM")},${lastModified?string("dd")},${lastModified?string("HH")},${lastModified?string("mm")},${lastModified?string("ss")}</span>
