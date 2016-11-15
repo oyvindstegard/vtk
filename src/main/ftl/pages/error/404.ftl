@@ -20,6 +20,15 @@ location.
 of the referring site that the link does not work.
 </p>
 
+<#if locations?has_content>
+  Are you looking for any of these resources?
+  <ul>
+  <#list locations as loc>
+    <li><a href="${loc.URI}">${loc.title}</a> (${loc.URI})
+  </#list>
+  </ul>
+</#if>
+
 <p>Server-administrator: <a href="mailto:${webmaster}">${webmaster}</a></p>
 
 <#if debugErrors?exists && debugErrors>

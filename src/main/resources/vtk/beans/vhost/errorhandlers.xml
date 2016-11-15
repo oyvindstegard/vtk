@@ -14,6 +14,7 @@
     <property name="referenceDataProviders">
       <list>
         <ref bean="resourceContextProvider"/>
+        <bean class="vtk.web.PreviousLocationsResolver" />
       </list>
     </property>
     <property name="statusCodeMappings">
