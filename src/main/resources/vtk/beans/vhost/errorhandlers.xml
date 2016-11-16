@@ -6,7 +6,7 @@
 
   <bean id="resourceNotFoundErrorHandler" class="vtk.web.ResourceNotFoundErrorHandler">
     <constructor-arg name="defaultView" value="resourceNotFoundError" />
-    <constructor-arg name="redirectMoved" value="true" />
+    <constructor-arg name="redirectMoved" value="false" />
     <constructor-arg name="referenceDataProviders" ref="resourceContextProvider" />
   </bean>
 
