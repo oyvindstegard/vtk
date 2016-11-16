@@ -239,18 +239,22 @@ public interface Repository {
     public Resource store(String token, Resource resource, StoreContext storeContext) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, ResourceLockedException, IllegalOperationException, ReadOnlyException, Exception;
     
+    default public Resource storeContent(String token, Path uri, InputStream stream) throws AuthorizationException,
+            AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
+            ReadOnlyException, Exception {
+        return storeContent(token, uri, ContentInputSources.fromStream(stream));
+    }
 
     /**
      * Requests that a a byte stream be written to the content of a resource in
      * the repository.
-     * 
+     *
      * @param token
      *            identifies the client's authenticated session
      * @param uri
      *            the resource identifier
-     * @param stream
-     *            a <code>java.io.InputStream</code> representing the byte
-     *            stream to be read from
+     * @param content
+     *            rhe resource content to store
      * @return the modified resource object
      * @exception ResourceNotFoundException
      *                if the URI does not identify an existing resource
@@ -266,11 +270,16 @@ public interface Repository {
      * @exception Exception
      *                if an I/O error occurs
      */
-    public Resource storeContent(String token, Path uri, InputStream stream) throws AuthorizationException,
+    public Resource storeContent(String token, Path uri, ContentInputSource content) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, Exception;
     
-    public Resource storeContent(String token, Path uri, InputStream stream, Revision revision) throws AuthorizationException,
+    default public Resource storeContent(String token, Path uri, InputStream stream, Revision revision) throws AuthorizationException,
+        AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException, ReadOnlyException, Exception {
+        return storeContent(token, uri, ContentInputSources.fromStream(stream), revision);
+    }
+
+    public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision) throws AuthorizationException,
         AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
         ReadOnlyException, Exception;
 
@@ -336,15 +345,15 @@ public interface Repository {
             String contentIdentifier)
             throws NoSuchContentException, ResourceNotFoundException,
             AuthorizationException, AuthenticationException, Exception;
-    
+
     /**
      * Creates a new document in the repository.
-     * 
+     *
      * @param token
      *            identifies the client's authenticated session
      * @param uri
      *            the resource identifier to be created
-     * @param inputStream
+     * @param content
      *            the resource's content
      * @return a <code>Resource</code> representing metadata about the newly
      *         created resource
@@ -365,8 +374,13 @@ public interface Repository {
      * @exception Exception
      *                if an I/O error occurs
      */
-    public Resource createDocument(String token, Path uri, InputStream inputStream) throws IllegalOperationException,
+    public Resource createDocument(String token, Path uri, ContentInputSource content) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, Exception;
+    
+    default public Resource createDocument(String token, Path uri, InputStream inputStream) throws IllegalOperationException,
+            AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, Exception {
+        return createDocument(token, uri, ContentInputSources.fromStream(inputStream));
+    }
 
     /**
      * Creates a new collection resource in the repository.

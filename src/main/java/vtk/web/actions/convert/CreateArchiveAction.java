@@ -32,14 +32,13 @@ package vtk.web.actions.convert;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -54,6 +53,7 @@ public class CreateArchiveAction implements CopyAction {
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));
     private ResourceArchiver archiver;
 
+    @Override
     public void process(Path uri, Path copyUri, Map<String, Object> properties) throws Exception {
 
         SecurityContext securityContext = SecurityContext.getSecurityContext();
@@ -69,12 +69,10 @@ public class CreateArchiveAction implements CopyAction {
         try {
             this.archiver.createArchive(token, resource, bo, properties);
             logger.info("Storing archive contents to '" + copyUri + "'");
-            InputStream in = new FileInputStream(outFile);
-            Resource dest = this.repository.createDocument(token, copyUri, in);
+            Resource dest = this.repository.createDocument(token, copyUri, ContentInputSources.fromFile(outFile, true));
             if (!dest.isReadRestricted()) {
                 logger.warn("The destination '" + copyUri + "' is open for access to all!");
             }
-            // this.repository.storeContent(token, dest.getURI(), in);
             logger.info("Done storing archive to '" + copyUri + "'");
 
         } finally {

@@ -34,7 +34,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +43,8 @@ import java.util.Random;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import vtk.repository.ContentInputSource;
+import vtk.repository.ContentInputSources;
 
 import vtk.repository.Path;
 import vtk.repository.store.AbstractContentStoreTest;
@@ -52,22 +53,21 @@ import vtk.repository.store.ContentStore;
 
 public class FileSystemContentStoreTest extends AbstractContentStoreTest {
 
-    private ContentStore store;
+    private FileSystemContentStore store;
 
     private String storeDir;
+    private String trashDir;
 
     @Before
     public void setUp() throws Exception {
-        this.storeDir = System.getProperty("java.io.tmpdir") + "/contentStore" + getRandomIntAsString();
+        String suffix = getRandomIntAsString();
+        this.storeDir = new File(System.getProperty("java.io.tmpdir"), "contentStore" + suffix).getCanonicalPath();
+        this.trashDir = new File(System.getProperty("java.io.tmpdir"), "trashStore" + suffix).getCanonicalPath();
         
-        File storeDirFile = new File(this.storeDir);
-        if (!storeDirFile.mkdir()) {
-            throw new IOException("could not make temp dir " + this.storeDir);
-        }
-        
-        FileSystemContentStore store = new FileSystemContentStore();
+        store = new FileSystemContentStore();
         store.setRepositoryDataDirectory(this.storeDir);
-        this.store = store;
+        store.setRepositoryTrashCanDirectory(this.trashDir);
+        store.afterPropertiesSet();
     }
 
     @After
@@ -81,7 +81,7 @@ public class FileSystemContentStoreTest extends AbstractContentStoreTest {
         storeDirFile.delete();
     }
     
-    private String getRandomIntAsString() {
+    protected String getRandomIntAsString() {
         Random generator = new Random(Calendar.getInstance().getTimeInMillis());
         return String.valueOf(generator.nextInt());
     }
@@ -113,13 +113,12 @@ public class FileSystemContentStoreTest extends AbstractContentStoreTest {
         inputStreamBeforeStoringContent.close();
         assertEquals(0, getStore().getContentLength(uri));
 
-        ByteArrayInputStream inputStreamForStoringContent = 
-            new ByteArrayInputStream(testString.getBytes());
+        ContentInputSource inputSourceForStoringContent =
+            ContentInputSources.fromBytes(testString.getBytes());
         
         getStore().createResource(uri, false);
 
-        getStore().storeContent(uri, inputStreamForStoringContent);
-        inputStreamForStoringContent.close();
+        getStore().storeContent(uri, inputSourceForStoringContent);
 
         assertEquals(testString.getBytes().length, getStore().getContentLength(uri));
         InputStream inputStreamAfterStoringContent = getStore().getInputStream(uri);

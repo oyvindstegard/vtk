@@ -37,6 +37,7 @@ import java.util.List;
 import vtk.repository.Acl;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Comment;
+import vtk.repository.ContentInputSource;
 import vtk.repository.ContentStream;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
@@ -142,20 +143,20 @@ public class RepositoryWrapper implements Repository {
     }
 
     @Override
-    public Resource storeContent(String token, Path uri, InputStream stream)
+    public Resource storeContent(String token, Path uri, ContentInputSource content)
             throws AuthorizationException, AuthenticationException,
             ResourceNotFoundException, ResourceLockedException,
             IllegalOperationException, ReadOnlyException, Exception {
-        return repository.storeContent(token, uri, stream);
+        return repository.storeContent(token, uri, content);
     }
 
     @Override
     public Resource storeContent(String token, Path uri,
-            InputStream stream, Revision revision)
+            ContentInputSource content, Revision revision)
             throws AuthorizationException, AuthenticationException,
             ResourceNotFoundException, ResourceLockedException,
             IllegalOperationException, ReadOnlyException, Exception {
-        return repository.storeContent(token, uri, stream, revision);
+        return repository.storeContent(token, uri, content, revision);
     }
 
     @Override
@@ -183,10 +184,10 @@ public class RepositoryWrapper implements Repository {
 
     @Override
     public Resource createDocument(String token, Path uri,
-            InputStream inputStream) throws IllegalOperationException,
+            ContentInputSource content) throws IllegalOperationException,
             AuthorizationException, AuthenticationException,
             ResourceLockedException, ReadOnlyException, Exception {
-        return repository.createDocument(token, uri, inputStream);
+        return repository.createDocument(token, uri, content);
     }
 
     @Override

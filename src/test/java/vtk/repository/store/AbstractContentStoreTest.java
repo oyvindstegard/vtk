@@ -37,6 +37,7 @@ import java.io.InputStream;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
+import vtk.repository.ContentInputSources;
 
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
@@ -84,7 +85,7 @@ public abstract class AbstractContentStoreTest {
         byte[] content = testString.getBytes();
 
         getStore().createResource(Path.fromString("/file.txt"), false);
-        getStore().storeContent(Path.fromString("/file.txt"), new ByteArrayInputStream(content));
+        getStore().storeContent(Path.fromString("/file.txt"), ContentInputSources.fromBytes(content));
 
         // Test that content length is correct
         assertEquals(content.length, getStore().getContentLength(Path.fromString("/file.txt")));
@@ -167,7 +168,7 @@ public abstract class AbstractContentStoreTest {
         
         // Create a node and store some content in it
         getStore().createResource(p, false);
-        getStore().storeContent(p, new ByteArrayInputStream(content));
+        getStore().storeContent(p, ContentInputSources.fromBytes(content));
         
         // Verify length
         InputStream input = getStore().getInputStream(p);
@@ -182,7 +183,7 @@ public abstract class AbstractContentStoreTest {
         getStore().copy(p, p2);
         
         // Truncate original file (make sure the copy is a real clone)
-        getStore().storeContent(p, new ByteArrayInputStream("".getBytes()));
+        getStore().storeContent(p, ContentInputSources.fromBytes("".getBytes()));
         assertEquals(0, getStore().getContentLength(p));
         
         input = getStore().getInputStream(p2);
@@ -213,9 +214,9 @@ public abstract class AbstractContentStoreTest {
         getStore().createResource(Path.fromString("/d/file4.txt"), false);
 
         // Insert some content
-        getStore().storeContent(Path.fromString("/a/b/file1.txt"), new ByteArrayInputStream(contentFile1));
-        getStore().storeContent(Path.fromString("/a/b/file2.txt"), new ByteArrayInputStream(contentFile2));
-        getStore().storeContent(Path.fromString("/a/b/file3.txt"), new ByteArrayInputStream(contentFile3));
+        getStore().storeContent(Path.fromString("/a/b/file1.txt"), ContentInputSources.fromBytes(contentFile1));
+        getStore().storeContent(Path.fromString("/a/b/file2.txt"), ContentInputSources.fromBytes(contentFile2));
+        getStore().storeContent(Path.fromString("/a/b/file3.txt"), ContentInputSources.fromBytes(contentFile3));
 
         // Copy subtree '/d' to '/a/d', then check consistency      
         getStore().copy(Path.fromString("/d"), Path.fromString("/a/d"));
@@ -326,7 +327,7 @@ public abstract class AbstractContentStoreTest {
                     this.store.createResource(Path.fromString(this.workdir + "/a/AN_EMPTY_FILE2.dat"), false);
                     
                     this.store.createResource(Path.fromString(this.workdir + "/worker_name.txt"), false);
-                    this.store.storeContent(Path.fromString(this.workdir + "/worker_name.txt"), new ByteArrayInputStream(this.name.getBytes()));
+                    this.store.storeContent(Path.fromString(this.workdir + "/worker_name.txt"), ContentInputSources.fromBytes(this.name.getBytes()));
                     
                     this.store.copy(Path.fromString(this.workdir + "/a"), Path.fromString(this.workdir + "/Copy of a (1)"));
                     this.store.copy(Path.fromString(this.workdir + "/a"), Path.fromString(this.workdir + "/Copy of a (2)"));
@@ -350,7 +351,7 @@ public abstract class AbstractContentStoreTest {
         getStore().createResource(Path.fromString("/off_limits"), true);
         getStore().createResource(Path.fromString("/off_limits/i_will_survive.txt"), false);
         getStore().storeContent(Path.fromString("/off_limits/i_will_survive.txt"), 
-                new ByteArrayInputStream("I Will Surviveeee !".getBytes()));
+                ContentInputSources.fromBytes("I Will Surviveeee !".getBytes()));
         
         // Create the worker threads, add them all to a single thread group
         Thread[] threads = new Thread[numWorkers];

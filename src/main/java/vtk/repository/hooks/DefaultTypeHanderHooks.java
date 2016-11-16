@@ -43,6 +43,7 @@ import vtk.repository.resourcetype.Content;
 import vtk.repository.store.ContentStore;
 
 import org.springframework.beans.factory.annotation.Required;
+import vtk.repository.ContentInputSource;
 
 /**
  * Default implementation of {@link TypeHandlerHooks} with no-op hooks
@@ -149,9 +150,9 @@ public abstract class DefaultTypeHanderHooks implements TypeHandlerHooks {
      * {@inheritDoc }
      */
     @Override
-    public ResourceImpl storeContent(ResourceImpl resource, InputStream stream, 
+    public ResourceImpl storeContent(ResourceImpl resource, ContentInputSource content,
             String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception {
-        getContentStore().storeContent(resource.getURI(), stream, progressCallback, progressInterval);
+        getContentStore().storeContent(resource.getURI(), content, progressCallback, progressInterval);
         return resource;
     }
 
@@ -176,9 +177,9 @@ public abstract class DefaultTypeHanderHooks implements TypeHandlerHooks {
      * {@inheritDoc }
      */
     @Override
-    public ResourceImpl storeContentOnCreate(ResourceImpl resource, InputStream stream, 
+    public ResourceImpl storeContentOnCreate(ResourceImpl resource, ContentInputSource content,
             String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception {
-        getContentStore().storeContent(resource.getURI(), stream, progressCallback, progressInterval);
+        getContentStore().storeContent(resource.getURI(), content, progressCallback, progressInterval);
         return resource;
     }
 

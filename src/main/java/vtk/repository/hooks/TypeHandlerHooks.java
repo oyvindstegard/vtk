@@ -32,6 +32,7 @@ package vtk.repository.hooks;
 
 import java.io.InputStream;
 import java.util.function.Consumer;
+import vtk.repository.ContentInputSource;
 import vtk.repository.ContentStream;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.NoSuchContentException;
@@ -204,7 +205,7 @@ public interface TypeHandlerHooks {
     ResourceImpl onStoreInheritableProps(ResourceImpl resource, InheritablePropertiesStoreContext ctx) throws Exception;
 
     /**
-     * Called before {@link Repository#storeContent(java.lang.String, vtk.repository.Path, java.io.InputStream)
+     * Called before {@link Repository#storeContent(java.lang.String, vtk.repository.Path, vtk.repository.ContentInputSource)
      * storing content} for a resource.
      *
      * <p>
@@ -217,12 +218,12 @@ public interface TypeHandlerHooks {
      * </strong>
      *
      * @param resource the resource for which content is being stored.
-     * @param stream the input stream with data to store.
+     * @param content content input source
      * @param contentType the guessed content type of the input stream.
      * @return the resource (may be modified)
      * @throws Exception in case of errors
      */
-    ResourceImpl storeContent(ResourceImpl resource, InputStream stream, String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception;
+    ResourceImpl storeContent(ResourceImpl resource, ContentInputSource content, String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception;
 
     /**
      * Hook method called when {@link Repository#getInputStream(java.lang.String, vtk.repository.Path, boolean)
@@ -248,7 +249,7 @@ public interface TypeHandlerHooks {
     ResourceImpl onCreateCollection(ResourceImpl newCollection) throws Exception;
     
     /**
-     * Hook method called on {@link Repository#createDocument(java.lang.String, vtk.repository.Path, java.io.InputStream)
+     * Hook method called on {@link Repository#createDocument(java.lang.String, vtk.repository.Path, vtk.repository.ContentInputSource)
      * document creation}.
      *
      * The method will be called <em>before</em> property evaluation takes
@@ -260,14 +261,16 @@ public interface TypeHandlerHooks {
      * default content store, but hook impl is free to do so itself.)</strong>
      *
      * @param resource the new resource being created
-     * @param stream the input stream with the content
+     * @param content the content input source
      * @param contentType the guessed content type of the input stream.
+     * @param progressCallback
+     * @param progressInterval
      * @return the resource to be stored (may be modified).
      *
      * @throws Exception in case of errors.
      */
     ResourceImpl storeContentOnCreate(ResourceImpl resource,
-            InputStream stream, String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception;
+            ContentInputSource content, String contentType, Consumer<Long> progressCallback, int progressInterval) throws Exception;
 
     /**
      * Hook method called when copying a resource takes place.
