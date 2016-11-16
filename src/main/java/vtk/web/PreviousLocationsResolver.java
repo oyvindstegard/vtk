@@ -30,15 +30,10 @@
  */
 package vtk.web;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
-import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -46,86 +41,86 @@ import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.query.PropertyTermQuery;
 import vtk.repository.search.query.TermOperator;
-import vtk.web.referencedata.ReferenceDataProvider;
 
-public class PreviousLocationsResolver implements ReferenceDataProvider {
-    
-    @Override
-    public void referenceData(Map<String, Object> model,
-            HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Path uri = requestContext.getRequestURL().getPath();
-        
-        PropertyTypeDefinition locationHistoryPropDef = 
-                requestContext.getRepository()
-                .getTypeInfo("resource")
-                .getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, 
-                        "location-history");
+public class PreviousLocationsResolver {
 
-        List<PropertySet> locations = new ArrayList<>();
-        Resolver resolver = new Resolver(locationHistoryPropDef, requestContext);
-        Set<PropertySet> result = resolver.resolve(uri);
-        if (result != null) {
-            locations.addAll(result);
-        }
-        model.put("locations", locations);
+    //    @Override
+    //    public void referenceData(Map<String, Object> model,
+    //            HttpServletRequest request) throws Exception {
+    //        RequestContext requestContext = RequestContext.getRequestContext();
+    //        Path uri = requestContext.getRequestURL().getPath();
+    //        
+    //        PropertyTypeDefinition locationHistoryPropDef = 
+    //                requestContext.getRepository()
+    //                .getTypeInfo("resource")
+    //                .getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, 
+    //                        "location-history");
+    //
+    //        List<PropertySet> locations = new ArrayList<>();
+    //        Resolver resolver = new Resolver(locationHistoryPropDef, requestContext);
+    //        Set<PropertySet> result = resolver.resolve(uri);
+    //        if (result != null) {
+    //            locations.addAll(result);
+    //        }
+    //        model.put("locations", locations);
+    //    }
+
+    //    private static class Resolver {
+    private RequestContext requestContext;
+    private PropertyTypeDefinition locationHistoryPropDef;
+
+    public PreviousLocationsResolver(PropertyTypeDefinition locationHistoryPropDef, 
+            RequestContext requestContext) {
+        this.locationHistoryPropDef = locationHistoryPropDef;
+        this.requestContext = requestContext;
     }
-   
-    private static class Resolver {
-        private RequestContext requestContext;
-        private PropertyTypeDefinition locationHistoryPropDef;
-        
-        public Resolver(PropertyTypeDefinition locationHistoryPropDef, 
-                RequestContext requestContext) {
-            this.locationHistoryPropDef = locationHistoryPropDef;
-            this.requestContext = requestContext;
-        }
-        
-        public Set<PropertySet> resolve(Path uri) throws Exception {
-            return track(uri, new HashSet<>(), 5);
-        }
-        
-        private Set<PropertySet> track(Path uri, Set<Path> seen, 
-                int recursion) throws Exception {
-            Set<PropertySet> result = new HashSet<>();
-            if (recursion == 0) return result;
-            seen.add(uri);
-            if (requestContext.getRepository()
-                    .exists(requestContext.getSecurityToken(), uri)) {
-                PropertySet resource = requestContext.getRepository()
-                        .retrieve(requestContext.getSecurityToken(), uri, true);
-                result.add(resource);
-            }
-            
-            for (int i = uri.getDepth(); i > 0; i--) {
-                Path left = uri.getPath(i);
-                Path right = uri.right(left);
 
-                List<PropertySet> prev = searchPreviousLocations(left);
-                for (PropertySet r: prev) {
-                    Path next = r.getURI().append(right);
-                    if (!seen.contains(next)) {
-                        result.addAll(track(next, seen, recursion - 1));
-                    }
+    public Set<PropertySet> resolve(Path uri) throws Exception {
+        return track(uri, new HashSet<>(), 5);
+    }
+
+    private Set<PropertySet> track(Path uri, Set<Path> seen, 
+            int recursion) throws Exception {
+        Set<PropertySet> result = new HashSet<>();
+        if (recursion == 0) return result;
+        seen.add(uri);
+        if (requestContext.getRepository()
+                .exists(requestContext.getSecurityToken(), uri)) {
+            PropertySet resource = requestContext.getRepository()
+                    .retrieve(requestContext.getSecurityToken(), uri, true);
+            result.add(resource);
+        }
+
+        for (int i = uri.getDepth(); i > 0; i--) {
+            Path left = uri.getPath(i);
+            Path right = uri.right(left);
+
+            List<PropertySet> prev = searchPreviousLocations(left);
+            for (PropertySet r: prev) {
+                Path next = r.getURI().append(right);
+                if (!seen.contains(next)) {
+                    result.addAll(track(next, seen, recursion - 1));
                 }
             }
-            return result;
         }
-        
-        private List<PropertySet> searchPreviousLocations(Path uri) {
-            
-            PropertyTermQuery termQuery = new PropertyTermQuery(
-                    locationHistoryPropDef, uri.toString(), TermOperator.EQ);
-            termQuery.setComplexValueAttributeSpecifier("locations.from_uri");
-            Search search = new Search();
-
-            search.setQuery(termQuery);
-            search.setLimit(10);
-            
-            ResultSet results = requestContext.getRepository()
-                    .search(requestContext.getSecurityToken(), search);
-            return results.getAllResults();
-        }
+        return result;
     }
-    
+
+    private List<PropertySet> searchPreviousLocations(Path uri) {
+
+        PropertyTermQuery termQuery = new PropertyTermQuery(
+                locationHistoryPropDef, uri.toString(), TermOperator.EQ);
+        termQuery.setComplexValueAttributeSpecifier("locations.from_uri");
+        Search search = new Search();
+        search.setQuery(termQuery);
+        search.setSorting(null);
+        search.clearAllFilterFlags();
+        //search.setPropertySelect(PropertySelect.NONE);
+        search.setLimit(10);
+
+        ResultSet results = requestContext.getRepository()
+                .search(requestContext.getSecurityToken(), search);
+        return results.getAllResults();
+    }
 }
+
