@@ -30,8 +30,6 @@
  */
 package vtk.web.decorating;
 
-import vtk.util.io.InputSource;
-
 public interface TemplateFactory {
 
     public Template newTemplate(InputSource templateSource) throws InvalidTemplateException;

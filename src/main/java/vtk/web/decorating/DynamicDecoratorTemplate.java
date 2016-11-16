@@ -54,7 +54,6 @@ import vtk.text.tl.Parser.Directive;
 import vtk.text.tl.TemplateContext;
 import vtk.text.tl.TemplateHandler;
 import vtk.text.tl.TemplateParser;
-import vtk.util.io.InputSource;
 
 
 public class DynamicDecoratorTemplate implements Template {

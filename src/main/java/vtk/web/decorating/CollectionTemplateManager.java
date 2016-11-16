@@ -44,8 +44,6 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
-import vtk.util.io.InputSource;
-import vtk.util.repository.RepositoryInputSource;
 
 
 /**

@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.util.repository;
+package vtk.web.decorating;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +36,6 @@ import java.io.InputStream;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.util.io.InputSource;
 
 
 public class RepositoryInputSource implements InputSource {

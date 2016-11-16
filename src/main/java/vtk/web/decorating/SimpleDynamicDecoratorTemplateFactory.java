@@ -34,7 +34,6 @@ import java.util.List;
 
 import vtk.text.html.HtmlPageParser;
 import vtk.text.tl.DirectiveHandler;
-import vtk.util.io.InputSource;
 
 public class SimpleDynamicDecoratorTemplateFactory implements TemplateFactory {
 

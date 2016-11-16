@@ -57,7 +57,6 @@ import vtk.text.tl.TemplateContext;
 import vtk.text.tl.TemplateHandler;
 import vtk.text.tl.TemplateParser;
 import vtk.text.tl.Token;
-import vtk.util.io.InputSource;
 import vtk.web.decorating.components.DynamicDecoratorComponent;
 
 public class DynamicComponentParser {

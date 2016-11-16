@@ -37,7 +37,7 @@ import java.io.InputStream;
 import vtk.resourcemanagement.DisplayTemplate;
 import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
-import vtk.util.io.InputSource;
+import vtk.web.decorating.InputSource;
 import vtk.web.decorating.AbstractCachingTemplateManager;
 
 public class DecoratorTemplateManager extends AbstractCachingTemplateManager {
