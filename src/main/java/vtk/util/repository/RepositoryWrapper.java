@@ -38,7 +38,6 @@ import vtk.repository.Acl;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Comment;
 import vtk.repository.ContentInputSource;
-import vtk.repository.ContentStream;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.NoSuchContentException;
@@ -175,11 +174,11 @@ public class RepositoryWrapper implements Repository {
     }
 
     @Override
-    public ContentStream getAlternativeContentStream(String token,
+    public InputStream getAlternativeInputStream(String token,
             Path uri, boolean forProcessing, String contentIdentifier)
             throws NoSuchContentException, ResourceNotFoundException,
             AuthorizationException, AuthenticationException, Exception {
-        return repository.getAlternativeContentStream(token, uri, forProcessing, contentIdentifier);
+        return repository.getAlternativeInputStream(token, uri, forProcessing, contentIdentifier);
     }
 
     @Override

@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.repository.content;
+package vtk.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,58 +41,61 @@ import java.io.InputStream;
  */
 public abstract class AbstractInputStreamWrapper extends InputStream {
 
-    private final InputStream inputStream;
+    private final InputStream wrappedStream;
 
     public AbstractInputStreamWrapper(InputStream is) {
-        this.inputStream = is;
+        wrappedStream = is;
     }
 
+    /**
+     * @return the wrapped (internal) stream which is delegated to.
+     */
     public InputStream getWrappedStream() {
-        return inputStream;
+        return wrappedStream;
     }
 
     @Override
     public int read() throws IOException {
-        return this.inputStream.read();
+        return wrappedStream.read();
     }
 
     @Override
     public int read(byte[] b) throws IOException {
-        return this.inputStream.read(b);
+        return wrappedStream.read(b);
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        return this.inputStream.read(b, off, len);
+        return wrappedStream.read(b, off, len);
     }
 
     @Override
     public long skip(long n) throws IOException {
-        return this.inputStream.skip(n);
+        return wrappedStream.skip(n);
     }
 
     @Override
     public int available() throws IOException {
-        return this.inputStream.available();
+        return wrappedStream.available();
     }
 
     @Override
     public void close() throws IOException {
-        this.inputStream.close();
+        wrappedStream.close();
     }
 
     @Override
-    public synchronized void mark(int readlimit) {
-        this.inputStream.mark(readlimit);
+    public void mark(int readlimit) {
+        wrappedStream.mark(readlimit);
     }
 
     @Override
-    public synchronized void reset() throws IOException {
-        this.inputStream.reset();
+    public void reset() throws IOException {
+        wrappedStream.reset();
     }
 
     @Override
     public boolean markSupported() {
-        return this.inputStream.markSupported();
+        return wrappedStream.markSupported();
     }
 }

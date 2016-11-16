@@ -101,7 +101,7 @@ public class ResourceToMapConverter {
     
     private static Object mapBinaryValue(BinaryValue value) throws IOException {
         if ("application/json".equals(value.getContentType())) {
-            return Json.parse(value.getContentStream().getStream());
+            return Json.parse(value.stream());
         }
        return null;
     }

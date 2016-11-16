@@ -379,7 +379,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     @Transactional(readOnly=true)
     @OpLog
     @Override
-    public ContentStream getAlternativeContentStream(@OpLogParam(name = "token") String token, @OpLogParam Path uri, boolean forProcessing, 
+    public InputStream getAlternativeInputStream(@OpLogParam(name = "token") String token, @OpLogParam Path uri, boolean forProcessing,
             @OpLogParam(name = "contentId") String contentIdentifier) 
             throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
 
@@ -405,7 +405,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(r);
         if (hooks != null) {
             try {
-                return hooks.onGetAlternativeContentStream(r, contentIdentifier);
+                return hooks.onGetAlternativeInputStream(r, contentIdentifier);
             } catch (Exception e) {
                 throw new TypeHandlerHookException("failed in onGetAlternativeContentStream hook: " + e.getMessage(), e);
             }

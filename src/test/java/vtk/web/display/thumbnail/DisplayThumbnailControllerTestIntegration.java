@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.servlet.ModelAndView;
 
-import vtk.repository.ContentStream;
+import vtk.util.io.InputStreamWithLength;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -88,7 +88,7 @@ public class DisplayThumbnailControllerTestIntegration extends AbstractControlle
         final byte[] imageBytes = out.toByteArray();
         out.close();
         InputStream in = new ByteArrayInputStream(imageBytes);
-        final ContentStream contentStream = new ContentStream(in, imageBytes.length);
+        final InputStreamWithLength contentStream = new InputStreamWithLength(in, imageBytes.length);
 
         context.checking(new Expectations() {
             {

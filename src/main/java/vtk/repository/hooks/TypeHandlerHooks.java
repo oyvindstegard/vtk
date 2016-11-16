@@ -33,15 +33,13 @@ package vtk.repository.hooks;
 import java.io.InputStream;
 import java.util.function.Consumer;
 import vtk.repository.ContentInputSource;
-import vtk.repository.ContentStream;
+import vtk.util.io.InputStreamWithLength;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.NoSuchContentException;
 import vtk.repository.RepositoryImpl;
 import vtk.repository.ResourceImpl;
 import vtk.repository.SystemChangeContext;
-import vtk.repository.content.ContentRepresentationRegistry;
 import vtk.repository.resourcetype.Content;
-import vtk.repository.store.ContentStore;
 
 /**
  * Expert API for customized resource type handling. Allows hooking into basic
@@ -129,11 +127,11 @@ public interface TypeHandlerHooks {
      *
      * @param resource the resource
      * @param contentIdentifier an implementation specific content identifier
-     * @return an instance of {@link ContentStream} with alternative content
+     * @return an instance of {@link InputStreamWithLength} with alternative content
      * @throws NoSuchContentException if no such content is available
      * @throws Exception in case of errors
      */
-    ContentStream onGetAlternativeContentStream(ResourceImpl resource, String contentIdentifier) throws NoSuchContentException, Exception;
+    InputStream onGetAlternativeInputStream(ResourceImpl resource, String contentIdentifier) throws NoSuchContentException, Exception;
 
     /**
      * Called by repository just before returning the resource in

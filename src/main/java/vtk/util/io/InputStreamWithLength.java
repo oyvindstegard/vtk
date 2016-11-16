@@ -28,35 +28,26 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.repository;
+package vtk.util.io;
 
 import java.io.InputStream;
 
 /**
- * A content stream provides an {@link InputStream} with a known length.
+ * An input stream wrapper which stores length as well.
  */
-public class ContentStream {
+public class InputStreamWithLength extends AbstractInputStreamWrapper {
     
-    private final InputStream stream;
     private final long length;
 
-    public ContentStream(InputStream stream, long length) {
-        this.stream = stream;
+    public InputStreamWithLength(InputStream stream, long length) {
+        super(stream);
         this.length = length;
     }
 
     /**
-     * @return an {@link InputStream}
+     * @return length of input stream in bytes, or <code>-1</code> if unknown.
      */
-    public InputStream getStream() {
-        return this.stream;
-    }
-
-    /**
-     * 
-     * @return length of input stream retured by {@link #getStream() }.
-     */
-    public long getLength() {
+    public long length() {
         return this.length;
     }
 

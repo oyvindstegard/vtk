@@ -219,12 +219,12 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
         IO.TempFile tempFile = null;
         try {
-            // Convert input stream to file FileInputStream if necessary, to ensure
+            // Convert input stream to local file if necessary, to ensure
             // most efficient transfer to repository content store while holding locks.
             if (!content.isFile() || !content.canDeleteSourceFile()) {
                 InputStream stream = content.stream();
-                if (!((stream instanceof FileInputStream)
-                        || (stream instanceof ByteArrayInputStream))) {
+                if (! (stream instanceof FileInputStream
+                         || stream instanceof ByteArrayInputStream)) {
 
                     tempFile = IO.tempFile(stream, tempDir)
                             .progress(p -> tokenManager.getPrincipal(token)) // Refresh token because upload may be slow
@@ -422,12 +422,12 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public ContentStream getAlternativeContentStream(String token, Path uri, boolean forProcessing, String contentIdentifier)
+    public InputStream getAlternativeInputStream(String token, Path uri, boolean forProcessing, String contentIdentifier)
             throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
 
         List<Path> locked = this.lockManager.lock(uri, false);
         try {
-            return this.wrappedRepository.getAlternativeContentStream(token, uri, forProcessing, contentIdentifier); // Tx
+            return this.wrappedRepository.getAlternativeInputStream(token, uri, forProcessing, contentIdentifier); // Tx
         }
         finally {
             this.lockManager.unlock(locked, false);

@@ -237,7 +237,7 @@ public class FeedImageInlineFilter extends AbstractResponseFilter {
                     Namespace.DEFAULT_NAMESPACE, PropertyType.THUMBNAIL_PROP_NAME);
             
             if (thumbnail != null) {
-                imageStream = thumbnail.getBinaryStream().getStream();
+                imageStream = thumbnail.getBinaryStream();
                 contentType = thumbnail.getBinaryContentType();
             }
             else if (resource.getContentLength() < MAX_IMG_INLINE_SIZE) {

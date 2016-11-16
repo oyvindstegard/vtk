@@ -33,7 +33,6 @@ package vtk.repository.hooks;
 
 import java.io.InputStream;
 import java.util.function.Consumer;
-import vtk.repository.ContentStream;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.NoSuchContentException;
 import vtk.repository.ResourceImpl;
@@ -168,7 +167,7 @@ public abstract class DefaultTypeHanderHooks implements TypeHandlerHooks {
      * {@inheritDoc }
      */
     @Override
-    public ContentStream onGetAlternativeContentStream(ResourceImpl resource, String contentIdentifier) 
+    public InputStream onGetAlternativeInputStream(ResourceImpl resource, String contentIdentifier) 
             throws NoSuchContentException, Exception {
         throw new NoSuchContentException("No such content");
     }

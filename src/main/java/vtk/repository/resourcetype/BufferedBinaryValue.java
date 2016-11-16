@@ -34,7 +34,7 @@ package vtk.repository.resourcetype;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 
-import vtk.repository.ContentStream;
+import vtk.util.io.InputStreamWithLength;
 import vtk.repository.store.DataAccessException;
 
 /**
@@ -80,9 +80,9 @@ public final class BufferedBinaryValue implements BinaryValue, Cloneable {
     }
 
     @Override
-    public ContentStream getContentStream() {
+    public InputStreamWithLength stream() {
         ByteArrayInputStream bis = new ByteArrayInputStream(this.buffer);
-        return new ContentStream(bis, this.buffer.length);
+        return new InputStreamWithLength(bis, this.buffer.length);
     }
     
     @Override

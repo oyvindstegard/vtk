@@ -31,7 +31,7 @@
 
 package vtk.repository.resourcetype;
 
-import vtk.repository.ContentStream;
+import vtk.util.io.InputStreamWithLength;
 import vtk.repository.store.DataAccessException;
 
 /**
@@ -52,7 +52,7 @@ public interface BinaryValue {
      * @return
      * @throws DataAccessException 
      */
-    public ContentStream getContentStream() throws DataAccessException;
+    public InputStreamWithLength stream() throws DataAccessException;
     
     /**
      * Get binary value byte buffer.

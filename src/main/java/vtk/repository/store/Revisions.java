@@ -32,7 +32,7 @@ package vtk.repository.store;
 
 import java.io.InputStream;
 
-import vtk.repository.content.AbstractInputStreamWrapper;
+import vtk.util.io.AbstractInputStreamWrapper;
 import vtk.util.codec.MD5;
 
 public final class Revisions {

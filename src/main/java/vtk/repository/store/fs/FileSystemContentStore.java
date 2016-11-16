@@ -166,21 +166,21 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
      */
     @Override
     public void storeContent(Path uri, ContentInputSource content, Consumer<Long> progressCallback, int progressInterval) throws DataAccessException {
-        final String fileName = getFileSystemPath(uri);
         // Attempt move in place, fall back to copy
-        final File dest = new File(fileName);
+        final File dest = new File(getFileSystemPath(uri));
         if (content.isFile() && content.canDeleteSourceFile()) {
             File inputFile = content.file();
             try {
-                Files.move(inputFile.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.move(inputFile.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
                 applyAttributes(dest);
                 if (progressCallback != null) {
                     progressCallback.accept(dest.length());
                 }
                 return;
             } catch (IOException e) {
-                // May fail if lacking permissions on source file parent dir
-                logger.warn("Failed to move source file into content repository [" + uri + "]", e);
+                // May fail if lacking permissions on source file parent dir or atomic move not possible
+                logger.warn("Failed to move source file '{}' into content repository [{}]: {}: {}",
+                        content.file(), uri, e.getClass().getSimpleName(), e.getMessage());
             }
         }
 

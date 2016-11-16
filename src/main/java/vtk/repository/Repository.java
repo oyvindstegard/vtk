@@ -327,7 +327,7 @@ public interface Repository {
             AuthorizationException, AuthenticationException, Exception;
     
     /**
-     * Obtains an alternative {@link ContentStream content stream} for the
+     * Obtains an alternative {@link InputStreamWithLength content stream} for the
      * resource at the given path. The repository generally does not
      * support alternative streams, but they may be available through
      * extensions. To get an alternative stream, you must know the particular
@@ -337,11 +337,11 @@ public interface Repository {
      * @param uri
      * @param forProcessing
      * @param contentIdentifier an implementation specific content identifier.
-     * @return instance of {@link ContentStream} with alternative content
+     * @return instance of {@link InputStreamWithLength} with alternative content
      * @throws NoSuchContentException if no such alternative content exists for
      * the given resource.
      */
-    public ContentStream getAlternativeContentStream(String token, Path uri, boolean forProcessing,
+    public InputStream getAlternativeInputStream(String token, Path uri, boolean forProcessing,
             String contentIdentifier)
             throws NoSuchContentException, ResourceNotFoundException,
             AuthorizationException, AuthenticationException, Exception;

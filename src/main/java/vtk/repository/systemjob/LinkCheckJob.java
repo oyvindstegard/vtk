@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.AuthorizationException;
-import vtk.repository.ContentStream;
 import vtk.repository.Lock;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -232,8 +231,8 @@ public class LinkCheckJob extends AbstractResourceJob {
         logger.debug("Running with link check state: " + state + " for " + resource.getURI());
 
         // Still supported for JSON properties:
-        ContentStream linksStream = hrefsProp.getBinaryStream();
-        Json.ParseEvents parser = Json.parseAsEvents(linksStream.getStream());
+        InputStream linksStream = hrefsProp.getBinaryStream();
+        Json.ParseEvents parser = Json.parseAsEvents(linksStream);
         
         final URL base = urlConstructor.canonicalUrl(resource).setImmutable();
         final AtomicLong n = new AtomicLong(0);
@@ -476,7 +475,7 @@ public class LinkCheckJob extends AbstractResourceJob {
         private static LinkCheckState create(Property statusProp) {
             LinkCheckState s = new LinkCheckState();
             if (statusProp != null) {
-                try (InputStream jsonStream = statusProp.getBinaryStream().getStream()) {
+                try (InputStream jsonStream = statusProp.getBinaryStream()) {
                     Json.MapContainer status = Json.parseToContainer(jsonStream).asObject();
                     s.complete = "COMPLETE".equals(status.get("status"));
                     for (Object b : status.optArrayValue("brokenLinks", Collections.emptyList())) {

@@ -64,8 +64,8 @@ public class PosixFileSystemContentStore extends FileSystemContentStore {
     public void afterPropertiesSet() throws Exception {
         super.afterPropertiesSet();
 
-        checkSupportsPosixAttributes(super.repositoryDataDirectory);
-        checkSupportsPosixAttributes(super.repositoryTrashCanDirectory);
+        checkFsSupport(super.repositoryDataDirectory);
+        checkFsSupport(super.repositoryTrashCanDirectory);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class PosixFileSystemContentStore extends FileSystemContentStore {
         }
     }
 
-    private void checkSupportsPosixAttributes(String fsPathString) throws IOException {
+    private void checkFsSupport(String fsPathString) throws IOException {
         java.nio.file.Path fsPath = Paths.get(fsPathString);
         FileStore fs = Files.getFileStore(fsPath);
         if (!fs.supportsFileAttributeView(PosixFileAttributeView.class)) {

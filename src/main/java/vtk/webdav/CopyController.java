@@ -67,7 +67,9 @@ public class CopyController extends AbstractWebdavController {
      *
      * @param request the HTTP request object
      * @param response the <code>HttpServletResponse</code> response object
+     * @return
      */
+    @Override
     public ModelAndView handleRequest(HttpServletRequest request,
                                       HttpServletResponse response) throws Exception {
 
@@ -124,11 +126,9 @@ public class CopyController extends AbstractWebdavController {
             }
             
             if (existed) {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                          new Integer(HttpServletResponse.SC_NO_CONTENT));
+                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_NO_CONTENT);
             } else {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                          new Integer(HttpServletResponse.SC_CREATED));
+                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_CREATED);
             }
 
             return new ModelAndView("COPY", model);
