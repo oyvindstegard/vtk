@@ -43,29 +43,6 @@ import vtk.repository.search.query.PropertyTermQuery;
 import vtk.repository.search.query.TermOperator;
 
 public class PreviousLocationsResolver {
-
-    //    @Override
-    //    public void referenceData(Map<String, Object> model,
-    //            HttpServletRequest request) throws Exception {
-    //        RequestContext requestContext = RequestContext.getRequestContext();
-    //        Path uri = requestContext.getRequestURL().getPath();
-    //        
-    //        PropertyTypeDefinition locationHistoryPropDef = 
-    //                requestContext.getRepository()
-    //                .getTypeInfo("resource")
-    //                .getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, 
-    //                        "location-history");
-    //
-    //        List<PropertySet> locations = new ArrayList<>();
-    //        Resolver resolver = new Resolver(locationHistoryPropDef, requestContext);
-    //        Set<PropertySet> result = resolver.resolve(uri);
-    //        if (result != null) {
-    //            locations.addAll(result);
-    //        }
-    //        model.put("locations", locations);
-    //    }
-
-    //    private static class Resolver {
     private RequestContext requestContext;
     private PropertyTypeDefinition locationHistoryPropDef;
 
@@ -115,7 +92,6 @@ public class PreviousLocationsResolver {
         search.setQuery(termQuery);
         search.setSorting(null);
         search.clearAllFilterFlags();
-        //search.setPropertySelect(PropertySelect.NONE);
         search.setLimit(10);
 
         ResultSet results = requestContext.getRepository()
