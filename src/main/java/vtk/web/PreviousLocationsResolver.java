@@ -37,6 +37,7 @@ import java.util.Set;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.PropertySelect;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.query.PropertyTermQuery;
@@ -91,6 +92,7 @@ public class PreviousLocationsResolver {
         Search search = new Search();
         search.setQuery(termQuery);
         search.setSorting(null);
+        search.setPropertySelect(PropertySelect.NONE);
         search.clearAllFilterFlags();
         search.setLimit(10);
 
