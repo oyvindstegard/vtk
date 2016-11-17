@@ -246,7 +246,9 @@
         <ref bean="templateLanguage.toLowerCaseFunction" />
         <ref bean="templateLanguage.toUpperCaseFunction" />
         <ref bean="templateLanguage.ceilFunction" />
+        <ref bean="templateLanguage.floorFunction" />
         <ref bean="templateLanguage.toIntFunction" />
+        <ref bean="templateLanguage.toDoubleFunction" />
         <ref bean="templateLanguage.dateCompareFunction" />
         <ref bean="templateLanguage.dateFormatFunction" />
         <ref bean="templateLanguage.replaceFunction" />

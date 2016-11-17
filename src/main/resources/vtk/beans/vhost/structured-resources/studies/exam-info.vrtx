@@ -19,6 +19,14 @@ resourcetype exam-info {
       [val dt # "full-month-short"]
       ##
     }
+    
+    duration-format(duration) {
+      ##
+      [def hours floor(duration)]
+      [def minutes floor(((double(duration) - hours) * 60))]
+      [if (hours > 0 || minutes > 0)] ([if hours > 0][val hours] [localized 'time-hours'][endif][if minutes > 0] [val minutes] [localized 'time-minutes'][endif])[endif]
+      ##
+    }
 
     exam-part (part, isSubPart) {
       ##
@@ -27,11 +35,7 @@ resourcetype exam-info {
       [if isSubPart = "true"]</h3>[else]</h2>[endif]
       
       [if part.datoEksamen]
-        [def hours part.varighetTimer]
-        [if hours != null && hours.length() = 3]
-          [def hours hours.substring(0, 1)]
-        [endif]
-        <p><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.datoEksamen }][if part.klokkeslettEksamen] [localized 'time-prefix'] [val part.klokkeslettEksamen][endif][if hours] ([val hours] [localized 'time-hours'])[endif].</p>
+        <p><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.datoEksamen }][if part.klokkeslettEksamen] [localized 'time-prefix'] [val part.klokkeslettEksamen][endif][if part.varighetTimer][call "comp:duration-format" { "duration" : part.varighetTimer }][endif].</p>
       [endif]
       
       [if part.datoInnlevering]
@@ -192,6 +196,7 @@ resourcetype exam-info {
     ordning : (en : "Examination system", no : "Eksamensordning", nn : "Eksamensordning"),
     time : (en : "Time", no : "Tid", nn : "Tid"),
     time-hours : (en : "hours", no : "timer", nn : "timer"),
+    time-minutes : (en : "minutes", no : "minutter", nn : "minutter"),
     time-prefix : (en : "at", no : "kl.", nn : "kl."),
     place : (en : "Place", no : "Sted", nn : "Stad"),
     place-info : (en : "You will find your candidate number and information about where to sit in",

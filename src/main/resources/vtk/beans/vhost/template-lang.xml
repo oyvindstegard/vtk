@@ -18,6 +18,14 @@
     </constructor-arg>
   </bean>
 
+  <bean id="templateLanguage.toDoubleFunction" class="vtk.text.tl.expr.ToDoubleFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg  value="double" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
   <bean id="templateLanguage.dateCompareFunction" class="vtk.text.tl.expr.DateCompareFunction">
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
@@ -110,6 +118,14 @@
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
         <constructor-arg  value="ceil" />
+      </bean>
+    </constructor-arg>
+  </bean>
+  
+  <bean id="templateLanguage.floorFunction" class="vtk.text.tl.expr.Floor">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg  value="floor" />
       </bean>
     </constructor-arg>
   </bean>
