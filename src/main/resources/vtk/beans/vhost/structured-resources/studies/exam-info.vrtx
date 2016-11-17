@@ -1,0 +1,221 @@
+resourcetype exam-info {
+
+  properties {
+    tittel : string,
+    title : derived (tittel) eval ("exam"?localized + " " + "for"?localized + " " + "courseContext.fs-course-code"?contextual + " - " + "semesterContext.semesterTitle"?contextual) overrides title
+  }
+
+  edit-rules {
+    tittel (size[1]),
+    tittel (class[ui-helper-hidden]),
+    title (class[ui-helper-hidden])
+  }
+
+  view-components {
+  
+    date-format(date) {
+      ##
+      [def dt to-date(date)]
+      [val dt # "full-month-short"]
+      ##
+    }
+
+    exam-part (part, isSubPart) {
+      ##
+      [if isSubPart = "true"]<h3>[else]<h2>[endif]
+        [val part.navn]
+      [if isSubPart = "true"]</h3>[else]</h2>[endif]
+      
+      [if part.datoEksamen]
+        [def hours part.varighetTimer]
+        [if hours != null && hours.length() = 3]
+          [def hours hours.substring(0, 1)]
+        [endif]
+        <p><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.datoEksamen }][if part.klokkeslettEksamen] [localized 'time-prefix'] [val part.klokkeslettEksamen][endif][if hours] ([val hours] [localized 'time-hours'])[endif].</p>
+      [endif]
+      
+      [if part.datoInnlevering]
+        <p><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.datoInnlevering }][if part.klokkeslettInnlevering] [localized 'time-prefix'] [val part.klokkeslettInnlevering][endif]</p>
+      [endif]
+      
+      [def rom part.rom]
+      [if part.datoEksamen != null || rom != null]
+        <p><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">StudentWeb</a>.</p>
+      [endif]
+      [if rom]
+        <ul>
+        [list rom r]
+          <li>
+            [if r.bygning]
+              [if r.url]
+                [def url r.url]
+              [else]
+                [def url concat("https://www.google.no/maps/place/", r.bygning)]
+              [endif]
+              <a href="[val url]">[if r.rom][val r.rom] [endif][val r.bygning]</a>
+            [elseif r.bygningskode]
+              [if r.romkode][val r.romkode] [endif][val r.bygningskode]
+            [endif]
+          </li>
+        [endlist]
+        </ul>
+      [endif]
+      
+      [if part.datasystem]
+        <p><strong>[localized 'system']:</strong></p>
+        [call "include:shared-text" { "folder": "/vrtx/fellestekst/eksamen", "file": "system", "key": part.datasystem }]
+      [endif]
+      
+      [if part.kommentar]
+        <p><strong>[localized 'notice']:</strong> [val part.kommentar]</p>
+      [endif]
+      
+      [if part.kunngjoring]
+        <p><strong>[localized 'announcement']:</strong> [val part.kunngjoring]</p>
+      [endif]
+      ##
+    }
+
+    exam-ordning (ordning) {
+      ##
+      [if ordning.trekkfrist]
+        <h2>[localized 'trekkfrist']</h2>
+        <p>[call "comp:date-format" { "date" : ordning.trekkfrist }]</p>
+      [endif]
+
+      [def eksamensdeler ordning.eksamensdel]
+      [if eksamensdeler]
+        [def isOrdningEksamensDel (ordning.datoEksamen != null || ordning.datoInnlevering != null)]
+
+        [def len eksamensdeler.length()]
+        [if len > 1 && ! isOrdningEksamensDel]
+          <h2>[localized 'ordning']</h2>
+          <p>[val ordning.navn]</p>
+        [endif]
+      
+        [if isOrdningEksamensDel]
+          [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
+        [endif]
+
+        [list eksamensdeler eksamensdel]
+          [call "comp:exam-part" { "part" : eksamensdel, "isSubPart": "false" }]
+          
+          [def deldager eksamensdel.deldag]
+          [if deldager]
+            [list deldager deldag]
+              [call "comp:exam-part" { "part" : deldag, "isSubPart": "true" }]
+            [endlist]
+          [endif]
+        [endlist]
+      [else]
+        [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
+
+        [def deldager ordning.deldag]
+        [if deldager]
+          [list deldager deldag]
+            [call "comp:exam-part" { "part" : deldag, "isSubPart": "true" }]
+          [endlist]
+        [endif]
+      [endif]
+      
+      <h2>[localized 'results']</h2>
+      <p>[localized 'results-info'] <a href="//studentweb.uio.no/">StudentWeb</a> [localized 'results-info-part-two'].</p>
+      
+      <h2>[localized 'more-about']</h2>
+      <p>[localized 'more-about-info'] <a href="./../../#exam">[localized 'more-about-info-course-pages-link']</a>.</p>
+      ##
+    }
+  }
+
+  view {
+    ##
+    [def settings settings()]
+    [def document structured-document()]
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>[call "resource:contextual-title-new"]</title>
+      </head>
+      <body id="vrtx-exam-info">
+        <div id="vrtx-content">
+          <div id="vrtx-main-content" class="vrtx-hide-additional-content-true">
+            <h1>[call "resource:property" {"id":"title"}]</h1>
+
+            [if ! settings.services.examInfo]
+              <p>[localized 'external-service-unavailable'].</p>
+            [else]
+              [def course-code resource-prop-obj-val(".", "courseContext.fs-course-code")]
+              [def term resource-prop-obj-val(".", "semesterContext.semesterTerm")]
+              [def year resource-prop-obj-val(".", "semesterContext.semesterYear")]
+              [if year != null && year.length() = 4]
+                [def year year.substring(2, 4)]
+              [endif]
+              
+              [def examInfoURL settings.services.examInfo]
+              
+              [if course-code != null && term != null && year != null]
+                [def examInfoURL replace(examInfoURL, "%term", term)]
+                [def examInfoURL replace(examInfoURL, "%sem", year)]
+                [def examInfoURL replace(examInfoURL, "%course", course-code)]
+              
+                [def resp url-as-json(examInfoURL)]
+              [else]
+                [def resp { "errorMessage": "Missing context values for course or semester" }]
+              [endif]
+
+              [if resp.errorMessage]
+                <p>[localized 'lookup-unable']: [val examInfoURL]</p>
+                <p>[localized 'lookup-unable-error-msg']: [val resp.errorMessage]</p>
+              [else]
+                [def exam resp.payload]
+                [def ordninger exam.ordning]
+                [if ordninger]
+                  [list ordninger ordning]
+                    [call "comp:exam-ordning" { "ordning" : ordning }]
+                  [endlist]
+                [endif]
+              [endif]
+            [endif]
+          </div>
+        </div>
+      </body>
+    </html>
+    ##
+  }
+
+  localization {
+    exam : (en : "Examination: Time and place", no : "Eksamen: Tid og sted", nn : "Eksamen: Tid og stad"),
+    for : (en : "for", no : "for", nn : "for"),
+    title : (en : "Title", no : "Tittel", nn : "Tittel"),
+    header : (en : "Edit exam", no : "Rediger eksamen", nn : "Rediger eksamen"),
+    trekkfrist : (en : "Deadline for withdrawing from the exam", no : "Trekkfrist", nn : "Trekkfrist"),
+    ordning : (en : "Examination system", no : "Eksamensordning", nn : "Eksamensordning"),
+    time : (en : "Time", no : "Tid", nn : "Tid"),
+    time-hours : (en : "hours", no : "timer", nn : "timer"),
+    time-prefix : (en : "at", no : "kl.", nn : "kl."),
+    place : (en : "Place", no : "Sted", nn : "Stad"),
+    place-info : (en : "You will find your candidate number and information about where to sit in",
+                  no : "Du finner kandidatnummeret ditt og informasjon om hvor du skal sitte i",
+                  nn : "Du finner kandidatnummeret ditt og informasjon om kvar du skal sitje i"),
+    system : (en : "Examination system", no : "Eksamenssystem", nn : "Eksamenssystem"),
+    notice : (en : "Notice", no : "Merknad", nn : "Merknad"),
+    announcement : (en : "Announcement of examination results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultatar"),
+    task-disclosure : (en : "Disclosure of the task", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
+    task-deadline : (en : "Deadline", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
+    results : (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
+    results-info : (en : "You will find your examination results in",
+                    no : "Du finner eksamensresultatene dine i",
+                    nn : "Du finn eksamensresultatane dine i"),
+    results-info-part-two : (en : "within three weeks after the exam (eight weeks for master theses)",
+                             no : "senest tre uker etter eksamen (åtte uker for masteroppgaver)",
+                             nn : "seinast tre veker etter eksamen (åtte veker for masteroppgåver)"),
+    more-about : (en : "More about the exam for this course", no : "Mer om eksamen for dette emnet", nn : "Meir om eksamen for dette emnet"),
+    more-about-info : (en : "More information about the examination system, permitted aids and exam forms can be found at the bottom of the",
+                       no : "Mer informasjon om eksamensordningen, tillatte hjelpemidler og vurderingsformer finner du nederst på",
+                       nn : "Meir informasjon om eksamensordninga, tillatte hjelpemidler og vurderingsformar finn du nederst på"),
+    more-about-info-course-pages-link : (en : "course pages", no : "emnesidene", nn : "emnesidane"),
+    lookup-unable : (en : "Unable to look up exam info", no : "Kunne ikke hente eksamensinfo", nn : "Kunne ikkje henta eksamensinfo"),
+    lookup-unable-error-msg : (en : "Error message", no : "Feilbeskjed", nn : "Feilbeskjed"),
+    external-service-unavailable : (en: "No external service available", no : "Ingen ekstern tjeneste tilgjengelig", nn : "Ingen ekstern teneste tilgjengeleg")
+  }
+}

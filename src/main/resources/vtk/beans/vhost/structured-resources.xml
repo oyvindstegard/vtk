@@ -89,6 +89,7 @@
     <property name="assertions">
       <list>
         <ref bean="resourceTypeIsNotExam" />
+        <ref bean="resourceTypeIsNotExamInfo" />
         <ref bean="resourceTypeIsNotSamletProgram" />
         <ref bean="resourceTypeIsNotSamletRetning" />
       </list>
@@ -97,6 +98,12 @@
 
   <bean id="resourceTypeIsNotExam" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
     <property name="resourceType" value="exam" />
+    <property name="invert" value="true" />
+  </bean>
+  
+
+  <bean id="resourceTypeIsNotExamInfo" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+    <property name="resourceType" value="exam-info" />
     <property name="invert" value="true" />
   </bean>
 
