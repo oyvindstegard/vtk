@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Required;
+import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -52,23 +53,23 @@ public class StoreAfterCopyAction {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        
+
         // Copy resource
         repository.copy(token, src.getURI(), copyUri, false, true);
-        
+
         // Store updated preserved properties
         Resource newRsrc = repository.retrieve(token, copyUri, true);
         for (Property prop : src) {
-          PropertyTypeDefinition propDef = prop.getDefinition();
-          if (preservedProperties.contains(propDef)) {
-            newRsrc.addProperty(prop);
-          }
+            PropertyTypeDefinition propDef = prop.getDefinition();
+            if (preservedProperties.contains(propDef)) {
+                newRsrc.addProperty(prop);
+            }
         }
         repository.store(token, newRsrc);
-        
+
         // Store updated content if changed
-        if(stream != null) {
-          repository.storeContent(token, copyUri, stream);
+        if (stream != null) {
+            repository.storeContent(token, copyUri, ContentInputSources.fromStream(stream));
         }
     }
 

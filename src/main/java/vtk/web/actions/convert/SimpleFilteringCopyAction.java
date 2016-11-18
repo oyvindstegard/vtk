@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -45,6 +46,7 @@ public class SimpleFilteringCopyAction implements CopyAction, InitializingBean {
     private Repository repository;
     private Filter filter;
 
+    @Override
     public void process(Path originalUri, Path copyUri, Map<String, Object> properties) throws Exception {
         String token = SecurityContext.getSecurityContext().getToken();
 
@@ -57,7 +59,7 @@ public class SimpleFilteringCopyAction implements CopyAction, InitializingBean {
                 is = this.filter.transform(is, resource);
 
                 this.repository.store(token, resource);
-                this.repository.storeContent(token, copyUri, is);
+                this.repository.storeContent(token, copyUri, ContentInputSources.fromStream(is));
             } catch (Exception e) {
                 try {
                     this.repository.delete(token, copyUri, true);

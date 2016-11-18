@@ -37,7 +37,7 @@ import java.util.List;
 import vtk.repository.Acl;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Comment;
-import vtk.repository.ContentStream;
+import vtk.repository.ContentInputSource;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.NoSuchContentException;
@@ -142,20 +142,19 @@ public class RepositoryWrapper implements Repository {
     }
 
     @Override
-    public Resource storeContent(String token, Path uri, InputStream stream)
+    public Resource storeContent(String token, Path uri, ContentInputSource content)
             throws AuthorizationException, AuthenticationException,
             ResourceNotFoundException, ResourceLockedException,
             IllegalOperationException, ReadOnlyException, Exception {
-        return repository.storeContent(token, uri, stream);
+        return repository.storeContent(token, uri, content);
     }
 
     @Override
-    public Resource storeContent(String token, Path uri,
-            InputStream stream, Revision revision)
+    public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision)
             throws AuthorizationException, AuthenticationException,
             ResourceNotFoundException, ResourceLockedException,
             IllegalOperationException, ReadOnlyException, Exception {
-        return repository.storeContent(token, uri, stream, revision);
+        return repository.storeContent(token, uri, content, revision);
     }
 
     @Override
@@ -174,19 +173,19 @@ public class RepositoryWrapper implements Repository {
     }
 
     @Override
-    public ContentStream getAlternativeContentStream(String token,
+    public InputStream getAlternativeInputStream(String token,
             Path uri, boolean forProcessing, String contentIdentifier)
             throws NoSuchContentException, ResourceNotFoundException,
             AuthorizationException, AuthenticationException, Exception {
-        return repository.getAlternativeContentStream(token, uri, forProcessing, contentIdentifier);
+        return repository.getAlternativeInputStream(token, uri, forProcessing, contentIdentifier);
     }
 
     @Override
-    public Resource createDocument(String token, Path uri,
-            InputStream inputStream) throws IllegalOperationException,
+    public Resource createDocument(String token, Path uri, ContentInputSource content)
+            throws IllegalOperationException,
             AuthorizationException, AuthenticationException,
             ResourceLockedException, ReadOnlyException, Exception {
-        return repository.createDocument(token, uri, inputStream);
+        return repository.createDocument(token, uri, content);
     }
 
     @Override

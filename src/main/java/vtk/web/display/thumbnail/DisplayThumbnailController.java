@@ -42,7 +42,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.LastModified;
 
-import vtk.repository.ContentStream;
+import vtk.util.io.InputStreamWithLength;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -111,12 +111,11 @@ public class DisplayThumbnailController implements Controller, LastModified {
                 response.setStatus(404);
             }
         } else {
-            ContentStream binaryStream = thumbnail.getBinaryStream();
+            InputStreamWithLength binaryStream = thumbnail.getBinaryStream();
             String mimetype = thumbnail.getBinaryContentType();
             response.setContentType(mimetype);
-            int length = (int) binaryStream.getLength();
-            response.setContentLength(length);
-            IO.copy(binaryStream.getStream(), response.getOutputStream()).perform();
+            response.setContentLengthLong(binaryStream.length());
+            IO.copy(binaryStream, response.getOutputStream()).perform();
         }
 
         return null;

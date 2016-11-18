@@ -44,6 +44,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
+import vtk.repository.ContentInputSources;
 
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -119,7 +120,7 @@ public class ImageEditController extends ResourceEditController {
 
         repository.store(token, resource);
         if (is != null) {
-            repository.storeContent(token, wrapper.getURI(), is);
+            repository.storeContent(token, wrapper.getURI(), ContentInputSources.fromStream(is));
         }
 
         if (!wrapper.isView()) {

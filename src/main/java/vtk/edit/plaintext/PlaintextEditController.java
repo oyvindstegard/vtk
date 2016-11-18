@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
+import vtk.repository.ContentInputSources;
 
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -243,8 +244,7 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
         if (this.logger.isDebugEnabled()) {
             this.logger.debug("Decoding posted string using encoding: " + characterEncoding);
         }
-        repository.storeContent(token, uri, 
-                new ByteArrayInputStream(content.getBytes(characterEncoding)));
+        repository.storeContent(token, uri, ContentInputSources.fromString(content, characterEncoding));
 
     }
     

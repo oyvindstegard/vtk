@@ -38,6 +38,7 @@ import vtk.repository.Resource;
 import vtk.repository.ResourceImpl;
 import vtk.repository.Revision;
 
+// TODO consider switching from InputStream to ContentInputSource
 public interface RevisionStore {
 
     public List<Revision> list(Resource resource) throws DataAccessException;

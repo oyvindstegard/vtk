@@ -30,7 +30,6 @@
  */
 package vtk.resourcemanagement.edit;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -43,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+import vtk.repository.ContentInputSources;
 
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -163,8 +163,7 @@ public class SimpleStructuredEditor implements Controller {
         }
         document.put("properties", propertyValues);
         String str = JsonStreamer.toJson(document);
-        InputStream is = new ByteArrayInputStream(str.getBytes("UTF-8"));
-        repository.storeContent(token, uri, is);
+        repository.storeContent(token, uri, ContentInputSources.fromBytes(str.getBytes("UTF-8")));
     }
 
     private Path createNewDocument(HttpServletRequest request, Repository repository, 
@@ -178,10 +177,9 @@ public class SimpleStructuredEditor implements Controller {
         }
         document.put("properties", propertyValues);
         String str = JsonStreamer.toJson(document);
-        InputStream is = new ByteArrayInputStream(str.getBytes("utf-8"));
         
         Path newUri = generateFilename(request, repository, token, uri);
-        Resource resource = repository.createDocument(token, newUri, is);
+        Resource resource = repository.createDocument(token, newUri, ContentInputSources.fromBytes(str.getBytes("utf-8")));
         publishResource(resource, token, repository);
         return newUri;
     }

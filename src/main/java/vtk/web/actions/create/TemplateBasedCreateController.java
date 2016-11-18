@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
+import vtk.repository.ContentInputSources;
 
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -313,7 +314,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, CreateDocumentCommand command,
             BindException errors) throws Exception {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         if (command.getCancelAction() != null) {
             command.setDone(true);
@@ -343,8 +344,9 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
 
         repository.copy(token, sourceURI, destinationURI, false, false);
 
-        String newContent = IO.readString(repository.getInputStream(
-                token, destinationURI, false)).perform();
+        // XXX encoding of content is not handled explicitly here, and it will be mangled
+        // if not in platform default encoding.
+        String newContent = IO.readString(repository.getInputStream(token, destinationURI, false)).perform();
 
         String title = command.getTitle();
         if (title == null)
@@ -359,8 +361,9 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
         }
         title = Matcher.quoteReplacement(title);
 
+        String contentToStore = newContent.replaceAll(titlePlaceholder, title);
         Resource r = repository.storeContent(token, destinationURI,
-                IO.stringStream(newContent.replaceAll(titlePlaceholder, title)));
+                ContentInputSources.fromString(contentToStore, System.getProperty("file.encoding")));
 
         if (removePropList != null) {
             for (PropertyTypeDefinition ptd : removePropList) {

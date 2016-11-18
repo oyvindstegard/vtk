@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
-import vtk.repository.ContentStream;
+import vtk.util.io.InputStreamWithLength;
 import vtk.repository.Lock;
 import vtk.repository.LockImpl;
 import vtk.repository.Namespace;
@@ -1548,12 +1548,12 @@ final class BinaryValueReference implements BinaryValue {
     }
 
     @Override
-    public ContentStream getContentStream() throws DataAccessException {
+    public InputStreamWithLength stream() throws DataAccessException {
         // Consider avoiding copy to mem here, but then we depend
         // on client code closing the underlying InputStream properly to free
         // database resource.
         byte[] data = getBytes();
-        return new ContentStream(new ByteArrayInputStream(data), data.length);
+        return new InputStreamWithLength(new ByteArrayInputStream(data), data.length);
     }
     
     @Override

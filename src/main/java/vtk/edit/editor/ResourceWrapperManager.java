@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Required;
+import vtk.repository.ContentInputSources;
 
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.Path;
@@ -181,17 +182,17 @@ public class ResourceWrapperManager {
                 // Store default encoding if unsupported encoding
                 if (Charset.isSupported(resource.getCharacterEncoding())) {
                     bytes = wrapper.getContent().getStringRepresentation().getBytes(resource.getCharacterEncoding());
-                    repository.storeContent(token, uri, new ByteArrayInputStream(bytes));
+                    repository.storeContent(token, uri, ContentInputSources.fromBytes(bytes));
 
                 }
                 else {
                     bytes = wrapper.getContent().getStringRepresentation().getBytes(defaultCharacterEncoding);
-                    repository.storeContent(token, uri, new ByteArrayInputStream(bytes));
+                    repository.storeContent(token, uri, ContentInputSources.fromBytes(bytes));
                 }
             }
             else {
                 bytes = wrapper.getContent().getStringRepresentation().getBytes(defaultCharacterEncoding);
-                repository.storeContent(token, uri, new ByteArrayInputStream(bytes));
+                repository.storeContent(token, uri, ContentInputSources.fromBytes(bytes));
             }
         }
         wrapper.setResource(resource);

@@ -45,6 +45,7 @@ import vtk.context.BaseContext;
 import vtk.repository.Acl;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Comment;
+import vtk.repository.ContentInputSource;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
@@ -440,7 +441,7 @@ public class RequestContext {
         }
 
         @Override
-        public Resource storeContent(String token, Path uri, InputStream stream)
+        public Resource storeContent(String token, Path uri, ContentInputSource content)
                 throws AuthorizationException, AuthenticationException,
                 ResourceNotFoundException, ResourceLockedException,
                 IllegalOperationException, ReadOnlyException, Exception {
@@ -449,7 +450,7 @@ public class RequestContext {
 
         @Override
         public Resource storeContent(String token, Path uri,
-                InputStream stream, Revision revision)
+                ContentInputSource content, Revision revision)
                 throws AuthorizationException, AuthenticationException,
                 ResourceNotFoundException, ResourceLockedException,
                 IllegalOperationException, ReadOnlyException, Exception {
@@ -458,7 +459,7 @@ public class RequestContext {
 
         @Override
         public Resource createDocument(String token, Path uri,
-                InputStream inputStream) throws IllegalOperationException,
+                ContentInputSource content) throws IllegalOperationException,
                 AuthorizationException, AuthenticationException,
                 ResourceLockedException, ReadOnlyException, Exception {
             throw new UnsupportedOperationException("Not supported");

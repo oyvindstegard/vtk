@@ -40,7 +40,7 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Acl;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Comment;
-import vtk.repository.ContentStream;
+import vtk.repository.ContentInputSource;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.NoSuchContentException;
@@ -168,23 +168,23 @@ public class RequestLocalRepository implements Repository {
     }
 
     @Override
-    public Resource storeContent(String token, Path uri, InputStream byteStream) throws Exception {
+    public Resource storeContent(String token, Path uri, ContentInputSource content) throws Exception {
 
         RepositoryContext ctx = RepositoryContext.getRepositoryContext();
         if (ctx != null) {
             ctx.clear();
         }
-        return this.repository.storeContent(token, uri, byteStream);
+        return this.repository.storeContent(token, uri, content);
     }
 
     @Override
-    public Resource storeContent(String token, Path uri, InputStream byteStream, Revision revision) throws Exception {
+    public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision) throws Exception {
 
         RepositoryContext ctx = RepositoryContext.getRepositoryContext();
         if (ctx != null) {
             ctx.clear();
         }
-        return this.repository.storeContent(token, uri, byteStream, revision);
+        return this.repository.storeContent(token, uri, content, revision);
     }
 
     @Override
@@ -200,19 +200,19 @@ public class RequestLocalRepository implements Repository {
     }
 
     @Override
-    public ContentStream getAlternativeContentStream(String token, Path uri, boolean forProcessing, String contentIdentifier) 
+    public InputStream getAlternativeInputStream(String token, Path uri, boolean forProcessing, String contentIdentifier)
             throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
-        return this.repository.getAlternativeContentStream(token, uri, forProcessing, contentIdentifier);
+        return this.repository.getAlternativeInputStream(token, uri, forProcessing, contentIdentifier);
     }
     
     @Override
-    public Resource createDocument(String token, Path uri, InputStream inStream) throws Exception {
+    public Resource createDocument(String token, Path uri, ContentInputSource content) throws Exception {
 
         RepositoryContext ctx = RepositoryContext.getRepositoryContext();
         if (ctx != null) {
             ctx.clear();
         }
-        return this.repository.createDocument(token, uri, inStream);
+        return this.repository.createDocument(token, uri, content);
     }
 
     @Override

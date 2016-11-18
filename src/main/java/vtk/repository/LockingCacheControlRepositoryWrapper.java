@@ -214,27 +214,30 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public Resource createDocument(final String token, final Path uri, InputStream byteStream) throws IllegalOperationException,
+    public Resource createDocument(final String token, final Path uri, ContentInputSource content) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, Exception {
 
         IO.TempFile tempFile = null;
         try {
-            // Convert input stream to file FileInputStream if necessary, to ensure
+            // Convert input stream to local file if necessary, to ensure
             // most efficient transfer to repository content store while holding locks.
-            if (! ((byteStream instanceof FileInputStream)
-                    || (byteStream instanceof ByteArrayInputStream))) {
+            if (!content.isFile() || !content.canDeleteSourceFile()) {
+                InputStream stream = content.stream();
+                if (! (stream instanceof FileInputStream
+                         || stream instanceof ByteArrayInputStream)) {
 
-                tempFile = IO.tempFile(byteStream, tempDir)
+                    tempFile = IO.tempFile(stream, tempDir)
                             .progress(p -> tokenManager.getPrincipal(token)) // Refresh token because upload may be slow
-                            .progressInterval(128*1024*1024)                 // Refresh approx. for every 128M uploaded
+                            .progressInterval(128 * 1024 * 1024) // Refresh approx. for every 128M uploaded
                             .perform();
-                byteStream =  tempFile.inputStream();
+                    content = ContentInputSources.fromFile(tempFile.file(), true);
+                }
             }
 
             // Synchronize on:
             // - Parent URI
             // - URI
-            List<Path> lockUris = new ArrayList<Path>(2);
+            List<Path> lockUris = new ArrayList<>(2);
             if (uri.getParent() != null) {
                 lockUris.add(uri.getParent());
             }
@@ -243,7 +246,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
             final List<Path> locked = this.lockManager.lock(lockUris, true);
 
             try {
-                Resource resource = this.wrappedRepository.createDocument(token, uri, byteStream); // Tx
+                Resource resource = this.wrappedRepository.createDocument(token, uri, content); // Tx
 
                 Path parent = resource.getURI().getParent();
                 if (parent != null) {
@@ -419,12 +422,12 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public ContentStream getAlternativeContentStream(String token, Path uri, boolean forProcessing, String contentIdentifier)
+    public InputStream getAlternativeInputStream(String token, Path uri, boolean forProcessing, String contentIdentifier)
             throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
 
         List<Path> locked = this.lockManager.lock(uri, false);
         try {
-            return this.wrappedRepository.getAlternativeContentStream(token, uri, forProcessing, contentIdentifier); // Tx
+            return this.wrappedRepository.getAlternativeInputStream(token, uri, forProcessing, contentIdentifier); // Tx
         }
         finally {
             this.lockManager.unlock(locked, false);
@@ -656,7 +659,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public Resource storeContent(String token, Path uri, InputStream byteStream) throws AuthorizationException,
+    public Resource storeContent(String token, Path uri, ContentInputSource content) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, Exception {
 
@@ -664,7 +667,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         // - URI
         final List<Path> locked = this.lockManager.lock(uri, true);
         try {
-           Resource r = this.wrappedRepository.storeContent(token, uri, byteStream); // Tx
+           Resource r = this.wrappedRepository.storeContent(token, uri, content); // Tx
            notifyFlush(uri, false, "storeContent");
            return r;
         }
@@ -674,7 +677,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public Resource storeContent(String token, Path uri, InputStream byteStream, Revision revision) throws AuthorizationException,
+    public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, Exception {
 
@@ -682,7 +685,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         // - URI
         final List<Path> locked = this.lockManager.lock(uri, true);
         try {
-            Resource r = this.wrappedRepository.storeContent(token, uri, byteStream, revision); // Tx
+            Resource r = this.wrappedRepository.storeContent(token, uri, content, revision); // Tx
             notifyFlush(uri, false, "storeContent");
             return r;
         }

@@ -30,6 +30,7 @@
  */
 package vtk.repository;
 
+import vtk.util.io.InputStreamWithLength;
 import java.util.Date;
 import java.util.Locale;
 
@@ -127,7 +128,7 @@ public interface Property extends Cloneable {
     
     public void setBinaryValue(byte[] contentBytes, String contentType) throws ValueFormatException;
 
-    public ContentStream getBinaryStream() throws IllegalOperationException;
+    public InputStreamWithLength getBinaryStream() throws IllegalOperationException;
     
     public String getBinaryContentType() throws IllegalOperationException;
 

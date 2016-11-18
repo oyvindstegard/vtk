@@ -47,7 +47,6 @@ import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.IfHandler;
 import vtk.text.tl.ValHandler;
 import vtk.text.tl.expr.Expression.FunctionResolver;
-import vtk.util.io.InputSource;
 import vtk.web.decorating.components.MockDecoratorResponse;
 import vtk.web.decorating.components.MockStringDecoratorRequest;
 

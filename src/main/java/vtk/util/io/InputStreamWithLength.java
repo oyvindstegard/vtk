@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, 2008, University of Oslo, Norway
+/* Copyright (c) 2008, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,25 +28,27 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.decorating;
+package vtk.util.io;
 
-import org.springframework.beans.factory.annotation.Required;
+import java.io.InputStream;
 
-public class TextualDecoratorTemplateFactory implements TemplateFactory {
+/**
+ * An input stream wrapper which stores length as well.
+ */
+public class InputStreamWithLength extends AbstractInputStreamWrapper {
+    
+    private final long length;
 
-    private TextualComponentParser parser;
-    private ComponentResolver componentResolver;
-
-
-    public Template newTemplate(InputSource templateSource) throws InvalidTemplateException {
-        return new TextualDecoratorTemplate(this.parser, templateSource, this.componentResolver);
+    public InputStreamWithLength(InputStream stream, long length) {
+        super(stream);
+        this.length = length;
     }
 
-    @Required public void setParser(TextualComponentParser parser) {
-        this.parser = parser;
+    /**
+     * @return length of input stream in bytes, or <code>-1</code> if unknown.
+     */
+    public long length() {
+        return this.length;
     }
 
-    @Required public void setComponentResolver(ComponentResolver componentResolver) {
-        this.componentResolver = componentResolver;
-    }
 }

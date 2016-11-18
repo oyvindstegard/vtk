@@ -51,6 +51,7 @@ import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import vtk.repository.ContentInputSources;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -158,7 +159,7 @@ public class EditDocument extends Document {
         xmlOutputter.output(this, outputStream);
 
         InputStream stream = new ByteArrayInputStream(outputStream.toByteArray());
-        this.resource = repository.storeContent(token, uri, stream);
+        this.resource = repository.storeContent(token, uri, ContentInputSources.fromStream(stream));
 
         // Remove user specified character encoding if it is something
         // other than UTF-8:

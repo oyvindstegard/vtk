@@ -30,6 +30,7 @@
  */
 package vtk.repository;
 
+import vtk.util.io.InputStreamWithLength;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumMap;
@@ -564,11 +565,11 @@ public class PropertyImpl implements Cloneable, Property {
     }
 
     @Override
-    public ContentStream getBinaryStream() throws IllegalOperationException {
+    public InputStreamWithLength getBinaryStream() throws IllegalOperationException {
         if (value == null || (getType() != Type.BINARY && getType() != Type.JSON)) {
             throw new IllegalOperationException("Property " + this + " not of type BINARY or JSON, or property is multi-value: " + getType());
         }
-        return value.getBinaryValue().getContentStream();
+        return value.getBinaryValue().stream();
     }
 
     @Override

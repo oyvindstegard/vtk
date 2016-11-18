@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
+import vtk.repository.ContentInputSources;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -201,7 +202,7 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
                     if (repository.exists(token, path)) {
                         repository.delete(token, path, false);
                     }
-                    repository.createDocument(token, path, tempFile.inputStream());
+                    repository.createDocument(token, path, ContentInputSources.fromFile(tempFile.file(), true));
                     tempFile.delete();
                 }
                 catch (Exception e) {

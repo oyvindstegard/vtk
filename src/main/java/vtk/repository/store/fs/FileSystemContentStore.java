@@ -36,12 +36,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+import vtk.repository.ContentInputSource;
 
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
@@ -60,10 +63,8 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
 
     private static Logger logger = LoggerFactory.getLogger(FileSystemContentStore.class);
 
-    private static final int COPY_BUF_SIZE = 122880;
-    
-    private String repositoryDataDirectory;
-    private String repositoryTrashCanDirectory;
+    protected String repositoryDataDirectory;
+    protected String repositoryTrashCanDirectory;
 
     private boolean urlEncodeFileNames = false;
 
@@ -76,7 +77,7 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
     @Override
     public void createResource(Path uri, boolean collection) throws DataAccessException {
 
-        String fileName = getLocalFilename(uri);
+        String fileName = getFileSystemPath(uri);
 
         try {
             if (collection) {
@@ -84,13 +85,13 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
                     logger.debug("Creating directory " + fileName);
                 }
 
-                new File(fileName).mkdir();
+                createFile(fileName, true);
             } else {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Creating file " + fileName);
                 }
 
-                new File(fileName).createNewFile();
+                createFile(fileName, false);
             }
         } catch (IOException e) {
             throw new DataAccessException("Create resource [" + uri + "] failed", e);
@@ -99,7 +100,7 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
 
     @Override
     public long getContentLength(Path uri) throws DataAccessException {
-        String fileName = getLocalFilename(uri);
+        String fileName = getFileSystemPath(uri);
 
         try {
             File f = new File(fileName);
@@ -119,7 +120,7 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
     public void deleteResource(Path uri) {
         // Don't delete root
         if (!uri.isRoot()) {
-            String fileName = getLocalFilename(uri);
+            String fileName = getFileSystemPath(uri);
             deleteFiles(new File(fileName));
         }
     }
@@ -139,7 +140,7 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
 
     @Override
     public InputStream getInputStream(Path uri) throws DataAccessException {
-        String fileName = getLocalFilename(uri);
+        String fileName = getFileSystemPath(uri);
 
         try {
             return new FileInputStream(new File(fileName));
@@ -149,21 +150,48 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
     }
 
     @Override
-    public void storeContent(Path uri, InputStream content) throws DataAccessException {
+    public void storeContent(Path uri, ContentInputSource content) throws DataAccessException {
         storeContent(uri, content, null, -1);
     }
 
+    /**
+     * Store content at a path.
+     *
+     * <p>If the content input source is a file that can be deleted, then a move
+     * is attempted first, otherwise a copy from the source stream is performed.
+     *
+     * @param uri resource path
+     * @param content file which has the content
+     * @param progressCallback
+     */
     @Override
-    public void storeContent(Path uri, InputStream content, Consumer<Long> progressCallback, int progressInterval) throws DataAccessException {
-        String fileName = getLocalFilename(uri);
-        File dest = new File(fileName);
+    public void storeContent(Path uri, ContentInputSource content, Consumer<Long> progressCallback, int progressInterval) throws DataAccessException {
+        // Attempt move in place, fall back to copy
+        final File dest = new File(getFileSystemPath(uri));
+        if (content.isFile() && content.canDeleteSourceFile()) {
+            File inputFile = content.file();
+            try {
+                Files.move(inputFile.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                applyAttributes(dest);
+                if (progressCallback != null) {
+                    progressCallback.accept(dest.length());
+                }
+                return;
+            } catch (IOException e) {
+                // May fail if lacking permissions on source file parent dir or atomic move not possible
+                logger.warn("Failed to move source file '{}' into content repository [{}]: {}: {}",
+                        content.file(), uri, e.getClass().getSimpleName(), e.getMessage());
+            }
+        }
+
         try {
             FileOutputStream outFileStream = new FileOutputStream(dest);
-            Copy<InputStream,OutputStream> copyOp = IO.copy(content, outFileStream);
+            Copy<InputStream,OutputStream> copyOp = IO.copy(content.stream(), outFileStream);
             if (progressCallback != null) {
                 copyOp.progress(progressCallback).progressInterval(progressInterval);
             }
             copyOp.perform();
+            applyAttributes(dest);
         } catch (IOException e) {
             throw new DataAccessException("Store content [" + uri + "] failed", e);
         }
@@ -171,59 +199,42 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
 
     @Override
     public void copy(Path srcURI, Path destURI) throws DataAccessException {
-        String fileNameFrom = getLocalFilename(srcURI);
-        String fileNameTo = getLocalFilename(destURI);
+        String fileNameFrom = getFileSystemPath(srcURI);
+        String fileNameTo = getFileSystemPath(destURI);
         try {
-            File fromDir = new File(fileNameFrom);
-            if (fromDir.isDirectory()) {
-                copyDir(fromDir, new File(fileNameTo));
+            File from = new File(fileNameFrom);
+            if (from.isDirectory()) {
+                copyDir(from, fileNameTo);
             } else {
-                copyFile(fromDir, new File(fileNameTo));
+                copyFile(from, fileNameTo);
             }
         } catch (IOException e) {
             throw new DataAccessException("Store content [" + fileNameFrom + ", " + fileNameTo + "] failed", e);
         }
     }
 
-    private void copyDir(File fromDir, File toDir) throws IOException {
-
-        toDir.mkdir();
-
+    private void copyDir(File fromDir, String fsPathTo) throws IOException {
+        File toDir = createFile(fsPathTo, true);
         File[] children = fromDir.listFiles();
         for (File child : children) {
-            File newFile = new File(toDir.getCanonicalPath() + File.separator + child.getName());
+            String newFileFsPath = toDir.getCanonicalPath() + File.separator + child.getName();
             if (child.isFile()) {
-                copyFile(child, newFile);
+                copyFile(child, newFileFsPath);
             } else {
-                copyDir(child, newFile);
+                copyDir(child, newFileFsPath);
             }
         }
     }
 
-    private void copyFile(File from, File to) throws IOException {
-        FileInputStream src = null;
-        FileOutputStream dst = null;
-        try {
-            src = new FileInputStream(from);
-            dst = new FileOutputStream(to);
-            IO.copy(src, dst).closeIn(false).closeOut(false).perform();
-        } finally {
-            try {
-                if (src != null) {
-                    src.close();
-                }
-            } finally {
-                if (dst != null) {
-                    dst.close();
-                }
-            }
-        }
+    private void copyFile(File from, String fsPathTo) throws IOException {
+        File to = createFile(fsPathTo, false);
+        IO.copy(new FileInputStream(from), new FileOutputStream(to)).perform();
     }
 
     @Override
     public void move(Path srcURI, Path destURI) throws DataAccessException {
-        String fileNameFrom = getLocalFilename(srcURI);
-        String fileNameTo = getLocalFilename(destURI);
+        String fileNameFrom = getFileSystemPath(srcURI);
+        String fileNameTo = getFileSystemPath(destURI);
         if (!new File(fileNameFrom).renameTo(new File(fileNameTo))) {
             throw new DataAccessException("Unable to rename file " + fileNameFrom + " to " + fileNameTo);
         }
@@ -231,28 +242,30 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
 
     @Override
     public void moveToTrash(Path srcURI, final String trashIdDir) throws DataAccessException {
-
-        String from = getLocalFilename(srcURI);
+        String from = getFileSystemPath(srcURI);
         File src = new File(from);
+        try {
+            String trashCanDir = this.repositoryTrashCanDirectory + "/" + trashIdDir;
+            File trashDir = createFile(trashCanDir, true);
 
-        String trashCanDir = this.repositoryTrashCanDirectory + "/" + trashIdDir;
-        File trashDir = new File(trashCanDir);
-        trashDir.mkdir();
-
-        Path path = this.getEncodedPathIfConfigured(srcURI);
-        File dest = new File(trashCanDir + "/" + path.getName());
-
-        if (!src.renameTo(dest)) {
-            throw new DataAccessException("Unable to move " + from + " to trash can");
+            Path path = this.getEncodedPathIfConfigured(srcURI);
+            File dest = new File(trashDir, path.getName());
+            if (!src.renameTo(dest)) {
+                throw new DataAccessException("Unable to move " + from + " to trash can");
+            }
+        } catch (IOException io) {
+            throw new DataAccessException("Unable to move " + from + " to trash can", io);
         }
     }
 
     @Override
     public void recover(Path destURI, RecoverableResource recoverableResource) throws DataAccessException {
-        String dest = this.getLocalFilename(destURI);
+        String dest = this.getFileSystemPath(destURI);
         String recover = dest + "/" + recoverableResource.getName();
         String trashPath = this.repositoryTrashCanDirectory + "/" + recoverableResource.getTrashUri();
-        if (!new File(trashPath).renameTo(new File(recover))) {
+        File trashPathFile = new File(trashPath);
+        File recoverFile = new File(recover);
+        if (!trashPathFile.renameTo(recoverFile)) {
             throw new DataAccessException("Unable to recover resource " + recoverableResource.getTrashUri() 
             + ": failed to rename " + trashPath + " to " + recover);
         }
@@ -266,8 +279,37 @@ public class FileSystemContentStore implements InitializingBean, ContentStore {
         this.deleteFiles(new File(filePath));
     }
     
+    /**
+     * Apply any attributes to a file.
+     *
+     * <p>This default implementation does nothing with file attributes.
+     * @param f
+     * @throws IOException
+     */
+    protected void applyAttributes(File f) throws IOException {
+    }
 
-    private String getLocalFilename(Path uri) {
+    /**
+     * Create a new empty file or directory.
+     *
+     * <p>Has no effect if file or directory already exists on the file system.
+     * @param fspath
+     * @param directory
+     * @return a <code>File</code> representing the newly created file system object
+     * @throws IOException
+     */
+    protected File createFile(String fspath, boolean directory) throws IOException {
+        final File file = new File(fspath);
+        if (directory) {
+            file.mkdir();
+        } else {
+            file.createNewFile();
+        }
+        applyAttributes(file);
+        return file;
+    }
+
+    private String getFileSystemPath(Path uri) {
         Path path = this.getEncodedPathIfConfigured(uri);
         return this.repositoryDataDirectory + path.toString();
     }

@@ -52,6 +52,7 @@ import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import vtk.repository.AuthorizationException;
+import vtk.repository.ContentInputSources;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -257,7 +258,7 @@ public class FCKeditorConnector implements Controller {
             }
 
             InputStream inStream = uploadItem.getInputStream();
-            repository.createDocument(token, uri, inStream);
+            repository.createDocument(token, uri, ContentInputSources.fromStream(inStream));
 
             Resource newResource = repository.retrieve(token, uri, true);
             TypeInfo typeInfo = repository.getTypeInfo(newResource);

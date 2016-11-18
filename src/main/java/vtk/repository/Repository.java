@@ -1,4 +1,4 @@
-/* Copyright (c) 2004, 2005, 2006, 2007, University of Oslo, Norway
+/* Copyright (c) 2004-2016 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -222,6 +222,7 @@ public interface Repository {
      *            modified resource to store
      * @param storeContext
      *            specialized store context (store mode)
+     * @return the stored resource
      * @exception ResourceNotFoundException
      *                if the URI does not identify an existing resource
      * @exception AuthorizationException
@@ -239,18 +240,16 @@ public interface Repository {
     public Resource store(String token, Resource resource, StoreContext storeContext) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, ResourceLockedException, IllegalOperationException, ReadOnlyException, Exception;
     
-
     /**
      * Requests that a a byte stream be written to the content of a resource in
      * the repository.
-     * 
+     *
      * @param token
      *            identifies the client's authenticated session
      * @param uri
      *            the resource identifier
-     * @param stream
-     *            a <code>java.io.InputStream</code> representing the byte
-     *            stream to be read from
+     * @param content
+     *            rhe resource content to store
      * @return the modified resource object
      * @exception ResourceNotFoundException
      *                if the URI does not identify an existing resource
@@ -266,11 +265,11 @@ public interface Repository {
      * @exception Exception
      *                if an I/O error occurs
      */
-    public Resource storeContent(String token, Path uri, InputStream stream) throws AuthorizationException,
+    public Resource storeContent(String token, Path uri, ContentInputSource content) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, Exception;
     
-    public Resource storeContent(String token, Path uri, InputStream stream, Revision revision) throws AuthorizationException,
+    public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision) throws AuthorizationException,
         AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
         ReadOnlyException, Exception;
 
@@ -318,7 +317,7 @@ public interface Repository {
             AuthorizationException, AuthenticationException, Exception;
     
     /**
-     * Obtains an alternative {@link ContentStream content stream} for the
+     * Obtains an alternative {@link InputStreamWithLength content stream} for the
      * resource at the given path. The repository generally does not
      * support alternative streams, but they may be available through
      * extensions. To get an alternative stream, you must know the particular
@@ -328,23 +327,23 @@ public interface Repository {
      * @param uri
      * @param forProcessing
      * @param contentIdentifier an implementation specific content identifier.
-     * @return instance of {@link ContentStream} with alternative content
+     * @return instance of {@link InputStreamWithLength} with alternative content
      * @throws NoSuchContentException if no such alternative content exists for
      * the given resource.
      */
-    public ContentStream getAlternativeContentStream(String token, Path uri, boolean forProcessing,
+    public InputStream getAlternativeInputStream(String token, Path uri, boolean forProcessing,
             String contentIdentifier)
             throws NoSuchContentException, ResourceNotFoundException,
             AuthorizationException, AuthenticationException, Exception;
-    
+
     /**
      * Creates a new document in the repository.
-     * 
+     *
      * @param token
      *            identifies the client's authenticated session
      * @param uri
      *            the resource identifier to be created
-     * @param inputStream
+     * @param content
      *            the resource's content
      * @return a <code>Resource</code> representing metadata about the newly
      *         created resource
@@ -365,9 +364,9 @@ public interface Repository {
      * @exception Exception
      *                if an I/O error occurs
      */
-    public Resource createDocument(String token, Path uri, InputStream inputStream) throws IllegalOperationException,
+    public Resource createDocument(String token, Path uri, ContentInputSource content) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, Exception;
-
+    
     /**
      * Creates a new collection resource in the repository.
      * 

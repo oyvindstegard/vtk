@@ -60,7 +60,6 @@ import vtk.text.tl.Symbol;
 import vtk.text.tl.ValHandler;
 import vtk.text.tl.expr.Expression.FunctionResolver;
 import vtk.text.tl.expr.Function;
-import vtk.util.io.InputSource;
 import vtk.util.repository.PropertyAspectDescription;
 import vtk.util.repository.PropertyAspectResolver;
 import vtk.web.RequestContext;

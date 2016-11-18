@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, University of Oslo, Norway
+/* Copyright (c) 2011, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,69 +28,74 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.util.repository;
+package vtk.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import vtk.repository.Path;
-import vtk.repository.Repository;
-import vtk.repository.Resource;
-import vtk.util.io.InputSource;
+/**
+ * Abstract wrapper for input streams, which is itself an {@link InputStream}.
+ * By default, all <code>InputStream</code> calls are delegated directly to the
+ * wrapped instance. Individual methods may be overridden to customize
+ * behaviour.
+ */
+public abstract class AbstractInputStreamWrapper extends InputStream {
 
+    private final InputStream wrappedStream;
 
-public class RepositoryInputSource implements InputSource {
+    public AbstractInputStreamWrapper(InputStream is) {
+        wrappedStream = is;
+    }
 
-    private Repository repository;
-    private String token;
-    private Path uri; 
-    
-    public RepositoryInputSource(Path uri, Repository repository, String token) throws Exception {
-        this.repository = repository;
-        this.token = token;
-        this.uri = uri;
+    /**
+     * @return the wrapped (internal) stream which is delegated to.
+     */
+    public InputStream getWrappedStream() {
+        return wrappedStream;
     }
 
     @Override
-    public String getID() {
-        return uri.toString();
-    }
-    
-    @Override
-    public long getLastModified() throws IOException {
-        try {
-            Resource resource = repository.retrieve(
-                    token, this.uri, true);
-            return resource.getLastModified().getTime();
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
+    public int read() throws IOException {
+        return wrappedStream.read();
     }
 
     @Override
-    public String getCharacterEncoding() throws IOException {
-        try {
-            Resource resource = repository.retrieve(
-                    token, uri, true);
-            return resource.getCharacterEncoding();
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
+    public int read(byte[] b) throws IOException {
+        return wrappedStream.read(b);
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
-        try {
-            return repository.getInputStream(token, uri, true);
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
+    public int read(byte[] b, int off, int len) throws IOException {
+        return wrappedStream.read(b, off, len);
     }
 
     @Override
-    public String toString() {
-        return getID();
+    public long skip(long n) throws IOException {
+        return wrappedStream.skip(n);
     }
 
+    @Override
+    public int available() throws IOException {
+        return wrappedStream.available();
+    }
+
+    @Override
+    public void close() throws IOException {
+        wrappedStream.close();
+    }
+
+    @Override
+    public void mark(int readlimit) {
+        wrappedStream.mark(readlimit);
+    }
+
+    @Override
+    public void reset() throws IOException {
+        wrappedStream.reset();
+    }
+
+    @Override
+    public boolean markSupported() {
+        return wrappedStream.markSupported();
+    }
 }
-

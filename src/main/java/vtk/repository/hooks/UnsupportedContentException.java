@@ -31,7 +31,8 @@
 package vtk.repository.hooks;
 
 import java.io.IOException;
-import vtk.repository.ContentStream;
+import vtk.repository.ContentInputSource;
+import vtk.repository.ContentInputSources;
 import vtk.util.io.IO;
 
 /**
@@ -50,14 +51,14 @@ import vtk.util.io.IO;
  */
 public class UnsupportedContentException extends TypeHandlerHookException {
 
-    private ContentStream content;
+    private final ContentInputSource content;
     
-    public UnsupportedContentException(String message, ContentStream content) {
+    public UnsupportedContentException(String message, ContentInputSource content) {
         super(message);
         this.content = content;
     }
     
-    public UnsupportedContentException(String message, ContentStream content, Throwable cause) {
+    public UnsupportedContentException(String message, ContentInputSource content, Throwable cause) {
         super(message, cause);
         this.content = content;
     }
@@ -71,10 +72,7 @@ public class UnsupportedContentException extends TypeHandlerHookException {
      */
     public UnsupportedContentException(String message, IO.TempFile contentFile) throws IOException {
         super(message);
-        try {
-            this.content = new ContentStream(contentFile.inputStream(),
-                           contentFile.file().length());
-        } catch (IOException io) {}
+        this.content = ContentInputSources.fromFile(contentFile.file(), true);
     }
     
     /**
@@ -86,18 +84,15 @@ public class UnsupportedContentException extends TypeHandlerHookException {
      */
     public UnsupportedContentException(String message, IO.TempFile contentFile, Throwable cause) throws IOException {
         super(message, cause);
-        try {
-            this.content = new ContentStream(contentFile.inputStream(),
-                           contentFile.file().length());
-        } catch (IOException io) {}
+        this.content = ContentInputSources.fromFile(contentFile.file(), true);
     }
     
     /**
-     * Get a <code>ContentStream</code> representation of the content that
+     * Get a <code>ContentInputSource</code> representation of the content that
      * was unsupported. May return <code>null</code> if none could be provided.
-     * @return a content stream, or <code>null</code> if none could be provided.
+     * @return a content input source, or <code>null</code> if none could be provided.
      */
-    public ContentStream getContentStream() {
+    public ContentInputSource getContentInputSource() {
         return this.content;
     }
 

@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+import vtk.repository.ContentInputSource;
 
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
@@ -129,7 +130,7 @@ public class MemoryContentStore implements ContentStore {
     }
 
     @Override
-    public void storeContent(Path uri, InputStream inputStream) throws DataAccessException {
+    public void storeContent(Path uri, ContentInputSource content) throws DataAccessException {
 
         Node node = getNode(uri);
 
@@ -142,6 +143,7 @@ public class MemoryContentStore implements ContentStore {
         }
 
         try {
+            final InputStream inputStream = content.stream();
             byte[] buffer = new byte[5000];
             int n;
             ByteArrayOutputStream output = new ByteArrayOutputStream();

@@ -32,7 +32,6 @@ package vtk.web.decorating;
 
 import org.springframework.beans.factory.annotation.Required;
 import vtk.text.html.HtmlPageParser;
-import vtk.util.io.InputSource;
 
 public class ParsedHtmlDecoratorTemplateFactory implements TemplateFactory {
 

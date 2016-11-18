@@ -236,7 +236,7 @@ public class VcfController implements Controller {
         }
 
         Property thumbnail = this.getProperty(r, thumbnailPropDefPointer);
-        InputStream i;
+        InputStream is;
 
         if (thumbnail == null) {
             Property prop;
@@ -249,18 +249,18 @@ public class VcfController implements Controller {
                 return null;
 
             try {
-                i = repository.getInputStream(token, p, true);
+                is = repository.getInputStream(token, p, true);
             } catch (Exception e) {
                 return null;
             }
         } else {
-            i = thumbnail.getBinaryStream().getStream();
+            is = thumbnail.getBinaryStream();
         }
 
         /* Base64 encodes the thumbnail. */
         String encoded;
         try {
-            encoded = Base64.encode(i);
+            encoded = Base64.encode(is);
         } catch (Exception e) {
             return null;
         }

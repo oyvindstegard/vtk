@@ -369,6 +369,8 @@ public final class Json {
      */
     public static final class ListContainer extends ArrayList<Object> implements Container {
 
+        private static final long serialVersionUID = 3463197926261032014L;
+
         public ListContainer() {
         }
         
@@ -546,6 +548,8 @@ public final class Json {
      * request for string values.
      */
     public static final class MapContainer extends LinkedHashMap<String,Object> implements Container {
+
+        private static final long serialVersionUID = 5385923218248104980L;
 
         public MapContainer() {
         }

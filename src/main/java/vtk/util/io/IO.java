@@ -815,7 +815,7 @@ public abstract class IO {
         }
 
         @Override
-        public void close() throws Exception {
+        public void close() {
             delete();
         }
 

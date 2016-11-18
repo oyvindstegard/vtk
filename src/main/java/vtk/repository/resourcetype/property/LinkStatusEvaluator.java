@@ -132,7 +132,7 @@ public class LinkStatusEvaluator implements LatePropertyEvaluator {
 
     
     private JSONObject propValue(Property linkCheck) throws Exception {
-        InputStream stream = linkCheck.getBinaryStream().getStream();
+        InputStream stream = linkCheck.getBinaryStream();
         Object o = JSONValue.parse(new InputStreamReader(stream));
         stream.close();
         return (JSONObject) o;
