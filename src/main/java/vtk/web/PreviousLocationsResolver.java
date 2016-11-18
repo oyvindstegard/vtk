@@ -35,7 +35,9 @@ import java.util.List;
 import java.util.Set;
 
 import vtk.repository.Path;
+import vtk.repository.Property;
 import vtk.repository.PropertySet;
+import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.PropertySelect;
 import vtk.repository.search.ResultSet;
@@ -46,10 +48,12 @@ import vtk.repository.search.query.TermOperator;
 public class PreviousLocationsResolver {
     private RequestContext requestContext;
     private PropertyTypeDefinition locationHistoryPropDef;
+    private PropertyTypeDefinition unpublishedCollectionPropDef;
 
-    public PreviousLocationsResolver(PropertyTypeDefinition locationHistoryPropDef, 
-            RequestContext requestContext) {
+    public PreviousLocationsResolver(PropertyTypeDefinition locationHistoryPropDef,
+            PropertyTypeDefinition unpublishedCollectionPropDef, RequestContext requestContext) {
         this.locationHistoryPropDef = locationHistoryPropDef;
+        this.unpublishedCollectionPropDef = unpublishedCollectionPropDef;
         this.requestContext = requestContext;
     }
 
@@ -62,12 +66,21 @@ public class PreviousLocationsResolver {
         Set<PropertySet> result = new HashSet<>();
         if (recursion == 0) return result;
         seen.add(uri);
-        if (requestContext.getRepository()
-                .exists(requestContext.getSecurityToken(), uri)) {
-            PropertySet resource = requestContext.getRepository()
+        try {
+            Resource resource = requestContext.getRepository()
                     .retrieve(requestContext.getSecurityToken(), uri, true);
-            result.add(resource);
+
+            Property unpubCollection = resource.getProperty(unpublishedCollectionPropDef);
+            boolean published = resource.isPublished() && 
+                    (unpubCollection == null || unpubCollection
+                        .getBooleanValue() == false);
+            
+            if (published) {
+                result.add(resource);
+            }
         }
+        catch (Throwable t) { }
+        
 
         for (int i = uri.getDepth(); i > 0; i--) {
             Path left = uri.getPath(i);

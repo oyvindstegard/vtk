@@ -88,10 +88,17 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
                 .getTypeInfo("resource")
                 .getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, 
                         "location-history");
-
+        
+        PropertyTypeDefinition unpublishedCollectionPropDef = 
+                requestContext.getRepository()
+                .getTypeInfo("resource")
+                .getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, 
+                        "unpublishedCollection");
+        
         List<PropertySet> locations = new ArrayList<>();
         PreviousLocationsResolver resolver = 
-                new PreviousLocationsResolver(locationHistoryPropDef, requestContext);
+                new PreviousLocationsResolver(locationHistoryPropDef, 
+                        unpublishedCollectionPropDef, requestContext);
         Set<PropertySet> result = resolver.resolve(uri);
         if (result != null) {
             locations.addAll(result);
