@@ -24,7 +24,7 @@ of the referring site that the link does not work.
   Are you looking for any of these resources?
   <ul>
   <#list locations as loc>
-    <li><a href="${loc.URI}">${loc.title}</a> (${loc.URI})
+    <li><a href="${loc.resource.URI}">${loc.resource.title}</a> (${loc.resource.URI}) <!-- ${loc.time} -->
   </#list>
   </ul>
 </#if>

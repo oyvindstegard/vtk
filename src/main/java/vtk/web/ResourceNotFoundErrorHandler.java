@@ -30,11 +30,11 @@
  */
 package vtk.web;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,6 +46,7 @@ import vtk.repository.Path;
 import vtk.repository.PropertySet;
 import vtk.repository.ResourceNotFoundException;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.web.PreviousLocationsResolver.RelocatedResource;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 
@@ -95,14 +96,14 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
                 .getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, 
                         "unpublishedCollection");
         
-        List<PropertySet> locations = new ArrayList<>();
         PreviousLocationsResolver resolver = 
                 new PreviousLocationsResolver(locationHistoryPropDef, 
                         unpublishedCollectionPropDef, requestContext);
-        Set<PropertySet> result = resolver.resolve(uri);
-        if (result != null) {
-            locations.addAll(result);
-        }
+        
+        List<RelocatedResource> locations = resolver.resolve(uri)
+                .stream()
+                .sorted(LOC_COMPARATOR)
+                .collect(Collectors.toList());
         request.setAttribute(getClass().getName() + ".locations", locations);
         model.put("locations", locations);
         
@@ -119,15 +120,11 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
             HttpServletResponse response, Throwable error) throws Exception {
 
         @SuppressWarnings("unchecked")
-        List<PropertySet> locations = (List<PropertySet>) 
+        List<RelocatedResource> locations = (List<RelocatedResource>) 
             request.getAttribute(getClass().getName() + ".locations");
 
-        if (locations.isEmpty()) {
-            return defaultView;
-        }
-        
-        if (locations.size() == 1 && redirectMoved) {
-            PropertySet propSet = locations.get(0); 
+        if (redirectMoved && !locations.isEmpty()) {
+            PropertySet propSet = locations.get(0).resource;
             return new RedirectView(propSet.getURI().toString());
         }
         return defaultView;
@@ -156,5 +153,19 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
             response.sendRedirect(location);
         }
     }
+
+    private static Comparator<RelocatedResource> LOC_COMPARATOR = (o1, o2) -> {
+        if (o1.time.isPresent() && o2.time.isPresent()) {
+            return o2.time.get().compareTo(o1.time.get());
+        }
+        else if (!o1.time.isPresent() && !o2.time.isPresent()) {
+            return 0;
+        }
+        else if (o1.time.isPresent()) {
+            return 1;
+        }
+        return -1;
+    };
+
 
 }
