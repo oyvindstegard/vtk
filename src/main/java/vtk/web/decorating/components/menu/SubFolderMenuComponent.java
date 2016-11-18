@@ -37,9 +37,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
+
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
+import vtk.repository.Resource;
 import vtk.repository.search.PropertySelect;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
@@ -52,6 +54,7 @@ import vtk.repository.search.query.UriPrefixQuery;
 import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
+import vtk.web.decorating.components.DecoratorComponentException;
 import vtk.web.view.components.menu.ListMenu;
 
 /**
@@ -133,6 +136,34 @@ public class SubFolderMenuComponent extends ListMenuComponent {
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.isViewUnauthenticated() ? null : requestContext.getSecurityToken(); // VTK-2460
         Repository repository = requestContext.getRepository();
+		Path uri = requestContext.getResourceURI();
+
+		boolean ascendingSort = true;
+		Resource currentResource = null;
+		String sortDirectionParam = request.getStringParameter(SubFolderMenuComponent.PARAMETER_SORT_DIRECTION);
+
+		if (sortDirectionParam == null) {
+		try {
+			currentResource = repository.retrieve(token, uri, true);
+			if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()) != null) {
+				if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()).getBooleanValue()) {
+					ascendingSort = false;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			}
+		} else {
+			if ("asc".equals(sortDirectionParam)) {
+				ascendingSort = true;
+			} else if ("desc".equals(sortDirectionParam)) {
+				ascendingSort = false;
+			} else {
+				throw new DecoratorComponentException("Illegal value for parameter '"
+						+ SubFolderMenuComponent.PARAMETER_SORT_DIRECTION + "': '" + sortDirectionParam
+						+ "' (must be one of 'asc', 'desc')");
+			}
+		}
 
         Search search = buildSearch(requestContext, menuRequest);
 
@@ -140,8 +171,8 @@ public class SubFolderMenuComponent extends ListMenuComponent {
         if (logger.isDebugEnabled()) {
             logger.debug("Executed search: " + search + ", hits: " + rs.getSize());
         }
-        ListMenu<PropertySet> menu = this.menuGenerator.buildListMenu(rs, menuRequest, this.modelName);
-        Map<String, Object> menuModel = this.menuGenerator.buildMenuModel(menu, menuRequest);
+		ListMenu<PropertySet> menu = this.menuGenerator.buildListMenu(rs, menuRequest, this.modelName, ascendingSort);
+		Map<String, Object> menuModel = this.menuGenerator.buildMenuModel(menu, menuRequest, ascendingSort);
         model.put(this.modelName, menuModel);
         if (logger.isDebugEnabled()) {
             logger.debug("Built model: " + model + " from menu: " + menu);

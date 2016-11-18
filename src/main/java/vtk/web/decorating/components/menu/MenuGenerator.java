@@ -80,7 +80,7 @@ public final class MenuGenerator {
         return menuRequest;
     }
 
-    public ListMenu<PropertySet> buildListMenu(ResultSet rs, MenuRequest menuRequest, String modelName) {
+	public ListMenu<PropertySet> buildListMenu(ResultSet rs, MenuRequest menuRequest, String modelName, boolean ascendingSort) {
         ListMenu<PropertySet> menu = new ListMenu<PropertySet>();
         Map<Path, List<PropertySet>> childMap = new HashMap<Path, List<PropertySet>>();
         List<PropertySet> toplevel = new ArrayList<PropertySet>();
@@ -112,7 +112,7 @@ public final class MenuGenerator {
         }
 
         menu.setComparator(new ListMenuComparator(menuRequest.getLocale(), this.importancePropDef,
-                this.navigationTitlePropDef, menuRequest.isAscendingSort(), menuRequest.isSortByName(), menuRequest
+				this.navigationTitlePropDef, ascendingSort, menuRequest.isSortByName(), menuRequest
                         .getSortProperty()));
 
         menu.addAllItems(toplevelItems);
@@ -163,7 +163,7 @@ public final class MenuGenerator {
         return item;
     }
 
-    public Map<String, Object> buildMenuModel(ListMenu<PropertySet> menu, MenuRequest menuRequest) {
+    public Map<String, Object> buildMenuModel(ListMenu<PropertySet> menu, MenuRequest menuRequest, boolean ascendingSort) {
         List<ListMenu<PropertySet>> resultList = new ArrayList<ListMenu<PropertySet>>();
 
         int resultSets = menuRequest.getResultSets();
@@ -201,7 +201,7 @@ public final class MenuGenerator {
 
             ListMenu<PropertySet> m = new ListMenu<PropertySet>();
             m.setComparator(new ListMenuComparator(menuRequest.getLocale(), this.importancePropDef,
-                    this.navigationTitlePropDef, menuRequest.isAscendingSort(), menuRequest.isSortByName(), menuRequest
+					this.navigationTitlePropDef, ascendingSort, menuRequest.isSortByName(), menuRequest
                             .getSortProperty()));
 
             m.setTitle(menu.getTitle());
