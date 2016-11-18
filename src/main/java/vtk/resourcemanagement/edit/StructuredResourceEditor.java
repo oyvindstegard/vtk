@@ -30,7 +30,6 @@
  */
 package vtk.resourcemanagement.edit;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -48,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
+import vtk.repository.ContentInputSources;
 
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -134,8 +134,7 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
             return new ModelAndView(getFormView(), model);
         }
 
-        byte[] buffer = JsonStreamer.toJson(form.getResource().toJSON(), 3, false).getBytes("utf-8");
-        InputStream stream = new ByteArrayInputStream(buffer);
+        final byte[] buffer = JsonStreamer.toJson(form.getResource().toJSON(), 3, false).getBytes("utf-8");
 
         if (saveWorkingCopy && workingCopy == null) {
             workingCopy = repository.createRevision(token, uri, Revision.Type.WORKING_COPY);
@@ -144,27 +143,27 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
         if (makePublicVersion && workingCopy != null) {
             repository.createRevision(token, uri, Revision.Type.REGULAR);
 
-            repository.storeContent(token, uri, stream, workingCopy);
-            repository.storeContent(token, uri, repository.getInputStream(token, uri, false, workingCopy));
+            repository.storeContent(token, uri, ContentInputSources.fromBytes(buffer), workingCopy);
+            repository.storeContent(token, uri, ContentInputSources.fromStream(repository.getInputStream(token, uri, false, workingCopy)));
             repository.deleteRevision(token, uri, workingCopy);
             form.setWorkingCopy(false);
 
         }
         else if (saveWorkingCopy) {
-            repository.storeContent(token, uri, stream, workingCopy);
+            repository.storeContent(token, uri, ContentInputSources.fromBytes(buffer), workingCopy);
             form.setWorkingCopy(true);
 
         }
         else {
             List<Revision> revisions = repository.getRevisions(token, uri);
-            Revision prev = revisions.size() == 0 ? null : revisions.get(0);
+            Revision prev = revisions.isEmpty() ? null : revisions.get(0);
             String checksum = Revisions.checksum(buffer);
 
             if (prev == null || !checksum.equals(prev.getChecksum())) {
                 // Take snapshot of previous version:
                 repository.createRevision(token, uri, Revision.Type.REGULAR);
             }
-            repository.storeContent(token, uri, stream);
+            repository.storeContent(token, uri, ContentInputSources.fromBytes(buffer));
             form.setWorkingCopy(false);
         }
 

@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Helper class to construct repository <code>ContentInputSource</code> instances
@@ -47,7 +48,8 @@ public final class ContentInputSources {
     /**
      * Make a stream based content input source.
      * @param content the stream for the source
-     * @return a content input source based on the provided input stream
+     * @return a content input source based on the provided input stream. The
+     * source returns the provided stream instance directly as-is.
      */
     public static ContentInputSource fromStream(final InputStream content) {
         return new ContentInputSource() {
@@ -110,7 +112,7 @@ public final class ContentInputSources {
     }
 
     /**
-     * Construct input source from bytes in memory.
+     * Content input source from bytes in memory.
      * @param bytes
      * @return
      */
@@ -133,6 +135,25 @@ public final class ContentInputSources {
                 return new ByteArrayInputStream(bytes);
             }
         };
+    }
+
+    /**
+     * Content from a string with a specified encoding.
+     * @param s the string to store as content
+     * @param encoding the encoding to be used
+     * @return a content input source based on the provided string
+     * @throws java.io.UnsupportedEncodingException if the specified encoding is unknown or not supported by platform
+     */
+    public static ContentInputSource fromString(String s, String encoding) throws UnsupportedEncodingException {
+        return fromBytes(s.getBytes(encoding));
+    }
+
+    /**
+     * An empty content input source
+     * @return an empty content input source.
+     */
+    public static ContentInputSource empty() {
+        return fromBytes(new byte[0]);
     }
 
 }

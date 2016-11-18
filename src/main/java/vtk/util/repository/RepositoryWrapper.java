@@ -150,8 +150,7 @@ public class RepositoryWrapper implements Repository {
     }
 
     @Override
-    public Resource storeContent(String token, Path uri,
-            ContentInputSource content, Revision revision)
+    public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision)
             throws AuthorizationException, AuthenticationException,
             ResourceNotFoundException, ResourceLockedException,
             IllegalOperationException, ReadOnlyException, Exception {
@@ -182,8 +181,8 @@ public class RepositoryWrapper implements Repository {
     }
 
     @Override
-    public Resource createDocument(String token, Path uri,
-            ContentInputSource content) throws IllegalOperationException,
+    public Resource createDocument(String token, Path uri, ContentInputSource content)
+            throws IllegalOperationException,
             AuthorizationException, AuthenticationException,
             ResourceLockedException, ReadOnlyException, Exception {
         return repository.createDocument(token, uri, content);

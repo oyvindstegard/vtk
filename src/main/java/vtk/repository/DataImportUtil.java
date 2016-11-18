@@ -89,7 +89,7 @@ public class DataImportUtil implements InitializingBean {
             }
             
             logger.info("Importing file '" + file + "' to URI '" + uri + "'");
-            this.repository.createDocument(token, uri, new BufferedInputStream(new FileInputStream(file)));
+            this.repository.createDocument(token, uri, ContentInputSources.fromFile(file));
         }
         
     }

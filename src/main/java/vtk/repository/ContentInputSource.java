@@ -37,25 +37,25 @@ import java.io.InputStream;
 /**
  * A source of content which can be stored in the content repository.
  *
- * <p>The source can either be a generic <code>InputStream</code> or a <code>File</code>.
+ * <p>The source can be anything, and it shall be accessible through this API either
+ * as a generic stream or a local file.
+ *
+ * @see ContentInputSources
  */
 public interface ContentInputSource {
 
     /**
-     *
-     * @return <code>true</code> if the source is a file
+     * @return Should <code>true</code> if the source is a file, <code>false</code> otherwise.
      */
     boolean isFile();
 
     /**
-     *
      * @return a <code>File</code> object for the source file, or <code>null</code>
      * if the source is not file based.
      */
     File file();
 
     /**
-     *
      * @return <code>true</code> if the source is a [temporary] file which can
      * be automatically deleted after storing its contents in the repository.
      */
@@ -63,11 +63,10 @@ public interface ContentInputSource {
 
     /**
      * @return an input stream for the content, never <code>null</code>. May return
-     * the same stream instance on multiple invocations, so do not
-     * rely on being able to read this stream more than once per content input source instance.
+     * the same stream instance on multiple invocations, so the repository does
+     * not rely on being able to read this stream more than once.
      *
      * @throws IOException if an error occurs when providing stream
-     *
      */
     InputStream stream() throws IOException;
 

@@ -61,6 +61,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
 import vtk.repository.Comment;
+import vtk.repository.ContentInputSources;
 import vtk.repository.InheritablePropertiesStoreContext;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -78,6 +79,7 @@ import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
+import vtk.util.io.AbstractInputStreamWrapper;
 
 public class ResourceArchiver {
 
@@ -802,7 +804,14 @@ public class ResourceArchiver {
 
     private boolean writeFile(String token, Path uri, ZipInputStream is) {
         try {
-            this.repository.createDocument(token, uri, new PartialZipStream(is));
+            this.repository.createDocument(token, uri, ContentInputSources.fromStream(
+                    new AbstractInputStreamWrapper(is) {
+                @Override
+                public void close() throws IOException {
+                    // Ignore close calls
+                }
+            }
+            ));
         }
         catch (Exception e) {
             logger.error("Error writing resource '" + uri + "': " + e.getMessage());
@@ -825,58 +834,6 @@ public class ResourceArchiver {
                 this.repository.createCollection(token, p);
                 dirCache.add(p);
             }
-        }
-    }
-
-    private static class PartialZipStream extends InputStream {
-        ZipInputStream in;
-
-        PartialZipStream(ZipInputStream in) {
-            this.in = in;
-        }
-
-        @Override
-        public int available() throws IOException {
-            return this.in.available();
-        }
-
-        @Override
-        public void close() throws IOException {
-        }
-
-        @Override
-        public void mark(int readLimit) {
-            this.in.mark(readLimit);
-        }
-
-        @Override
-        public void reset() throws IOException {
-            this.in.reset();
-        }
-
-        @Override
-        public boolean markSupported() {
-            return false;
-        }
-
-        @Override
-        public int read() throws IOException {
-            return this.in.read();
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException {
-            return this.in.read(b);
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            return this.in.read(b, off, len);
-        }
-
-        @Override
-        public long skip(long n) throws IOException {
-            return this.in.skip(n);
         }
     }
 

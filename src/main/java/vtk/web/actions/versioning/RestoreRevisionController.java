@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -90,7 +91,7 @@ public class RestoreRevisionController implements Controller {
             repository.createRevision(token, uri, Revision.Type.REGULAR);
             
             repository.storeContent(token, uri, 
-                    repository.getInputStream(token, uri, false, revision));
+                    ContentInputSources.fromStream(repository.getInputStream(token, uri, false, revision)));
 
             if (this.deleteWorkingCopy && 
                     revision.getType() == Revision.Type.WORKING_COPY) {

@@ -45,6 +45,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.springframework.web.servlet.ModelAndView;
+import vtk.repository.ContentInputSources;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Lock;
@@ -145,7 +146,7 @@ public class LockController extends AbstractWebdavController {
                 if (this.logger.isDebugEnabled()) {
                     this.logger.debug("Creating null resource");
                 }
-                repository.createDocument(token, uri, new ByteArrayInputStream(new byte[0]));
+                repository.createDocument(token, uri, ContentInputSources.empty());
                 
                 // Should get real lockOwnerInfo, even if resource don't exist when locked
                 if (request.getContentLength() > 0) {
@@ -181,8 +182,7 @@ public class LockController extends AbstractWebdavController {
         } catch (InvalidRequestException e) {
             this.logger.info("Got InvalidRequestException for URI " + uri, e);
             model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
-                    HttpServletResponse.SC_BAD_REQUEST));
+            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_BAD_REQUEST);
 
         } catch (ResourceNotFoundException e) {
             if (this.logger.isDebugEnabled()) {

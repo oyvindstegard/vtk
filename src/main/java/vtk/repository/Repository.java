@@ -1,4 +1,4 @@
-/* Copyright (c) 2004, 2005, 2006, 2007, University of Oslo, Norway
+/* Copyright (c) 2004-2016 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -222,6 +222,7 @@ public interface Repository {
      *            modified resource to store
      * @param storeContext
      *            specialized store context (store mode)
+     * @return the stored resource
      * @exception ResourceNotFoundException
      *                if the URI does not identify an existing resource
      * @exception AuthorizationException
@@ -239,12 +240,6 @@ public interface Repository {
     public Resource store(String token, Resource resource, StoreContext storeContext) throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, ResourceLockedException, IllegalOperationException, ReadOnlyException, Exception;
     
-    default public Resource storeContent(String token, Path uri, InputStream stream) throws AuthorizationException,
-            AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
-            ReadOnlyException, Exception {
-        return storeContent(token, uri, ContentInputSources.fromStream(stream));
-    }
-
     /**
      * Requests that a a byte stream be written to the content of a resource in
      * the repository.
@@ -274,11 +269,6 @@ public interface Repository {
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
             ReadOnlyException, Exception;
     
-    default public Resource storeContent(String token, Path uri, InputStream stream, Revision revision) throws AuthorizationException,
-        AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException, ReadOnlyException, Exception {
-        return storeContent(token, uri, ContentInputSources.fromStream(stream), revision);
-    }
-
     public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision) throws AuthorizationException,
         AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
         ReadOnlyException, Exception;
@@ -377,11 +367,6 @@ public interface Repository {
     public Resource createDocument(String token, Path uri, ContentInputSource content) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, Exception;
     
-    default public Resource createDocument(String token, Path uri, InputStream inputStream) throws IllegalOperationException,
-            AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, Exception {
-        return createDocument(token, uri, ContentInputSources.fromStream(inputStream));
-    }
-
     /**
      * Creates a new collection resource in the repository.
      * 

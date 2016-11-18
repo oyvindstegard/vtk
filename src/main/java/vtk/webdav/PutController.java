@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.ModelAndView;
+import vtk.repository.ContentInputSources;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -132,7 +133,7 @@ public class PutController extends AbstractWebdavController {
                         "Trying to PUT to collection resource '" + uri + "'");
                 }
                 InputStream inStream = request.getInputStream();
-                repository.storeContent(token, resource.getURI(), inStream);
+                repository.storeContent(token, resource.getURI(), ContentInputSources.fromStream(inStream));
 
             } else {
 
@@ -149,8 +150,7 @@ public class PutController extends AbstractWebdavController {
                         uri + "', parent resource '" + parentURI + "' does not exist.");
                 }
                 if (!allowedResourceName(uri)) {
-                    model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                              new Integer(HttpServletResponse.SC_OK));
+                    model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_OK);
                     throw new IllegalOperationException("Rejecting resource creation: '"
                                                         + uri + "'");
                 }
@@ -159,7 +159,7 @@ public class PutController extends AbstractWebdavController {
                     this.logger.debug("Resource does not exist (creating)");
                 }
                 InputStream inStream = request.getInputStream();
-                resource = repository.createDocument(token, uri, inStream);
+                resource = repository.createDocument(token, uri, ContentInputSources.fromStream(inStream));
             }
 
             resource = repository.retrieve(token, resource.getURI(), false);
@@ -193,11 +193,9 @@ public class PutController extends AbstractWebdavController {
             }
 
             if (exists) {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                          new Integer(HttpServletResponse.SC_OK));
+                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_OK);
             } else {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                          new Integer(HttpServletResponse.SC_CREATED));
+                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_CREATED);
             }
 
             model.put(WebdavConstants.WEBDAVMODEL_ETAG, resource.getEtag());
@@ -205,28 +203,23 @@ public class PutController extends AbstractWebdavController {
 
         } catch (ResourceNotFoundException e) {
             model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_NOT_FOUND));
+            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_NOT_FOUND);
 
         } catch (ResourceLockedException e) {
             model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpUtil.SC_LOCKED));
+            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpUtil.SC_LOCKED);
             
         } catch (IllegalOperationException e) {
             model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_FORBIDDEN));
+            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_FORBIDDEN);
 
         } catch (WebdavConflictException e) {
             model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_CONFLICT));
+            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_CONFLICT);
 
         } catch (ReadOnlyException e) {
             model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_FORBIDDEN));
+            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_FORBIDDEN);
 
         }
         return new ModelAndView("PUT", model);
