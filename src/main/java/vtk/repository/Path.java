@@ -345,6 +345,30 @@ public final class Path implements Comparable<Path>, Serializable {
     }
     
     /**
+     * Appends a path to this path. The root of the 
+     * path to be appended is ignored. For example, if this path is 
+     * <code>/a/b</code> and the argument is <code>/c/d</code>, the 
+     * resulting path is <code>/a/b/c/d</code>.
+     * @param other the path to append
+     * @return the resulting path 
+     */
+    public Path append(Path other) {
+        if (other == null) {
+            throw new IllegalArgumentException("null");
+        }
+        if (other.equals(ROOT)) {
+            return this;
+        }
+        Path p = this;
+        for (String segment: other.elements()) {
+            if (segment.equals("/")) continue;
+            p = p.extend(segment);
+        }
+        return p;
+    }
+    
+    
+    /**
      * Returns longest common path between this path and another.
      * @param otherPath the other
      * @return the longest common path
@@ -364,6 +388,31 @@ public final class Path implements Comparable<Path>, Serializable {
             common = this.getPath(i);
         }
         return common;
+    }
+    
+    /**
+     * Returns the remaining elements to the right of the 
+     * common path between this path and the given path.
+     * 
+     * For example, if this path is <code>/a/b/c</code> and the 
+     * argument is <code>/a</code>, the path <code>/b/c</code> 
+     * is returned.
+     * @param path the other path, which must be an ancestor of this path
+     * @return the remaining path to the right
+     */
+    public Path right(Path path) {
+        if (path == null) throw new IllegalArgumentException("null");
+        if (path.equals(this)) return Path.ROOT;
+        if (!path.isAncestorOf(this)) 
+            throw new IllegalArgumentException("Path " + path 
+                    + " is not an ancestor of " + this);
+        List<String> elements = elements();
+        
+        Path result = Path.ROOT;
+        for (int i = path.getDepth() + 1; i < getDepth() + 1; i++) {
+            result = result.extend(elements.get(i));
+        }
+        return result;
     }
 
     @Override

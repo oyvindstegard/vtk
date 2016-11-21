@@ -4,25 +4,11 @@
 
   <!-- Error handlers -->
 
-  <bean id="resourceNotFoundErrorHandler" class="vtk.web.DefaultErrorHandler">
-    <property name="errorViewName" value="resourceNotFoundError" />
-    <property name="errorType">
-      <bean class="java.lang.Class" factory-method="forName">
-        <constructor-arg value="vtk.repository.ResourceNotFoundException" />
-      </bean>
-    </property>
-    <property name="referenceDataProviders">
-      <list>
-        <ref bean="resourceContextProvider"/>
-      </list>
-    </property>
-    <property name="statusCodeMappings">
-      <map>
-        <entry key="vtk.repository.ResourceNotFoundException" value="404" />
-      </map>
-    </property>
+  <bean id="resourceNotFoundErrorHandler" class="vtk.web.ResourceNotFoundErrorHandler">
+    <constructor-arg name="defaultView" value="resourceNotFoundError" />
+    <constructor-arg name="redirectPolicy" value="${errorHandler.notFound.redirectPolicy}" />
+    <constructor-arg name="referenceDataProviders" ref="resourceContextProvider" />
   </bean>
-
 
   <bean id="badRequestErrorHandler" class="vtk.web.DefaultErrorHandler">
     <property name="errorViewName" value="badRequestError" />

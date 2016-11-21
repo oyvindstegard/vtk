@@ -68,7 +68,7 @@ public interface ErrorHandler {
      *
      * @return the exception class
      */
-    public Class<Throwable> getErrorType();
+    public Class<? extends Throwable> getErrorType();
 
 
     /**

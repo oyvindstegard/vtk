@@ -2,11 +2,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>404 - Not Found</title>
+  <title>Not Found</title>
 </head>
 <body>
 
-<h1>404 - Page does not exist</h1>
+<h1>Page does not exist</h1>
 
 <p>
 The web page <strong>${resourceContext.currentURI?if_exists}</strong>
@@ -20,12 +20,16 @@ location.
 of the referring site that the link does not work.
 </p>
 
-<p>Server-administrator: <a href="mailto:${webmaster}">${webmaster}</a></p>
-
-<#if debugErrors?exists && debugErrors>
-  <hr />
-  <#include "/lib/error-detail.ftl" />
+<#if locations?has_content>
+  Are you looking for any of these resources?
+  <ul>
+  <#list locations as loc>
+    <li><a href="${loc.resource.URI}">${loc.resource.title}</a> (${loc.resource.URI}) <!-- ${loc.time} -->
+  </#list>
+  </ul>
 </#if>
+
+<p>Server-administrator: <a href="mailto:${webmaster}">${webmaster}</a></p>
 
 </body>
 </html>
