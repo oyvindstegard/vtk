@@ -189,7 +189,7 @@ public class PreviousLocationsResolver {
                 .collect(Collectors.toSet());
         
         OrQuery query = new OrQuery();
-        uris.stream().forEach(uri -> query.add(
+        uris.forEach(uri -> query.add(
                 new UriTermQuery(uri.toString(), TermOperator.EQ)));
         
         Search search = new Search();
