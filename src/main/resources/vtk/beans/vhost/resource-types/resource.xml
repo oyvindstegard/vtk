@@ -346,6 +346,11 @@
     <property name="multiple" value="false" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ROLE_ROOT" />
     <property name="mandatory" value="false" />
+    <property name="metadata">
+      <map>
+        <entry key="indexableJsonHint" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="brokenLinksCountPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
