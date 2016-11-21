@@ -241,7 +241,7 @@ public class LinkChecker {
             status = validateURL(urlToCheck, request.sendReferrer() ? base : null, "HEAD");
             if (status == Status.NOT_FOUND) {
                 // Some broken servers return different result codes based on HEAD versus GET, so we retry...
-                logger.info("Validate (HEAD returned NOT_FOUND, retrying with GET): href='" + urlToCheck + "'");
+                logger.debug("Validate (HEAD returned NOT_FOUND, retrying with GET): href='" + urlToCheck + "'");
                 status = validateURL(urlToCheck, request.sendReferrer() ? base : null, "GET");
             }
         }
