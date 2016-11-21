@@ -51,19 +51,24 @@ import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 
 public class ResourceNotFoundErrorHandler implements ErrorHandler {
-    
     private String defaultView;
-    private boolean redirectMoved = false;
+    private RedirectPolicy redirectPolicy = RedirectPolicy.NEVER;
     private List<ReferenceDataProvider> referenceDataProviders;
     
-    public ResourceNotFoundErrorHandler(String defaultView, boolean redirectMoved) {
-        this(defaultView, redirectMoved, null);
+    public static enum RedirectPolicy {
+        NEVER,
+        UNAMBIGUOUS,
+        ALWAYS
     }
     
-    public ResourceNotFoundErrorHandler(String defaultView, boolean redirectMoved, 
+    public ResourceNotFoundErrorHandler(String defaultView, RedirectPolicy redirectPolicy) {
+        this(defaultView, redirectPolicy, null);
+    }
+    
+    public ResourceNotFoundErrorHandler(String defaultView, RedirectPolicy redirectPolicy, 
             List<ReferenceDataProvider> referenceDataProviders) {
         this.defaultView = defaultView;
-        this.redirectMoved = redirectMoved;
+        this.redirectPolicy = redirectPolicy;
         this.referenceDataProviders = referenceDataProviders;
     }
 
@@ -123,11 +128,22 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
         List<RelocatedResource> locations = (List<RelocatedResource>) 
             request.getAttribute(getClass().getName() + ".locations");
 
-        if (redirectMoved && !locations.isEmpty()) {
+        if (locations.isEmpty()) {
+            return defaultView;
+        }
+        if (redirectPolicy == RedirectPolicy.NEVER) {
+            return defaultView;
+        }
+        if (redirectPolicy == RedirectPolicy.UNAMBIGUOUS) {
+            if (locations.size() > 1) {
+                return defaultView;
+            }
             PropertySet propSet = locations.get(0).resource;
             return new RedirectView(propSet.getURI().toString());
         }
-        return defaultView;
+        // ALWAYS:
+        PropertySet propSet = locations.get(0).resource;
+        return new RedirectView(propSet.getURI().toString());
     }
 
     @Override
