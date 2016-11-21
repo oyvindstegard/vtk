@@ -114,7 +114,8 @@ public class DisplayThumbnailController implements Controller, LastModified {
             InputStreamWithLength binaryStream = thumbnail.getBinaryStream();
             String mimetype = thumbnail.getBinaryContentType();
             response.setContentType(mimetype);
-            response.setContentLengthLong(binaryStream.length());
+            //response.setContentLengthLong(binaryStream.length());
+            response.setContentLength((int) binaryStream.length());
             IO.copy(binaryStream, response.getOutputStream()).perform();
         }
 
