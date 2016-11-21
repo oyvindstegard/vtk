@@ -180,6 +180,7 @@
     <property name="assertions">
       <list>
         <ref bean="contentTypeMatchesVideo" />
+        <ref bean="resourceIsNotLectureVideoRefAssertion" />
       </list>
     </property>
     <property name="handler" ref="editor.videoEditHandler" />
