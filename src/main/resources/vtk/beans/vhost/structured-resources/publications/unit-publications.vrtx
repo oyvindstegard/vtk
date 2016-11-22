@@ -7,13 +7,15 @@ resourcetype unit-publications {
     selectedPublications : html noextract,
     showAdditionalContent : boolean defaultvalue("true"),
     related-content : html noextract,
-    link-other-language: resource_ref
+    link-other-language: resource_ref,
+    numberOfPublications: string
   }
 
   edit-rules {
     areacode (size[8]),
-    group publications (areacode, selectedPublications) (after introduction),
+    group publications (areacode, numberOfPublications, selectedPublications) (after introduction),
     group related-content-group (showAdditionalContent, related-content) (after selectedPublications)
+    numberOfPublications (dropdown)
   }
 
   view-components {
@@ -128,6 +130,11 @@ resourcetype unit-publications {
       en : ("true" = "Yes", "false" = "No"),
       no : ("true" = "Ja", "false" = "Nei"),
       nn : ("true" = "Ja", "false" = "Nei")
+    },
+    numberOfPublications {
+     en : (range = "100,150,200,300,350,400,450,500"),
+     no : (range = "100,150,200,300,350,400,450,500"),
+     nn : (range = "100,150,200,300,350,400,450,500")
     }
   }
 
@@ -137,6 +144,7 @@ resourcetype unit-publications {
     areacode : (en : "Org. Unit ID", no : "Stedkode", nn : "Stadkode"),
     publications : (en : "Publications", no : "Publikasjoner", nn : "Publikasjonar"),
     selectedPublications : (en : "Selected publications", no : "Utvalgte publikasjoner", nn : "Utvalde publikasjonar"),
+    numberOfPublications : (en : "Maximum number of publications from Cristin", no : "Maks antall publikasjoner fra Cristin", nn : "Maks antall publikasjonar frå Cristin"),
     showAdditionalContent : (en : "Show in right-column", no : "Vis i høyrekolonne", nn : "Vis i høgrekolonne"),
     related-content-group : (en : "Related content", no : "Relatert innhold", nn : "Relatert innhald"),
     related-content : (en : "Related content", no : "Relatert innhold", nn : "Relatert innhold"),
