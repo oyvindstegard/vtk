@@ -183,6 +183,7 @@ public class PreviousLocationsResolver {
 
     
     private Set<RelocatedResource> resolveAncestorTimes(Set<RelocatedResource> resources) {
+        if (resources.size() == 0) return resources;
         Set<String> uris = resources.stream().map(r -> r.resource.getURI())
                 .flatMap(uri -> uri.getPaths().stream())
                 .map(uri -> uri.toString())
