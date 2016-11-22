@@ -39,7 +39,24 @@
       </map>
     </property>
   </bean>
-  
+
+  <bean id="isAuthorizedPrincipalWebDavService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="webdavService" />
+    <property name="order" value="-3" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="vrtx" />
+          <property name="parameterValue" value="is-authorized" />
+        </bean>
+        <bean class="vtk.web.service.IsAuthenticatedAssertion">
+          <property name="requiresAuthentication" value="true" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="isAuthorizedPrincipalServiceHandler" />
+  </bean>
+
   <bean id="webdav.davMountService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-100" />
     <property name="assertions">
