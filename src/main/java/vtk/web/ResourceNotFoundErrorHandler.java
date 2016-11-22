@@ -128,6 +128,10 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
         List<RelocatedResource> locations = (List<RelocatedResource>) 
             request.getAttribute(getClass().getName() + ".locations");
 
+        if ("True".equals(request.getHeader("X-VTK-Linkcheck"))) {
+            return defaultView;
+        }
+        
         if (locations.isEmpty()) {
             return defaultView;
         }
@@ -166,6 +170,7 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
         @Override
         public void render(Map<String, ?> model, HttpServletRequest request,
                 HttpServletResponse response) throws Exception {
+            // Cache headers, permanently/temporary:
             response.sendRedirect(location);
         }
     }

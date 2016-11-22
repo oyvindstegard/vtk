@@ -38,6 +38,9 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,13 +63,15 @@ public class LinkChecker {
         private String href;
         private URL base;
         private boolean sendReferrer;
+        private Map<String, String> customHeaders;
         private boolean allowCached;
         
         private LinkCheckRequest(String href, URL base, boolean sendReferrer,
-                boolean allowCached) {
+                Map<String, String> customHeaders, boolean allowCached) {
             this.href = href;
             this.base = base;
             this.sendReferrer = sendReferrer;
+            this.customHeaders = customHeaders;
             this.allowCached = allowCached;
         }
         
@@ -81,6 +86,8 @@ public class LinkChecker {
         public boolean sendReferrer() { return sendReferrer; }
         
         public boolean allowCached() { return allowCached; }
+        
+        public Map<String, String> customHeaders() { return customHeaders; }
 
         @Override
         public String toString() {
@@ -93,6 +100,7 @@ public class LinkChecker {
             private String href;
             private URL base;
             private boolean sendReferrer = false, allowCached = true;
+            private Map<String, String> customHeaders;
             public Builder(String href, URL base) {
                 if (href == null || "".equals(href.trim()))
                     throw new IllegalArgumentException("Empty href");
@@ -102,7 +110,9 @@ public class LinkChecker {
                 this.base = base;
             }
             public LinkCheckRequest build() {
-                return new LinkCheckRequest(href, base, sendReferrer, allowCached);
+                if (customHeaders == null) customHeaders = Collections.emptyMap();
+                return new LinkCheckRequest(href, base, sendReferrer, 
+                        Collections.unmodifiableMap(customHeaders), allowCached);
             }
             
             public Builder sendReferrer(boolean sendReferrer) {
@@ -111,6 +121,11 @@ public class LinkChecker {
             }
             public Builder allowCached(boolean allowCached) {
                 this.allowCached = allowCached;
+                return this;
+            }
+            public Builder customHeader(String name, String value) {
+                if (customHeaders == null) customHeaders = new HashMap<>();
+                customHeaders.put(name, value);
                 return this;
             }
         }
