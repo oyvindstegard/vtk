@@ -50,10 +50,9 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.ConfigurablePropertySelect;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
-import vtk.repository.search.query.OrQuery;
 import vtk.repository.search.query.PropertyTermQuery;
 import vtk.repository.search.query.TermOperator;
-import vtk.repository.search.query.UriTermQuery;
+import vtk.repository.search.query.UriSetQuery;
 import vtk.util.text.Json.MapContainer;
 
 public class PreviousLocationsResolver {
@@ -184,14 +183,11 @@ public class PreviousLocationsResolver {
 
     
     private Set<RelocatedResource> resolveAncestorTimes(Set<RelocatedResource> resources) {
-        Set<Path> uris = resources.stream().map(r -> r.resource.getURI())
+        Set<String> uris = resources.stream().map(r -> r.resource.getURI())
                 .flatMap(uri -> uri.getPaths().stream())
+                .map(uri -> uri.toString())
                 .collect(Collectors.toSet());
-        
-        OrQuery query = new OrQuery();
-        uris.forEach(uri -> query.add(
-                new UriTermQuery(uri.toString(), TermOperator.EQ)));
-        
+        UriSetQuery query = new UriSetQuery(uris, TermOperator.IN);
         Search search = new Search();
         search.setQuery(query);
         search.setPropertySelect(new ConfigurablePropertySelect(
