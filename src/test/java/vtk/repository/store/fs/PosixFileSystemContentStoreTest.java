@@ -35,13 +35,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Calendar;
-import java.util.Random;
 import java.util.Set;
 import org.junit.After;
 import org.junit.Assume;
@@ -53,17 +50,24 @@ import vtk.repository.Path;
 import static org.junit.Assert.*;
 import vtk.repository.ContentInputSource;
 import vtk.repository.ContentInputSources;
+import vtk.repository.store.AbstractContentStoreTest;
+import vtk.repository.store.ContentStore;
 import vtk.util.io.IO;
 
 /**
  *
  */
-public class PosixFileSystemContentStoreTest {
+public class PosixFileSystemContentStoreTest extends AbstractContentStoreTest {
 
     private PosixFileSystemContentStore store;
 
     private String storeDir;
     private String trashDir;
+
+    @Override
+    public ContentStore getStore() {
+        return store;
+    }
 
     @BeforeClass
     public static void checkPlatform() {
@@ -73,33 +77,26 @@ public class PosixFileSystemContentStoreTest {
 
     @Before
     public void setUp() throws Exception {
-        String suffix = getRandomIntAsString();
-        this.storeDir = new File(System.getProperty("java.io.tmpdir"), "contentStore" + suffix).getCanonicalPath();
-        this.trashDir = new File(System.getProperty("java.io.tmpdir"), "trashStore" + suffix).getAbsolutePath();
-
+        storeDir = Files.createTempDirectory("contentStore").toString();
+        trashDir = Files.createTempDirectory("trashStore").toString();
         store = new PosixFileSystemContentStore();
-        store.setRepositoryDataDirectory(storeDir);
-        store.setRepositoryTrashCanDirectory(trashDir);
+        store.setRepositoryDataDirectory(this.storeDir);
+        store.setRepositoryTrashCanDirectory(this.trashDir);
         store.afterPropertiesSet();
     }
 
     @After
     public void tearDown() throws Exception {
+
         // Clean out store before next test or at end
         File storeDirFile = new File(this.storeDir);
-        for (String rootChild : storeDirFile.list()) {
+        for (String rootChild: storeDirFile.list()) {
             this.store.deleteResource(Path.fromString("/" + rootChild));
         }
         storeDirFile.delete();
 
-        // Currently trash handling lacks tests and is thus empty
-        File trashDirFile = new File(this.trashDir);
-        trashDirFile.delete();
-    }
-
-    protected String getRandomIntAsString() {
-        Random generator = new Random(Calendar.getInstance().getTimeInMillis());
-        return String.valueOf(generator.nextInt());
+        // Currently no tests use trash dir, so it's just an empty dir.
+        new File(trashDir).delete();
     }
 
     @Test

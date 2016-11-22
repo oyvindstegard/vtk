@@ -30,17 +30,18 @@
  */
 package vtk.repository.store;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
+import vtk.repository.ContentInputSource;
 import vtk.repository.ContentInputSources;
 
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
+import vtk.util.io.IO;
 
 /**
  * Tests for <code>vtk.repository.store.ContentStore</code> 
@@ -392,6 +393,51 @@ public abstract class AbstractContentStoreTest {
              assertTrue(blobsEqual(content, ("Worker # " + i).getBytes()));
              assertTrue(fileExists(Path.fromString("/workers_play_area/worker" + i + "/x/AN_EMPTY_FILE.dat")));
              assertTrue(fileExists(Path.fromString("/workers_play_area/worker" + i + "/x/AN_EMPTY_FILE2.dat")));
+        }
+    }
+
+    @Test
+    public void testCreateResource() throws IOException {
+        Path uri = Path.fromString("/test.html");
+        getStore().createResource(uri, false);
+        try (InputStream is = getStore().getInputStream(uri)) {
+            assertNotNull(is);
+        }
+        assertEquals(0, getStore().getContentLength(uri));
+    }
+
+    @Test
+    public void testStoreFileContentAndRetrieve() throws IOException {
+        Path uri = Path.fromString("/test.html");
+        getStore().createResource(uri, false);
+        String testString = "This is a test æøå ÆØÅ";
+
+        try (InputStream inputStreamBeforeStoringContent = getStore().getInputStream(uri)) {
+            assertNotNull(inputStreamBeforeStoringContent);
+        }
+        assertEquals(0, getStore().getContentLength(uri));
+
+        ContentInputSource inputSourceForStoringContent =
+            ContentInputSources.fromString(testString);
+
+        getStore().createResource(uri, false);
+
+        getStore().storeContent(uri, inputSourceForStoringContent);
+
+        assertEquals(testString.getBytes().length, getStore().getContentLength(uri));
+        try (InputStream inputStreamAfterStoringContent = getStore().getInputStream(uri)) {
+            assertNotNull(inputStreamAfterStoringContent);
+            assertEquals(testString, IO.readString(inputStreamAfterStoringContent).perform());
+        }
+
+        getStore().deleteResource(uri);
+        //assertEquals(0, getStore().getContentLength(uri));
+
+        try {
+            getStore().getInputStream(uri);
+            fail("file does not exist");
+        } catch (Exception e) {
+            // ok
         }
     }
 }

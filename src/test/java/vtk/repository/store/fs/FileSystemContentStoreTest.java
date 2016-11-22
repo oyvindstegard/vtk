@@ -30,21 +30,12 @@
  */
 package vtk.repository.store.fs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Calendar;
-import java.util.Random;
+import java.nio.file.Files;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
-import vtk.repository.ContentInputSource;
-import vtk.repository.ContentInputSources;
 
 import vtk.repository.Path;
 import vtk.repository.store.AbstractContentStoreTest;
@@ -54,16 +45,13 @@ import vtk.repository.store.ContentStore;
 public class FileSystemContentStoreTest extends AbstractContentStoreTest {
 
     private FileSystemContentStore store;
-
     private String storeDir;
     private String trashDir;
 
     @Before
     public void setUp() throws Exception {
-        String suffix = getRandomIntAsString();
-        this.storeDir = new File(System.getProperty("java.io.tmpdir"), "contentStore" + suffix).getCanonicalPath();
-        this.trashDir = new File(System.getProperty("java.io.tmpdir"), "trashStore" + suffix).getCanonicalPath();
-        
+        storeDir = Files.createTempDirectory("contentStore").toString();
+        trashDir = Files.createTempDirectory("trashStore").toString();
         store = new FileSystemContentStore();
         store.setRepositoryDataDirectory(this.storeDir);
         store.setRepositoryTrashCanDirectory(this.trashDir);
@@ -79,61 +67,14 @@ public class FileSystemContentStoreTest extends AbstractContentStoreTest {
             this.store.deleteResource(Path.fromString("/" + rootChild));
         }
         storeDirFile.delete();
+
+        // Currently no tests use trash dir, so it's just an empty dir.
+        new File(trashDir).delete();
     }
     
-    protected String getRandomIntAsString() {
-        Random generator = new Random(Calendar.getInstance().getTimeInMillis());
-        return String.valueOf(generator.nextInt());
-    }
-
     @Override
     public ContentStore getStore() {
-        return this.store;
-    }
-    
-
-    @Test
-    public void testCreateResource() throws IOException {
-        Path uri = Path.fromString("/test.html");
-        getStore().createResource(uri, false);
-        InputStream is = getStore().getInputStream(uri);
-        assertNotNull(is);
-        is.close();
-        assertEquals(0, getStore().getContentLength(uri));
+        return store;
     }
 
-    @Test
-    public void testStoreFileContentAndRetrieve() throws IOException {
-        Path uri = Path.fromString("/test.html");
-        getStore().createResource(uri, false);
-        String testString = "This is a test æøå ÆØÅ";
-
-        InputStream inputStreamBeforeStoringContent = getStore().getInputStream(uri);
-        assertNotNull(inputStreamBeforeStoringContent);
-        inputStreamBeforeStoringContent.close();
-        assertEquals(0, getStore().getContentLength(uri));
-
-        ContentInputSource inputSourceForStoringContent =
-            ContentInputSources.fromBytes(testString.getBytes());
-        
-        getStore().createResource(uri, false);
-
-        getStore().storeContent(uri, inputSourceForStoringContent);
-
-        assertEquals(testString.getBytes().length, getStore().getContentLength(uri));
-        InputStream inputStreamAfterStoringContent = getStore().getInputStream(uri);
-        assertNotNull(inputStreamAfterStoringContent);
-        // Write some assertions to make sure the content of the file is ok
-        inputStreamAfterStoringContent.close();
-
-        getStore().deleteResource(uri);
-        //assertEquals(0, getStore().getContentLength(uri));
-
-        try {
-            getStore().getInputStream(uri);
-            fail("file does not exist");
-        } catch (Exception e) {
-            // ok
-        }
-    }
 }

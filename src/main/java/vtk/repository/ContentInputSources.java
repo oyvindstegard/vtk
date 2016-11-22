@@ -149,6 +149,15 @@ public final class ContentInputSources {
     }
 
     /**
+     * Content from a string using platform default encoding.
+     * @param s the string to store as content
+     * @return a content input source based on the provided string using the platform default encoding
+     */
+    public static ContentInputSource fromString(String s) {
+        return fromBytes(s.getBytes());
+    }
+
+    /**
      * An empty content input source
      * @return an empty content input source.
      */
