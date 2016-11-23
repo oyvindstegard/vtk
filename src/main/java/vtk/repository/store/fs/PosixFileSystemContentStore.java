@@ -45,6 +45,7 @@ import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.beans.factory.BeanInitializationException;
 
 /**
  * File system content store with options to set POSIX file attributes on newly
@@ -66,6 +67,12 @@ public class PosixFileSystemContentStore extends FileSystemContentStore {
 
         checkFsSupport(super.repositoryDataDirectory);
         checkFsSupport(super.repositoryTrashCanDirectory);
+        try {
+            applyAttributes(new File(this.repositoryDataDirectory));
+            applyAttributes(new File(this.repositoryTrashCanDirectory));
+        } catch (IOException io) {
+            throw new BeanInitializationException("Failed to set configured attributes on content store data or trash root directory", io);
+        }
     }
 
     @Override
