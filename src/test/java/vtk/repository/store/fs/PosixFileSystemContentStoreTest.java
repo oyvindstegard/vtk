@@ -197,4 +197,49 @@ public class PosixFileSystemContentStoreTest extends AbstractContentStoreTest {
 
     }
 
+    @Test
+    public void testCopyWithAttributes() throws IOException {
+        store.setFilePermissions("rw-----w-");
+        store.setDirectoryPermissions("rwx----wx");
+
+        store.createResource(Path.fromString("/a"), true);
+        store.createResource(Path.fromString("/a/b.txt"), false);
+        store.createResource(Path.fromString("/a/c.txt"), false);
+        store.createResource(Path.fromString("/a/d"), true);
+        store.createResource(Path.fromString("/a/d/e.txt"), false);
+        store.storeContent(Path.fromString("/a/b.txt"), ContentInputSources.fromString("b content"));
+        store.storeContent(Path.fromString("/a/c.txt"), ContentInputSources.fromString("c content"));
+        store.storeContent(Path.fromString("/a/d/e.txt"), ContentInputSources.fromString("e content"));
+
+        // Copy file
+        store.copy(Path.fromString("/a/b.txt"), Path.fromString("/a/b(1).txt"));
+        Set<PosixFilePermission> perms = Files.getPosixFilePermissions(Paths.get(storeDir, "a", "b(1).txt"), LinkOption.NOFOLLOW_LINKS);
+        assertEquals(3, perms.size());
+        assertFalse(perms.contains(PosixFilePermission.OTHERS_EXECUTE));
+        assertTrue(perms.contains(PosixFilePermission.OTHERS_WRITE));
+        assertFalse(perms.contains(PosixFilePermission.OTHERS_READ));
+
+        // Copy dir
+        store.copy(Path.fromString("/a"), Path.fromString("/a(1)"));
+
+        perms = Files.getPosixFilePermissions(Paths.get(storeDir, "a(1)"), LinkOption.NOFOLLOW_LINKS);
+        assertEquals(5, perms.size());
+        assertTrue(perms.contains(PosixFilePermission.OTHERS_EXECUTE));
+        assertTrue(perms.contains(PosixFilePermission.OTHERS_WRITE));
+        assertFalse(perms.contains(PosixFilePermission.OTHERS_READ));
+
+        perms = Files.getPosixFilePermissions(Paths.get(storeDir, "a(1)", "d"), LinkOption.NOFOLLOW_LINKS);
+        assertEquals(5, perms.size());
+        assertTrue(perms.contains(PosixFilePermission.OTHERS_EXECUTE));
+        assertTrue(perms.contains(PosixFilePermission.OTHERS_WRITE));
+        assertFalse(perms.contains(PosixFilePermission.OTHERS_READ));
+
+        perms = Files.getPosixFilePermissions(Paths.get(storeDir, "a(1)", "d", "e.txt"), LinkOption.NOFOLLOW_LINKS);
+        assertEquals(3, perms.size());
+        assertFalse(perms.contains(PosixFilePermission.OTHERS_EXECUTE));
+        assertTrue(perms.contains(PosixFilePermission.OTHERS_WRITE));
+        assertFalse(perms.contains(PosixFilePermission.OTHERS_READ));
+
+    }
+
 }
