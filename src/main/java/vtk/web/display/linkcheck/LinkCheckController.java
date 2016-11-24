@@ -86,7 +86,6 @@ public class LinkCheckController implements Controller {
         for (String link : input) {
             LinkCheckRequest request = LinkCheckRequest.builder(link, base)
                     .sendReferrer(sendReferrer)
-                    .customHeader("X-VTK-Linkcheck", "True")
                     .build();
             LinkCheckResult result = this.linkChecker.validate(request);
             results.add(result);

@@ -189,7 +189,8 @@ public class LinkChecker {
         if (!isASCII(url.getHost())) {
             String frag = url.getRef() != null ? "#" + url.getRef() : "";
             String host = java.net.IDN.toASCII(url.getHost());
-            url = new java.net.URL(url.getProtocol(), host, url.getPort(), url.getFile() + frag);
+            url = new java.net.URL(url.getProtocol(), host, url.getPort(), 
+                    url.getFile() + frag);
         }
         
         // URL may already be encoded, or it may not, at this point.
@@ -198,7 +199,8 @@ public class LinkChecker {
             uri = url.toURI(); // This validates URI syntax of URL
         }
         catch (URISyntaxException e) {
-            // Something is not proper, build new URI which does encoding of each component
+            // Something is not proper, build new URI which does encoding of 
+            // each component
             try {
                 uri = new URI(url.getProtocol(), null, url.getHost(), url.getPort(), 
                           url.getPath(), url.getQuery(), url.getRef());
@@ -253,11 +255,15 @@ public class LinkChecker {
         Status status;
         String reason = null;
         try {
-            status = validateURL(urlToCheck, request.sendReferrer() ? base : null, "HEAD");
+            status = validateURL(urlToCheck, request.sendReferrer() ? 
+                    base : null, request.customHeaders, "HEAD");
             if (status == Status.NOT_FOUND) {
-                // Some broken servers return different result codes based on HEAD versus GET, so we retry...
-                logger.debug("Validate (HEAD returned NOT_FOUND, retrying with GET): href='" + urlToCheck + "'");
-                status = validateURL(urlToCheck, request.sendReferrer() ? base : null, "GET");
+                // Some broken servers return different result codes based on 
+                // HEAD versus GET, so we retry...
+                logger.debug("Validate (HEAD returned NOT_FOUND, "
+                        + "retrying with GET): href='" + urlToCheck + "'");
+                status = validateURL(urlToCheck, request.sendReferrer() ? 
+                        base : null, request.customHeaders, "GET");
             }
         }
         catch (Throwable t) {
@@ -277,16 +283,18 @@ public class LinkChecker {
         return result;
     }
     
-    private Status validateURL(java.net.URL url, URL referrer, String method) {
+    private Status validateURL(java.net.URL url, URL referrer, 
+            Map<String, String> customHeaders, String method) {
         HttpURLConnection urlConnection = null;
         try {
-            urlConnection = createRequest(url, referrer, method);
+            urlConnection = createRequest(url, referrer, method, customHeaders);
             urlConnection.connect();
             int  httpResponseCode = urlConnection.getResponseCode();
             if (httpResponseCode == HttpURLConnection.HTTP_MOVED_PERM
                     || httpResponseCode == HttpURLConnection.HTTP_MOVED_TEMP
                     || httpResponseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-                httpResponseCode = checkMoved(urlConnection, httpResponseCode, referrer, method);
+                httpResponseCode = checkMoved(urlConnection, httpResponseCode, 
+                        referrer, method, customHeaders);
             }
             if (httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND 
                 || httpResponseCode == HttpURLConnection.HTTP_GONE) {
@@ -310,17 +318,23 @@ public class LinkChecker {
         }
     }
 
-    private int checkMoved(HttpURLConnection urlConnection, int responseCode, URL referrer, String method) throws IOException {
+    private int checkMoved(HttpURLConnection urlConnection, int responseCode, 
+            URL referrer, String method, Map<String, String> customHeaders) 
+                    throws IOException {
         int retry = 0;
         // try a maximum of three times
         while (retry < 3
-                && (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP)) {
+                && (responseCode == HttpURLConnection.HTTP_MOVED_PERM 
+                || responseCode == HttpURLConnection.HTTP_MOVED_TEMP)) {
             String location = urlConnection.getHeaderField("Location");
             urlConnection.disconnect();
             if (location == null) {
                 return responseCode;
             }
-            urlConnection = createRequest(escape(new java.net.URL(location)), referrer, method);
+            
+            urlConnection = createRequest(
+                    escape(new java.net.URL(location)), referrer, 
+                    method, customHeaders);
             urlConnection.connect();
             responseCode = urlConnection.getResponseCode();
             retry++;
@@ -328,14 +342,19 @@ public class LinkChecker {
         return responseCode;
     }
     
-    private HttpURLConnection createRequest(java.net.URL url, URL referrer, String method) throws IOException {
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+    private HttpURLConnection createRequest(java.net.URL url, URL referrer, 
+            String method, Map<String, String> customHeaders) throws IOException {
+        HttpURLConnection urlConnection = 
+                (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod(method);
         urlConnection.setConnectTimeout(connectTimeout);
         urlConnection.setReadTimeout(readTimeout);
         urlConnection.setRequestProperty("User-Agent", userAgent);
         if (referrer != null) {
             urlConnection.setRequestProperty("Referer", referrer.toString());
+        }
+        for (Map.Entry<String, String> entry: customHeaders.entrySet()) {
+            urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
         }
         
         return urlConnection;

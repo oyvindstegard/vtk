@@ -312,7 +312,6 @@ public class LinkCheckJob extends AbstractResourceJob {
                     LinkCheckRequest request = LinkCheckRequest.builder(url, base)
                             .sendReferrer(!resource.isReadRestricted())
                             .allowCached(allowCached)
-                            .customHeader("X-VTK-Linkcheck", "True")
                             .build();
                     
                     LinkCheckResult result = linkChecker.validate(request);
