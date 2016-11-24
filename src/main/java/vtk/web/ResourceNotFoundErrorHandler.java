@@ -30,6 +30,8 @@
  */
 package vtk.web;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -48,12 +50,14 @@ import vtk.repository.ResourceNotFoundException;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.PreviousLocationsResolver.RelocatedResource;
 import vtk.web.referencedata.ReferenceDataProvider;
+import vtk.web.service.Assertion;
 import vtk.web.service.Service;
 
 public class ResourceNotFoundErrorHandler implements ErrorHandler {
     private String defaultView;
     private RedirectPolicy redirectPolicy = RedirectPolicy.NEVER;
     private List<ReferenceDataProvider> referenceDataProviders;
+    private Assertion redirectAssertion;
     
     public static enum RedirectPolicy {
         NEVER,
@@ -62,14 +66,15 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
     }
     
     public ResourceNotFoundErrorHandler(String defaultView, RedirectPolicy redirectPolicy) {
-        this(defaultView, redirectPolicy, null);
+        this(defaultView, redirectPolicy, null, null);
     }
     
     public ResourceNotFoundErrorHandler(String defaultView, RedirectPolicy redirectPolicy, 
-            List<ReferenceDataProvider> referenceDataProviders) {
+            List<ReferenceDataProvider> referenceDataProviders, Assertion redirectAssertion) {
         this.defaultView = defaultView;
         this.redirectPolicy = redirectPolicy;
         this.referenceDataProviders = referenceDataProviders;
+        this.redirectAssertion = redirectAssertion;
     }
 
     @Override
@@ -105,8 +110,16 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
                 new PreviousLocationsResolver(locationHistoryPropDef, 
                         unpublishedCollectionPropDef, requestContext);
         
-        List<RelocatedResource> locations = resolver.resolve(uri)
-                .stream()
+        boolean resolveRedirects = true;
+        if (redirectAssertion != null) {
+            resolveRedirects = redirectAssertion
+                    .matches(request, null, requestContext.getPrincipal());
+        }
+
+        Collection<RelocatedResource> resolved = resolveRedirects ? 
+                resolver.resolve(uri) : Collections.emptyList();
+
+        List<RelocatedResource> locations = resolved.stream()
                 .sorted(LOC_COMPARATOR)
                 .collect(Collectors.toList());
         request.setAttribute(getClass().getName() + ".locations", locations);
@@ -166,6 +179,7 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
         @Override
         public void render(Map<String, ?> model, HttpServletRequest request,
                 HttpServletResponse response) throws Exception {
+            // Cache headers, permanently/temporary:
             response.sendRedirect(location);
         }
     }
