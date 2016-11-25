@@ -290,15 +290,15 @@ public class LinkCheckJob extends AbstractResourceJob {
                 @Override
                 public boolean endObject() throws IOException {
                     if (n.getAndIncrement() < state.index) {
-                        field = url = type = null;
+                        field = url = type = vrtxid = null;
                         return true;
                     }
                     if (url == null) {
-                        field = url = type = null;
+                        field = url = type = vrtxid = null;
                         return true;
                     }
                     if (!shouldCheck(url)) {
-                        field = url = type = null;
+                        field = url = type = vrtxid = null;
                         return true;
                     }
                     if ("PROPERTY".equals(type)) {
