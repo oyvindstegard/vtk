@@ -307,7 +307,6 @@ public class LinkCheckJob extends AbstractResourceJob {
 
                     boolean allowCached = base.getHost().equals(base.relativeURL(url).getHost()) ? 
                             false : allowCachedResults;
-                    allowCached = false; // XXX what is going on here, set conditionally first, then unconditionally set to false
                     
                     LinkCheckRequest request = LinkCheckRequest.builder(url, base)
                             .sendReferrer(!resource.isReadRestricted())
