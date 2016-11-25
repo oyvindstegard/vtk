@@ -62,6 +62,11 @@ import vtk.util.io.IO;
  *
  * Repository service calls which entail writing use exclusive locks on the involved
  * <code>Path</code>s, while reading calls use shared locks.
+ * 
+ * <p>One could argue that, since this code is necessary for proper synchronization of multithreaded access,
+ * some or all of this code belongs somewhere inside or underneath
+ * {@link RepositoryImpl}, but the code was cleaner when modelling it as a wrapper around it.
+ * TODO rename to RepositoryNamespaceSynchronizer ? Model as subclass of RepositoryImpl instead ? And make RepositoryImpl abstract ?
  */
 public class LockingCacheControlRepositoryWrapper implements Repository, ClusterAware {
 
