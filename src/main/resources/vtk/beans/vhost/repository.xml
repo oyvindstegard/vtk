@@ -61,7 +61,7 @@
   <bean id="repository.lockingCacheControlWrapper" class="vtk.repository.LockingCacheControlRepositoryWrapper">
     <property name="wrappedRepository" ref="repository.internal" />
     <property name="cache" ref="repository.cache" />
-    <property name="tempDir" value="${repository.lockingWrapper.tempDir}" />
+    <property name="tempDir" value="${upload.tempDir}" />
     <property name="tokenManager" ref="tokenManager" />
   </bean>
 
