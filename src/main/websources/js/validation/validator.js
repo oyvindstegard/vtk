@@ -1,44 +1,62 @@
-function validate() {
+function validator() {
   this.isDebugMode = false,
-  this.run = function() {
-    // Vortex fields that needs validation
-
-    // DATE RANGE
-    Validate.validate({ date: ".start-date", startDate: ".start-date", endDate: ".end-date" }, "TIME_HELP");
-    Validate.validate({ date: ".end-date", startDate: ".start-date", endDate: ".end-date" }, "TIME_HELP");
-    Validate.validate({ startDate: ".start-date", endDate: ".end-date" }, "DATE_RANGE");
-
-  };
-  this.validate = function(selector, type) {
+  this.validate = function(opts, type, cbFn) {
     var vd = this;
 
-    if(vd.isDebugMode) $(selector.date).css("border", "2px solid red");
+    if(vd.isDebugMode) $(opts.date).css("border", "2px solid red");
 
     switch (type) {
+      case "IS_IMAGE":
+        if(opts.url === "") {
+          vd.addErrorMsg(opts.container, "", false);
+          cbFn(false, opts.hasCaption);
+          return;
+        }
+      
+        var image = new Image();
+        image.onload = function() {
+        
+          // Check for invalid images: http://stackoverflow.com/questions/9809015/image-onerror-event-never-fires-but-image-isnt-valid-data-need-a-work-around
+          if (('naturalHeight' in this && (this.naturalHeight + this.naturalWidth === 0)) || (this.width + this.height == 0)) {
+            this.onerror();
+            return;
+          }
+          
+          vd.addErrorMsg(opts.container, "", false);
+          cbFn(true, opts.hasCaption);
+        };
+        image.onerror = function() {
+          vd.addErrorMsg(opts.container, vrtxAdmin.messages.editor.validation.errors.image.url, true);
+          cbFn(false, opts.hasCaption);
+        };
+        image.src = opts.url;
+        
+        break;
       case "TIME_HELP":
-        $(document).on("change", selector.date + " .vrtx-hours", function () {
+        $(document).on("change", opts.date + " .vrtx-hours", function () {
           var hh = $(this);
           var mm = hh.nextAll(".vrtx-minutes").filter(":first");
           vd.timeHelp(hh, mm);
-          vd.checkRange(selector, vd);
+          vd.checkRange(opts, vd);
         });
-        $(document).on("change", selector.date + " .vrtx-minutes", function () {
+        $(document).on("change", opts.date + " .vrtx-minutes", function () {
           var mm = $(this);
           var hh = mm.prevAll(".vrtx-hours").filter(":first");
           vd.timeHelp(hh, mm);
-          vd.checkRange(selector, vd);
+          vd.checkRange(opts, vd);
         });
+        
         break;
       case "DATE_RANGE":
-        $(document).on("focus", selector.endDate + " input[type='text']", function () {
-          var parent = $(this).closest(selector.endDate);
+        $(document).on("focus", opts.endDate + " input[type='text']", function () {
+          var parent = $(this).closest(opts.endDate);
           var isEndBlank = true;
           parent.find("input[type='text']").filter(":visible").each(function() {
             if(this.value != "") isEndBlank = false;
           });
           if(isEndBlank) {
             var isStartBlank = false;
-            var startDateTime = parent.prev(selector.startDate);
+            var startDateTime = parent.prev(opts.startDate);
             startDateTime.find("input[type='text']").filter(":visible").each(function() {
               if(this.value === "") isStartBlank = true;
             });
@@ -57,15 +75,15 @@ function validate() {
           }
         });
         var currentStartDateVal = "";
-        $(document).on("focus", selector.startDate + " .vrtx-date", function () {
+        $(document).on("focus", opts.startDate + " .vrtx-date", function () {
           var startDate = $(this);
           currentStartDateVal = startDate.val();
         });
-        $(document).on("change", selector.startDate + " .vrtx-date", function () {
-          var startDateTime = $(this).closest(selector.startDate);
+        $(document).on("change", opts.startDate + " .vrtx-date", function () {
+          var startDateTime = $(this).closest(opts.startDate);
           var startDate = $(this);
           var startDateVal = startDate.val();
-          var endDateTime = startDateTime.next(selector.endDate);
+          var endDateTime = startDateTime.next(opts.endDate);
           var endDate = endDateTime.find(".vrtx-date");
           var endDateVal = endDate.val();
 
@@ -73,38 +91,39 @@ function validate() {
             currentStartDateVal = startDateVal;
             endDate.val(currentStartDateVal);
           }
-          vd.checkRange(selector, vd);
+          vd.checkRange(opts, vd);
         });
-        $(document).on("change", selector.endDate + " .vrtx-date", function() {
-          vd.checkRange(selector, vd);
+        $(document).on("change", opts.endDate + " .vrtx-date", function() {
+          vd.checkRange(opts, vd);
         });
+        
         break;
       default:
     }
   };
-  this.checkRange = function(selector, vd) {
-    var startDateTime = $(selector.startDate);
-    var endDateTime = $(selector.endDate);
-
-    var startDateObj = vd.extractDateObj(startDateTime);
-    var endDateObj = vd.extractDateObj(endDateTime);
-
-    var container = startDateTime.closest(".timeAndPlace");
+  this.addErrorMsg = function(container, msg, condition) {
     var errorsElm = container.find("ul.errors");
-    var errorHtml = "<ul class='errors'><li>" + vrtxAdmin.messages.editor.validation.errors.dateTime.endBeforeStart + "</li></ul>";
-    if(startDateObj != null && endDateObj != null) {
-      if(endDateObj < startDateObj) {
-        if(errorsElm.length) {
-          errorsElm.replaceWith(errorHtml);
-        } else {
-          container.append(errorHtml);
-        }
+    var errorHtml = "<ul class='errors'><li>" + msg + "</li></ul>";
+    if(condition) {
+      if(errorsElm.length) {
+        errorsElm.replaceWith(errorHtml);
       } else {
-        errorsElm.remove();
+        container.append(errorHtml);
       }
     } else {
       errorsElm.remove();
     }
+  };
+  this.checkRange = function(opts, vd) {
+    var startDateTime = $(opts.startDate);
+    var endDateTime = $(opts.endDate);
+
+    var startDateObj = vd.extractDateObj(startDateTime);
+    var endDateObj = vd.extractDateObj(endDateTime);
+    
+    this.addErrorMsg(startDateTime.closest(".timeAndPlace"), 
+                     vrtxAdmin.messages.editor.validation.errors.dateTime.endBeforeStart,
+                     (startDateObj != null && endDateObj != null && endDateObj < startDateObj));
   };
   this.extractDateObj = function(dateTime) {
     var dateArr = dateTime.find(".vrtx-date").val().split("-");
@@ -145,4 +164,4 @@ function validate() {
   };
 }
 
-var Validate = new validate();
+var Validator = new validator();

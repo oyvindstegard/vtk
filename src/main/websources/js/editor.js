@@ -1119,9 +1119,22 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
       hideImagePreviewCaptionFunc = hideImagePreviewCaption;
   for (i = previewInputFields.length; i--;) {
     var elm = $(previewInputFields[i]);
-    if (previewInputFields[i].value === "" && !hasImageCaption(elm, true)) {
-      hideImagePreviewCaptionFunc(elm, true);
-    }
+    var parent = elm.parent();
+    var url = previewInputFields[i].value;
+
+    Validator.validate({ "url": url,
+                         "container": parent,
+                         "hasCaption": hasImageCaption(elm, true)
+                       }, "IS_IMAGE", function(isImage, hasCaption) {
+      if(isImage) {
+        var imgElm = parent.parent().find("img");
+        imgElm.attr("src", url + "?vrtx=thumbnail");
+        imgElm.attr("alt", "thumbnail");
+      } else {
+	    hideImagePreviewCaption(elm, true, hasCaption);
+      }
+    });
+    
   }
   
   /* Inputfield events for image preview */
@@ -1133,9 +1146,39 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
   }, null, 50, true);
 };
 
+function previewImage(urlobj, isBlurEvent) {
+  if (typeof urlobj === "undefined") return;
+  urlobj = urlobj.replace(/\./g, '\\.');
+  
+  var previewNode = $("#" + urlobj + '\\.preview-inner');
+  if (previewNode.length) {
+    var elm = $("#" + urlobj);
+    if (elm.length) {
+      var url = elm.val();
+      var parentPreviewNode = previewNode.parent();
+
+      Validator.validate({ "url": url,
+                           "container": parentPreviewNode.prev(),
+                           "hasCaption": hasImageCaption(elm, false)
+                         }, "IS_IMAGE", function(isImage, hasCaption) {
+        if(isImage) {
+          previewNode.find("img").attr("src", url + "?vrtx=thumbnail");
+          previewNode.find("img").attr("alt", "thumbnail");
+          showImagePreviewCaption(elm);
+          
+          if(typeof isBlurEvent === "undefined") elm.focus();
+        } else {
+          hideImagePreviewCaption(elm, false, hasCaption);
+        }
+      });
+      
+    }
+  }
+}
+
 function initPictureAddJsonField(elm) {
   initBoxPictures(elm.find(".boxPictureAlt, .featuredPictureAlt"));
-  hideImagePreviewCaption(elm.find("input.preview-image-inputfield"), true);
+  hideImagePreviewCaption(elm.find("input.preview-image-inputfield"), true, true);
 }
 
 function initBoxPictures(altTexts) {
@@ -1147,10 +1190,10 @@ function initBoxPictures(altTexts) {
   }
 }
 
-function hideImagePreviewCaption(input, isInit) {
+function hideImagePreviewCaption(input, isInit, hasCaption) {
   if (!input.length) return;
   var previewImg = $("div#" + input[0].id.replace(/\./g, '\\.') + '\\.preview:visible');
-  if (!previewImg.length) return;
+  //if (!previewImg.length) return;
 
   var fadeSpeed = isInit ? 0 : "fast";
 
@@ -1158,18 +1201,22 @@ function hideImagePreviewCaption(input, isInit) {
 
   var captionWrp = input.closest(".introImageAndCaption, #vrtx-resource\\.picture");
   if (captionWrp.length) {
-    captionWrp.find(".caption").fadeOut(fadeSpeed);
-    captionWrp.find(".hidePicture").fadeOut(fadeSpeed);
-    captionWrp.find(".pictureAlt").fadeOut(fadeSpeed);
+    if(!hasCaption) {
+      captionWrp.find(".caption").fadeOut(fadeSpeed);
+      captionWrp.find(".hidePicture").fadeOut(fadeSpeed);
+      captionWrp.find(".pictureAlt").fadeOut(fadeSpeed);
+    }
+    
+    var errors = captionWrp.find("ul.errors");
     captionWrp.animate({
-      height: "59px"
+      height: (hasCaption ? 255 : (59 + (errors.length ? errors.outerHeight(true) : 0) + "px"))
     }, fadeSpeed);
   }
 }
 
 function showImagePreviewCaption(input) {
   var previewImg = $("div#" + input[0].id.replace(/\./g, '\\.') + '\\.preview');
-  if (!previewImg.length) return;
+  //if (!previewImg.length) return;
 
   previewImg.fadeIn("fast");
 
@@ -1178,31 +1225,11 @@ function showImagePreviewCaption(input) {
     captionWrp.find(".caption").fadeIn("fast");
     captionWrp.find(".hidePicture").fadeIn("fast");
     captionWrp.find(".pictureAlt").fadeIn("fast");
+    
+    var errors = captionWrp.find("ul.errors");
     captionWrp.animate({
-      height: "225px"
+      height: 225 + "px"
     }, "fast");
-  }
-}
-
-function previewImage(urlobj, isBlurEvent) {
-  if (typeof urlobj === "undefined") return;
-
-  urlobj = urlobj.replace(/\./g, '\\.');
-  var previewNode = $("#" + urlobj + '\\.preview-inner');
-  if (previewNode.length) {
-    var elm = $("#" + urlobj);
-    if (elm.length) {
-      var url = elm.val();
-      if (url !== "" || hasImageCaption(elm, false)) {
-        var parentPreviewNode = previewNode.parent();
-        previewNode.find("img").attr("src", url + "?vrtx=thumbnail");
-        previewNode.find("img").attr("alt", "thumbnail");
-        showImagePreviewCaption(elm);
-        if(typeof isBlurEvent === "undefined") elm.focus();
-      } else {
-        hideImagePreviewCaption(elm, false);
-      } 
-    }
   }
 }
 

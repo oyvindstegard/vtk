@@ -85,6 +85,9 @@
       },
       validation: {
         errors: {
+          image: {
+            url: '${vrtx.getMsg("editor.validation.errors.image.url")}'
+          },
           dateTime: {
             endBeforeStart: '${vrtx.getMsg("editor.validation.errors.date-time.end-before-start")}'
           }
