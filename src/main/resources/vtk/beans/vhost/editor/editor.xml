@@ -179,8 +179,7 @@
   <bean id="editor.videoEditService" parent="editor.abstractEditService">
     <property name="assertions">
       <list>
-        <ref bean="contentTypeMatchesVideo" />
-        <ref bean="resourceIsNotLectureVideoRefAssertion" />
+        <ref bean="resourceTypeIsVideoAssertion" />
       </list>
     </property>
     <property name="handler" ref="editor.videoEditHandler" />

@@ -28,6 +28,11 @@
     </property>
   </bean>
 
+  <bean id="resourceTypeIsVideoAssertion" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+    <property name="resourceTypeDefinition" ref="videoResourceTypeDefinition" />
+    <property name="exactMatch" value="true" />
+  </bean>
+
   <bean id="mediaPlayerService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="viewAsWebPageService" />
     <property name="order" value="-1" />

@@ -528,6 +528,19 @@
               </#if>
             </#list>
           </select>
+        <#elseif dynamicValues?? && dynamicValues[name]??>
+          <select name="resource.${name}" id="resource.${name}">
+            <option value="">${vrtx.getMsg("default.unspecified")}</option>
+            <#local dynamicValuesForName = dynamicValues[name]>
+            <#list dynamicValuesForName?keys as dynamicValueKey>
+              <#local dynamicValue = dynamicValuesForName[dynamicValueKey]>
+              <#if dynamicValue == value>
+                <option selected="selected" value="${dynamicValue}">${dynamicValueKey}</option>
+              <#else>
+                <option value="${dynamicValue}">${dynamicValueKey}</option>
+              </#if>
+            </#list>
+          </select>
         <#else>
           <input class="vrtx-textfield<#if multiple> vrtx-multiple</#if>" type="text" id="resource.${name}" name="resource.${name}" value="${value}" size="32" />
     
