@@ -17,7 +17,7 @@ function validator() {
         image.onload = function() {
 
           // Check for invalid images: http://stackoverflow.com/questions/9809015/image-onerror-event-never-fires-but-image-isnt-valid-data-need-a-work-around
-          if (('naturalHeight' in this && (this.naturalHeight + this.naturalWidth === 0)) || (this.width + this.height == 0)) {
+          if (('naturalHeight' in this && (this.naturalHeight + this.naturalWidth === 0)) || (this.width + this.height === 0)) {
             this.onerror();
             return;
           }
