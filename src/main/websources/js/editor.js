@@ -1150,16 +1150,7 @@ function previewImage(urlobj, isBlurEvent) {
 }
 
 function makePreviewImg(url, inputElm, containerElm, imgElm, isInit, isBlurEvent) {
-  var fullUrl = "";
-  if(url !== "") {
-    // Check if absolute path: https://regex101.com/r/nlaX4A/1
-    // Check if root-relative path: https://regex101.com/r/9YQQsd/1
-    var host = location.protocol + "//" + location.host.replace("-adm", "");
-    var fullUrl = (!/^((https?:)|(\/\/))/.test(url) ? (!/^\//.test(url) ? host + location.pathname.replace(/[^\/]*$/, "")
-                                                                        : host)
-                                                    : "") + url;
-  }
-
+  var fullUrl = resolveAbsoluteUrl(url); // View url to image path
   var hasCaption = hasImageCaption(inputElm, isInit);
 
   Validator.validate({ "url": fullUrl,
@@ -1179,6 +1170,17 @@ function makePreviewImg(url, inputElm, containerElm, imgElm, isInit, isBlurEvent
       hideImagePreviewCaption(inputElm, isInit, hasCaption);
     }
   });
+}
+
+function resolveAbsoluteUrl(url) {
+  if(url === "") return url;
+
+  // Check if absolute path: https://regex101.com/r/nlaX4A/1
+  // Check if root-relative path: https://regex101.com/r/9YQQsd/1
+  var host = location.protocol + "//" + location.host.replace("-adm", "");
+  return (!/^((https?:)|(\/\/))/.test(url) ? (!/^\//.test(url) ? host + location.pathname.replace(/[^\/]*$/, "")
+                                                               : host)
+                                           : "") + url;
 }
 
 function hideImagePreviewCaption(inputElm, isInit, hasCaption) {
