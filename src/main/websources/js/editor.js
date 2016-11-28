@@ -1159,10 +1159,12 @@ function makePreviewImg(url, inputElm, containerElm, imgElm, isInit, isBlurEvent
                                                                         : host)
                                                     : "") + url;
   }
+
+  var hasCaption = hasImageCaption(inputElm, isInit);
+
   Validator.validate({ "url": fullUrl,
-                       "container": containerElm,
-                       "hasCaption": hasImageCaption(inputElm, isInit)
-                     }, "IS_IMAGE", function(isImage, hasCaption) {
+                       "container": containerElm
+                     }, "IS_IMAGE", function(isImage) {
     if(isImage) {
       imgElm.attr("src", fullUrl + "?vrtx=thumbnail");
       imgElm.attr("alt", "thumbnail");

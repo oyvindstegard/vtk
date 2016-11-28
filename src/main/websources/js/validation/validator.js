@@ -9,28 +9,28 @@ function validator() {
       case "IS_IMAGE":
         if(opts.url === "") {
           vd.addErrorMsg(opts.container, "", false);
-          cbFn(false, opts.hasCaption);
+          cbFn(false);
           return;
         }
-      
+
         var image = new Image();
         image.onload = function() {
-        
+
           // Check for invalid images: http://stackoverflow.com/questions/9809015/image-onerror-event-never-fires-but-image-isnt-valid-data-need-a-work-around
           if (('naturalHeight' in this && (this.naturalHeight + this.naturalWidth === 0)) || (this.width + this.height == 0)) {
             this.onerror();
             return;
           }
-          
+
           vd.addErrorMsg(opts.container, "", false);
-          cbFn(true, opts.hasCaption);
+          cbFn(true);
         };
         image.onerror = function() {
           vd.addErrorMsg(opts.container, vrtxAdmin.messages.editor.validation.errors.image.url, true);
-          cbFn(false, opts.hasCaption);
+          cbFn(false);
         };
         image.src = opts.url;
-        
+
         break;
       case "TIME_HELP":
         $(document).on("change", opts.date + " .vrtx-hours", function () {
@@ -45,7 +45,7 @@ function validator() {
           vd.timeHelp(hh, mm);
           vd.checkRange(opts, vd);
         });
-        
+
         break;
       case "DATE_RANGE":
         $(document).on("focus", opts.endDate + " input[type='text']", function () {
@@ -96,7 +96,7 @@ function validator() {
         $(document).on("change", opts.endDate + " .vrtx-date", function() {
           vd.checkRange(opts, vd);
         });
-        
+
         break;
       default:
     }
@@ -120,8 +120,8 @@ function validator() {
 
     var startDateObj = vd.extractDateObj(startDateTime);
     var endDateObj = vd.extractDateObj(endDateTime);
-    
-    this.addErrorMsg(startDateTime.closest(".timeAndPlace"), 
+
+    this.addErrorMsg(startDateTime.closest(".timeAndPlace"),
                      vrtxAdmin.messages.editor.validation.errors.dateTime.endBeforeStart,
                      (startDateObj != null && endDateObj != null && endDateObj < startDateObj));
   };
