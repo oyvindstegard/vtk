@@ -1180,8 +1180,9 @@ function resolveAbsoluteUrl(url) {
 
   if(!isAbsoluteUrl) {
     var host = location.protocol + "//" + location.host.replace("-adm", "");
+    var pathWithoutFilename = location.pathname.replace(/[^\/]*$/, "");
     if(!isRootRelativeUrl) {
-      return host + location.pathname.replace(/[^\/]*$/, "") + url;
+      return host + pathWithoutFilename + url;
     } else {
       return host + url;
     }
