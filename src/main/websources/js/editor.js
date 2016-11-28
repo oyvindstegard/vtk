@@ -1154,8 +1154,10 @@ function makePreviewImg(url, inputElm, containerElm, imgElm, isInit, isBlurEvent
   if(url !== "") {
     // Check if absolute path: https://regex101.com/r/nlaX4A/1
     // Check if root-relative path: https://regex101.com/r/9YQQsd/1
-    var fullUrl = (!/^((https?:)|(\/\/))/.test(url) ? (!/^\//.test(url) ? location.protocol + "//" + location.host.replace("-adm", "") + location.pathname.replace(/[^\/]*$/, "")
-                                                                        : location.protocol + "//" + location.host.replace("-adm", "")) : "") + url;
+    var host = location.protocol + "//" + location.host.replace("-adm", "");
+    var fullUrl = (!/^((https?:)|(\/\/))/.test(url) ? (!/^\//.test(url) ? host + location.pathname.replace(/[^\/]*$/, "")
+                                                                        : host)
+                                                    : "") + url;
   }
   Validator.validate({ "url": fullUrl,
                        "container": containerElm,
