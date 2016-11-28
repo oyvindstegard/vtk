@@ -1120,7 +1120,8 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
     var url = previewInputFields[i].value;
     var elm = $(previewInputFields[i]);
     var containerElm = elm.parent();
-    makePreviewImg(url, elm, containerElm, true);
+    var imgElm = containerElm.parent().find("img");
+    makePreviewImg(url, elm, containerElm, imgElm, true);
   }
 
   /* Inputfield events for image preview */
@@ -1141,36 +1142,96 @@ function previewImage(urlobj, isBlurEvent) {
     var elm = $("#" + urlobj);
     if (elm.length) {
       var url = elm.val();
-      var containerElm = previewNode.parent();
-      makePreviewImg(url, elm, containerElm, false);
+      var containerElm = previewNode.parent().prev();
+      var imgElm = previewNode.find("img");
+      makePreviewImg(url, elm, containerElm, imgElm, false, isBlurEvent);
     }
   }
 }
 
-function makePreviewImg(url, elm, containerElm, isInit) {
+function makePreviewImg(url, inputElm, containerElm, imgElm, isInit, isBlurEvent) {
   var fullUrl = "";
   if(url !== "") {
-    var fullUrl = (!/^((https?:)|(\/\/))/.test(url) ? (!/^\//.test(url) ? location.protocal + "//" + location.host + location.pathname.replace(/[^\/]+$/, "")
+    // Check if absolute path: https://regex101.com/r/nlaX4A/1
+    // Check if root-relative path: https://regex101.com/r/9YQQsd/1
+    var fullUrl = (!/^((https?:)|(\/\/))/.test(url) ? (!/^\//.test(url) ? location.protocol + "//" + location.host + location.pathname.replace(/[^\/]*$/, "")
                                                                         : location.protocol + "//" + location.host) : "") + url;
   }
   Validator.validate({ "url": fullUrl,
-                       "container": parentPreviewNode.prev(),
-                       "hasCaption": hasImageCaption(elm, isInit)
+                       "container": containerElm,
+                       "hasCaption": hasImageCaption(inputElm, isInit)
                      }, "IS_IMAGE", function(isImage, hasCaption) {
     if(isImage) {
-      previewNode.find("img").attr("src", fullUrl + "?vrtx=thumbnail");
-      previewNode.find("img").attr("alt", "thumbnail");
+      imgElm.attr("src", fullUrl + "?vrtx=thumbnail");
+      imgElm.attr("alt", "thumbnail");
 
       if(!isInit) {
-        showImagePreviewCaption(elm);
+        showImagePreviewCaption(inputElm);
         if(typeof isBlurEvent === "undefined") {
-          elm.focus();
+          inputElm.focus();
         }
       }
     } else {
-      hideImagePreviewCaption(elm, isInit, hasCaption);
+      hideImagePreviewCaption(inputElm, isInit, hasCaption);
     }
   });
+}
+
+function hideImagePreviewCaption(inputElm, isInit, hasCaption) {
+  if (!inputElm.length) return;
+  var previewImg = $("div#" + inputElm[0].id.replace(/\./g, '\\.') + '\\.preview:visible');
+  //if (!previewImg.length) return;
+
+  var fadeSpeed = isInit ? 0 : "fast";
+
+  previewImg.fadeOut(fadeSpeed);
+
+  var captionWrp = inputElm.closest(".introImageAndCaption, #vrtx-resource\\.picture");
+  if (captionWrp.length) {
+    if(!hasCaption) {
+      captionWrp.find(".caption").fadeOut(fadeSpeed);
+      captionWrp.find(".hidePicture").fadeOut(fadeSpeed);
+      captionWrp.find(".pictureAlt").fadeOut(fadeSpeed);
+    }
+
+    var errorsElm = captionWrp.find("ul.errors");
+    captionWrp.animate({
+      height: (hasCaption ? 255 : (59 + (errorsElm.length ? errorsElm.outerHeight(true) : 0) + "px"))
+    }, fadeSpeed);
+  }
+}
+
+function showImagePreviewCaption(inputElm) {
+  var previewImg = $("div#" + inputElm[0].id.replace(/\./g, '\\.') + '\\.preview');
+  //if (!previewImg.length) return;
+
+  previewImg.fadeIn("fast");
+
+  var captionWrp = inputElm.closest(".introImageAndCaption, #vrtx-resource\\.picture");
+  if (captionWrp.length) {
+    captionWrp.find(".caption").fadeIn("fast");
+    captionWrp.find(".hidePicture").fadeIn("fast");
+    captionWrp.find(".pictureAlt").fadeIn("fast");
+    captionWrp.animate({
+      height: 225 + "px"
+    }, "fast");
+  }
+}
+
+function hasImageCaption(inputElm, isInit) {
+  var captionWrp = inputElm.closest(".introImageAndCaption, #vrtx-resource\\.picture");
+  if(captionWrp.length) {
+    if(isInit) {
+      var captionTextAreaValue = captionWrp.find(".caption textarea").val();
+      return captionTextAreaValue != "";
+    } else {
+      var captionId = captionWrp.find(".caption textarea")[0].id;
+      vrtxEditor.richtextEditorFacade.updateInstance(captionId)
+      var captionCkValue = vrtxEditor.richtextEditorFacade.getInstanceValue(captionId);
+      return captionCkValue != null && captionCkValue != "";
+    }
+  }
+  return false;
 }
 
 function initPictureAddJsonField(elm) {
@@ -1185,65 +1246,6 @@ function initBoxPictures(altTexts) {
     imageRef.addClass("vrtx-image-ref-alt-text");
     imageRef.find(".vrtx-image-ref-preview").append(altText.remove());
   }
-}
-
-function hideImagePreviewCaption(input, isInit, hasCaption) {
-  if (!input.length) return;
-  var previewImg = $("div#" + input[0].id.replace(/\./g, '\\.') + '\\.preview:visible');
-  //if (!previewImg.length) return;
-
-  var fadeSpeed = isInit ? 0 : "fast";
-
-  previewImg.fadeOut(fadeSpeed);
-
-  var captionWrp = input.closest(".introImageAndCaption, #vrtx-resource\\.picture");
-  if (captionWrp.length) {
-    if(!hasCaption) {
-      captionWrp.find(".caption").fadeOut(fadeSpeed);
-      captionWrp.find(".hidePicture").fadeOut(fadeSpeed);
-      captionWrp.find(".pictureAlt").fadeOut(fadeSpeed);
-    }
-
-    var errors = captionWrp.find("ul.errors");
-    captionWrp.animate({
-      height: (hasCaption ? 255 : (59 + (errors.length ? errors.outerHeight(true) : 0) + "px"))
-    }, fadeSpeed);
-  }
-}
-
-function showImagePreviewCaption(input) {
-  var previewImg = $("div#" + input[0].id.replace(/\./g, '\\.') + '\\.preview');
-  //if (!previewImg.length) return;
-
-  previewImg.fadeIn("fast");
-
-  var captionWrp = input.closest(".introImageAndCaption, #vrtx-resource\\.picture");
-  if (captionWrp.length) {
-    captionWrp.find(".caption").fadeIn("fast");
-    captionWrp.find(".hidePicture").fadeIn("fast");
-    captionWrp.find(".pictureAlt").fadeIn("fast");
-
-    var errors = captionWrp.find("ul.errors");
-    captionWrp.animate({
-      height: 225 + "px"
-    }, "fast");
-  }
-}
-
-function hasImageCaption(input, init) {
-  var captionWrp = input.closest(".introImageAndCaption, #vrtx-resource\\.picture");
-  if(captionWrp.length) {
-    if(init) {
-      var captionTextAreaValue = captionWrp.find(".caption textarea").val();
-      return captionTextAreaValue != "";
-    } else {
-      var captionId = captionWrp.find(".caption textarea")[0].id;
-      vrtxEditor.richtextEditorFacade.updateInstance(captionId)
-      var captionCkValue = vrtxEditor.richtextEditorFacade.getInstanceValue(captionId);
-      return captionCkValue != null && captionCkValue != "";
-    }
-  }
-  return false;
 }
 
 

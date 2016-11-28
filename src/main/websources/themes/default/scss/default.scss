@@ -986,13 +986,19 @@ ul.errors li {
   color: $errorRestrictedTextColor;
 }
 
-form#editor ul.errors {
-  clear: both;
-  float: left;
-  width: 100%;
-  list-style: none;
-  margin: 10px 0 5px 0;
-  padding-left: 0;
+form#editor {
+  ul.errors {
+    clear: both;
+    float: left;
+    width: 100%;
+    list-style: none;
+    margin: 10px 0 5px 0;
+    padding-left: 0;
+  }
+
+  &.vrtx-person ul.errors {
+    float: none;
+  }
 }
 
 table.resourceInfo,
