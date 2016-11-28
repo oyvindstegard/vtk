@@ -1175,12 +1175,19 @@ function makePreviewImg(url, inputElm, containerElm, imgElm, isInit, isBlurEvent
 function resolveAbsoluteUrl(url) {
   if(url === "") return url;
 
-  // Check if absolute path: https://regex101.com/r/nlaX4A/1
-  // Check if root-relative path: https://regex101.com/r/9YQQsd/1
-  var host = location.protocol + "//" + location.host.replace("-adm", "");
-  return (!/^((https?:)|(\/\/))/.test(url) ? (!/^\//.test(url) ? host + location.pathname.replace(/[^\/]*$/, "")
-                                                               : host)
-                                           : "") + url;
+  var isAbsoluteUrl = /^((https?:)|(\/\/))/.test(url); // https://regex101.com/r/nlaX4A/1
+  var isRootRelativeUrl = /^\//.test(url); // https://regex101.com/r/9YQQsd/1
+
+  if(!isAbsoluteUrl) {
+    var host = location.protocol + "//" + location.host.replace("-adm", "");
+    if(!isRootRelativeUrl) {
+      return host + location.pathname.replace(/[^\/]*$/, "") + url;
+    } else {
+      return host + url;
+    }
+  } else {
+    return url;
+  }
 }
 
 function hideImagePreviewCaption(inputElm, isInit, hasCaption) {
