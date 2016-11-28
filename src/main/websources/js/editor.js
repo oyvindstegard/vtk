@@ -1115,8 +1115,7 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
   }
 
   /* Hide image previews on init (unobtrusive) */
-  var previewInputFields = _$("input.preview-image-inputfield"),
-      hideImagePreviewCaptionFunc = hideImagePreviewCaption;
+  var previewInputFields = _$("input.preview-image-inputfield");
   for (i = previewInputFields.length; i--;) {
     var url = previewInputFields[i].value;
     var elm = $(previewInputFields[i]);
@@ -1164,7 +1163,9 @@ function makePreviewImg(url, elm, containerElm, isInit) {
 
       if(!isInit) {
         showImagePreviewCaption(elm);
-        if(typeof isBlurEvent === "undefined") elm.focus();
+        if(typeof isBlurEvent === "undefined") {
+          elm.focus();
+        }
       }
     } else {
       hideImagePreviewCaption(elm, isInit, hasCaption);

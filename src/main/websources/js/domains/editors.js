@@ -10,7 +10,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
     case "vrtx-edit-plaintext":
       if (_$("form#editor").length) {
         keepAliveEditors();
-        
+
         Validator.validate({ date: ".start-date", startDate: ".start-date", endDate: ".end-date" }, "TIME_HELP");
         Validator.validate({ date: ".end-date", startDate: ".start-date", endDate: ".end-date" }, "TIME_HELP");
         Validator.validate({ startDate: ".start-date", endDate: ".end-date" }, "DATE_RANGE");
