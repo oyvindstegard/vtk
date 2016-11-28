@@ -206,6 +206,33 @@
   </#compress>
 </#macro>
 
+<#--
+ * genPreviewImg
+ *
+ * Generate thumbnail with absolute path
+ * Example: <@vrtx.genThumbnail value='image.png' />
+ *
+ * @param value the URL
+ *
+-->
+<#macro genPreviewImg value>
+  <#compress>
+    <#local thumbnail = '' />
+    <#if value?has_content>
+      <#if vrtx.linkConstructor(value, 'displayThumbnailService')?exists >
+        <#local thumbnail = vrtx.linkConstructor(value, 'displayThumbnailService') />
+      <#else>
+        <#local thumbnail = value />
+      </#if> 
+    </#if>
+    <#if thumbnail != ''>
+      <img src="${thumbnail}" alt="preview" />
+    <#else>
+      <img src="" alt="preview" />
+    </#if>
+  </#compress>
+</#macro>
+
 
 <#--
  * linkResolveFilter

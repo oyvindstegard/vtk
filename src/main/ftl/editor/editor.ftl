@@ -389,19 +389,7 @@
           <div id="resource.${name}.preview">
             <div class="resource.${name}.preview-inner property-label"><@vrtx.msg code="editor.image.preview-title"/></div>
             <div id="resource.${name}.preview-inner">
-              <#local thumbnail = '' />
-              <#if value?has_content>
-                <#if  vrtx.linkConstructor(value, 'displayThumbnailService')?exists >
-                  <#local thumbnail = vrtx.linkConstructor(value, 'displayThumbnailService').getPathRepresentation() />
-                <#else>
-                  <#local thumbnail = value />
-                </#if> 
-              </#if>
-              <#if thumbnail != ''>
-                <img src="${thumbnail}" alt="preview" />
-              <#else>
-                <img src="" alt="preview" />
-              </#if>
+              <@vrtx.genPreviewImg value />
             </div>
           </div>
         <#else>
@@ -415,19 +403,7 @@
             <div id="resource.${name}.preview">
               <div class="resource.${name}.preview-inner property-label"><@vrtx.msg code="editor.image.preview-title"/></div>
               <div id="resource.${name}.preview-inner">
-                <#local thumbnail = '' />
-                <#if value?exists && value != "">
-                  <#if  vrtx.linkConstructor(value, 'displayThumbnailService')?exists >
-                    <#local thumbnail = vrtx.linkConstructor(value, 'displayThumbnailService').getPathRepresentation() />
-                  <#else>
-                    <#local thumbnail = value />
-                  </#if> 
-                </#if>
-                <#if thumbnail != ''>
-                  <img src="${thumbnail}" alt="preview" />
-                <#else>
-                  <img src="" alt="preview" />
-                </#if>
+                <@vrtx.genPreviewImg value />
               </div>
             </div>
           </div>

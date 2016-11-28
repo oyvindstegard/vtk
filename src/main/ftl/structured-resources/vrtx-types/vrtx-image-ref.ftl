@@ -1,4 +1,5 @@
 <#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
+<#import "/lib/vtk.ftl" as vrtx />
 <#macro printPropertyEditView title inputFieldName tooltip="" classes="" value="" name="" baseFolder="/">
   <div class="vrtx-image-ref ${classes}">
 	<div class="vrtx-image-ref-label">
@@ -11,7 +12,7 @@
 	<div id="${inputFieldName}.preview" class="vrtx-image-ref-preview">
 	  <label for="${inputFieldName}.preview"><@vrtx.msg code="editor.image.preview-title"/></label>
 	  <div id="${inputFieldName}.preview-inner" class="vrtx-image-ref-preview-inner">
-	    <img src="<#if value?has_content>${value}</#if>" alt="preview" />
+	    <@vrtx.genPreviewImg value />
 	  </div>
 	</div>
   </div>

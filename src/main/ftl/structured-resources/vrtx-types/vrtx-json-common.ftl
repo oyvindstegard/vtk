@@ -117,16 +117,10 @@
       <#break>
 
     <#case "image_ref">
-      <#if elem.value?exists>
-        <#local thumbnail = vrtx.relativeLinkConstructor(elem.value, 'displayThumbnailService') />
-      <#else>
-        <#local thumbnail = "" />
-      </#if>
-      
       <@vrtxImageRef.printPropertyEditView
         title=localizedTitle
         inputFieldName=elem.name
-        value=thumbnail
+        value=elem.value
         name=elem.value
         baseFolder=resourceContext.parentURI
         classes=elem.name
@@ -330,16 +324,10 @@
       <#break>
 
    <#case "image_ref">
-     <#if value?has_content>
-       <#local thumbnail =  vrtx.relativeLinkConstructor(value, 'displayThumbnailService') />
-     <#else>
-       <#local thumbnail = "" />
-     </#if>
-
      <@vrtxImageRef.printPropertyEditView
        title=jsonAttr
        inputFieldName=tmpName
-       value=thumbnail
+       value=value
        name=value
        baseFolder=resourceContext.parentURI
        classes="" />

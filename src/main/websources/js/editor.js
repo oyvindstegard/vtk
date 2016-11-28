@@ -1157,14 +1157,8 @@ function makePreviewImg(url, inputElm, containerElm, imgElm, isInit, isBlurEvent
                        "container": containerElm
                      }, "IS_IMAGE", function(isImage) {
     if(isImage) {
-      imgElm.attr("src", fullUrl + "?vrtx=thumbnail");
-      imgElm.attr("alt", "thumbnail");
-
       if(!isInit) {
-        showImagePreviewCaption(inputElm);
-        if(typeof isBlurEvent === "undefined") {
-          inputElm.focus();
-        }
+        showImagePreviewCaption(fullUrl, inputElm, imgElm, isBlurEvent);
       }
     } else {
       hideImagePreviewCaption(inputElm, isInit, hasCaption);
@@ -1215,9 +1209,12 @@ function hideImagePreviewCaption(inputElm, isInit, hasCaption) {
   }
 }
 
-function showImagePreviewCaption(inputElm) {
+function showImagePreviewCaption(fullUrl, inputElm, imgElm, isBlurEvent) {
   var previewImg = $("div#" + inputElm[0].id.replace(/\./g, '\\.') + '\\.preview');
   //if (!previewImg.length) return;
+
+  imgElm.attr("src", fullUrl + "?vrtx=thumbnail");
+  imgElm.attr("alt", "preview");
 
   previewImg.fadeIn("fast");
 
@@ -1229,6 +1226,10 @@ function showImagePreviewCaption(inputElm) {
     captionWrp.animate({
       height: 225 + "px"
     }, "fast");
+  }
+
+  if(typeof isBlurEvent === "undefined") {
+    inputElm.focus();
   }
 }
 
