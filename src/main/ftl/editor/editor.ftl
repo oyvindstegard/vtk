@@ -530,7 +530,7 @@
           </select>
         <#elseif dynamicValues?? && dynamicValues[name]??>
           <select name="resource.${name}" id="resource.${name}">
-            <option value="">${vrtx.getMsg("default.unspecified")}</option>
+            <option value="">${vrtx.getMsg("property." + name + ".unset")}</option>
             <#local dynamicValuesForName = dynamicValues[name]>
             <#list dynamicValuesForName?keys as dynamicValueKey>
               <#local dynamicValue = dynamicValuesForName[dynamicValueKey]>
