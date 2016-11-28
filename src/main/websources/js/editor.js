@@ -1,7 +1,7 @@
 /*
  *  Vortex Editor
  *
- *  ToC: 
+ *  ToC:
  *
  *  1.  Config
  *  2.  DOM is ready
@@ -15,7 +15,7 @@
  *  10. Send to approval
  *  11. Utils
  */
- 
+
 /*-------------------------------------------------------------------*\
     1. Config
 \*-------------------------------------------------------------------*/
@@ -37,7 +37,7 @@ function VrtxEditor() {
   /** Radios at init */
   this.editorInitRadios = [];
 
-  /** Select fields show/hide mappings 
+  /** Select fields show/hide mappings
     * Mapping: "select-id": ["option-value-1", ..., "option-value-n"]
     */
   this.selectMappings = {
@@ -52,7 +52,7 @@ function VrtxEditor() {
   this.needToConfirm = true;
 
   this.multipleFieldsBoxes = {}; /* Make sure every new field and box have unique id's (important for CK-fields) */
-  
+
   /** These needs better names. */
   this.multipleFieldsBoxesTemplates = [];
   this.multipleFieldsBoxesDeferred = null;
@@ -85,34 +85,34 @@ var accordionGrouped = null;
 $(document).ready(function () {
   var vrtxEdit = vrtxEditor;
   vrtxEdit.editorForm = $("#editor");
-  
+
   // Simple structured / embedded editor
   $("#app-content").on("click", "#vrtx-simple-editor .vrtx-back a, .vrtx-close-dialog-editor", function(e) {
     $("#vrtx-embedded-cancel-button, #cancel").click();
     e.preventDefault();
-  });  
+  });
 
   if (!vrtxEdit.isInAdmin || !vrtxEdit.editorForm.length) {
     vrtxEdit.richtextEditorFacade.setupMultiple(false);
     return; /* Exit if not is in admin or have regular editor */
   }
-  
+
   vrtxAdmin.cacheDOMNodesForReuse();
 
   // Skip UI helper as first element in editor
   vrtxEdit.editorForm.find(".ui-helper-hidden").filter(":not(:last)").filter(":first").next().addClass("first");
 
   vrtxEdit.initPreviewImage();
-  
+
   var waitALittle = setTimeout(function() {
     autocompleteUsernames($(".vrtx-autocomplete-username"));
     autocompleteTags(".vrtx-autocomplete-tag");
     vrtxEdit.initSendToApproval();
-    
+
     if(!vrtxEdit.isInAdmin || (vrtxEdit.isInAdmin && !isEmbedded)) {
       var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
       var futureStickyBar = (typeof VrtxStickyBar === "undefined") ? getScriptFn("/vrtx/__vrtx/static-resources/js/vrtx-sticky-bar.js") : $.Deferred().resolve();
-      $.when(futureStickyBar).done(function() {     
+      $.when(futureStickyBar).done(function() {
         var editorStickyBar = new VrtxStickyBar({
           wrapperId: "#vrtx-editor-title-submit-buttons",
           stickyClass: "vrtx-sticky-editor-title-submit-buttons",
@@ -179,7 +179,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
   */
   setupMultiple: function(isInAdmin) {
     if(isInAdmin) this.setupMaximizeMinimize();
-  
+
     for (var i = 0, len = this.editorsForInit.length; i < len && i < this.initSyncMax; i++) { // Initiate <=CKEditorsInitSyncMax CKEditors sync
       this.setup(this.editorsForInit[i]);
     }
@@ -227,7 +227,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
       linkBrowseUrl: linkBrowseUrl,
       imageBrowseUrl: classification.isMain ? imageBrowseUrl : null,
       flashBrowseUrl: classification.isMain ? flashBrowseUrl : null,
-      defaultLanguage: opts.defaultLanguage, 
+      defaultLanguage: opts.defaultLanguage,
       cssFileList: opts.cssFileList,
       height: vrtxEdit.setupEditorHeight(classification, opts),
       maxHeight: vrtxEdit.setupEditorMaxHeight(classification, opts),
@@ -252,7 +252,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
    * @param {string} opts.linkBrowseUrl Link browse integration URL
    * @param {string} opts.imageBrowseUrl Image browse integration URL
    * @param {string} opts.flashBrowseUrl Flash browse integration URL
-   * @param {string} opts.defaultLanguage Language in editor 
+   * @param {string} opts.defaultLanguage Language in editor
    * @param {string} opts.cssFileList List of CSS-files to style content in editor
    * @param {number} opts.height Height of editor
    * @param {number} opts.maxHeight Max height of editor
@@ -260,7 +260,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
    * @param {object} opts.toolbar The toolbar config
    * @param {string} opts.complete Use complete toolbar
    * @param {boolean} opts.resizable Possible to resize editor
-   * @param {string} opts.baseDocumentUrl URL to current document 
+   * @param {string} opts.baseDocumentUrl URL to current document
    * @param {string} opts.isSimple Make h1 format available (for old document types)
    * @param {string} opts.isFrontpageBox Make h2 format unavailable (for frontpage boxes)
    */
@@ -270,11 +270,11 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.baseHref = opts.baseDocumentUrl;
     config.contentsCss = opts.cssFileList;
     config.entities = false;
-    
+
     if(opts.isReadOnly) {
       config.readOnly = true;
     }
-    
+
     if (opts.linkBrowseUrl) {
       config.filebrowserBrowseUrl = opts.linkBrowseUrl;
       config.filebrowserImageBrowseLinkUrl = opts.linkBrowseUrl;
@@ -284,29 +284,29 @@ VrtxEditor.prototype.richtextEditorFacade = {
       config.filebrowserImageBrowseUrl = opts.imageBrowseUrl;
       config.filebrowserFlashBrowseUrl = opts.flashBrowseUrl;
       if(opts.requiresStudyRefPlugin) {
-        config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax,balloonpanel,a11ychecker';	    
+        config.extraPlugins = 'mediaembed,studyreferencecomponent,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax,balloonpanel,a11ychecker';
       } else {
-        config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax,balloonpanel,a11ychecker'; 
+        config.extraPlugins = 'mediaembed,htmlbuttons,button-h2,button-h3,button-h4,button-h5,button-h6,button-normal,lineutils,widget,image2,mathjax,balloonpanel,a11ychecker';
       }
       config.image2_alignClasses = [ 'image-left', 'image-center', 'image-right' ];
       config.image2_captionedClass = 'image-captioned';
-      
+
       config.stylesSet = this.divContainerStylesSet;
       if (opts.isSimple) { // HTML
         config.format_tags = 'p;h1;h2;h3;h4;h5;h6;pre;div';
       } else {
         config.format_tags = 'p;h2;h3;h4;h5;h6;pre;div';
-      }    
+      }
     } else {
-      config.extraPlugins = 'a11ychecker'; 
+      config.extraPlugins = 'a11ychecker';
       config.removePlugins = 'elementspath';
     }
-    
+
 	//  Remove h2 in frontpage box content?
     //  if (opts.isFrontpageBox) {
     //	config.format_tags = 'p;h3;h4;h5;h6;pre;div';
     //  }
-    
+
     config.resize_enabled = opts.resizable;
     config.toolbarCanCollapse = false;
     config.defaultLanguage = 'no';
@@ -321,9 +321,9 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.forcePasteAsPlainText = false;
     config.disableObjectResizing = true;
     config.disableNativeSpellChecker = false;
-    
+
     config.allowedContent = true;
-  
+
     /* Enable ACF - with all elements
      *
      * Use the ability to specify elements as an object.
@@ -337,12 +337,12 @@ VrtxEditor.prototype.richtextEditorFacade = {
       }
     };
     */
-    
+
     // Enable ACF
     if (vrtxEditor.editorForm.hasClass("vrtx-course-schedule")) {
       config.allowedContent = null;
     }
-    
+
     config.linkShowTargetTab = false;
 
     // Key strokes
@@ -363,7 +363,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
         rteFacade.setupTagsFormatting(this, ['ol', 'ul', 'li'], true);
       }
     };
-  
+
     if (!this.isInstance(opts.name)) {
       CKEDITOR.replace(opts.name, config);
     }
@@ -387,7 +387,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
       });
     }
   },
-  
+
   /* Save with CTRL-S */
   setupCTRLS: function() {
     var rteFacade = this;
@@ -399,7 +399,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
       _$(".cke_contents iframe").contents().find("body").bind('keydown mousedown', $.debounce(150, true, function (e) {
         vrtxAdmin.editorLastInteraction = +new Date();
       }));
-      
+
       // Fix bug (http://dev.ckeditor.com/ticket/9958) with IE triggering onbeforeunload on dialog click
       event.editor.on('dialogShow', function(dialogShowEvent) {
         if(CKEDITOR.env.ie) {
@@ -415,16 +415,16 @@ VrtxEditor.prototype.richtextEditorFacade = {
         });
       }
     };
-    
+
     CKEDITOR.on('instanceReady', function (event) {
       setupCTRLSPrivate(event);
-      
+
       // Re-run code when source-button is toggled (VTK-4023)
       var instance = rteFacade.getInstance(event.editor.name);
       instance.on('contentDom', setupCTRLSPrivate);
     });
   },
-  
+
   /* Minimize/maximize */
   setupMaximizeMinimize: function() {
     vrtxAdmin.cachedAppContent.on("click", ".cke_button__maximize.cke_button_on", this.maximize);
@@ -433,10 +433,10 @@ VrtxEditor.prototype.richtextEditorFacade = {
   maximize: function() {
     var vrtxAdm = vrtxAdmin,
         _$ = vrtxAdm._$;
-  
+
     var stickyBar = _$("#vrtx-editor-title-submit-buttons");
     stickyBar.hide();
-    
+
     vrtxAdm.cachedBody.addClass("forms-new");
     vrtxAdm.cachedBody.addClass("js");
 
@@ -466,7 +466,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
     stickyBar.show();
     var ckInject = _$(this).closest(".cke_reset").find(".ck-injected-save-help").hide();
   },
-  
+
   /* Get/Set/Update instance or data */
   getInstanceValue: function(name) {
     var inst = this.getInstance(name);
@@ -502,7 +502,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
     return this.getInstance(name) !== null;
   },
   isChanged: function(instance) {
-    return instance.checkDirty(); 
+    return instance.checkDirty();
   },
   resetChanged: function() {
     for (var instance in CKEDITOR.instances) {
@@ -541,7 +541,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
 /* Toolbars */
 
 vrtxEditor.richtextEditorFacade.toolbars.inlineToolbar = [
-  ['PasteText', 'Link', 'Unlink', 'Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'SpecialChar'], 
+  ['PasteText', 'Link', 'Unlink', 'Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'SpecialChar'],
   ['A11ychecker', '-', 'Source']
 ];
 
@@ -557,7 +557,7 @@ vrtxEditor.richtextEditorFacade.toolbars.commentsToolbar = [
 vrtxEditor.richtextEditorFacade.toolbars.completeToolbar = [
   ['PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'], ['Replace'], ['Link', 'Unlink', 'Anchor'],
   ['Image', 'MediaEmbed', 'Table', 'CreateDiv', 'HorizontalRule', 'Mathjax', 'SpecialChar'],
-  ['Maximize'], ['A11ychecker', '-', 'Source'], '/', ['Format'], 
+  ['Maximize'], ['A11ychecker', '-', 'Source'], '/', ['Format'],
   ['Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'TextColor', '-', 'RemoveFormat'],
   ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote']
 ];
@@ -605,9 +605,9 @@ vrtxEditor.richtextEditorFacade.divContainerStylesSet = [
 VrtxEditor.prototype.setupEditorHeight = function setupEditorHeight(c, opts) {
   return opts.isCompleteEditor ? ((c.isContent || c.isCourseGroup) ? 400 : (c.isSupervisorBox ? 130 : (c.isCourseDescriptionB ? 200 : 220)))
                                : (c.isMessage ? 250
-                                              : (c.isCaption ? 55 
-                                                             : ((c.isStudyField || c.isScheduleComment || c.isAdditionalContent) ? 150 
-                                                                                                                                 : (c.isIntro ? 100 
+                                              : (c.isCaption ? 55
+                                                             : ((c.isStudyField || c.isScheduleComment || c.isAdditionalContent) ? 150
+                                                                                                                                 : (c.isIntro ? 100
                                                                                                                                               : 90))));
 };
 
@@ -617,12 +617,12 @@ VrtxEditor.prototype.setupEditorMaxHeight = function setupEditorMaxHeight(c, opt
 
 VrtxEditor.prototype.setupEditorToolbar = function setupEditorToolbar(c, opts) {
   var tb = vrtxEditor.richtextEditorFacade.toolbars;
-  return classification.isMain ? ((c.isCourseDescriptionB || c.isCourseGroup) ? tb.studyRefToolbar 
+  return classification.isMain ? ((c.isCourseDescriptionB || c.isCourseGroup) ? tb.studyRefToolbar
                                                                               : (c.isStudyContent ? tb.studyToolbar
                                                                                                   : tb.completeToolbar))
                                : (c.isMessage ? tb.messageToolbar
-                                              : (c.isResourcesText ? tb.resourcesTextToolbar                     
-                                                                   : (c.isStudyField ? tb.studyToolbar 
+                                              : (c.isResourcesText ? tb.resourcesTextToolbar
+                                                                   : (c.isStudyField ? tb.studyToolbar
                                                                                      : ((c.isIntro || c.isCaption || c.isScheduleComment) ? tb.inlineToolbar
                                                                                                                                             : tb.withoutSubSuperToolbar))));
 };
@@ -651,13 +651,13 @@ VrtxEditor.prototype.classifyEditorInstance = function classifyEditorInstance(op
                              classification.isStudyContent;
   classification.isSimple = classification.isOldContent && opts.simple;
   classification.isFrontpageBox = vrtxEdit.editorForm.hasClass("vrtx-frontpage");
-                             
-  // Additional-content                  
+
+  // Additional-content
   classification.isAdditionalContent = vrtxEdit.contains(name, "additional-content") ||
                                        vrtxEdit.contains(name, "additionalContents");
-                                       
-  classification.isMain = opts.isCompleteEditor || classification.isAdditionalContent;                   
-  
+
+  classification.isMain = opts.isCompleteEditor || classification.isAdditionalContent;
+
   // Introduction / caption / sp.box
   classification.isIntro = vrtxEdit.contains(name, "introduction") ||
                            vrtxEdit.contains(name, "resource.description") ||
@@ -668,7 +668,7 @@ VrtxEditor.prototype.classifyEditorInstance = function classifyEditorInstance(op
   classification.isMessage = vrtxEdit.contains(name, "message");
   classification.isResourcesText = vrtxEdit.contains(name, "vrtxResourcesText");
   classification.isSupervisorBox = vrtxEdit.contains("supervisor-box");
-  
+
   // Studies
   classification.isStudyField = vrtxEdit.contains(name, "frist-frekvens-fri") ||
                                 vrtxEdit.contains(name, "metode-fri") ||
@@ -717,20 +717,20 @@ VrtxEditor.prototype.classifyEditorInstance = function classifyEditorInstance(op
                                  name === "courses-in-group" ||
                                  name === "course-group-admission" ||
                                  name === "relevant-study-programmes" ||
-                                 name === "course-group-other";       
-                                 
+                                 name === "course-group-other";
+
   classification.requiresStudyRefPlugin = classification.isStudyContent || classification.isCourseDescriptionB || classification.isCourseGroup || classification.isStudyField;
-         
+
   return classification;
 };
-    
-/* 
+
+/*
  * VTK-3873
- * 
+ *
  * Migrate old image div-containers to new image plugin on interaction
  *
  */
-         
+
 function migrateOldDivContainersCheck(data) {
   return /<div[^>]+class=(\'|\")([^\']*[^\"]* |)vrtx-(img-|)container( |(\'|\"))/i.test(data);
 }
@@ -747,12 +747,12 @@ function showMigrateDialog(instance) {
   });
   d.open();
 }
-         
+
 function migrateOldDivContainersToNewImagePlugin(instance) {
   var rteFacade = vrtxEditor.richtextEditorFacade;
   var data = $($.parseHTML("<div>" + rteFacade.getValue(instance) + "</div>"));
   var containers = data.find(".vrtx-container, .vrtx-img-container");
-  
+
   for(var i = 0, len = containers.length; i < len; i++) {
     var container = $(containers[i]);
     var containerChildren = container.children();
@@ -761,9 +761,9 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
       var images = container.find("img");
       if(images.length == 1) {
         var out = "";
-        
+
         var img = images.clone();
-        
+
         // Limit to this width (can maybe be optimized a little)
         var overrideWidth = 999999;
         if(container.hasClass("vrtx-container-size-xxl")) {
@@ -781,7 +781,7 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
         } else if(container.hasClass("vrtx-container-size-xxs")) {
           overrideWidth = 200;
         }
-        
+
         // Width/height conversion
         var style = img.attr("style");
         var hasStyle = typeof style !== "undefined" && style != "";
@@ -806,9 +806,9 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
             }
             style = style.replace(heightRegex, "$1$3", "");
           }
-          
+
           img.attr("style", style);
-          
+
           if(width > overrideWidth) {
             img.attr("width", overrideWidth);
             img.removeAttr("height");
@@ -834,12 +834,12 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
             img.removeAttr("height");
           }
         }
-              
+
         // Alignment
         var align = container.hasClass("vrtx-container-left") ? "image-left" : "";
             align += container.hasClass("vrtx-container-right") ? "image-right" : "";
             align += container.hasClass("vrtx-container-middle") ? "image-center" : "";
-              
+
         // Has caption?
         var caption = container.find("p");
         if($.trim(caption.text()) !== "") {
@@ -860,7 +860,7 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
            if(align === "image-center") {
              out += "</div>";
            }
-                    
+
          // Only image
          } else {
            if(align !== "" && align !== "image-center") {
@@ -872,7 +872,7 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
              out += img[0].outerHTML;
            }
          }
-       
+
          if(out !== "") {
            container.replaceWith(out);
          }
@@ -890,7 +890,7 @@ function migrateOldDivContainersToNewImagePlugin(instance) {
        });
        d.open();
      }
-   }  
+   }
 }
 
 
@@ -908,7 +908,7 @@ function storeInitPropValues(contents) {
   var selects = contents.find("select");
   var checkboxes = contents.find("input[type=checkbox]:checked");
   var radioButtons = contents.find("input[type=radio]:checked");
-  
+
   for (var i = 0, len = inputFields.length; i < len; i++) {
     vrtxEdit.editorInitInputFields[i] = inputFields[i].value;
   }
@@ -928,13 +928,13 @@ function unsavedChangesInEditor() {
     vrtxAdmin.ignoreAjaxErrors = true;
     return false;
   }
-  
+
   var vrtxEdit = vrtxEditor;
-  
+
   if(typeof editorCourseSchedule === "object") {
     return editorCourseSchedule.checkUnsavedChanges();
   }
-  
+
   var contents = $("#app-content > form, #contents");
 
   var currentStateOfInputFields = contents.find("input").not("[type=submit]").not("[type=button]")
@@ -949,7 +949,7 @@ function unsavedChangesInEditor() {
 
   // Check if count has changed
   if (textLen !== vrtxEdit.editorInitInputFields.length || selectsLen !== vrtxEdit.editorInitSelects.length || checkboxLen !== vrtxEdit.editorInitCheckboxes.length || radioLen !== vrtxEdit.editorInitRadios.length) return true;
-  
+
   // Check if values have changed
   for (var i = 0; i < textLen; i++) if (currentStateOfInputFields[i].value !== vrtxEdit.editorInitInputFields[i]) return true;
   for (i = 0; i < selectsLen; i++) if (currentStateOfSelects[i].value !== vrtxEdit.editorInitSelects[i]) return true;
@@ -1017,7 +1017,7 @@ function editorDetectChange(sessionId, o1, o2, isCK) {
 /* Validate length for 2048 bytes fields */
 function validTextLengthsInEditor(isOldEditor) {
   var MAX_LENGTH = 1500, // Back-end limits is 2048
-  
+
     // NEW starts on wrapper and OLD starts on field (because of slightly different semantic/markup build-up)
     INPUT_NEW = ".vrtx-string:not(.vrtx-multiple), .vrtx-resource-ref, .vrtx-image-ref, .vrtx-media-ref",
     INPUT_OLD = "input[type=text]:not(.vrtx-multiple)", // RT# 1045040 (skip aggregate and manually approve hidden input-fields)
@@ -1098,7 +1098,7 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
   // Box pictures
   var altTexts = $(".boxPictureAlt, .featuredPictureAlt");
   initBoxPictures(altTexts);
-  
+
   // Introduction pictures
   var introImageAndCaption = _$(".introImageAndCaption, #vrtx-resource\\.picture");
   var injectionPoint = introImageAndCaption.find(".picture-and-caption, .vrtx-image-ref");
@@ -1113,30 +1113,17 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
     pictureAlt = introImageAndCaption.find(".pictureAlt");
     injectionPoint.append(pictureAlt.remove());
   }
-  
+
   /* Hide image previews on init (unobtrusive) */
   var previewInputFields = _$("input.preview-image-inputfield"),
       hideImagePreviewCaptionFunc = hideImagePreviewCaption;
   for (i = previewInputFields.length; i--;) {
-    var elm = $(previewInputFields[i]);
-    var parent = elm.parent();
     var url = previewInputFields[i].value;
-
-    Validator.validate({ "url": url,
-                         "container": parent,
-                         "hasCaption": hasImageCaption(elm, true)
-                       }, "IS_IMAGE", function(isImage, hasCaption) {
-      if(isImage) {
-        var imgElm = parent.parent().find("img");
-        imgElm.attr("src", url + "?vrtx=thumbnail");
-        imgElm.attr("alt", "thumbnail");
-      } else {
-	    hideImagePreviewCaption(elm, true, hasCaption);
-      }
-    });
-    
+    var elm = $(previewInputFields[i]);
+    var containerElm = elm.parent();
+    makePreviewImg(url, elm, containerElm, true);
   }
-  
+
   /* Inputfield events for image preview */
   eventListen(vrtxAdmin.cachedDoc, "blur", "input.preview-image-inputfield", function (ref) {
     previewImage(ref.id, true);
@@ -1149,31 +1136,40 @@ VrtxEditor.prototype.initPreviewImage = function initPreviewImage() {
 function previewImage(urlobj, isBlurEvent) {
   if (typeof urlobj === "undefined") return;
   urlobj = urlobj.replace(/\./g, '\\.');
-  
+
   var previewNode = $("#" + urlobj + '\\.preview-inner');
   if (previewNode.length) {
     var elm = $("#" + urlobj);
     if (elm.length) {
       var url = elm.val();
-      var parentPreviewNode = previewNode.parent();
-
-      Validator.validate({ "url": url,
-                           "container": parentPreviewNode.prev(),
-                           "hasCaption": hasImageCaption(elm, false)
-                         }, "IS_IMAGE", function(isImage, hasCaption) {
-        if(isImage) {
-          previewNode.find("img").attr("src", url + "?vrtx=thumbnail");
-          previewNode.find("img").attr("alt", "thumbnail");
-          showImagePreviewCaption(elm);
-          
-          if(typeof isBlurEvent === "undefined") elm.focus();
-        } else {
-          hideImagePreviewCaption(elm, false, hasCaption);
-        }
-      });
-      
+      var containerElm = previewNode.parent();
+      makePreviewImg(url, elm, containerElm, false);
     }
   }
+}
+
+function makePreviewImg(url, elm, containerElm, isInit) {
+  var fullUrl = "";
+  if(url !== "") {
+    var fullUrl = (!/^((https?:)|(\/\/))/.test(url) ? (!/^\//.test(url) ? location.protocal + "//" + location.host + location.pathname.replace(/[^\/]+$/, "")
+                                                                        : location.protocol + "//" + location.host) : "") + url;
+  }
+  Validator.validate({ "url": fullUrl,
+                       "container": parentPreviewNode.prev(),
+                       "hasCaption": hasImageCaption(elm, isInit)
+                     }, "IS_IMAGE", function(isImage, hasCaption) {
+    if(isImage) {
+      previewNode.find("img").attr("src", fullUrl + "?vrtx=thumbnail");
+      previewNode.find("img").attr("alt", "thumbnail");
+
+      if(!isInit) {
+        showImagePreviewCaption(elm);
+        if(typeof isBlurEvent === "undefined") elm.focus();
+      }
+    } else {
+      hideImagePreviewCaption(elm, isInit, hasCaption);
+    }
+  });
 }
 
 function initPictureAddJsonField(elm) {
@@ -1206,7 +1202,7 @@ function hideImagePreviewCaption(input, isInit, hasCaption) {
       captionWrp.find(".hidePicture").fadeOut(fadeSpeed);
       captionWrp.find(".pictureAlt").fadeOut(fadeSpeed);
     }
-    
+
     var errors = captionWrp.find("ul.errors");
     captionWrp.animate({
       height: (hasCaption ? 255 : (59 + (errors.length ? errors.outerHeight(true) : 0) + "px"))
@@ -1225,7 +1221,7 @@ function showImagePreviewCaption(input) {
     captionWrp.find(".caption").fadeIn("fast");
     captionWrp.find(".hidePicture").fadeIn("fast");
     captionWrp.find(".pictureAlt").fadeIn("fast");
-    
+
     var errors = captionWrp.find("ul.errors");
     captionWrp.animate({
       height: 225 + "px"
@@ -1258,7 +1254,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
   var vrtxAdm = vrtxAdmin,
     _$ = vrtxAdm._$,
     vrtxEdit = this;
-    
+
   /* Show / hide for fields */
   var initResetAggregationManuallyApproved = function(_$, checkboxId, name) {
     if (!_$(checkboxId + "\\.true").is(":checked")) {
@@ -1275,7 +1271,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
       e.stopPropagation();
     });
   };
-  
+
   initResetAggregationManuallyApproved(_$, "#resource\\.display-aggregation", "aggregation");
   initResetAggregationManuallyApproved(_$, "#resource\\.display-manually-approved", "manually-approve-from");
 
@@ -1302,20 +1298,20 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
     e.stopPropagation();
   });
   _$("#resource\\.courseContext\\.course-status").change();
-  
-  
+
+
   // Show/hide mappings for radios/booleans
-  
+
   // Exchange sub-folder title
   setShowHideBooleanOldEditor("#resource\\.show-subfolder-menu\\.true, #resource\\.show-subfolder-menu\\.unspecified",
     "#vrtx-resource\\.show-subfolder-title",
     "#resource\\.show-subfolder-menu\\.unspecified:checked");
-    
+
   // Recursive
   setShowHideBooleanOldEditor("#resource\\.recursive-listing\\.false, #resource\\.recursive-listing\\.true, #resource\\.recursive-listing\\.selected",
     "#vrtx-resource\\.recursive-listing-subfolders",
     "#resource\\.recursive-listing\\.false:checked, #resource\\.recursive-listing\\.true:checked");
-    
+
   // Calendar title
   setShowHideBooleanOldEditor("#resource\\.display-type\\.unspecified, #resource\\.display-type\\.calendar",
     "#vrtx-resource\\.event-type-title",
@@ -1327,8 +1323,8 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
 
   // Show / hide mappings for selects
   vrtxEdit.setShowHideSelectNewEditor();
-  
-  
+
+
   // Documenttype domains
   if(vrtxEdit.editorForm.hasClass("vrtx-course-schedule")) {
     editorCourseSchedule = new courseSchedule();
@@ -1461,13 +1457,13 @@ VrtxEditor.prototype.showHideSelect = function showHideSelect(select, init) {
   }
   if (!init && accordionGrouped) accordionGrouped.closeActiveHidden();
 };
-   
+
 
 /*-------------------------------------------------------------------*\
     8. Multiple fields and boxes
 \*-------------------------------------------------------------------*/
 
-/* 
+/*
  * A. Multiple inputfields (vrtx-multiple-inputfield)
  *
  * 1. (NORMAL - HTML)
@@ -1493,7 +1489,7 @@ VrtxEditor.prototype.showHideSelect = function showHideSelect(select, init) {
 function getMultipleFieldsBoxesTemplates() {
   if (!vrtxEditor.multipleFieldsBoxesDeferred) {
     vrtxEditor.multipleFieldsBoxesDeferred = $.Deferred();
-    vrtxEditor.multipleFieldsBoxesTemplates = vrtxAdmin.templateEngineFacade.get("multiple-fields-boxes", 
+    vrtxEditor.multipleFieldsBoxesTemplates = vrtxAdmin.templateEngineFacade.get("multiple-fields-boxes",
       ["string", "html", "radio", "checkbox", "dropdown", "date", "browse",
        "browse-images", "add-remove-move", "button", "add-button",
        "multiple-inputfield", "accordion"],
@@ -1503,7 +1499,7 @@ function getMultipleFieldsBoxesTemplates() {
 
 function initMultipleInputFields() {
   getMultipleFieldsBoxesTemplates();
-  
+
   eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-multipleinputfield button.remove", function (ref) {
     removeFormField($(ref));
   }, "clickOrEnter");
@@ -1534,7 +1530,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
   if (!inputField.length || vrtxAdmin.isIE7 || vrtxAdmin.isIETridentInComp) return;
 
   // ENHANCE!
-  
+
   // Config
   var size = inputField.attr("size");
   var isDropdown = inputField.hasClass("vrtx-multiple-dropdown");
@@ -1548,12 +1544,12 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
   // Keeping track
   inputFieldParent.addClass("vrtx-multipleinputfields").data("name", name);
   vrtxEditor.multipleFieldsBoxes[name] = { counter: 1, limit: limit };
-  
+
   // Hide field with data, get its value and split it into multiple entries
   var inputFieldVal = inputField.hide().val();
   var formFields = json && json.length ? inputFieldVal.split("$$$")
                                        : inputFieldVal.split(",");
-  
+
   // Render add button after field
   $($.parseHTML(vrtxEditor.htmlFacade.getMultipleInputFieldsAddButton(name, size, isBrowsable, isMovable, isDropdown, JSON.stringify(json, null, 2), isResettable), document, true)).insertAfter(inputField);
 
@@ -1567,7 +1563,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
   html = $.parseHTML(html, document, true);
   $(html).insertBefore("#vrtx-" + name + "-add");
   inputFieldParent.find(".vrtx-multipleinputfield:first").addClass("first");
-  
+
   // Hide add button if limit is reached or is read only
   var isLimitReached = len >= vrtxEditor.multipleFieldsBoxes[name].limit;
   if(isLimitReached || isReadOnly) {
@@ -1577,7 +1573,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
     }
     moreBtn.hide();
   }
-  
+
   // Check if username with autocomplete and initiate on all fields
   if(inputFieldParent.hasClass("inputfield")) {
     autocompleteUsernames(inputFieldParent.parent().filter(".vrtx-autocomplete-username"), isEnriched);
@@ -1589,7 +1585,7 @@ function enhanceMultipleInputFields(name, isMovable, isBrowsable, limit, json, i
 function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown, init, json, isReadOnly) {
   var fields = $("." + name + " div.vrtx-multipleinputfield");
   var idstr = "vrtx-" + name + "-";
-	
+
   // Keeping track
   var i = vrtxEditor.multipleFieldsBoxes[name].counter;
   len = !init ? fields.length : len;
@@ -1610,7 +1606,7 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
   if (isBrowsable) {
     browseButton = vrtxEditor.htmlFacade.getMultipleInputfieldsInteractionsButton("browse", "-resource-ref", idstr, "", vrtxAdmin.multipleFormGroupingMessages.browse);
   }
-  
+
   // JSON and user enrichments
   var isEnriched = false;
   var hasEnrichedText = false;
@@ -1621,13 +1617,13 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
       value = value.split("###");
     }
     jsonProcessed = jQuery.extend(true, [], json);
-    
+
     var enriched = addFormFieldUserEnrichment(value, jsonProcessed, isEnriched, hasEnrichedText, hasEnrichedUrl);
     isEnriched = enriched.isEnriched;
     hasEnrichedText = enriched.hasEnrichedText;
     hasEnrichedUrl = enriched.hasEnrichedUrl;
   }
-  
+
   // Render the finished field
   var html = vrtxEditor.htmlFacade.getMultipleInputfield(name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, jsonProcessed, isReadOnly, hasEnrichedText, hasEnrichedUrl);
 
@@ -1643,20 +1639,20 @@ function addFormField(name, len, value, size, isBrowsable, isMovable, isDropdown
         last.append(moveDownButton);
       }
     }
-    
+
     var moreBtn = $("#vrtx-" + name + "-add");
     $($.parseHTML(html, document, true)).insertBefore(moreBtn);
-    
+
     fields = $("." + name + " div.vrtx-multipleinputfield");
-    
+
     if(len === 0) {
       fields.filter(":first").addClass("first");
     }
-    
+
     // Setup autocomplete on username fields
     autocompleteUsername(".vrtx-autocomplete-username", idstr + i);
     autocompleteUsername(".vrtx-autocomplete-username", idstr + "id-" + i, isEnriched); // JSON name='id' fix
-    
+
     var focusable = moreBtn.prev().find("input[type='text'], select");
     if(focusable.length) {
       focusable[0].focus();
@@ -1694,7 +1690,7 @@ function removeFormField(input) {
       focusable[0].focus();
     }
   }
-  
+
   // Show add button if is within limit again
   if(fields.length === (vrtxEditor.multipleFieldsBoxes[name].limit - 1)) {
     $(".vrtx-" + name + "-limit-reached").remove();
@@ -1717,7 +1713,7 @@ function swapContentTmp(moveBtn, move) {
     movedElmInputs[i].value = tmp;
   }
   swapUserEnrichment(curElm, movedElm, curElmInputs, movedElmInputs);
-  
+
   movedElmInputs.filter(":first")[0].focus();
 }
 
@@ -1725,7 +1721,7 @@ function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, ha
   var enrichedUrl = "";
   var enrichedText = "";
   var sep = userEnrichmentSeperators;
-  
+
   // Extract user enrichments if exists
   if(value && value.length) {
     var valueIsMultiple = typeof value === "object";
@@ -1750,7 +1746,7 @@ function addFormFieldUserEnrichment(value, json, isEnriched, hasEnrichedText, ha
   } else {
     value = [ "" ];
   }
-  
+
   // Prepare JSON multiple and user enrichments for template rendering
   var i = 0;
   var enrichedTextProp = null;
@@ -1853,7 +1849,7 @@ function saveMultipleInputFields(content, arrSeperator) {
 }
 
 
-/* 
+/*
  * B. Multiple boxes (vrtx-json)
  *
  *  Multiple data comes as JSON generated with Freemarker.
@@ -1881,7 +1877,7 @@ function initJsonMovableElements() {
 
     JSON_ELEMENTS_INITIALIZED.resolve();
   });
-  
+
   eventListen(vrtxAdmin.cachedAppContent, "click keypress", ".vrtx-json .vrtx-move-down-button", function (ref) {
     swapContent($(ref), 1);
   }, "clickOrEnter");
@@ -1981,7 +1977,7 @@ function addJsonField(ref) {
       }
     }, 25);
   }
-  
+
   // Box picture
   initPictureAddJsonField(btn.closest(".vrtx-json").find(".vrtx-json-element:last"));
   // Count
@@ -2014,7 +2010,7 @@ function removeJsonField(ref) {
   }
 }
 
-// Move up or move down  
+// Move up or move down
 function swapContent(moveBtn, move) {
   var curElm = moveBtn.closest(".vrtx-json-element");
   var accordionWrapper = curElm.closest(".vrtx-json-accordion");
@@ -2108,7 +2104,7 @@ function scrollToElm(movedElm) {
  * @namespace
  */
 VrtxEditor.prototype.htmlFacade = {
-  /* 
+  /*
    * Turn a block of JSON into HTML (only working for Schedule)
    */
   jsonToHtml: function(isMedisin, id, sessionId, idForLookup, session, fixedResourcesUrl, fixedResources, descs, i18n, embeddedAdminService) {
@@ -2117,7 +2113,7 @@ VrtxEditor.prototype.htmlFacade = {
     var rtEditors = [];
     var vrtxEdit = vrtxEditor;
     var sep = userEnrichmentSeperators;
-    
+
     for(var name in descs) {
       var desc = descs[name];
       if((desc.notMedisin && isMedisin) || (desc.onlyMedisin && !isMedisin)) {
@@ -2130,7 +2126,7 @@ VrtxEditor.prototype.htmlFacade = {
           readOnly = session.vrtxOrphan,
           browsable = false,
           hasOrig = false;
-    
+
       var origName = name.split("vrtx")[1];
       if(origName) {
         var origVal = session[origName.toLowerCase()];
@@ -2169,7 +2165,7 @@ VrtxEditor.prototype.htmlFacade = {
           if(desc.multiple) {
             multiples.push({
               name: name,
-              json: descProps ? descProps : null, 
+              json: descProps ? descProps : null,
               movable: desc.multiple.movable,
               resettable: desc.multiple.resettable,
               browsable: browsable,
@@ -2177,7 +2173,7 @@ VrtxEditor.prototype.htmlFacade = {
             });
           }
           var nameI18n = isMedisin && name === "vrtxResources" ? name + "NotFixed" : name;
-          
+
           html += vrtxEdit.htmlFacade.getStringField({ title: i18n[nameI18n],
                                                        name: (desc.autocomplete ? "vrtx-autocomplete-" + desc.autocomplete + " " : "") + name + " " + name + "-" + sessionId,
                                                        id: name + "-" + sessionId,
@@ -2195,7 +2191,7 @@ VrtxEditor.prototype.htmlFacade = {
               var folderType = fr.folderType;
               var folderName = fr.folderName;
               var folderRoot = fr.folderRoot;
-              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'>" + 
+              html += "<div class='vrtx-simple-html vrtx-fixed-resources vrtx-fixed-resources-" + folderType + (i == 0 && desc.divide ? " divide-" + desc.divide : "") + "'>" +
                       "<label>" + i18n[name + "-" + folderType] +
                         (i18n[name + "-" + folderType + "-info"] ? "<abbr tabindex='0' class='tooltips label-tooltips' title='" + i18n[name + "-" + folderType + "-info"] + "'></abbr>" : "") +
                       "</label>";
@@ -2243,19 +2239,19 @@ VrtxEditor.prototype.htmlFacade = {
     }
     return { html: html, multiples: multiples, rtEditors: rtEditors };
   },
- /* 
+ /*
   * Turn a block of HTML/DOM into JSON (only working for Schedule)
   */
   htmlToJson: function (isMedisin, sessionElms, sessionId, descs, rawOrig, rawOrigTP, rawPtr) {
     var vrtxEdit = vrtxEditor;
     var hasChanges = false;
     var editorDetectChangeFunc = editorDetectChange;
-    
+
     for(var name in descs) {
       var desc = descs[name],
           val = "";
       // Skip fixed resources and branch: Medisin | Not Medisin
-      if(desc.type === "json-fixed" || (desc.notMedisin && isMedisin) 
+      if(desc.type === "json-fixed" || (desc.notMedisin && isMedisin)
                                     || (desc.onlyMedisin && !isMedisin)) {
         continue;
       } else if(desc.type === "html") {
@@ -2286,7 +2282,7 @@ VrtxEditor.prototype.htmlFacade = {
             for(var j = 0, descPropsLen = desc.props.length; j < descPropsLen; j++) { // Definition
               if(desc.props[j].type == "enrichedUrl"
               || desc.props[j].type == "enrichedText") continue;
-              
+
               if(prop[j] !== "") {
                 if(!newProp) {
                   newProp = {};
@@ -2337,7 +2333,7 @@ VrtxEditor.prototype.htmlFacade = {
     }
     return hasChanges;
   },
-  /* 
+  /*
    * Interaction
    */
   getMultipleInputfieldsInteractionsButton: function (clazz, name, idstr, title, text) {
@@ -2379,8 +2375,8 @@ VrtxEditor.prototype.htmlFacade = {
       content: content
     });
   },
-  /* 
-   * Type / fields 
+  /*
+   * Type / fields
    */
   getMultipleInputfield: function (name, idstr, i, value, size, browseButton, removeButton, moveUpButton, moveDownButton, isDropdown, json, isReadOnly, hasEnrichedText, hasEnrichedUrl) {
     return vrtxAdmin.templateEngineFacade.render(vrtxEditor.multipleFieldsBoxesTemplates["multiple-inputfield"], {
@@ -2535,7 +2531,7 @@ VrtxEditor.prototype.accordionGroupedInit = function accordionGroupedInit(subGro
   grouped.wrapAll("<div id='" + accordionWrpId + "' />");
 
   accordionContentSplitHeaderPopulators(true);
-  
+
   var opts = {
     elem: vrtxEdit.editorForm.find("#" + accordionWrpId),
     headerSelector: "> div > .header",
@@ -2559,7 +2555,7 @@ VrtxEditor.prototype.accordionGroupedInit = function accordionGroupedInit(subGro
     }
     accordionGrouped.updateHeader(group, false, true);
   }
-  
+
   accordionGrouped.create();
   opts.elem.addClass("fast");
 };
@@ -2583,7 +2579,7 @@ function accordionJsonNew(accordionWrapper) {
   group.find("> *").wrapAll("<div />");
   group.prepend('<div class="header">' + (vrtxAdmin.lang !== "en" ? "Intet innhold" : "No content") + '</div>');
   accordionContentSplitHeaderPopulators(false);
-  
+
   accordionJsonRefresh(accordionContent, false);
   accordionJson.create();
 }
@@ -2618,7 +2614,7 @@ function accordionContentSplitHeaderPopulators(init) {
     semesterResourceLinksItems.find(".vrtx-json-element").addClass("header-empty-check-and");
     if(init) {
       vrtxAdmin.cachedDoc.on("click", semesterResourceLinksItems.find(".vrtx-add-button"), function(e) {
-        semesterResourceLinksItems.find(".vrtx-json-element:last").addClass("header-empty-check-and"); 
+        semesterResourceLinksItems.find(".vrtx-json-element:last").addClass("header-empty-check-and");
       });
     }
   }
@@ -2722,7 +2718,7 @@ VrtxEditor.prototype.saveSendToApproval = function saveSendToApproval(btn) {
  * @this {VrtxEditor}
  * @param {string} string The string
  * @param {string} substring The substring
- * @return {boolean} Existance 
+ * @return {boolean} Existance
  */
 VrtxEditor.prototype.contains = function contains(string, substring) {
   return string.indexOf(substring) != -1;
@@ -2730,7 +2726,7 @@ VrtxEditor.prototype.contains = function contains(string, substring) {
 
 /**
  * Replace tags
- * 
+ *
  * XXX: Should be chainable / jQuery fn
  *
  * @this {VrtxEditor}
@@ -2746,10 +2742,10 @@ VrtxEditor.prototype.replaceTag = function replaceTag(selector, tag, replacement
 
 /**
  * Handler for events and init code applying a callback function with parameters
- * 
+ *
  * - If no parameters are provided then $(selector) is used as default
  * - 'this' in the callback is vrtxEditor with its prototype chain
- * 
+ *
  * @example
  * // Process special list links
  * vrtxEditor.initEventHandler("#list a.special", {
@@ -2758,7 +2754,7 @@ VrtxEditor.prototype.replaceTag = function replaceTag(selector, tag, replacement
  *
  * @this {VrtxEditor}
  * @param {string} selector The selector
- * @param {object} opts The options 
+ * @param {object} opts The options
  */
 VrtxEditor.prototype.initEventHandler = function initEventHandler(selector, opts) {
   var select = $(selector);
