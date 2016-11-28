@@ -115,11 +115,4 @@
     <property name="type" value="STRING" />
   </bean>
 
-  <bean id="resourceIsNotLectureVideoRefAssertion" class="vtk.web.service.ResourcePropertyAssertion">
-    <property name="namespace" ref="DEFAULT_NAMESPACE" />
-    <property name="name" value="videoref-type" />
-    <property name="value" value="lecture-videoref" />
-    <property name="invert" value="true" />
-  </bean>
-
 </beans>
