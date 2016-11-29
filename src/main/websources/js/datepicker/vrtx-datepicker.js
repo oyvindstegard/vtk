@@ -42,7 +42,7 @@ var VrtxDatepicker = dejavu.Class.declare({
     datepick.__opts = opts;
     datepick.__opts.contents = $(opts.selector || this.$static.contentsDefaultSelector);
 
-    // TODO: rootUrl and jQueryUiVersion should be retrieved from Vortex config/properties somehow
+    // TODO: VrtxComponents should be a super class with these checks
     var rootUrl = "/vrtx/__vrtx/static-resources";
     var jQueryUiVersion = "1.10.4";
 
