@@ -336,8 +336,13 @@ VrtxAdmin.prototype.initTooltips = function initTooltips() {
       expandHoverToTipBox: true
     });
   }
-  $("#main").vortexTips(".tooltips", {
+  $("#main > *:not(#active-tab)").vortexTips(".tooltips", {
     appendTo: "#contents",
+    containerWidth: 320,
+    xOffset: 20, yOffset: -15
+  });
+  $("#active-tab").vortexTips(".tooltips", {
+    appendTo: "#active-tab",
     containerWidth: 320,
     xOffset: 20, yOffset: -15
   });
