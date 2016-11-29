@@ -1,8 +1,8 @@
 /*
  *  VrtxAccordion - facade to jQuery UI accordions (by USIT/GPL|GUAN)
- *  
+ *
  *  API: http://api.jqueryui.com/accordion/
- *  
+ *
  *  * Requires Dejavu OOP library
  *  * Requires but Lazy-loads jQuery UI library (if not defined) on open
  *
@@ -21,7 +21,7 @@
  * ----------------------------------------------------------------------------------------
  * __getFieldString(field)              - Get either input value or CK data
  * __findMultiContentMatch(elm)         - All need to have content for a match
- * __findSingleContentMatch(elm)        - One need to have content for a match 
+ * __findSingleContentMatch(elm)        - One need to have content for a match
  * __headerCheckNoContentOrNoTitle(elm) - Returns text for use in header when no title or no content
  */
 
@@ -44,19 +44,29 @@ var VrtxAccordion = dejavu.Class.declare({
     // TODO: rootUrl and jQueryUiVersion should be retrieved from Vortex config/properties somehow
     var rootUrl = "/vrtx/__vrtx/static-resources";
     var jQueryUiVersion = "1.10.4";
-    
-    var futureUi = $.Deferred();
-    if (typeof $.ui === "undefined") {
-      var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
-      getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery-ui-" + jQueryUiVersion + ".custom.min.js").done(function () {
-        futureUi.resolve();
-      });
-    } else {
-      futureUi.resolve();
+
+    var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
+
+    if(typeof vrtxComponents === "undefined") {
+      vrtxComponents = {};
+      vrtxComponents.futureUi = $.Deferred();
+      vrtxComponents.futureUiIsLoading = false;
     }
-    $.when(futureUi).done(function() {
+    if (typeof $.ui === "undefined") {
+      if(!vrtxComponents.futureUiIsLoading) {
+        vrtxComponents.futureUiIsLoading = true;
+        getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery-ui-" + jQueryUiVersion + ".custom.min.js").done(function () {
+          vrtxComponents.futureUiIsLoading = false;
+          vrtxComponents.futureUi.resolve();
+        });
+      }
+    } else {
+      vrtxComponents.futureUi.resolve();
+    }
+
+    $.when(vrtxComponents.futureUi).done(function() {
       accordion.destroy(); // Destroy if already exists
-      
+
       var initOpts = {
         header: accordion.__opts.headerSelector,
         heightStyle: "content",
@@ -121,13 +131,13 @@ var VrtxAccordion = dejavu.Class.declare({
     if(!this.__opts.noTitleText) {
       var lang = (vrtxAdmin !== "undefined") ? vrtxAdmin.lang : $("body").attr("lang");
       this.__opts.noTitleText = (lang !== "en") ? "Ingen tittel" : "No title";
-      this.__opts.noContentText = (lang !== "en") ? "Intet innhold" : "No content"; 
+      this.__opts.noContentText = (lang !== "en") ? "Intet innhold" : "No content";
     }
     return (this.__findMultiContentMatch(elm) || this.__findSingleContentMatch(elm)) ? this.__opts.noTitleText : this.__opts.noContentText;
   },
   updateHeader: function(elem, isJson, init) {
     if (typeof elem.closest !== "function") elem = $(elem);
-    var elm = isJson ? elem.closest(".vrtx-json-element") 
+    var elm = isJson ? elem.closest(".vrtx-json-element")
                      : elem.closest(".vrtx-grouped"); // XXX: extract
     if (elm.length) { // Header populators
       var str = "";

@@ -1,6 +1,6 @@
 /*
  *  VrtxSimpleDialog - facade to jQuery UI dialogs (by USIT/GPL|GUAN)
- *  
+ *
  *  API: http://api.jqueryui.com/dialog/
  *
  *  * Requires Dejavu OOP library
@@ -9,7 +9,7 @@
  *     - requiresTree: true
  *     - requiresDatepicker: true
  */
- 
+
 /* Public
  * ----------------------
  * initialize(opts)
@@ -31,7 +31,7 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
   initialize: function(opts) {              // Constructor
       this.__opts = opts;
       this.__addDOM();
-      var dialogOpts =     { modal: true,                        
+      var dialogOpts =     { modal: true,
                              autoOpen: false,
                              resizable: false,
                              //draggable: false,
@@ -120,17 +120,27 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
     // TODO: rootUrl and jQueryUiVersion should be retrieved from Vortex config/properties somehow
     var rootUrl = "/vrtx/__vrtx/static-resources";
     var jQueryUiVersion = "1.10.4";
-    
-    var futureUi = $.Deferred();
-    if (typeof $.ui === "undefined") {
-      var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
-      getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery-ui-" + jQueryUiVersion + ".custom.min.js").done(function () {
-        futureUi.resolve();
-      });
-    } else {
-      futureUi.resolve();
+
+    var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
+
+    if(typeof vrtxComponents === "undefined") {
+      vrtxComponents = {};
+      vrtxComponents.futureUi = $.Deferred();
+      vrtxComponents.futureUiIsLoading = false;
     }
-    $.when(futureUi).done(function() {
+    if (typeof $.ui === "undefined") {
+      if(!vrtxComponents.futureUiIsLoading) {
+        vrtxComponents.futureUiIsLoading = true;
+        getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery-ui-" + jQueryUiVersion + ".custom.min.js").done(function () {
+          vrtxComponents.futureUiIsLoading = false;
+          vrtxComponents.futureUi.resolve();
+        });
+      }
+    } else {
+      vrtxComponents.futureUi.resolve();
+    }
+
+    $.when(vrtxComponents.futureUi).done(function() {
       if (dialog.__state.opening) {
         dialog.__state.opening = false;
         dialog.__state.opened = true;
@@ -156,7 +166,7 @@ var AbstractVrtxSimpleDialog = dejavu.AbstractClass.declare({
       this.__state.opened = false;
       this.__opts.elm.remove();
     }
-  }        
+  }
 });
 
 var VrtxLoadingDialog = dejavu.Class.declare({
@@ -226,7 +236,7 @@ var VrtxConfirmDialog = dejavu.Class.declare({
   $name: "VrtxConfirmDialog",
   $extends: AbstractVrtxSimpleDialog,
   initialize: function (opts) {
-    this.$super({ 
+    this.$super({
       selector: "#dialog-confirm",
       msg: opts.msg,
       title: opts.title,

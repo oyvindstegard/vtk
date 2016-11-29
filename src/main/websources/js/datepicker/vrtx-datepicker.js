@@ -46,18 +46,26 @@ var VrtxDatepicker = dejavu.Class.declare({
     var rootUrl = "/vrtx/__vrtx/static-resources";
     var jQueryUiVersion = "1.10.4";
 
-    var futureUi = $.Deferred();
-
     var getScriptFn = (typeof $.cachedScript === "function") ? $.cachedScript : $.getScript;
 
-    if (typeof $.ui === "undefined") {
-      getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery-ui-" + jQueryUiVersion + ".custom.min.js").done(function () {
-        futureUi.resolve();
-      });
-    } else {
-      futureUi.resolve();
+    if(typeof vrtxComponents === "undefined") {
+      vrtxComponents = {};
+      vrtxComponents.futureUi = $.Deferred();
+      vrtxComponents.futureUiIsLoading = false;
     }
-    $.when(futureUi).done(function() {
+    if (typeof $.ui === "undefined") {
+      if(!vrtxComponents.futureUiIsLoading) {
+        vrtxComponents.futureUiIsLoading = true;
+        getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery-ui-" + jQueryUiVersion + ".custom.min.js").done(function () {
+          vrtxComponents.futureUiIsLoading = false;
+          vrtxComponents.futureUi.resolve();
+        });
+      }
+    } else {
+      vrtxComponents.futureUi.resolve();
+    }
+
+    $.when(vrtxComponents.futureUi).done(function() {
       var futureDatepickerLang = $.Deferred();
       if (opts.language != "" && opts.language != "en" && !$.datepicker.regional[opts.language]) {
         getScriptFn(rootUrl + "/jquery/plugins/ui/jquery-ui-" + jQueryUiVersion + ".custom/js/jquery.ui.datepicker-" + opts.language + ".js").done(function() {
