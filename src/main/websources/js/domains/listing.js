@@ -366,7 +366,7 @@ VrtxAdmin.prototype.initFileUpload = function initFileUpload() {
   if (vrtxAdm.supportsMultipleAttribute(document.getElementById("file"))) {
     inputFile.attr("multiple", "multiple");
     if (typeof multipleFilesInfoText !== "undefined") {
-      _$("<p id='vrtx-file-upload-info-text'>" + multipleFilesInfoText + "</p>").insertAfter(".vrtx-textfield");
+      _$("<p id='vrtx-file-upload-info-text'>" + multipleFilesInfoText + "</p>").insertAfter("#fileUploadService-form .vrtx-textfield");
     }
   }
 };
