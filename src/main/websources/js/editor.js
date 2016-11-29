@@ -541,7 +541,7 @@ VrtxEditor.prototype.richtextEditorFacade = {
 /* Toolbars */
 
 vrtxEditor.richtextEditorFacade.toolbars.inlineToolbar = [
-  ['PasteText', 'Link', 'Unlink', 'Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'SpecialChar'],
+  ['PasteText', 'Link', 'Unlink', 'Bold', 'Italic', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat', 'SpecialChar'],
   ['A11ychecker', '-', 'Source']
 ];
 
