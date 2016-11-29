@@ -35,9 +35,10 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.InitializingBean;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
@@ -68,8 +69,8 @@ public class SubFolderMenuProvider implements InitializingBean {
     private QueryParser queryParser;
     private Query queryFilter;
 
-    public Map<String, Object> getSubfolderMenuWithGeneratedResultSets(Resource collection, HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+	public Map<String, Object> getSubfolderMenuWithGeneratedResultSets(Resource collection, HttpServletRequest request) {
+		RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         ResultSet rs = listCollections(collection.getURI(), requestContext);
 
@@ -91,7 +92,7 @@ public class SubFolderMenuProvider implements InitializingBean {
 
     public Map<String, Object> getSubfolderMenuWithThreeGeneratedResultSets(Resource collection,
             HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+		RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         ResultSet rs = listCollections(collection.getURI(), requestContext);
 
@@ -104,7 +105,7 @@ public class SubFolderMenuProvider implements InitializingBean {
     
     public Map<String, Object> getSubfolderMenuWithOneGeneratedResultSet(Resource collection,
             HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+		RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         ResultSet rs = listCollections(collection.getURI(), requestContext);
 
@@ -118,7 +119,7 @@ public class SubFolderMenuProvider implements InitializingBean {
     public Map<String, Object> getSubfolderMenu(ResultSet rs, Resource collection, String token, Locale locale,
             int resultSets, PropertyTypeDefinition sortProperty) {
         String title = null;
-        boolean ascendingSort = true;
+		boolean ascendingSort = true;
         boolean sortByName = false;
         int groupResultSetsBy = 0;
         int freezeAtLevel = 0;
@@ -133,12 +134,18 @@ public class SubFolderMenuProvider implements InitializingBean {
             sortByName = true;
         }
 
+		if (collection.getProperty(menuGenerator.getSortDescendingPropDef()) != null) {
+			if (collection.getProperty(menuGenerator.getSortDescendingPropDef()).getBooleanValue()) {
+				ascendingSort = false;
+			}
+		}
+
         MenuRequest menuRequest = this.menuGenerator.getMenuRequest(collection.getURI(), title, sortProperty,
                 ascendingSort, sortByName, resultSets, groupResultSetsBy, freezeAtLevel, depth, displayFromLevel,
                 maxNumberOfChildren, display, locale, token, searchLimit, includeURIs);
 
-        ListMenu<PropertySet> menu = this.menuGenerator.buildListMenu(rs, menuRequest, null);
-        return this.menuGenerator.buildMenuModel(menu, menuRequest);
+        ListMenu<PropertySet> menu = this.menuGenerator.buildListMenu(rs, menuRequest, null, true);
+        return this.menuGenerator.buildMenuModel(menu, menuRequest, true);
     }
 
     protected ResultSet listCollections(Path uri, RequestContext requestContext) {
