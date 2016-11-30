@@ -36,6 +36,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -57,7 +58,7 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
     private String defaultView;
     private RedirectPolicy redirectPolicy = RedirectPolicy.NEVER;
     private List<ReferenceDataProvider> referenceDataProviders;
-    private Assertion redirectAssertion;
+    private Optional<Assertion> redirectAssertion;
     
     public static enum RedirectPolicy {
         NEVER,
@@ -65,12 +66,9 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
         ALWAYS
     }
     
-    public ResourceNotFoundErrorHandler(String defaultView, RedirectPolicy redirectPolicy) {
-        this(defaultView, redirectPolicy, null, null);
-    }
-    
     public ResourceNotFoundErrorHandler(String defaultView, RedirectPolicy redirectPolicy, 
-            List<ReferenceDataProvider> referenceDataProviders, Assertion redirectAssertion) {
+            List<ReferenceDataProvider> referenceDataProviders, 
+            Optional<Assertion> redirectAssertion) {
         this.defaultView = defaultView;
         this.redirectPolicy = redirectPolicy;
         this.referenceDataProviders = referenceDataProviders;
@@ -109,13 +107,13 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
         PreviousLocationsResolver resolver = 
                 new PreviousLocationsResolver(locationHistoryPropDef, 
                         unpublishedCollectionPropDef, requestContext);
+       
         
-        boolean resolveRedirects = true;
-        if (redirectAssertion != null) {
-            resolveRedirects = redirectAssertion
-                    .matches(request, null, requestContext.getPrincipal());
-        }
-
+        
+        Boolean resolveRedirects = !redirectAssertion.isPresent() 
+                || redirectAssertion.get()
+                .matches(request, null, requestContext.getPrincipal());
+        
         Collection<RelocatedResource> resolved = resolveRedirects ? 
                 resolver.resolve(uri) : Collections.emptyList();
 
@@ -125,10 +123,8 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
         request.setAttribute(getClass().getName() + ".locations", locations);
         model.put("locations", locations);
         
-        if (referenceDataProviders != null) {
-            for (ReferenceDataProvider p: referenceDataProviders) {
-                p.referenceData(model,  request);
-            }
+        for (ReferenceDataProvider p: referenceDataProviders) {
+            p.referenceData(model,  request);
         }
         return model;
     }
@@ -145,6 +141,9 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
             return defaultView;
         }
         if (redirectPolicy == RedirectPolicy.NEVER) {
+            return defaultView;
+        }
+        if ("false".equals(request.getParameter("redirect"))) {
             return defaultView;
         }
         if (redirectPolicy == RedirectPolicy.UNAMBIGUOUS) {

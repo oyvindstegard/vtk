@@ -11,12 +11,12 @@
     <constructor-arg name="redirectAssertion" ref="resourceNotFoundErrorHandler.redirectAssertion" />
   </bean>
 
-  <bean id="resourceNotFoundErrorHandler.redirectAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
-    <property name="header" value="User-Agent" />
-    <property name="pattern" value="^Link checker for .*" />
-    <property name="invert" value="true" />
+  <bean id="resourceNotFoundErrorHandler.redirectAssertion"
+        class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    <property name="targetClass" value="java.util.Optional" />
+    <property name="targetMethod" value="empty" />
   </bean>
-
+  
   <bean id="badRequestErrorHandler" class="vtk.web.DefaultErrorHandler">
     <property name="errorViewName" value="badRequestError" />
     <property name="errorType">
