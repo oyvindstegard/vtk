@@ -159,7 +159,6 @@ public class LinkCheckJob extends AbstractResourceJob {
             }
 
             MapContainer hrefObj = links.objectValue(i);
-
             if (hrefObj.containsKey("url")) {
                 String href = (String) hrefObj.get("url");
                 URL url = null;
@@ -218,6 +217,7 @@ public class LinkCheckJob extends AbstractResourceJob {
         if (shouldResetState(state, resource, changeContext)) {
             logger.debug("Reset link check state for " + resource.getURI());
             state.brokenLinks.clear();
+            state.relocatedLinks.clear();
             state.complete = false;
             state.index = 0;
         }
@@ -315,30 +315,39 @@ public class LinkCheckJob extends AbstractResourceJob {
                     
                     LinkCheckResult result = linkChecker.validate(request);
                     switch (result.getStatus()) {
-                    case OK:
                     case TIMEOUT:
                         break;
+                    case OK:
+                        // Check if 'OK' was result of a redirect (relocated resource),
+                        // or just a plain '200 OK':
+                        URL resourceURL = base.relativeURL(url);
+                        if (vrtxid != null && base.getHost().equals(resourceURL.getHost())) {
+                            Optional<Path> relocated = findResourceByID(execContext, vrtxid);
+                            if (relocated.isPresent() && !relocated.get().equals(resourceURL.getPath())) {
+                                Map<String, String> m = new HashMap<>();
+                                m.put("link", url);
+                                logger.debug("URL " + url + " (referenced from " 
+                                        + resource.getURI() + ") has moved, "
+                                        + " vrtxid: " + vrtxid + " still valid");
+                                m.put("vrtxid", vrtxid);
+                                state.relocatedLinks.add(m);
+                            }
+                        }
+                        break;
                     default:
-                        // Mark as broken
+                        // Mark everything except OK and TIMEOUT as broken:
                         Map<String, String> m = new HashMap<>();
                         m.put("link", url);
                         if (type != null) {
                             m.put("type", type);
                         }
                         m.put("status", result.getStatus().toString());
-                        
-                        if (vrtxid != null && base.getHost().equals(base.relativeURL(url).getHost())) {
-                            Optional<Path> relocated = findResourceByID(execContext, vrtxid);
-                            if (relocated.isPresent()) {
-                                logger.debug("URL " + url + " (referenced from " 
-                                        + resource.getURI() + ") has moved, "
-                                        + " vrtxid: " + vrtxid + " still valid");
-                                m.put("vrtxid", vrtxid);
-                            }
-                        }
                         state.brokenLinks.add(m);
                     }
                     if (state.brokenLinks.size() >= MAX_BROKEN_LINKS) {
+                        return false;
+                    }
+                    if (state.relocatedLinks.size() >= MAX_BROKEN_LINKS) {
                         return false;
                     }
                     if (n.get()-state.index == MAX_CHECK_LINKS) {
@@ -465,6 +474,7 @@ public class LinkCheckJob extends AbstractResourceJob {
 
     private static class LinkCheckState {
         private List<Object> brokenLinks = new ArrayList<>();
+        private List<Object> relocatedLinks = new ArrayList<>();
         private long index = 0;
         private String timestamp = null;
         private boolean complete = false;
@@ -479,6 +489,9 @@ public class LinkCheckJob extends AbstractResourceJob {
                     s.complete = "COMPLETE".equals(status.get("status"));
                     for (Object b : status.optArrayValue("brokenLinks", Collections.emptyList())) {
                         s.brokenLinks.add(b);
+                    }
+                    for (Object b : status.optArrayValue("relocatedLinks", Collections.emptyList())) {
+                        s.relocatedLinks.add(b);
                     }
                     s.index = status.optLongValue("index", 0L);
                     s.timestamp = status.optStringValue("timestamp", null);
@@ -502,6 +515,7 @@ public class LinkCheckJob extends AbstractResourceJob {
             JsonBuilder jb = new JsonBuilder();
             jb.beginObject()
                     .memberIfNotNull("brokenLinks", brokenLinks)
+                    .memberIfNotNull("relocatedLinks", relocatedLinks)
                     .member("status", complete ? "COMPLETE" : "INCOMPLETE")
                     .member("timestamp", timestamp)
                     .member("index", index)

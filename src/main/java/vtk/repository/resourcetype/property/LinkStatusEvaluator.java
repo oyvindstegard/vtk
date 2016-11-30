@@ -113,9 +113,6 @@ public class LinkStatusEvaluator implements LatePropertyEvaluator {
                     }
                     errors.add("BROKEN_LINKS_" + type.toString());
                 }
-                if (map.containsKey("vrtxid")) {
-                    errors.add("TARGET_RELOCATED");
-                }
             }
             List<Value> values = new ArrayList<>();
             for (String s: errors) {
