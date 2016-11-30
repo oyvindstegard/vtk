@@ -321,6 +321,8 @@
         </td>
       </tr>
     </#if>
+    <!-- Edit videoref -->
+    <@propList.editOrDisplayProperty modelName='aboutItems' propertyName = 'videoref-type' />
   </#if>
   </table>
   </div>

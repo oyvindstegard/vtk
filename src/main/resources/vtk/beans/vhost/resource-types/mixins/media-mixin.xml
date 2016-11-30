@@ -109,4 +109,10 @@
     <property name="type" value="INT" />
   </bean>
 
+  <bean id="videoref.typePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="videoref-type" />
+    <property name="namespace" ref="DEFAULT_NAMESPACE" />
+    <property name="type" value="STRING" />
+  </bean>
+
 </beans>

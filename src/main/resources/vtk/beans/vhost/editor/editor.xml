@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <import resource="blog-listing-editor.xml" />
   <import resource="employee-listing-editor.xml" />
@@ -179,7 +179,7 @@
   <bean id="editor.videoEditService" parent="editor.abstractEditService">
     <property name="assertions">
       <list>
-        <ref bean="contentTypeMatchesVideo" />
+        <ref bean="resourceTypeIsVideoAssertion" />
       </list>
     </property>
     <property name="handler" ref="editor.videoEditHandler" />
@@ -328,7 +328,11 @@
         <entry key="helpURL.editor.en" value="${helpURL.editor.en}" />
       </map>
     </property>
-    <property name="referenceDataProviders">
+    <property name="referenceDataProviders" ref="editor.referenceDataProviders" />
+  </bean>
+  
+  <bean id="editor.referenceDataProviders" class="java.util.ArrayList">
+    <constructor-arg>
       <list>
         <ref bean="resourceContextProvider" />
         <ref bean="manage.unlockURLProvider" />
@@ -371,7 +375,7 @@
           </property>
         </bean>
       </list>
-    </property>
+    </constructor-arg>
   </bean>
 
   <bean id="editor.ooXmlEditView" parent="freemarkerView">
