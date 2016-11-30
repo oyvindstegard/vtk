@@ -97,6 +97,11 @@ public final class PropertyType {
     public static final String PUBLISHED_PROP_NAME = "published";
     public static final String TAGS_PROP_NAME = "tags";
     public static final String CONTENTLOCALE_PROP_NAME = "contentLocale";
+    public static final String SYSTEM_JOB_STATUS_PROP_NAME = "system-job-status";
+    public static final String LOCATION_HISTORY_PROP_NAME = "location-history";
+    public static final String LINK_CHECK_PROP_NAME = "link-check";
+    public static final String LINK_STATUS_PROP_NAME = "link-status";
+
     
     /*
      * Special properties
@@ -150,6 +155,10 @@ public final class PropertyType {
      */
     public static final Set<String> UNCOPYABLE_PROPERTIES = 
         Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
-            NUMBER_OF_COMMENTS_PROP_NAME
+            NUMBER_OF_COMMENTS_PROP_NAME,
+            LOCATION_HISTORY_PROP_NAME,
+            SYSTEM_JOB_STATUS_PROP_NAME,
+            LINK_CHECK_PROP_NAME,
+            LINK_STATUS_PROP_NAME
     )));
 }
