@@ -58,6 +58,8 @@
     <Logger name="org.springframework.transaction.interceptor" level="info" />
     <Logger name="java.sql" level="info" />
     <Logger name="org.apache.commons.dbcp" level="info" />
+
+    <!-- To debug SQL statements, set level="debug": -->
     <Logger name="vtk.repository.store.db" level="info" />
     
     <Logger name="vtk.repository.index" level="info" />
