@@ -1,9 +1,9 @@
 <#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#--
   - File: editor.ftl
-  - 
+  -
   - Required model data:
-  -  
+  -
   -  ckeditorBase.url
   -  ckSource.getURL
   -  ckCleanup.url
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.hotkeys.js"></script>
 
     <@vrtx.cssPlaceholder place="editor:head" />
-    
+
 
     <#assign language = vrtx.getMsg("eventListing.calendar.lang", "en") />
     <#assign isCollection = resource.resource.collection />
@@ -31,7 +31,7 @@
     <#assign isImage = resource.contentType?exists && resource.contentType?starts_with("image/") />
     <#assign isAudio = resource.contentType?exists && resource.contentType?starts_with("audio/") />
     <#assign isVideo = resource.contentType?exists && resource.contentType?starts_with("video/") />
-    <#assign supportedImageEditor = isImage && (resource.contentType == "image/jpeg" 
+    <#assign supportedImageEditor = isImage && (resource.contentType == "image/jpeg"
                                              || resource.contentType == "image/pjpeg"
                                              || resource.contentType == "image/png") />
 
@@ -43,19 +43,19 @@
         <#global baseFolder = resourceContext.parentURI />
       </#if>
     </#if>
-    
+
     <#assign contentLanguage = defaultLocale />
     <#if resource.contentLanguage?exists>
       <#assign contentLanguage = resource.contentLanguage />
-    </#if>    
+    </#if>
 
     <script type="text/javascript"><!--
       var MULTIPLE_INPUT_FIELD_INITIALIZED;
-      
+
       $(window).load(function() {
         initDatePicker(datePickerLang); // TODO: this would never run if resources hangs
       });
-    
+
       $(document).ready(function() {
         var vrtxAdm = vrtxAdmin, _$ = vrtxAdm._$;
 
@@ -65,12 +65,12 @@
         vrtxAdm.mapShortcut("#vrtx-save-shortcut", "#saveButton");
         vrtxAdm.mapShortcut("#vrtx-cancel-shortcut", "#cancel");
         vrtxAdm.mapShortcut("#vrtx-send-to-approval-shortcut", "#vrtx-send-to-approval");
-        
+
         // Cancel action
         _$("#editor").on("click", "#cancel", function(e) {
           vrtxEditor.needToConfirm = false;
         });
-        
+
         // Save and copy
         _$("#editor").on("click", "#saveAndViewButton, #saveCopyButton", function(e) {
           var ok = performValidation();
@@ -87,28 +87,28 @@
             e.stopPropagation();
           }
         });
-        
+
         // XXX: possible to avoid hard-coding of these? (as in new editor)
         var hasFeaturedArticles = _$("#resource\\.featured-articles").length;
         var hasAggregation = _$("#resource\\.aggregation").length;
         var hasManuallyApprove = _$("#resource\\.manually-approve-from").length;
         var hasTagSearchSuggestions = _$("#resource\\.tag-search-suggestions").length;
-        
+
         var hasMultipleInputFields = hasFeaturedArticles || hasAggregation || hasManuallyApprove || hasTagSearchSuggestions;
         if(hasMultipleInputFields) {
           var aggregationLimit = "${aggregationLimit}";
-        
+
           initMultipleInputFields();
-          
+
           $.when(vrtxEditor.multipleFieldsBoxesDeferred).done(function() {
             MULTIPLE_INPUT_FIELD_INITIALIZED = $.Deferred();
-            
+
             // General/aggregation
             enhanceMultipleInputFields("aggregation", false, false, aggregationLimit, null, false, false);
             enhanceMultipleInputFields("manually-approve-from", false, false, aggregationLimit, null, false, false);
             enhanceMultipleInputFields("featured-articles", true, true, 50, null, false, false); // Article listing
             enhanceMultipleInputFields("tag-search-suggestions", false, false, 50, null, false, false); // Employee listing
-            
+
             // var manuallyApproveButton = $("#manually-approve-container-title");
             // manuallyApproveButton.parent().find("> div:first-child").append(manuallyApproveButton.remove());
             MULTIPLE_INPUT_FIELD_INITIALIZED.resolve();
@@ -129,15 +129,15 @@
           saveMultipleInputFields();
         }
       }
-      
+
       // Async. save i18n
       <#if isCollection> var ajaxSaveText = "<@vrtx.msg code='editor.save-folder-ajax-loading-title' />";
-      <#elseif isImage>  var ajaxSaveText = "<@vrtx.msg code='editor.save-image-ajax-loading-title' />";   
-      <#elseif isAudio>  var ajaxSaveText = "<@vrtx.msg code='editor.save-audio-ajax-loading-title' />";         
-      <#elseif isVideo>  var ajaxSaveText = "<@vrtx.msg code='editor.save-video-ajax-loading-title' />";         
+      <#elseif isImage>  var ajaxSaveText = "<@vrtx.msg code='editor.save-image-ajax-loading-title' />";
+      <#elseif isAudio>  var ajaxSaveText = "<@vrtx.msg code='editor.save-audio-ajax-loading-title' />";
+      <#elseif isVideo>  var ajaxSaveText = "<@vrtx.msg code='editor.save-video-ajax-loading-title' />";
       <#else>            var ajaxSaveText = "<@vrtx.msg code='editor.save-doc-ajax-loading-title' />";
       </#if>
-      
+
       // Manually approve i18n
       var approveGeneratingPage = "<@vrtx.msg code='editor.manually-approve.generating-page' />",
           approveRetrievingData = "<@vrtx.msg code='editor.manually-approve.retrieving-data' />",
@@ -157,11 +157,11 @@
                            <#list fckEditorAreaCSSURL as cssURL>
                              "${cssURL}" <#if cssURL_has_next>,</#if>
                            </#list>
-                         </#if>]; 
-     
+                         </#if>];
+
     //-->
     </script>
-    
+
     <script type="text/javascript" src="${jsBaseURL}/collectionlisting/manually-approve.js"></script>
 
     <@editor.addCommonScripts language true />
@@ -171,7 +171,7 @@
         <script type="text/javascript" src="${jsBaseURL}/image-editor/excanvas.compiled.js"></script>
       <![endif]-->
       <script type="text/javascript" src="${jsBaseURL}/image-editor/editor.js"></script>
-      <script type="text/javascript"><!--  
+      <script type="text/javascript"><!--
         var startCropText = '<@vrtx.msg code="editor.image.start-crop" default="Start cropping" />';
         var cropText = '<@vrtx.msg code="editor.image.crop" default="Crop" />';
         var widthText = '<@vrtx.msg code="imageListing.width" default="Width" />';
@@ -192,7 +192,7 @@
     <div id="vrtx-editor-title-submit-buttons">
       <div id="vrtx-editor-title-submit-buttons-inner-wrapper">
         <h2>${header}</h2>
-        
+
         <div class="submitButtons submit-extra-buttons">
             <a class="vrtx-button" id="vrtx-save-view-shortcut" href="javascript:void(0)">${vrtx.getMsg("editor.saveAndView")}</a>
             <#if supportedImageEditor><a class="vrtx-button" id="vrtx-save-copy-shortcut" href="javascript:void(0)"><span>${vrtx.getMsg("editor.saveCopy")}</span></a></#if>
@@ -209,7 +209,7 @@
         </div>
       </div>
     </div>
-    
+
     <#if !resource.isCollection()>
       <#assign backupURL = vrtx.linkConstructor(".", 'copyBackupService') />
       <#assign backupViewURL = vrtx.relativeLinkConstructor("", 'viewService') />
@@ -223,7 +223,7 @@
       <div class="properties"<#if isImage> id="image-properties"</#if>>
         <@propsForm resource.editProperties />
       </div>
- 
+
       <#if (resource.content)?exists>
         <div class="html-content">
           <label class="resource.content" for="resource.content"><@vrtx.msg code="editor.content" /></label> 
@@ -231,7 +231,7 @@
           <@editor.createEditor  'resource.content' true false simpleHTML />
         </div>
       </#if>
- 
+
      <#if isImage>
        <div id="vrtx-image-editor-wrapper">
          <h3 id="vrtx-image-editor-preview"><@vrtx.msg code="editor.image.preview-title" default="Preview" /></h3>
@@ -240,7 +240,7 @@
          </div>
        </div>
      </#if>
-      
+
       <#-- Margin-bottom before save- cancel button for collections -->
       <#if isCollection>
         <div id="allowedValues"></div>
@@ -261,7 +261,7 @@
       </div>
 
      </form>
-     
+
     </body>
 </html>
 
@@ -271,7 +271,7 @@
     <#list propDefs as propDef>
       <#local name = propDef.name />
       <#local multiple = propDef.isMultiple() />
-      
+
       <#-- HACKS 2012 start -->
       <#-- Wrap hide properties -->
       <#if !name?starts_with("hide") && startWrapHideProps?exists && startWrapHideProps = "true">
@@ -282,7 +282,7 @@
         <div id="vrtx-resource.hide-props" class="hide property-item">
           <div class="resource.hide-props property-label"><@vrtx.msg code='editor.hide-props-title' /></div>
       </#if>
-      
+
       <#-- For employee listing. Grouping of display properties. -->
       <#if resource.resourceType = 'employee-listing'>
         <#if !(name?starts_with("display-affiliation-tabs") || name?starts_with("display-tags"))
@@ -295,7 +295,7 @@
           <div class="resource.display-props property-label"><@vrtx.msg code='editor.display-props-title' /></div>
       </#if>
       </#if>
-      
+
       <#-- I have no idea what this VTK-2012 hack is supposed ot do, but whatever it is, it's not going to work -->
       <#-- Title for aggregation and manually approve when recursive isn't present -->
       <#if name == "recursive-listing"><#assign recursivePresent = "true" /></#if>
@@ -305,13 +305,13 @@
         </div>
       </#if>
       <#-- HACKS 2012 end -->
-      
+
       <#if name = "display-aggregation" || name = "display-manually-approved">
         <#local localizedName>
           <@vrtx.msg code="proptype.name.${resource.resourceType}.${name}" />
         </#local>
       <#elseif name = "linkOtherLanguage">
-        <#local localizedName>      
+        <#local localizedName>
           <#if contentLanguage = "en">
             <@vrtx.msg code="proptype.name.${name}.en" />
           <#else>
@@ -321,7 +321,7 @@
       <#else>
         <#local localizedName = propDef.getLocalizedName(locale)?no_esc />
       </#if>
-      
+
       <#local value = resource.getValue(propDef) />
       <#local description = propDef.getDescription(locale)?default("") />
 
@@ -329,7 +329,7 @@
 
       <#local type = propDef.type />
       <#local error = resource.getError(propDef)?default('') />
-	  
+
       <#local useRadioButtons = false />
       <#if ((propDef.metadata.editingHints.radio)?exists)>
         <#local useRadioButtons = true />
@@ -339,17 +339,17 @@
       <#if ((propDef.metadata.editingHints.hideLabel)?exists)>
         <#local displayLabel = false />
       </#if>
-      
+
       <div id="vrtx-resource.${name}" class="${name} property-item">
       <#if displayLabel>
         <div class="resource.${name} property-label">${localizedName}<#if name == "fs-program-codes"><abbr tabindex="0" class="tooltips label-tooltips" title="${vrtx.getMsg('proptype.name.program.fs-program-codes.info')}"></abbr></#if></div>
       </#if>
-      
+
       <#if type = 'HTML' && name != 'userTitle' && name != 'title' && name != 'caption'>
 
         <textarea id="resource.${name}" name="resource.${name}" rows="7" cols="60">${value}</textarea>
         <@editor.createEditor  'resource.${name}' false false simpleHTML />
-        
+
       <#elseif type = 'HTML' && name == 'caption'>
         <textarea id="resource.${name}" name="resource.${name}" rows="7" cols="60">${value}</textarea>
         <@editor.createEditor 'resource.${name}' false true />
@@ -371,14 +371,14 @@
         <input class="vrtx-textfield" type="text" id="resource.${name}"  name="resource.${name}" value="${value}" />
         <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url}', '${baseFolder}',
                 '${fckBrowse.url.pathRepresentation}', 'Media');"><@vrtx.msg code="editor.browseMediaFiles"/></button>
-                
+
       <#elseif name = 'linkOtherLanguage'>
         <input class="vrtx-textfield" type="text" id="resource.${name}"  name="resource.${name}" value="${value}" />
         <button class="vrtx-button" type="button" onclick="browseServer('resource.${name}', '${fckeditorBase.url}', '${baseFolder}',
                 '${fckBrowse.url.pathRepresentation}', 'File');"><@vrtx.msg code="editor.browseMediaFiles"/></button>
-        
+
       <#elseif type = 'IMAGE_REF'>
-      
+
         <#if name == "picture">
         <div class="picture-and-caption">
           <div class="input-and-button-container">
@@ -393,7 +393,7 @@
             </div>
           </div>
         <#else>
-        
+
           <div class="image-ref vrtx-image-ref.${name}">
             <div class="input-and-button-container.${name}">
               <input type="text" class="vrtx-textfield preview-image-inputfield" id="resource.${name}" name="resource.${name}" value="${value}" />
@@ -429,7 +429,7 @@
         </#if>
 
         <#local uniqueName = 'cal_' + propDef_index />
-        
+
         <#t><input size="8" maxlength="10" type="text" class="vrtx-textfield vrtx-date date" id="resource.${name}" name="resource.${name}.date" value="${dateVal}" />
         <#t><input size="1" maxlength="2" type="text" class="vrtx-textfield vrtx-hours hours" id="resource.${name}.hours" name="resource.${name}.hours" value="${hours}" />
         <#t><span class="colon">:</span>
@@ -471,7 +471,7 @@
 
           <@displayDefaultSelectedValueAsRadioButton propDef name />
           <@displayAllowedValuesAsRadioButtons propDef name allowedValues value />
-            
+
           <#else>
             <select name="resource.${name}" id="resource.${name}">
               <#if !propDef.mandatory>
@@ -480,7 +480,7 @@
               <#recover>
                 <#local nullValue = 'unspecified' />
               </#recover>
-                
+
                 <option value="">${nullValue}</option>
               </#if>
               <#list allowedValues as v>
@@ -519,7 +519,7 @@
           </select>
         <#else>
           <input class="vrtx-textfield<#if multiple> vrtx-multiple</#if>" type="text" id="resource.${name}" name="resource.${name}" value="${value}" size="32" />
-    
+
           <#if name = 'recursive-listing-subfolders'>
             <label class="tooltip">${vrtx.getMsg("editor.recursive-listing.featured-articles.hint")}</label>
           </#if>
@@ -536,10 +536,10 @@
             <div id="manually-approve-container">
             </div>
           </#if>
-        
+
         </#if>
       </#if>
-      <#if error != ""><span class="error">${error}</span></#if> 
+      <#if error != ""><span class="error">${error}</span></#if>
     </div>
     </#list>
 </#macro>
@@ -551,15 +551,15 @@
     <#recover>
       <#local nullValue = 'unspecified' />
     </#recover>
-		 
-	<#if name = "sortdescending"> 
-		<#local nullValue = nullValue + " " + vrtx.getMsg("editor.sortdescending.default")>	
+
+	<#if name = "sortdescending">
+		<#local nullValue = nullValue + " " + vrtx.getMsg("editor.sortdescending.default")>
 		<#if resource.getProperty(propDef)?? && resource.getProperty(propDef).isInherited()>
 			<#return>
-		</#if>    
+		</#if>
 	</#if>
- 
-	<div class="vrtx-radio-button">            
+
+	<div class="vrtx-radio-button">
       <#if !(resource.getProperty(propDef))?exists>
         <input name="resource.${name}" id="resource.${name}.unspecified" type="radio" value="" checked="checked" />
         <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
@@ -568,7 +568,7 @@
         <label class="resource.${name}" for="resource.${name}.unspecified">${nullValue}</label>
       </#if>
     </div>
-	</#if>	
+	</#if>
 
 </#macro>
 
@@ -582,7 +582,7 @@
       <#if v == value>
         <#if name = "sortdescending" && resource.getProperty(propDef).isInherited()>
 			<#local localized = localized + " (" + vrtx.getMsg("resource.property.inherited") + ")"/>
-		</#if>	
+		</#if>
         <input name="resource.${name}" id="resource.${name}.${v}" type="radio" value="${v}" checked="checked" />
         <label class="resource.${name}" for="resource.${name}.${v}">${localized}</label>
       <#else>
@@ -598,11 +598,11 @@
 </#macro>
 
 <#macro genEditorHelpMenu type isCollection>
-   
+
   <div id="editor-help-menu">
     <span id="editor-help-menu-header"><@vrtx.msg code="manage.help" default="Help" />:</span>
     <ul>
-      <li> 
+      <li>
         <#assign lang><@vrtx.requestLanguage/></#assign>
         <#assign propKey = "helpURL.editor." + lang />
         <#if isCollection >
@@ -610,9 +610,9 @@
         </#if>
         <#if type == "image" || type == "video" || type == "audio" >
             <#assign propKey = "helpURL.editor." + type + "." + lang />
-                    
+
         </#if>
-        
+
         <#assign url = helpURL />
         <#if .vars[propKey?markup_string]?exists>
           <#assign url = .vars[propKey?markup_string] />
