@@ -27,8 +27,8 @@
   <#if !isAudio>
     <#if poster?? && (hideVideoFallbackLink?? == false || useVideoTag)>
       <#local imgSrc = poster />
-      <#-- FIXME Specific handling for "videoref" resource type does *NOT* belong in VTK ! -->
-      <#elseif mediaResource?? && vrtx.isOfType("videoref",mediaResource.resourceType)>
+    <#-- FIXME Specific handling for "videoref" resource type does *NOT* belong in VTK ! -->
+    <#elseif mediaResource?? && vrtx.isOfType("videoref", mediaResource.resourceType)>
       <#local imgSrc = "/vrtx/__vrtx/static-resources/themes/default/icons/video-streaming-only.png" />
       <#local width = "500" />
       <#local height = "279" />

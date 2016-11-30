@@ -461,8 +461,12 @@
 -->
 <#function isOfType superTypeName testTypeName>
   <#if VRTX_RESOURCE_TYPE_TREE?exists>
-    <#local superDef = VRTX_RESOURCE_TYPE_TREE.getResourceTypeDefinitionByName(superTypeName) />
-    <#return VRTX_RESOURCE_TYPE_TREE.isContainedType(superDef, testTypeName) />
+    <#attempt>
+      <#local superDef = VRTX_RESOURCE_TYPE_TREE.getResourceTypeDefinitionByName(superTypeName) />
+      <#return VRTX_RESOURCE_TYPE_TREE.isContainedType(superDef, testTypeName) />
+    <#recover>
+      <#return false />
+    </#attempt>
   </#if>
   <#return false />
 </#function>
