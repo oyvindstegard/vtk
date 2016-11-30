@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
-import vtk.util.io.InputStreamWithLength;
 import vtk.repository.Lock;
 import vtk.repository.LockImpl;
 import vtk.repository.Namespace;
@@ -74,6 +73,7 @@ import vtk.repository.store.db.SqlDaoUtils.PropHolder;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
+import vtk.util.io.InputStreamWithLength;
 
 /**
  * An iBATIS SQL maps implementation of the DataAccessor interface.
@@ -597,6 +597,12 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         ResourceImpl created = loadResourceInternal(newResource.getURI(), sqlSession);
         for (Property prop : newResource) {
+            
+            if (prop.getDefinition().getNamespace() == Namespace.DEFAULT_NAMESPACE 
+                    && uncopyableProperties.contains(prop.getDefinition().getName())) {
+                continue;
+            }
+            
             created.addProperty(prop);
             Property fixedProp = fixedProperties != null ? fixedProperties.getProperty(prop.getDefinition()
                     .getNamespace(), prop.getDefinition().getName()) : null;
