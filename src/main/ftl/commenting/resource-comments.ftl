@@ -33,12 +33,15 @@
     <ul class="comments">
     <#list comments as comment>
         <li class="comment"><h2>
-          <a href="${(commentURLMap[comment.ID] + '#comment-' + comment.ID)}">
-            <#-- XXX: look up principal -->
-            ${comment.author}
+            <#if comment.author.URL?exists>
+              <span class="comment-author"><a href="${comment.author.URL}">${comment.author.description}</a></span>
+            <#else>
+              <span class="comment-author"><@vrtx.breakSpecificChar nchars=21 char='@'>${comment.author.description}</@vrtx.breakSpecificChar></span>
+            </#if>
 	    <@vrtx.msg code="commenting.comments.on" default="about" />
-            "${resourceMap[comment.URI].title}"
-          </a></h2>
+            <a href="${(commentURLMap[comment.ID] + '#comment-' + comment.ID)}">
+              "${resourceMap[comment.URI].title}"
+            </a></h2>
           <div class="comment">${comment.content?no_esc}</div>
           <span class="pubdate"><@vrtx.date value=comment.time format='long' /></span>
         </li>
