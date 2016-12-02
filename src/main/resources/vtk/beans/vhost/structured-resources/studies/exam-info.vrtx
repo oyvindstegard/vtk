@@ -2,7 +2,7 @@ resourcetype exam-info {
 
   properties {
     tittel : string,
-    title : derived (tittel) eval ("exam"?localized) overrides title
+    title : derived (tittel) eval ("exam"?localized + " " + "for"?localized + " " + "courseContext.fs-course-code"?contextual + " - " + "semesterContext.semesterTitle"?contextual) overrides title
   }
 
   edit-rules {
