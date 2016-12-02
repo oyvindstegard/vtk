@@ -88,7 +88,7 @@ resourcetype exam-info {
 
     exam-ordning (ordning) {
       ##
-      [if ordning.trekkfrist]
+      [if ordning.deadlineWithdrawal]
         <h2>[localized 'trekkfrist']</h2>
         <p>[call "comp:date-format" { "date" : ordning.deadlineWithdrawal }]</p>
       [endif]
