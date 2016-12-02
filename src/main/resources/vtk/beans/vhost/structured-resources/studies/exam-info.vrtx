@@ -31,24 +31,24 @@ resourcetype exam-info {
     exam-part (part, isSubPart) {
       ##
       [if isSubPart = "true"]<h3>[else]<h2>[endif]
-        [val part.navn]
+        [val part.name]
       [if isSubPart = "true"]</h3>[else]</h2>[endif]
       
-      [if part.datoEksamen]
-        <p><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.datoEksamen }][if part.klokkeslettEksamen] [localized 'time-prefix'] [val part.klokkeslettEksamen][endif][if part.varighetTimer][call "comp:duration-format" { "duration" : part.varighetTimer }][endif].</p>
+      [if part.dateExam]
+        <p><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.dateExam }][if part.timeExam] [localized 'time-prefix'] [val part.timeExam][endif][if part.durationHours][call "comp:duration-format" { "duration" : part.durationHours }][endif].</p>
       [endif]
       
-      [if part.datoInnlevering]
-        <p><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.datoInnlevering }][if part.klokkeslettInnlevering] [localized 'time-prefix'] [val part.klokkeslettInnlevering][endif]</p>
+      [if part.submissionDeadline]
+        <p><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.submissionDeadline }][if part.timeSubmission] [localized 'time-prefix'] [val part.timeSubmission][endif]</p>
       [endif]
       
-      [def rom part.rom]
-      [if part.datoEksamen != null || rom != null]
+      [def room part.room]
+      [if part.dateExam != null || room != null]
         <p><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">StudentWeb</a>.</p>
       [endif]
-      [if rom]
+      [if room]
         <ul>
-        [list rom r]
+        [list room r]
           <li>
             [if r.bygning]
               [if r.url]
@@ -56,9 +56,15 @@ resourcetype exam-info {
               [else]
                 [def url concat("https://www.google.no/maps/place/", r.bygning)]
               [endif]
-              <a href="[val url]">[if r.rom][val r.rom] [endif][val r.bygning]</a>
-            [elseif r.bygningskode]
-              [if r.romkode][val r.romkode] [endif][val r.bygningskode]
+              [if r.rom][val r.rom] [endif][val r.bygning]</a>
+            [elseif r.buildingCode]
+              [if r.url]
+                <a href="[val r.url]">
+              [endif]
+              [if r.roomCode][val r.roomCode] [endif][val r.buildingCode]
+              [if r.url]
+                </a>
+              [endif]
             [endif]
           </li>
         [endlist]
@@ -70,54 +76,54 @@ resourcetype exam-info {
         [call "include:shared-text" { "folder": "/vrtx/fellestekst/eksamen", "file": "system", "key": part.datasystem }]
       [endif]
       
-      [if part.kommentar]
-        <p><strong>[localized 'comment']:</strong> [val part.kommentar]</p>
+      [if part.comment]
+        <p><strong>[localized 'comment']:</strong> [val part.comment]</p>
       [endif]
       
-      [if part.kunngjoring]
-        <p><strong>[localized 'announcement']:</strong> [val part.kunngjoring]</p>
+      [if part.announcement]
+        <p><strong>[localized 'announcement']:</strong> [val part.announcement]</p>
       [endif]
       ##
     }
 
     exam-ordning (ordning) {
       ##
-      [if ordning.trekkfrist]
+      [if ordning.deadlineWithdrawal]
         <h2>[localized 'trekkfrist']</h2>
-        <p>[call "comp:date-format" { "date" : ordning.trekkfrist }]</p>
+        <p>[call "comp:date-format" { "date" : ordning.deadlineWithdrawal }]</p>
       [endif]
 
-      [def eksamensdeler ordning.eksamensdel]
-      [if eksamensdeler]
-        [def isOrdningEksamensDel (ordning.datoEksamen != null || ordning.datoInnlevering != null)]
+      [def examParts ordning.examPart]
+      [if examParts]
+        [def isOrdningEksamensDel (ordning.dateExam != null || ordning.submissionDeadline != null)]
 
-        [def len eksamensdeler.length()]
+        [def len examParts.length()]
         [if len > 1 && ! isOrdningEksamensDel]
           <h2>[localized 'ordning']</h2>
-          <p>[val ordning.navn]</p>
+          <p>[val ordning.name]</p>
         [endif]
       
         [if isOrdningEksamensDel]
           [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
         [endif]
 
-        [list eksamensdeler eksamensdel]
-          [call "comp:exam-part" { "part" : eksamensdel, "isSubPart": "false" }]
+        [list examParts examPart]
+          [call "comp:exam-part" { "part" : examPart, "isSubPart": "false" }]
           
-          [def deldager eksamensdel.deldag]
-          [if deldager]
-            [list deldager deldag]
-              [call "comp:exam-part" { "part" : deldag, "isSubPart": "true" }]
+          [def partDays examPart.partDay]
+          [if partDays]
+            [list partDays partDay]
+              [call "comp:exam-part" { "part" : partDay, "isSubPart": "true" }]
             [endlist]
           [endif]
         [endlist]
       [else]
         [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
 
-        [def deldager ordning.deldag]
-        [if deldager]
-          [list deldager deldag]
-            [call "comp:exam-part" { "part" : deldag, "isSubPart": "true" }]
+        [def partDays ordning.partDay]
+        [if partDays]
+          [list partDays partDay]
+            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true" }]
           [endlist]
         [endif]
       [endif]
@@ -158,9 +164,9 @@ resourcetype exam-info {
               [def examInfoURL settings.services.examInfo]
               
               [if course-code != null && term != null && year != null]
-                [def examInfoURL replace(examInfoURL, "%term", term)]
+                [def examInfoURL replace(examInfoURL, "%cid", course-code)]
                 [def examInfoURL replace(examInfoURL, "%sem", year)]
-                [def examInfoURL replace(examInfoURL, "%course", course-code)]
+                [def examInfoURL replace(examInfoURL, "%term", term)]
               
                 [def resp url-as-json(examInfoURL)]
               [else]
@@ -171,11 +177,11 @@ resourcetype exam-info {
                 <p>[localized 'lookup-unable']: [val examInfoURL]</p>
                 <p>[localized 'lookup-unable-error-msg']: [val resp.errorMessage]</p>
               [else]
-                [def exam resp.payload]
-                [def ordninger exam.ordning]
-                [if ordninger]
-                  [list ordninger ordning]
-                    [call "comp:exam-ordning" { "ordning" : ordning }]
+                [def exam resp.payload.exams]
+                [def arrangement exam.arrangement]
+                [if arrangement]
+                  [list arrangement arr]
+                    [call "comp:exam-ordning" { "ordning" : arr }]
                   [endlist]
                 [endif]
               [endif]
@@ -204,8 +210,8 @@ resourcetype exam-info {
                   nn : "Du finn informasjon om kvar du skal møte ved å logge på"),
     system : (en : "Examination system", no : "Eksamenssystem", nn : "Eksamenssystem"),
     comment : (en : "Comment", no : "Merknad", nn : "Merknad"),
-    announcement : (en : "Announcement of results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultat"),
-    task-disclosure : (en : "Disclosure of the task", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
+    announcement : (en : "Announcement of examination results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultat"),
+    task-disclosure : (en : "Disclosure of exam assignment", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
     task-deadline : (en : "Submission deadline", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
     results : (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
     results-info : (en : "You will find your examination results by logging on to",
