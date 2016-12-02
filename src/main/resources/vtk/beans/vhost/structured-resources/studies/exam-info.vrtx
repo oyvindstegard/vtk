@@ -35,19 +35,19 @@ resourcetype exam-info {
       [if isSubPart = "true"]</h3>[else]</h2>[endif]
       
       [if part.dateExam]
-        <p><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.dateExam }][if part.timeExam] [localized 'time-prefix'] [val part.timeExam][endif][if part.durationHours][call "comp:duration-format" { "duration" : part.durationHours }][endif].</p>
+        <p class="exam-date"><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.dateExam }][if part.timeExam] [localized 'time-prefix'] [val part.timeExam][endif][if part.durationHours][call "comp:duration-format" { "duration" : part.durationHours }][endif].</p>
       [endif]
       
       [if part.submissionDeadline]
-        <p><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.submissionDeadline }][if part.timeSubmission] [localized 'time-prefix'] [val part.timeSubmission][endif]</p>
+        <p class="exam-submission"><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.submissionDeadline }][if part.timeSubmission] [localized 'time-prefix'] [val part.timeSubmission][endif]</p>
       [endif]
       
       [def room part.room]
       [if part.dateExam != null || room != null]
-        <p><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">StudentWeb</a>.</p>
+        <p class="exam-place-info"><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">StudentWeb</a>.</p>
       [endif]
       [if room]
-        <ul>
+        <ul class="exam-rooms">
         [list room r]
           <li>
             [if r.bygning]
@@ -72,16 +72,16 @@ resourcetype exam-info {
       [endif]
       
       [if part.datasystem]
-        <p><strong>[localized 'system']:</strong></p>
+        <p class="exam-datasystem"><strong>[localized 'system']:</strong></p>
         [call "include:shared-text" { "folder": "/vrtx/fellestekst/eksamen", "file": "system", "key": part.datasystem }]
       [endif]
       
       [if part.comment]
-        <p><strong>[localized 'comment']:</strong> [val part.comment]</p>
+        <p class="exam-comment"><strong>[localized 'comment']:</strong> [val part.comment]</p>
       [endif]
       
       [if part.announcement]
-        <p><strong>[localized 'announcement']:</strong> [val part.announcement]</p>
+        <p class="exam-announcement"><strong>[localized 'announcement']:</strong> [val part.announcement]</p>
       [endif]
       ##
     }
