@@ -418,7 +418,7 @@ div#vrtx-resource\.picture {
     width: 395px;
   }
   iframe {
-    width: 371px !important;
+    width: 385px !important;
   }
 }
 
@@ -618,16 +618,36 @@ div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
   .cke_contents {
     border: 1px solid #d9d9d9 !important;
   }
-  .cke_toolgroup {
+  .cke_toolgroup,
+  .cke_combo_button {
+    margin: 0 6px 10px 0 !important;
     background: #fff !important;
-    margin-bottom: 10px !important;
-    border: 1px solid #bbb !important;
-    box-shadow: none !important;
     -ms-filter: "none" !important;
+    border: 1px solid #bbb !important;
+    @include borderRadius(3px !important);
+  }
+  .cke_toolgroup {
+    padding-right: 0 !important;
+    box-shadow: none !important;
+
+    a.cke_button:last-child,
+    a.cke_button.cke_button_disabled:hover:last-child {
+      &:after {
+        border-right: none !important;
+      }
+    }
+  }
+  .cke_combo {
+    margin-bottom: 0;
   }
   .cke_combo_button {
-    background: #fff !important;
-    -ms-filter: "none" !important;
+    padding: 0 !important;
+  }
+  .cke_combo:after {
+    border-right: none !important;
+  }
+  .cke_combo_open {
+    height: 23px !important;
   }
   .cke_combo_text {
     width: 63px;
