@@ -100,7 +100,7 @@ resourcetype exam-info {
         [def len examParts.length()]
         [if len > 1 && ! isOrdningEksamensDel]
           <h2>[localized 'ordning']</h2>
-          <p>[val ordning.name]</p>
+          <p>[val ordning.name].</p>
         [endif]
       
         [if isOrdningEksamensDel]
@@ -181,7 +181,9 @@ resourcetype exam-info {
                 [def arrangement exam.arrangement]
                 [if arrangement]
                   [list arrangement arr]
-                    [call "comp:exam-ordning" { "ordning" : arr }]
+                    [if arr.status = "Ordinær eksamen"]
+                      [call "comp:exam-ordning" { "ordning" : arr }]
+                    [endif]
                   [endlist]
                 [endif]
               [endif]
