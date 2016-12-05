@@ -652,6 +652,9 @@ div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
   .cke_combo_text {
     width: 63px;
   }
+  a.cke_button_on {
+    background: #e1e1e1;
+  }
   /* Make scrollbar visible with padding in textarea / CK-source */
   .cke_source {
     @include borderBox;
