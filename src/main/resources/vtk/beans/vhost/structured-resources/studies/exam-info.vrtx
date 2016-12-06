@@ -86,7 +86,7 @@ resourcetype exam-info {
       ##
     }
 
-    exam-ordning (ordning) {
+    exam-ordning (ordning, termNr) {
       ##
       [if ordning.deadlineWithdrawal]
         <h2>[localized 'trekkfrist']</h2>
@@ -108,13 +108,15 @@ resourcetype exam-info {
         [endif]
 
         [list examParts examPart]
-          [call "comp:exam-part" { "part" : examPart, "isSubPart": "false" }]
-          
-          [def partDays examPart.partDay]
-          [if partDays]
-            [list partDays partDay]
-              [call "comp:exam-part" { "part" : partDay, "isSubPart": "true" }]
-            [endlist]
+          [if (examPart.termNr = null || termNr = null || (int(examPart.termNr) = int(termNr)))]
+            [call "comp:exam-part" { "part" : examPart, "isSubPart": "false" }]
+	          
+	        [def partDays examPart.partDay]
+	        [if partDays]
+	          [list partDays partDay]
+	            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true" }]
+	          [endlist]
+	        [endif]
           [endif]
         [endlist]
       [else]
@@ -156,6 +158,7 @@ resourcetype exam-info {
             [else]
               [def course-code resource-prop-obj-val(".", "courseContext.fs-course-code")]
               [def term resource-prop-obj-val(".", "semesterContext.semesterTerm")]
+              [def termNr resource-prop-obj-val(".", "semesterContext.semesterTermNumber")]
               [def year resource-prop-obj-val(".", "semesterContext.semesterYear")]
               [if year != null && year.length() = 4]
                 [def year year.substring(2, 4)]
@@ -182,7 +185,7 @@ resourcetype exam-info {
                 [if arrangement]
                   [list arrangement arr]
                     [if arr.status = "Ordinær eksamen"]
-                      [call "comp:exam-ordning" { "ordning" : arr }]
+                      [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr }]
                     [endif]
                   [endlist]
                 [endif]
