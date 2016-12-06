@@ -50,13 +50,13 @@ resourcetype exam-info {
         <ul class="exam-rooms">
         [list room r]
           <li>
-            [if r.bygning]
-              [if r.url]
-                [def url r.url]
+            [if r.buildingName]
+              [if r.buildingUrl]
+                [def url r.buildingUrl]
               [else]
-                [def url concat("https://www.google.no/maps/place/", r.bygning)]
+                [def url concat("https://www.google.no/maps/place/", r.buildingName)]
               [endif]
-              [if r.rom][val r.rom] [endif][val r.bygning]</a>
+              <a href="[val url]">[if r.roomName][val r.roomName] [endif][val r.buildingName]</a>
             [elseif r.buildingCode]
               [if r.url]
                 <a href="[val r.url]">
