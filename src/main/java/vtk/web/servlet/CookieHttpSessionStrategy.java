@@ -70,7 +70,6 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
         String cookieName = request.isSecure() ? cookieNameHttps : cookieNameHttp;
         Cookie cookie = new Cookie(cookieName, session.getId());
         logger.debug("New session cookie: " + cookieName + ":" + session.getId());
-        cookie.setDomain(request.getServerName());
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setSecure(request.isSecure());
@@ -85,7 +84,6 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
         String cookieName = request.isSecure() ? cookieNameHttps : cookieNameHttp;
         Cookie cookie = new Cookie(cookieName, id.orElse(""));
         logger.debug("Remove session cookie: " + cookieName);
-        cookie.setDomain(request.getServerName());
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setSecure(request.isSecure());
