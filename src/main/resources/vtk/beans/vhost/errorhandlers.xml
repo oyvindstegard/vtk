@@ -14,7 +14,18 @@
   <bean id="resourceNotFoundErrorHandler.redirectAssertion"
         class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
     <property name="targetClass" value="java.util.Optional" />
-    <property name="targetMethod" value="empty" />
+    <property name="targetMethod" value="of" />
+    <property name="arguments">
+      <bean class="vtk.web.service.AndAssertion">
+        <property name="assertions">
+          <list>
+            <ref bean="webPortAssertion" />
+            <ref bean="webHostNameAssertion" />
+            <ref bean="webProtocolAssertion" />
+          </list>
+        </property>
+      </bean>
+    </property>
   </bean>
   
   <bean id="badRequestErrorHandler" class="vtk.web.DefaultErrorHandler">
