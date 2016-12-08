@@ -46,9 +46,11 @@ public class TemplateHeaderProvider implements ResponseFilter {
     private Map<String, SimpleTemplate> headers = new LinkedHashMap<>();
     private List<ReferenceDataProvider> referenceDataProviders;
     private int order;
+    private boolean addHeaders = true;
     
     public TemplateHeaderProvider(Map<String, String> headers, 
-            List<ReferenceDataProvider> referenceDataProviders, int order) {
+            List<ReferenceDataProvider> referenceDataProviders, 
+            int order, boolean addHeaders) {
         for (String name: headers.keySet()) {
             String spec = headers.get(name);
             SimpleTemplate template = SimpleTemplate.compile(spec, "%{", "}");
@@ -56,6 +58,7 @@ public class TemplateHeaderProvider implements ResponseFilter {
         }
         this.referenceDataProviders = referenceDataProviders;
         this.order = order;
+        this.addHeaders = addHeaders;
     }
 
     @Override
@@ -87,7 +90,12 @@ public class TemplateHeaderProvider implements ResponseFilter {
                 public void write(String text) {
                     header.append(text);
                 }});
-            response.addHeader(name, header.toString());
+            if (addHeaders) {
+                response.addHeader(name, header.toString());
+            }
+            else {
+                response.setHeader(name, header.toString());
+            }
         }
         return response;
     }
