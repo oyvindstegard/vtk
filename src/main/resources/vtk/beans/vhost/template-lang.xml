@@ -138,4 +138,13 @@
     </constructor-arg>
   </bean>
 
+  
+  <bean id="templateLanguage.regexpReplaceFunction" class="vtk.text.tl.expr.RegexpReplace">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg  value="regexp-replace" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
 </beans>

@@ -252,6 +252,7 @@
         <ref bean="templateLanguage.dateCompareFunction" />
         <ref bean="templateLanguage.dateFormatFunction" />
         <ref bean="templateLanguage.replaceFunction" />
+        <ref bean="templateLanguage.regexpReplaceFunction" />
         <ref bean="decorating.requestContextFunction" />
         <ref bean="decorating.retrieveFunction" />
         <ref bean="decorating.serviceURLFunction" />
