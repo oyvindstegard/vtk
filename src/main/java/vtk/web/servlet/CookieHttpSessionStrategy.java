@@ -75,16 +75,6 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
         cookie.setSecure(request.isSecure());
         cookie.setMaxAge(-1); // Session cookie (not stored)
         response.addCookie(cookie);
-
-        // TODO: Remove domain cookies set on .www.usit.uio.no - remove before christmas 2016
-        Cookie oldCookie = new Cookie(cookieName, "REMOVE BEFORE CHRISTMAS 2016");
-        logger.debug("Remove OLD session cookie: " + cookieName);
-        oldCookie.setDomain(request.getServerName());
-        oldCookie.setPath("/");
-        oldCookie.setHttpOnly(true);
-        oldCookie.setSecure(request.isSecure());
-        oldCookie.setMaxAge(0);
-        response.addCookie(oldCookie);
     }
 
     @Override
