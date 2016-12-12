@@ -82,42 +82,54 @@ public class SubFolderMenuComponent extends ListMenuComponent {
     private static final String PARAMETER_TITLE_DESC = "The menu title";
 
     protected static final String PARAMETER_SORT = "sort";
-    private static final String PARAMETER_SORT_DESC = "The name of a property to sort results by. Legal values are ('name', 'title'). "
+    private static final String PARAMETER_SORT_DESC = 
+            "The name of a property to sort results by. Legal values are ('name', 'title'). "
             + "The default property is 'title'";
 
     protected static final String PARAMETER_SORT_DIRECTION = "direction";
-    private static final String PARAMETER_SORT_DIRECTION_DESC = "The sort direction. Legal values are 'asc', 'desc'. The default value is 'asc' ";
+    private static final String PARAMETER_SORT_DIRECTION_DESC = 
+            "The sort direction. Legal values are 'asc', 'desc'. The default value is 'asc' ";
 
     protected static final String PARAMETER_RESULT_SETS = "result-sets";
-    private static final String PARAMETER_RESULT_SETS_DESC = "The number of result sets to split the result into. The default value is '1'";
+    private static final String PARAMETER_RESULT_SETS_DESC = 
+            "The number of result sets to split the result into. The default value is '1'";
 
     protected static final String PARAMETER_GROUP_RESULT_SETS_BY = "group-result-sets-by";
-    private static final String PARAMETER_GROUP_RESULT_SETS_BY_DESC = "The number of results-sets in grouping divs";
+    private static final String PARAMETER_GROUP_RESULT_SETS_BY_DESC = 
+            "The number of results-sets in grouping divs";
 
     protected static final String PARAMETER_FREEZE_AT_LEVEL = "freeze-at-level";
-    private static final String PARAMETER_FREEZE_AT_LEVEL_DESC = "At which level the subfolder-listing should freeze and show the same listing further down. The default is none.";
+    private static final String PARAMETER_FREEZE_AT_LEVEL_DESC = 
+            "At which level the subfolder-listing should freeze and show the same listing further down. The default is none.";
 
     protected static final String PARAMETER_EXCLUDE_FOLDERS = "exclude-folders";
-    private static final String PARAMETER_EXCLUDE_FOLDERS_DESC = "Commma-separated list with relative paths to folders which should not be displayed in the list";
+    private static final String PARAMETER_EXCLUDE_FOLDERS_DESC = 
+            "Commma-separated list with relative paths to folders which should not be displayed in the list";
 
     protected static final String PARAMETER_URI = "uri";
     private static final String PARAMETER_URI_DESC = "The URI (path) to the selected folder.";
 
     protected static final String PARAMETER_AS_CURRENT_USER = "authenticated";
-    private static final String PARAMETER_AS_CURRENT_USER_DESC = "The default is that only resources readable for everyone is listed. "
-            + "If this is set to 'true', the listing is done as the currently " + "logged in user (if any)";
+    private static final String PARAMETER_AS_CURRENT_USER_DESC = 
+            "The default is that only resources readable for everyone is listed. "
+            + "If this is set to 'true', the listing is done as the currently " 
+                    + "logged in user (if any)";
 
     protected static final String PARAMETER_DEPTH = "depth";
-    private static final String PARAMETER_DEPTH_DESC = "Specifies the number of levels to retrieve subfolders for. The default value is '1' ";
+    private static final String PARAMETER_DEPTH_DESC = 
+            "Specifies the number of levels to retrieve subfolders for. The default value is '1' ";
 
     protected static final String PARAMETER_DISPLAY_FROM_LEVEL = "display-from-level";
-    private static final String PARAMETER_DISPLAY_FROM_LEVEL_DESC = "Defines the starting URI level for the subfolder-menu";
+    private static final String PARAMETER_DISPLAY_FROM_LEVEL_DESC = 
+            "Defines the starting URI level for the subfolder-menu";
 
     protected static final String PARAMETER_MAX_NUMBER_OF_CHILDREN = "max-number-of-children";
-    private static final String PARAMETER_MAX_NUMBER_OF_CHILDREN_DESC = "Defines the maximum number of children displayed for each element";
+    private static final String PARAMETER_MAX_NUMBER_OF_CHILDREN_DESC = 
+            "Defines the maximum number of children displayed for each element";
 
     protected static final String PARAMETER_DISPLAY = "display";
-    private static final String PARAMETER_DISPLAY_DESC = "Specifies how to display the subfolder-menu. The default is normal lists. 'comma-separated' separates sublist-elements with commas.";
+    private static final String PARAMETER_DISPLAY_DESC = 
+            "Specifies how to display the subfolder-menu. The default is normal lists. 'comma-separated' separates sublist-elements with commas.";
 
     private static Logger logger = LoggerFactory.getLogger(SubFolderMenuComponent.class);
 
@@ -125,7 +137,7 @@ public class SubFolderMenuComponent extends ListMenuComponent {
     public void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
-        MenuRequest menuRequest = this.menuGenerator.getMenuRequest(request);
+        MenuRequest menuRequest = menuGenerator.getMenuRequest(request);
 
         int currentLevel = menuRequest.getCurrentCollectionUri().getDepth() + 1;
         if (menuRequest.getDisplayFromLevel() != -1) {
@@ -134,49 +146,53 @@ public class SubFolderMenuComponent extends ListMenuComponent {
             }
         }
         RequestContext requestContext = RequestContext.getRequestContext();
-        String token = requestContext.isViewUnauthenticated() ? null : requestContext.getSecurityToken(); // VTK-2460
+        String token = requestContext.isViewUnauthenticated() ? 
+                null : requestContext.getSecurityToken(); // VTK-2460
         Repository repository = requestContext.getRepository();
-		Path uri = requestContext.getResourceURI();
+        Path uri = requestContext.getResourceURI();
 
-		boolean ascendingSort = true;
-		Resource currentResource = null;
-		String sortDirectionParam = request.getStringParameter(SubFolderMenuComponent.PARAMETER_SORT_DIRECTION);
+        boolean ascendingSort = true;
+        String sortDirectionParam = request.getStringParameter(
+                SubFolderMenuComponent.PARAMETER_SORT_DIRECTION);
 
-		if (sortDirectionParam == null) {
-		try {
-			currentResource = repository.retrieve(token, uri, true);
-			if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()) != null) {
-				if (currentResource.getProperty(menuGenerator.getSortDescendingPropDef()).getBooleanValue()) {
-					ascendingSort = false;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			}
-		} else {
-			if ("asc".equals(sortDirectionParam)) {
-				ascendingSort = true;
-			} else if ("desc".equals(sortDirectionParam)) {
-				ascendingSort = false;
-			} else {
-				throw new DecoratorComponentException("Illegal value for parameter '"
-						+ SubFolderMenuComponent.PARAMETER_SORT_DIRECTION + "': '" + sortDirectionParam
-						+ "' (must be one of 'asc', 'desc')");
-			}
-		}
+        if (sortDirectionParam == null) {
+            try {
+                Resource currentResource = repository.retrieve(token, uri, true);
+                if (currentResource.getProperty(
+                        menuGenerator.getSortDescendingPropDef()) != null) {
+                    if (currentResource.getProperty(
+                            menuGenerator.getSortDescendingPropDef()).getBooleanValue()) {
+                        ascendingSort = false;
+                    }
+                }
+            }
+            catch (Exception e) { }
+        }
+        else {
+            if ("asc".equals(sortDirectionParam)) {
+                ascendingSort = true;
+            }
+            else if ("desc".equals(sortDirectionParam)) {
+                ascendingSort = false;
+            }
+            else {
+                throw new DecoratorComponentException("Illegal value for parameter '"
+                        + SubFolderMenuComponent.PARAMETER_SORT_DIRECTION 
+                        + "': '" + sortDirectionParam
+                        + "' (must be one of 'asc', 'desc')");
+            }
+        }
 
         Search search = buildSearch(requestContext, menuRequest);
 
         ResultSet rs = repository.search(token, search);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Executed search: " + search + ", hits: " + rs.getSize());
-        }
-		ListMenu<PropertySet> menu = this.menuGenerator.buildListMenu(rs, menuRequest, this.modelName, ascendingSort);
-		Map<String, Object> menuModel = this.menuGenerator.buildMenuModel(menu, menuRequest, ascendingSort);
-        model.put(this.modelName, menuModel);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Built model: " + model + " from menu: " + menu);
-        }
+        logger.debug("Executed search: " + search + ", hits: " + rs.getSize());
+        ListMenu<PropertySet> menu = menuGenerator
+                .buildListMenu(rs, menuRequest, modelName, ascendingSort);
+        Map<String, Object> menuModel = menuGenerator.buildMenuModel(
+                menu, menuRequest, ascendingSort);
+        model.put(modelName, menuModel);
+        logger.debug("Built model: " + model + " from menu: " + menu);
     }
 
     private Search buildSearch(RequestContext requestContext, MenuRequest menuRequest) {
@@ -197,7 +213,8 @@ public class SubFolderMenuComponent extends ListMenuComponent {
                 depthQuery.add(new UriDepthQuery(depth + i));
             }
             mainQuery.add(depthQuery);
-        } else {
+        }
+        else {
             mainQuery.add(new UriDepthQuery(depth));
         }
 
@@ -209,9 +226,10 @@ public class SubFolderMenuComponent extends ListMenuComponent {
             }
         }
         mainQuery.add(includeFolders);
-        mainQuery.add(new TypeTermQuery(menuRequest.getCollectionResourceType().getName(), TermOperator.IN));
+        mainQuery.add(new TypeTermQuery(
+                menuRequest.getCollectionResourceType().getName(), TermOperator.IN));
         Search search = new Search();
-        if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+        if (requestContext.isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
         }
         search.setQuery(mainQuery);
@@ -247,8 +265,9 @@ public class SubFolderMenuComponent extends ListMenuComponent {
     @Override
     public void afterPropertiesSet() throws Exception {
         super.afterPropertiesSet();
-        if (this.searchLimit <= 0) {
-            throw new BeanInitializationException("JavaBean property '" + searchLimit + "' must be a positive integer");
+        if (searchLimit <= 0) {
+            throw new BeanInitializationException(
+                    "JavaBean property '" + searchLimit + "' must be a positive integer");
         }
     }
 
