@@ -23,7 +23,8 @@ void execute(context, args, out) {
     parser = beanContext.getBean("searchParser");
 
     setAccessibility(true);
-    dao = beanContext.getBean("repository.cache").wrappedAccessor;
+    cache = beanContext.getBean("repository.cache");
+    dao = cache.wrappedAccessor;
     helper = beanContext.getBean("repositoryResourceHelper");
     contentStore = beanContext.getBean("repository.fsContentStore");
     contentRegistry = beanContext.getBean("contentRepresentationRegistry");
@@ -41,7 +42,6 @@ void execute(context, args, out) {
         }
         out.println("Log file: " + logFile);
     }
-
     propList = args.get("properties");
 
     before = System.currentTimeMillis();
@@ -149,6 +149,8 @@ void execute(context, args, out) {
 
                 status = tm.getTransaction(def);
                 try {
+                    cache.flushFromCache(evaluated.getURI(), false);
+
                     //tm.startTransaction();
                     dao.store(evaluated);
 
