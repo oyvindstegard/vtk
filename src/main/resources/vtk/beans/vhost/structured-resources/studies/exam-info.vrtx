@@ -27,13 +27,6 @@ resourcetype exam-info {
       [if (hours > 0 || minutes > 0)] ([if hours > 0][val hours] [localized 'time-hours'][endif][if minutes > 0] [val minutes] [localized 'time-minutes'][endif])[endif]
       ##
     }
-    
-    freetext-format(freetext) {
-      ##
-      [def ft regexp-replace(freetext, "(https?://\\\\S+)", "<a href='$1'>$1</a>")]
-      [val ft # unescaped]
-      ##
-    }
 
     exam-part (part, isSubPart) {
       ##
@@ -84,7 +77,7 @@ resourcetype exam-info {
       [endif]
       
       [if part.comment]
-        <p class="exam-comment"><strong>[localized 'comment']:</strong> [call "comp:freetext-format" { "freetext" : part.comment }]</p>
+        <p class="exam-comment"><strong>[localized 'comment']:</strong> [val part.comment]</p>
       [endif]
       
       [if part.announcement]
