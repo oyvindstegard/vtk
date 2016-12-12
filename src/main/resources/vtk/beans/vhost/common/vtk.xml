@@ -52,7 +52,7 @@
     </constructor-arg>
     <constructor-arg name="referenceDataProviders" ref="vtk.globalHeaders.referenceDataProviders" />
     <constructor-arg name="order" value="0" />
-    <constructor-arg name="addHeaders" value="true" />
+    <constructor-arg name="addHeaders" value="false" />
   </bean>
 
   <bean parent="defaultResponseFilters.builder">
