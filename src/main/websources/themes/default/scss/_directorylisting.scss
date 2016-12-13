@@ -161,6 +161,7 @@
     @include listingIcon(audio, $firstIsPng: true);
     @include listingIcon(video);
     @include listingIcon(videoref);
+    @include listingIcon(lecture-videoref);
     @include listingIcon(binary);
     @include listingIcon(dmg, $firstIsPng: true, $hasUnpublished: false);
     @include listingIcon(zip, $firstIsPng: true, $hasUnpublished: false);
