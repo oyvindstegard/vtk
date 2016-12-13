@@ -39,6 +39,11 @@
   </bean>
 
   <bean parent="cluster.componentRegistration">
+    <property name="component" ref="repository.internal"/>
+    <property name="async" value="false"/>
+  </bean>
+
+  <bean parent="cluster.componentRegistration">
     <property name="component" ref="repository.lockingCacheControlWrapper"/>
   </bean>
 
