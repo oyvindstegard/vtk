@@ -153,10 +153,6 @@ void execute(context, args, out) {
                     //tm.startTransaction();
                     dao.store(evaluated);
 
-                    // trigger re-indexing:
-                    event = new ResourceModificationEvent(repo, evaluated, origClone);
-                    beanContext.publishEvent(event);
-
                     // flush resource from cache (and propagate flush message to cluster node(s)):
                     cache.flushFromCache(evaluated.getURI(), false);
                     if (cluster.isPresent()) {
@@ -164,6 +160,10 @@ void execute(context, args, out) {
                               evaluated.getURI(), false, "evaluate.bsh");
                         cluster.get().clusterMessage(msg);
                     }
+
+                    // trigger re-indexing:
+                    event = new ResourceModificationEvent(repo, evaluated, origClone);
+                    beanContext.publishEvent(event);
 
                     tm.commit(status);
                 }
