@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -60,6 +61,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import vtk.cluster.ClusterAware;
+import vtk.cluster.ClusterRole;
 
 import vtk.repository.Revision.Type;
 import vtk.repository.content.ContentImpl;
@@ -112,7 +115,7 @@ import vtk.util.repository.MimeHelper;
  * XXX: duplication of owner and inherited between resource and acl.
  * XXX: too big.
  */
-public class RepositoryImpl implements Repository, ApplicationContextAware {
+public class RepositoryImpl implements Repository, ApplicationContextAware, ClusterAware {
 
     private ApplicationContext context;
     private DataAccessor dao;
@@ -2202,6 +2205,13 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
     private PlatformTransactionManager transactionManager;
     private final MaintenanceManager mm = new MaintenanceManager();
 
+    private Optional<ClusterRole> clusterRole = Optional.empty();
+
+    @Override
+    public void roleChange(ClusterRole role) {
+        clusterRole = Optional.of(role);
+    }
+
     public void init() {
         mm.init();
     }
@@ -2252,6 +2262,10 @@ public class RepositoryImpl implements Repository, ApplicationContextAware {
         @Override
         public void run() {
             if (isReadOnly()) {
+                return;
+            }
+            final Optional<ClusterRole> role = clusterRole;
+            if (role.isPresent() && role.get() == ClusterRole.SLAVE) {
                 return;
             }
 
