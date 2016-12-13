@@ -25,6 +25,7 @@ void execute(context, args, out) {
     setAccessibility(true);
     cache = beanContext.getBean("repository.cache");
     dao = cache.wrappedAccessor;
+    cluster = repo.repository.clusterContext;
     helper = beanContext.getBean("repositoryResourceHelper");
     contentStore = beanContext.getBean("repository.fsContentStore");
     contentRegistry = beanContext.getBean("contentRepresentationRegistry");
@@ -42,6 +43,7 @@ void execute(context, args, out) {
         }
         out.println("Log file: " + logFile);
     }
+    out.println("REPO: " + repo);
     propList = args.get("properties");
 
     before = System.currentTimeMillis();
@@ -149,14 +151,20 @@ void execute(context, args, out) {
 
                 status = tm.getTransaction(def);
                 try {
-                    cache.flushFromCache(evaluated.getURI(), false);
-
                     //tm.startTransaction();
                     dao.store(evaluated);
 
                     // trigger re-indexing:
                     event = new ResourceModificationEvent(repo, evaluated, origClone);
                     beanContext.publishEvent(event);
+
+                    // flush resource from cache (and propagate flush message to cluster node(s)):
+                    cache.flushFromCache(evaluated.getURI(), false);
+                    if (cluster.isPresent()) {
+                        msg = new vtk.repository.LockingCacheControlRepositoryWrapper.FlushMessage(
+                              evaluated.getURI(), false, "evaluate.bsh");
+                        cluster.get().clusterMessage(msg);
+                    }
 
                     tm.commit(status);
                 }
