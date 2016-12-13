@@ -43,7 +43,6 @@ void execute(context, args, out) {
         }
         out.println("Log file: " + logFile);
     }
-    out.println("REPO: " + repo);
     propList = args.get("properties");
 
     before = System.currentTimeMillis();
