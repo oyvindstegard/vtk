@@ -30,12 +30,12 @@
     }, options || {});
 
     var wrp = $(wrapper);
-    
+
     // Unobtrusive
     wrp.find(container + "-pure-css").addClass(container.substring(1));
     wrp.find(container + "-nav-pure-css").addClass(container.substring(1) + "-nav");
     wrp.find(container.replace("-container", "") + "-thumbs-pure-css").addClass(container.substring(1).replace("-container", "") + "-thumbs");
-    
+
     // Cache containers and image HTML with src as hash
     var wrpContainer = wrp.find(container + "-pure-css"),
         wrpThumbs = wrp.find("ul"),
@@ -46,14 +46,17 @@
         wrpNavPrev = wrpNavNextPrev.filter(".prev"),
         wrpNavNextPrevSpans = wrpNavNextPrev.find("span"),
         images = {}, imageUrlsToBePrefetchedLen = imageUrlsToBePrefetched.length - 1,
-        isFullscreen = false, isResponsive = false,
-        widthProp = "width", heightProp = "height",
-        maxRegularWidth = 507, maxRegularHeight = 380,
-        // TODO: account for description variable padding/width also (instead of -30), but could be none descriptions added at init
+        isFullscreen = false,
+        isResponsive = false,
+        widthProp = "width",
+        heightProp = "height",
+        maxRegularWidth = 507,
+        maxRegularHeight = 380,
+
         wrpDescriptionBorderPaddingWidth = 30,
         wrpContainerBorderPaddingWidth = parseInt(wrpContainer.css("paddingLeft"), 10) + parseInt(wrpContainer.css("paddingRight"), 10) +
                                          parseInt(wrpContainer.css("borderLeftWidth"), 10) + parseInt(wrpContainer.css("borderRightWidth"), 10);
-        
+
     var maxHeight = 4/3;
     if(settings.maxHeight === "none") {
       maxHeight = 99999;
@@ -62,21 +65,20 @@
     } else if(settings.maxHeight === "16-9") {
       maxHeight = 16/9; // 1.77:1
     }
-    
+
     if(isNaN(wrpContainerBorderPaddingWidth)) {
       wrpContainerBorderPaddingWidth = 0;
     }
-        
-    
+
     // Init first active image
     var firstImage = wrpThumbsLinks.filter(".active");
-    if(!firstImage.length) return this; 
+    if(!firstImage.length) return this;
     showImage(firstImage.find("img.vrtx-thumbnail-image"), true);
     wrpNavNextPrev.fadeTo(0, 0);
     wrpNavNextPrevSpans.fadeTo(0, 0);
-    
+
     $("html").addClass("fullscreen-gallery-big-arrows");
-    
+
     // Thumbs interaction
     wrp.on("mouseover mouseout click", "li a", function (e) {
       var elm = $(this);
@@ -103,7 +105,7 @@
     wrp.on("click mouseover mouseout", "a.prev", function (e) {
       nextPrevNavigate(e, -1);
     });
-    
+
     // Fullscreen toggle interaction
     wrp.on("click", "a.toggle-fullscreen", function (e) {
       var htmlTag = $("html");
@@ -128,7 +130,7 @@
       e.stopPropagation();
       e.preventDefault();
     });
-    
+
     // Fullscreen resize
     var maxRuns = 0;
     $(window).resize($.throttle(250, function () {
@@ -147,7 +149,7 @@
     });
     $.vrtxSGalleryToggleResponsive = function(responsive) {
       isResponsive = responsive;
-      
+
       if(!isFullscreen && !isResponsive) {
         resizeFullscreen(true);
       }
@@ -161,18 +163,18 @@
       }
       toggleFullscreenResponsive(htmlTag);
     };
-    
+
     var imgs = this;
     processLinkImages(imgs);
 
     // Prefetch current, next and prev full images in the background
     prefetchCurrentNextPrevNthImages(1);
-    
+
     wrp.removeClass("loading");
-  
+
     return imgs; /* Make chainable */
-    
-    
+
+
     function navigate(elm) {
       var img = elm.find("img.vrtx-thumbnail-image");
       showImage(img, false);
@@ -180,16 +182,16 @@
       prefetchCurrentNextPrevNthImages(1);
       img.stop().fadeTo(0, 1);
     }
-    
+
     function nextPrevNavigate(e, dir) {
-      var isNext = dir > 0;	
+      var isNext = dir > 0;
       if (e.type === "mouseover") {
         wrpNavNext.stop().fadeTo(settings.fadeNavInOutTime, isNext ? 1 : settings.fadedInActiveNavOpacity);
         wrpNavPrev.stop().fadeTo(settings.fadeNavInOutTime, isNext ? settings.fadedInActiveNavOpacity : 1);
         wrpNavNextPrevSpans.stop().fadeTo(settings.fadeNavInOutTime, settings.fadedNavOpacity);   /* XXX: some filtering instead below */
       } else if (e.type === "mouseout") {
         wrpNavNextPrevSpans.stop().fadeTo(settings.fadeNavInOutTime, 0);
-        wrpNavNextPrev.stop().fadeTo(settings.fadeNavInOutTime, 0); 
+        wrpNavNextPrev.stop().fadeTo(settings.fadeNavInOutTime, 0);
       } else {
         var activeThumb = wrpThumbsLinks.filter(".active").parent();
         var elm = isNext ? activeThumb.next("li") : activeThumb.prev("li");
@@ -204,29 +206,30 @@
         }
       }
     }
-    
-    function loadImage(src) {      
+
+    function loadImage(src) {
       if(src.indexOf("//") === 0) {
         src = window.location.protocol + src;
       }
       var id = genId(src);
       if(wrp.find("a#" + id).length) return;
-      var description = "<div id='" + id + "-description' class='" + container.substring(1) + "-description" + (!images[src].desc ? " empty-description" : "") + "' style='display: none; width: " + Math.max(0, ((images[src].width - wrpDescriptionBorderPaddingWidth) + wrpContainerBorderPaddingWidth)) + "px'>" + 
+      var description = "<div id='" + id + "-description' class='" + container.substring(1) + "-description" + (!images[src].desc ? " empty-description" : "") + "' style='display: none; width: " + Math.max(0, ((images[src].width - wrpDescriptionBorderPaddingWidth) + wrpContainerBorderPaddingWidth)) + "px'>" +
                         images[src].desc + "<div class='toggle-fullscreen-container'><a href='javascript:void(0);' class='toggle-fullscreen minimized'>" + (isResponsive ? settings.i18n.showFullscreenResponsive : settings.i18n.showFullscreen) + "</a></div></div>";
       $($.parseHTML(description)).insertBefore(wrpThumbs);
       wrpContainer.append("<a id='" + id + "' style='display: none' href='" + src + "' tabindex='-1' class='" + container.substring(1) + "-link'>" +
                             "<img src='" + src + "' alt='" + images[src].alt + "' style='width: " + images[src][widthProp] + "px; height: " + images[src][heightProp] + "px;' />" +
                           "</a>");
     }
-    
+
     function prefetchCurrentNextPrevNthImages(n) {
       var active = wrpThumbsLinks.filter(".active"),
           activeIdx = active.parent().index() - 1,
-          activeSrc = active.find("img.vrtx-thumbnail-image")[0].src.split("?")[0],
+          activeSrc = active.find("img.vrtx-thumbnail-image")[0].src,
+          activeSrc = /\.php/i.test(activeSrc) ? activeSrc : activeSrc.split("?")[0],
           alternate = false,
           i = 1;
       loadImage(activeSrc);
-      var loadNextPrevImages = setTimeout(function() {   
+      var loadNextPrevImages = setTimeout(function() {
         if(alternate) {
           var activeIdxMinus = activeIdx - i;
           if(activeIdxMinus < 0) {
@@ -255,12 +258,12 @@
       resizeContainers(activeSrc, active, activeDesc);
       active.addClass("active-full-image").fadeTo(0, 0).fadeTo(settings.fadeInOutTime, 1);
     }
-    
+
     function showImageToggle(current, active) {
       current.removeClass("active-full-image");
       active.addClass("active-full-image");
     }
-    
+
     function showImageDescStrategy(current, active, activeSrc, currentDesc, activeDesc, init) {
       currentDesc.removeClass("active-description");
       activeDesc.addClass("active-description");
@@ -275,15 +278,16 @@
         resizeContainers(activeSrc, active, activeDesc);
       }
     }
-    
+
     function showImage(image, init) {
-      var activeSrc = image[0].src.split("?")[0];
+      var activeSrc = image[0].src;
+      activeSrc = /\.php/i.test(activeSrc) ? activeSrc : activeSrc.split("?")[0];
 
       if (init) {
         cacheGenerateLinkImage(activeSrc);
       }
       var activeId = genId(activeSrc);
-      
+
       var active = wrp.find("a#" + activeId);
       var activeDesc = wrp.find("#" + activeId + "-description");
       var current = wrp.find("a" + container + "-link.active-full-image");
@@ -307,16 +311,19 @@
         wrpThumbsLinks.filter(":not(.active)").find("img").stop().fadeTo(0, settings.fadedThumbsOutOpacity);
       }
     }
-    
+
     function processLinkImages(imgs) {
-      var centerThumbnailImageFunc = centerThumbnailImage, 
+      var centerThumbnailImageFunc = centerThumbnailImage,
           cacheGenerateLinkImageFunc = cacheGenerateLinkImage,
           link, image;
       for(var i = 0, len = imgs.length; i < len; i++) {
         link = $(imgs[i]);
         image = link.find("img.vrtx-thumbnail-image");
         centerThumbnailImageFunc(image, link);
-        cacheGenerateLinkImageFunc(image[0].src.split("?")[0]);
+
+        var imageSrc = image[0].src;
+        imageSrc = /\.php/i.test(imageSrc) ? imageSrc : imageSrc.split("?")[0];
+        cacheGenerateLinkImageFunc(imageSrc);
       }
     }
 
@@ -344,7 +351,7 @@
       images[src].alt = alt !== "" ? $("<div/>").html(alt).text().replace(/\'/g, "&#39;") : null;
       images[src].desc = desc !== "" ? $("<div/>").html(desc).text().replace(/\'/g, "&#39;") : null;
       images[src].title = title !== "" ? $("<div/>").html(title).text().replace(/\'/g, "&#39;") : null;
-      
+
       // Add description
       desc = "";
       if (images[src].title) desc += "<p class='" + container.substring(1) + "-title'>" + images[src].title + "</p>";
@@ -360,7 +367,7 @@
     function centerDimension(thumb, tDim, tCDim, cssProperty) { // Center thumbDimension in thumbContainerDimension
       thumb.css(cssProperty, ((tDim > tCDim) ? ((tDim - tCDim) / 2) * -1 : (tDim < tCDim) ? (tCDim - tDim) / 2 : 0) + "px");
     }
-    
+
     var runnedOnce = false;
     function toggleFullscreenResponsive(htmlTag) {
       if(!isFullscreen) return;
@@ -385,7 +392,7 @@
         toggleFullscreenResponsiveShowHideLink(wrp.find(container + "-description.active-description"));
       }
     }
-    
+
     function toggleFullscreenResponsiveShowHideLink(activeDesc) {
       if(isResponsive && isFullscreen) {
         var hasDescription = !activeDesc.hasClass("empty-description");
@@ -396,7 +403,7 @@
         }
       }
     }
-    
+
     function resizeContainers(activeSrc, active, activeDesc) {
       var width = Math.max(images[activeSrc][widthProp], (isFullscreen ? 500 : 250)); // 250x188px and 500x375px (fullscreen) min. containers
       var height = Math.max(images[activeSrc][heightProp], (isFullscreen ? 375 : 188));
@@ -405,7 +412,7 @@
       wrpNavNextPrevSpans.css("height", height + "px");
       wrpNav.css("width", width + "px");
       wrpContainer.css("width", width + "px");
-      activeDesc.css("width", Math.max(0, ((width - wrpDescriptionBorderPaddingWidth) + wrpContainerBorderPaddingWidth))); 
+      activeDesc.css("width", Math.max(0, ((width - wrpDescriptionBorderPaddingWidth) + wrpContainerBorderPaddingWidth)));
     }
 
     function resizeToggleFullscreen() {
@@ -417,11 +424,12 @@
       }
       // Resize active containers
       var active = wrp.find("a" + container + "-link.active-full-image");
-      var activeSrc = active[0].href.split("?")[0];
+      var activeSrc = active[0].href;
+      activeSrc = /\.php/i.test(activeSrc) ? activeSrc : activeSrc.split("?")[0];
       var activeDesc = wrp.find(container + "-description.active-description");
       resizeContainers(activeSrc, active, activeDesc);
     }
-    
+
     var curWinWidth = 0, curWinHeight = 0;
     function resizeFullscreen(forceResize) {
       var winWidth = $(window).width();
@@ -437,7 +445,7 @@
         maxRegularHeight = maxHeight === 99999 ? maxHeight : Math.round(maxRegularWidth/(maxHeight));
         for(var key in images) {
           var image = images[key];
-          var dimsRegular = cacheCalculateImageDimensions(image.fullWidthOrig, image.fullHeightOrig, maxRegularWidth, maxRegularHeight);   
+          var dimsRegular = cacheCalculateImageDimensions(image.fullWidthOrig, image.fullHeightOrig, maxRegularWidth, maxRegularHeight);
           image.width = dimsRegular[0];
           image.height = dimsRegular[1];
           var dimsFull = cacheCalculateFullscreenImageDimensions(image.fullWidthOrig, image.fullHeightOrig, genId(key), winWidth, winHeight, toplineHeight);
@@ -453,17 +461,17 @@
         resizeToggleFullscreen();
       }
     }
-  
+
     function calculateFullscreenImageDimensions(w, h, id, winWidth, winHeight, toplineHeight) {
       var desc = wrp.find("#" + id + "-description");
       var descHeight = !desc.hasClass("empty-description") ? desc.outerHeight(true) : 0;
       winHeight = winHeight - (descHeight + toplineHeight) - 20;
       return calculateImageDimensions(w, h, winWidth, winHeight);
     }
-    
+
     function calculateImageDimensions(w, h, maxW, maxH) {
       if(isNaN(w) || isNaN(h)) return [1, 1];
-    
+
       var gcdVal = gcd(w, h);
       var aspectRatio = (w/gcdVal) / (h/gcdVal);
       if(w > maxW || h > maxH) {
@@ -497,7 +505,7 @@
 /*
  * jQuery throttle / debounce - v1.1 - 3/7/2010
  * http://benalman.com/projects/jquery-throttle-debounce-plugin/
- * 
+ *
  * Copyright (c) 2010 "Cowboy" Ben Alman
  * Dual licensed under the MIT and GPL licenses.
  * http://benalman.com/about/license/
