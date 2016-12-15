@@ -40,11 +40,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
+import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.ConfigurablePropertySelect;
@@ -56,12 +58,13 @@ import vtk.repository.search.query.UriSetQuery;
 import vtk.util.text.Json.MapContainer;
 
 public class PreviousLocationsResolver {
-    private RequestContext requestContext;
     // Resolve latest time stamps on the set of ancestor paths, 
     // or only on the resources found? (Requires an extra index search):
     private boolean pathTimestamps = true;
     private PropertyTypeDefinition locationHistoryPropDef;
     private PropertyTypeDefinition unpublishedCollectionPropDef;
+    private Supplier<Repository> repo;
+    private Supplier<String> token;
 
     public static class RelocatedResource {
         public final PropertySet resource;
@@ -83,10 +86,12 @@ public class PreviousLocationsResolver {
     }
     
     public PreviousLocationsResolver(PropertyTypeDefinition locationHistoryPropDef,
-            PropertyTypeDefinition unpublishedCollectionPropDef, RequestContext requestContext) {
+            PropertyTypeDefinition unpublishedCollectionPropDef, 
+            Supplier<Repository> repo, Supplier<String> token) {
         this.locationHistoryPropDef = locationHistoryPropDef;
         this.unpublishedCollectionPropDef = unpublishedCollectionPropDef;
-        this.requestContext = requestContext;
+        this.repo = repo;
+        this.token = token;
     }
 
     public Collection<RelocatedResource> resolve(Path uri) throws Exception {
@@ -107,8 +112,8 @@ public class PreviousLocationsResolver {
         if (uri.getDepth() > 10) return result;
         seen.add(uri);
         try {
-            Resource resource = requestContext.getRepository()
-                    .retrieve(requestContext.getSecurityToken(), uri, true);
+            Resource resource = repo.get()
+                    .retrieve(token.get(), uri, true);
 
             Property unpubCollection = resource
                     .getProperty(unpublishedCollectionPropDef);
@@ -149,8 +154,8 @@ public class PreviousLocationsResolver {
         search.clearAllFilterFlags();
         search.setLimit(10);
 
-        ResultSet results = requestContext.getRepository()
-                .search(requestContext.getSecurityToken(), search);
+        ResultSet results = repo.get()
+                .search(token.get(), search);
         return results.getAllResults().stream()
                 .map(resource -> new RelocatedResource(resource, latestRelocation(resource)))
                 .collect(Collectors.toList());
@@ -197,8 +202,8 @@ public class PreviousLocationsResolver {
         search.clearAllFilterFlags();
         search.setLimit(30);
         
-        ResultSet results = requestContext.getRepository()
-                .search(requestContext.getSecurityToken(), search);
+        ResultSet results = repo.get()
+                .search(token.get(), search);
         Map<Path, Optional<LocalDateTime>> ancestorTimes = new HashMap<>();
         results.getAllResults()
             .forEach(r -> ancestorTimes.put(r.getURI(), latestRelocation(r)));
