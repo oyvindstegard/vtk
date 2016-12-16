@@ -88,7 +88,7 @@
 	    <#local duration = vrtx.propValue(r, "duration")! />
             <#if duration?has_content>
               <div class="duration">
-                ${duration}
+                <#if 60 < duration?number >#{duration?number / 60; M0}:${(duration?number % 60)?string["00"]}<#else>${duration}</#if>
               </div>
             </#if>
 
