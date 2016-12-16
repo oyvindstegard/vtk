@@ -257,4 +257,55 @@
     <property name="component" ref="repository.systemjob.linkcheck.blacklist.refreshTrigger"/>
   </bean>
 
+  <bean id="repository.systemjob.linkrepair" 
+        class="vtk.repository.systemjob.LinkRepairJob" parent="repository.systemjob">
+    <constructor-arg name="resourceManager" ref="structuredResources.resourceManager" />
+    <constructor-arg name="aspectsPropDef" ref="resourceAspectsPropDef" />
+    <constructor-arg name="aspectFieldDesc" ref="visualProfileAspect.fieldConfig" />
+    <constructor-arg name="enabledAspect" value="visual-profile" />
+    <property name="securityContext">
+      <bean class="vtk.security.SecurityContext">
+        <constructor-arg ref="systemjob.linkRepairPrincipal.token" />
+        <constructor-arg ref="systemjob.linkRepairPrincipal" />
+      </bean>
+    </property>
+    <property name="triggerExpression" value="${systemjob.linkrepair.trigger}" />
+    <property name="enabled" value="${systemjob.linkrepair.enabled}" />
+    <property name="id" value="linkrepair" />
+    <property name="affectedPropDefPointers">
+      <list>
+        <value>resource::hrefs</value>
+      </list>
+    </property>
+    <property name="pathSelector">
+      <bean class="vtk.repository.systemjob.IndexQueryPathSelector" 
+            parent="repository.systemjob.indexPathSelector">
+        <property name="queryString" value="link-check@relocatedLinks.vrtxid exists AND (type IN json-resource OR type IN html)" />
+        <property name="sortString" value="system-job-status@linkrepair ASC" />
+        <property name="limit" value="${systemjob.linkcheck.batch}" />
+      </bean>
+    </property>
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="repository.systemjob.linkrepair"/>
+    <property name="async" value="false" />
+  </bean>
+
+  <!-- Special principals and tokens -->
+  <bean id="systemjob.linkRepairPrincipal" class="vtk.security.PrincipalImpl">
+    <constructor-arg value="${systemjob.linkrepair.principal}" />
+    <constructor-arg value="USER" />
+  </bean>
+
+  <bean id="systemjob.linkRepairPrincipal.token" lazy-init="true" 
+        class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    <property name="targetObject" ref="tokenManager" />
+    <property name="targetMethod" value="getRegisteredToken" />
+    <property name="arguments">
+      <list>
+        <ref bean="systemjob.linkRepairPrincipal" />
+      </list>
+    </property>
+  </bean>
+
 </beans>
