@@ -108,8 +108,10 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
         functionResolver.addFunction(new RequestParameterFunction(new Symbol("request-param")));
         functionResolver.addFunction(new ResourceLocaleFunction(new Symbol("resource-locale")));
         functionResolver.addFunction(new TemplateParameterFunction(new Symbol("template-param")));
-        functionResolver.addFunction(new ResourceUriAspectFunction(new Symbol("resource-uri-aspect"), this.aspectsPropdef, this.fieldConfig, this.token));
-        functionResolver.addFunction(new ResourceAspectFunction(new Symbol("resource-aspect"), this.aspectsPropdef, this.fieldConfig, this.token));
+        functionResolver.addFunction(new ResourceUriAspectFunction(new Symbol("resource-uri-aspect"), 
+                this.repository, this.aspectsPropdef, this.fieldConfig, this.token));
+        functionResolver.addFunction(new ResourceAspectFunction(new Symbol("resource-aspect"), 
+                this.repository, this.aspectsPropdef, this.fieldConfig, this.token));
         functionResolver.addFunction(new ResourcePropHandler(new Symbol("resource-prop")));
 
 
@@ -227,9 +229,12 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
     private static class ResourceAspectFunction extends Function {
         private PropertyAspectResolver resolver = null;
 
-        public ResourceAspectFunction(Symbol symbol, PropertyTypeDefinition aspectsPropdef, PropertyAspectDescription fieldConfig, String token) {
+        public ResourceAspectFunction(Symbol symbol, Repository repository, 
+                PropertyTypeDefinition aspectsPropdef, 
+                PropertyAspectDescription fieldConfig, String token) {
             super(symbol, 1);
-            this.resolver = new PropertyAspectResolver(aspectsPropdef, fieldConfig, token);
+            this.resolver = new PropertyAspectResolver(repository, aspectsPropdef, 
+                    fieldConfig, token);
         }
         
         @Override
@@ -251,9 +256,12 @@ public class DynamicDecoratorTemplateFactory implements TemplateFactory, Initial
     private static class ResourceUriAspectFunction extends Function {
         private PropertyAspectResolver resolver = null;
 
-        public ResourceUriAspectFunction(Symbol symbol, PropertyTypeDefinition aspectsPropdef, PropertyAspectDescription fieldConfig, String token) {
+        public ResourceUriAspectFunction(Symbol symbol, Repository repository,
+                PropertyTypeDefinition aspectsPropdef, 
+                PropertyAspectDescription fieldConfig, String token) {
             super(symbol, 2);
-            this.resolver = new PropertyAspectResolver(aspectsPropdef, fieldConfig, token);
+            this.resolver = new PropertyAspectResolver(repository, aspectsPropdef, 
+                    fieldConfig, token);
         }
         
         @Override

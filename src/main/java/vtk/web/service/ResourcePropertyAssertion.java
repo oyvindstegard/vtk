@@ -36,9 +36,9 @@ import vtk.repository.Property;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
+import vtk.util.repository.RepositoryTraversal;
+import vtk.util.repository.RepositoryTraversal.TraversalCallback;
 import vtk.web.RequestContext;
-import vtk.web.RequestContext.RepositoryTraversal;
-import vtk.web.RequestContext.TraversalCallback;
 
 /**
  * Assertion for matching on whether the current resource has a
