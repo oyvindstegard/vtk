@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.View;
 
 import vtk.repository.Namespace;
@@ -55,24 +57,20 @@ import vtk.web.service.Assertion;
 import vtk.web.service.Service;
 
 public class ResourceNotFoundErrorHandler implements ErrorHandler {
-    private String defaultView;
-    private RedirectPolicy redirectPolicy = RedirectPolicy.NEVER;
+    private static Logger logger = 
+            LoggerFactory.getLogger(ResourceNotFoundErrorHandler.class);
+    private String defaultView;    
     private List<ReferenceDataProvider> referenceDataProviders;
-    private Optional<Assertion> redirectAssertion;
+    private Optional<Assertion> redirectAssertion = Optional.empty();
+    private Optional<String> securityToken = Optional.empty();
     
-    public static enum RedirectPolicy {
-        NEVER,
-        UNAMBIGUOUS,
-        ALWAYS
-    }
-    
-    public ResourceNotFoundErrorHandler(String defaultView, RedirectPolicy redirectPolicy, 
+    public ResourceNotFoundErrorHandler(String defaultView, 
             List<ReferenceDataProvider> referenceDataProviders, 
-            Optional<Assertion> redirectAssertion) {
+            Optional<Assertion> redirectAssertion, Optional<String> securityToken) {
         this.defaultView = defaultView;
-        this.redirectPolicy = redirectPolicy;
         this.referenceDataProviders = referenceDataProviders;
         this.redirectAssertion = redirectAssertion;
+        this.securityToken = securityToken;
     }
 
     @Override
@@ -103,13 +101,15 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
                 .getTypeInfo("resource")
                 .getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, 
                         "unpublishedCollection");
-        
+
+        String token = securityToken.orElse(requestContext.getSecurityToken());
+
         PreviousLocationsResolver resolver = 
                 new PreviousLocationsResolver(locationHistoryPropDef, 
-                        unpublishedCollectionPropDef, requestContext);
+                        unpublishedCollectionPropDef,
+                        () -> requestContext.getRepository(),
+                        () -> token);
        
-        
-        
         Boolean resolveRedirects = !redirectAssertion.isPresent() 
                 || redirectAssertion.get()
                 .matches(request, null, requestContext.getPrincipal());
@@ -137,23 +137,13 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
         List<RelocatedResource> locations = (List<RelocatedResource>) 
             request.getAttribute(getClass().getName() + ".locations");
 
+        if (request.getParameterMap().containsKey("log")) {
+            logger.info("404 request " + request.getRequestURL() 
+                + ": redirect candidates" + locations);
+        }
         if (locations.isEmpty()) {
             return defaultView;
         }
-        if (redirectPolicy == RedirectPolicy.NEVER) {
-            return defaultView;
-        }
-        if ("false".equals(request.getParameter("redirect"))) {
-            return defaultView;
-        }
-        if (redirectPolicy == RedirectPolicy.UNAMBIGUOUS) {
-            if (locations.size() > 1) {
-                return defaultView;
-            }
-            PropertySet propSet = locations.get(0).resource;
-            return new RedirectView(propSet.getURI().toString());
-        }
-        // ALWAYS:
         PropertySet propSet = locations.get(0).resource;
         return new RedirectView(propSet.getURI().toString());
     }
