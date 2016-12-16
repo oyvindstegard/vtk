@@ -52,13 +52,12 @@
       periods of inactivity.
     </description>
     <constructor-arg name="principalFactory" ref="principalFactory" />
+    <constructor-arg name="systemPrincipals" ref="tokenManager.systemPrincipals" />
     <constructor-arg name="cache" ref="tokenManagerCache" />
-    <property name="defaultPrincipals">
-      <list>
-        <ref bean="trustedPrincipal" />
-        <ref bean="rootPrincipal" />
-      </list>
-    </property>
+  </bean>
+
+  <bean id="tokenManager.systemPrincipals" class="vtk.context.JSONFactoryBean">
+    <constructor-arg value="${tokenManager.systemPrincipals}" />
   </bean>
 
   <bean id="tokenManagerCache"
@@ -171,7 +170,7 @@
     <constructor-arg value="USER" />
   </bean>
 
-  <bean id="trustedToken" lazy-init="true" 
+  <bean id="trustedToken" 
         class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
     <description>
       This bean represents a "trusted" repository token. It is used
@@ -191,7 +190,6 @@
     <constructor-arg value="root@localhost" />
     <constructor-arg value="USER" />
   </bean>
-
   <bean id="writeAllToken"
         class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
     <description>
@@ -207,6 +205,7 @@
       </list>
     </property>
   </bean>
+
 
   <!-- Principal factory and related beans -->
   <bean id="principalFactory" class="vtk.security.PrincipalFactory" />
