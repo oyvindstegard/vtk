@@ -60,6 +60,7 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -138,12 +139,12 @@ public class Application  {
 
     protected final void run(String[] args) throws Exception {
         String[] springArgs = args;
-        boolean gracefulRestart = false;
+        boolean gracefulShutdown = false;
         int gracePeriodSeconds = DEFAULT_GRACE_PERIOD;
 
         for (int i=0; i < args.length; i++) {
             if (args[i].equals(GRACEFUL_ARG) || args[i].startsWith(GRACEFUL_ARG + "=")) {
-                gracefulRestart = true;
+                gracefulShutdown = true;
                 String[] parts = args[i].split("=");
                 if (parts.length > 1) {
                     gracePeriodSeconds = Integer.parseInt(parts[1]);
@@ -169,12 +170,20 @@ public class Application  {
 
         app.setBanner(banner());
         app.setHeadless(true);
-        if (gracefulRestart) {
+        if (gracefulShutdown) {
             app.setRegisterShutdownHook(false);
         }
-        ConfigurableApplicationContext applicationContext = app.run(springArgs);
-        if (gracefulRestart) {
-            Runtime.getRuntime().addShutdownHook(new GracefulShutdownHook(applicationContext, gracePeriodSeconds));
+        try {
+            ConfigurableApplicationContext applicationContext = app.run(springArgs);
+            if (gracefulShutdown) {
+                Runtime.getRuntime().addShutdownHook(new GracefulShutdownHook(applicationContext, gracePeriodSeconds));
+            }
+        } catch (Exception e) {
+            String errorMessage = "Application context failed to initialize: " + e.getClass().getSimpleName() + ": " + e.getMessage();
+            logger.error(errorMessage, e);
+            System.err.println(errorMessage);
+            // Force exit, since half-initialized stuff may have spawned non-daemon threads preventing JVM shutdown
+            System.exit(1);
         }
     }
 
