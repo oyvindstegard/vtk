@@ -11,19 +11,19 @@
   if(vrtxAdmin.isIE7 || vrtxAdmin.isIETridentInComp) {
     if(vrtxAdmin.isIETridentInComp) {
       var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.comp")}';
-    } else if(vrtxAdmin.isIE8) {   
-      var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie8")}';      
-    } else if(vrtxAdmin.isIE7) {   
-      var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie7")}';    
+    } else if(vrtxAdmin.isIE8) {
+      var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie8")}';
+    } else if(vrtxAdmin.isIE7) {
+      var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie7")}';
     } else if(vrtxAdmin.isIE6) {
       var outdatedBrowserText = '${vrtx.getMsg("msg.browser.msie.msie6")}';
     }
   }
-  
+
   var cancelI18n = '${vrtx.getMsg("editor.cancel")}',
       datePickerLang = "${lang}",
       loadingSubfolders = '${vrtx.getMsg("manage.load-subfolders")}';
-  
+
   vrtxAdmin.messages = {
     upload: {
       browse: '${vrtx.getMsg("editor.browse")}',
@@ -34,6 +34,7 @@
         skip: '${vrtx.getMsg("uploading.existing.skip")}',
         overwrite: '${vrtx.getMsg("uploading.existing.overwrite")}'
       },
+      folder: '${vrtx.getMsg("uploading.folder")}',
       drag: '${vrtx.getMsg("uploading.drag")}',
       drop: '${vrtx.getMsg("uploading.drop")}'
     },
@@ -54,7 +55,7 @@
       updatedTitle: '${vrtx.getMsg("course-schedule.edit.updated.title")}'
     },
     dropdowns: {
-      createTitle: '${vrtx.getMsg("dropdowns.create.title")}', 
+      createTitle: '${vrtx.getMsg("dropdowns.create.title")}',
       resourceTitle: '${vrtx.getMsg("dropdowns.resource.title")}',
       editorTitle: '${vrtx.getMsg("dropdowns.editor.title")}',
       publishingTitle: '${vrtx.getMsg("dropdowns.publishing.title")}'
@@ -95,7 +96,7 @@
       }
     }
   }
-  
+
   vrtxAdmin.serverFacade.errorMessages = {
     title: "${vrtx.getMsg('ajaxError.title')}",
     retryTitle: "${vrtx.getMsg('ajaxError.retry.title')}",
@@ -104,7 +105,7 @@
     general: "${vrtx.getMsg('ajaxError.general')}",
     timeout: "${vrtx.getMsg('ajaxError.timeout')}",
     abort: "${vrtx.getMsg('ajaxError.abort')}",
-    parsererror: "${vrtx.getMsg('ajaxError.parsererror')}", 
+    parsererror: "${vrtx.getMsg('ajaxError.parsererror')}",
     offline: "${vrtx.getMsg('ajaxError.offline')}",
     lockStolen: "${vrtx.getMsg('ajaxError.lockStolen')}",
     lockStolenTitle: "${vrtx.getMsg('ajaxError.lockStolen.title')}",
@@ -137,7 +138,7 @@
     s403: "${vrtx.getMsg('ajaxError.s403')}",
     s404: "${vrtx.getMsg('ajaxError.s404')}",
     s423: "${vrtx.getMsg('ajaxError.s423')}",
-    s4233: "${vrtx.getMsg('ajaxError.s423.parent')}", 
+    s4233: "${vrtx.getMsg('ajaxError.s423.parent')}",
     customTitle: {
       "0": "${vrtx.getMsg('ajaxError.offline.title')}",
       "4233": "${vrtx.getMsg('ajaxError.s423.parent.title')}"

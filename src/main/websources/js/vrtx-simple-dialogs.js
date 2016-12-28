@@ -227,7 +227,8 @@ var VrtxMsgDialog = dejavu.Class.declare({
       height: opts.height,
       noTitle: opts.noTitle,
       hasOk: true,
-      unclosable: true
+      unclosable: true,
+      onOk: opts.onOk
     });
   }
 });

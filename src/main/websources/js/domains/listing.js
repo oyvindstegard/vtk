@@ -530,79 +530,113 @@ function ajaxUpload(opts) {
   _$.when(futureFormAjax).done(function() {
     var fileField = _$("#file");
     var filePaths = "";
+    var dirPaths = [];
     var numberOfFiles = 0;
     var size = 0;
     if (vrtxAdm.supportsFileList || opts.isDragAndDrop) {
       var files = !opts.isDragAndDrop ? fileField[0].files : vrtxAdm.droppedFiles;
       for (var i = 0, numberOfFiles = files.length; i < numberOfFiles; i++) {
-        filePaths += files[i].name + ",";
-        // size += files[i].size;
+        var file = files[i];
+        if(file.size % 4096 == 0 && file.type === "") {
+          dirPaths.push(file.name);
+        } else {
+          filePaths += file.name + ",";
+        }
       }
+      numberOfFiles -= dirPaths.length;
     } else {
       filePaths = fileField.val().substring(fileField.val().lastIndexOf("\\") + 1);
       numberOfFiles = 1;
     }
 
-    var checkForm = _$(uploadCheckServiceSelector);
-    var filenamesToCheckField = checkForm.find("input[name='filenamesToBeChecked']");
-    if(!filenamesToCheckField.length) {
-      checkForm.append("<input type='hidden' name='filenamesToBeChecked' value='" + filePaths + "' />");
-    } else {
-      filenamesToCheckField.val(filePaths);
-    }
-    vrtxAdm.removeErrorContainers(opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
+    if(numberOfFiles > 0) {
+      var checkForm = _$(uploadCheckServiceSelector);
+      var filenamesToCheckField = checkForm.find("input[name='filenamesToBeChecked']");
+      if(!filenamesToCheckField.length) {
+        checkForm.append("<input type='hidden' name='filenamesToBeChecked' value='" + filePaths + "' />");
+      } else {
+        filenamesToCheckField.val(filePaths);
+      }
+      vrtxAdm.removeErrorContainers(opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
 
-    checkForm.ajaxSubmit({
-      success: function(results, status, xhr) {
-        var result = _$.parseHTML(results);
-        var existingFilenamesField = _$(result).find(existingFilenamesSelector);
+      checkForm.ajaxSubmit({
+        success: function(results, status, xhr) {
+          var result = _$.parseHTML(results);
+          var existingFilenamesField = _$(result).find(existingFilenamesSelector);
 
-        if (!existingFilenamesField.length && vrtxAdm.hasErrorContainers(result, opts.errorContainer)) {
-          vrtxAdm.displayErrorContainers(result, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
-          vrtxAdmin.droppedFiles = null;
-        } else {
-          if(existingFilenamesField.length) {
-            var existingFilenamesFixedField = _$(result).find(existingFilesnamesFixedSelector);
-            var existingFilenames = existingFilenamesField.text().split("#");
-            var existingFilenamesFixed = existingFilenamesFixedField.text().split("#");
-            userProcessExistingFiles({
-              filenames: existingFilenames,
-              filenamesFixed: existingFilenamesFixed,
-              numberOfFiles: numberOfFiles,
-              completeFn: function() {
-                ajaxUploadPerform(opts/*, size*/);
-              },
-              cancelFn: function() {
-                vrtxAdm.uploadCopyMoveSkippedFiles = {};
-                vrtxAdmin.droppedFiles = null;
-
-                var afterOut = function() {
-                  if(opts.funcAfterComplete) {
-                    opts.funcAfterComplete();
-                  }
-                };
-
-                if(!opts.isDragAndDrop) {
-                  var animation = new VrtxAnimation({
-                    elem: opts.form.parent(),
-                    animationSpeed: opts.transitionSpeed,
-                    easeIn: opts.transitionEasingSlideDown,
-                    easeOut: opts.transitionEasingSlideUp,
-                    afterOut: afterOut
-                  });
-                  animation.bottomUp();
-                } else {
-                  afterOut();
-                }
-              },
-              isAllSkippedEqualComplete: false
-            });
+          if (!existingFilenamesField.length && vrtxAdm.hasErrorContainers(result, opts.errorContainer)) {
+            vrtxAdm.displayErrorContainers(result, opts.form, opts.errorContainerInsertAfter, opts.errorContainer);
+            vrtxAdm.droppedFiles = null;
           } else {
-            ajaxUploadPerform(opts/*, size*/);
+            if(existingFilenamesField.length || dirPaths.length) {
+              var existingFilenamesFixedField = _$(result).find(existingFilesnamesFixedSelector);
+              var existingFilenames = existingFilenamesField.length ? existingFilenamesField.text().split("#") : [];
+              var existingFilenamesFixed = existingFilenamesField.length ? existingFilenamesFixedField.text().split("#") : [];
+              userProcessExistingFiles({
+                dirs: dirPaths,
+                filenames: existingFilenames,
+                filenamesFixed: existingFilenamesFixed,
+                numberOfFiles: numberOfFiles,
+
+                completeFn: function() {
+                  ajaxUploadPerform(opts/*, size*/);
+                },
+                cancelFn: function() {
+                  vrtxAdm.uploadCopyMoveSkippedFiles = {};
+                  vrtxAdm.droppedFiles = null;
+
+                  var afterOut = function() {
+                    if(opts.funcAfterComplete) {
+                      opts.funcAfterComplete();
+                    }
+                  };
+
+                  if(!opts.isDragAndDrop) {
+                    var animation = new VrtxAnimation({
+                      elem: opts.form.parent(),
+                      animationSpeed: opts.transitionSpeed,
+                      easeIn: opts.transitionEasingSlideDown,
+                      easeOut: opts.transitionEasingSlideUp,
+                      afterOut: afterOut
+                    });
+                    animation.bottomUp();
+                  } else {
+                    afterOut();
+                  }
+                },
+                isAllSkippedEqualComplete: false
+              });
+            } else {
+              ajaxUploadPerform(opts/*, size*/);
+            }
           }
         }
-      }
-    });
+      });
+    } else {
+      userProcessExistingFiles({
+        dirs: dirPaths,
+        filenames: [],
+        filenamesFixed: [],
+        numberOfFiles: 0,
+        completeFn: function() {
+          vrtxAdm.uploadCopyMoveSkippedFiles = {};
+          vrtxAdm.droppedFiles = null;
+
+          if(opts.funcAfterComplete) {
+            opts.funcAfterComplete();
+          }
+        },
+        cancelFn: function() {
+          vrtxAdm.uploadCopyMoveSkippedFiles = {};
+          vrtxAdm.droppedFiles = null;
+
+          if(opts.funcAfterComplete) {
+            opts.funcAfterComplete();
+          }
+        },
+        isAllSkippedEqualComplete: true
+      });
+    }
   });
   return false;
 }
@@ -861,15 +895,15 @@ function userProcessExistingFiles(opts) {
       var filenameFixed = opts.filenamesFixed ? opts.filenamesFixed.pop() : filename;
       if(filenamesLen === 1 && opts.numberOfFiles === 1) {
         var skipOverwriteDialogOpts = {
-          msg: filenameFixed,
           title: vrtxAdm.messages.upload.existing.title,
+          msg: filenameFixed,
           onOk: userProcessNextFilename, // Keep/overwrite file
           btnTextOk: vrtxAdm.messages.upload.existing.overwrite
         };
       } else {
         var skipOverwriteDialogOpts = {
-          msg: filenameFixed,
           title: vrtxAdm.messages.upload.existing.title,
+          msg: filenameFixed,
           onOk: function () {  // Skip file
             vrtxAdm.uploadCopyMoveSkippedFiles[filename] = "skip";
             userProcessNextFilename();
@@ -886,15 +920,36 @@ function userProcessExistingFiles(opts) {
       userDecideExistingFileDialog.open();
     } else { // User has decided for all existing uris
       var numberOfSkippedFiles = 0;
-       for (skippedFile in vrtxAdm.uploadCopyMoveSkippedFiles) {
-         if (vrtxAdm.uploadCopyMoveSkippedFiles[skippedFile]) {
-           numberOfSkippedFiles++;
-         }
-       }
-       if(opts.numberOfFiles > numberOfSkippedFiles || opts.isAllSkippedEqualComplete) {
-         opts.completeFn();
-       } else {
-         opts.cancelFn();
+      for (skippedFile in vrtxAdm.uploadCopyMoveSkippedFiles) {
+        if (vrtxAdm.uploadCopyMoveSkippedFiles[skippedFile]) {
+          numberOfSkippedFiles++;
+        }
+      }
+
+      var uploadOrCancel = function() {
+        if(opts.numberOfFiles > numberOfSkippedFiles || opts.isAllSkippedEqualComplete) {
+          opts.completeFn();
+        } else {
+          opts.cancelFn();
+        }
+      };
+
+      var numberOfDirs = opts.dirs && opts.dirs.length;
+      if(numberOfDirs) {
+        for(var i = 0; i < numberOfDirs; i++) {
+          vrtxAdm.uploadCopyMoveSkippedFiles[opts.dirs[i]] = "skip";
+        }
+        var userInfoDirsDialog = new VrtxMsgDialog({
+          title: vrtxAdm.messages.upload.folder,
+          msg: opts.dirs.join(", "),
+          onOk: function () {
+            opts.dirs = [];
+            uploadOrCancel();
+          }
+        });
+        userInfoDirsDialog.open();
+      } else {
+        uploadOrCancel();
       }
     }
   };
