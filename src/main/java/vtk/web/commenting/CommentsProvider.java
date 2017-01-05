@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Comment;
@@ -65,15 +66,18 @@ public class CommentsProvider implements ReferenceDataProvider {
     
     @Override
     public void referenceData(final Map<String, Object> model, HttpServletRequest servletRequest) throws Exception {
-        
-        if (this.formSessionAttributeName != null) {
 
-            if (servletRequest.getSession(false) != null) {
-                Map<?, ?> map = (Map<?, ?>) servletRequest.getSession(false).getAttribute(
-                    this.formSessionAttributeName);
+        // See vtk.web.commenting.PostCommentCommand, which populates this session attribute in case of
+        // comment validation errors
+        if (formSessionAttributeName != null) {
+            HttpSession session = servletRequest.getSession(false);
+            if (session != null) {
+                Map<?, ?> map = (Map<?, ?>) session.getAttribute(formSessionAttributeName);
                 if (map != null) {
                     model.put("form", map.get("form"));
                     model.put("errors", map.get("errors"));
+                    // Display validation errors only once and not on subsequent requests:
+                    session.removeAttribute(formSessionAttributeName);
                 }
             }
         }
@@ -116,7 +120,7 @@ public class CommentsProvider implements ReferenceDataProvider {
 
         URL baseDeleteURL = null;
         try {
-            baseDeleteURL = this.deleteCommentService.constructURL(resource, principal);
+            baseDeleteURL = deleteCommentService.constructURL(resource, principal);
         } catch (Exception e) { }
 
         for (Comment c: comments) {
@@ -129,7 +133,7 @@ public class CommentsProvider implements ReferenceDataProvider {
         model.put("deleteCommentURLs", deleteCommentURLs);
 
         try {
-            URL deleteAllCommentsURL = this.deleteAllCommentsService.constructURL(resource, principal);
+            URL deleteAllCommentsURL = deleteAllCommentsService.constructURL(resource, principal);
             model.put("deleteAllCommentsURL", deleteAllCommentsURL);
         } catch (Exception e) { }
         
@@ -141,23 +145,23 @@ public class CommentsProvider implements ReferenceDataProvider {
         model.put("baseCommentURL", baseCommentURL);
 
         try {
-            URL postCommentURL = this.postCommentService.constructURL(resource, principal);
+            URL postCommentURL = postCommentService.constructURL(resource, principal);
             model.put("postCommentURL", postCommentURL);
         } catch (Exception e) { }
 
         if (this.loginService != null && principal == null) {
             try {
-                URL loginURL = this.loginService.constructURL(resource, principal);
+                URL loginURL = loginService.constructURL(resource, principal);
                 model.put("loginURL", loginURL);
             } catch (Exception e) { }
         }
 
-        if (this.resourceCommentsFeedService != null) {
+        if (resourceCommentsFeedService != null) {
             
             // Only provide feed subscription link if resource is READ for ALL.
             if (repository.isAuthorized(resource, RepositoryAction.READ, PrincipalFactory.ALL, false)) {
                 try {
-                    URL feedURL = this.resourceCommentsFeedService.constructURL(resource, principal);
+                    URL feedURL = resourceCommentsFeedService.constructURL(resource, principal);
                     model.put("feedURL", feedURL);
                 } catch (Exception e) { }
             }
