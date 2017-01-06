@@ -38,11 +38,6 @@
       margin-top: 0px;
       padding-top: 20px;
       overflow: hidden; /* IE collision fix */
-
-      .vrtx-image-ref-preview {
-        display: inline-block;
-        margin-top: 20px;
-      }
     }
 
     .vrtx-resource-ref-browse,
@@ -66,6 +61,11 @@
       padding: 0px !important;
     }
   }
+}
+
+.vrtx-image-ref .vrtx-image-ref-preview {
+  display: inline-block;
+  margin-top: 20px;
 }
 
 .vrtx-radio-buttons {
