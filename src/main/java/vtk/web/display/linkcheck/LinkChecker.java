@@ -350,6 +350,7 @@ public class LinkChecker {
         urlConnection.setConnectTimeout(connectTimeout);
         urlConnection.setReadTimeout(readTimeout);
         urlConnection.setRequestProperty("User-Agent", userAgent);
+        urlConnection.setRequestProperty("Accept", "*/*");
         if (referrer != null) {
             urlConnection.setRequestProperty("Referer", referrer.toString());
         }
