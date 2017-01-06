@@ -50,6 +50,15 @@ gulp.task('theme-compile-sass', function () {
         .pipe(gulp.dest(TARGET + '/themes/default'));
 });
 
+gulp.task('theme-compile-editor-structured-resources-sass', function () {
+    return gulp.src('themes/default/scss/structured-resources/*.scss')
+        .pipe((!config.production) ? sourceMaps.init() : util.noop())
+        .pipe(sass().on('error', sass.logError))
+        .pipe((config.production) ? minifyCss() : util.noop())
+        .pipe((!config.production) ? sourceMaps.write() : util.noop())
+        .pipe(gulp.dest(TARGET + '/themes/default/structured-resources'));
+});
+
 gulp.task('theme-copy-css', function () {
     return gulp.src(['themes/**/*.css'])
         .pipe((config.production) ? minifyCss({processImport: false}) : util.noop())
@@ -94,6 +103,7 @@ gulp.task('ckeditor-copy', function () {
 
 gulp.task('watch', function () {
     gulp.watch('themes/default/scss/*.scss', ['theme-compile-sass']);
+    gulp.watch('themes/default/scss/structured-resources/*.scss', ['theme-compile-editor-structured-resources-sass']);
     gulp.watch('themes/**/*.css', ['theme-copy-css'])
     gulp.watch('js/**/*.js', ['js-copy']);
     gulp.watch('jquery/**/*.js', ['jquery-plugins-copy', 'jquery-copy']);
@@ -137,6 +147,7 @@ gulp.task('default', function () {
     return gulp.start(
         'lib-compile',
         'theme-compile-sass',
+        'theme-compile-editor-structured-resources-sass',
         'theme-copy-css',
         'theme-copy-resources',
         'js-copy',
@@ -147,4 +158,3 @@ gulp.task('default', function () {
         'flash-copy'
     );
 });
-

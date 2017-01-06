@@ -11,12 +11,14 @@
 
 @import "base";
 
+$imgBase: "/vrtx/__vrtx/static-resources/themes/default/";
+
 /*-----------------------------------------*\
 	1. General
 \*-----------------------------------------*/
 
 h2 {
-  background: url(images/line-dotted.gif) repeat-x bottom left;
+  background: url("#{$imgBase}images/line-dotted.gif") repeat-x bottom left;
   padding-bottom: 15px;
 }
 
@@ -48,7 +50,7 @@ h2 {
 .properties .vrtx-html.divide-top,
 .properties .vrtx-simple-html.divide-top,
 .properties .vrtx-checkbox.divide-top {
-  background: url(images/line-dotted.gif) repeat-x top left !important;
+  background: url("#{$imgBase}images/line-dotted.gif") repeat-x top left !important;
   margin-top: 30px !important;
   padding-top: 15px !important;
 }
@@ -192,26 +194,26 @@ h2 {
 
 .vrtx-multipleinputfield .vrtx-button.moveup span,
 .vrtx-json .vrtx-json-element .vrtx-move-up-button span {
-  background: url("images/multiple-move-up.png") no-repeat center center;
+  background: url("#{$imgBase}images/multiple-move-up.png") no-repeat center center;
 }
 
 .vrtx-multipleinputfield .vrtx-button.movedown span,
 .vrtx-json .vrtx-json-element .vrtx-move-down-button span {
-  background: url("images/multiple-move-down.png") no-repeat center center;
+  background: url("#{$imgBase}images/multiple-move-down.png") no-repeat center center;
 }
 
 .vrtx-multipleinputfield .vrtx-button.moveup:hover span,
 .vrtx-json .vrtx-json-element .vrtx-move-up-button:hover span,
 .vrtx-multipleinputfield .vrtx-button.moveup:focus span,
 .vrtx-json .vrtx-json-element .vrtx-move-up-button:focus span {
-  background-image: url("images/multiple-move-up-rollover.png");
+  background-image: url("#{$imgBase}images/multiple-move-up-rollover.png");
 }
 
 .vrtx-multipleinputfield .vrtx-button.movedown:hover span,
 .vrtx-json .vrtx-json-element .vrtx-move-down-button:hover span,
 .vrtx-multipleinputfield .vrtx-button.movedown:focus span,
 .vrtx-json .vrtx-json-element .vrtx-move-down-button:focus span {
-  background-image: url("images/multiple-move-down-rollover.png");
+  background-image: url("#{$imgBase}images/multiple-move-down-rollover.png");
 }
 
 /* Sticky title and editor save/cancel buttons */
@@ -227,7 +229,7 @@ h2 {
 
 #vrtx-editor #editor {
   padding-top: 20px;
-  background: transparent url("images/line-dotted.gif") repeat-x left top;
+  background: transparent url("#{$imgBase}images/line-dotted.gif") repeat-x left top;
 }
 
 #vrtx-editor #editor .properties.hidden-props {
@@ -265,7 +267,7 @@ h2 {
 #app-content .vrtx-sticky-editor-title-submit-buttons .sticky-bg-ie8-below {
   @include posAbsBottom(-13px, 0);
   @include wh(100%, 13px);
-  background: transparent url(images/sticky-bar-fade-to-grey-ie8-bg.png) repeat-x bottom left;
+  background: transparent url("#{$imgBase}images/sticky-bar-fade-to-grey-ie8-bg.png") repeat-x bottom left;
   display: block;
 }
 
@@ -294,7 +296,7 @@ html.embedded #editor-loading {
 }
 
 #editor-loading-inner {
-  background: transparent url(images/ajax-loader.gif) no-repeat center left;
+  background: transparent url("#{$imgBase}images/ajax-loader.gif") no-repeat center left;
   display: block;
   padding: 10px 5px 10px 42px;
   font-size: 1.308em;
@@ -608,7 +610,7 @@ div#vrtx-resource\.studentExchangeUniversityAgreementListing\.picture img {
     -ms-filter: "none" !important;
   }
   .cke_resizer {
-    background: url(images/resize-ck.png) no-repeat center center !important;
+    background: url("#{$imgBase}images/resize-ck.png") no-repeat center center !important;
     border: none !important;
     box-shadow: none !important;
     display: inline-block !important;

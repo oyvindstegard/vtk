@@ -1,0 +1,618 @@
+/*
+ *
+ *  Vortex - Editor - New documenttypes
+ *
+ */
+
+@import "../editor-common";
+
+.vrtx-json {
+  clear: both;
+
+  .vrtx-json-element {
+    margin-bottom: 20px;
+    position: relative;
+    clear: both;
+
+    .vrtx-string,
+    .vrtx-resource-ref,
+    .vrtx-button {
+      margin: 0 20px 0 0;
+      clear: none;
+      float: left;
+    }
+
+    .vrtx-string.id {
+      float: none;
+    }
+
+    .vrtx-remove-button,
+    .vrtx-move-up-button,
+    .vrtx-move-down-button {
+      margin-top: 26px;
+    }
+
+    .vrtx-image-ref {
+      clear: left;
+      /* Fix a clearing problem */
+      margin-top: 0px;
+      padding-top: 20px;
+      overflow: hidden; /* IE collision fix */
+
+      .vrtx-image-ref-preview {
+        display: inline-block;
+        margin-top: 20px;
+      }
+    }
+
+    .vrtx-resource-ref-browse,
+    .vrtx-image-ref-browse,
+    .vrtx-image-ref {
+      .vrtx-button {
+        float: none;
+        margin: 0 0 0 20px;
+      }
+    }
+
+    .vrtx-html {
+      margin-bottom: 20px;
+    }
+  }
+
+  .cke_chrome {
+    border: none !important;
+
+    .cke_inner {
+      padding: 0px !important;
+    }
+  }
+}
+
+.vrtx-radio-buttons {
+  label {
+    margin-bottom: 0px;
+    display: inline;
+  }
+
+  .vrtx-radio-buttons-false {
+    margin-left: 5px;
+  }
+}
+
+.vrtx-grouped-horizontal {
+  .vrtx-string,
+  .vrtx-radio,
+  .vrtx-resource-ref,
+  .vrtx-image-ref,
+  .vrtx-media-ref {
+    float: left;
+    margin-right: 20px;
+    margin-top: 0px;
+
+    label {
+      margin-bottom: 0px;
+      padding-bottom: 10px;
+    }
+  }
+}
+
+.vrtx-grouped {
+  .vrtx-string,
+  .vrtx-radio,
+  .vrtx-resource-ref,
+  .vrtx-image-ref,
+  .vrtx-media-ref {
+    margin-top: 15px;
+  }
+
+  .related-content label {
+    display: none;
+  }
+}
+
+.vrtx-add-button,
+.vrtx-grouped-horizontal,
+.vrtx-string.author {
+  clear: left;
+}
+
+.getExternalPersonInfo,
+.getExternalUnitInfo {
+  label {
+    display: inline;
+  }
+
+  .vrtx-radio-buttons {
+    margin-top: 10px;
+  }
+
+  .tooltip {
+    padding-left: 5px;
+  }
+}
+
+// Info message
+
+.vrtx-info-msg {
+  margin-bottom: -15px;
+  font-size: 0.867em;
+
+  .inputfield {
+    display: none;
+  }
+
+  label {
+    background: url(../images/info-small.gif) no-repeat 0 0;
+    padding: 0 0 10px 25px;
+    margin-bottom: 0px;
+  }
+}
+
+.vrtx-grouped .vrtx-info-msg {
+  font-size: 1em;
+}
+
+// Accordion
+
+.ui-accordion > div {
+  margin-left: -20px;
+  margin-right: -20px;
+}
+
+.ui-accordion > .header,
+.ui-accordion > .vrtx-add-button {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+.ui-accordion > .vrtx-grouped {
+  margin-top: 0px;
+}
+
+.ui-accordion > div > .header.ui-accordion-header label,
+.ui-accordion > .vrtx-json-element {
+  margin-bottom: 0px;
+}
+
+.ui-accordion > .vrtx-json-element.last {
+  margin-bottom: 20px;
+}
+
+.accordion-title {
+  padding: 15px 15px 14px 18px;
+  margin-top: 2px;
+  margin-bottom: -3px;
+  background: transparent;
+  border: 1px solid #d9d9d9;
+  font-size: 1.15em;
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+.ui-accordion > div > .header.ui-accordion-header,
+.ui-accordion > div .ui-accordion > div .ui-accordion-header {
+  padding: 15px 15px 14px 40px;
+  border-radius: 0px;
+}
+
+.ui-accordion > div > .header.ui-accordion-header {
+  margin-bottom: -3px;
+  background: #f9f9f9;
+  color: inherit;
+  border-color: #d9d9d9;
+}
+
+.ui-accordion > div .ui-accordion > div .ui-accordion-header {
+  background: url(../images/line-dotted.gif) repeat-x top left;
+  padding-left: 30px;
+  border-radius: 0px;
+  margin: 0 0 -3px 20px;
+  color: inherit;
+  border-width: 0;
+}
+
+.ui-accordion > div .ui-accordion > div .ui-accordion {
+  background: url(../images/line-dotted.gif) repeat-x bottom left;
+}
+
+.embedded .ui-accordion,
+.session .ui-accordion {
+  margin-top: 5px;
+  margin-bottom: 0px;
+  background: transparent !important;
+}
+
+.ui-accordion > div > .header.ui-accordion-header.ui-corner-top {
+  border-bottom: none;
+}
+
+.ui-accordion > div > .header.ui-accordion-header .ui-icon {
+  top: 25px;
+  left: 11px;
+  height: 16px;
+  width: 16px;
+}
+
+.ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
+  background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
+
+  transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+
+  transition: all 600ms ease-in-out;
+  -webkit-transition: all 600ms ease-in-out;
+  -moz-transition: all 600ms ease-in-out;
+  -o-transition: all 600ms ease-in-out;
+  -ms-transition: all 600ms ease-in-out;
+
+  top: 20px;
+  left: 13px;
+}
+
+.ui-accordion > div .ui-accordion > div .header.ui-accordion-header .ui-icon {
+  left: -3px;
+}
+
+.ie8 .ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
+  background: url(../images/arrow-expanded-big.gif) no-repeat center left;
+}
+
+.ui-accordion.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s {
+  transition: all 200ms ease-in-out;
+  -webkit-transition: all 200ms ease-in-out;
+  -moz-transition: all 200ms ease-in-out;
+  -o-transition: all 200ms ease-in-out;
+  -ms-transition: all 200ms ease-in-out;
+}
+
+.ui-accordion > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-e { /* Collapsed */
+  background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
+  transition: all 600ms ease-in-out;
+  -webkit-transition: all 600ms ease-in-out;
+  -moz-transition: all 600ms ease-in-out;
+  -o-transition: all 600ms ease-in-out;
+  -ms-transition: all 600ms ease-in-out;
+}
+
+.ui-accordion.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-e {
+  transition: all 200ms ease-in-out;
+  -webkit-transition: all 200ms ease-in-out;
+  -moz-transition: all 200ms ease-in-out;
+  -o-transition: all 200ms ease-in-out;
+  -ms-transition: all 200ms ease-in-out;
+}
+
+.ui-accordion .vrtx-grouped .header.ui-accordion-header.ui-state-hover label {
+  cursor: pointer;
+}
+
+.ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .header.ui-accordion-header.ui-state-focus {
+  background-color: #ecf3f9;
+}
+
+.ui-accordion > div > .header.ui-accordion-header.ui-corner-top,
+.ui-accordion > div > .header.ui-accordion-header.ui-state-hover.ui-corner-top {
+  background: none;
+}
+
+/* Ensure dotted background on inner accordions */
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-corner-top,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover.ui-corner-top,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus.ui-corner-top {
+  background: url(../images/line-dotted.gif) repeat-x top left !important;
+}
+
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-hover .session-date,
+.ui-accordion .ui-accordion .header.ui-accordion-header.ui-state-focus .session-date {
+  text-decoration: underline !important;
+}
+
+.ui-accordion > div > .ui-accordion-content {
+  padding-left: 40px !important;
+  padding-top: 0px !important;
+  border: 1px solid #d9d9d9 !important;
+  border-bottom: none !important;
+  border-top: none !important;
+  overflow: hidden;
+}
+
+.embedded .ui-accordion .ui-accordion-content,
+.accordion-wrapper > div .ui-accordion > div .ui-accordion-content {
+  padding-left: 50px !important;
+  border: none !important;
+}
+
+.embedded .ui-accordion .ui-accordion-content,
+.accordion-wrapper.skip-tier > .ui-accordion-content,
+.accordion-wrapper > div .ui-accordion > div .ui-accordion-content {
+  padding-top: 10px !important;
+}
+
+.accordion-wrapper .accordion-content-title {
+  font-size: 1.15em;
+  margin-bottom: 10px;
+  display: block;
+}
+
+#accordion-grouped {
+  margin: 20px 0;
+}
+
+// Course schedule
+
+#editor.vrtx-course-schedule {
+  .properties {
+    .tooltips.cancelled-tp {
+      margin-top: 15px;
+    }
+
+    .vrtx-checkbox {
+      margin-top: 30px;
+    }
+
+    .property-label {
+      font-weight: normal;
+      margin: 0 0 25px 0;
+    }
+
+    .session-date {
+      display: inline-block;
+      width: 15em;
+    }
+
+    .header-status {
+      color: #ed2023;
+    }
+  }
+
+  .admin-fixed-resources-iframe {
+    width: 100%;
+    height: 200px; /* default height */
+  }
+}
+
+// Study enhancements
+
+// Preview html/shared text
+
+.preview-html,
+.vrtx-shared-text .shared-text-description {
+  background-color: #fafafa;
+  border: 1px dashed #d5d5d5;
+  margin: 15px 0;
+  padding: 6px 15px;
+
+  a {
+    color: #005aab;
+    text-decoration: underline;
+  }
+}
+
+.vrtx-shared-text .shared-text-description.unavailable {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  color: #ed1c24;
+}
+
+// Selects - all is default
+
+#editor.select-typeToDisplay-so .pris,
+#editor.select-typeToDisplay-so .regelverk,
+#editor.select-typeToDisplay-so .documentation-admin,
+#editor.select-typeToDisplay-nm .spesielle-admin,
+#editor.select-typeToDisplay-nm .forstevitnemal-kvote,
+#editor.select-typeToDisplay-nm .ordinar-kvote-alle-kvalifiserte,
+#editor.select-typeToDisplay-nm .credit-limits,
+#editor.select-typeToDisplay-nm .studiekode,
+#editor.select-typeToDisplay-nm .quota,
+#editor.select-typeToDisplay-em .spesielle-admin,
+#editor.select-typeToDisplay-em .forstevitnemal-kvote,
+#editor.select-typeToDisplay-em .ordinar-kvote-alle-kvalifiserte,
+#editor.select-typeToDisplay-em .credit-limits,
+#editor.select-typeToDisplay-em .quota,
+#editor.select-typeToDisplay-em .studiekode {
+  display: none;
+}
+
+// Selects - otherwise (reversed logic)
+
+// Hide only if JS is turned on
+#editor.select-type-of-agreement .if-type-of-agreement-other,
+#editor.select-teachingsemester .if-teachingsemester-particular,
+#editor.select-teachingsemester .teachingsemester-every-other-semester,
+#editor.select-examsemester .if-examsemester-particular,
+#editor.select-examsemester .examsemester-every-other-semester {
+  display: none;
+}
+
+#editor.select-type-of-agreement .if-type-of-agreement-other label,
+#editor.select-type-of-agreement .if-type-of-agreement-other .header,
+#editor.select-teachingsemester-particular-semester .if-teachingsemester-particular label,
+#editor.select-teachingsemester-every-other .teachingsemester-every-other-semester .header,
+#editor.select-examsemester-particular-semester .if-examsemester-particular label,
+#editor.select-examsemester-every-other .examsemester-every-other-semester .header {
+  display: none;
+}
+
+#editor.select-type-of-agreement-other .if-type-of-agreement-other,
+#editor.select-teachingsemester-particular-semester .if-teachingsemester-particular,
+#editor.select-teachingsemester-every-other .teachingsemester-every-other-semester,
+#editor.select-teachingsemester-other .teachingsemester-other,
+#editor.select-examsemester-particular-semester .if-examsemester-particular,
+#editor.select-examsemester-every-other .examsemester-every-other-semester {
+  display: block;
+}
+
+#editor .phd-web-address {
+  display: none;
+}
+
+#editor.select-program-type-phd .phd-web-address {
+  display: block;
+}
+
+// Radios
+
+#vrtx-resource\.courseContext\.course-continued-as.hidden {
+  display: none;
+}
+
+// TODO: generalize JSON-element-accordion
+#items .vrtx-json-element {
+  > div > div,
+  .left > div,
+  .right > div {
+    clear: left;
+    float: left;
+    margin-top: 20px;
+  }
+
+  .left,
+  .right,
+  .left > div:first-child,
+  .right > div:first-child,
+  > div > div:first-child,
+  .vrtx-grouped .ui-accordion-content > div:first-child {
+    margin-top: 0px;
+  }
+
+  .right {
+    clear: none;
+  }
+}
+
+// JSON-boxes - explicit settings
+
+.vrtx-json {
+  #main-content,
+  #contact-supervisor-box,
+  #additional-content,
+  #featured-items {
+    .vrtx-json-element {
+      padding: 10px;
+      border: 1px solid #D8D8D8;
+      background-color: #eee;
+
+      .vrtx-button {
+        background: #F7F7F7;
+      }
+    }
+  }
+}
+
+.forms-new .vrtx-json {
+  #main-content,
+  #contact-supervisor-box,
+  #additional-content,
+  #featured-items {
+    .vrtx-json-element .vrtx-button {
+      &:hover,
+      &.hover,
+      &:focus {
+        background: #4195db;
+      }
+    }
+  }
+}
+
+.vrtx-json {
+  &.vrtx-json-accordion,
+  #main-content,
+  #contact-supervisor-box,
+  #additional-content,
+  #featured-items {
+    .vrtx-json-element {
+      .vrtx-remove-button {
+        position: absolute;
+        margin-top: 0;
+        right: 0px;
+        top: 50%;
+        float: none;
+      }
+      .vrtx-move-up-button,
+      .vrtx-move-down-button {
+        position: absolute;
+        right: 0px;
+        margin-top: 0 !important;
+      }
+      .vrtx-move-up-button {
+        top: 10px;
+      }
+      .vrtx-move-down-button {
+        bottom: 10px;
+      }
+    }
+  }
+
+  .vrtx-json-element {
+    .vrtx-html {
+      width: 600px;
+
+      iframe {
+        width: 576px;
+      }
+    }
+    .boxPictureAlt,
+    .featuredPictureAlt {
+      margin-top: 20px;
+      float: none;
+
+      input {
+        width: 230px;
+      }
+    }
+    .vrtx-image-ref-alt-text {
+      .vrtx-image-ref-preview-inner,
+      .boxPictureAlt,
+      .featuredPictureAlt {
+        float: left;
+        margin-top: 0;
+      }
+      .boxPictureAlt,
+      .featuredPictureAlt {
+        margin-left: 20px;
+        margin-top: -27px;
+      }
+    }
+  }
+}
+
+.contactInformation .visitingAddress {
+  display: none !important;
+}
+
+#resource-links .vrtx-textfield {
+  width: 160px;
+}
+
+// Clearings
+
+.vrtx-grouped-horizontal:after,
+.vrtx-grouped-vertical:after,
+.vrtx-grouped:after,
+.vrtx-json:after,
+.vrtx-json .vrtx-json-element:after {
+  clear: both;
+  content: ".";
+  display: block;
+  height: 0;
+  visibility: hidden;
+}
+
+.vrtx-grouped .vrtx-json:after {
+  content: "";
+}
+
+/* ^ Vortex - Editor - New documenttypes */
