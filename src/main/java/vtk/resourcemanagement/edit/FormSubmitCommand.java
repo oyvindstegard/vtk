@@ -83,8 +83,6 @@ public class FormSubmitCommand extends UpdateCancelCommand {
                 .map(rule -> rule.getName())
                 .collect(Collectors.toList());
         
-        System.out.println("__no_edit: " + noEdit);
-
         for (PropertyDescription def : type.getAllPropertyDescriptions()) {
             
             if (noEdit.contains(def.getName())) continue;
