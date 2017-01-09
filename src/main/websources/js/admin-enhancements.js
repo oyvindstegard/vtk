@@ -224,6 +224,7 @@ vrtxAdmin._$(document).ready(function () {
   if(isEmbedded2) {
     $("html").addClass("embedded2");
   }
+  var isNotEmbedded = !isEmbedded && !isEmbedded2;
 
   vrtxAdm.bodyId = vrtxAdm.cachedBody.attr("id") || "";
   vrtxAdm.cachedBody.addClass("js");
@@ -254,25 +255,25 @@ vrtxAdmin._$(document).ready(function () {
   vrtxAdm.clientLastModified = $("#resource-last-modified").text().split(",");
 
   /* Delay some stuff and only run some stuff if not embedded */
-  if(!isEmbedded && !isEmbedded2) {
+  if(isNotEmbedded) {
     vrtxAdm.initDropdowns();
     vrtxAdm.initScrollBreadcrumbs();
   }
   vrtxAdm.domainsInstantIsReady.resolve();
 
-  if(!isEmbedded && !isEmbedded2) {
+  if(isNotEmbedded) {
     vrtxAdm.initMiscAdjustments();
   }
 
   var waitALittle = setTimeout(function() {
     vrtxAdm.initTooltips();
-    if(!isEmbedded && !isEmbedded2) {
+    if(isNotEmbedded) {
       vrtxAdm.initGlobalDialogs();
     }
   }, 15);
 
   var waitALittleMore = setTimeout(function() {
-    if(!isEmbedded && !isEmbedded2) {
+    if(isNotEmbedded) {
       vrtxAdm.initResourceMenus();
     }
     vrtxAdm.initDomains();
