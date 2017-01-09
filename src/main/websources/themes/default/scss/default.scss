@@ -1270,57 +1270,59 @@ h3.resourceInfoHeader {
 
 /* Versioning */
 
-#vrtx-revisions table.resourceInfo {
-  border: none;
-}
-
-#vrtx-revisions .resourceInfo td,
-#vrtx-revisions .resourceInfo th {
-  border: none;
-  border-bottom: 1px solid #D9D9D9;
-}
-
-#vrtx-revisions .resourceInfo td {
-  font-size: 1.154em;
-  padding: 14px 10px 14px 0;
-}
-
 table.resourceInfo.revisions tr:nth-child(even) td {
   background-color: $contentBackgroundColor;
 }
 
-#vrtx-revisions .resourceInfo th {
-  padding: 0 0 10px 0;
-  text-align: left;
-}
+#vrtx-revisions .resourceInfo {
+  border: none;
 
-#vrtx-revisions .resourceInfo td.vrtx-revisions-buttons-column {
-  font-size: 1em;
-  width: 450px;
-  padding: 11px;
-}
+  td,
+  th {
+    border: none;
+    border-bottom: 1px solid #D9D9D9;
+  }
 
-#vrtx-revisions .resourceInfo td.vrtx-revisions-buttons-column .vrtx-revision-view-changes,
-#vrtx-revisions .resourceInfo td.vrtx-revisions-buttons-column form {
-  display: inline-block;
-  margin-left: 10px;
-}
+  td {
+    font-size: 1.154em;
+    padding: 14px 10px 14px 0;
+  }
 
-#vrtx-revisions .resourceInfo td.vrtx-revisions-buttons-column form:after {
-  display: none;
-}
+  th {
+    padding: 0 0 10px 0;
+    text-align: left;
+  }
 
-#vrtx-revisions .resourceInfo tr#vrtx-revisions-working-copy td {
-  font-style: italic;
-  color: #999;
-}
+  td.vrtx-revisions-buttons-column {
+    font-size: 1em;
+    width: 450px;
+    padding: 11px;
 
-#vrtx-revisions .resourceInfo tr#vrtx-revisions-working-copy td.vrtx-revisions-buttons-column {
-  font-style: normal;
-}
+    .vrtx-revision-view-changes,
+    form {
+      display: inline-block;
+      margin-left: 10px;
+    }
 
-#vrtx-revisions .resourceInfo td#vrtx-revisions-current {
-  color: $publishedAllowedTextColor;
+    form:after {
+      display: none;
+    }
+  }
+
+  tr#vrtx-revisions-working-copy {
+    td {
+      font-style: italic;
+      color: #999;
+    }
+
+    td.vrtx-revisions-buttons-column {
+      font-style: normal;
+    }
+  }
+
+  td#vrtx-revisions-current {
+    color: $publishedAllowedTextColor;
+  }
 }
 
 .vrtx-revision-amount,
@@ -1371,32 +1373,35 @@ table.resourceInfo.revisions tr:nth-child(even) td {
   padding: 0 0 0 12px;
 }
 
-.vrtx-report-paging .next {
-  margin-left: 0px !important;
+.vrtx-report-paging {
+  .next {
+    margin-left: 0px !important;
+  }
+  .prev {
+    margin-right: 20px !important;
+  }
 }
 
-.vrtx-report-paging .prev {
-  margin-right: 20px !important;
-}
-
-#app-head:after,
-#app-footer:after,
-#app-content:after,
-#main:after,
-#title-container:after,
-#resource-title:after,
-ul#resourceMenuLeft:after,
-ul#resourceMenuRight:after,
-div.globalmenu:after,
-#active-tab:after,
-#contents:after,
-#app-content .principalList:after,
-#app-content form:after {
-  clear: both;
-  content: ".";
-  display: block;
-  height: 0;
-  visibility: hidden;
+#app-head,
+#app-footer,
+#app-content,
+#main,
+#title-container,
+#resource-title,
+ul#resourceMenuLeft,
+ul#resourceMenuRight,
+div.globalmenu,
+#active-tab,
+#contents,
+#app-content .principalList,
+#app-content form {
+  &:after {
+    clear: both;
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
+  }
 }
 
 ul.radio-buttons,
@@ -1465,29 +1470,31 @@ tr.expandedForm td .vrtx-button-small {
   margin-left: 2px;
   font-size: 0.846em;
   padding: 2px 13px;
-}
 
-.forms-new .resourceInfo table .vrtx-button-small:hover,
-.forms-new .resourceInfo table .vrtx-button-small:focus,
-.forms-new .resourceInfo table .vrtx-button-small.hover {
-  padding: 3px 14px;
+  &:hover,
+  &:focus,
+  &.hover {
+    padding: 3px 14px;
+  }
 }
 
 /* Create dialog */
 
-.vrtx-create-tree .vrtx-button-small {
-  margin-top: -2px;
-  margin-bottom: -2px;
-}
+.vrtx-create-tree {
+  .vrtx-button-small {
+    margin-top: -2px;
+    margin-bottom: -2px;
+  }
 
-.vrtx-create-tree .tree-create {
-  @include posAbs;
-  padding: 0 15px !important;
-}
+  .tree-create {
+    @include posAbs;
+    padding: 0 15px !important;
+  }
 
-.vrtx-create-tree a.tree-link {
-  color: #2b2b2b !important;
-  font-size: 1.077em;
+  a.tree-link {
+    color: #2b2b2b !important;
+    font-size: 1.077em;
+  }
 }
 
 .loading-tree-node {
