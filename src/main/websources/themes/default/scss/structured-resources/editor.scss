@@ -244,7 +244,7 @@
     left: -3px;
   }
 
-  .ui-accordion.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s {
+  &.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s {
     @include transitions(all 200ms ease-in-out);
   }
 
