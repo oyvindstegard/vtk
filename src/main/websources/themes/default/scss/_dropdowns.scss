@@ -125,42 +125,40 @@ ul.publishing-document {
 .forms-new ul.button-row li,
 .forms-new ul.button-row-small li {
   float: left;
+
+  a,
+  input[type='submit'] {
+    @include borderRadius(0px);
+  }
+  &.dropdown-init {
+    float: none;
+  }
 }
 
-.forms-new ul.button-row li.dropdown-init,
-.forms-new ul.button-row-small li.dropdown-init {
-  float: none;
-}
-
-.forms-new ul.button-row li a,
-.forms-new ul.button-row li input[type='submit'],
-.forms-new ul.button-row-small li a,
-.forms-new ul.button-row-small li input[type='submit'] {
-  @include borderRadius(0px);
-}
-
-ul.button-row li.first a,
-ul.button-row li.first input[type='submit'],
-ul.button-row-small li.first a,
-ul.button-row-small li.first input[type='submit'] {
-  -webkit-border-top-left-radius: 5px;
-  -webkit-border-bottom-left-radius: 5px;
-  -moz-border-radius-topleft: 5px;
-  -moz-border-radius-bottomleft: 5px;
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
-}
-
-ul.button-row li.last a,
-ul.button-row li.last input[type='submit'],
-ul.button-row-small li.last a,
-ul.button-row-small li.last input[type='submit'] {
-  -webkit-border-top-right-radius: 5px;
-  -webkit-border-bottom-right-radius: 5px;
-  -moz-border-radius-topright: 5px;
-  -moz-border-radius-bottomright: 5px;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
+ul.button-row,
+ul.button-row-small {
+  li.first {
+    a,
+    input[type='submit'] {
+      -webkit-border-top-left-radius: 5px;
+      -webkit-border-bottom-left-radius: 5px;
+      -moz-border-radius-topleft: 5px;
+      -moz-border-radius-bottomleft: 5px;
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px;
+    }
+  }
+  li.last {
+    a,
+    input[type='submit'] {
+      -webkit-border-top-right-radius: 5px;
+      -webkit-border-bottom-right-radius: 5px;
+      -moz-border-radius-topright: 5px;
+      -moz-border-radius-bottomright: 5px;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+    }
+  }
 }
 
 div.dropdown-shortcut-menu-container,
@@ -189,63 +187,65 @@ ul.dropdown-shortcut-menu-container {
 
 #editor-menu-wrapper {
   position: relative;
+
+  div.dropdown-shortcut-menu-container {
+    right: 7px;
+    top: 32px;
+  }
+
+  #editor-menu {
+    padding: 0 7px 0 0;
+  }
 }
 
-#editor-menu-wrapper div.dropdown-shortcut-menu-container {
-  right: 7px;
-  top: 32px;
-}
+ul.dropdown-shortcut-menu {
+  li.dropdown-init {
+    position: relative;
+    padding-right: 26px !important;
+    line-height: 17px;
 
-ul.dropdown-shortcut-menu li.dropdown-init {
-  position: relative;
-  padding-right: 26px !important;
-  line-height: 17px;
-}
+    .dropdown-shortcut-menu-click-area {
+      border: 1px solid $buttonBorderColor;
+      @include posAbsRight;
+      @include wh(25px, 28px);
+      @include noMargPadd;
+      cursor: pointer;
+      -webkit-border-top-right-radius: 5px;
+      -webkit-border-bottom-right-radius: 5px;
+      -moz-border-radius-topright: 5px;
+      -moz-border-radius-bottomright: 5px;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      background: $buttonBackgroundColor url("images/dropdown-arrow.png") no-repeat 8px 12px;
 
-#editor-menu-wrapper #editor-menu {
-  padding: 0 7px 0 0;
-}
+      &:focus,
+      &:hover {
+        background-color: $buttonHoverBackgroundColor;
+        border-color: $buttonHoverBackgroundColor;
+        border-width: 0 0 0 1px;
+        height: 30px;
+        top: 0;
+        right: 0;
+        background-image: url("images/dropdown-arrow-hover.png");
+        background-position: 7px 13px;
+        outline: none;
+        cursor: pointer;
+      }
+    }
+  }
 
-ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area {
-  border: 1px solid $buttonBorderColor;
-  @include posAbsRight;
-  @include wh(25px, 28px);
-  @include noMargPadd;
-  cursor: pointer;
-  -webkit-border-top-right-radius: 5px;
-  -webkit-border-bottom-right-radius: 5px;
-  -moz-border-radius-topright: 5px;
-  -moz-border-radius-bottomright: 5px;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
-  background: $buttonBackgroundColor url("images/dropdown-arrow.png") no-repeat 8px 12px;
-}
+  &.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area {
+    background-image: url("images/dropdown-arrow-small.png");
+    background-position: 8px 11px;
+    @include wh(25px, 24px);
 
-ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area {
-  background-image: url("images/dropdown-arrow-small.png");
-  background-position: 8px 11px;
-  @include wh(25px, 24px);
-}
-
-ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area:focus,
-ul.dropdown-shortcut-menu li.dropdown-init .dropdown-shortcut-menu-click-area:hover {
-  background-color: $buttonHoverBackgroundColor;
-  border-color: $buttonHoverBackgroundColor;
-  border-width: 0 0 0 1px;
-  height: 30px;
-  top: 0;
-  right: 0;
-  background-image: url("images/dropdown-arrow-hover.png");
-  background-position: 7px 13px;
-  outline: none;
-  cursor: pointer;
-}
-
-ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area:focus,
-ul.dropdown-shortcut-menu.dropdown-shortcut-menu-small li.dropdown-init .dropdown-shortcut-menu-click-area:hover {
-  height: 26px;
-  background-image: url("images/dropdown-arrow-small-hover.png");
-  background-position: 7px 12px;
+    &:focus,
+    &:hover {
+      height: 26px;
+      background-image: url("images/dropdown-arrow-small-hover.png");
+      background-position: 7px 12px;
+    }
+  }
 }
 
 div.dropdown-shortcut-menu-container ul,
@@ -256,75 +256,65 @@ ul.dropdown-shortcut-menu-container li {
   list-style: none;
 }
 
-div.dropdown-shortcut-menu-container ul li a,
-ul.dropdown-shortcut-menu-container li a,
-div.dropdown-shortcut-menu-container ul li span,
-ul.dropdown-shortcut-menu-container li span,
-div.dropdown-shortcut-menu-container ul li form input[type='submit'],
-ul.dropdown-shortcut-menu-container li form input[type='submit'] {
-  border: none;
-  border-bottom: 1px solid $buttonBorderColor; 
-  padding: 8px 14px 7px 14px !important;
-  background-color: #fff;
-  display: block;
-  white-space: nowrap;
-}
+div.dropdown-shortcut-menu-container ul li,
+ul.dropdown-shortcut-menu-container li {
+  &:hover,
+  &:focus {
+    text-decoration: none;
+  }
 
-div.dropdown-shortcut-menu-container ul li form,
-ul.dropdown-shortcut-menu-container li form {
-  display: block;
-}
+  a,
+  span,
+  form input[type='submit'] {
+    border: none;
+    border-bottom: 1px solid $buttonBorderColor;
+    padding: 8px 14px 7px 14px !important;
+    background-color: #fff;
+    display: block;
+    white-space: nowrap;
+  }
 
-div.dropdown-shortcut-menu-container ul li a:hover,
-ul.dropdown-shortcut-menu-container li a:hover,
-div.dropdown-shortcut-menu-container ul li form input[type='submit']:hover,
-ul.dropdown-shortcut-menu-container li form input[type='submit']:hover,
-div.dropdown-shortcut-menu-container ul li a:focus,
-ul.dropdown-shortcut-menu-container li a:focus,
-div.dropdown-shortcut-menu-container ul li form input[type='submit']:focus,
-ul.dropdown-shortcut-menu-container li form input[type='submit']:focus {
-  background-color: $listingDropdownTipFocusBackgroundColor;
-  cursor: pointer;
-}
+  form {
+    display: block;
+  }
 
-div.dropdown-shortcut-menu-container ul li form input[type='submit'],
-ul.dropdown-shortcut-menu-container li form input[type='submit'] {
-  float: left;
-  text-align: left;
-  width: 100%;
-}
+  form input[type='submit'] {
+    float: left;
+    text-align: left;
+    width: 100%;
+  }
 
-div.dropdown-shortcut-menu-container ul li a:hover,
-ul.dropdown-shortcut-menu-container li a:hover,
-div.dropdown-shortcut-menu-container ul li a:focus,
-ul.dropdown-shortcut-menu-container li a:focus {
-  text-decoration: none;
+  a,
+  form input[type='submit'] {
+    &:hover,
+    &:focus {
+      background-color: $listingDropdownTipFocusBackgroundColor;
+      cursor: pointer;
+    }
+  }
 }
 
 div.dropdown-shortcut-menu-container form .vrtx-button {
   height: auto;
   background: none;
-}
 
-div.dropdown-shortcut-menu-container form .vrtx-button button {
-  color: $linkColor;
-}
+  &:hover,
+  &:focus {
+    background: none;
+  }
 
-div.dropdown-shortcut-menu-container form .vrtx-button:hover,
-div.dropdown-shortcut-menu-container form .vrtx-button:focus {
-  background: none;
-}
+  button {
+    color: $linkColor;
+    background: none;
+    height: auto;
+    @include noMargPadd;
 
-div.dropdown-shortcut-menu-container form .vrtx-button button:hover,
-div.dropdown-shortcut-menu-container form .vrtx-button button:focus {
-  background: none;
-  color: $linkColor;
-}
-
-div.dropdown-shortcut-menu-container form .vrtx-button button {
-  background: none;
-  height: auto;
-  @include noMargPadd;
+    &:hover,
+    &:focus {
+      background: none;
+      color: $linkColor;
+    }
+  }
 }
 
 /* ^ Vortex - Dropdowns */
