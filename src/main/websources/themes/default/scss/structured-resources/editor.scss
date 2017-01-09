@@ -169,131 +169,139 @@
 }
 
 .ui-accordion {
-  > div {
-    margin-left: -20px;
-    margin-right: -20px;
-  }
-
   > .header,
   > .vrtx-add-button {
     margin-left: 0px;
     margin-right: 0px;
   }
 
+  > div {
+    margin-left: -20px;
+    margin-right: -20px;
+
+    > .header.ui-accordion-header,
+    .ui-accordion > div .ui-accordion-header {
+      padding: 15px 15px 14px 40px;
+      border-radius: 0px;
+    }
+
+    > .header.ui-accordion-header {
+      margin-bottom: -3px;
+      background: #f9f9f9;
+      color: inherit;
+      border-color: #d9d9d9;
+
+      label {
+        margin-bottom: 0px;
+      }
+
+      &.ui-corner-top {
+        border-bottom: none;
+      }
+
+      .ui-icon {
+        top: 25px;
+        left: 11px;
+        height: 16px;
+        width: 16px;
+      }
+
+      .ui-icon.ui-icon-triangle-1-s { /* Expanded */
+        background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
+
+        @include transforms(rotate(90deg));
+        @include transitions(all 600ms ease-in-out);
+
+        top: 20px;
+        left: 13px;
+      }
+
+      .ui-icon.ui-icon-triangle-1-e { /* Collapsed */
+        background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
+        @include transitions(all 600ms ease-in-out);
+      }
+
+      &.ui-corner-top,
+      &.ui-state-hover.ui-corner-top {
+        background: none;
+      }
+    }
+
+    .ui-accordion > div {
+      .ui-accordion-header {
+        background: url(../images/line-dotted.gif) repeat-x top left;
+        padding-left: 30px;
+        border-radius: 0px;
+        margin: 0 0 -3px 20px;
+        color: inherit;
+        border-width: 0;
+      }
+
+      .ui-accordion {
+        background: url(../images/line-dotted.gif) repeat-x bottom left;
+      }
+
+      .header.ui-accordion-header .ui-icon {
+        left: -3px;
+      }
+    }
+
+    > .ui-accordion-content {
+      padding-left: 40px !important;
+      padding-top: 0px !important;
+      border: 1px solid #d9d9d9 !important;
+      border-bottom: none !important;
+      border-top: none !important;
+      overflow: hidden;
+    }
+  }
+
   > .vrtx-grouped {
     margin-top: 0px;
+
+    .header.ui-accordion-header.ui-state-hover label {
+      cursor: pointer;
+    }
   }
 
-  > div > .header.ui-accordion-header label,
   > .vrtx-json-element {
     margin-bottom: 0px;
+
+    &.last {
+      margin-bottom: 20px;
+    }
   }
 
-  > .vrtx-json-element.last {
-    margin-bottom: 20px;
+  // Faster animations
+  &.fast > div > .header.ui-accordion-header .ui-icon {
+    &.ui-icon-triangle-1-s,
+    &.ui-icon-triangle-1-e {
+      @include transitions(all 200ms ease-in-out);
+    }
   }
 
-  > div > .header.ui-accordion-header,
-  > div .ui-accordion > div .ui-accordion-header {
-    padding: 15px 15px 14px 40px;
-    border-radius: 0px;
-  }
-
-  > div > .header.ui-accordion-header {
-    margin-bottom: -3px;
-    background: #f9f9f9;
-    color: inherit;
-    border-color: #d9d9d9;
-  }
-
-  > div .ui-accordion > div .ui-accordion-header {
-    background: url(../images/line-dotted.gif) repeat-x top left;
-    padding-left: 30px;
-    border-radius: 0px;
-    margin: 0 0 -3px 20px;
-    color: inherit;
-    border-width: 0;
-  }
-
-  > div .ui-accordion > div .ui-accordion {
-    background: url(../images/line-dotted.gif) repeat-x bottom left;
-  }
-
-  > div > .header.ui-accordion-header.ui-corner-top {
-    border-bottom: none;
-  }
-
-  > div > .header.ui-accordion-header .ui-icon {
-    top: 25px;
-    left: 11px;
-    height: 16px;
-    width: 16px;
-  }
-
-  > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s { /* Expanded */
-    background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
-
-    @include transforms(rotate(90deg));
-    @include transitions(all 600ms ease-in-out);
-
-    top: 20px;
-    left: 13px;
-  }
-
-  > div .ui-accordion > div .header.ui-accordion-header .ui-icon {
-    left: -3px;
-  }
-
-  &.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-s {
-    @include transitions(all 200ms ease-in-out);
-  }
-
-  > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-e { /* Collapsed */
-    background: url(../images/arrow-collapsed-big.gif) no-repeat top left;
-    @include transitions(all 600ms ease-in-out);
-  }
-
-  &.fast > div > .header.ui-accordion-header .ui-icon.ui-icon-triangle-1-e {
-    @include transitions(all 200ms ease-in-out);
-  }
-
-  .vrtx-grouped .header.ui-accordion-header.ui-state-hover label {
-    cursor: pointer;
-  }
-
-  .header.ui-accordion-header.ui-state-hover,
-  .header.ui-accordion-header.ui-state-focus {
-    background-color: #ecf3f9;
-  }
-
-  > div > .header.ui-accordion-header.ui-corner-top,
-  > div > .header.ui-accordion-header.ui-state-hover.ui-corner-top {
-    background: none;
+  .header.ui-accordion-header {
+    &.ui-state-hover,
+    &.ui-state-focus {
+      background-color: #ecf3f9;
+    }
   }
 
   /* Ensure dotted background on inner accordions */
-  .ui-accordion .header.ui-accordion-header.ui-state-hover,
-  .ui-accordion .header.ui-accordion-header.ui-state-focus,
-  .ui-accordion .header.ui-accordion-header.ui-corner-top,
-  .ui-accordion .header.ui-accordion-header.ui-state-hover.ui-corner-top,
-  .ui-accordion .header.ui-accordion-header.ui-state-focus.ui-corner-top {
-    background: url(../images/line-dotted.gif) repeat-x top left !important;
-  }
-
-  .ui-accordion .header.ui-accordion-header.ui-state-hover,
-  .ui-accordion .header.ui-accordion-header.ui-state-focus,
-  .ui-accordion .header.ui-accordion-header.ui-state-hover .session-date,
-  .ui-accordion .header.ui-accordion-header.ui-state-focus .session-date {
-    text-decoration: underline !important;
-  }
-
-  > div > .ui-accordion-content {
-    padding-left: 40px !important;
-    padding-top: 0px !important;
-    border: 1px solid #d9d9d9 !important;
-    border-bottom: none !important;
-    border-top: none !important;
-    overflow: hidden;
+  .ui-accordion .header.ui-accordion-header {
+    &.ui-state-hover,
+    &.ui-state-focus,
+    &.ui-corner-top,
+    &.ui-state-hover.ui-corner-top,
+    &.ui-state-focus.ui-corner-top {
+      background: url(../images/line-dotted.gif) repeat-x top left !important;
+    }
+    &.ui-state-hover,
+    &.ui-state-focus,
+    &.ui-state-hover .session-date,
+    &.ui-state-focus .session-date {
+      text-decoration: underline !important;
+    }
   }
 }
 
