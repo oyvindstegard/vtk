@@ -8,78 +8,16 @@
 
 @import "base";
 
-html.embedded2,
-body.embedded2 {
-  background-color: #fff;
-  text-align: left;
-}
-
-body.embedded2 {
-  min-width: 0;
-  float: left;
-  width: 100%;
-}
-
-body.embedded2.forms-new .ui-widget-overlay {
-  @include wh(100%, 100%);
-  @include posAbs;
-}
-
-body.embedded2 #directory-listing.collection-listing {
-  border-collapse: separate;
-  margin-bottom: 15px;
-}
-
-body.embedded2 #directory-listing.collection-listing tr td {
-  border: 1px solid #f0f0f0;
-}
-
-body.embedded2 #directory-listing.collection-listing tr.expandedForm td {
-  padding-top: 10px;
-  padding-bottom: 15px;
-}
-
-body.embedded2 #directory-listing.collection-listing tr.expandedForm h3 {
-  font-size: 1.35em;
-}
-
-body.embedded2 #directory-listing tr.even td {
-  background-color: $contentBackgroundColor;
-  border-top: 1px solid transparent;
-  border-bottom: 1px solid transparent;
-}
-
-body.embedded2 #directory-listing tr.even:last-child td {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-body.embedded2 #directory-listing tr.odd td {
-  background-color: $contentTablesEvenBackgroundColor;
-}
-
-body.embedded2.forms-new #directory-listing tr.focus td,
-body.embedded2.forms-new #directory-listing tr:focus td,
-body.embedded2.forms-new #directory-listing tr:hover td {
-  border: 1px solid #c7dadf;
-  background-color: $listingDropdownTipFocusBackgroundColor;
-}
-
-body.embedded2 #directory-listing.collection-listing tr td:first-child {
-  border-right: none;
-}
-
-body.embedded2 #directory-listing.collection-listing tr td:last-child {
-  border-left: none;
-}
-
-body.embedded2 .expandedForm {
-  margin: 10px 0 0 0;
-  @include borderBox;
-}
-
 #vrtx-editor-title-submit-buttons h2 {
   margin: 0;
   background: none;
+}
+
+#editor-fail {
+  background: transparent url("images/line-dotted.gif") repeat-x left top;
+  padding-top: 15px;
+  margin-top: 0;
+  display: block;
 }
 
 .vrtx-close-dialog-editor {
@@ -90,74 +28,146 @@ body.embedded2 .expandedForm {
   margin-top: 2px;
 }
 
-html.embedded #vrtx-editor-title-submit-buttons h2 {
-  padding-bottom: 5px;
-}
-
-html.embedded .vrtx-close-dialog-editor {
-  margin-top: 5px;
-}
-
-html.embedded .embedded-editor-fail #contents {
-  height: auto !important;
-}
-
-html.embedded .embedded-editor-fail #app-content {
-  width: 450px;
-}
-
-#editor-fail {
-  background: transparent url("images/line-dotted.gif") repeat-x left top;
-  padding-top: 15px;
-  margin-top: 0;
-  display: block;
-}
-
 html.embedded {
   overflow-y: scroll;
+
+  &,
+  body {
+    background: #999999;
+  }
+
+  body {
+    min-width: 0;
+    padding: 20px;
+  }
+
+  #app-content,
+  #app-content #main {
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+  }
+
+  #app-content {
+    width: 780px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    background: $contentBackgroundColor;
+    border: 2px solid #848484;
+    @include boxShadow(1px 1px 5px 2px #848484);
+
+    #main {
+      padding-top: 0 !important;
+    }
+  }
+
+  #app-head-wrapper,
+  #app-footer-wrapper,
+  #title-container,
+  #app-tabs,
+  #active-tab {
+    display: none;
+  }
+
+  #vrtx-editor-title-submit-buttons h2 {
+    padding-bottom: 5px;
+  }
+
+  .vrtx-close-dialog-editor {
+    margin-top: 5px;
+  }
+
+  .embedded-editor-fail {
+    #contents {
+      height: auto !important;
+    }
+
+    #app-content {
+      width: 450px;
+    }
+  }
 }
 
-html.embedded,
-html.embedded body {
-  background: #999999;
+html.embedded2,
+body.embedded2 {
+  background-color: #fff;
+  text-align: left;
 }
 
-html.embedded body {
+body.embedded2 {
   min-width: 0;
-  padding: 20px;
-}
+  float: left;
+  width: 100%;
 
-html.embedded #app-content,
-html.embedded #app-content #main {
-  width: auto;
-  min-width: 0;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-}
+  #directory-listing {
+    &.collection-listing {
+      border-collapse: separate;
+      margin-bottom: 15px;
 
-html.embedded #app-content #main {
-  padding-top: 0 !important;
-}
+      tr td {
+        border: 1px solid #f0f0f0;
+      }
 
-html.embedded #app-content {
-  width: 780px;
-  margin: 0 auto;
-  padding: 20px;
-  position: relative;
-  background: $contentBackgroundColor;
-  border: 2px solid #848484;
-  @include boxShadow(1px 1px 5px 2px #848484);
-}
+      tr.expandedForm td {
+        padding-top: 10px;
+        padding-bottom: 15px;
+      }
 
-html.embedded #app-head-wrapper,
-html.embedded #app-footer-wrapper,
-html.embedded #title-container,
-html.embedded #app-tabs,
-html.embedded #active-tab {
-  display: none;
-}
+      tr.expandedForm h3 {
+        font-size: 1.35em;
+      }
 
-/* ^ Embedded */
+      tr td {
+        &:first-child {
+          border-right: none;
+        }
+
+        &:last-child {
+          border-left: none;
+        }
+      }
+    }
+
+    tr.even {
+      td {
+        background-color: $contentBackgroundColor;
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+      }
+
+      &:last-child td {
+        border-bottom: 1px solid #f0f0f0;
+      }
+    }
+
+    tr.odd td {
+      background-color: $contentTablesEvenBackgroundColor;
+    }
+  }
+
+  .expandedForm {
+    margin: 10px 0 0 0;
+    @include borderBox;
+  }
+
+  &.forms-new {
+    .ui-widget-overlay {
+      @include wh(100%, 100%);
+      @include posAbs;
+    }
+
+    #directory-listing tr {
+      &.focus td,
+      &:focus td,
+      &:hover td {
+        border: 1px solid #c7dadf;
+        background-color: $listingDropdownTipFocusBackgroundColor;
+      }
+    }
+  }
+}
