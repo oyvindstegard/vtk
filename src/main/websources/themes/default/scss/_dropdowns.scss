@@ -278,12 +278,12 @@ ul.dropdown-shortcut-menu-container li {
 
   form {
     display: block;
-  }
 
-  form input[type='submit'] {
-    float: left;
-    text-align: left;
-    width: 100%;
+    input[type='submit'] {
+      float: left;
+      text-align: left;
+      width: 100%;
+    }
   }
 
   a,
