@@ -258,9 +258,11 @@ ul.dropdown-shortcut-menu-container li {
 
 div.dropdown-shortcut-menu-container ul li,
 ul.dropdown-shortcut-menu-container li {
-  &:hover,
-  &:focus {
-    text-decoration: none;
+  a {
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
   }
 
   a,
