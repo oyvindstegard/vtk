@@ -9,7 +9,7 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
 
 @mixin breadcrumbBlock {
   font-size: 1.15em;
-  margin: 0; 
+  margin: 0;
   height: 32px;
   @include floatBlock;
 }
@@ -25,11 +25,11 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
   overflow: hidden;
   position: relative;
   bottom: -1px;
-  margin-top: -1px; 
-    
+  margin-top: -1px;
+
   #vrtx-breadcrumb {
     @include appHeadLine;
-    text-align: left; 
+    text-align: left;
     height: auto;
 
     .breadcrumb-prefix {
@@ -196,7 +196,7 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
     &#navigate-crumbs-right {
       right: 35px;
       border-left: 1px solid #DAD9D9;
-    
+
       &:focus span.navigate-crumbs-icon,
       &:hover span.navigate-crumbs-icon {
         background-image: url(images/breadcrumbs-right-nav-rollover.png);
@@ -212,5 +212,3 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
     }
   }
 }
-
-/* ^ Vortex - Breadcrumbs */

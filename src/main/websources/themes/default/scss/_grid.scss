@@ -6,7 +6,7 @@
  * - Global-menus
  * - Content-wrapper
  * - Fluid design
- * 
+ *
  */
 
 @import "base";
@@ -92,7 +92,7 @@ body {
       &:hover {
         color: #0b5a9d;
         text-decoration: none;
-  
+
       }
     }
     span#tagline {
@@ -146,7 +146,7 @@ body {
 
   .principal {
     @include bg("images/person.png");
-    padding-left: 28px; 
+    padding-left: 28px;
     display: inline-block;
 
     #logoutForm {
@@ -233,5 +233,3 @@ body {
     padding-right: $fluidPadding;
   }
 }
-
-/* ^ Vortex - Grid */

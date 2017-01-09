@@ -2,7 +2,7 @@
  * Vortex - Tabs
  *
  */
- 
+
 @import "base";
 
 @mixin tabBlockActive {
@@ -33,7 +33,7 @@
       &.activeTab {
         a {
           @include tabBlockActive;
-          
+
           &:hover,
           &:focus {
             border-color: $tabsBorderColor;
@@ -51,7 +51,7 @@
         text-align: center;
         text-decoration: none;
         @include floatBlock;
-        padding: 6px 22px 5px 19px; 
+        padding: 6px 22px 5px 19px;
         margin: 0;
         text-decoration: none;
         border: 1px solid $tabsBorderColor;
@@ -61,7 +61,7 @@
         &:focus {
           background: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
           color: #fff;
-          border-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor; 
+          border-color: $breadcrumbTabHoverSystemTabMessageBackgroundColor;
           border-bottom: 1px solid $breadcrumbTabHoverSystemTabMessageBackgroundColor;
           margin-left: -1px;
           padding-left: 20px;
@@ -70,5 +70,3 @@
     }
   }
 }
-
-/* ^ Vortex - Tabs */

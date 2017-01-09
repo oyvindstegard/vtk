@@ -2,7 +2,7 @@
  * Vortex - Forms
  *
  */
- 
+
 @import "base";
 
 @mixin button {
@@ -17,7 +17,7 @@
   padding: 5px 15px 6px;
   margin: 0;
   @include borderRadius(5px);
-  
+
   &:hover,
   &:focus,
   &.hover {
@@ -32,7 +32,7 @@
 }
 @mixin buttonSmall {
   padding: 3px 13px 4px;
-  
+
   &:hover,
   &:focus,
   &.hover {
@@ -71,7 +71,7 @@
   }
   input {
     @include noMargPadd;
-    
+
     &[type=button],
     &[type=file],
     &[type=image],
@@ -133,7 +133,7 @@
   .vrtx-focus-button,
   .vrtx-button-small {
     @include button;
-    
+
     &[disabled],
     &[readonly] {
       background: $disabledButtonBackgroundColor;
@@ -162,7 +162,7 @@
   #submitButtons {
     padding: 20px 0 0 0;
     clear: left;
-    
+
     .vrtx-button,
     .vrtx-focus-button {
       @include buttonSubmits;
@@ -170,7 +170,7 @@
   }
 
   /* Dialogs */
- 
+
   .vrtx-close-dialog {
     display: none;
   }
@@ -184,7 +184,7 @@
     padding: 20px;
     z-index: 100000 !important;
     @include borderRadius(7px);
-    
+
     h1 {
       display: none;
     }
@@ -192,7 +192,7 @@
       background: url(/vrtx/__vrtx/static-resources/themes/default/images/line-dotted.gif) repeat-x scroll left bottom transparent;
       border: none;
       padding: 0 0 15px 0;
-      
+
       &.closable {
         padding-bottom: 0px;
         background: none;
@@ -207,7 +207,7 @@
       right: 3px;
       top: 3px;
       z-index: 1;
-      
+
       .ui-button-text {
         display: none;
       }
@@ -240,7 +240,7 @@
     .ui-dialog-content {
       padding: 15px 0;
       min-height: 0 !important;
-      
+
       ul {
         margin: 10px 0 10px 25px;
         padding: 0;
@@ -253,7 +253,7 @@
         @include resetFont;
         @include button;
         @include buttonSubmits;
-        
+
         &:focus {
           outline: none;
         }
@@ -299,7 +299,7 @@
     font-family: $baseFont !important;
     font-size: 1em !important;
     text-align: left;
-    
+
     &.ui-datepicker {
       font-size: 0.9em !important;
     }
@@ -314,7 +314,7 @@
     background: #000;
     opacity: 0.4;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=40)" !important;
-    z-index: 99999 !important; 
+    z-index: 99999 !important;
   }
 }
 
@@ -448,7 +448,7 @@
   text-decoration: underline;
 }
 
-.forms-new div#email-response { 
+.forms-new div#email-response {
   font-size: 0.923em;
   font-style: italic;
   color: #ed1c24;
@@ -463,5 +463,3 @@
   border: none;
   padding: 0;
 }
-
-/* ^ Vortex - Forms */
