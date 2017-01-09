@@ -1,0 +1,56 @@
+// Selects - all is default
+
+#editor.select-typeToDisplay-so .pris,
+#editor.select-typeToDisplay-so .regelverk,
+#editor.select-typeToDisplay-so .documentation-admin,
+#editor.select-typeToDisplay-nm .spesielle-admin,
+#editor.select-typeToDisplay-nm .forstevitnemal-kvote,
+#editor.select-typeToDisplay-nm .ordinar-kvote-alle-kvalifiserte,
+#editor.select-typeToDisplay-nm .credit-limits,
+#editor.select-typeToDisplay-nm .studiekode,
+#editor.select-typeToDisplay-nm .quota,
+#editor.select-typeToDisplay-em .spesielle-admin,
+#editor.select-typeToDisplay-em .forstevitnemal-kvote,
+#editor.select-typeToDisplay-em .ordinar-kvote-alle-kvalifiserte,
+#editor.select-typeToDisplay-em .credit-limits,
+#editor.select-typeToDisplay-em .quota,
+#editor.select-typeToDisplay-em .studiekode {
+  display: none;
+}
+
+// Selects - otherwise (reversed logic)
+
+// Hide only if JS is turned on
+#editor.select-type-of-agreement .if-type-of-agreement-other,
+#editor.select-teachingsemester .if-teachingsemester-particular,
+#editor.select-teachingsemester .teachingsemester-every-other-semester,
+#editor.select-examsemester .if-examsemester-particular,
+#editor.select-examsemester .examsemester-every-other-semester {
+  display: none;
+}
+
+#editor.select-type-of-agreement .if-type-of-agreement-other label,
+#editor.select-type-of-agreement .if-type-of-agreement-other .header,
+#editor.select-teachingsemester-particular-semester .if-teachingsemester-particular label,
+#editor.select-teachingsemester-every-other .teachingsemester-every-other-semester .header,
+#editor.select-examsemester-particular-semester .if-examsemester-particular label,
+#editor.select-examsemester-every-other .examsemester-every-other-semester .header {
+  display: none;
+}
+
+#editor.select-type-of-agreement-other .if-type-of-agreement-other,
+#editor.select-teachingsemester-particular-semester .if-teachingsemester-particular,
+#editor.select-teachingsemester-every-other .teachingsemester-every-other-semester,
+#editor.select-teachingsemester-other .teachingsemester-other,
+#editor.select-examsemester-particular-semester .if-examsemester-particular,
+#editor.select-examsemester-every-other .examsemester-every-other-semester {
+  display: block;
+}
+
+#editor .phd-web-address {
+  display: none;
+}
+
+#editor.select-program-type-phd .phd-web-address {
+  display: block;
+}

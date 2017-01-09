@@ -1,0 +1,19 @@
+.preview-html,
+.vrtx-shared-text .shared-text-description {
+  background-color: #fafafa;
+  border: 1px dashed #d5d5d5;
+  margin: 15px 0;
+  padding: 6px 15px;
+
+  a {
+    color: #005aab;
+    text-decoration: underline;
+  }
+}
+
+.vrtx-shared-text .shared-text-description.unavailable {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  color: #ed1c24;
+}

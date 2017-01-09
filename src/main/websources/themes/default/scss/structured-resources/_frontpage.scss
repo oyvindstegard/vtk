@@ -1,0 +1,91 @@
+.vrtx-json {
+  #main-content,
+  #contact-supervisor-box,
+  #additional-content,
+  #featured-items {
+    .vrtx-json-element {
+      padding: 10px;
+      border: 1px solid #D8D8D8;
+      background-color: #eee;
+
+      .vrtx-button {
+        background: #F7F7F7;
+      }
+    }
+  }
+
+  &.vrtx-json-accordion,
+  #main-content,
+  #contact-supervisor-box,
+  #additional-content,
+  #featured-items {
+    .vrtx-json-element {
+      .vrtx-remove-button {
+        position: absolute;
+        margin-top: 0;
+        right: 0px;
+        top: 50%;
+        float: none;
+      }
+      .vrtx-move-up-button,
+      .vrtx-move-down-button {
+        position: absolute;
+        right: 0px;
+        margin-top: 0 !important;
+      }
+      .vrtx-move-up-button {
+        top: 10px;
+      }
+      .vrtx-move-down-button {
+        bottom: 10px;
+      }
+    }
+  }
+
+  .vrtx-json-element {
+    .vrtx-html {
+      width: 600px;
+
+      iframe {
+        width: 576px;
+      }
+    }
+    .boxPictureAlt,
+    .featuredPictureAlt {
+      margin-top: 20px;
+      float: none;
+
+      input {
+        width: 230px;
+      }
+    }
+    .vrtx-image-ref-alt-text {
+      .vrtx-image-ref-preview-inner,
+      .boxPictureAlt,
+      .featuredPictureAlt {
+        float: left;
+        margin-top: 0;
+      }
+      .boxPictureAlt,
+      .featuredPictureAlt {
+        margin-left: 20px;
+        margin-top: -27px;
+      }
+    }
+  }
+}
+
+.forms-new .vrtx-json {
+  #main-content,
+  #contact-supervisor-box,
+  #additional-content,
+  #featured-items {
+    .vrtx-json-element .vrtx-button {
+      &:hover,
+      &.hover,
+      &:focus {
+        background: #4195db;
+      }
+    }
+  }
+}
