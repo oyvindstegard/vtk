@@ -1,0 +1,83 @@
+/*
+ *
+ *  Vortex - Editor - Folders (and unstructured documents)
+ *
+ */
+
+@import "editor-common";
+@import "image-editor";
+@import "simple-editor";
+@import "manually-approve";
+
+.properties:after {
+  clear: both;
+  content: ".";
+  display: block;
+  height: 0;
+  visibility: hidden;
+}
+
+.media.vrtx-textfield,
+.image-ref.vrtx-textfield {
+  margin-right: 20px;
+}
+
+.image-ref img {
+  margin: 20px 0 0 0;
+}
+
+#vrtx-resource\.recursive-listing-subfolders {
+  margin-top: 5px;
+
+  .vrtx-textfield {
+    margin-left: 5px;
+  }
+}
+
+#vrtx-resource\.recursive-listing-subfolders,
+#vrtx-resource\.aggregation,
+#vrtx-resource\.manually-approve-from {
+  margin-left: 20px;
+}
+
+#vrtx-resource\.hide-props .property-item,
+#vrtx-resource\.display-props .property-item,
+#vrtx-resource\.display-manually-approved {
+  margin-bottom: 13px;
+  margin-top: 0;
+}
+
+#vrtx-resource\.display-manually-approved,
+#vrtx-resource\.display-aggregation {
+  margin-bottom: 0;
+  margin-top: 13px;
+}
+
+#vrtx-resource\.manually-approve-from,
+#vrtx-resource\.aggregation {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+#vrtx-resource\.display-manually-approved .tooltips,
+#vrtx-resource\.display-aggregation .tooltips {
+  margin-bottom: -0.1em;
+}
+
+#vrtx-resource\.featured-articles,
+#vrtx-resource\.recursive-listing,
+#vrtx-resource\.display-aggregation,
+#vrtx-resource\.aggregation,
+#vrtx-resource\.display-manually-approved,
+#vrtx-resource\.manually-approve-from {
+  &.property-item {
+    min-width: 0;
+  }
+}
+
+#vrtx-resource\.display-aggregation.property-item,
+#vrtx-resource\.display-manually-approved.property-item {
+  .vrtx-checkbox-square > * {
+    vertical-align: bottom;
+  }
+}

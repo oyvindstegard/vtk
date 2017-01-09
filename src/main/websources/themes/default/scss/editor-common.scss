@@ -46,13 +46,15 @@ h2 {
   margin-top: 20px;
 }
 
-.properties .vrtx-string.divide-top,
-.properties .vrtx-html.divide-top,
-.properties .vrtx-simple-html.divide-top,
-.properties .vrtx-checkbox.divide-top {
-  background: url("#{$imgBase}images/line-dotted.gif") repeat-x top left !important;
-  margin-top: 30px !important;
-  padding-top: 15px !important;
+.properties {
+  .vrtx-string.divide-top,
+  .vrtx-html.divide-top,
+  .vrtx-simple-html.divide-top,
+  .vrtx-checkbox.divide-top {
+    background: url("#{$imgBase}images/line-dotted.gif") repeat-x top left !important;
+    margin-top: 30px !important;
+    padding-top: 15px !important;
+  }
 }
 
 .property-item,
@@ -83,17 +85,21 @@ h2 {
   display: block;
 }
 
-.vrtx-grouped-vertical label,
-.vrtx-grouped-horizontal label,
-.vrtx-grouped label,
-.vrtx-json label {
-  font-size: 1em;
+.vrtx-grouped-vertical,
+.vrtx-grouped-horizontal,
+.vrtx-grouped,
+.vrtx-json {
+  label {
+    font-size: 1em;
+  }
 }
 
-.vrtx-image-ref-browse .vrtx-button,
-.vrtx-media-ref .vrtx-button,
-.vrtx-resource-ref .vrtx-button {
-  margin-left: 11px;
+.vrtx-image-ref-browse,
+.vrtx-media-ref,
+.vrtx-resource-ref {
+  .vrtx-button {
+    margin-left: 11px;
+  }
 }
 
 .featured-articles-row,
@@ -112,16 +118,15 @@ h2 {
   display: inline-block;
 }
 
-.featured-articles-row .vrtx-textfield,
-.featured-articles-row .vrtx-button,
-.aggregation-row .vrtx-textfield,
-.aggregation-row .vrtx-button,
-.manually-approve-from-row .vrtx-textfield,
-.manually-approve-from-row .vrtx-button,
-.vrtx-multipleinputfield .vrtx-textfield,
-.vrtx-multipleinputfield .vrtx-dropdown,
-.vrtx-multipleinputfield .vrtx-button {
-  margin-right: 20px;
+.featured-articles-row,
+.aggregation-row,
+.manually-approve-from-row,
+.vrtx-multipleinputfield {
+  .vrtx-textfield,
+  .vrtx-dropdown,
+  .vrtx-button {
+    margin-right: 20px;
+  }
 }
 
 .vrtx-multipleinputfields .vrtx-button {
@@ -161,27 +166,29 @@ h2 {
   margin-right: 20px;
 }
 
-.vrtx-multipleinputfield > * {
-  float: left;
-}
+.vrtx-multipleinputfield {
+  > * {
+    float: left;
+  }
 
-.vrtx-multipleinputfield .vrtx-button.moveup img,
-.vrtx-multipleinputfield .vrtx-button.movedown img {
-  height: 15px;
-}
+  .vrtx-button.moveup img,
+  .vrtx-button.movedown img {
+    height: 15px;
+  }
 
-.vrtx-multipleinputfield .vrtx-button.moveup,
-.vrtx-multipleinputfield .vrtx-button.movedown {
-  padding-left: 9px;
-  padding-right: 9px;
-}
+  .vrtx-button.moveup,
+  .vrtx-button.movedown {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
 
-.vrtx-multipleinputfield .vrtx-button.moveup:hover,
-.vrtx-multipleinputfield .vrtx-button.moveup:focus,
-.vrtx-multipleinputfield .vrtx-button.movedown:hover,
-.vrtx-multipleinputfield .vrtx-button.movedown:focus {
-  padding-left: 10px;
-  padding-right: 10px;
+  vrtx-button.moveup:hover,
+  .vrtx-button.moveup:focus,
+  .vrtx-button.movedown:hover,
+  .vrtx-button.movedown:focus {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
 }
 
 .vrtx-multipleinputfield .vrtx-button.moveup span,
@@ -202,38 +209,42 @@ h2 {
   background: url("#{$imgBase}images/multiple-move-down.png") no-repeat center center;
 }
 
-.vrtx-multipleinputfield .vrtx-button.moveup:hover span,
-.vrtx-json .vrtx-json-element .vrtx-move-up-button:hover span,
-.vrtx-multipleinputfield .vrtx-button.moveup:focus span,
-.vrtx-json .vrtx-json-element .vrtx-move-up-button:focus span {
-  background-image: url("#{$imgBase}images/multiple-move-up-rollover.png");
+.vrtx-multipleinputfield .vrtx-button.moveup,
+.vrtx-json .vrtx-json-element .vrtx-move-up-button {
+  &:focus span,
+  &:hover span {
+    background-image: url("#{$imgBase}images/multiple-move-up-rollover.png");
+  }
 }
 
-.vrtx-multipleinputfield .vrtx-button.movedown:hover span,
-.vrtx-json .vrtx-json-element .vrtx-move-down-button:hover span,
-.vrtx-multipleinputfield .vrtx-button.movedown:focus span,
-.vrtx-json .vrtx-json-element .vrtx-move-down-button:focus span {
-  background-image: url("#{$imgBase}images/multiple-move-down-rollover.png");
+.vrtx-multipleinputfield .vrtx-button.movedown,
+.vrtx-json .vrtx-json-element .vrtx-move-down-button {
+  &:focus span,
+  &:hover span {
+    background-image: url("#{$imgBase}images/multiple-move-down-rollover.png");
+  }
 }
 
 /* Sticky title and editor save/cancel buttons */
 
-.properties > *:first-child,
-.properties > .first {
-  margin-top: 0px;
-}
+.properties {
+  > *:first-child,
+  > .first {
+    margin-top: 0px;
+  }
 
-.properties.properties-post > *:first-child {
-  margin-top: 20px;
+  &.properties-post > *:first-child {
+    margin-top: 20px;
+  }
 }
 
 #vrtx-editor #editor {
   padding-top: 20px;
   background: transparent url("#{$imgBase}images/line-dotted.gif") repeat-x left top;
-}
 
-#vrtx-editor #editor .properties.hidden-props {
-  display: none;
+  .properties.hidden-props {
+    display: none;
+  }
 }
 
 #vrtx-editor-title-submit-buttons-inner-wrapper {
@@ -241,45 +252,47 @@ h2 {
   background: #fff;
 }
 
-#app-content #main {
-  padding-top: 9px;
-}
+#app-content {
+  #main {
+    padding-top: 9px;
+  }
 
-#app-content .submit-extra-buttons {
-  clear: none;
-  float: right;
-  margin-top: -42px;
-  padding-top: 0px;
-}
+  .submit-extra-buttons {
+    clear: none;
+    float: right;
+    margin-top: -42px;
+    padding-top: 0px;
+  }
 
-#app-content .submit-extra-buttons #editor-button-row {
-  margin-bottom: -10px;
-}
+  .submit-extra-buttons #editor-button-row {
+    margin-bottom: -10px;
+  }
 
-#app-content .vrtx-sticky-editor-title-submit-buttons {
-  position: fixed;
-  top: 0px;
-  z-index: 9999;
-  margin-left: -19px;
-  @include boxShadow(0px 7px 14px -8px rgba(0, 0, 0, 0.5));
-}
+  .vrtx-sticky-editor-title-submit-buttons {
+    position: fixed;
+    top: 0px;
+    z-index: 9999;
+    margin-left: -19px;
+    @include boxShadow(0px 7px 14px -8px rgba(0, 0, 0, 0.5));
+  }
 
-#app-content .vrtx-sticky-editor-title-submit-buttons .sticky-bg-ie8-below {
-  @include posAbsBottom(-13px, 0);
-  @include wh(100%, 13px);
-  background: transparent url("#{$imgBase}images/sticky-bar-fade-to-grey-ie8-bg.png") repeat-x bottom left;
-  display: block;
-}
+  .vrtx-sticky-editor-title-submit-buttons .sticky-bg-ie8-below {
+    @include posAbsBottom(-13px, 0);
+    @include wh(100%, 13px);
+    background: transparent url("#{$imgBase}images/sticky-bar-fade-to-grey-ie8-bg.png") repeat-x bottom left;
+    display: block;
+  }
 
-#app-content .vrtx-sticky-editor-title-submit-buttons #vrtx-editor-title-submit-buttons-inner-wrapper {
-  padding-left: 19px;
-  padding-right: 19px;
-  position: relative;
-}
+  .vrtx-sticky-editor-title-submit-buttons #vrtx-editor-title-submit-buttons-inner-wrapper {
+    padding-left: 19px;
+    padding-right: 19px;
+    position: relative;
+  }
 
-#app-content form#backupForm,
-#app-content .animate-optimized {
-  overflow: hidden;
+  form#backupForm,
+  .animate-optimized {
+    overflow: hidden;
+  }
 }
 
 #editor-loading {
@@ -305,21 +318,23 @@ html.embedded #editor-loading {
   @include posAbs(38%, 38%);
 }
 
-html.embedded #vrtx-editor #app-content #editor {
-  padding-top: 15px;
-}
+html.embedded {
+  #vrtx-editor #app-content #editor {
+    padding-top: 15px;
+  }
 
-html.embedded #vrtx-editor-title-submit-buttons-inner-wrapper {
-  padding-top: 0;
-}
+  #vrtx-editor-title-submit-buttons-inner-wrapper {
+    padding-top: 0;
+  }
 
-html.embedded #vrtx-editor-title-submit-buttons .submitButtons,
-html.embedded .submitButtons > * {
-  display: none;
-}
+  #vrtx-editor-title-submit-buttons .submitButtons,
+  .submitButtons > * {
+    display: none;
+  }
 
-html.embedded .submitButtons .vrtx-embedded-button {
-  display: inline-block;
+  .submitButtons .vrtx-embedded-button {
+    display: inline-block;
+  }
 }
 
 html.embedded-loading #vrtx-editor #app-content #editor {

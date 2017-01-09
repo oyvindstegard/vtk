@@ -1,0 +1,129 @@
+#vrtx-resource\.manually-approve-from {
+  width: 95%;
+}
+
+#manually-approve-refresh-icon {
+  height: 16px;
+  width: 16px;
+  background: url(images/reload.png) no-repeat center center;
+  display: inline-block;
+  margin: 0 5px -4px -7px;
+}
+
+#vrtx-manually-approve-from-add {
+  margin-right: 20px;
+}
+
+#approve-spinner {
+  background: transparent url(images/spinner.gif) no-repeat 14px 50%;
+  padding-left: 36px;
+}
+
+#vrtx-manually-approve-from-add,
+#manually-approve-container-title {
+  display: inline-block;
+}
+
+#manually-approve-container.hidden,
+#vrtx-manually-approve-tab-menu.hidden {
+  display: none;
+}
+
+#manually-approve-container {
+  padding: 10px 0 30px 0;
+  clear: both;
+  width: 100%;
+
+  > *.approve-page-hidden {
+    display: none;
+  }
+
+  table {
+    width: 100%;
+    table-layout: fixed;
+
+    td {
+      font-size: 1.15em;
+      border-top: 1px solid #f0f0f0;
+      padding: 5px 15px 4px 0;
+      word-wrap: break-word;
+      overflow: hidden;
+      vertical-align: top;
+
+      &:first-child {
+        overflow: visible;
+      }
+    }
+
+    th {
+      background: url(images/line-dotted.gif) repeat-x bottom left;
+      padding: 0 15px 8px 0;
+      text-align: left;
+      white-space: nowrap;
+      vertical-align: top;
+
+      &#approve-checkbox {
+        width: 20px;
+      }
+
+      &#approve-title {
+        width: 40%;
+      }
+
+      &#approve-src {
+        width: 40%;
+      }
+
+      &#approve-published {
+        width: 100px;
+      }
+    }
+
+    tr:first-child td {
+      border-top: none;
+    }
+
+    tr.even td,
+    tr:nth-child(even) td {
+      background-color: #F9F9F9;
+    }
+
+    th,
+    tr.last td,
+    tr:last-child td {
+      background: url(images/line-dotted.gif) repeat-x bottom left;
+    }
+
+    tr.last.even td,
+    tr:last-child:nth-child(even) td {
+      background: #F9F9F9 url(images/line-dotted.gif) repeat-x bottom left;
+    }
+  }
+
+  .next,
+  .prev,
+  .approve-info {
+    margin-top: 10px;
+    display: block;
+    float: left;
+  }
+}
+
+div.manually-approve-from table {
+  td input {
+    margin-top: 3px;
+  }
+
+  th input {
+    margin-top: 2px;
+  }
+}
+
+#vrtx-manually-approve-no-approved-msg {
+  clear: left;
+  padding: 15px 0 0 0;
+}
+
+#vrtx-resource\.manually-approved-resources {
+  display: none;
+}

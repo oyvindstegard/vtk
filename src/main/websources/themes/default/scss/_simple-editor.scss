@@ -1,0 +1,41 @@
+body#vrtx-simple-editor {
+  background: #999999;
+
+  #app-content {
+    width: 530px;
+    padding: 20px 20px 68px 20px;
+    position: relative;
+    background: #fff;
+    border: 2px solid #848484;
+    box-shadow: 1px 1px 5px 2px #848484;
+  }
+
+  .vrtx-focus-button,
+  #vrtx-message-cancel,
+  #vrtx-message-delete {
+    position: absolute;
+    bottom: 20px;
+  }
+
+  .vrtx-focus-button {
+    left: 20px;
+  }
+
+  #vrtx-message-cancel {
+    left: 180px;
+  }
+
+  .simple-editor-save-view #vrtx-message-cancel {
+    left: 155px;
+  }
+
+  #vrtx-message-delete {
+    left: 240px;
+  }
+
+  h3 {
+    background: url("/vrtx/__vrtx/static-resources/themes/default/images/line-dotted.gif") repeat-x scroll left bottom transparent;
+    padding: 0 0 5px 0;
+    margin: 0 0 15px 0;
+  }
+}

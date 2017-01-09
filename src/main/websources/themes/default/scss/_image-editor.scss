@@ -1,0 +1,85 @@
+#image-properties {
+  position: relative;
+
+  #resource\.userTitle,
+  #resource\.photographer {
+    width: 317px;
+  }
+
+  #vrtx-resource\.image-description {
+    position: absolute;
+    top: -20px;
+    left: 370px;
+  }
+
+  #vrtx-resource\.image-description .cke_contents {
+    height: 117px !important;
+  }
+}
+
+#vrtx-image-editor-beta-msg {
+  font-size: 40%;
+}
+
+#vrtx-image-editor-inner-wrapper {
+  min-height: 300px;
+  clear: left;
+  float: left;
+}
+
+h3#vrtx-image-editor-preview {
+  clear: left;
+  float: left;
+  margin: 0 0 15px 0;
+}
+
+.vrtx-label-and-text {
+  float: left;
+  margin: 10px 20px 0 0;
+}
+
+#vrtx-image-editor-wrapper {
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding: 0 0 20px 0;
+
+  &.loading #vrtx-image-editor-inner-wrapper {
+    display: none;
+  }
+
+  .ui-wrapper {
+    opacity: 1 !important;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)" !important;
+    clear: left;
+  }
+}
+
+#vrtx-image-dimensions-crop {
+  position: relative;
+
+  .vrtx-textfield {
+    margin-bottom: 20px;
+
+    &#resource-height {
+      margin-bottom: 0px;
+    }
+  }
+}
+
+#vrtx-image-crop-button {
+  float: left;
+  background: url("images/seperator-grey-gradient.png") no-repeat left top;
+  padding: 0 0 0 17px;
+  margin: 29px 0 0 0;
+
+  .vrtx-button {
+    margin-top: 10px;
+  }
+}
+
+#vrtx-image-crop-coordinates {
+  float: left;
+  display: block;
+  margin: 46px 0px -10px 15px;
+  font-size: 0.846em;
+}
