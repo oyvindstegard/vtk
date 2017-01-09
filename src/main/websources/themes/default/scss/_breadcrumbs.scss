@@ -180,10 +180,12 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
       left: 35px;
       border-right: 1px solid #DAD9D9;
 
-      &:focus span.navigate-crumbs-icon,
-      &:hover span.navigate-crumbs-icon {
-        background-image: url(images/breadcrumbs-left-nav-rollover.png);
-        top: 11px;
+      &:focus,
+      &:hover {
+        span.navigate-crumbs-icon {
+          background-image: url(images/breadcrumbs-left-nav-rollover.png);
+          top: 11px;
+        }
       }
       span.navigate-crumbs-icon {
         background: url(images/breadcrumbs-left-nav.png) no-repeat center center;
@@ -197,10 +199,12 @@ $breadcrumbLeftRightAnimationSpeed: 300ms;
       right: 35px;
       border-left: 1px solid #DAD9D9;
 
-      &:focus span.navigate-crumbs-icon,
-      &:hover span.navigate-crumbs-icon {
-        background-image: url(images/breadcrumbs-right-nav-rollover.png);
-        top: 11px;
+      &:focus,
+      &:hover {
+        span.navigate-crumbs-icon {
+          background-image: url(images/breadcrumbs-right-nav-rollover.png);
+          top: 11px;
+        }
       }
       span.navigate-crumbs-icon {
         background: url(images/breadcrumbs-right-nav.png) no-repeat center center;

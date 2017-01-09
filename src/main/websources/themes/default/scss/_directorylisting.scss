@@ -215,11 +215,10 @@ body#vrtx-report-broken-links #directory-listing td.vrtx-report-broken-links {
 #directory-listing #trash-can-empty,
 #directory-listing #collectionlisting-empty {
   text-align: center;
-}
 
-#directory-listing #trash-can-empty td,
-#directory-listing #collectionlisting-empty td {
-  padding: 25px 0 30px 0;
+  td {
+    padding: 25px 0 30px 0;
+  }
 }
 
 /* Permissions / published */
