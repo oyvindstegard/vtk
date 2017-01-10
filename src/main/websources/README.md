@@ -16,9 +16,8 @@ This can be done in the ``.vtk.properties`` or ``.vrtx.properties`` files.
 You can then run ``./gulp.sh watch`` in this directory, which will proccess the files as you
 change them.
 
-
-.. _Node: https://nodejs.org/
-.. _NPM: https://www.npmjs.com/
-.. _Bower: http://bower.io/
-.. _Gulp: http://gulpjs.com/
-.. _Frontend Maven Plugin: https://github.com/eirslett/frontend-maven-plugin
+- Node: https://nodejs.org/
+- NPM: https://www.npmjs.com/
+- Bower: http://bower.io/
+- Gulp: http://gulpjs.com/
+- Frontend Maven Plugin: https://github.com/eirslett/frontend-maven-plugin
