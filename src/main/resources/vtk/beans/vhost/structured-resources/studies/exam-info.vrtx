@@ -38,6 +38,10 @@ resourcetype exam-info {
         <p class="exam-date"><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.dateExam }][if part.timeExam] [localized 'time-prefix'] [val part.timeExam][endif][if part.durationHours][call "comp:duration-format" { "duration" : part.durationHours }][endif].</p>
       [endif]
       
+      [if part.dateAvailable]
+        <p class="exam-available"><strong>[localized 'task-available']:</strong> [call "comp:date-format" { "date" : part.dateAvailable }][if part.timeAvailable] [localized 'time-prefix'] [val part.timeAvailable][endif]</p>
+      [endif]
+      
       [if part.submissionDeadline]
         <p class="exam-submission"><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.submissionDeadline }][if part.timeSubmission] [localized 'time-prefix'] [val part.timeSubmission][endif]</p>
       [endif]
@@ -221,7 +225,7 @@ resourcetype exam-info {
     system : (en : "Examination system", no : "Eksamenssystem", nn : "Eksamenssystem"),
     comment : (en : "Comment", no : "Merknad", nn : "Merknad"),
     announcement : (en : "Announcement of examination results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultat"),
-    task-disclosure : (en : "Disclosure of exam assignment", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
+    task-available : (en : "Disclosure of exam assignment", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
     task-deadline : (en : "Submission deadline", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
     results : (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
     results-info : (en : "You will find your examination results by logging on to",
