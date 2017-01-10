@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import vtk.resourcemanagement.EditRule;
 import vtk.resourcemanagement.EditRule.EditRuleType;
@@ -75,15 +76,25 @@ public class FormSubmitCommand extends UpdateCancelCommand {
         this.onlyWriteUnpublished = onlyWriteUnpublished;
         this.defaultLocale = defaultLocale;
         StructuredResourceDescription type = resource.getType();
-
+        List<EditRule> editRules = type.getEditRules();
+        
+        List<String> noEdit = editRules.stream()
+                .filter(rule -> rule.getType().equals(EditRuleType.NO_EDIT))
+                .map(rule -> rule.getName())
+                .collect(Collectors.toList());
+        
         for (PropertyDescription def : type.getAllPropertyDescriptions()) {
+            
+            if (noEdit.contains(def.getName())) continue;
+            
             if (def instanceof SimplePropertyDescription) {
                 SimplePropertyDescription editable = (SimplePropertyDescription) def;
                 FormElementBox elementBox = new FormElementBox(def.getName());
                 elementBox.addFormElement(new FormElement(editable, null, resource.getProperty(def.getName()), editable
                         .getDefaultValue()));
                 this.elements.add(elementBox);
-            } else if (def instanceof EditablePropertyDescription) {
+            }
+            else if (def instanceof EditablePropertyDescription) {
                 EditablePropertyDescription editable = (EditablePropertyDescription) def;
                 FormElementBox elementBox = new FormElementBox(def.getName());
                 elementBox.addFormElement(new FormElement(editable, null, resource.getProperty(def.getName()), null));
@@ -91,17 +102,19 @@ public class FormSubmitCommand extends UpdateCancelCommand {
             }
         }
 
-        List<EditRule> editRules = type.getEditRules();
         if (editRules != null && editRules.size() > 0) {
             for (EditRule editRule : editRules) {
                 EditRuleType ruleType = editRule.getType();
                 if (EditRuleType.GROUP.equals(ruleType)) {
                     groupElements(editRule);
-                } else if (EditRuleType.POSITION_BEFORE.equals(ruleType)) {
+                }
+                else if (EditRuleType.POSITION_BEFORE.equals(ruleType)) {
                     rearrangePosition(editRule, EditRuleType.POSITION_BEFORE);
-                } else if (EditRuleType.POSITION_AFTER.equals(ruleType)) {
+                }
+                else if (EditRuleType.POSITION_AFTER.equals(ruleType)) {
                     rearrangePosition(editRule, EditRuleType.POSITION_AFTER);
-                } else if (EditRuleType.EDITHINT.equals(ruleType)) {
+                }
+                else if (EditRuleType.EDITHINT.equals(ruleType)) {
                     setEditHints(editRule);
                 }
             }
