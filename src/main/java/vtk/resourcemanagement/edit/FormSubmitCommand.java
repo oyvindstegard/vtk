@@ -78,7 +78,8 @@ public class FormSubmitCommand extends UpdateCancelCommand {
         StructuredResourceDescription type = resource.getType();
         List<EditRule> editRules = type.getEditRules();
         
-        List<String> noEdit = editRules.stream()
+        List<String> noEdit = (editRules == null) ? 
+                Collections.emptyList() : editRules.stream()
                 .filter(rule -> rule.getType().equals(EditRuleType.NO_EDIT))
                 .map(rule -> rule.getName())
                 .collect(Collectors.toList());
