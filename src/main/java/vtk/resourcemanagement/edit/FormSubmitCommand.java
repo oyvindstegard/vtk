@@ -64,6 +64,8 @@ public class FormSubmitCommand extends UpdateCancelCommand {
     private StructuredResource resource;
     private List<FormElementBox> elements = new ArrayList<FormElementBox>();
     private URL listComponentServiceURL;
+    
+    private List<String> noEdit;
 
     public FormSubmitCommand(StructuredResource resource, URL url, URL listComponentServiceURL, boolean workingCopy,
             boolean published, boolean hasPublishDate, boolean onlyWriteUnpublished, Locale defaultLocale) {
@@ -78,7 +80,7 @@ public class FormSubmitCommand extends UpdateCancelCommand {
         StructuredResourceDescription type = resource.getType();
         List<EditRule> editRules = type.getEditRules();
         
-        List<String> noEdit = (editRules == null) ? 
+        this.noEdit = (editRules == null) ? 
                 Collections.emptyList() : editRules.stream()
                 .filter(rule -> rule.getType().equals(EditRuleType.NO_EDIT))
                 .map(rule -> rule.getName())
@@ -232,8 +234,11 @@ public class FormSubmitCommand extends UpdateCancelCommand {
 
     public void sync() {
         List<PropertyDescription> descriptions = this.resource.getType().getAllPropertyDescriptions();
+        
         for (PropertyDescription desc : descriptions) {
             if (desc instanceof EditablePropertyDescription) {
+                if (noEdit.contains(desc.getName())) continue;
+
                 String name = desc.getName();
                 FormElement elem = findElement(name);
                 Object value = elem.getValue();
