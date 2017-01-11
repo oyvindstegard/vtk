@@ -548,11 +548,8 @@ body#vrtx-preview #app-content #contents .previewUnavailable {
 }
 
 #preview-index-file-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  @include posAbs(0, 0);
+  @include wh(100%, 100%);
   background: rgba(0,0,0,0.8);
 }
 
@@ -578,7 +575,7 @@ body#vrtx-preview #app-content #contents .previewUnavailable {
 
     &:focus,
     &:hover {
-      background: #005aab;
+      background: $buttonFocusBackgroundColor;
       padding: 20px;
     }
   }
@@ -588,6 +585,14 @@ body#vrtx-preview #app-content #contents .previewUnavailable {
   color: #fff;
   display: inline-block;
   float: right;
+  width: 34px;
+  height: 34px;
+  background: url(images/preview-index-file-overlay-close.png) no-repeat 0 0;
+
+  &:focus,
+  &:hover {
+    background-image: url(images/preview-index-file-overlay-close-rollover.png);
+  }
 }
 
 p.previewUnavailableReasons {

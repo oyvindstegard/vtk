@@ -78,6 +78,13 @@
         msg: '${vrtx.getMsg("system.going-down.msg")}'
       }
     },
+    preview: {
+      indexFileMenu: {
+        title: '${vrtx.getMsg("preview.index-file-menu.title")}',
+        showFolder: '${vrtx.getMsg("preview.index-file-menu.show-folder")}',
+        editFile: '${vrtx.getMsg("preview.index-file-menu.edit-file")}'
+      }
+    },
     editor: {
       timedOut: {
         title: '${vrtx.getMsg("editor.timed-out.title")}',

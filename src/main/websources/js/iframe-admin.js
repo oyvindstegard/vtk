@@ -147,9 +147,9 @@
     var editService = $("#structuredResources\\.editService");
     var html = "<div id='preview-index-file-overlay'>" +
                  "<div id='preview-index-file-menu'>" +
-                   "<h2>Ønsker du å... <a href='javascript:void();' id='preview-index-file-overlay-close'>X</a></h2>" +
-                   "<a href='./?vrtx=admin' class='vrtx-button'>vise mappen denne siden ligger i</a>" +
-                   (editService.length ? "<br><a href='" + editService.attr("href") + "' class='vrtx-button'>redigere innholdet i siden</a>" : "") +
+                   "<h2>" + vrtxAdmin.messages.preview.indexFileMenu.title + "<a href='javascript:void();' id='preview-index-file-overlay-close'></a></h2>" +
+                   "<a href='./?vrtx=admin' class='vrtx-button'>" + vrtxAdmin.messages.preview.indexFileMenu.showFolder + "</a>" +
+                   (editService.length ? "<br><a href='" + editService.attr("href") + "' class='vrtx-button'>" + vrtxAdmin.messages.preview.indexFileMenu.editFile + "</a>" : "") +
                  "</div>" +
                "</div>";
     preview.prepend(html);
