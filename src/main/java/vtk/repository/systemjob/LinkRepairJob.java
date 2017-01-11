@@ -32,8 +32,10 @@ package vtk.repository.systemjob;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +56,8 @@ import vtk.resourcemanagement.StructuredResource;
 import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
 import vtk.resourcemanagement.property.EditablePropertyDescription;
+import vtk.resourcemanagement.property.JSONPropertyAttributeDescription;
+import vtk.resourcemanagement.property.JSONPropertyDescription;
 import vtk.resourcemanagement.property.PropertyDescription;
 import vtk.text.html.HtmlAttribute;
 import vtk.text.html.HtmlContent;
@@ -66,6 +70,8 @@ import vtk.util.repository.PropertyAspectDescription;
 import vtk.util.repository.PropertyAspectResolver;
 import vtk.util.text.Json.MapContainer;
 import vtk.util.text.JsonStreamer;
+import vtk.web.service.CanonicalUrlConstructor;
+import vtk.web.service.URL;
 
 public class LinkRepairJob extends AbstractResourceJob {
     private static final Logger logger = LoggerFactory.getLogger(LinkRepairJob.class);
@@ -73,15 +79,18 @@ public class LinkRepairJob extends AbstractResourceJob {
     private PropertyTypeDefinition aspectsPropDef;
     private PropertyAspectDescription aspectFieldDesc;
     private String enabledAspect;
-    
+    private CanonicalUrlConstructor urlConstructor;
+
     public LinkRepairJob(StructuredResourceManager resourceManager, 
             PropertyTypeDefinition aspectsPropDef, 
             PropertyAspectDescription aspectFieldDesc,
-            String enabledAspect) {
+            String enabledAspect,
+            CanonicalUrlConstructor urlConstructor) {
         this.resourceManager = resourceManager;
         this.aspectsPropDef = aspectsPropDef;
         this.aspectFieldDesc = aspectFieldDesc;
         this.enabledAspect = enabledAspect;
+        this.urlConstructor = urlConstructor;
     }
     
     
@@ -92,7 +101,7 @@ public class LinkRepairJob extends AbstractResourceJob {
             logger.debug("Resource is locked, skipping: " + resource);
             return;
         }
-        
+        URL base = urlConstructor.canonicalUrl(resource).setImmutable();
         PropertyAspectResolver resolver = 
                 new PropertyAspectResolver(ctx.getRepository(), 
                         aspectsPropDef, aspectFieldDesc, ctx.getToken());
@@ -107,67 +116,20 @@ public class LinkRepairJob extends AbstractResourceJob {
         logger.debug("Correcting links for resource " + resource + "; " + ctx);
         
         if ("application/json".equals(resource.getContentType())) {
-            UrlMapper mapper = new UrlMapper(resource, ctx);
+            UrlMapper mapper = new UrlMapper(resource, base, ctx);
             StructuredResourceDescription desc = 
                     resourceManager.get(resource.getResourceType());
             if (desc == null) {
                 return;
             }
             processStructuredResource(resource, ctx, desc, mapper);
-            
         }
         else if ("text/html".equals(resource.getContentType())) {
-            UrlMapper mapper = new UrlMapper(resource, ctx);
+            UrlMapper mapper = new UrlMapper(resource, base, ctx);
             processHtmlResource(resource, ctx, mapper);
         }
         // XXX: handle other types (collections, markdown, ..)
     }
-    
-    private void processStructuredResource(Resource resource, ExecutionContext ctx, 
-            StructuredResourceDescription desc, UrlMapper mapper) throws Exception {
-        
-        InputStream is = ctx.getRepository()
-                .getInputStream(ctx.getToken(), resource.getURI(), false);
-        
-        StructuredResource res = desc.buildResource(is);
-        boolean modified = false;
-        
-        for (PropertyDescription pdesc : desc.getAllPropertyDescriptions()) {
-            
-            Object prop = res.getProperty(pdesc.getName());
-            
-            if (!(pdesc instanceof EditablePropertyDescription)) continue;
-            
-            switch (pdesc.getType()) {
-            case "image_ref":
-            case "media_ref":
-            case "resource_ref":
-                if (prop != null) {
-                    String filtered = filterRefProp(prop, mapper);
-                    res.removeProperty(pdesc.getName());
-                    res.addProperty(pdesc.getName(), filtered);
-                    if (!filtered.equals(prop.toString())) modified = true;
-                }
-                break;
-            case "html":
-            case "simple_html":
-                if (prop != null) {
-                    String filtered = filterHtmlProp(prop, mapper);
-                    res.removeProperty(pdesc.getName());
-                    res.addProperty(pdesc.getName(), filtered);
-                    if (!filtered.equals(prop.toString())) modified = true;
-                }
-                break;
-            case "json":
-                if (prop != null) {
-
-                }
-                break;
-            }
-        }
-        if (modified) writeRevision(ctx, resource.getURI(), res);
-    }
-
     
     private void processHtmlResource(Resource resource, ExecutionContext ctx, UrlMapper mapper) throws Exception {
         if (resource.getContentLength() > 2000000L) return;
@@ -183,40 +145,139 @@ public class LinkRepairJob extends AbstractResourceJob {
         ctx.getRepository().store(ctx.getToken(), stored, ctx.getSystemChangeContext());
     }
     
-    private void writeRevision(ExecutionContext ctx, Path uri, StructuredResource res) throws Exception {
-        final byte[] buffer = JsonStreamer.toJson(res.toJSON(), 3, false).getBytes("utf-8");
+    private void processStructuredResource(Resource resource, ExecutionContext ctx, 
+            StructuredResourceDescription desc, UrlMapper mapper) throws Exception {
         
-        ctx.getRepository().createRevision(ctx.getToken(), uri, Type.REGULAR);
-        Resource stored = ctx.getRepository().storeContent(ctx.getToken(), uri, ContentInputSources.fromBytes(buffer));
-        ctx.getRepository().store(ctx.getToken(), stored, ctx.getSystemChangeContext());
+        InputStream is = ctx.getRepository()
+                .getInputStream(ctx.getToken(), resource.getURI(), false);
+        
+        StructuredResource res = desc.buildResource(is);
+        boolean modified = false;
+        
+        for (PropertyDescription pdesc : desc.getAllPropertyDescriptions()) {
+            Object prop = res.getProperty(pdesc.getName());
+            if (prop == null) continue;
+            if (!(pdesc instanceof EditablePropertyDescription)) continue;
+            
+            switch (pdesc.getType()) {
+            case "image_ref":
+            case "media_ref":
+            case "resource_ref":
+                String mappedd = mapRef(prop, mapper);
+                modified = modified || !mappedd.equals(prop.toString());
+                if (modified) {
+                    res.removeProperty(pdesc.getName());
+                    res.addProperty(pdesc.getName(), mappedd);
+                }
+                break;
+            case "html":
+            case "simple_html":
+                String filtered = filterHtml(prop.toString(), mapper);
+                modified = modified || !filtered.equals(prop.toString());
+                if (modified) {
+                    res.removeProperty(pdesc.getName());
+                    res.addProperty(pdesc.getName(), filtered);
+                }
+                break;
+            case "json":
+                if (!(pdesc instanceof JSONPropertyDescription)) break;
+                
+                JSONPropertyDescription jsonDesc = (JSONPropertyDescription) pdesc;
+                if (jsonDesc.isWildcard()) continue;
+                List<JSONPropertyAttributeDescription> attributes = jsonDesc.getAttributes();
+                String before = prop.toString();
+
+                if (pdesc.isMultiple()) {
+                    List<Map<String, Object>> elements = (List<Map<String, Object>>) prop;
+
+                    prop = elements.stream()
+                            .map(jsonValue -> filterJsonProp(jsonValue, attributes, mapper))
+                            .collect(Collectors.toList());
+                    modified = modified || !prop.equals(elements);
+                }
+                else {
+                    Map<String, Object> jsonValue = (Map<String, Object>) prop;
+                    prop = filterJsonProp(jsonValue, attributes, mapper);
+                    modified = modified || !jsonValue.equals(before);
+                }
+
+                if (modified) {
+                    res.removeProperty(pdesc.getName());
+                    res.addProperty(pdesc.getName(), prop);
+                }
+                break;
+            }
+        }
+        if (modified) writeRevision(ctx, resource.getURI(), res);
+    }
+
+    
+    private void writeRevision(ExecutionContext ctx, Path uri, StructuredResource res) {
+        try {
+            final byte[] buffer = JsonStreamer.toJson(res.toJSON(), 3, false).getBytes("utf-8");
+
+            ctx.getRepository().createRevision(ctx.getToken(), uri, Type.REGULAR);
+            Resource stored = ctx.getRepository()
+                    .storeContent(ctx.getToken(), uri, ContentInputSources.fromBytes(buffer));
+            ctx.getRepository().store(ctx.getToken(), stored, ctx.getSystemChangeContext());
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
     
-    private String filterRefProp(Object prop, UrlMapper mapper) throws Exception {
-        String value = prop.toString();
+    private Map<String, Object> filterJsonProp(Map<String, Object> jsonValue, 
+            List<JSONPropertyAttributeDescription> attributes, UrlMapper mapper) {
+        for (JSONPropertyAttributeDescription attr: attributes) {
+            switch (attr.getType()) {
+            case "image_ref": 
+            case "media_ref":
+            case "resource_ref":
+                Object ref = jsonValue.get(attr.getName());
+                jsonValue.put(attr.getName(), mapRef(ref, mapper));
+                break;
+            case "simple_html":
+            case "html":
+                String html = jsonValue.get(attr.getName()).toString();
+                jsonValue.put(attr.getName(), filterHtml(html, mapper));
+                break;
+            }
+        }
+        return jsonValue;
+    }
+    
+    private String mapRef(Object ref, UrlMapper mapper) {
+        String value = ref.toString();
         Optional<String> mapped = mapper.mapUrl(value);
         return mapped.orElse(value);
     }    
     
-    private String filterHtmlProp(Object prop, UrlMapper mapper) throws Exception {
-        HtmlPageParser parser = new HtmlPageParser();
-        HtmlFragment fragment;
-        fragment = parser.parseFragment(prop.toString());
-        UrlMapFilter filter = new UrlMapFilter(mapper);
-        fragment.filter(filter);
-        return fragment.getStringRepresentation();
+    private String filterHtml(String fragment, UrlMapper mapper) {
+        try {
+            HtmlPageParser parser = new HtmlPageParser();
+            HtmlFragment f = parser.parseFragment(fragment.toString());
+            UrlMapFilter filter = new UrlMapFilter(mapper);
+            f.filter(filter);
+            return f.getStringRepresentation();
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
     
     
     private static class UrlMapper {
+        private final URL base;
         private Map<String, String> vrtxIdMap;
         private Map<String, String> relocMap;
         
-        public UrlMapper(Resource resource, ExecutionContext ctx) throws Exception {
+        public UrlMapper(Resource resource, URL base, ExecutionContext ctx) throws Exception {
+            this.base = base;
             this.vrtxIdMap = mapIds(resource);
             this.relocMap = mapLinks(vrtxIdMap, ctx);
         }
         
-        public Optional<String> mapUrl(String input) {
+        public Optional<String> mapUrl(String input) {            
             if (vrtxIdMap.containsKey(input)) {
                 String vrtxid = vrtxIdMap.get(input);
                 return Optional.ofNullable(relocMap.get(vrtxid));
@@ -232,7 +293,19 @@ public class LinkRepairJob extends AbstractResourceJob {
             jsonValue.arrayValue("relocatedLinks").forEach(urlObj-> {
                 Map<?,?> link = (Map<?,?>) urlObj;
                 if (link.containsKey("link") && link.containsKey("vrtxid")) {
-                    vrtxIdMap.put(link.get("link").toString(), link.get("vrtxid").toString());
+                    String key = link.get("link").toString();
+                    String value = link.get("vrtxid").toString();
+                    vrtxIdMap.put(key, value);
+                    if (key.startsWith("http://") || key.startsWith("https://")) {
+                        try {
+                            URL url = URL.parse(key);
+                            if (url.getHost().equals(base.getHost())) {
+                                vrtxIdMap.put(url.getPathRepresentation(), value);
+                            }
+                        }
+                        catch (Throwable t) { }
+                    }
+                    
                 }
             });
             return vrtxIdMap;

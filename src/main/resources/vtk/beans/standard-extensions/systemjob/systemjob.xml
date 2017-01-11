@@ -263,6 +263,7 @@
     <constructor-arg name="aspectsPropDef" ref="resourceAspectsPropDef" />
     <constructor-arg name="aspectFieldDesc" ref="visualProfileAspect.fieldConfig" />
     <constructor-arg name="enabledAspect" value="visual-profile" />
+    <constructor-arg name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
     <property name="securityContext">
       <bean class="vtk.security.SecurityContext">
         <constructor-arg ref="systemjob.linkRepairPrincipal.token" />
