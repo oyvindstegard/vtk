@@ -69,7 +69,8 @@
     if(initHashParamsRunned) return;
 
     var isMobilePreview = $.bbq.getState("mobile") === "on",
-        isFullscreen = $.bbq.getState("fullscreen") === "on";
+        isFullscreen = $.bbq.getState("fullscreen") === "on",
+        isAdminIndexFile = $.bbq.getState("admin-index-file") === "on";
 
     if(isMobilePreview) {
       $("#preview-mode a").click();
@@ -92,6 +93,10 @@
       $(window).bind('hashchange', function(e) {
         updateHashShareLink(link);
       });
+    }
+
+    if(isAdminIndexFile) {
+      previewAdminIndexFile();
     }
 
     initHashParamsRunned = true;
@@ -135,6 +140,27 @@
     previewLoading.remove();
     initHashParams();
     vrtxAdmin.ariaBusy("#previewIframe", false);
+  }
+
+  function previewAdminIndexFile() {
+    var preview = $("#previewIframeInnerWrapper");
+    var editService = $("#structuredResources\\.editService");
+    var html = "<div id='preview-index-file-overlay'>" +
+                 "<div id='preview-index-file-menu'>" +
+                   "<h2>Ønsker du å... <a href='javascript:void();' id='preview-index-file-overlay-close'>X</a></h2>" +
+                   "<a href='./?vrtx=admin' class='vrtx-button'>vise mappen denne siden ligger i</a>" +
+                   (editService.length ? "<br><a href='" + editService.attr("href") + "' class='vrtx-button'>redigere innholdet i siden</a>" : "") +
+                 "</div>" +
+               "</div>";
+    preview.prepend(html);
+
+    $("#preview-index-file-overlay-close").on("click", "", function(e) {
+      $("#preview-index-file-overlay").remove();
+      $.bbq.removeState("admin-index-file");
+
+      e.stopPropagation();
+      e.preventDefault();
+    });
   }
 
   // Find min-height

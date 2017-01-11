@@ -541,6 +541,55 @@ body#vrtx-preview #app-content #contents .previewUnavailable {
   margin: 10px 14px;
 }
 
+#previewIframeInnerWrapper {
+  position: relative;
+  float: left;
+  width: 100%;
+}
+
+#preview-index-file-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+}
+
+#preview-index-file-menu {
+  margin: 120px auto 0 auto;
+  padding: 20px;
+  color: #fff;
+  width: 500px;
+
+  h2 {
+    font-size: 2.4em;
+    margin-bottom: 0px;
+  }
+  .vrtx-button {
+    background: #569ee2;
+    border: none;
+    color: #fff;
+    font-size: 1.4em;
+    width: 100%;
+    margin-top: 20px;
+    padding: 20px;
+    box-sizing: border-box;
+
+    &:focus,
+    &:hover {
+      background: #005aab;
+      padding: 20px;
+    }
+  }
+}
+
+#preview-index-file-overlay-close {
+  color: #fff;
+  display: inline-block;
+  float: right;
+}
+
 p.previewUnavailableReasons {
   margin-top: 15px;
   padding-top: 15px;
