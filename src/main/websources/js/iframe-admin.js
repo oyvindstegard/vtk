@@ -143,7 +143,7 @@
   }
 
   function previewAdminIndexFile() {
-    var preview = $("#previewIframeInnerWrapper");
+    var preview = $("#previewIframeWrapper");
     var editService = $("#structuredResources\\.editService");
     var html = "<div id='preview-index-file-overlay'>" +
                  "<div id='preview-index-file-menu'>" +

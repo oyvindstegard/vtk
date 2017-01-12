@@ -541,7 +541,7 @@ body#vrtx-preview #app-content #contents .previewUnavailable {
   margin: 10px 14px;
 }
 
-#previewIframeInnerWrapper {
+#previewIframeWrapper {
   position: relative;
   float: left;
   width: 100%;
@@ -551,6 +551,7 @@ body#vrtx-preview #app-content #contents .previewUnavailable {
   @include posAbs(0, 0);
   @include wh(100%, 100%);
   background: rgba(0,0,0,0.8);
+  z-index: 1;
 }
 
 #preview-index-file-menu {
@@ -558,6 +559,7 @@ body#vrtx-preview #app-content #contents .previewUnavailable {
   padding: 20px;
   color: #fff;
   width: 500px;
+  text-align: left;
 
   h2 {
     font-size: 2.4em;
@@ -585,8 +587,7 @@ body#vrtx-preview #app-content #contents .previewUnavailable {
   color: #fff;
   display: inline-block;
   float: right;
-  width: 34px;
-  height: 34px;
+  @include wh(34px, 34px);
   background: url(images/preview-index-file-overlay-close.png) no-repeat 0 0;
 
   &:focus,
