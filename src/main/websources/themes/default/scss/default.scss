@@ -193,30 +193,26 @@ ol.vrtx-help-step-by-step {
   white-space: nowrap;
   overflow: visible;
   height: 22px;
-}
 
-#vrtx-report-filters ul li.active-filter span,
-#vrtx-report-filters ul li a,
-#preview-mode li.active-mode span,
-#preview-mode li a {
-  height: 19px;
-  padding: 3px 9px 0 10px;
-  display: inline-block;
-}
+  &.active-filter span,
+  &.active-mode span,
+  a {
+    height: 19px;
+    padding: 3px 9px 0 10px;
+    display: inline-block;
+  }
+  &.active-filter,
+  &.active-mode {
+    &,
+    &:hover {
+      @include bg("images/report-filter-hover-left.png");
 
-#vrtx-report-filters ul li.active-filter,
-#vrtx-report-filters ul li.active-filter:hover,
-#preview-mode li.active-mode,
-#preview-mode li.active-mode:hover {
-  @include bg("images/report-filter-hover-left.png");
-}
-
-#vrtx-report-filters ul li.active-filter span,
-#vrtx-report-filters ul li.active-filter:hover span,
-#preview-mode li.active-mode span,
-#preview-mode li.active-mode:hover span {
-  background: url(images/report-filter-hover-right.png) no-repeat top right;
-  display: inline-block;
+      span {
+        background: url(images/report-filter-hover-right.png) no-repeat top right;
+        display: inline-block;
+      }
+    }
+  }
 }
 
 /* Dark list bullets */
