@@ -1,0 +1,361 @@
+body#vrtx-preview {
+  overflow-y: scroll;
+}
+
+body#vrtx-preview #app-content #contents iframe#previewIframe {
+  border: 1px solid #d9d9d9;
+}
+
+body#vrtx-preview #app-content #contents .previewUnavailable {
+  margin: 10px 14px;
+}
+
+#previewIframeWrapper {
+  position: relative;
+  float: left;
+  width: 100%;
+}
+
+#preview-index-file-overlay {
+  @include posAbs(0, 0);
+  @include wh(100%, 100%);
+  background: rgba(0,0,0,0.8);
+  z-index: 1;
+}
+
+#preview-index-file-menu {
+  margin: 120px auto 0 auto;
+  padding: 20px;
+  color: #fff;
+  width: 500px;
+  text-align: left;
+
+  h2 {
+    font-size: 2.4em;
+    margin-bottom: 0px;
+  }
+  .vrtx-button {
+    background: #569ee2;
+    border: none;
+    color: #fff;
+    font-size: 1.4em;
+    width: 100%;
+    margin-top: 20px;
+    padding: 20px;
+    box-sizing: border-box;
+
+    &:focus,
+    &:hover {
+      background: $buttonFocusBackgroundColor;
+      padding: 20px;
+    }
+  }
+}
+
+#preview-index-file-overlay-close {
+  color: #fff;
+  display: inline-block;
+  float: right;
+  @include wh(34px, 34px);
+  background: url(images/preview-index-file-overlay-close.png) no-repeat 0 0;
+
+  &:focus,
+  &:hover {
+    background-image: url(images/preview-index-file-overlay-close-rollover.png);
+  }
+}
+
+p.previewUnavailableReasons {
+  margin-top: 15px;
+  padding-top: 15px;
+  background: url(images/line-dotted.gif) repeat-x 0 2px;
+}
+
+#preview-loading {
+  @include posAbs;
+  background: $contentBackgroundColor;
+  display: block;
+  width: 100%;
+  padding: 2px;
+}
+
+#preview-loading-inner {
+  @include posAbs;
+  width: 100%;
+  display: block;
+  background: transparent;
+}
+
+#preview-loading-inner span {
+  background: transparent url(images/ajax-loader.gif) no-repeat center left;
+  display: block;
+  padding: 10px 5px 10px 42px;
+  font-size: 1.308em;
+  color: #5e5e5e;
+  position: relative;
+  @include posAbs(45%, 41%);
+}
+
+/* Preview mode and actions */
+
+#preview-mode-mobile-rotate-hv,
+#previewIframeMobileBg,
+#preview-mode,
+#preview-actions {
+  display: none;
+  margin-top: 0;
+}
+
+.js ul#preview-mode,
+.js ul#preview-actions {
+  display: block;
+}
+
+body#vrtx-preview.js #app-content #main {
+  padding-top: 4px;
+}
+
+ul#preview-mode {
+  float: left;
+}
+
+#preview-mode-actions {
+  padding-top: 15px;
+}
+
+/* Mobile preview */
+
+.mobile body#vrtx-preview #app-content #contents #previewIframeWrapper {
+  background: #ececec;
+  clear: both;
+  height: 494px !important;
+  padding: 190px 0;
+  position: relative;
+  text-align: center;
+}
+
+.mobile #previewIframeWrapper #previewIframeMobileBg {
+  @include bg("images/preview-mobile-bg.png");
+  @include wh(400px, 745px);
+  margin: -135px auto 0;
+  display: block;
+  position: relative;
+  top: 0px;
+  z-index: 0;
+
+  /* Move down faster to avoid collision with link */
+  @include transitionsTransforms(top 200ms ease-in-out 0ms, 300ms ease-in-out);
+}
+
+.mobile.horizontal #previewIframeWrapper #previewIframeMobileBg {
+  @include transforms(rotate(-90deg));
+  top: -170px;
+
+  /* Move up faster after some delay to avoid collision with link */
+  @include transitionsTransforms(top 200ms ease-in-out 100ms, 300ms ease-in-out);
+}
+
+/* Move shadow below mobile */
+.mobile.horizontal.change-bg #previewIframeWrapper #previewIframeMobileBg {
+  background: transparent url(images/preview-mobile-bg-horizontal.png) no-repeat -2px 0;
+  left: 4px;
+  top: -167px;
+  border: 1px solid transparent;
+  @include transitions(none);
+}
+
+.mobile body#vrtx-preview #app-content #contents #previewIframeWrapper #previewIframeInnerWrapper {
+  @include wh(327px !important, 493px !important);
+  overflow: scroll;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background-color: $contentBackgroundColor;
+  display: block;
+  margin: -622px auto 0;
+  border: none;
+  position: relative;
+}
+
+.mobile body#vrtx-preview #app-content #contents iframe#previewIframe {
+  overflow: hidden !important;
+  border-width: 0px;
+}
+
+.mobile body#vrtx-preview #app-content #contents iframe#previewIframe::-webkit-scrollbar {
+  display: none !important;
+}
+
+.mobile.horizontal body#vrtx-preview #app-content #contents #previewIframeWrapper #previewIframeInnerWrapper {
+  @include wh(494px !important, 327px !important);
+  top: -86px;
+  left: -4px;
+}
+
+.mobile body#vrtx-preview #app-content #contents #previewIframeWrapper #preview-mode-mobile-rotate-hv {
+  display: inline-block;
+  padding-left: 24px;
+  background: #ececec url(images/refresh.png) no-repeat center left;
+  font-size: 1.15em;
+  top: -167px;
+  position: relative;
+}
+
+/* ^ Mobile preview */
+
+ul#preview-actions {
+  float: right;
+  margin-top: 3px;
+}
+
+ul#preview-actions li {
+  display: inline-block;
+}
+
+#contents ul#preview-actions li {
+  margin-left: 30px;
+}
+
+ul#preview-actions li a {
+  padding: 2px 0;
+}
+
+ul#preview-actions #preview-actions-share {
+  padding-left: 20px;
+  background: url(images/preview-share.png) no-repeat center left;
+}
+
+ul#preview-actions #preview-actions-print {
+  padding-left: 22px;
+  background: url(images/preview-print.png) no-repeat center left;
+}
+
+/* ^ Preview mode and actions  */
+
+/* Preview action fullscreen */
+
+ul#preview-actions #preview-actions-fullscreen-toggle {
+  padding-left: 22px;
+  background: url(images/preview-maximize.png) no-repeat 0 3px;
+}
+
+.fullscreen-toggle-open ul#preview-actions #preview-actions-fullscreen-toggle {
+  background-image: url(images/preview-minimize.png);
+}
+
+.fullscreen-toggle-open,
+.fullscreen-toggle-open body {
+  background-color: $contentBackgroundColor;
+}
+
+.mobile.fullscreen-toggle-open,
+.mobile.fullscreen-toggle-open body {
+  background-color: #ececec;
+}
+
+.fullscreen-toggle-open #app-head-wrapper,
+.fullscreen-toggle-open #title-container,
+.fullscreen-toggle-open #app-tabs,
+.fullscreen-toggle-open #app-footer-wrapper,
+.fullscreen-toggle-open #active-tab,
+.fullscreen-toggle-open .tabMessage-big {
+  display: none;
+}
+
+.fullscreen-toggle-open body#vrtx-preview #app-content #main {
+  border: none;
+  padding: 0;
+}
+
+.fullscreen-toggle-open .app-fluid #app-content {
+  @include noMargPadd;
+  min-width: 0;
+  max-width: none;
+}
+
+.fullscreen-toggle-open body#vrtx-preview #app-content #contents iframe#previewIframe {
+  border-width: 1px 0;
+}
+
+.fullscreen-toggle-open.mobile body#vrtx-preview #app-content #contents iframe#previewIframe {
+  border-width: 0px;
+}
+
+.mobile.fullscreen-toggle-open body#vrtx-preview #app-content #contents #previewIframeWrapper {
+  border-top: 1px solid #D9D9D9;
+}
+
+.fullscreen-toggle-open #app-content .vrtx-sticky-preview-mode-actions {
+  position: fixed;
+  top: 0px;
+  z-index: 9999;
+  background-color: $contentBackgroundColor;
+  @include boxShadow(0px 7px 14px -8px rgba(0, 0, 0, 0.5));
+}
+
+.fullscreen-toggle-open #app-content #preview-mode-actions-inner {
+  margin: 0 auto;
+  width: auto;
+  min-width: 914px;
+  max-width: 1200px;
+  padding-left: 50px;
+  padding-right: 50px;
+}
+
+.fullscreen-toggle-open #app-content .vrtx-sticky-preview-mode-actions .sticky-bg-ie8-below {
+  @include posAbsBottom(-13px, 0);
+  @include wh(100%, 13px);
+  background: transparent url(images/sticky-bar-fade-to-grey-ie8-bg.png) repeat-x bottom left;
+  display: block;
+}
+
+/* ^ Preview action fullscreen */
+
+/* Preview popup */
+
+html#vrtx-preview-popup,
+html#vrtx-preview-popup body {
+  background-color: #fff !important;
+}
+
+html#vrtx-preview-popup body {
+  padding: 0 35px 35px 35px;
+  text-align: left;
+  min-width: 760px;
+}
+
+html#vrtx-preview-popup h1 {
+  margin: 15px 0 10px 0;
+  padding: 0 30px 10px 0;
+  font-weight: normal;
+  background: url("images/line-dotted.gif") repeat-x scroll left bottom transparent;
+  position: relative;
+}
+
+html#vrtx-preview-popup h1 span#vrtx-preview-popup-close {
+  background: url(images/thickbox-close.png) no-repeat top right;
+  display: block;
+  @include wh(18px, 18px);
+  @include posAbsBottomRight(14px, 5px);
+}
+
+html#vrtx-preview-popup h1 span#vrtx-preview-popup-close:hover {
+  cursor: pointer;
+}
+
+#vrtx-preview-message-box {
+  background: url("images/message-info-grey-bg.png") no-repeat scroll 14px center #F0F0F0;
+  border: 1px solid #e4e4e4;
+  font-size: 1.15em;
+  font-weight: bold;
+  padding: 16px 12px 16px 46px;
+  margin: 0 0 20px 0;
+}
+
+#vrtx-preview-popup-open {
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+}
+
+html#vrtx-preview-popup iframe#previewViewIframe {
+  border: 1px solid #e4e4e4;
+}
