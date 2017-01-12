@@ -145,6 +145,7 @@
   function previewAdminIndexFile() {
     var preview = $("#previewIframeWrapper");
     var editService = $("#structuredResources\\.editService");
+
     var html = "<div id='preview-index-file-overlay'>" +
                  "<div id='preview-index-file-menu'>" +
                    "<h2>" + vrtxAdmin.messages.preview.indexFileMenu.title + "<a href='javascript:void();' id='preview-index-file-overlay-close'></a></h2>" +
@@ -154,7 +155,7 @@
                "</div>";
     preview.prepend(html);
 
-    $("#preview-index-file-overlay-close").on("click", "", function(e) {
+    $("#previewIframeWrapper").on("click", "#preview-index-file-overlay-close", function(e) {
       $("#preview-index-file-overlay").remove();
       $.bbq.removeState("admin-index-file");
 
