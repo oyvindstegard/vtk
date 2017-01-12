@@ -1,20 +1,15 @@
 /*
  * Vortex
  *
- * ToC:
- *
- * 1. Tags / typography
- * 2. Resource bar
- * 3. Tab bar
- * 4. Content
- *
  */
 
 @import "base";
 @import "forms";
 @import "grid";
 @import "breadcrumbs";
+@import "resource-bar";
 @import "tabs";
+@import "tab-bar";
 @import "embedded";
 @import "tooltip";
 @import "dropdowns";
@@ -23,10 +18,11 @@
 @import "upload";
 @import "upload-drag-drop";
 @import "preview";
+@import "permissions";
+@import "revisions";
+@import "stats-report";
 
-/*-----------------------------------------*\
-	1. Tags / typography
-\*-----------------------------------------*/
+/* Tags / typography */
 
 body {
   color: $textColor;
@@ -104,6 +100,10 @@ iframe {
 table {
   border-collapse: collapse;
   border-spacing: 0 0;
+
+  tbody th {
+    text-align: left;
+  }
 }
 
 a {
@@ -119,222 +119,6 @@ a {
 abbr {
     text-decoration: none;
 }
-
-
-/*-----------------------------------------*\
-	2. Resource bar
-\*-----------------------------------------*/
-
-.hidden-server-info {
-  display: none;
-}
-
-#title-container {
-  position: relative;
-  color: $titleContainerTextColor;
-}
-
-/* Icons - TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later) */
-
-#resource-title {
-  background: transparent url(images/file.gif) no-repeat 0px 3px;
-  padding-top: 8px;
-  position: relative;
-
-  &.unpublished {
-    background: transparent url(images/file-unpublished.png) no-repeat 0px 3px;
-  }
-  h1 {
-    margin: 0 0 15px 32px;
-    float: left;
-    min-width: 85px; /* at least as wide as 'Endre navn' in dropdown + 15px */
-
-    .title-split {
-      display: block;
-    }
-  }
-
-  @include resourceTitleIcon(folder,   0px 5px,  42px);
-  @include resourceTitleIcon(text,     0px 2px);
-  @include resourceTitleIcon(pdf,      0px 2px);
-  @include resourceTitleIcon(doc,      0px 2px);
-  @include resourceTitleIcon(xls,      0px 2px);
-  @include resourceTitleIcon(ppt,      0px 2px);
-  @include resourceTitleIcon(image,    0px 10px, 39px);
-  @include resourceTitleIcon(audio,    0px 12px, 26px, $firstIsPng: true);
-  @include resourceTitleIcon(video,    0px 5px,  40px);
-  @include resourceTitleIcon(videoref, 0px 5px,  40px);
-  @include resourceTitleIcon(lecture-videoref, 0px 5px,  40px);
-  @include resourceTitleIcon(binary,   0px 3px);
-  @include resourceTitleIcon(dmg,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
-  @include resourceTitleIcon(zip,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
-  @include resourceTitleIcon(jar,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
-}
-
-.ie8 #resource-title {
-  display: inline-block;
-}
-
-#server-going-down {
-  display: none;
-}
-
-/* Resource menus */
-
-#resourceMenuLeft {
-  margin: 0 0 20px 0;
-  clear: left;
-  float: left;
-}
-
-#resourceMenuRight {
-  float: left;
-  min-height: 86px;
-  margin: -12px 0 20px 25px;
-  padding: 0 0 0 25px;
-  @include bg("images/seperator-grey-gradient-big.png");
-}
-
-#resourceMenuRight.overflow-hidden {
-  overflow: hidden;
-}
-
-#resourceMenuRight > li {
-  background: url(images/seperator-grey-gradient-big.png) no-repeat top right;
-  float: left;
-  margin: 0 25px 0 0;
-  padding: 0 25px 0 0;
-  min-height: 86px;
-}
-
-#resourceMenuRight > li.last {
-  background: none;
-  @include noMargPadd;
-}
-
-#resourceMenuRight > li h3 {
-  font-size: 1.15em;
-  font-weight: bold;
-  margin: 9px 0 5px 0;
-}
-
-#resourceMenuRight .manage\.unlockFormService h3 {
-  background: url(images/lock.png) no-repeat 100% 1px;
-  padding-right: 18px;
-  display: inline-block;
-  margin-bottom: 2px;
-}
-
-#resource-title h1 {
-  max-width: 30%;
-}
-
-#resourceMenuRight > li.publish\.globalPublishService,
-#resourceMenuRight > li.publish\.globalUnpublishService,
-#resourceMenuRight > li.manage\.unlockFormService {
-  max-width: 130px;
-}
-
-#resource-title h1,
-#resourceMenuRight > li.manage\.unlockFormService p,
-#resourceMenuRight > li.manage\.unlockFormService p a {
-  white-space: pre;           /* CSS 2.0 */
-  white-space: pre-wrap;      /* CSS 2.1 */
-  white-space: pre-line;      /* CSS 3.0 */
-  white-space: -pre-wrap;     /* Opera 4-6 */
-  white-space: -o-pre-wrap;   /* Opera 7 */
-  white-space: -moz-pre-wrap; /* Mozilla */
-  word-wrap: break-word;      /* IE 5+ */
-}
-
-#resourceMenuRight span.published,
-#publishing-status span.published {
-  background: url(images/menu-active-green.gif) no-repeat 100% 1px;
-  padding-right: 18px;
-}
-
-#resourceMenuRight p span,
-#publishing-status span.published,
-#publishing-status span.unpublished {
-  font-weight: bold;
-}
-
-#resourceMenuRight span.unpublished span {
-  font-weight: normal;
-}
-
-#resourceMenuRight > li.resourceType p {
-  color: #888;
-}
-
-
-/*-----------------------------------------*\
-  3. Tab bar
-\*-----------------------------------------*/
-
-#active-tab {
-  margin: 0 0 5px 0;
-
-  ul.list-menu a {
-    font-weight: bold;
-  }
-}
-
-#tabMenuLeft,
-#tabMenuLeft li {
-  float: left;
-}
-
-#tabMenuLeft a#navigateToParentService {
-  display: block;
-  background: url(images/tab-menu-navigate-up.png) no-repeat center left;
-  padding: 5px 0 5px 28px;
-}
-
-#tabMenuRight {
-  float: right;
-
-  li {
-    float: left;
-    margin: -10px 0 0 30px;
-    padding: 10px 0 10px;
-
-    a {
-      display: block;
-      padding: 5px 0 6px 30px;
-    }
-    &.deleteResourcesService a {
-      background: url(images/tab-menu-delete.png) no-repeat center left;
-      padding-left: 25px;
-    }
-    &.moveResourcesService a {
-      background: url(images/tab-menu-move.png) no-repeat center left;
-      padding-left: 41px;
-    }
-    &.copyResourcesService a {
-      background: url(images/tab-menu-copy.png) no-repeat center left;
-      padding-left: 38px;
-    }
-    &.fileUploadService a {
-      background: url(images/tab-menu-upload.png) no-repeat center left;
-    }
-    &.createDocumentService a {
-      background: url(images/tab-menu-new-file.png) no-repeat center left;
-    }
-    &.createCollectionService a {
-      background: url(images/tab-menu-new-folder.png) no-repeat center left;
-    }
-    &.recoverResourceService a,
-    &.deleteResourcePermanentService a {
-      padding-left: 0;
-    }
-  }
-}
-
-
-/*-----------------------------------------*\
-  3. Content
-\*-----------------------------------------*/
 
 /* Tab forms */
 
@@ -532,118 +316,6 @@ ol.vrtx-help-step-by-step {
   display: inline-block;
 }
 
-/* Permissions */
-
-#permissions-read-write-admin {
-  padding-bottom: 15px;
-  padding-top: 5px;
-  margin: 15px 0;
-  border-top: 1px solid $expandedFormBorderColor;
-  border-bottom: 1px solid $expandedFormBorderColor;
-}
-
-#permissions-read-write-admin .permissions-read-wrapper,
-#permissions-read-write-admin .permissions-read-write-wrapper {
-  padding-bottom: 15px;
-  border-bottom: 1px solid $expandedFormBorderColor;
-}
-
-/* Remove borders around expanded forms */
-
-.permissions-read-wrapper .permissions-read-wrapper,
-.permissions-read-wrapper.expandedForm {
-  margin-top: -6px ;
-}
-
-.permissions-read-write-wrapper .permissions-read-write-wrapper,
-.permissions-read-write-wrapper.expandedForm {
-  margin-top: -1px;
-}
-
-.permissions-all-wrapper .permissions-all-wrapper,
-.permissions-all-wrapper.expandedForm {
-  margin-top: -1px;
-  margin-bottom: -16px;
-}
-
-/* ^ Remove borders around expanded forms */
-
-body#vrtx-permissions {
-  ul.shortcuts {
-    margin-top: 0;
-    margin-bottom: 15px;
-
-    li {
-      margin: 0 0 5px 0;
-    }
-  }
-
-  li.groups,
-  li.users {
-    float: left;
-    border: 1px solid #bebebe;
-    padding: 7px 19px 19px 19px;
-
-    .vrtx-button {
-      margin-left: 15px;
-    }
-
-    legend {
-      font-size: 1.23em;
-      padding: 0 0 8px 0;
-    }
-
-    ul {
-      margin: 0;
-      padding: 0 0 10px 0;
-    }
-
-    div.errorContainer ul li {
-      background: none;
-      @include noMargPadd;
-    }
-  }
-
-  li.groups {
-    margin-right: 20px;
-  }
-
-  .removePermission {
-    background: url(images/list-remove-red.png) no-repeat 0px 4px;
-    color: $expandedFormBackgroundColor;
-    width: 12px;
-    display: inline-block;
-    text-indent: -9999px;
-    overflow: hidden;
-    cursor: pointer;
-    border: none !important;
-  }
-
-  .addGroup,
-  .addUser {
-    display: block;
-  }
-}
-
-#app-content .principalList.hidden {
-  display: none;
-}
-
-#permissions-inheritance,
-#permissions-read-write-admin div.read,
-#permissions-read-write-admin div.read-write,
-#permissions-read-write-admin div.all,
-body#vrtx-permissions ul.shortcuts li {
-  font-size: 1.154em;
-}
-
-#permissions-inheritance .vrtx-button-small,
-#permissions-read-write-admin div.read a.vrtx-button-small,
-#permissions-read-write-admin div.read-write a.vrtx-button-small,
-#permissions-read-write-admin div.all a.vrtx-button-small {
-  font-size: 0.867em;
-}
-
 /* Dark list bullets */
 
 ul.vrtx-reporters,
@@ -711,72 +383,51 @@ table.resourceInfo,
 table.privilegeTable {
   border: 1px solid #d9d9d9;
   width: 100%;
+
+  td,
+  th {
+    padding: 3px 5px;
+    border-top: 1px solid #F0F0F0;
+    vertical-align: top;
+  }
+
+  .key {
+    font-weight: bold;
+    width: 1%;
+    white-space: nowrap;
+  }
 }
 
-table tbody th {
-  text-align: left;
-}
-
-table.resourceInfo td,
-table.resourceInfo th,
-table.privilegeTable td,
-table.privilegeTable th {
-  padding: 3px 5px;
-  border-top: 1px solid #F0F0F0;
-  vertical-align: top;
-}
-
-table.resourceInfo tr.first td,
-table.resourceInfo tr.first th,
-table.privilegeTable tr.first td,
-table.privilegeTable tr.first th {
-  border-top: none;
-}
-
-table.resourceInfo tr.even td,
-table.resourceInfo tr.even th,
-table.privilegeTable tr.even td,
-table.privilegeTable tr.even th,
-table.report-urchin-table tr.even td,
-table.report-urchin-table tr.even th {
-  background-color: $contentTablesEvenBackgroundColor;
-}
-
-table.resourceInfo tr:nth-child(even) td,
-table.resourceInfo tr:nth-child(even) th {
-  background-color: $contentTablesEvenBackgroundColor;
-}
-
-table.resourceInfo tr.first td,
-table.resourceInfo tr.first th,
-table.report-urchin-table tr.first td,
-table.report-urchin-table tr.first th {
-  border-top: none;
-}
-
-table.resourceInfo tr:first-child td,
-table.resourceInfo tr:first-child th {
-  border-top: none;
-}
-
-table.resourceInfo .key,
-table.privilegeTable .key {
-  font-weight: bold;
-  width: 1%;
-  white-space: nowrap;
-}
-
-table.resourceInfo form#propertyForm ul.property .vrtx-textfield {
-  margin-right: 10px;
+table.resourceInfo,
+table.privilegeTable,
+table.report-urchin-table {
+  tr:first-child {
+    td,
+    th {
+      border-top: none;
+    }
+  }
+  tr:nth-child(even) {
+    td,
+    th {
+      background-color: $contentTablesEvenBackgroundColor;
+    }
+  }
 }
 
 ul.property {
   margin: 0px;
 }
 
+table.resourceInfo form#propertyForm ul.property .vrtx-textfield {
+  margin-right: 10px;
+}
+
 #vrtx-admin-ownership-form {
   display: inline;
 }
+
+/* Plain text edit */
 
 body#vrtx-edit-plaintext textarea {
   width: 100%;
@@ -786,6 +437,8 @@ body#vrtx-edit-plaintext textarea {
 body#vrtx-edit-plaintext .contextual-help {
   float: right;
 }
+
+/* Visual profile */
 
 .vrtx-visual-profile-rows {
   margin: 0 0 10px 0;
@@ -810,27 +463,6 @@ body#vrtx-edit-plaintext .contextual-help {
 #publishing-publish-date.expandedForm,
 #publishing-unpublish-date.expandedForm {
   margin-top: -1px !important;
-}
-
-/* Urchin reports */
-
-#vrtx-resource-visit {
-  @include floatClearFix;
-  position: relative;
-}
-
-h3#resourceVisitHeader {
-  margin-top: 20px;
-}
-
-h3.resourceInfoHeader {
-  clear: left;
-}
-
-#urchin-loading {
-  display: block;
-  @include wh(100%, 200px);
-  background: url(images/loadingAnimation.gif) no-repeat center center;
 }
 
 /* Tab menu */
@@ -887,170 +519,6 @@ h3.resourceInfoHeader {
   background: url(images/report-tab-active-right-first.png) no-repeat top right !important;
 }
 
-/* ^ Tab menu */
-
-#vrtx-resource-visit,
-#vrtx-resource-visit-no-stat {
-  margin-bottom: 25px;
-}
-
-#vrtx-resource-visit-info {
-  @include posAbsBottom(22px, 650px);
-  background: #f9f9f9 url(images/info-icon-grey-grey-bg.png) no-repeat 8px 7px;
-  border: 1px solid #d9d9d9;
-  padding: 8px 13px 8px 30px;
-  font-size: 0.85em;
-}
-
-#vrtx-resource-visit-chart {
-  clear: left;
-  float: left;
-  margin: 0 50px 0 0;
-  width: 600px;
-}
-
-#vrtx-resource-visit-stats {
-  float: left;
-  position: relative;
-  top: 10px;
-  left: 0px;
-  width: 35%;
-}
-
-#vrtx-resource-visit-wrapper ul {
-  margin: 0 0 10px 0;
-  padding: 0;
-  list-style: none;
-  float: left;
-}
-
-/* Responsive design */
-
-.vrtx-resource-visit-stat {
-  float: left;
-  text-align: left;
-  margin: 0 3.317535545023696682% 1.5em 0;
-  width: 46.6824645%;
-  color: #363534;
-  font-size: 1.154em;
-}
-
-.vrtx-resource-visit-stat span {
-  color: #a6a6a6;
-  font-weight: bold;
-  font-size: 2em;
-  display: block;
-}
-
-@media screen and (max-width: 1270px) {
-  #resource-title #resourceMenuRight {
-    margin-right: -40%;
-  }
-}
-
-@media screen and (max-width: 1170px) {
-  .vrtx-resource-visit-stat {
-    width: 20%;
-    margin-bottom: 0px;
-  }
-  #vrtx-resource-visit-stats {
-    clear: left;
-    width: 100%;
-    margin: 10px 0 0 0;
-    top: 0px;
-  }
-  #vrtx-resource-visit-info {
-    bottom: 90px;
-  }
-}
-
-/* ^ Responsive design */
-
-/* ^ Urchin reports */
-
-/* Versioning */
-
-table.resourceInfo.revisions tr:nth-child(even) td {
-  background-color: $contentBackgroundColor;
-}
-
-#vrtx-revisions .resourceInfo {
-  border: none;
-
-  td,
-  th {
-    border: none;
-    border-bottom: 1px solid #D9D9D9;
-  }
-
-  td {
-    font-size: 1.154em;
-    padding: 14px 10px 14px 0;
-  }
-
-  th {
-    padding: 0 0 10px 0;
-    text-align: left;
-  }
-
-  td.vrtx-revisions-buttons-column {
-    font-size: 1em;
-    width: 450px;
-    padding: 11px;
-
-    .vrtx-revision-view-changes,
-    form {
-      display: inline-block;
-      margin-left: 10px;
-    }
-
-    form:after {
-      display: none;
-    }
-  }
-
-  tr#vrtx-revisions-working-copy {
-    td {
-      font-style: italic;
-      color: #999;
-    }
-
-    td.vrtx-revisions-buttons-column {
-      font-style: normal;
-    }
-  }
-
-  td#vrtx-revisions-current {
-    color: $publishedAllowedTextColor;
-  }
-}
-
-.vrtx-revision-amount,
-.vrtx-revision-amount-rest {
-  display: block;
-  @include wh(3px, 10px);
-  float: left;
-  margin: 0 4px 0 0;
-}
-
-.vrtx-revision-amount {
-  background: url(images/report-revision-change-amount-dark-grey.png) no-repeat center center;
-}
-
-.vrtx-revision-amount-rest {
-  background: url(images/report-revision-change-amount-grey.png) no-repeat center center;
-}
-
-/* OoXML editor */
-
-#vrtx-ooxml-editor #vrtx-open-webdav-wrapper {
-  display: none;
-}
-
-#vrtx-ooxml-editor #app-content h2 {
-  margin-top: 10px;
-}
-
 /* Paging */
 
 .vrtx-course-schedule .prev-next,
@@ -1080,6 +548,16 @@ table.resourceInfo.revisions tr:nth-child(even) td {
   .prev {
     margin-right: 20px !important;
   }
+}
+
+/* OoXML editor */
+
+#vrtx-ooxml-editor #vrtx-open-webdav-wrapper {
+  display: none;
+}
+
+#vrtx-ooxml-editor #app-content h2 {
+  margin-top: 10px;
 }
 
 /* Clearing */
@@ -1219,14 +697,14 @@ tr.expandedForm td .vrtx-button-small {
 #TB_title {
   padding-right: 0px !important;
   margin: 30px 30px 0 30px !important;
-}
 
-#TB_title.show-close-window {
-  padding-right: 70px !important;
-}
+  &.show-close-window {
+    padding-right: 70px !important;
 
-#TB_title.show-close-window #TB_closeAjaxWindow {
-  display: block;
+    #TB_closeAjaxWindow {
+      display: block;
+    }
+  }
 }
 
 #TB_ajaxContent {
@@ -1270,20 +748,20 @@ tr.expandedForm td .vrtx-button-small {
 /* Fix rendering bug in Firefox for hover in table (VTK-2562)
  * TODO: the problems lays though with 'overflow:hidden' on table cells and resource link
  */
-#directory-listing tr input, x:-moz-any-link, x:only-child {
-  margin: 3px 3px 3px 4px;
-}
+ #directory-listing tr input, x:-moz-any-link, x:only-child {
+   margin: 3px 3px 3px 4px;
+ }
 
-#resource-title .button-row li form input[type="submit"], x:-moz-any-link, x:only-child {
-  padding: 5px 15px 6px;
-}
+ #resource-title .button-row li form input[type="submit"], x:-moz-any-link, x:only-child {
+   padding: 5px 15px 6px;
+ }
 
-#resource-title .button-row li form input[type="submit"]:hover, x:-moz-any-link, x:only-child,
-#resource-title .button-row li form input[type="submit"]:focus, x:-moz-any-link, x:only-child {
-  padding: 6px 16px 7px;
-}
+ #resource-title .button-row li form input[type="submit"]:hover, x:-moz-any-link, x:only-child,
+ #resource-title .button-row li form input[type="submit"]:focus, x:-moz-any-link, x:only-child {
+   padding: 6px 16px 7px;
+ }
 
-#resource-title .dropdown-shortcut-menu-container li form input[type="submit"], x:-moz-any-link, x:only-child {
-  padding-left: 11px !important;
-  padding-right: 11px !important;
-}
+ #resource-title .dropdown-shortcut-menu-container li form input[type="submit"], x:-moz-any-link, x:only-child {
+   padding-left: 11px !important;
+   padding-right: 11px !important;
+ }

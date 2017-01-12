@@ -1,0 +1,60 @@
+@import "base";
+
+#active-tab {
+  margin: 0 0 5px 0;
+
+  ul.list-menu a {
+    font-weight: bold;
+  }
+}
+
+#tabMenuLeft,
+#tabMenuLeft li {
+  float: left;
+}
+
+#tabMenuLeft a#navigateToParentService {
+  display: block;
+  background: url(images/tab-menu-navigate-up.png) no-repeat center left;
+  padding: 5px 0 5px 28px;
+}
+
+#tabMenuRight {
+  float: right;
+
+  li {
+    float: left;
+    margin: -10px 0 0 30px;
+    padding: 10px 0 10px;
+
+    a {
+      display: block;
+      padding: 5px 0 6px 30px;
+    }
+    &.deleteResourcesService a {
+      background: url(images/tab-menu-delete.png) no-repeat center left;
+      padding-left: 25px;
+    }
+    &.moveResourcesService a {
+      background: url(images/tab-menu-move.png) no-repeat center left;
+      padding-left: 41px;
+    }
+    &.copyResourcesService a {
+      background: url(images/tab-menu-copy.png) no-repeat center left;
+      padding-left: 38px;
+    }
+    &.fileUploadService a {
+      background: url(images/tab-menu-upload.png) no-repeat center left;
+    }
+    &.createDocumentService a {
+      background: url(images/tab-menu-new-file.png) no-repeat center left;
+    }
+    &.createCollectionService a {
+      background: url(images/tab-menu-new-folder.png) no-repeat center left;
+    }
+    &.recoverResourceService a,
+    &.deleteResourcePermanentService a {
+      padding-left: 0;
+    }
+  }
+}

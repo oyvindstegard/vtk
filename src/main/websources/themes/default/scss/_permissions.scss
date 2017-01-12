@@ -1,0 +1,111 @@
+@import "base";
+
+#permissions-read-write-admin {
+  padding-bottom: 15px;
+  padding-top: 5px;
+  margin: 15px 0;
+  border-top: 1px solid $expandedFormBorderColor;
+  border-bottom: 1px solid $expandedFormBorderColor;
+}
+
+#permissions-read-write-admin .permissions-read-wrapper,
+#permissions-read-write-admin .permissions-read-write-wrapper {
+  padding-bottom: 15px;
+  border-bottom: 1px solid $expandedFormBorderColor;
+}
+
+/* Remove borders around expanded forms */
+
+.permissions-read-wrapper .permissions-read-wrapper,
+.permissions-read-wrapper.expandedForm {
+  margin-top: -6px ;
+}
+
+.permissions-read-write-wrapper .permissions-read-write-wrapper,
+.permissions-read-write-wrapper.expandedForm {
+  margin-top: -1px;
+}
+
+.permissions-all-wrapper .permissions-all-wrapper,
+.permissions-all-wrapper.expandedForm {
+  margin-top: -1px;
+  margin-bottom: -16px;
+}
+
+/* ^ Remove borders around expanded forms */
+
+body#vrtx-permissions {
+  ul.shortcuts {
+    margin-top: 0;
+    margin-bottom: 15px;
+
+    li {
+      margin: 0 0 5px 0;
+    }
+  }
+
+  li.groups,
+  li.users {
+    float: left;
+    border: 1px solid #bebebe;
+    padding: 7px 19px 19px 19px;
+
+    .vrtx-button {
+      margin-left: 15px;
+    }
+
+    legend {
+      font-size: 1.23em;
+      padding: 0 0 8px 0;
+    }
+
+    ul {
+      margin: 0;
+      padding: 0 0 10px 0;
+    }
+
+    div.errorContainer ul li {
+      background: none;
+      @include noMargPadd;
+    }
+  }
+
+  li.groups {
+    margin-right: 20px;
+  }
+
+  .removePermission {
+    background: url(images/list-remove-red.png) no-repeat 0px 4px;
+    color: $expandedFormBackgroundColor;
+    width: 12px;
+    display: inline-block;
+    text-indent: -9999px;
+    overflow: hidden;
+    cursor: pointer;
+    border: none !important;
+  }
+
+  .addGroup,
+  .addUser {
+    display: block;
+  }
+}
+
+#app-content .principalList.hidden {
+  display: none;
+}
+
+#permissions-inheritance,
+#permissions-read-write-admin div.read,
+#permissions-read-write-admin div.read-write,
+#permissions-read-write-admin div.all,
+body#vrtx-permissions ul.shortcuts li {
+  font-size: 1.154em;
+}
+
+#permissions-inheritance .vrtx-button-small,
+#permissions-read-write-admin div.read a.vrtx-button-small,
+#permissions-read-write-admin div.read-write a.vrtx-button-small,
+#permissions-read-write-admin div.all a.vrtx-button-small {
+  font-size: 0.867em;
+}

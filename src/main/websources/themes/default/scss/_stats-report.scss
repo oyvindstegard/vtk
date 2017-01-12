@@ -1,0 +1,95 @@
+@import "base";
+
+#vrtx-resource-visit {
+  @include floatClearFix;
+  position: relative;
+}
+
+h3#resourceVisitHeader {
+  margin-top: 20px;
+}
+
+h3.resourceInfoHeader {
+  clear: left;
+}
+
+#urchin-loading {
+  display: block;
+  @include wh(100%, 200px);
+  background: url(images/loadingAnimation.gif) no-repeat center center;
+}
+
+#vrtx-resource-visit,
+#vrtx-resource-visit-no-stat {
+  margin-bottom: 25px;
+}
+
+#vrtx-resource-visit-info {
+  @include posAbsBottom(22px, 650px);
+  background: #f9f9f9 url(images/info-icon-grey-grey-bg.png) no-repeat 8px 7px;
+  border: 1px solid #d9d9d9;
+  padding: 8px 13px 8px 30px;
+  font-size: 0.85em;
+}
+
+#vrtx-resource-visit-chart {
+  clear: left;
+  float: left;
+  margin: 0 50px 0 0;
+  width: 600px;
+}
+
+#vrtx-resource-visit-stats {
+  float: left;
+  position: relative;
+  top: 10px;
+  left: 0px;
+  width: 35%;
+}
+
+#vrtx-resource-visit-wrapper ul {
+  margin: 0 0 10px 0;
+  padding: 0;
+  list-style: none;
+  float: left;
+}
+
+/* Responsive design */
+
+.vrtx-resource-visit-stat {
+  float: left;
+  text-align: left;
+  margin: 0 3.317535545023696682% 1.5em 0;
+  width: 46.6824645%;
+  color: #363534;
+  font-size: 1.154em;
+}
+
+.vrtx-resource-visit-stat span {
+  color: #a6a6a6;
+  font-weight: bold;
+  font-size: 2em;
+  display: block;
+}
+
+@media screen and (max-width: 1270px) {
+  #resource-title #resourceMenuRight {
+    margin-right: -40%;
+  }
+}
+
+@media screen and (max-width: 1170px) {
+  .vrtx-resource-visit-stat {
+    width: 20%;
+    margin-bottom: 0px;
+  }
+  #vrtx-resource-visit-stats {
+    clear: left;
+    width: 100%;
+    margin: 10px 0 0 0;
+    top: 0px;
+  }
+  #vrtx-resource-visit-info {
+    bottom: 90px;
+  }
+}

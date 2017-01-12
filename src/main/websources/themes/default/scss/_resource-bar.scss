@@ -1,0 +1,143 @@
+@import "base";
+
+.hidden-server-info {
+  display: none;
+}
+
+#title-container {
+  position: relative;
+  color: $titleContainerTextColor;
+}
+
+/* Icons - TODO: should override with just background-image instead (FF can be uncooperative with this sometimes so later) */
+
+#resource-title {
+  background: transparent url(images/file.gif) no-repeat 0px 3px;
+  padding-top: 8px;
+  position: relative;
+
+  &.unpublished {
+    background: transparent url(images/file-unpublished.png) no-repeat 0px 3px;
+  }
+  h1 {
+    margin: 0 0 15px 32px;
+    float: left;
+    min-width: 85px; /* at least as wide as 'Endre navn' in dropdown + 15px */
+
+    .title-split {
+      display: block;
+    }
+  }
+
+  @include resourceTitleIcon(folder,   0px 5px,  42px);
+  @include resourceTitleIcon(text,     0px 2px);
+  @include resourceTitleIcon(pdf,      0px 2px);
+  @include resourceTitleIcon(doc,      0px 2px);
+  @include resourceTitleIcon(xls,      0px 2px);
+  @include resourceTitleIcon(ppt,      0px 2px);
+  @include resourceTitleIcon(image,    0px 10px, 39px);
+  @include resourceTitleIcon(audio,    0px 12px, 26px, $firstIsPng: true);
+  @include resourceTitleIcon(video,    0px 5px,  40px);
+  @include resourceTitleIcon(videoref, 0px 5px,  40px);
+  @include resourceTitleIcon(lecture-videoref, 0px 5px,  40px);
+  @include resourceTitleIcon(binary,   0px 3px);
+  @include resourceTitleIcon(dmg,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(zip,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+  @include resourceTitleIcon(jar,      0px 3px, $firstIsPng: true, $hasUnpublished: false);
+}
+
+.ie8 #resource-title {
+  display: inline-block;
+}
+
+#server-going-down {
+  display: none;
+}
+
+/* Resource menus */
+
+#resourceMenuLeft {
+  margin: 0 0 20px 0;
+  clear: left;
+  float: left;
+}
+
+#resourceMenuRight {
+  float: left;
+  min-height: 86px;
+  margin: -12px 0 20px 25px;
+  padding: 0 0 0 25px;
+  @include bg("images/seperator-grey-gradient-big.png");
+}
+
+#resourceMenuRight.overflow-hidden {
+  overflow: hidden;
+}
+
+#resourceMenuRight > li {
+  background: url(images/seperator-grey-gradient-big.png) no-repeat top right;
+  float: left;
+  margin: 0 25px 0 0;
+  padding: 0 25px 0 0;
+  min-height: 86px;
+}
+
+#resourceMenuRight > li.last {
+  background: none;
+  @include noMargPadd;
+}
+
+#resourceMenuRight > li h3 {
+  font-size: 1.15em;
+  font-weight: bold;
+  margin: 9px 0 5px 0;
+}
+
+#resourceMenuRight .manage\.unlockFormService h3 {
+  background: url(images/lock.png) no-repeat 100% 1px;
+  padding-right: 18px;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+#resource-title h1 {
+  max-width: 30%;
+}
+
+#resourceMenuRight > li.publish\.globalPublishService,
+#resourceMenuRight > li.publish\.globalUnpublishService,
+#resourceMenuRight > li.manage\.unlockFormService {
+  max-width: 130px;
+}
+
+#resource-title h1,
+#resourceMenuRight > li.manage\.unlockFormService p,
+#resourceMenuRight > li.manage\.unlockFormService p a {
+  white-space: pre;           /* CSS 2.0 */
+  white-space: pre-wrap;      /* CSS 2.1 */
+  white-space: pre-line;      /* CSS 3.0 */
+  white-space: -pre-wrap;     /* Opera 4-6 */
+  white-space: -o-pre-wrap;   /* Opera 7 */
+  white-space: -moz-pre-wrap; /* Mozilla */
+  word-wrap: break-word;      /* IE 5+ */
+}
+
+#resourceMenuRight span.published,
+#publishing-status span.published {
+  background: url(images/menu-active-green.gif) no-repeat 100% 1px;
+  padding-right: 18px;
+}
+
+#resourceMenuRight p span,
+#publishing-status span.published,
+#publishing-status span.unpublished {
+  font-weight: bold;
+}
+
+#resourceMenuRight span.unpublished span {
+  font-weight: normal;
+}
+
+#resourceMenuRight > li.resourceType p {
+  color: #888;
+}

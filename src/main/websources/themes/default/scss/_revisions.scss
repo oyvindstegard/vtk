@@ -1,0 +1,72 @@
+@import "base";
+
+table.resourceInfo.revisions tr:nth-child(even) td {
+  background-color: $contentBackgroundColor;
+}
+
+#vrtx-revisions .resourceInfo {
+  border: none;
+
+  td,
+  th {
+    border: none;
+    border-bottom: 1px solid #D9D9D9;
+  }
+
+  td {
+    font-size: 1.154em;
+    padding: 14px 10px 14px 0;
+  }
+
+  th {
+    padding: 0 0 10px 0;
+    text-align: left;
+  }
+
+  td.vrtx-revisions-buttons-column {
+    font-size: 1em;
+    width: 450px;
+    padding: 11px;
+
+    .vrtx-revision-view-changes,
+    form {
+      display: inline-block;
+      margin-left: 10px;
+    }
+
+    form:after {
+      display: none;
+    }
+  }
+
+  tr#vrtx-revisions-working-copy {
+    td {
+      font-style: italic;
+      color: #999;
+    }
+
+    td.vrtx-revisions-buttons-column {
+      font-style: normal;
+    }
+  }
+
+  td#vrtx-revisions-current {
+    color: $publishedAllowedTextColor;
+  }
+}
+
+.vrtx-revision-amount,
+.vrtx-revision-amount-rest {
+  display: block;
+  @include wh(3px, 10px);
+  float: left;
+  margin: 0 4px 0 0;
+}
+
+.vrtx-revision-amount {
+  background: url(images/report-revision-change-amount-dark-grey.png) no-repeat center center;
+}
+
+.vrtx-revision-amount-rest {
+  background: url(images/report-revision-change-amount-grey.png) no-repeat center center;
+}
