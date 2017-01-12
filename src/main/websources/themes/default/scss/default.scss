@@ -475,6 +475,8 @@ ul.radio-buttons li > * {
   line-height: 1;
 }
 
+/* Step ny step help */
+
 ol.vrtx-help-step-by-step {
   font-size: 1.154em;
   margin-left: 0;
@@ -489,6 +491,8 @@ ol.vrtx-help-step-by-step {
     font-weight: bold;
   }
 }
+
+/* Filters */
 
 #vrtx-report-filters ul.vrtx-report-filter-last {
   margin-right: 0;
@@ -528,6 +532,8 @@ ol.vrtx-help-step-by-step {
   display: inline-block;
 }
 
+/* Permissions */
+
 #permissions-read-write-admin {
   padding-bottom: 15px;
   padding-top: 5px;
@@ -562,9 +568,65 @@ ol.vrtx-help-step-by-step {
 
 /* ^ Remove borders around expanded forms */
 
-body#vrtx-permissions ul.shortcuts {
-  margin-top: 0;
-  margin-bottom: 15px;
+body#vrtx-permissions {
+  ul.shortcuts {
+    margin-top: 0;
+    margin-bottom: 15px;
+
+    li {
+      margin: 0 0 5px 0;
+    }
+  }
+
+  li.groups,
+  li.users {
+    float: left;
+    border: 1px solid #bebebe;
+    padding: 7px 19px 19px 19px;
+
+    .vrtx-button {
+      margin-left: 15px;
+    }
+
+    legend {
+      font-size: 1.23em;
+      padding: 0 0 8px 0;
+    }
+
+    ul {
+      margin: 0;
+      padding: 0 0 10px 0;
+    }
+
+    div.errorContainer ul li {
+      background: none;
+      @include noMargPadd;
+    }
+  }
+
+  li.groups {
+    margin-right: 20px;
+  }
+
+  .removePermission {
+    background: url(images/list-remove-red.png) no-repeat 0px 4px;
+    color: $expandedFormBackgroundColor;
+    width: 12px;
+    display: inline-block;
+    text-indent: -9999px;
+    overflow: hidden;
+    cursor: pointer;
+    border: none !important;
+  }
+
+  .addGroup,
+  .addUser {
+    display: block;
+  }
+}
+
+#app-content .principalList.hidden {
+  display: none;
 }
 
 #permissions-inheritance,
@@ -582,74 +644,25 @@ body#vrtx-permissions ul.shortcuts li {
   font-size: 0.867em;
 }
 
-body#vrtx-permissions ul.shortcuts li {
-  margin: 0 0 5px 0;
-}
+/* Dark list bullets */
 
-#app-content .principalList.hidden {
-  display: none;
-}
-
-body#vrtx-permissions li.groups,
-body#vrtx-permissions li.users {
-  float: left;
-  border: 1px solid #bebebe;
-  padding: 7px 19px 19px 19px;
-}
-
-body#vrtx-permissions li.groups {
-  margin-right: 20px;
-}
-
-body#vrtx-permissions li.groups .vrtx-button,
-body#vrtx-permissions li.users .vrtx-button {
-  margin-left: 15px;
-}
-
-body#vrtx-permissions li.groups legend,
-body#vrtx-permissions li.users legend {
-  font-size: 1.23em;
-  padding: 0 0 8px 0;
-}
-
+ul.vrtx-reporters,
 body#vrtx-permissions li.groups ul,
-body#vrtx-permissions li.users ul {
-  margin: 0;
-  padding: 0 0 10px 0;
-}
-
-ul.vrtx-reporters li,
-body#vrtx-permissions li.groups ul li,
-body#vrtx-permissions li.users ul li,
-body#vrtx-preview-ssl-mixed-mode #contents ul li {
-  background: url(images/list-bullet-dark-grey.png) no-repeat center left;
-  margin: 0 0 5px 5px;
-  padding: 0 0 0 10px;
-}
-
-body#vrtx-permissions li.groups div.errorContainer ul li,
-body#vrtx-permissions li.users div.errorContainer ul li {
-  background: none;
-  @include noMargPadd;
-}
-
-body#vrtx-permissions .removePermission {
-  background: url(images/list-remove-red.png) no-repeat 0px 4px;
-  color: $expandedFormBackgroundColor;
-  width: 12px;
-  display: inline-block;
-  text-indent: -9999px;
-  overflow: hidden;
-  cursor: pointer;
-  border: none !important;
-}
-
-body#vrtx-permissions .addGroup,
-body#vrtx-permissions .addUser {
-  display: block;
+body#vrtx-permissions li.users ul,
+body#vrtx-preview-ssl-mixed-mode #contents ul {
+  li {
+    background: url(images/list-bullet-dark-grey.png) no-repeat center left;
+    margin: 0 0 5px 5px;
+    padding: 0 0 0 10px;
+  }
 }
 
 /* Autocomplete */
+
+.ac_results {
+  margin-left: -8px !important;
+  margin-top: -3px !important;
+}
 
 .properties .tags input.ac_input {
   width: 320px;
@@ -671,7 +684,7 @@ body#vrtx-permissions .addUser {
   position: relative;
 }
 
-/* ^ Autocomplete */
+/* Errors */
 
 ul.errors li {
   color: $errorRestrictedTextColor;
@@ -691,6 +704,8 @@ form#editor {
     float: none;
   }
 }
+
+/* Table meta */
 
 table.resourceInfo,
 table.privilegeTable {
@@ -761,11 +776,6 @@ ul.property {
 
 #vrtx-admin-ownership-form {
   display: inline;
-}
-
-.ac_results {
-  margin-left: -8px !important;
-  margin-top: -3px !important;
 }
 
 body#vrtx-edit-plaintext textarea {
@@ -1072,6 +1082,8 @@ table.resourceInfo.revisions tr:nth-child(even) td {
   }
 }
 
+/* Clearing */
+
 #app-head,
 #app-footer,
 #app-content,
@@ -1094,6 +1106,8 @@ div.globalmenu,
   }
 }
 
+/* Lists without native style */
+
 ul.radio-buttons,
 ul.radio-buttons li,
 .expandedForm form ul,
@@ -1114,6 +1128,8 @@ ul#vrtx-manually-approve-tab-menu li,
   padding-left: 0px;
   list-style: none;
 }
+
+/* Expanded forms */
 
 div.globalmenu h3,
 form.vrtx-admin-form h3,
