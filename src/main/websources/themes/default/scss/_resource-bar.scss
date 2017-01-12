@@ -23,6 +23,7 @@
     margin: 0 0 15px 32px;
     float: left;
     min-width: 85px; /* at least as wide as 'Endre navn' in dropdown + 15px */
+    max-width: 30%;
 
     .title-split {
       display: block;
@@ -100,10 +101,6 @@
   margin-bottom: 2px;
 }
 
-#resource-title h1 {
-  max-width: 30%;
-}
-
 #resourceMenuRight > li.publish\.globalPublishService,
 #resourceMenuRight > li.publish\.globalUnpublishService,
 #resourceMenuRight > li.manage\.unlockFormService {
@@ -140,4 +137,31 @@
 
 #resourceMenuRight > li.resourceType p {
   color: #888;
+}
+
+/* Copy and move */
+
+#app-content .vrtx-cancel-link {
+  display: inline-block;
+  font-size: 1px;
+  @include wh(12px, 12px);
+  margin-left: 7px;
+  position: relative;
+  top: -3.8em;
+  color: #F8F8F8;
+  background: url(images/resource-menu-dialog-close.png) no-repeat center center;
+  border: none;
+
+  &:hover {
+    cursor: pointer;
+  }
+  &:focus {
+    outline: 1px solid #aaa;
+  }
+}
+
+#app-content .vrtx-show-processing {
+  background: url(images/spinner.gif) no-repeat center left;
+  display: block;
+  @include wh(16px, 16px);
 }

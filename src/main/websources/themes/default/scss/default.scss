@@ -4,6 +4,7 @@
  */
 
 @import "base";
+@import "tags-typography";
 @import "forms";
 @import "grid";
 @import "breadcrumbs";
@@ -21,104 +22,6 @@
 @import "permissions";
 @import "revisions";
 @import "stats-report";
-
-/* Tags / typography */
-
-body {
-  color: $textColor;
-  font: normal 81.25%/1.3 $baseFont;
-}
-
-h1 {
-  font-size: 1.84em;
-  font-weight: bold;
-  line-height: 1.2em;
-  margin: 0 0 15px 0;
-}
-
-h2 {
-  font-size: 1.76em;
-  font-weight: normal;
-  margin: 15px 0 8px 0;
-}
-
-#app-content h2:first-child {
-  margin-top: 0;
-}
-
-h3,
-caption {
-  font-size: 1.538em;
-  font-weight: normal;
-}
-
-caption {
-  text-align: left;
-}
-
-h4 {
-  font-size: 1em;
-  font-weight: bold;
-}
-
-h3,
-h4,
-caption {
-  margin: 10px 0 8px 0;
-}
-
-p {
-  margin: 3px 0 8px 0;
-}
-
-p.larger-p {
-  font-size: 1.077em;
-  max-width: 50em;
-  margin: 4px 0 11px;
-}
-
-pre {
-  font-family: courier;
-  line-height: 1.9;
-}
-
-#contents pre {
-  color: #2b2b2b;
-  margin: 0;
-}
-
-ul,
-ol {
-  margin: 8px 0 15px 10px;
-}
-
-img,
-iframe {
-  border: 0;
-}
-
-table {
-  border-collapse: collapse;
-  border-spacing: 0 0;
-
-  tbody th {
-    text-align: left;
-  }
-}
-
-a {
-  color: $linkColor;
-  text-decoration: none;
-
-  &:focus,
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-abbr {
-    text-decoration: none;
-}
 
 /* Tab forms */
 
@@ -471,52 +374,42 @@ body#vrtx-edit-plaintext .contextual-help {
   padding: 15px 0 0 0;
 }
 
-#vrtx-resource-visit-tab-menu li,
-#vrtx-manually-approve-tab-menu li {
-  float: left;
-}
+#vrtx-resource-visit-tab-menu,
+#vrtx-manually-approve-tab-menu {
+  li {
+    float: left;
 
-#vrtx-resource-visit-tab-menu li a,
-#vrtx-manually-approve-tab-menu li a,
-#vrtx-manually-approve-tab-menu li span {
-  display: inline-block;
-}
+    a {
+      padding: 5px 15px;
+      background: url(images/report-tab-middle.png) repeat-x 0px 25px;
+      white-space: nowrap;
+    }
+    a,
+    span {
+      display: inline-block;
+    }
+    &.active a,
+    span {
+      padding: 5px 15px 5px 10px;
+      margin: 0 0 0 5px;
+    }
+    &.active {
+      @include bg("images/report-tab-active-left.png", true);
 
-#vrtx-resource-visit-tab-menu li.active a,
-#vrtx-manually-approve-tab-menu li span {
-  padding: 5px 15px 5px 10px;
-  margin: 0 0 0 5px;
-}
+      a,
+      span {
+        background: url(images/report-tab-active-right.png) no-repeat top right !important;
+      }
+      &.active-first {
+        @include bg("images/report-tab-active-left-first.png", true);
 
-#vrtx-resource-visit-tab-menu li a,
-#vrtx-manually-approve-tab-menu li a {
-  padding: 5px 15px;
-}
-
-#vrtx-resource-visit-tab-menu li a,
-#vrtx-manually-approve-tab-menu li a {
-  background: url(images/report-tab-middle.png) repeat-x 0px 25px;
-  white-space: nowrap;
-}
-
-#vrtx-resource-visit-tab-menu li.active,
-#vrtx-manually-approve-tab-menu li.active {
-  @include bg("images/report-tab-active-left.png", true);
-}
-
-#vrtx-resource-visit-tab-menu li.active a,
-#vrtx-manually-approve-tab-menu li.active span {
-  background: url(images/report-tab-active-right.png) no-repeat top right !important;
-}
-
-#vrtx-resource-visit-tab-menu li.active.active-first,
-#vrtx-manually-approve-tab-menu li.active.active-first {
-  @include bg("images/report-tab-active-left-first.png", true);
-}
-
-#vrtx-resource-visit-tab-menu li.active.active-first a,
-#vrtx-manually-approve-tab-menu li.active.active-first span {
-  background: url(images/report-tab-active-right-first.png) no-repeat top right !important;
+        a,
+        span {
+          background: url(images/report-tab-active-right-first.png) no-repeat top right !important;
+        }
+      }
+    }
+  }
 }
 
 /* Paging */
@@ -662,7 +555,7 @@ tr.expandedForm td .vrtx-button-small {
   }
 }
 
-/* Create dialog */
+/* Dialog */
 
 .vrtx-create-tree {
   .vrtx-button-small {
@@ -711,35 +604,6 @@ tr.expandedForm td .vrtx-button-small {
   padding: 2px 0 30px 30px !important;
 }
 
-/* Copy and move */
-
-#app-content .vrtx-cancel-link {
-  display: inline-block;
-  font-size: 1px;
-  @include wh(12px, 12px);
-  margin-left: 7px;
-  position: relative;
-  top: -3.8em;
-  color: #F8F8F8;
-  background: url(images/resource-menu-dialog-close.png) no-repeat center center;
-  border: none;
-
-  &:hover {
-    cursor: pointer;
-  }
-  &:focus {
-    outline: 1px solid #aaa;
-  }
-}
-
-#app-content .vrtx-show-processing {
-  background: url(images/spinner.gif) no-repeat center left;
-  display: block;
-  @include wh(16px, 16px);
-}
-
-/* Loading dialog */
-
 #dialog-loading-content img {
   opacity: 0.7;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)" !important;
@@ -748,20 +612,21 @@ tr.expandedForm td .vrtx-button-small {
 /* Fix rendering bug in Firefox for hover in table (VTK-2562)
  * TODO: the problems lays though with 'overflow:hidden' on table cells and resource link
  */
- #directory-listing tr input, x:-moz-any-link, x:only-child {
-   margin: 3px 3px 3px 4px;
- }
+#directory-listing tr input, x:-moz-any-link, x:only-child {
+  margin: 3px 3px 3px 4px;
+}
 
- #resource-title .button-row li form input[type="submit"], x:-moz-any-link, x:only-child {
-   padding: 5px 15px 6px;
- }
+#resource-title {
+  .button-row li form input[type="submit"], x:-moz-any-link, x:only-child {
+    padding: 5px 15px 6px;
 
- #resource-title .button-row li form input[type="submit"]:hover, x:-moz-any-link, x:only-child,
- #resource-title .button-row li form input[type="submit"]:focus, x:-moz-any-link, x:only-child {
-   padding: 6px 16px 7px;
- }
-
- #resource-title .dropdown-shortcut-menu-container li form input[type="submit"], x:-moz-any-link, x:only-child {
-   padding-left: 11px !important;
-   padding-right: 11px !important;
- }
+    &:hover,
+    &:focus {
+      padding: 6px 16px 7px;
+    }
+  }
+  .dropdown-shortcut-menu-container li form input[type="submit"], x:-moz-any-link, x:only-child {
+    padding-left: 11px !important;
+    padding-right: 11px !important;
+  }
+}

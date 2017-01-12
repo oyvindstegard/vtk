@@ -1,9 +1,5 @@
 @import "base";
 
-table.resourceInfo.revisions tr:nth-child(even) td {
-  background-color: $contentBackgroundColor;
-}
-
 #vrtx-revisions .resourceInfo {
   border: none;
 
@@ -39,6 +35,10 @@ table.resourceInfo.revisions tr:nth-child(even) td {
     }
   }
 
+  tr:nth-child(even) td {
+    background-color: $contentBackgroundColor;
+  }
+
   tr#vrtx-revisions-working-copy {
     td {
       font-style: italic;
@@ -54,6 +54,8 @@ table.resourceInfo.revisions tr:nth-child(even) td {
     color: $publishedAllowedTextColor;
   }
 }
+
+/* Changed amount: not in use at the moment */
 
 .vrtx-revision-amount,
 .vrtx-revision-amount-rest {
