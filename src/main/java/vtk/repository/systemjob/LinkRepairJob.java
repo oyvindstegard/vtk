@@ -31,6 +31,7 @@
 package vtk.repository.systemjob;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +44,13 @@ import org.slf4j.LoggerFactory;
 import vtk.repository.ContentInputSources;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
+import vtk.repository.Property;
+import vtk.repository.RepositoryAction;
 import vtk.repository.Resource;
 import vtk.repository.Revision.Type;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.resourcetype.Value;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.query.OrQuery;
@@ -107,16 +111,17 @@ public class LinkRepairJob extends AbstractResourceJob {
                         aspectsPropDef, aspectFieldDesc, ctx.getToken());
         
         MapContainer aspect = resolver.resolve(resource.getURI(), enabledAspect);
-        boolean enabled = aspect != null && "true".equals(aspect.get("link-repair"));
+        boolean enabled = aspect != null && "true".equals(aspect.get("auto-link-repair"));
         if (!enabled) {
             logger.debug("Link repair disabled for " + resource);
             ctx.getRepository().store(ctx.getToken(), resource);
             return;
         }
+        
         logger.debug("Correcting links for resource " + resource + "; " + ctx);
+        UrlMapper mapper = new UrlMapper(resource, base, ctx);
         
         if ("application/json".equals(resource.getContentType())) {
-            UrlMapper mapper = new UrlMapper(resource, base, ctx);
             StructuredResourceDescription desc = 
                     resourceManager.get(resource.getResourceType());
             if (desc == null) {
@@ -124,11 +129,67 @@ public class LinkRepairJob extends AbstractResourceJob {
             }
             processStructuredResource(resource, ctx, desc, mapper);
         }
-        else if ("text/html".equals(resource.getContentType())) {
-            UrlMapper mapper = new UrlMapper(resource, base, ctx);
+        else {
+            processProperties(resource, ctx, mapper);
+        }
+
+        // Process content of well-known resource types:
+        
+        if ("text/html".equals(resource.getContentType())) {
             processHtmlResource(resource, ctx, mapper);
         }
-        // XXX: handle other types (collections, markdown, ..)
+    }
+    
+    private void processProperties(Resource resource, ExecutionContext ctx, UrlMapper mapper) {
+        boolean modified = false;
+        for (Property p: resource) {
+            PropertyTypeDefinition def = p.getDefinition();
+            if (def == null) continue;
+            
+            if (def.getProtectionLevel() == RepositoryAction.UNEDITABLE_ACTION) continue;
+            if (p.getType() != PropertyType.Type.IMAGE_REF && p.getType() != PropertyType.Type.HTML) {
+                continue;
+            }
+            if (def.isMultiple()) {
+                List<Value> result = new ArrayList<>();
+                for (Value value: p.getValues()) {
+                    Value mapped = processPropValue(value, p.getType(), mapper);
+                    modified = modified || !mapped.equals(value);
+                    result.add(mapped);
+                }
+                p.setValues(result.toArray(new Value[result.size()]));
+            }
+            else {
+                Value value = p.getValue();
+                Value mapped = processPropValue(value, p.getType(), mapper);
+                p.setValue(mapped);
+                modified = modified || !mapped.equals(value);
+            }
+        }
+        
+        if (modified) {
+            try {
+                // XXX: cannot use system change context when storing properties:
+                //ctx.getRepository().store(ctx.getToken(), resource, 
+                //        ctx.getSystemChangeContext());
+                ctx.getRepository().store(ctx.getToken(), resource);
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    
+    private Value processPropValue(Value value, PropertyType.Type t, UrlMapper mapper) {
+        switch (t) {
+        case IMAGE_REF:
+            return new Value(mapRef(value.getStringValue(), mapper), t);
+        case HTML:
+            return new Value(
+                    filterHtml(value.getStringValue(), mapper), t);
+        default:
+            return value;
+        }
     }
     
     private void processHtmlResource(Resource resource, ExecutionContext ctx, UrlMapper mapper) throws Exception {
