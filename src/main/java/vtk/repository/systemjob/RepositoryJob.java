@@ -53,6 +53,12 @@ import vtk.security.SecurityContext;
 /**
  * Sets up thread local security context, system change context and executes
  * repository job.
+ *
+ * <p>It is assumed that jobs of this type will potentially perform modifications
+ * to the repository, and if running in a clustered scenario, these jobs will not
+ * execute on SLAVE nodes.
+ *
+ * <p>XXX not sure if cluster role should be checked at this level, or some lower or higher level..
  */
 public abstract class RepositoryJob extends AbstractTask implements InitializingBean, ClusterAware {
 
@@ -72,10 +78,10 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
     @Override
     public void run() {
         if (clusterRole.isPresent() && clusterRole.get() == ClusterRole.SLAVE) {
-            logger.debug("Do not run repository job " + getId()
-                + ": cluster node in slave mode");
+            logger.debug("Not running scheduled repository job " + getId() + ": cluster node has slave role");
             return;
         }
+
         try {
             BaseContext.pushContext();
             SecurityContext.setSecurityContext(securityContext);
@@ -100,7 +106,7 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
             for (String pointer : affectedPropDefPointers) {
                 PropertyTypeDefinition prop = resourceTypeTree.getPropertyDefinitionByPointer(pointer);
                 if (affectedProperties == null) {
-                    affectedProperties = new ArrayList<PropertyTypeDefinition>();
+                    affectedProperties = new ArrayList<>();
                 }
                 if (prop != null) {
                     affectedProperties.add(prop);
@@ -109,6 +115,13 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
         }
     }
 
+    /**
+     * This method will be called every time job i scheduled to run, but it will
+     * not be called if running in a clustered setup and cluster role is {@link ClusterRole#SLAVE}.
+     * @param repository
+     * @param context
+     * @throws Exception
+     */
     public abstract void executeWithRepository(Repository repository,
             SystemChangeContext context) throws Exception;
 
@@ -150,5 +163,21 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
     @Override
     public void roleChange(ClusterRole role) {
         this.clusterRole = Optional.of(role);
+    }
+
+    /**
+     * Get current current cluster role for this node.
+     *
+     * <p>
+     * Jobs may need to alter their behaviour in accordance with the current
+     * cluster role, and this can be used to query status. Also note that {@link RepositoryJob} will
+     * not invoke
+     * {@link #executeWithRepository(vtk.repository.Repository, vtk.repository.SystemChangeContext) executeWithRepository}
+     * if cluster role is present and is SLAVE.
+     *
+     * @return an optional <code>ClusterRole</code> instance
+     */
+    protected Optional<ClusterRole> clusterRole() {
+        return clusterRole;
     }
 }

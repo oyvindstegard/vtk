@@ -9,7 +9,7 @@
     <property name="maxCaptureBytes" value="${davlogger.maxLogBytesBody}"/>
   </bean>
   
-  <bean parent="defaultRequestFiltersBuilder">
+  <bean parent="defaultRequestFilters.builder">
     <property name="arguments" ref="davRequestLogger" />
   </bean>
 
@@ -19,8 +19,8 @@
     <property name="maxLogBytesBody" value="${davlogger.maxLogBytesBody}" />
   </bean>
 
-  <bean parent="defaultResponseFiltersBuilder">
-    <property name="arguments" ref="davRequestLogger" />
+  <bean parent="defaultResponseFilters.builder">
+    <property name="arguments" ref="davResponseLogger" />
   </bean>
 
 </beans>
