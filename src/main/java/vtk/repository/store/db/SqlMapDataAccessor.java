@@ -1090,16 +1090,12 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     private void storeProperties(final ResourceImpl r, SqlSession sqlSession) {
 
-        for (Property p : r) {
-            if (p.getType() == PropertyType.Type.BINARY) {
-                // XXX: mem copying has to be done because of the way properties
-                // are stored: first deleted then inserted (never updated)
-                // If any binary value is of type BinaryValueReference (created only by this class)
-                // then DataAccessException will be thrown if the reference is STALE.
-                // We only do this for BINARY type, since other types stored in binary columns are always
-                // copied to string in memory at load time.
-                ensureBinaryValueBuffered(p);
-            }
+        for (Property property : r) {
+            // XXX: mem copying has to be done because of the way properties
+            // are stored: first deleted, then inserted (never updated).
+            // If any binary value is of type BinaryValueReference (created only by this class)
+            // then DataAccessException will be thrown if the reference is STALE.
+            ensureBinaryValuesAreBuffered(property);
         }
         
         String sqlMap = getSqlMap("deletePropertiesByResourceId");
@@ -1135,7 +1131,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                         final String valueContentType;
                         switch (property.getType()) {
                             case IMAGE_REF:
-                            case HTML: 
+                            case HTML:
                                 valueContentType = "text/html"; break;
                             case STRING:
                                 valueContentType = "text/plain"; break;
@@ -1454,7 +1450,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         Map<String, Object> map = getSqlSession().selectOne(sqlMap, reference);
         final byte[] result = (byte[])map.get("byteArray");
         if (result == null) {
-            throw new DataAccessException("Binary value with reference " + reference + " does not exist.");
+            throw new DataAccessException("Binary value with reference " + reference + " is stale.");
         }
         
         return result;
@@ -1466,12 +1462,10 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     }
 
     /**
-     * Makes sure binary value is not backed only by a reference to database id.
-     * If so, then copy to memory buffered value.
-     * 
-     * @param prop must be a property with a binary value
+     * Makes sure any value is not backed only by a reference to database id.
+     * If so, then copy to a memory buffered value.
      */
-    private void ensureBinaryValueBuffered(Property prop) {
+    private void ensureBinaryValuesAreBuffered(Property prop) {
         boolean multiple = prop.getDefinition() != null && prop.getDefinition().isMultiple();
         final Value[] values;
         if (multiple) {
@@ -1482,7 +1476,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         for (int i = 0; i < values.length; i++) {
             BinaryValue binVal = values[i].getBinaryValue();
-            if (binVal.getClass() == BinaryValueReference.class) {
+            if (binVal != null && binVal.getClass() == BinaryValueReference.class) {
                 values[i] = new Value(binVal.getBytes(), binVal.getContentType(), prop.getDefinition().getType());
             }
         }

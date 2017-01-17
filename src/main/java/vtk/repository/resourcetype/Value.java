@@ -30,11 +30,13 @@
  */
 package vtk.repository.resourcetype;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import vtk.repository.IllegalOperationException;
 import vtk.repository.resourcetype.PropertyType.Type;
+import vtk.repository.store.DataAccessException;
 import vtk.security.Principal;
 import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
@@ -47,7 +49,7 @@ import vtk.util.text.JsonStreamer;
  */
 public class Value implements Cloneable, Comparable<Value> {
 
-    private Type type = Type.STRING;
+    private final Type type;
 
     private String stringValue;
     private Date dateValue;
@@ -65,13 +67,11 @@ public class Value implements Cloneable, Comparable<Value> {
         case HTML:
         case IMAGE_REF:
         case JSON:
-            this.type = type;
             this.stringValue = stringValue;
             break;
             
         case BOOLEAN:
             if ("true".equals(stringValue) || "false".equals(stringValue)) {
-                this.type = Type.BOOLEAN;
                 this.booleanValue = "true".equals(stringValue);
                 break;
             }
@@ -79,6 +79,7 @@ public class Value implements Cloneable, Comparable<Value> {
             throw new IllegalArgumentException("Invalid type [" + type 
                     + "] for constructor of value [" + stringValue + "]");
         }
+        this.type = type;
     }
 
     public Value(boolean booleanValue) {
@@ -143,13 +144,9 @@ public class Value implements Cloneable, Comparable<Value> {
             case STRING:
             case IMAGE_REF:
             case HTML:
-                // Copy binary data to stringValue field
-                try {
-                    this.stringValue = new String(buffer, "UTF-8");
-                    this.type = valueType;
-                } catch (UnsupportedEncodingException ue) {
-                    throw new IllegalStateException("UTF-8 encoding not available");
-                }
+                // Copy buffered UTF-8-coded data to stringValue field
+                this.stringValue = new String(buffer, StandardCharsets.UTF_8);
+                this.type = valueType;
                 break;
                 
             default:
@@ -158,17 +155,24 @@ public class Value implements Cloneable, Comparable<Value> {
         }
     }
 
+    // Used by ValueFactoryImpl when creating values from DAO layer
     Value(BinaryValue value, Type valueType) {
-        if (value == null)
+        if (value == null) {
             throw new IllegalArgumentException("value cannot be null");
-        
+        }
+        String valueContentType = value.getContentType();
+
+        // Validate binary value content type to ensure proper mapping
         switch (valueType) {
             case BINARY:
-                this.type = Type.BINARY;
-                this.binaryValue = value; // Possibly lazy-loaded variant
                 break;
-                
             case JSON:
+                if (!"application/json".equals(valueContentType)) {
+                    throw new IllegalArgumentException("Content type 'application/json'"
+                            + " required for creating JSON value type from binary storage (got content type '"
+                            + valueContentType + "' from binary value reference)");
+                }
+                break;
             case STRING:
             case IMAGE_REF:
             case HTML:
@@ -176,25 +180,18 @@ public class Value implements Cloneable, Comparable<Value> {
                 // since JSON props may become dead and thus will be loaded as STRING type.
                 // Validate content type, to make sure we don't allow creating garbage
                 // strings from arbitrary binary data.
-                String valueContentType = value.getContentType();
                 if (valueContentType == null
                         || !("application/json".equals(valueContentType) || valueContentType.startsWith("text/"))) {
                     throw new IllegalArgumentException("Content type 'application/json' or 'text/*'"
                             + " required for creating " + valueType + " value type from binary storage (got content type '" + valueContentType + "' from binary value reference)");
                 }
-                // Copy binary data to stringValue field after sanity checking content type
-                try {
-                    this.stringValue = new String(value.getBytes(), "UTF-8");
-                    this.type = valueType;
-                } catch (UnsupportedEncodingException ue) {
-                    throw new IllegalStateException("UTF-8 encoding not available");
-                }
                 break;
-                
             default:
                 throw new IllegalArgumentException("valueType must be one of: BINARY, JSON, STRING, IMAGE_REF or HTML");
-                
         }
+
+        this.type = valueType;
+        this.binaryValue = value;
     }
 
     public Type getType() {
@@ -221,26 +218,51 @@ public class Value implements Cloneable, Comparable<Value> {
         return this.principalValue;
     }
 
-    public String getStringValue() {
-        return this.stringValue;
+    public Json.MapContainer getJSONValue() {
+        if (this.stringValue == null && this.binaryValue != null) {
+            try {
+                return Json.parseToContainer(this.binaryValue.stream()).asObject();
+            } catch (IOException io) {
+                throw new DataAccessException("Failed to parse JSON value from binary storage", io);
+            }
+        }
+        return Json.parseToContainer(this.stringValue).asObject();
     }
 
-    public Json.MapContainer getJSONValue() {
-        return Json.parseToContainer(getStringValue()).asObject();
+    public String getStringValue() {
+        if (this.stringValue == null && this.binaryValue != null) {
+            return new String(this.binaryValue.getBytes(), StandardCharsets.UTF_8);
+        }
+        return this.stringValue;
     }
 
     /**
      * Get <code>BinaryValue</code> of this value. Works for raw binary values of
-     * type {@link Type#BINARY} or string based JSON value type, which will be encoded
-     * as UTF-8.
+     * type {@link Type#BINARY} or string based value types, which will be encoded
+     * as UTF-8 and given an appropriate content type.
      * @return A <code>BinaryValue</code> instance for this value, or <code>null</code>
      * if no such value is applicable.
      */
     public BinaryValue getBinaryValue() {
-        // For consistency, we allowing getting binary value for JSON, since we also
-        // allow setting JSON through a binary value.
-        if (this.type == Type.JSON && this.stringValue != null) {
-            return new BufferedBinaryValue(this.stringValue, "application/json");
+        // For consistency, we allowing getting binary value for string based types, since we also
+        // allow setting these through a binary value.
+        if (this.stringValue != null && this.binaryValue == null) {
+            final String contentType;
+            switch (this.type) {
+                case JSON:
+                    contentType = "application/json";
+                    break;
+                case HTML:
+                case IMAGE_REF:
+                    contentType = "text/html";
+                    break;
+                case STRING:
+                    contentType = "text/plain";
+                    break;
+                default:
+                    contentType = "application/octet-stream";
+            }
+            return new BufferedBinaryValue(this.stringValue, contentType);
         }
         
         return this.binaryValue;
@@ -250,17 +272,17 @@ public class Value implements Cloneable, Comparable<Value> {
         switch (this.type) {
 
         case BOOLEAN:
-            return Boolean.valueOf(this.booleanValue);
+            return this.booleanValue;
 
         case DATE:
         case TIMESTAMP:
             return this.dateValue.clone();
 
         case INT:
-            return new Integer(this.intValue);
+            return this.intValue;
 
         case LONG:
-            return new Long(this.longValue);
+            return this.longValue;
 
         case STRING:
         case HTML:
@@ -312,8 +334,10 @@ public class Value implements Cloneable, Comparable<Value> {
 
         // String based types
         default:
-            return (getStringValue() == null && v.getStringValue() == null)
-                    || (getStringValue() != null && getStringValue().equals(v.getStringValue()));
+            final String thisStringValue = getStringValue();
+            final String otherStringValue = v.getStringValue();
+            return (thisStringValue == null && otherStringValue == null)
+                    || (thisStringValue != null && thisStringValue.equals(otherStringValue));
         }
     }
 
@@ -356,12 +380,18 @@ public class Value implements Cloneable, Comparable<Value> {
             return new Value(this.dateValue, false);
         case PRINCIPAL:
             return new Value(this.principalValue);
+
         case BINARY:
             return new Value(this.binaryValue, Type.BINARY);
-        case JSON:
-            return new Value(getStringValue(), Type.JSON);
-        default:
-            return new Value(this.stringValue, this.type);
+
+        default: // JSON, STRING, HTML or IMAGE_REF or other string based type
+            if (this.stringValue != null) {
+                return new Value(this.stringValue, this.type);
+            } else if (this.binaryValue != null) {
+                return new Value(this.binaryValue, this.type);
+            } else {
+                throw new IllegalStateException("Both string value and binary value null for value of type " + this.type);
+            }
         }
     }
 

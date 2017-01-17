@@ -32,10 +32,9 @@
 package vtk.repository.resourcetype;
 
 import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import vtk.util.io.InputStreamWithLength;
-import vtk.repository.store.DataAccessException;
 
 /**
  * Binary value buffer.
@@ -66,12 +65,8 @@ public final class BufferedBinaryValue implements BinaryValue, Cloneable {
      */
     public BufferedBinaryValue(String string, String contentType) {
         if (string == null) throw new IllegalArgumentException("string cannot be null");
-        try {
-            this.buffer = string.getBytes("UTF-8");
-            this.contentType = contentType;
-        } catch (UnsupportedEncodingException ue) {
-            throw new IllegalStateException("UTF-8 encoding not available");
-        }
+        this.buffer = string.getBytes(StandardCharsets.UTF_8);
+        this.contentType = contentType;
     }
     
     @Override
