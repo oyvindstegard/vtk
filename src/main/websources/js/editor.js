@@ -321,7 +321,8 @@ VrtxEditor.prototype.richtextEditorFacade = {
     config.forcePasteAsPlainText = false;
     config.disableObjectResizing = true;
     config.disableNativeSpellChecker = false;
-
+    config.pasteFromWordRemoveFontStyles = true;
+    
     config.allowedContent = true;
 
     /* Enable ACF - with all elements
