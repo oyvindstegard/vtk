@@ -68,7 +68,6 @@
     </div>
     
   </#if>
-  
 </#if>
 
 <#function adminIndexFile type opt><#compress>
