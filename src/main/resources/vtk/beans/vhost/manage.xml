@@ -784,7 +784,17 @@
     </property>
     <property name="handler" ref="previewTextHandler" />
   </bean>
-
+  
+  <bean id="previewIndexFile" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="previewHTMLService" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.IsIndexFileAssertion" />
+        <ref bean="manage.adminIndexFileFromViewParameter" />
+      </list>
+    </property>
+    <property name="handler" ref="previewAdminIframeHandler" />
+  </bean>
 
   <bean id="previewText.documentTooLargeService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="previewTextService" />
@@ -2142,6 +2152,11 @@
   <bean id="manage.refreshLockRequestParameter" class="vtk.web.service.RequestParameterAssertion">
     <property name="parameterName" value="action" />
     <property name="parameterValue" value="refresh-lock" />
+  </bean>
+
+  <bean id="manage.adminIndexFileFromViewParameter" class="vtk.web.service.RequestParameterAssertion">
+    <property name="parameterName" value="action" />
+    <property name="parameterValue" value="admin-index-file-from-view" />
   </bean>
 
   <bean id="localeParameterEqualsNO" class="vtk.web.service.RequestParameterAssertion">

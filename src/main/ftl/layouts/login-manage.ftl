@@ -13,7 +13,7 @@
       <#assign titleLink = "" />
    <#else>
       <#assign title = vrtx.getMsg("decoration.${type}.${opt}") />
-      <#assign titleLink = options[opt] />
+      <#assign titleLink = options[opt] + adminIndexFile(type, opt) />
       <#assign titleLinkTip = vrtx.getMsg("decoration.${type}.tip") />
     </#if>
   </#list>
@@ -49,7 +49,7 @@
                 <@vrtx.msg code="decoration.${type}.${opt}" />
               </a>
             <#else>
-              <a href="${url}<@adminIndexFile type />" class="vrtx-${type}-${opt}">
+              <a href="${url}${adminIndexFile(type, opt)}" class="vrtx-${type}-${opt}">
                 <@vrtx.msg code="decoration.${type}.${opt}" />
               </a>
             </#if>
@@ -62,7 +62,7 @@
   <#else>
  
     <div class="vrtx-${type}-component">
-      <a href="<#if titleLink != ''>${titleLink}<@adminIndexFile type /><#else>javascript:void(0)</#if>" class="vrtx-${type}-link">
+      <a href="<#if titleLink != ''>${titleLink}<#else>javascript:void(0)</#if>" class="vrtx-${type}-link">
         ${title}
       </a>
     </div>
@@ -71,7 +71,8 @@
   
 </#if>
 
-<#macro adminIndexFile type><#compress>
+<#function adminIndexFile type opt><#compress>
   <#assign isIndexFile = resourceContext.requestContext.indexFile />
-  <#if isIndexFile && type = "login-manage">#admin-index-file=on</#if>
-</#compress></#macro>
+  <#if isIndexFile && type == "login-manage" && opt == "admin"><#return "&action=admin-index-file-from-view" /></#if>
+  <#return "" />
+</#compress></#function>

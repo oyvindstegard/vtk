@@ -70,7 +70,7 @@
 
     var isMobilePreview = $.bbq.getState("mobile") === "on",
         isFullscreen = $.bbq.getState("fullscreen") === "on",
-        isAdminIndexFile = $.bbq.getState("admin-index-file") === "on";
+        isAdminIndexFile = gup("action", location.href) === "admin-index-file-from-view";
 
     if(isMobilePreview) {
       $("#preview-mode a").click();
@@ -157,7 +157,7 @@
 
     $("#previewIframeWrapper").on("click", "#preview-index-file-overlay-close", function(e) {
       $("#preview-index-file-overlay").remove();
-      $.bbq.removeState("admin-index-file");
+      $("#app-tabs li.previewService a").click();
 
       e.stopPropagation();
       e.preventDefault();
