@@ -31,26 +31,19 @@
 package vtk.repository.systemjob;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import vtk.repository.ContentInputSources;
 import vtk.repository.Namespace;
-import vtk.repository.Path;
-import vtk.repository.Property;
-import vtk.repository.RepositoryAction;
 import vtk.repository.Resource;
 import vtk.repository.Revision.Type;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.repository.resourcetype.Value;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.query.OrQuery;
@@ -59,17 +52,7 @@ import vtk.repository.search.query.TermOperator;
 import vtk.resourcemanagement.StructuredResource;
 import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
-import vtk.resourcemanagement.property.EditablePropertyDescription;
-import vtk.resourcemanagement.property.JSONPropertyAttributeDescription;
-import vtk.resourcemanagement.property.JSONPropertyDescription;
-import vtk.resourcemanagement.property.PropertyDescription;
-import vtk.text.html.HtmlAttribute;
-import vtk.text.html.HtmlContent;
-import vtk.text.html.HtmlElement;
-import vtk.text.html.HtmlFragment;
-import vtk.text.html.HtmlPage;
-import vtk.text.html.HtmlPageFilter;
-import vtk.text.html.HtmlPageParser;
+import vtk.util.repository.LinkReplacer;
 import vtk.util.repository.PropertyAspectDescription;
 import vtk.util.repository.PropertyAspectResolver;
 import vtk.util.text.Json.MapContainer;
@@ -78,7 +61,11 @@ import vtk.web.service.CanonicalUrlConstructor;
 import vtk.web.service.URL;
 
 public class LinkRepairJob extends AbstractResourceJob {
-    private static final Logger logger = LoggerFactory.getLogger(LinkRepairJob.class);
+    private static final Logger logger = 
+            LoggerFactory.getLogger(LinkRepairJob.class);
+    private static final Logger changeLogger = 
+            LoggerFactory.getLogger(LinkRepairJob.class + ".Changes");
+    
     private StructuredResourceManager resourceManager;
     private PropertyTypeDefinition aspectsPropDef;
     private PropertyAspectDescription aspectFieldDesc;
@@ -97,9 +84,8 @@ public class LinkRepairJob extends AbstractResourceJob {
         this.urlConstructor = urlConstructor;
     }
     
-    
     @Override
-    protected void executeForResource(Resource resource, ExecutionContext ctx)
+    protected void executeForResource(Resource resource, final ExecutionContext ctx)
             throws Exception {
         if (resource.getLock() != null) {
             logger.debug("Resource is locked, skipping: " + resource);
@@ -111,219 +97,96 @@ public class LinkRepairJob extends AbstractResourceJob {
                         aspectsPropDef, aspectFieldDesc, ctx.getToken());
         
         MapContainer aspect = resolver.resolve(resource.getURI(), enabledAspect);
-        boolean enabled = aspect != null && "true".equals(aspect.get("auto-link-repair"));
+        boolean enabled = aspect != null && "true".equals(aspect.get("link-repair"));
+        
         if (!enabled) {
             logger.debug("Link repair disabled for " + resource);
-            ctx.getRepository().store(ctx.getToken(), resource);
+            ctx.getRepository().store(ctx.getToken(), resource, ctx.getSystemChangeContext());
             return;
         }
-        
         logger.debug("Correcting links for resource " + resource + "; " + ctx);
-        UrlMapper mapper = new UrlMapper(resource, base, ctx);
+        final UrlMapper mapper = new UrlMapper(resource, base, ctx);
         
-        if ("application/json".equals(resource.getContentType())) {
-            StructuredResourceDescription desc = 
-                    resourceManager.get(resource.getResourceType());
-            if (desc == null) {
-                return;
-            }
-            processStructuredResource(resource, ctx, desc, mapper);
-        }
-        else {
-            processProperties(resource, ctx, mapper);
-        }
-
-        // Process content of well-known resource types:
-        
-        if ("text/html".equals(resource.getContentType())) {
-            processHtmlResource(resource, ctx, mapper);
-        }
-    }
-    
-    private void processProperties(Resource resource, ExecutionContext ctx, UrlMapper mapper) {
-        boolean modified = false;
-        for (Property p: resource) {
-            PropertyTypeDefinition def = p.getDefinition();
-            if (def == null) continue;
+        LinkReplacer.Context replaceContext = new LinkReplacer.Context() {
             
-            if (def.getProtectionLevel() == RepositoryAction.UNEDITABLE_ACTION) continue;
-            if (p.getType() != PropertyType.Type.IMAGE_REF && p.getType() != PropertyType.Type.HTML) {
-                continue;
+            @Override
+            public Resource resource() {
+                return resource;
             }
-            if (def.isMultiple()) {
-                List<Value> result = new ArrayList<>();
-                for (Value value: p.getValues()) {
-                    Value mapped = processPropValue(value, p.getType(), mapper);
-                    modified = modified || !mapped.equals(value);
-                    result.add(mapped);
-                }
-                p.setValues(result.toArray(new Value[result.size()]));
-            }
-            else {
-                Value value = p.getValue();
-                Value mapped = processPropValue(value, p.getType(), mapper);
-                p.setValue(mapped);
-                modified = modified || !mapped.equals(value);
-            }
-        }
-        
-        if (modified) {
-            try {
-                // XXX: cannot use system change context when storing properties:
-                //ctx.getRepository().store(ctx.getToken(), resource, 
-                //        ctx.getSystemChangeContext());
-                ctx.getRepository().store(ctx.getToken(), resource);
-            }
-            catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-    
-    private Value processPropValue(Value value, PropertyType.Type t, UrlMapper mapper) {
-        switch (t) {
-        case IMAGE_REF:
-            return new Value(mapRef(value.getStringValue(), mapper), t);
-        case HTML:
-            return new Value(
-                    filterHtml(value.getStringValue(), mapper), t);
-        default:
-            return value;
-        }
-    }
-    
-    private void processHtmlResource(Resource resource, ExecutionContext ctx, UrlMapper mapper) throws Exception {
-        if (resource.getContentLength() > 2000000L) return;
-        InputStream inputStream = ctx.getRepository()
-                .getInputStream(ctx.getToken(), resource.getURI(), false);
-        HtmlPageParser parser = new HtmlPageParser();
-        HtmlPage page = parser.parse(inputStream, resource.getCharacterEncoding());
-        UrlMapFilter filter = new UrlMapFilter(mapper);
-        page.filter(filter);
-        Resource stored = ctx.getRepository().storeContent(ctx.getToken(), 
-                resource.getURI(), ContentInputSources.fromString(
-                        page.getStringRepresentation(), page.getCharacterEncoding()));
-        ctx.getRepository().store(ctx.getToken(), stored, ctx.getSystemChangeContext());
-    }
-    
-    private void processStructuredResource(Resource resource, ExecutionContext ctx, 
-            StructuredResourceDescription desc, UrlMapper mapper) throws Exception {
-        
-        InputStream is = ctx.getRepository()
-                .getInputStream(ctx.getToken(), resource.getURI(), false);
-        
-        StructuredResource res = desc.buildResource(is);
-        boolean modified = false;
-        
-        for (PropertyDescription pdesc : desc.getAllPropertyDescriptions()) {
-            Object prop = res.getProperty(pdesc.getName());
-            if (prop == null) continue;
-            if (!(pdesc instanceof EditablePropertyDescription)) continue;
             
-            switch (pdesc.getType()) {
-            case "image_ref":
-            case "media_ref":
-            case "resource_ref":
-                String mappedd = mapRef(prop, mapper);
-                modified = modified || !mappedd.equals(prop.toString());
-                if (modified) {
-                    res.removeProperty(pdesc.getName());
-                    res.addProperty(pdesc.getName(), mappedd);
-                }
-                break;
-            case "html":
-            case "simple_html":
-                String filtered = filterHtml(prop.toString(), mapper);
-                modified = modified || !filtered.equals(prop.toString());
-                if (modified) {
-                    res.removeProperty(pdesc.getName());
-                    res.addProperty(pdesc.getName(), filtered);
-                }
-                break;
-            case "json":
-                if (!(pdesc instanceof JSONPropertyDescription)) break;
-                
-                JSONPropertyDescription jsonDesc = (JSONPropertyDescription) pdesc;
-                if (jsonDesc.isWildcard()) continue;
-                List<JSONPropertyAttributeDescription> attributes = jsonDesc.getAttributes();
-                String before = prop.toString();
-
-                if (pdesc.isMultiple()) {
-                    List<Map<String, Object>> elements = (List<Map<String, Object>>) prop;
-
-                    prop = elements.stream()
-                            .map(jsonValue -> filterJsonProp(jsonValue, attributes, mapper))
-                            .collect(Collectors.toList());
-                    modified = modified || !prop.equals(elements);
-                }
-                else {
-                    Map<String, Object> jsonValue = (Map<String, Object>) prop;
-                    prop = filterJsonProp(jsonValue, attributes, mapper);
-                    modified = modified || !jsonValue.equals(before);
-                }
-
-                if (modified) {
-                    res.removeProperty(pdesc.getName());
-                    res.addProperty(pdesc.getName(), prop);
-                }
-                break;
+            @Override
+            public Optional<String> mapURL(String input) {
+                return mapper.mapUrl(input);
             }
-        }
-        if (modified) writeRevision(ctx, resource.getURI(), res);
-    }
 
-    
-    private void writeRevision(ExecutionContext ctx, Path uri, StructuredResource res) {
-        try {
-            final byte[] buffer = JsonStreamer.toJson(res.toJSON(), 3, false).getBytes("utf-8");
-
-            ctx.getRepository().createRevision(ctx.getToken(), uri, Type.REGULAR);
-            Resource stored = ctx.getRepository()
-                    .storeContent(ctx.getToken(), uri, ContentInputSources.fromBytes(buffer));
-            ctx.getRepository().store(ctx.getToken(), stored, ctx.getSystemChangeContext());
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
-    private Map<String, Object> filterJsonProp(Map<String, Object> jsonValue, 
-            List<JSONPropertyAttributeDescription> attributes, UrlMapper mapper) {
-        for (JSONPropertyAttributeDescription attr: attributes) {
-            switch (attr.getType()) {
-            case "image_ref": 
-            case "media_ref":
-            case "resource_ref":
-                Object ref = jsonValue.get(attr.getName());
-                jsonValue.put(attr.getName(), mapRef(ref, mapper));
-                break;
-            case "simple_html":
-            case "html":
-                String html = jsonValue.get(attr.getName()).toString();
-                jsonValue.put(attr.getName(), filterHtml(html, mapper));
-                break;
+            @Override
+            public Optional<StructuredResourceDescription> resourceDescription() {
+                return Optional.ofNullable(resourceManager.get(resource.getResourceType()));
             }
-        }
-        return jsonValue;
-    }
-    
-    private String mapRef(Object ref, UrlMapper mapper) {
-        String value = ref.toString();
-        Optional<String> mapped = mapper.mapUrl(value);
-        return mapped.orElse(value);
-    }    
-    
-    private String filterHtml(String fragment, UrlMapper mapper) {
-        try {
-            HtmlPageParser parser = new HtmlPageParser();
-            HtmlFragment f = parser.parseFragment(fragment.toString());
-            UrlMapFilter filter = new UrlMapFilter(mapper);
-            f.filter(filter);
-            return f.getStringRepresentation();
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
+            @Override
+            public void storeProperties() {
+                try {
+                    ctx.getRepository().store(ctx.getToken(), resource);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public Optional<InputStream> content() {
+                try {
+                    return Optional.of(ctx.getRepository()
+                            .getInputStream(ctx.getToken(), resource.getURI(), false));
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void writeContent(InputStream content) {
+                try {
+                    ctx.getRepository().storeContent(
+                            ctx.getToken(), resource.getURI(), 
+                            ContentInputSources.fromStream(content));
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void writeRevision(StructuredResource res) {
+                // XXX: If the last revision was written by "our" principal, 
+                // don't create a new revision here..
+                try {
+                    final byte[] buffer = JsonStreamer.toJson(
+                            res.toJSON(), 3, false).getBytes("utf-8");
+
+                    ctx.getRepository().createRevision(ctx.getToken(), 
+                            resource.getURI(), Type.REGULAR);
+                    
+                    Resource stored = ctx.getRepository()
+                            .storeContent(ctx.getToken(), resource.getURI(), 
+                                    ContentInputSources.fromBytes(buffer));
+                    ctx.getRepository().store(ctx.getToken(), stored, 
+                            ctx.getSystemChangeContext());
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            
+            @Override
+            public void log(String from, String to, String label) {
+                changeLogger.info("Link repair: " + resource.getURI() 
+                    + ": " + label + ": " + from + " -> " + to);
+            }
+
+        };
+        LinkReplacer.process(replaceContext);
     }
     
     
@@ -338,7 +201,7 @@ public class LinkRepairJob extends AbstractResourceJob {
             this.relocMap = mapLinks(vrtxIdMap, ctx);
         }
         
-        public Optional<String> mapUrl(String input) {            
+        public Optional<String> mapUrl(String input) {
             if (vrtxIdMap.containsKey(input)) {
                 String vrtxid = vrtxIdMap.get(input);
                 return Optional.ofNullable(relocMap.get(vrtxid));
@@ -355,13 +218,13 @@ public class LinkRepairJob extends AbstractResourceJob {
                 Map<?,?> link = (Map<?,?>) urlObj;
                 if (link.containsKey("link") && link.containsKey("vrtxid")) {
                     String key = link.get("link").toString();
-                    String value = link.get("vrtxid").toString();
-                    vrtxIdMap.put(key, value);
+                    String vrtxid = link.get("vrtxid").toString();
+                    vrtxIdMap.put(key, vrtxid);
                     if (key.startsWith("http://") || key.startsWith("https://")) {
                         try {
                             URL url = URL.parse(key);
                             if (url.getHost().equals(base.getHost())) {
-                                vrtxIdMap.put(url.getPathRepresentation(), value);
+                                vrtxIdMap.put(url.getPathRepresentation(), vrtxid);
                             }
                         }
                         catch (Throwable t) { }
@@ -401,57 +264,4 @@ public class LinkRepairJob extends AbstractResourceJob {
             return resultMap;
         }
     }
-
-    
-    private static class UrlMapFilter implements HtmlPageFilter {
-        private UrlMapper mapper;
-
-        public UrlMapFilter(UrlMapper mapper) {
-            this.mapper = mapper;
-        }
-        
-        @Override
-        public boolean match(HtmlPage page) {
-            return true;                
-        }
-
-        @Override
-        public NodeResult filter(HtmlContent node) {
-            if (node instanceof HtmlElement) {
-                HtmlElement elem = (HtmlElement) node;
-                if ("img".equalsIgnoreCase(elem.getName())) {
-                    mapURL(elem, "src");
-                }
-                else if ("a".equalsIgnoreCase(elem.getName())) {
-                    mapURL(elem, "href");
-                }
-                else if ("script".equalsIgnoreCase(elem.getName())) {
-                    mapURL(elem, "src");
-                }
-                else if ("link".equalsIgnoreCase(elem.getName())) {
-                    mapURL(elem, "href");
-                }
-                else if ("frame".equalsIgnoreCase(elem.getName())) {
-                    mapURL(elem, "src");
-                }
-                else if ("iframe".equalsIgnoreCase(elem.getName())) {
-                    mapURL(elem, "src");
-                }
-                
-            }
-            return NodeResult.keep;
-        }
-        
-        private void mapURL(HtmlElement elem, String attr) {
-            HtmlAttribute ref = elem.getAttribute(attr);
-            if (ref == null) return;
-            String value = ref.getValue();
-            if (value != null) {
-                Optional<String> mapped = mapper.mapUrl(value);
-                if (mapped.isPresent()) {
-                    ref.setValue(mapped.get());
-                }
-            }
-        }
-    }    
 }
