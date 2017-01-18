@@ -157,7 +157,7 @@
 
     $("#previewIframeWrapper").on("click", "#preview-index-file-overlay-close", function(e) {
       $("#preview-index-file-overlay").remove();
-      $("#app-tabs li.previewService a").click();
+      location.href = $("#app-tabs li.previewService a").attr("href");
 
       e.stopPropagation();
       e.preventDefault();
