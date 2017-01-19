@@ -40,6 +40,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -47,9 +48,9 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.Revision;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.util.repository.RepositoryTraversal;
+import vtk.util.repository.RepositoryTraversal.TraversalCallback;
 import vtk.web.RequestContext;
-import vtk.web.RequestContext.RepositoryTraversal;
-import vtk.web.RequestContext.TraversalCallback;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
@@ -124,7 +125,7 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
         // Resolve service links
         for (Map.Entry<String, Service> entry : this.serviceMap.entrySet()) {
             String key = entry.getKey();
-            Service service = (Service) entry.getValue();
+            Service service = entry.getValue();
 
             String url = null;
             try {

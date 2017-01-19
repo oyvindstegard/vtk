@@ -32,30 +32,29 @@ package vtk.util.repository;
 
 import vtk.repository.Path;
 import vtk.repository.Property;
+import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.util.repository.RepositoryTraversal.TraversalCallback;
 import vtk.util.text.Json;
-import vtk.web.RequestContext;
-import vtk.web.RequestContext.RepositoryTraversal;
-import vtk.web.RequestContext.TraversalCallback;
 
 public class PropertyAspectResolver {
-
+    private Repository repository;
     private PropertyTypeDefinition aspectsPropdef;
-    PropertyAspectDescription fieldConfig;
-    private String token = null;
+    private PropertyAspectDescription fieldConfig;
+    private String token;
     
-    public PropertyAspectResolver(PropertyTypeDefinition aspectsPropdef, PropertyAspectDescription fieldConfig, String token) {
+    public PropertyAspectResolver(Repository repository, PropertyTypeDefinition aspectsPropdef, 
+            PropertyAspectDescription fieldConfig, String token) {
+        this.repository = repository;
         this.aspectsPropdef = aspectsPropdef;
         this.fieldConfig = fieldConfig;
         this.token = token;
     }
 
     public Json.MapContainer resolve(final Path uri, final String aspect) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
         final Json.MapContainer result = new Json.MapContainer();
-        String token = this.token != null ? this.token : requestContext.getSecurityToken();
-        RepositoryTraversal traversal = requestContext.rootTraversal(token, uri);
+        RepositoryTraversal traversal = new RepositoryTraversal(repository, token, uri);
 
         traversal.traverse(new TraversalCallback() {
             @Override

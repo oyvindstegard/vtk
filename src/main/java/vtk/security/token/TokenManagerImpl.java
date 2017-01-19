@@ -39,6 +39,7 @@ import java.util.UUID;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
+import vtk.security.PrincipalImpl;
 import vtk.security.web.AuthenticationHandler;
 import vtk.util.cache.SimpleCache;
 import vtk.util.cache.SimpleCacheImpl;
@@ -67,21 +68,22 @@ public class TokenManagerImpl implements TokenManager {
     private Map<String, Principal> registeredPrincipals = new HashMap<>();
     
     public TokenManagerImpl(PrincipalFactory principalFactory,
+            List<String> systemPrincipals,
             SimpleCache<String, PrincipalItem> cache) {
         this.principalFactory = principalFactory;
         this.cache = cache;
+        if (systemPrincipals != null) {
+            for (String id: systemPrincipals) {
+                Principal principal = new PrincipalImpl(id, Principal.Type.USER);
+                String token = generateID();
+                registeredPrincipals.put(token, principal);
+            }
+        }
         SimpleCacheImpl<String, Principal> impl = 
                 new SimpleCacheImpl<>((int) Duration.ofMinutes(10).getSeconds());
         impl.setRefreshTimestampOnGet(false);
         impl.afterPropertiesSet();
         this.lookupCache = impl;
-    }
-
-    public void setDefaultPrincipals(List<Principal> defaultPrincipals) {
-        for (Principal principal: defaultPrincipals) {
-            String token = generateID();
-            registeredPrincipals.put(token, principal);
-        }
     }
     
     @Override

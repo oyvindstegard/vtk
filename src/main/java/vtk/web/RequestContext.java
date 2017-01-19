@@ -65,6 +65,7 @@ import vtk.repository.store.PrincipalMetadataDAO;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
 import vtk.security.SecurityContext;
+import vtk.util.repository.RepositoryTraversal;
 import vtk.util.repository.RepositoryWrapper;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
@@ -325,44 +326,6 @@ public class RequestContext {
 
     public static RepositoryTraversal rootTraversal(Repository repository, String token, Path uri) {
         return new RepositoryTraversal(repository, token, uri);
-    }
-
-    public static final class RepositoryTraversal {
-        private Repository repository;
-        private String token;
-        private Path uri;
-
-        private RepositoryTraversal(Repository repository, String token, Path uri) {
-            if (repository == null) {
-                throw new IllegalArgumentException("Repository is NULL");
-            }
-            this.repository = repository;
-            this.token = token;
-            this.uri = uri;
-        }
-
-        public void traverse(TraversalCallback callback) {
-            Path uri = this.uri;
-            while (uri != null) {
-                try {
-                    Resource resource = this.repository.retrieve(this.token, uri, true);
-                    if (!callback.callback(resource)) {
-                        return;
-                    }
-                } catch (Throwable t) {
-                    if (!callback.error(uri, t)) {
-                        return;
-                    }
-                }
-                uri = uri.getParent();
-            }
-        }
-    }
-
-    public static interface TraversalCallback {
-        public boolean callback(Resource resource);
-
-        public boolean error(Path uri, Throwable error);
     }
 
     public boolean isPreviewUnpublished() {

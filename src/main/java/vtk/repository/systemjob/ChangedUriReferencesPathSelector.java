@@ -36,7 +36,9 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import vtk.repository.Namespace;
 import vtk.repository.Path;
+import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.SystemChangeContext;
@@ -45,6 +47,7 @@ import vtk.repository.event.ResourceCreationEvent;
 import vtk.repository.event.ResourceDeletionEvent;
 import vtk.repository.event.ResourceModificationEvent;
 import vtk.repository.event.ResourceMovedEvent;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.PropertySelect;
 import vtk.repository.search.PropertySortField;
@@ -54,6 +57,7 @@ import vtk.repository.search.Searcher;
 import vtk.repository.search.Sorting;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
+import vtk.repository.search.query.PropertyTermQuery;
 import vtk.repository.search.query.PropertyWildcardQuery;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.UriDepthQuery;
@@ -78,7 +82,7 @@ public class ChangedUriReferencesPathSelector
     private PropertyTypeDefinition hrefsPropDef;
     protected Searcher searcher;
     private int mainQueryLimit = 200;
-    private final BlockingQueue<Path> queue = new ArrayBlockingQueue<>(100);
+    private final BlockingQueue<PropertySet> queue = new ArrayBlockingQueue<>(100);
     
     public ChangedUriReferencesPathSelector(PropertyTypeDefinition hrefsPropDef,
             Searcher searcher) {
@@ -96,18 +100,18 @@ public class ChangedUriReferencesPathSelector
                     (ResourceModificationEvent) event;
             if (modEvent.getOriginal().isPublished() != 
                     modEvent.getResource().isPublished()) {
-                queue.offer(modEvent.getOriginal().getURI());
+                queue.offer(modEvent.getOriginal());
             }
         }
         else if (event instanceof ResourceDeletionEvent) {
-            queue.offer(((ResourceDeletionEvent) event).getResource().getURI());
+            queue.offer(((ResourceDeletionEvent) event).getResource());
         }
         else if (event instanceof ResourceCreationEvent) {
-            queue.offer(((ResourceCreationEvent) event).getResource().getURI());
+            queue.offer(((ResourceCreationEvent) event).getResource());
         }
         else if (event instanceof ResourceMovedEvent) {
-            queue.offer(((ResourceMovedEvent) event).getFrom().getURI());
-            queue.offer(((ResourceMovedEvent) event).getResource().getURI());
+            queue.offer(((ResourceMovedEvent) event).getFrom());
+            queue.offer(((ResourceMovedEvent) event).getResource());
         }
     }
 
@@ -125,10 +129,10 @@ public class ChangedUriReferencesPathSelector
             SystemChangeContext context, PathSelectCallback callback)
                     throws Exception {
 
-        List<Path> uris = new ArrayList<>(100);
-        queue.drainTo(uris);
+        List<PropertySet> modified = new ArrayList<>(100);
+        queue.drainTo(modified);
         
-        Search mainSearch = referencingSearch(context, uris);
+        Search mainSearch = referencingSearch(context, modified);
         final String token = SecurityContext.exists() ? 
                 SecurityContext.getSecurityContext().getToken() : null;
 
@@ -140,10 +144,12 @@ public class ChangedUriReferencesPathSelector
     }
     
 
-    private Search referencingSearch(SystemChangeContext context, List<Path> uris) {
+    private Search referencingSearch(SystemChangeContext context, List<PropertySet> resources) {
         OrQuery query = new OrQuery();
         
-        for (Path uri: uris) {
+        for (PropertySet resource: resources) {
+            Path uri = resource.getURI();
+            
             // Root-relative and full URLs:
             String term = "*" + uri.toString().replaceAll(" ", "\\ ") + "*";
             PropertyWildcardQuery hrefQuery = new PropertyWildcardQuery(hrefsPropDef, term, TermOperator.EQ);
@@ -160,7 +166,17 @@ public class ChangedUriReferencesPathSelector
                 andQuery.add(new UriPrefixQuery(uri.getParent().toString().replaceAll(" ", "\\ ")));
                 andQuery.add(new UriDepthQuery(uri.getDepth()));
                 query.add(andQuery);
+                
             }
+            
+            // vrtxid fields in hrefs property:
+            Property idProp = resource.getProperty(
+                    Namespace.DEFAULT_NAMESPACE, 
+                    PropertyType.EXTERNAL_ID_PROP_NAME);
+            PropertyTermQuery idRefQuery = new PropertyTermQuery(
+                    hrefsPropDef, idProp.getStringValue(), TermOperator.EQ);
+            idRefQuery.setComplexValueAttributeSpecifier("links.vrtxid");
+            query.add(idRefQuery);
         }
 
         Search search = new Search();
