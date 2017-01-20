@@ -61,16 +61,16 @@ import vtk.web.service.CanonicalUrlConstructor;
 import vtk.web.service.URL;
 
 public class LinkRepairJob extends AbstractResourceJob {
-    private static final Logger logger = 
+    private final Logger logger = 
             LoggerFactory.getLogger(LinkRepairJob.class);
-    private static final Logger changeLogger = 
+    private final Logger changeLogger = 
             LoggerFactory.getLogger(LinkRepairJob.class + ".Changes");
     
-    private StructuredResourceManager resourceManager;
-    private PropertyTypeDefinition aspectsPropDef;
-    private PropertyAspectDescription aspectFieldDesc;
-    private String enabledAspect;
-    private CanonicalUrlConstructor urlConstructor;
+    private final StructuredResourceManager resourceManager;
+    private final PropertyTypeDefinition aspectsPropDef;
+    private final PropertyAspectDescription aspectFieldDesc;
+    private final String enabledAspect;
+    private final CanonicalUrlConstructor urlConstructor;
 
     public LinkRepairJob(StructuredResourceManager resourceManager, 
             PropertyTypeDefinition aspectsPropDef, 

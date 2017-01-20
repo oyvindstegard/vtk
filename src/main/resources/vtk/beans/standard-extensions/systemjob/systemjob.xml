@@ -259,11 +259,11 @@
 
   <bean id="repository.systemjob.linkrepair" 
         class="vtk.repository.systemjob.LinkRepairJob" parent="repository.systemjob">
-    <constructor-arg name="resourceManager" ref="structuredResources.resourceManager" />
-    <constructor-arg name="aspectsPropDef" ref="resourceAspectsPropDef" />
-    <constructor-arg name="aspectFieldDesc" ref="visualProfileAspect.fieldConfig" />
-    <constructor-arg name="enabledAspect" value="visual-profile" />
-    <constructor-arg name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
+    <constructor-arg ref="structuredResources.resourceManager" />
+    <constructor-arg ref="resourceAspectsPropDef" />
+    <constructor-arg ref="visualProfileAspect.fieldConfig" />
+    <constructor-arg value="visual-profile" />
+    <constructor-arg ref="canonicalUrlConstructor" />
     <property name="securityContext">
       <bean class="vtk.security.SecurityContext">
         <constructor-arg ref="systemjob.linkRepairPrincipal.token" />
