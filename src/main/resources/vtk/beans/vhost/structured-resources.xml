@@ -587,6 +587,11 @@
     <property name="resourceType" value="unit-publications" />
   </bean>
 
+  <bean id="resourceTypeIsProject" class="vtk.web.service.ResourceTypeAssertion"
+    parent="repositoryAware">
+    <property name="resourceType" value="structured-project" />
+  </bean>
+
   <!-- ### SHARED TEXT ### -->
   <bean id="sharedTextResolver" class="vtk.resourcemanagement.studies.SharedTextResolver">
     <property name="repository" ref="repository" />
