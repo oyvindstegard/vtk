@@ -191,7 +191,10 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
         if (property != null) {
             Json.MapContainer propertyValue = property.getJSONValue();
             if (propertyValue != null) {
-                toplevel = propertyValue.objectValue(this.toplevelField);
+                if (propertyValue.containsKey(this.toplevelField)) {
+                    toplevel = propertyValue.objectValue(this.toplevelField);
+                }
+                else toplevel = new Json.MapContainer();
             }
         }
         Locale requestLocale = RequestContextUtils.getLocale(request);
@@ -271,26 +274,40 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
         for (FormElement element: form.getElements()) {
             Object key = element.getIdentifier();
             Object value = element.getValue();
+            
             if (value == null || "".equals(value.toString().trim())) {
-                toplevel.remove(key);
-            } else {
-                toplevel.put(element.getIdentifier().toString(), element.getValue().toString());
+                if (element.isInheritable() && "flag".equals(element.getType())) {
+                    toplevel.put(element.getIdentifier().toString(), "false");
+                }
+                else toplevel.remove(key);
+            }
+            else {
+                if (element.isInheritable() && "flag".equals(element.getType()) 
+                        && element.inheritedValue != null && element.inheritedValue.equals(value)) {
+                   toplevel.remove(key);
+                }
+                else toplevel.put(element.getIdentifier().toString(), element.getValue().toString());
             }
         }
-        
         Property property = resource.getProperty(this.propertyDefinition);
         Json.MapContainer propertyValue = null;
         if (property == null) {
             property = this.propertyDefinition.createProperty();
             resource.addProperty(property);
             propertyValue = new Json.MapContainer();
-        } else {
+        }
+        else {
             propertyValue = property.getJSONValue();
             if (propertyValue == null) {
                 propertyValue = new Json.MapContainer();
             }
         }
-        propertyValue.put(this.toplevelField, toplevel);
+        if (toplevel.isEmpty()) {
+            propertyValue.remove(this.toplevelField);
+        }
+        else {
+            propertyValue.put(this.toplevelField, toplevel);
+        }
         property.setJSONValue(propertyValue);
         
         repository.store(token, resource);

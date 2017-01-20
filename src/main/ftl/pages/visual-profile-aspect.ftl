@@ -49,12 +49,18 @@
         <div class="vrtx-visual-profile-rows">
       </#if>
       <#if element.type == 'flag'>
-        <input type="checkbox" name="${element.identifier}"
-               value="true" <#if element.value?exists>checked="checked"</#if> /> 
-          ${element.label}
+        <h3>${element.label}</h3>
+        <!-- v: ${element.value!'unset'}, i: ${element.inheritedValue!'unset'}-->
+        <#assign checked = ((element.value!"unset") == "true") || 
+            (((element.value!"unset") != "false") && (element.inheritedValue!"unset") == "true") />
+        <input type="checkbox" id="${element.identifier}" name="${element.identifier}"
+               value="true" <#if checked>checked="checked"</#if> /> 
+        <label for="${element.identifier}">${element.label}</label>
       <#elseif element.type == 'string'>
         <h3>${element.label}</h3>
-        <input class="vrtx-textfield" type="text" name="${element.identifier}" value="${element.value?default('')}" />
+        <#assign placeholder = element.inheritedValue!"" />
+
+        <input class="vrtx-textfield" type="text" size="40" name="${element.identifier}" value="${element.value?default('')}" placeholder="${placeholder}"/>
 
       <#elseif element.type == 'enum'>
         <h3>${element.label}</h3> 
@@ -71,9 +77,11 @@
       <#else>
         unknown type: ${element.type}
       </#if>
+      <#--
       <#if element.inheritable && element.inheritedValue?exists>
         <div class="tooltip">(<@vrtx.msg code="default.inheritsValue" args=[element.inheritedValue] default="inherits" + element.inheritedValue />)</div>
       </#if>
+      -->
       </div>
     </#list>
     <div class="submitButtons">

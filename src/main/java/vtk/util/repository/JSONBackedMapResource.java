@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,13 +59,14 @@ public class JSONBackedMapResource implements ReverseMap<Object, Object>, Initia
     public void afterPropertiesSet() throws Exception {
         try {
             load();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             // Ignore
         }
     }   
 
     public Map<?, ?> getMap() {
-        return Collections.unmodifiableMap(this.map);
+        return Collections.unmodifiableMap(map);
     }
     
     @Required
@@ -86,28 +88,30 @@ public class JSONBackedMapResource implements ReverseMap<Object, Object>, Initia
         Map<Object, Object> newMap = null;
         Map<Object, Set<Object>> newReverseMap = null;
         try {
-            InputStream inputStream = this.repository.getInputStream(this.token, this.uri, false);
-            Object parsed = Json.parse(inputStream);
+            InputStream inputStream = repository.getInputStream(token, uri, false);
+            Object parsed = Json.parseToContainer(inputStream);
+            
             if (!(parsed instanceof Map<?, ?>)) {
                 return;
             }
             Map<?, ?> m = (Map<?, ?>) parsed;
             
-            newMap = new HashMap<Object, Object>();
-            newReverseMap = new HashMap<Object, Set<Object>>();
+            newMap = new LinkedHashMap<>();
+            newReverseMap = new HashMap<>();
 
             for (Object k: m.keySet()) {
                 Object v = m.get(k);
                 newMap.put(k, v);
                 if (!newReverseMap.containsKey(v)) {
-                    newReverseMap.put(v, new HashSet<Object>());
+                    newReverseMap.put(v, new HashSet<>());
                 }
                 Set<Object> keys = newReverseMap.get(v);
                 keys.add(k);
             }
-        } finally {
-            this.map = newMap;
-            this.reverseMap = newReverseMap;
+        }
+        finally {
+            this.map = Collections.unmodifiableMap(newMap);
+            this.reverseMap = Collections.unmodifiableMap(newReverseMap);
         }
     }
     
@@ -118,50 +122,50 @@ public class JSONBackedMapResource implements ReverseMap<Object, Object>, Initia
 
     @Override
     public boolean containsKey(Object key) {
-        if (this.map == null) {
+        if (map == null) {
             return false;
         }
-        return this.map.containsKey(key);
+        return map.containsKey(key);
     }
 
     @Override
     public boolean containsValue(Object value) {
-        if (this.map == null) {
+        if (map == null) {
             return false;
         }
-        return this.map.containsValue(value);
+        return map.containsValue(value);
     }
 
     @Override
     public Set<Map.Entry<Object, Object>> entrySet() {
-        if (this.map == null) {
+        if (map == null) {
             return Collections.emptySet();
         }
-        return this.map.entrySet();
+        return map.entrySet();
     }
 
     @Override
     public Object get(Object key) {
-        if (this.map == null) {
+        if (map == null) {
             return null;
         }
-        return this.map.get(key);
+        return map.get(key);
     }
 
     @Override
     public boolean isEmpty() {
-        if (this.map == null) {
+        if (map == null) {
             return true;
         }
-        return this.map.isEmpty();
+        return map.isEmpty();
     }
 
     @Override
     public Set<Object> keySet() {
-        if (this.map == null) {
+        if (map == null) {
             return Collections.emptySet();
         }
-        return this.map.keySet();
+        return map.keySet();
     }
 
     @Override
@@ -181,34 +185,34 @@ public class JSONBackedMapResource implements ReverseMap<Object, Object>, Initia
 
     @Override
     public int size() {
-        if (this.map == null) {
+        if (map == null) {
             return 0;
         }
-        return this.map.size();
+        return map.size();
     }
 
     @Override
     public Collection<Object> values() {
-        if (this.map == null) {
+        if (map == null) {
             return Collections.emptySet();
         }
-        return this.map.values();
+        return map.values();
     }
     
     @Override
     public String toString() {
-        if (this.map != null) {
-            return this.map.toString();
+        if (map != null) {
+            return map.toString();
         }
         return "{}";
     }
 
     @Override
     public Set<Object> keysOf(Object value) {
-        if (this.reverseMap == null) {
+        if (reverseMap == null) {
             return null;
         }
-        Set<Object> result = this.reverseMap.get(value);
+        Set<Object> result = reverseMap.get(value);
         if (result == null) {
             return null;
         }
