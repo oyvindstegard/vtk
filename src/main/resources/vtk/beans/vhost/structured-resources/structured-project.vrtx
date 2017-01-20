@@ -73,7 +73,7 @@ resourcetype structured-project {
       [def getExternalPublications document.properties.getExternalScientificInformation]
       [def projectNr document.properties.projectNr]
       [if getExternalPublications = "true" && projectNr != null]
-        [call "project:publications"]
+        [call "structured-project:publications"]
       [else]
         [def selectedPublications document.properties.selectedPublications]
         [if (selectedPublications != null && selectedPublications != "")]
