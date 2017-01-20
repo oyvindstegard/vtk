@@ -64,7 +64,7 @@ public class LinkRepairJob extends AbstractResourceJob {
     private final Logger logger = 
             LoggerFactory.getLogger(LinkRepairJob.class);
     private final Logger changeLogger = 
-            LoggerFactory.getLogger(LinkRepairJob.class + ".Changes");
+        LoggerFactory.getLogger(LinkRepairJob.class.getName() + ".Changes");
     
     private final StructuredResourceManager resourceManager;
     private final PropertyTypeDefinition aspectsPropDef;
