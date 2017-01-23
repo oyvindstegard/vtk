@@ -2,6 +2,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
+  <!-- Depends on and overrides parts of:
+       - vtk/beans/standard-extensions/shared-session-redis.xml
+  -->
+
   <bean id="redis.sentinel.nodeSet" class="vtk.context.CSVSetFactoryBean">
     <property name="csvList" value="${redis.sentinel.nodes}" />
   </bean>
