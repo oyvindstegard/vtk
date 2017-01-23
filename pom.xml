@@ -441,13 +441,6 @@
 
   <dependencies>
 
-    <dependency>
-      <artifactId>commons-logging</artifactId>
-      <groupId>commons-logging</groupId>
-      <version>1.2</version>
-      <scope>provided</scope>
-    </dependency>
-
     <!-- ehcache -->
     <dependency>
       <groupId>net.sf.ehcache</groupId>
@@ -867,10 +860,11 @@
     </dependency>
 
     <!-- Known logging API routes:
-      - VTK application uses SLF4J-api        with backend Log4J-2
-      - Libs use JCL-api routed to SLF4J-api  with backend Log4J-2
-      - Libs use Log4J-1.2-api                with backend Log4J-2
-      - Libs use SLF4j-api                    with backend Log4J-2
+      - VTK application uses SLF4J-api                 with backend Log4J-2
+      - Libs use JCL-api routed to SLF4J-api           with backend Log4J-2
+      - Libs use Log4J-1.2-api                         with backend Log4J-2
+      - Libs use SLF4j-api                             with backend Log4J-2
+      - Some libs use JUL-logging which is unhandled by this config.
 
       For debugging, see `mvn -Dverbose=true dependency:tree`.
     -->
@@ -879,15 +873,21 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.21</version>
+      <version>1.7.22</version>
       <scope>compile</scope>
     </dependency>
 
-    <!-- JCL logging routed over SLF4J (Spring and others uses JCL): -->
+    <!-- JCL logging routed over [provided by] SLF4J (Spring and others uses JCL): -->
+    <dependency>
+      <artifactId>commons-logging</artifactId>
+      <groupId>commons-logging</groupId>
+      <version>1.2</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.21</version>
+      <version>1.7.22</version>
       <scope>runtime</scope>
     </dependency>
 
