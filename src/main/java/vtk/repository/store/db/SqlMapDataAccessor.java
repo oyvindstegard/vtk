@@ -1409,7 +1409,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         resourceMap.put("parent", parentPath != null ? parentPath.toString() : null);
         resourceMap.put("aclInheritedFrom", aclInheritedFrom);
         resourceMap.put("uri", r.getURI().toString());
-        resourceMap.put("resourceType", resourceTypeMapper.generateResourceType(r.getResourceType()));
+        resourceMap.put("resourceType", resourceTypeMapper.resourceTypePath(r.getResourceType()));
 
         resourceMap.put(PropertyType.COLLECTION_PROP_NAME, r.isCollection() ? "Y" : "N");
         resourceMap.put(PropertyType.OWNER_PROP_NAME, r.getOwner().getQualifiedName());
