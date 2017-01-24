@@ -57,20 +57,22 @@ public abstract class AbstractResourceTypeDefinitionImpl
     
     private TypeLocalizationProvider typeLocalizationProvider; 
     
+    @Override
     public void afterPropertiesSet() {
-        if (this.name == null) {
+        if (name == null) {
             throw new BeanInitializationException("Property 'name' not set.");
-        } else if (this.namespace == null) {
+        } else if (name.contains("/")) {
+            throw new IllegalArgumentException("Resource type name cannot contain '/': " + name);
+        } else if (namespace == null) {
             throw new BeanInitializationException("Property 'namespace' not set.");
         }
 
         // XXX hack:
         // Setting namespace of all property type definitions to namespace of this resource type
-        for (int i = 0; i < this.propertyTypeDefinitions.length; i++) {
-            if (this.propertyTypeDefinitions[i] instanceof PropertyTypeDefinitionImpl) {
-                ((PropertyTypeDefinitionImpl) this.propertyTypeDefinitions[i]).setNamespace(this.namespace);
+        for (int i = 0; i < propertyTypeDefinitions.length; i++) {
+            if (propertyTypeDefinitions[i] instanceof PropertyTypeDefinitionImpl) {
+                ((PropertyTypeDefinitionImpl) propertyTypeDefinitions[i]).setNamespace(namespace);
             }
-
         }
     }
 
