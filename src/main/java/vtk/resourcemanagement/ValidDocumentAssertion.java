@@ -77,6 +77,8 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
             }
         }
         catch (Exception e) {
+            // XXX: return false and log warning instead ? We probably should allow invalid JSON
+            //      to be uploaded to repository (just evaluate type to '/file/text').
             throw new PropertyEvaluationException(
                     "Unable to get JSON representation of content: " + resource, e);
         }
