@@ -262,14 +262,19 @@ public class LinkReplacer {
             case "media_ref":
             case "resource_ref":
                 Object ref = jsonValue.get(attr.getName());
-                jsonValue.put(attr.getName(), mapRef(ref, ctx, logLabel + "@" + attr.getName()));
+                if (ref != null) {
+                    jsonValue.put(attr.getName(), 
+                                  mapRef(ref, ctx, logLabel +
+                                         "@" + attr.getName()));
+                }
                 break;
             case "simple_html":
             case "html":
                 Object html = jsonValue.get(attr.getName());
                 if (html != null) {
                     jsonValue.put(attr.getName(), 
-                            filterHtml(html.toString(), ctx, logLabel + "@" + attr.getName()));
+                            filterHtml(html.toString(), ctx,
+                                       logLabel + "@" + attr.getName()));
                 }
                 break;
             }
