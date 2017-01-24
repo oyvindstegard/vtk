@@ -244,6 +244,13 @@ public class LinkCheckJob extends AbstractResourceJob {
                 String url = null;
                 String vrtxid = null;
                 String type = null;
+                
+                private void clear() {
+                    field = null;
+                    url = null;
+                    type = null;
+                    vrtxid = null;
+                }
 
                 @Override
                 public void endJson() throws IOException {
@@ -290,15 +297,15 @@ public class LinkCheckJob extends AbstractResourceJob {
                 @Override
                 public boolean endObject() throws IOException {
                     if (n.getAndIncrement() < state.index) {
-                        field = url = type = vrtxid = null;
+                        clear();
                         return true;
                     }
                     if (url == null) {
-                        field = url = type = vrtxid = null;
+                        clear();
                         return true;
                     }
                     if (!shouldCheck(url)) {
-                        field = url = type = vrtxid = null;
+                        clear();
                         return true;
                     }
                     if ("PROPERTY".equals(type)) {
@@ -377,7 +384,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                         state.brokenLinks.add(m);
                     }
                     
-                    field = url = type = null;
+                    clear();
                     
                     if (state.brokenLinks.size() >= MAX_BROKEN_LINKS) {
                         return false;
