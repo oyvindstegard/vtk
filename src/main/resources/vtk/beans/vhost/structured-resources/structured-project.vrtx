@@ -18,7 +18,7 @@ resourcetype structured-project {
     numberOfParticipantsToDisplay : string defaultvalue("50"),
     relatedGroups : resource_ref multiple,
     rssFeeds : json (rssTitle:string, rssUrl:string) multiple,
-    getExternalScientificInformation : boolean,
+    getExternalScientificInformation : boolean defaultvalue("false"),
     projectNr : string trim,
     numberOfPublications : string,
     selectedPublications : html noextract,
@@ -40,8 +40,7 @@ resourcetype structured-project {
 
   scripts {
     participantsUsernames multipleinputfields,
-    relatedGroups multipleinputfields,
-    getExternalScientificInformation show-hide onclick (projectNr, numberOfPublications)
+    relatedGroups multipleinputfields
   }
     
   services {
@@ -278,9 +277,9 @@ resourcetype structured-project {
       nn : ("true" = "Ja", "false" = "Nei")
     },
     numberOfPublications {
-      en : (range = "100,150,200,300,350,400,450,500,1000"),
-      no : (range = "100,150,200,300,350,400,450,500,1000"),
-      nn : (range = "100,150,200,300,350,400,450,500,1000")
+      en : (range = "5,100,150,200,300,350,400,450,500,1000"),
+      no : (range = "5,100,150,200,300,350,400,450,500,1000"),
+      nn : (range = "5,100,150,200,300,350,400,450,500,1000")
     }
   }
   
@@ -304,18 +303,19 @@ resourcetype structured-project {
     rssFeeds : (en : "Subscribe to RSS-feeds",no : "Abonner på RSS-strømmer", nn :"Abonner på RSS-strømmar"),
     rssTitle : (en : "Title",no : "Tittel", nn : "Tittel"),
     rssUrl : (en : "Webaddress",no : "Webadresse", nn :"Webadresse"),
+    combinedPublications : (en : "Publications", no : "Publikasjoner", nn : "Publikasjonar"),
     getExternalScientificInformation : (en : "Show publications registered in Cristin", no : "Vis publikasjoner rapportert i Cristin", nn : "Vis publikasjonar rapporterte i Cristin"),
     projectNr : (en : "Project number in Cristin", no : "Prosjektløpenummer i Cristin", nn : "Prosjektløpenummer i Cristin"),
     numberOfPublications : (en : "Maximum number of publications from Cristin", no : "Maks antall publikasjoner fra Cristin", nn : "Maks antall publikasjonar frå Cristin"),
     selectedPublications : (en : "Selected publications", no : "Utvalgte publikasjoner", nn : "Utvalde publikasjonar"),
     tags : (en : "Tags", no : "Emneord", nn : "Emneord"),
-    content : (en : "Content", no :"Innhold",nn : "Innhold"),
+    content : (en : "Content", no :"Innhold", nn : "Innhold"),
     contactInfo : (en : "Contact information", no : "Kontaktinformasjon", nn : "Kontaktinformasjon"),
     contactInfoView : (en : "Contact", no : "Kontakt", nn : "Kontakt"),
     header : (en : "Edit project", no : "Rediger prosjekt", nn : "Rediger prosjekt"),
-    publishedDate : (en : "Published", no :"Publisert", nn:"Publisert"),
+    publishedDate : (en : "Published", no :"Publisert", nn: "Publisert"),
     lastModifiedDate : (en : "Last modified", no : "Sist endret", nn : "Sist endra"),
-      numberOfParticipantsToDisplay : (
+    numberOfParticipantsToDisplay : (
       en : "Number of participants to show",
       no : "Antall deltakere som skal vises",
       nn : "Antall deltakarar som skal visast"),
