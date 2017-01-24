@@ -42,8 +42,13 @@ public class LocaleHelper {
      * <code>language_country_variant</code> into {@link Locale} objects.
      */
     public static Locale getLocale(String localeString) {
+        if (localeString == null) {
+            return null;
+        }
 
-        if (localeString == null || localeString.trim().equals("")) {
+        localeString = localeString.trim();
+
+        if (localeString.isEmpty()) {
             return null;
         }
 
@@ -54,8 +59,6 @@ public class LocaleHelper {
         if ("unknown".equals(localeString)) {
             return null;
         }
-
-        localeString = localeString.trim();
 
         String[] locale = localeString.split("_");
         switch (locale.length) {
@@ -71,10 +74,13 @@ public class LocaleHelper {
     }
 
     public static Locale getMessageLocalizationLocale(Locale providedResourceLocale) {
-        if (providedResourceLocale == null || "".equals(providedResourceLocale.toString().trim())) {
+        if (providedResourceLocale == null) {
             return null;
         }
-        String localeString = providedResourceLocale.toString().toLowerCase();
+        final String localeString = providedResourceLocale.toString().trim().toLowerCase();
+        if (localeString.isEmpty()) {
+            return null;
+        }
         if (localeString.contains("ny")) {
             return new Locale("nn");
         } else if (!localeString.contains("en")) {
