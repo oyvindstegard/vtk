@@ -30,9 +30,8 @@
  */
 package vtk.repository.store.db;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 
 import vtk.repository.Path;
@@ -40,15 +39,27 @@ import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 
 public final class ResourceTypeMapper {
-    private ResourceTypeTree resourceTypeTree;
+    private final ResourceTypeTree resourceTypeTree;
 
     public ResourceTypeMapper(ResourceTypeTree resourceTypeTree) {
         this.resourceTypeTree = resourceTypeTree;
     }
-    
+
+    /**
+     * Resolve resource type, which may be specified either as a full type path
+     * or (for legacy support) only the type name.
+     *
+     * <p>If specified as a path, then each type is looked up beginning from
+     * the right (leaf type), and the first type name that exists will be returned. This has
+     * the effect that old types which may no longer be defined will be promoted to
+     * some ancestor type instead.
+     *
+     * @param input
+     * @return
+     */
     public String resolveResourceType(String input) {
         Path path = input.startsWith("/") ? 
-                Path.fromString(input) : legacyMappings.get(input);
+                Path.fromString(input) : LEGACY_MAPPINGS.get(input);
         if (path == null) return input;
         
         while (!path.isRoot()) {
@@ -63,30 +74,39 @@ public final class ResourceTypeMapper {
         }
         return input;
     }
-    
-    public String generateResourceType(String input) {
-        List<String> list = new ArrayList<String>();
+
+    /**
+     * Obtain complete resource type path as defined by the type hierarchy.
+     *
+     * <p>The root resource type '<code>resource</code>' is represented by the leftmost
+     * slash in the path.
+     *
+     * <p>If the resource type name is not recognized or is a mixin type, then
+     * the name is returned as-is, and not as a complete path.
+     *
+     * @param resourceTypeName resource type name
+     * @return complete resource type path as defined by the type hierarchy as
+     * a string
+     */
+    public String resourceTypePath(String resourceTypeName) {
         PrimaryResourceTypeDefinition def = null;
         try {
             def = (PrimaryResourceTypeDefinition)
-                    resourceTypeTree.getResourceTypeDefinitionByName(input);
+                    resourceTypeTree.getResourceTypeDefinitionByName(resourceTypeName);
         } catch (Throwable t) {  }
         if (def == null) {
-            return input;
+            return resourceTypeName;
         }
+        LinkedList<String> typeHierarchyNames = new LinkedList<>();
         while (def.getParentTypeDefinition() != null) {
-            list.add(0, def.getName());
+            typeHierarchyNames.addFirst(def.getName());
             def = def.getParentTypeDefinition();
         }
-        if (list.isEmpty()) return input;
-        Path path = Path.ROOT;
-        for (String s: list) path = path.extend(s);
-        return path.toString();
-        
+        return "/" + String.join("/", typeHierarchyNames);
     }
     
     // Types snapshot
-    private static final String[] legacyTypes = new String[] {
+    private static final String[] LEGACY_TYPES = new String[] {
         "/collection",
         "/collection/article-listing",
         "/collection/audio-video-listing",
@@ -196,8 +216,8 @@ public final class ResourceTypeMapper {
         "/file/video/videoref"
     };
     
-    private static final Map<String, Path> legacyMappings = new HashMap<String, Path>() {{
-        for (String s: legacyTypes) {
+    private static final Map<String, Path> LEGACY_MAPPINGS = new HashMap<String,Path>() {{
+        for (String s: LEGACY_TYPES) {
             Path p = Path.fromString(s);
             put(p.getName(), p);
         }
