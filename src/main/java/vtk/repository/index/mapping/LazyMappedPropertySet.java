@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, University of Oslo, Norway
+/* Copyright (c) 2012–2017 University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,7 @@ public final class LazyMappedPropertySet implements PropertySet {
         for (IndexableField f : doc) {
             if (ResourceFields.ID_FIELD_NAME.equals(f.name())) {
                 id = Integer.parseInt(f.stringValue());
+                continue;
             }
             
             if (ResourceFields.URI_FIELD_NAME.equals(f.name())) {
@@ -81,7 +82,7 @@ public final class LazyMappedPropertySet implements PropertySet {
             
             if (AclFields.isAclField(f.name())) {
                 if (aclFields == null) {
-                    aclFields = new ArrayList<IndexableField>();
+                    aclFields = new ArrayList<>();
                 }
                 aclFields.add(f);
                 continue;
@@ -92,7 +93,7 @@ public final class LazyMappedPropertySet implements PropertySet {
             }
 
             if (propFields == null) {
-                propFields = new ArrayList<IndexableField>();
+                propFields = new ArrayList<>();
             }
 
             propFields.add(f);
@@ -132,14 +133,14 @@ public final class LazyMappedPropertySet implements PropertySet {
     @Override
     public List<Property> getProperties() {
         if (propFields == null) {
-            return new ArrayList<Property>(0);
+            return new ArrayList<>(0);
         }
 
         // Lucene guarantees stored field order to be same as when document was indexed
-        final List<Property> props = new ArrayList<Property>(propFields.size());
+        final List<Property> props = new ArrayList<>(propFields.size());
         for (int i = 0; i < propFields.size(); i++) {
             IndexableField f = propFields.get(i);
-            List<IndexableField> values = new ArrayList<IndexableField>();
+            List<IndexableField> values = new ArrayList<>();
             values.add(f);
             while (i < propFields.size() - 1 && f.name().equals(propFields.get(i + 1).name())) {
                 values.add(propFields.get(++i));
@@ -152,16 +153,16 @@ public final class LazyMappedPropertySet implements PropertySet {
     @Override
     public List<Property> getProperties(Namespace namespace) {
         if (propFields == null) {
-            return new ArrayList<Property>(0);
+            return new ArrayList<>(0);
         }
 
         // Lucene guarantees stored field order to be same as when document was indexed
-        final List<Property> props = new ArrayList<Property>();
+        final List<Property> props = new ArrayList<>();
         for (int i = 0; i < propFields.size(); i++) {
             final IndexableField f = propFields.get(i);
             List<IndexableField> values = null;
             if (PropertyFields.isPropertyFieldInNamespace(f.name(), namespace)) {
-                values = new ArrayList<IndexableField>();
+                values = new ArrayList<>();
                 values.add(f);
             }
             while (i < propFields.size() - 1 && f.name().equals(propFields.get(i + 1).name())) {
@@ -195,7 +196,7 @@ public final class LazyMappedPropertySet implements PropertySet {
         for (IndexableField f : propFields) {
             if (fieldName.equals(f.name())) {
                 if (values == null) {
-                    values = new ArrayList<IndexableField>();
+                    values = new ArrayList<>();
                 }
                 values.add(f);
             } else if (values != null) break; // All fields for property collected.
@@ -216,7 +217,7 @@ public final class LazyMappedPropertySet implements PropertySet {
         for (IndexableField f : propFields) {
             if (fieldName.equals(f.name())) {
                 if (values == null) {
-                    values = new ArrayList<IndexableField>();
+                    values = new ArrayList<>();
                 }
                 values.add(f);
             } else if (values != null) break; // All fields for property collected.

@@ -84,8 +84,7 @@ public class DocumentMapper implements InitializingBean {
 
     // Fast lookup maps for flat list of resource type prop defs and
     // stored field-name to prop-def map
-    private final Map<String, PropertyTypeDefinition> fieldNamePropDefMap 
-                                  = new HashMap<String, PropertyTypeDefinition>();
+    private final Map<String, PropertyTypeDefinition> fieldNamePropDefMap = new HashMap<>();
 
     @Override
     public void afterPropertiesSet() {
