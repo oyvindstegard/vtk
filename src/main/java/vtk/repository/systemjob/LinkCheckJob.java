@@ -109,7 +109,7 @@ public class LinkCheckJob extends AbstractResourceJob {
     @Override
     protected void executeForResource(Resource resource, ExecutionContext ctx) throws Exception {
         logger.debug("Link check: " + resource.getURI());
-        Property hrefsProp = resolveHrefIDs(resource, ctx);
+        Property hrefsProp = updateHrefIDs(resource, ctx);
         if (hrefsProp == null) {
             resource.removeProperty(hrefsPropDef);
         }
@@ -135,7 +135,7 @@ public class LinkCheckJob extends AbstractResourceJob {
         b.flush();
     }
 
-    private Property resolveHrefIDs(final Resource resource, ExecutionContext ctx)
+    private Property updateHrefIDs(final Resource resource, ExecutionContext ctx)
             throws InterruptedException {
         Property hrefsProp = resource.getProperty(hrefsPropDef);
         if (hrefsProp == null) {
@@ -167,7 +167,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                     url = base.relativeURL(href);
                 }
                 catch (Exception e) {
-                    logger.debug("Failed to create URL from string: " 
+                    logger.warn("Failed to create URL from string: " 
                             + href + ", base: " + base, e);
                     continue;
                 }
@@ -190,10 +190,10 @@ public class LinkCheckJob extends AbstractResourceJob {
                 catch (ResourceNotFoundException e) {
                     logger.debug("Resource " + href + " (referenced from " 
                             + resource.getURI() + ") not found");
+                    // Keep vrtxid if it exists
                 }
                 catch (Exception e) {
                     logger.debug("Failed to retrieve resource " + url.getPath(), e);
-                    continue;
                 }
             }
             hrefsProp.setJSONValue(jsonValue);
@@ -314,28 +314,60 @@ public class LinkCheckJob extends AbstractResourceJob {
                             .build();
                     
                     LinkCheckResult result = linkChecker.validate(request);
+                    URL resourceURL = base.relativeURL(url);
                     switch (result.getStatus()) {
                     case TIMEOUT:
                         break;
                     case OK:
-                        // Check if 'OK' was result of a redirect (relocated resource),
-                        // or just a plain '200 OK':
-                        URL resourceURL = base.relativeURL(url);
                         if (vrtxid != null && base.getHost().equals(resourceURL.getHost())) {
+                            // Check if 'OK' was result of a redirect (relocated resource),
+                            // or just a plain '200 OK':
                             Optional<Path> relocated = findResourceByID(execContext, vrtxid);
                             if (relocated.isPresent() && !relocated.get().equals(resourceURL.getPath())) {
                                 Map<String, String> m = new HashMap<>();
                                 m.put("link", url);
+                                if (type != null) {
+                                    m.put("type", type);
+                                }
+                                m.put("vrtxid", vrtxid);
+                                state.relocatedLinks.add(m);
                                 logger.debug("URL " + url + " (referenced from " 
                                         + resource.getURI() + ") has moved, "
                                         + " vrtxid: " + vrtxid + " still valid");
-                                m.put("vrtxid", vrtxid);
-                                state.relocatedLinks.add(m);
                             }
                         }
                         break;
+                    case NOT_FOUND:
+                        if (vrtxid != null && base.getHost().equals(resourceURL.getHost())) {
+                            // Check if resource is relocated:
+                            Optional<Path> relocated = findResourceByID(execContext, vrtxid);
+                            if (relocated.isPresent()) {
+                                Map<String, String> m = new HashMap<>();
+                                m.put("link", url);
+                                if (type != null) {
+                                    m.put("type", type);
+                                }
+                                m.put("vrtxid", vrtxid);
+                                state.relocatedLinks.add(m);
+                                logger.debug("URL " + url + " (referenced from " 
+                                        + resource.getURI() + ") has moved, "
+                                        + " vrtxid: " + vrtxid + " still valid");
+                            }
+                            else {
+                                // Else mark as broken:
+                                Map<String, String> m = new HashMap<>();
+                                m.put("link", url);
+                                if (type != null) {
+                                    m.put("type", type);
+                                }
+                                m.put("status", result.getStatus().toString());
+                                state.brokenLinks.add(m);
+                            }
+                        }
+                        break;
+                        
                     default:
-                        // Mark everything except OK and TIMEOUT as broken:
+                        // Mark everything else as broken:
                         Map<String, String> m = new HashMap<>();
                         m.put("link", url);
                         if (type != null) {
@@ -344,6 +376,9 @@ public class LinkCheckJob extends AbstractResourceJob {
                         m.put("status", result.getStatus().toString());
                         state.brokenLinks.add(m);
                     }
+                    
+                    field = url = type = null;
+                    
                     if (state.brokenLinks.size() >= MAX_BROKEN_LINKS) {
                         return false;
                     }
@@ -359,8 +394,7 @@ public class LinkCheckJob extends AbstractResourceJob {
                     }
                     catch (InterruptedException ie) {
                         throw new RuntimeException(ie);
-                    }                   
-                    field = url = type = null;
+                    }
                     return true;
                 }
 
