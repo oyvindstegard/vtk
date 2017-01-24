@@ -34,8 +34,7 @@
   <import resource="employee-listing.xml" />
   <import resource="person-listing.xml" />
 
-
-  <!-- Studinfo -->
+  <!-- Studinfo (obsolete) -->
   <import resource="emne.xml" />
   <import resource="semester.xml" />
   <import resource="emnegruppe.xml" />
@@ -43,34 +42,13 @@
   <import resource="studieretning.xml" />
   <import resource="utvekslingsavtale.xml" />
 
-  <!-- Felles / Common -->
-  <import resource="artikkelsamling.xml" />
-
-  <!-- UiO -->
-  <import resource="artikkel.xml" />
-  <import resource="disputas.xml" />
-  <import resource="proveforelesning.xml" />
-  <import resource="nyhet.xml" />
-  <import resource="arrangement.xml" />
-  <import resource="publikasjon.xml" />
-
-  <!-- Sakskart -->
-  <import resource="sakskart.xml" />
-
-  <!-- Traktater -->
+  <!-- Traktater (obsolete, to be removed) -->
   <import resource="treaty.xml" />
 
-  <!-- Portal.xml - søkedokumentet -->
+  <!-- Portal.xml - configurable search document type (XML based) -->
   <import resource="portal.xml" />
 
-  <!-- MUV -->
-  <import resource="muv-artikkel.xml" />
-
-  <!-- CEES -->
-  <import resource="researcher.xml" />
-  <import resource="project.xml" />
-
-  <!-- MIXINs -->
+  <!-- Mixin types -->
   <import resource="mixins/introduction-mixin.xml" />
   <import resource="mixins/navigation.xml" />
   <import resource="mixins/additional-content-mixin.xml" />
@@ -78,4 +56,5 @@
   <import resource="mixins/media-mixin.xml" />
   <import resource="mixins/show-subfolder-mixin.xml" />
   <import resource="mixins/link-other-language-mixin.xml" />
+
 </beans>
