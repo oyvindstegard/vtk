@@ -32,21 +32,20 @@
 package vtk.repository.index.mapping;
 
 import com.ibm.icu.text.Collator;
+import com.ibm.icu.text.RawCollationKey;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import org.apache.lucene.collation.ICUCollationAttributeFactory;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.util.BytesRef;
@@ -74,34 +73,24 @@ public abstract class Fields {
                                                 "yyyy-MM-dd HH",
                                                 "yyyy-MM-dd" };
     
-    private static final FieldType STRING_SORT_FIELDTYPE = new FieldType();
-
     private static final ReusableObjectCache<SimpleDateFormat>[] CACHED_DATE_FORMAT_PARSERS;
 
     static {
-        STRING_SORT_FIELDTYPE.setIndexed(true);
-        STRING_SORT_FIELDTYPE.setOmitNorms(true);
-        STRING_SORT_FIELDTYPE.setIndexOptions(FieldInfo.IndexOptions.DOCS_ONLY);
-        STRING_SORT_FIELDTYPE.setTokenized(true);
-        STRING_SORT_FIELDTYPE.freeze();
-
         // Create parser caches for each date format (maximum capacity of 3
         // instances per format)
         CACHED_DATE_FORMAT_PARSERS = new ReusableObjectCache[SUPPORTED_DATE_FORMATS.length];
 
         for (int i = 0; i < SUPPORTED_DATE_FORMATS.length; i++) {
-            CACHED_DATE_FORMAT_PARSERS[i] = new ReusableObjectArrayStackCache<SimpleDateFormat>(3);
+            CACHED_DATE_FORMAT_PARSERS[i] = new ReusableObjectArrayStackCache<>(3);
         }
     }
     
     private final Locale locale;
     private final Collator collator;
-    private final ICUCollationAttributeFactory collationAttributeFactory;
     
     Fields(Locale locale) {
         this.locale = locale != null ? locale : Locale.getDefault();
         this.collator = Collator.getInstance(this.locale);
-        this.collationAttributeFactory = new ICUCollationAttributeFactory(collator);
     }
     
     public Locale getLocale() {
@@ -140,11 +129,8 @@ public abstract class Fields {
      * @return 
      */
     public IndexableField makeSortField(String name, String value) {
-        // Use a "token stream", even though we only have one value. This is due to
-        // Lucene API not allowing creation of raw binary indexable terms without going
-        // through this path.
-        StringArrayTokenStream ts = new StringArrayTokenStream(collationAttributeFactory, value);
-        return new Field(name, ts, STRING_SORT_FIELDTYPE);
+        RawCollationKey key = collator.getRawCollationKey(value, new RawCollationKey());
+        return new SortedDocValuesField(name, new BytesRef(key.bytes));
     }
     
     public List<IndexableField> makeFields(String fieldName, String value, FieldSpec spec) {
