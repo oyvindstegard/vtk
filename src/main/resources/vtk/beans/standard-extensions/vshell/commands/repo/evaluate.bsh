@@ -55,8 +55,8 @@ void execute(context, args, out) {
 
     number = 0;
 
-    searcher.iterateMatching(token, search, new Searcher.MatchCallback() {
-            public boolean matching(Searcher.MatchingResult result) {
+    searcher.iterateMatching(token, search, new vtk.repository.search.Searcher.MatchCallback() {
+            public boolean matching(vtk.repository.search.Searcher.MatchingResult result) {
                 PropertySet propset = result.propertySet();
 
                 number++;
