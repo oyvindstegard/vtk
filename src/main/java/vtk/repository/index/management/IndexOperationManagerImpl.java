@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import vtk.repository.index.DirectReindexer;
+import vtk.repository.index.IndexException;
 import vtk.repository.index.IndirectReindexer;
 import vtk.repository.index.PropertySetIndex;
 import vtk.repository.index.PropertySetIndexReindexer;
@@ -132,15 +133,9 @@ public class IndexOperationManagerImpl implements IndexOperationManager, Disposa
             LOG.info("Consistency check found too many errors");
             this.lastConsistencyCheck = tme.getPartialCheck();
             this.lastConsistencyCheckException = tme;
-        } catch (Exception e) {
-            if (e.getCause() instanceof TooManyErrorsException) {
-                LOG.info("Consistency check found too many errors");
-                this.lastConsistencyCheck = ((TooManyErrorsException)e.getCause()).getPartialCheck();
-                this.lastConsistencyCheckException = (TooManyErrorsException)e.getCause();
-            } else {
-                LOG.info("Error running consistency check", e);
-                this.lastConsistencyCheckException = e;
-            }
+        } catch (IndexException e) {
+            LOG.info("Error running consistency check: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            this.lastConsistencyCheckException = e;
         } finally {
             this.index.unlock();
             LOG.info("Lock released");

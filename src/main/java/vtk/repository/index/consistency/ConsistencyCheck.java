@@ -113,8 +113,7 @@ public class ConsistencyCheck {
     }
 
     @SuppressWarnings("unchecked")
-    private void runInternal() throws IndexException,
-            ConsistencyCheckException, StorageCorruptionException {
+    private void runInternal() throws IndexException {
 
         String indexId = this.index.getId();
 
@@ -142,9 +141,24 @@ public class ConsistencyCheck {
                 LOG.info("Consistency check completed successfully without any errors detected.");
             }
 
-        } catch (StorageCorruptionException sce) {
-            LOG.warn("Storage corruption test failed: " + sce.getMessage());
-            throw sce; // Re-throw, since we can't work on or fix a corrupted index
+        } catch (IndexException e) {
+            LOG.warn("IndexException during consistency check: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            throw e; // Re-throw, since we can't work on or fix a corrupted index
+        } catch (final RuntimeException e) {
+            // Index exceptions may be wrapped due to MyBatis callback API, in which cause we'd like
+            // to throw those instead
+            Throwable cause = null, result = e;
+            while ((cause = result.getCause()) != null && result != cause) {
+                result = cause;
+                if (result instanceof IndexException) {
+                    LOG.warn("Exception during consistency check: " 
+                            + result.getClass().getSimpleName()
+                            + ": " + result.getMessage());
+                    throw (IndexException)result;
+                }
+            }
+            throw e;
+
         } finally {
             // Clean up resources
             if (indexUriIterator != null) this.index.close(indexUriIterator);
