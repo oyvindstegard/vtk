@@ -1341,8 +1341,7 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
 
   // Show / hide mappings for selects
   vrtxEdit.setShowHideSelectNewEditor();
-
-
+    
   // Documenttype domains
   if(vrtxEdit.editorForm.hasClass("vrtx-course-schedule")) {
     editorCourseSchedule = new courseSchedule();
@@ -1366,6 +1365,8 @@ VrtxEditor.prototype.initEnhancements = function initEnhancements() {
     vrtxEdit.replaceTag(samletElm, "h1", "h2");
   } else if (vrtxEdit.editorForm.hasClass("vrtx-frontpage")) {
     vrtxEdit.accordionGroupedInit(".vrtx-sea-accordion", "fast");
+  } else if (vrtxEdit.editorForm.hasClass("vrtx-structured-project")) {
+    setShowHideBooleanNewEditor("getExternalScientificInformation", "div.projectNr, div.numberOfPublications", false);
   } else if (vrtxEdit.editorForm.hasClass("vrtx-contact-supervisor")) {
     vrtxAdm.cachedDoc.on("keyup", ".vrtx-string.id input[type='text']", $.debounce(50, true, function () {
       vrtxAdm.inputUpdateEngine.update({
