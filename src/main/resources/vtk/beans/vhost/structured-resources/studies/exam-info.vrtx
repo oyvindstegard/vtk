@@ -100,7 +100,7 @@ resourcetype exam-info {
 
       [def examParts ordning.examParts]
       [if examParts]
-        [def isOrdningEksamensDel (ordning.examDate != null || ordning.submissionDueDate != null)]
+        [def isOrdningEksamensDel (ordning.examDate != null || ordning.availableDate != null || ordning.submissionDueDate != null)]
 
         [def len examParts.length()]
         [if len > 1 && ! isOrdningEksamensDel]
@@ -192,7 +192,7 @@ resourcetype exam-info {
                 <p>[localized 'lookup-unable-error-msg']: [val resp.errorMessage]</p>
               [else]
                 [def arrangements resp.payload.arrangements]
-                [if arrangement]
+                [if arrangements]
                   [list arrangements arr]
                     [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
                       [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr }]
