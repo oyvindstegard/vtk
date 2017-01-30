@@ -20,6 +20,13 @@ resourcetype exam-info {
       ##
     }
     
+    time-format(time) {
+      ##
+      [def dt to-date(time)]
+      [localized 'time-prefix'] [val dt # "hours-minutes"]
+      ##
+    }
+    
     duration-format(duration) {
       ##
       [def hours floor(duration)]
@@ -34,25 +41,25 @@ resourcetype exam-info {
         [val part.name]
       [if isSubPart = "true"]</h3>[else]</h2>[endif]
       
-      [if part.dateExam]
-        <p class="exam-date"><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.dateExam }][if part.timeExam] [localized 'time-prefix'] [val part.timeExam][endif][if part.durationHours][call "comp:duration-format" { "duration" : part.durationHours }][endif].</p>
+      [if part.examDate]
+        <p class="exam-date"><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.examDate }][if part.examTime] [call "comp:time-format" { "time" : part.examTime }][endif][if part.durationHours][call "comp:duration-format" { "duration" : part.durationHours }][endif].</p>
       [endif]
       
-      [if part.dateAvailable]
-        <p class="exam-available"><strong>[localized 'task-available']:</strong> [call "comp:date-format" { "date" : part.dateAvailable }][if part.timeAvailable] [localized 'time-prefix'] [val part.timeAvailable][endif]</p>
+      [if part.availableDate]
+        <p class="exam-available"><strong>[localized 'task-available']:</strong> [call "comp:date-format" { "date" : part.availableDate }][if part.availableTime] [call "comp:time-format" { "time" : part.availableTime }][endif]</p>
       [endif]
       
-      [if part.submissionDeadline]
-        <p class="exam-submission"><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.submissionDeadline }][if part.timeSubmission] [localized 'time-prefix'] [val part.timeSubmission][endif]</p>
+      [if part.submissionDueDate]
+        <p class="exam-submission"><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.submissionDueDate }][if part.submissionDueTime] [call "comp:time-format" { "time" : part.submissionDueTime }][endif]</p>
       [endif]
       
-      [def room part.room]
-      [if part.dateExam != null || room != null]
+      [def rooms part.rooms]
+      [if part.examDate != null || rooms != null]
         <p class="exam-place-info"><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
       [endif]
-      [if room]
+      [if rooms]
         <ul class="exam-rooms">
-        [list room r]
+        [list rooms r]
           <li>
             [if r.buildingName]
               [if r.buildingUrl]
@@ -61,14 +68,8 @@ resourcetype exam-info {
                 [def url concat("https://www.google.no/maps/place/", r.buildingName)]
               [endif]
               <a href="[val url]">[if r.roomName][val r.roomName] [endif][val r.buildingName]</a>
-            [elseif r.buildingCode]
-              [if r.url]
-                <a href="[val r.url]">
-              [endif]
-              [if r.roomCode][val r.roomCode] [endif][val r.buildingCode]
-              [if r.url]
-                </a>
-              [endif]
+            [elseif r.buildingId]
+              [if r.roomId][val r.roomId] [endif][val r.buildingId]
             [endif]
           </li>
         [endlist]
@@ -97,9 +98,9 @@ resourcetype exam-info {
         <p>[call "comp:date-format" { "date" : ordning.deadlineWithdrawal }]</p>
       [endif]
 
-      [def examParts ordning.examPart]
+      [def examParts ordning.examParts]
       [if examParts]
-        [def isOrdningEksamensDel (ordning.dateExam != null || ordning.submissionDeadline != null)]
+        [def isOrdningEksamensDel (ordning.examDate != null || ordning.submissionDueDate != null)]
 
         [def len examParts.length()]
         [if len > 1 && ! isOrdningEksamensDel]
@@ -115,7 +116,7 @@ resourcetype exam-info {
           [if (examPart.termNr = null || termNr = null || (int(examPart.termNr) = int(termNr)))]
             [call "comp:exam-part" { "part" : examPart, "isSubPart": "false" }]
 	          
-	        [def partDays examPart.partDay]
+	        [def partDays examPart.partDays]
 	        [if partDays]
 	          [list partDays partDay]
 	            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true" }]
@@ -126,7 +127,7 @@ resourcetype exam-info {
       [else]
         [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
 
-        [def partDays ordning.partDay]
+        [def partDays ordning.partDays]
         [if partDays]
           [list partDays partDay]
             [call "comp:exam-part" { "part" : partDay, "isSubPart": "true" }]
@@ -147,6 +148,7 @@ resourcetype exam-info {
     ##
     [def settings settings()]
     [def document structured-document()]
+    [def locale resource-locale()]
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
@@ -167,6 +169,11 @@ resourcetype exam-info {
               [if year != null && year.length() = 4]
                 [def year year.substring(2, 4)]
               [endif]
+              [if locale != null && locale = "en"]
+                [def lang = "en"]
+              [else]
+                [def lang = "no"]
+              [endif]
               
               [def examInfoURL settings.services.examInfo]
               
@@ -174,7 +181,7 @@ resourcetype exam-info {
                 [def examInfoURL replace(examInfoURL, "%cid", course-code)]
                 [def examInfoURL replace(examInfoURL, "%sem", year)]
                 [def examInfoURL replace(examInfoURL, "%term", term)]
-              
+                [def examInfoURL replace(examInfoURL, "%lang", lang)]
                 [def resp url-as-json(examInfoURL)]
               [else]
                 [def resp { "errorMessage": "Missing context values for course or semester" }]
@@ -184,11 +191,10 @@ resourcetype exam-info {
                 <p>[localized 'lookup-unable']: [val examInfoURL]</p>
                 <p>[localized 'lookup-unable-error-msg']: [val resp.errorMessage]</p>
               [else]
-                [def exam resp.payload.exams]
-                [def arrangement exam.arrangement]
+                [def arrangements resp.payload.arrangements]
                 [if arrangement]
-                  [list arrangement arr]
-                    [if arr.status = "Ordinær eksamen"]
+                  [list arrangements arr]
+                    [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
                       [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr }]
                     [endif]
                   [endlist]
