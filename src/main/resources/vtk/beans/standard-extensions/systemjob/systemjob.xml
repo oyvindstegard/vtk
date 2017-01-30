@@ -107,6 +107,7 @@
     <property name="allowCachedResults" value="false" />
     <property name="id" value="linkcheck-referencing" />
     <property name="hrefsPropDef" ref="hrefsPropDef" />
+    <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
     <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
@@ -142,6 +143,7 @@
     <property name="enabled" value="${systemjob.linkcheck.recent.enabled}" />
     <property name="id" value="linkcheck-recent" />
     <property name="hrefsPropDef" ref="hrefsPropDef" />
+    <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
     <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
@@ -188,6 +190,7 @@
     <property name="id" value="linkcheck" />
 
     <property name="hrefsPropDef" ref="hrefsPropDef" />
+    <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
     <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
