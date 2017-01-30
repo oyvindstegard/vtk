@@ -68,11 +68,11 @@ import vtk.repository.resourcetype.Content;
  * Certain aspects of the repository are currently not supported by hooks in
  * this interface:
  * <ul>
- * <li>Revisions
- * <li>Comments
- * <li>Restorable resources (trash can)
- * <li>Locking
- * <li>ACL and security-related operations.
+ *   <li>Revisions
+ *   <li>Comments
+ *   <li>Restorable resources (trash can)
+ *   <li>Locking
+ *   <li>ACL and security-related operations.
  * </ul>
  */
 public interface TypeHandlerHooks {
