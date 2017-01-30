@@ -50,8 +50,8 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Lock;
 import vtk.repository.Namespace;
-import vtk.repository.Path;
 import vtk.repository.Property;
+import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.Repository.Depth;
 import vtk.repository.Resource;
@@ -80,6 +80,7 @@ import vtk.web.service.URL;
 public class LinkCheckJob extends AbstractResourceJob {
     private PropertyTypeDefinition linkCheckPropDef;
     private PropertyTypeDefinition hrefsPropDef;
+    private PropertyTypeDefinition unpublishedCollectionPropDef;
     private LinkChecker linkChecker;
     boolean allowCachedResults = true;
     private List<String> blackListConfig;
@@ -200,7 +201,6 @@ public class LinkCheckJob extends AbstractResourceJob {
         }
         return hrefsProp;
     }
-    
     
     private Property linkCheck(final Resource resource, final ExecutionContext execContext)
             throws InterruptedException {
@@ -329,8 +329,9 @@ public class LinkCheckJob extends AbstractResourceJob {
                         if (vrtxid != null && base.getHost().equals(resourceURL.getHost())) {
                             // Check if 'OK' was result of a redirect (relocated resource),
                             // or just a plain '200 OK':
-                            Optional<Path> relocated = findResourceByID(execContext, vrtxid);
-                            if (relocated.isPresent() && !relocated.get().equals(resourceURL.getPath())) {
+                            Optional<PropertySet> relocated = findResourceByID(execContext, vrtxid);
+                            if (relocated.isPresent() && 
+                                    !relocated.get().getURI().equals(resourceURL.getPath())) {
                                 Map<String, String> m = new HashMap<>();
                                 m.put("link", url);
                                 if (type != null) {
@@ -347,7 +348,8 @@ public class LinkCheckJob extends AbstractResourceJob {
                     case NOT_FOUND:
                         if (vrtxid != null && base.getHost().equals(resourceURL.getHost())) {
                             // Check if resource is relocated:
-                            Optional<Path> relocated = findResourceByID(execContext, vrtxid);
+                            Optional<PropertySet> relocated = findResourceByID(execContext, vrtxid);
+
                             if (relocated.isPresent()) {
                                 Map<String, String> m = new HashMap<>();
                                 m.put("link", url);
@@ -355,10 +357,20 @@ public class LinkCheckJob extends AbstractResourceJob {
                                     m.put("type", type);
                                 }
                                 m.put("vrtxid", vrtxid);
-                                state.relocatedLinks.add(m);
-                                logger.debug("URL " + url + " (referenced from " 
-                                        + resource.getURI() + ") has moved, "
-                                        + " vrtxid: " + vrtxid + " still valid");
+                                
+                                if (published(relocated.get())) {
+                                    state.relocatedLinks.add(m);
+                                    logger.debug("URL " + url + " (referenced from " 
+                                            + resource.getURI() + ") has moved, "
+                                            + " vrtxid: " + vrtxid + " still valid");
+                                }
+                                else {
+                                    logger.debug("URL " + url + " (referenced from " 
+                                            + resource.getURI() + ") is unpublished, "
+                                            + " vrtxid: " + vrtxid + " still valid");
+                                    m.put("status", result.getStatus().toString());
+                                    state.brokenLinks.add(m);
+                                }
                             }
                             else {
                                 // Else mark as broken:
@@ -481,7 +493,18 @@ public class LinkCheckJob extends AbstractResourceJob {
         return state.complete;
     }
     
-    private Optional<Path> findResourceByID(ExecutionContext context, String vrtxid) {
+    private boolean published(PropertySet resource) {
+        Property publishedProp = resource.getProperty(
+                Namespace.DEFAULT_NAMESPACE, PropertyType.PUBLISHED_PROP_NAME);
+        Property unpubCollection = resource
+                .getProperty(unpublishedCollectionPropDef);
+        return (publishedProp != null && publishedProp.getBooleanValue()) && 
+                (unpubCollection == null || unpubCollection
+                    .getBooleanValue() == false);
+    }
+
+    
+    private Optional<PropertySet> findResourceByID(ExecutionContext context, String vrtxid) {
 
         PropertyTypeDefinition idPropDef = context.getRepository()
                 .getTypeInfo("resource")
@@ -499,7 +522,7 @@ public class LinkCheckJob extends AbstractResourceJob {
         if (result.getTotalHits() == 0) {
             return Optional.empty();
         }
-        return Optional.of(result.getResult(0).getURI());
+        return Optional.of(result.getResult(0));
     }
     
     public void refreshBlackList() {
@@ -554,13 +577,25 @@ public class LinkCheckJob extends AbstractResourceJob {
         
         private String toJsonString() {
             JsonBuilder jb = new JsonBuilder();
-            jb.beginObject()
-                    .memberIfNotNull("brokenLinks", brokenLinks)
-                    .memberIfNotNull("relocatedLinks", relocatedLinks)
-                    .member("status", complete ? "COMPLETE" : "INCOMPLETE")
-                    .member("timestamp", timestamp)
-                    .member("index", index)
-              .endObject();
+            jb.beginObject();
+            if (brokenLinks != null && !brokenLinks.isEmpty())
+                jb.member("brokenLinks", brokenLinks);
+            if (relocatedLinks != null && !relocatedLinks.isEmpty())
+                jb.member("relocatedLinks", relocatedLinks);
+            jb.member("status", complete ? "COMPLETE" : "INCOMPLETE")
+                .member("timestamp", timestamp)
+                .member("index", index)
+                .endObject();
+//            
+//            
+//            
+//            jb.beginObject()
+//                    .memberIfNotNull("brokenLinks", brokenLinks)
+//                    .memberIfNotNull("relocatedLinks", relocatedLinks)
+//                    .member("status", complete ? "COMPLETE" : "INCOMPLETE")
+//                    .member("timestamp", timestamp)
+//                    .member("index", index)
+//              .endObject();
             return jb.jsonString();
         }
         
@@ -680,6 +715,12 @@ public class LinkCheckJob extends AbstractResourceJob {
     @Required
     public void setHrefsPropDef(PropertyTypeDefinition hrefsPropDef) {
         this.hrefsPropDef = hrefsPropDef;
+    }
+
+    @Required
+    public void setUnpublishedCollectionPropDef(
+            PropertyTypeDefinition unpublishedCollectionPropDef) {
+        this.unpublishedCollectionPropDef = unpublishedCollectionPropDef;
     }
 
     @Required
