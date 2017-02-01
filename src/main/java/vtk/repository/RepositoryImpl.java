@@ -61,9 +61,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import vtk.cluster.ClusterAware;
 import vtk.cluster.ClusterRole;
-
 import vtk.repository.Revision.Type;
 import vtk.repository.content.ContentImpl;
 import vtk.repository.content.ContentRepresentationRegistry;
@@ -709,15 +709,15 @@ public class RepositoryImpl implements Repository, ApplicationContextAware, Clus
                 }
             }
             
+            Resource srcClone = (Resource) src.clone();
+            
             newResource = this.resourceHelper.nameChange(src, newResource, principal, content);
             newResource = this.dao.move(src, newResource);
             this.contentStore.move(src.getURI(), newResource.getURI());
 
             this.context.publishEvent(new ResourceMovedEvent(
-                    this, (Resource) newResource.clone(), (Resource) src.clone()));
+                    this, (Resource) newResource.clone(), srcClone));
             
-            //this.context.publishEvent(new ResourceCreationEvent(this, (Resource) newResource.clone()));
-            //this.context.publishEvent(new ResourceDeletionEvent(this, srcUri, src.getID(), src.isCollection()));
         } catch (CloneNotSupportedException e) {
             throw new IOException("Failed to clone object", e);
         }
