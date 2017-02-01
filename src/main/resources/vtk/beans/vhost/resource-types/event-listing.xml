@@ -34,6 +34,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />
@@ -60,6 +61,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />
@@ -86,20 +88,15 @@
     <property name="mandatory" value="false" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.event-listing-display-type" />
         <constructor-arg value="STRING" />
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.event-listing-display-type" />
       </bean>
     </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>calendar</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
+            <value>calendar</value>
           </list>
         </property>
       </bean>

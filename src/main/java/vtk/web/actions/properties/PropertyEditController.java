@@ -33,6 +33,7 @@ package vtk.web.actions.properties;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -183,7 +184,7 @@ public class PropertyEditController extends SimpleFormController<PropertyEditCom
 
         Vocabulary<Value> vocabulary = definition.getVocabulary();
         if (vocabulary != null) {
-            Value[] definitionAllowedValues = vocabulary.getAllowedValues();
+            Collection<Value> definitionAllowedValues = vocabulary.vocabularyValues();
             formAllowedValues = new ArrayList<>();
             if (!definition.isMandatory()) {
                 formAllowedValues.add("");
@@ -262,7 +263,7 @@ public class PropertyEditController extends SimpleFormController<PropertyEditCom
                     return;
                 }
 
-                Value[] allowedValues = vocabulary.getAllowedValues();
+                Collection<Value> allowedValues = vocabulary.vocabularyValues();
 
                 if (allowedValues == null) {
                     return;
@@ -524,35 +525,35 @@ public class PropertyEditController extends SimpleFormController<PropertyEditCom
             return false;
         }
 
-        Value[] allowedValues = vocabulary.getAllowedValues();
+        Collection<Value> allowedValues = vocabulary.vocabularyValues();
 
         if (allowedValues == null) {
             return false;
         }
 
         if (def.isMandatory()) {
-            return (allowedValues.length == 2);
+            return (allowedValues.size() == 2);
         }
 
-        return (allowedValues.length == 1);
+        return (allowedValues.size() == 1);
     }
 
     private Value getToggleValue(PropertyTypeDefinition def, Property property) {
 
-        Value[] allowedValues = def.getVocabulary().getAllowedValues();
+        List<Value> allowedValues = def.getVocabulary().vocabularyValues();
 
-        if (!def.isMandatory() && allowedValues != null && allowedValues.length == 1) {
+        if (!def.isMandatory() && allowedValues != null && allowedValues.size() == 1) {
             if (property == null) {
-                return allowedValues[0];
+                return allowedValues.get(0);
             }
             return null;
         }
 
-        if (def.isMandatory() && allowedValues != null && allowedValues.length == 2) {
-            if (property.getValue().equals(allowedValues[0])) {
-                return allowedValues[0];
+        if (def.isMandatory() && allowedValues != null && allowedValues.size() == 2) {
+            if (property.getValue().equals(allowedValues.get(0))) {
+                return allowedValues.get(0);
             }
-            return allowedValues[1];
+            return allowedValues.get(1);
         }
 
         throw new IllegalArgumentException("Property " + def + " is not a toggleable property");

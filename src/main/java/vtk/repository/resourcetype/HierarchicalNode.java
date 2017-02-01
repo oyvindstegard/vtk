@@ -30,27 +30,37 @@
  */
 package vtk.repository.resourcetype;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.stream.Stream;
 
 public class HierarchicalNode<T> {
 
-    private T entry;
-    private List<HierarchicalNode<T>> children;
-    
-    public List<HierarchicalNode<T>> getChildren() {
-        return children;
-    }
+    private final T entry;
+    private final Collection<HierarchicalNode<T>> children;
 
-    public void setChildren(List<HierarchicalNode<T>> children) {
+    public HierarchicalNode(T entry, Collection<HierarchicalNode<T>> children) {
+        this.entry = entry;
         this.children = children;
+    }
+    
+    public Collection<HierarchicalNode<T>> getChildren() {
+        return children;
     }
 
     public T getEntry() {
         return entry;
     }
 
-    public void setEntry(T entry) {
-        this.entry = entry;
+    /**
+     * @return Stream of flattened hierarchy with this node as first element.
+     */
+    public Stream<HierarchicalNode<T>> flatten() {
+        return Stream.concat(Stream.of(this), children.stream().flatMap(HierarchicalNode::flatten));
+    }
+
+    @Override
+    public String toString() {
+        return "HierarchicalNode{" + "entry=" + entry + ", children=" + children + '}';
     }
 
 }

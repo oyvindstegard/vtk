@@ -1010,7 +1010,12 @@
     <property name="descriptionPropDef" ref="descriptionPropDef" />
     <property name="normalFolderProperties">
       <map>
-        <entry key-ref="collection.recursiveListingPropDef" value-ref="collection.string_value_false" />
+        <entry key-ref="collection.recursiveListingPropDef">
+          <bean class="vtk.repository.resourcetype.Value">
+            <constructor-arg value="false" type="java.lang.String" />
+            <constructor-arg ref="TYPE_STRING" />
+          </bean>
+        </entry>
       </map>
     </property>
     <property name="publishDatePropDef" ref="publishDatePropDef" />

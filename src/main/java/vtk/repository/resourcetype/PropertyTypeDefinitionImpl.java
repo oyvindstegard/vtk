@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, University of Oslo, Norway
+/* Copyright (c) 2006–2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ import vtk.security.Principal;
 @SuppressWarnings("deprecation")
 public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, InitializingBean {
 
-    private Map<String, Object> metadata = new HashMap<String, Object>();
+    private Map<String, Object> metadata = new HashMap<>();
     private Namespace namespace;
     private String name;
     private Type type = PropertyType.Type.STRING;
@@ -71,7 +71,7 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     private PropertyValidator validator;
     private ValueFormatter valueFormatter;
     private ValueSeparator defaultValueSeparator = new ConfigurableValueSeparator();
-    private Map<String, ValueSeparator> valueSeparators = new HashMap<String, ValueSeparator>();
+    private Map<String, ValueSeparator> valueSeparators = new HashMap<>();
     private Vocabulary<Value> vocabulary;
     private ValueFactory valueFactory;
     private ValueFormatterRegistry valueFormatterRegistry;
@@ -112,20 +112,15 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
         prop.setDefinition(this);
 
         if (value instanceof Date) {
-            Date date = (Date) value;
-            prop.setDateValue(date);
+            prop.setDateValue((Date)value);
         } else if (value instanceof Boolean) {
-            Boolean bool = (Boolean) value;
-            prop.setBooleanValue(bool.booleanValue());
+            prop.setBooleanValue((Boolean)value);
         } else if (value instanceof Long) {
-            Long l = (Long) value;
-            prop.setLongValue(l.longValue());
+            prop.setLongValue((Long)value);
         } else if (value instanceof Integer) {
-            Integer i = (Integer) value;
-            prop.setIntValue(i.intValue());
+            prop.setIntValue((Integer)value);
         } else if (value instanceof Principal) {
-            Principal p = (Principal) value;
-            prop.setPrincipalValue(p);
+            prop.setPrincipalValue((Principal)value);
         } else if (!(value instanceof String)) {
             throw new ValueFormatException("Supplied value of property [namespaces: " + namespace + ", name: " + name
                     + "] not of any supported type " + "(type was: " + value.getClass() + ")");

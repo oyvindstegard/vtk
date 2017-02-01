@@ -31,6 +31,8 @@
 package vtk.repository.store.db;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -1144,10 +1146,9 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                                         + property + ": native string size limit exceeded and type cannot be stored as binary.");
                         }
                         
-                        BinaryValue bval = new BufferedBinaryValue(nativeStringValue, valueContentType);
                         parameters.put("value", "#binary");
-                        parameters.put("binaryContent", bval.getBytes());
-                        parameters.put("binaryMimeType", bval.getContentType());
+                        parameters.put("binaryContent", nativeStringValue.getBytes(StandardCharsets.UTF_8));
+                        parameters.put("binaryMimeType", valueContentType);
 
                     } else {
                         // Value stored in regular "value" column, make sure binary ref columns are null
@@ -1499,7 +1500,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         public void addEntry(Privilege action, Principal principal) {
             Set<Principal> set = this.get(action);
             if (set == null) {
-                set = new HashSet<Principal>();
+                set = new HashSet<>();
                 this.put(action, set);
             }
             set.add(principal);
@@ -1530,8 +1531,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 /**
  * An on-demand loading binary value with reference and
  * access to value in DataAccesor.
- * 
  */
+
 final class BinaryValueReference implements BinaryValue {
 
     private final Integer ref;
@@ -1555,12 +1556,22 @@ final class BinaryValueReference implements BinaryValue {
         byte[] data = getBytes();
         return new InputStreamWithLength(new ByteArrayInputStream(data), data.length);
     }
-    
+
     @Override
     public byte[] getBytes() throws DataAccessException {
         return this.dao.getBinaryPropertyBytes(this.ref);
     }
-    
+
+    @Override
+    public String stringValue(Charset charset) {
+        return new String(getBytes(), charset);
+    }
+
+    @Override
+    public String stringValue() {
+        return new String(getBytes(), StandardCharsets.UTF_8);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -1585,9 +1596,8 @@ final class BinaryValueReference implements BinaryValue {
     
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder("BinaryValueReference[");
-        b.append("ref = ").append(this.ref).append("]");
+        StringBuilder b = new StringBuilder("BinaryValueReference{");
+        b.append("ref = ").append(this.ref).append("}");
         return b.toString();
     }
-
 }

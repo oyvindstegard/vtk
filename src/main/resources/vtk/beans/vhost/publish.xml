@@ -381,14 +381,10 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
-        <property name="type" value="BOOLEAN" />
+        <constructor-arg value="BOOLEAN" />
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="boolean">
-                <value>true</value>
-              </constructor-arg>
-            </bean>
+            <ref bean="VALUE_TRUE"/>
           </list>
         </property>
       </bean>

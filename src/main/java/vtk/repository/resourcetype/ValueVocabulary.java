@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, University of Oslo, Norway
+/* Copyright (c) 2007,2017 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,43 +30,104 @@
  */
 package vtk.repository.resourcetype;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.beans.factory.InitializingBean;
+import java.util.stream.Collectors;
 import vtk.repository.Vocabulary;
 
-public class ValueVocabulary implements Vocabulary<Value>, InitializingBean {
+/**
+ * An ordered set of allowed values of uniform type.
+ *
+ * <p>Supports formatting of values through resource bundle files.
+ */
+public class ValueVocabulary implements Vocabulary<Value> {
 
-    private PropertyType.Type type = PropertyType.Type.STRING;
-    private String messageSourceBaseName;
-    private Value[] allowedValues;
-    private ValueFormatter valueFormatter;
-    
-    public Value[] getAllowedValues() {
-        return this.allowedValues;
+    private final PropertyType.Type type;
+    private List<Value> allowedValues = new ArrayList<>();
+    private MessageSourceValueFormatter messageSourceValueFormatter;
+
+    /**
+     * Construct vocabulary with default value type {@link PropertyType.Type#STRING}.
+     */
+    public ValueVocabulary() {
+        this.type = PropertyType.Type.STRING;
     }
 
-    public void setValues(List<Value> allowedValues) {
-        this.allowedValues = allowedValues.toArray(new Value[allowedValues.size()]);
-    }
-
-    
-    public void setMessageSourceBaseName(String messageSourceBaseName) {
-        this.messageSourceBaseName = messageSourceBaseName;
-    }
-
-    public ValueFormatter getValueFormatter() {
-        return this.valueFormatter;
-    }
-
-    
-    public void setType(PropertyType.Type type) {
+    /**
+     * Construct vocabulary with specified value type.
+     * @param type
+     */
+    public ValueVocabulary(PropertyType.Type type) {
         this.type = type;
     }
 
-    public void afterPropertiesSet() throws Exception {
-        if (this.messageSourceBaseName != null) {
-            this.valueFormatter = new MessageSourceValueFormatter(this.messageSourceBaseName, this.type);
-        } 
+    @Override
+    public List<Value> vocabularyValues() {
+        return allowedValues;
     }
+
+    /**
+     * Set list of allowed values.
+     *
+     * <p>If list contains <code>Value</code> objects of a different type than
+     * declared for the vocabulary, then value will converted if possible. For
+     * other objects, conversion of their default string representation will
+     * be attempted.
+     *
+     * @param allowedValues initial list of allowed values for vocabulary
+     */
+    public void setValues(List<?> allowedValues) {
+        if (allowedValues == null) {
+            throw new IllegalArgumentException("allowedValues cannot be null");
+        }
+
+        this.allowedValues = allowedValues.stream().map(this::convert).collect(Collectors.toList());
+    }
+
+    /**
+     * Add an allowed value to the vocabulary.
+     * @see #setValues(java.util.List)
+     * @param value
+     */
+    public void addValue(Object value) {
+        allowedValues.add(convert(value));
+    }
+
+    private Value convert(Object value) {
+        if (value instanceof Value && ((Value)value).getType() == type) {
+            return (Value)value;
+        }
+
+        return new Value(value.toString(), type);
+    }
+
+    /**
+     * Set initial message source base name used for localized value formatting.
+     * @param baseName
+     */
+    public void setMessageSourceBaseName(String baseName) {
+        this.messageSourceValueFormatter = new MessageSourceValueFormatter(type, baseName);
+    }
+
+    /**
+     * Add a message source basename for the value vocabulary.
+     * @param baseName
+     */
+    public void addMessageSourceBaseName(String baseName) {
+        if (this.messageSourceValueFormatter == null) {
+            this.messageSourceValueFormatter = new MessageSourceValueFormatter(type, baseName);
+        } else {
+            this.messageSourceValueFormatter.addMessageSourceBaseNames(baseName);
+        }
+    }
+
+    /**
+     * @return a value formatter for this vocabulary, possibly <code>null</code> if
+     * no message source has been configured
+     */
+    @Override
+    public ValueFormatter getValueFormatter() {
+        return this.messageSourceValueFormatter;
+    }
+    
 }

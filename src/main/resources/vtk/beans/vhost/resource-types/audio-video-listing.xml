@@ -32,8 +32,8 @@
     <property name="mandatory" value="false" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.audio-video-listing-display-type" />
         <constructor-arg value="STRING" />
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.audio-video-listing-display-type" />
       </bean>
     </property>
     <property name="metadata">
@@ -56,26 +56,16 @@
     <property name="mandatory" value="false" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.audio-video-listing-sorting" />
         <constructor-arg value="STRING" />
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.audio-video-listing-sorting" />
       </bean>
     </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>publish-date</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>name</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
+            <value>publish-date</value>
+            <value>name</value>
           </list>
         </property>
       </bean>

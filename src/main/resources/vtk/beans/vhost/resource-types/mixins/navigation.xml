@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd" xmlns:aop="http://www.springframework.org/schema/aop">
 
   <bean id="navigationMixinResourceTypeDef" 
         class="vtk.repository.resourcetype.MixinResourceTypeDefinitionImpl">
@@ -33,15 +33,11 @@
     <property name="mandatory" value="false"/>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
-        <property name="type" value="BOOLEAN" />
+        <constructor-arg value="BOOLEAN" />
         <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-hidden" />
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="boolean">
-                <value>true</value>
-              </constructor-arg>
-            </bean>
+            <ref bean="VALUE_TRUE"/>
           </list>
         </property>
       </bean>
@@ -66,20 +62,12 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
-        <property name="type" value="BOOLEAN" />
+        <constructor-arg value="BOOLEAN" />
         <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-sortdescending" />        
         <property name="values">
           <list>
-             <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="boolean">
-                <value>false</value>
-              </constructor-arg>
-            </bean>
-             <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="boolean">
-                <value>true</value>
-              </constructor-arg>
-            </bean>          
+            <ref bean="VALUE_FALSE"/>
+            <ref bean="VALUE_TRUE"/>
           </list>
         </property>        
       </bean>
@@ -103,18 +91,12 @@
     <property name="mandatory" value="false"/>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
-        <property name="type" value="INT"/>
+        <constructor-arg value="INT"/>
         <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-importance" />
         <property name="values">
-          <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-            <property name="targetClass"><value>vtk.repository.resourcetype.ValueVocabularyUtil</value></property>
-            <property name="targetMethod"><value>integerRangeValueList</value></property>
-            <property name="arguments">
-              <list>
-                <value>15</value>
-                <value>-15</value>
-              </list>
-            </property>
+          <bean class="vtk.repository.resourcetype.ValueVocabularyUtil" factory-method="integerRangeValueList">
+             <constructor-arg value="15" />
+             <constructor-arg value="-15" />
           </bean>
         </property>
       </bean>

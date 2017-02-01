@@ -31,20 +31,15 @@
     <property name="mandatory" value="false" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.project-listing-display-type" />
         <constructor-arg value="STRING" />
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.project-listing-display-type" />
       </bean>
     </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>alphabetical</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
+            <value>alphabetical</value>
           </list>
         </property>
       </bean>

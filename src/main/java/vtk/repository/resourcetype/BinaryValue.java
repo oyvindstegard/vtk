@@ -31,6 +31,8 @@
 
 package vtk.repository.resourcetype;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import vtk.util.io.InputStreamWithLength;
 import vtk.repository.store.DataAccessException;
 
@@ -62,5 +64,17 @@ public interface BinaryValue {
      * @throws DataAccessException 
      */
     public byte[] getBytes() throws DataAccessException;
-    
+
+    /**
+     * Get value as string using the provided character set for decoding.
+     * @param charset the character set which should be used for decoding
+     * @return a decoded string
+     */
+    public String stringValue(Charset charset);
+
+    /**
+     * Get value as string using UTF-8 for decoding.
+     * @return a decoded string
+     */
+    public String stringValue();
 }
