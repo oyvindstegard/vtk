@@ -76,5 +76,5 @@ public class LocationHistoryEvaluator implements LatePropertyEvaluator {
         property.setJSONValue(value);
         return true;
     }
-    
+
 }

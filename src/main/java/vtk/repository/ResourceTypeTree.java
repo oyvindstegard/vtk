@@ -121,6 +121,7 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
      * Since a mixin might be included in several primary resource types, this
      * method returns an array.
      * 
+     * @param definition
      * @return an array containing the <code>PrimaryResourceTypeDefinition</code>s that define
      * this property, or an empty array if none 
      */

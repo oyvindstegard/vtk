@@ -290,8 +290,7 @@ public class PropertyFields extends Fields {
      * @throws DocumentMappingException 
      */
     Property fromFields(PropertyTypeDefinition def, List<IndexableField> fields) throws DocumentMappingException {
-        PropertyImpl property = new PropertyImpl();
-        property.setDefinition(def);
+        PropertyImpl property = new PropertyImpl(def);
         if (def.isMultiple()) {
             Value[] values = valuesFromFields(def.getType(), fields);
             property.setValues(values, false);

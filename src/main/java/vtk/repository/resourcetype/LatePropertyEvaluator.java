@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, University of Oslo, Norway
+/* Copyright (c) 2011,2017 University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,16 +35,21 @@ package vtk.repository.resourcetype;
 /**
  * Marker for evaluators which should only run after normal completion of
  * recursive top-down evaluation.
- * 
- * Only for testing concept. Late evaluation should probably be included in general
- * PropertyEvaluator interface instead (isLateEvaluation()), and also probably will need to introduce
- * ordering (getOrder()), to get predicatibility and maintain control when doing late evaluation.
- * 
- * Perhaps also introduce constraint on props with late-evaluators, that they cannot
- * be overridden, nor override anything (within the same line of type inheritance in resource type tree).
+ *
+ * <p>All late evaluators will be invoked according to natural order, but dependencies
+ * between late evaluators should probably be avoided in general.
  * 
  * @see PropertyEvaluator
  */
-public interface LatePropertyEvaluator extends PropertyEvaluator  {
+public interface LatePropertyEvaluator extends PropertyEvaluator, Comparable<LatePropertyEvaluator> {
+
+    @Override
+    public default int compareTo(LatePropertyEvaluator o) {
+        return order() < o.order() ? -1 : (order() > o.order() ? 1 : 0);
+    }
+
+    public default int order() {
+        return 0;
+    }
 
 }

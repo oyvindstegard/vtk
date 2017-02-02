@@ -319,8 +319,14 @@ public class RepositoryResourceHelper {
     }
     
     private void lateEvaluation(PropertyEvaluationContext ctx) throws IOException {
-        for (PropertyTypeDefinition def: ctx.getLateEvalutionPropertyTypeDefinitions()) {
-            evaluateManagedProperty(ctx, def);
+        List<PropertyTypeDefinition> lateEvalPropDefs = ctx.getLateEvalutionPropertyTypeDefinitions();
+
+        lateEvalPropDefs.sort((d1,d2) ->
+            ((LatePropertyEvaluator)d1.getPropertyEvaluator())
+                    .compareTo((LatePropertyEvaluator)d2.getPropertyEvaluator()));
+
+        for (PropertyTypeDefinition propDef: lateEvalPropDefs) {
+            evaluateManagedProperty(ctx, propDef);
         }
     }
 

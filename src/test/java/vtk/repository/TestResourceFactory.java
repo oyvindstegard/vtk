@@ -291,7 +291,6 @@ public class TestResourceFactory {
                 if (properties != null) {
                     for (String key: properties.keySet()) {
                         Object val = properties.get(key);
-                        PropertyImpl p = new PropertyImpl();
                         PropertyTypeDefinitionImpl def = new PropertyTypeDefinitionImpl();
                         Value value;
                         if (val instanceof Boolean) {
@@ -317,7 +316,7 @@ public class TestResourceFactory {
                         }
                         def.setName(key);
                         def.setNamespace(Namespace.DEFAULT_NAMESPACE);
-                        p.setDefinition(def);
+                        PropertyImpl p = new PropertyImpl(def);
                         p.setValue(value);
                         resource.addProperty(p);
                     }

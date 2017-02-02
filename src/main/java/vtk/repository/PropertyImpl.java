@@ -101,10 +101,18 @@ public class PropertyImpl implements Property {
 
     }
     
-    private PropertyTypeDefinition propertyTypeDefinition;
+    private final PropertyTypeDefinition propertyTypeDefinition;
     private Value value;
     private Value[] values;
     private boolean inherited = false;
+
+    public PropertyImpl(PropertyTypeDefinition propDef) {
+        if (propDef == null) {
+            throw new IllegalArgumentException("Property type definition cannot be null");
+        }
+        this.propertyTypeDefinition = propDef;
+        this.value = propDef.getDefaultValue();
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -496,11 +504,6 @@ public class PropertyImpl implements Property {
                 throw e;
             }
         }
-    }
-    
-
-    public void setDefinition(PropertyTypeDefinition propertyTypeDefinition) {
-        this.propertyTypeDefinition = propertyTypeDefinition;
     }
     
     @Override

@@ -1308,8 +1308,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     Property createProperty(Namespace ns, String name, Object objectValue) {
         
         PropertyTypeDefinition propDef = this.resourceTypeTree.getPropertyTypeDefinition(ns, name);
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(propDef);
+        PropertyImpl prop = new PropertyImpl(propDef);
 
         // See also PropertyTypeDefinitionImppl#createProperty(Object value) 
         // which essentially does the same thing, but with strict validation of value.
@@ -1346,8 +1345,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     Property createProperty(PropHolder holder) {
         Namespace namespace = this.resourceTypeTree.getNamespace(holder.namespaceUri);
         PropertyTypeDefinition propDef = this.resourceTypeTree.getPropertyTypeDefinition(namespace, holder.name);
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(propDef);
+        PropertyImpl prop = new PropertyImpl(propDef);
         
         // In case of multi-value props, some values may be stored as binary
         // and others directly as strings for the same property, depending on size.

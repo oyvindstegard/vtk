@@ -95,21 +95,13 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
 
     @Override
     public Property createProperty() {
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(this);
-
-        if (this.getDefaultValue() != null) {
-            prop.setValue(this.getDefaultValue());
-        }
-
-        return prop;
+        return new PropertyImpl(this);
     }
 
     @Override
     public Property createProperty(Object value) throws ValueFormatException {
 
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(this);
+        PropertyImpl prop = new PropertyImpl(this);
 
         if (value instanceof Date) {
             prop.setDateValue((Date)value);
@@ -139,8 +131,7 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     @Override
     public Property createProperty(String[] stringValues) throws ValueFormatException {
 
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(this);
+        PropertyImpl prop = new PropertyImpl(this);
 
         if (this.isMultiple()) {
             Value[] values = this.valueFactory.createValues(stringValues, getType());
@@ -182,8 +173,7 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
                 throw new ValueFormatException("Cannot create property of type " + getType() + " from binary value(s)");
         }
 
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(this);
+        PropertyImpl prop = new PropertyImpl(this);
         if (this.isMultiple()) {
             prop.setValues(this.valueFactory.createValues(binaryValues, type));
         } else {

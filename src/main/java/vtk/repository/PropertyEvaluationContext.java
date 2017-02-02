@@ -73,9 +73,9 @@ public class PropertyEvaluationContext {
     private Map<String, Object> propertyValueMap;
     private StoreContext storeContext;
     
-    private List<PropertyTypeDefinition> lateEvaluationPropDefs = new ArrayList<PropertyTypeDefinition>();
+    private final List<PropertyTypeDefinition> lateEvaluationPropDefs = new ArrayList<>();
 
-    private Map<String, Object> contextAttributes = new HashMap<String, Object>();
+    private Map<String, Object> contextAttributes = new HashMap<>();
 
     public static PropertyEvaluationContext propertiesChangeContext(ResourceImpl originalResource,
             ResourceImpl suppliedResource, Principal principal, Content content) throws InternalRepositoryException {
