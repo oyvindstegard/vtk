@@ -227,9 +227,7 @@ public interface Resource extends PropertySet, Cloneable {
      */
     public String getCharacterEncoding();
 
-
     public Object clone() throws CloneNotSupportedException;
-
 
     /**
      * @return Boolean indicating if resource has entries in acl concerning read permissions on the resource, i.e. if

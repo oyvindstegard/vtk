@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -87,7 +86,6 @@ public class ResourceImpl extends PropertySetImpl implements Resource {
     public String getContentLanguage() {
         return getPropValue(PropertyType.CONTENTLOCALE_PROP_NAME);
     }
-
 
     @Override
     public Acl getAcl() {
@@ -244,40 +242,6 @@ public class ResourceImpl extends PropertySetImpl implements Resource {
         return getDatePropValue(PropertyType.UNPUBLISH_DATE_PROP_NAME);
     }
     
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        LockImpl lock = null;
-        if (this.lock != null)
-            lock = (LockImpl) this.lock.clone();
-
-        ResourceImpl clone = new ResourceImpl(this.uri);
-        clone.setID(this.id);
-
-        if (this.acl != null) {
-            clone.setAcl(this.acl);
-        }
-        clone.setInheritedAcl(this.aclInherited);
-        clone.setAclInheritedFrom(this.getAclInheritedFrom());
-        clone.setLock(lock);
-        clone.setResourceType(super.resourceType);
-        
-        // Special case child URI list, shallow copy only.
-        clone.childURIs = this.childURIs;
-        
-        // Clone all props:
-        for (Map.Entry<Namespace, Map<String,Property>> entry: super.propertyMap.entrySet()) {
-            Namespace ns = entry.getKey();
-            Map<String,Property> propMap = entry.getValue();
-            Map<String,Property> clonePropMap = new HashMap<String,Property>(propMap.size() + propMap.size()/2);
-            for (Map.Entry<String,Property> propEntry: propMap.entrySet()) {
-                clonePropMap.put(propEntry.getKey(), (Property)propEntry.getValue().clone());
-            }
-            clone.propertyMap.put(ns, clonePropMap);
-        }
-
-        return clone;
-    }
-
     ResourceImpl createCopy(Path newUri, Acl acl) {
         ResourceImpl resource = new ResourceImpl(newUri);
         resource.setResourceType(getResourceType());

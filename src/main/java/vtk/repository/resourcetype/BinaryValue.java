@@ -32,7 +32,6 @@
 package vtk.repository.resourcetype;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import vtk.util.io.InputStreamWithLength;
 import vtk.repository.store.DataAccessException;
 

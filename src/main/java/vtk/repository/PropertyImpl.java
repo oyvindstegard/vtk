@@ -61,9 +61,7 @@ import vtk.util.text.Json;
  * 
  * XXX: Fail in all getters if value not initialized ?
  */
-public class PropertyImpl implements Cloneable, Property {
-
-    private static final long serialVersionUID = 3762531209208410417L;
+public class PropertyImpl implements Property {
 
     private static final Map<PropertyType.Type, Set<PropertyType.Type>> COMPATIBILITY_MAP;
     static {
@@ -373,16 +371,16 @@ public class PropertyImpl implements Cloneable, Property {
     }
     
     @Override
-    public Object clone() {
-        PropertyImpl clone = new PropertyImpl();
+    public Object clone() throws CloneNotSupportedException {
+
+        PropertyImpl clone = (PropertyImpl)super.clone(); // magically shallow copies all fields
         
-        clone.propertyTypeDefinition = this.propertyTypeDefinition;
-        clone.value = this.value;
         if (this.values != null) {
+            // Clone should not share values array with this object
+            // However, the values themselves are immutable and can be shared
             clone.values = new Value[this.values.length];
             System.arraycopy(this.values, 0, clone.values, 0, clone.values.length);
         }
-        clone.inherited = this.inherited;
         
         return clone;
     }

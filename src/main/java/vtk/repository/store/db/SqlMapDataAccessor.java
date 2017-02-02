@@ -51,7 +51,6 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
 import vtk.repository.Lock;
-import vtk.repository.LockImpl;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -749,7 +748,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         Map<Path, Lock> result = new HashMap<Path, Lock>();
 
         for (Map<String, Object> map : locks) {
-            LockImpl lock = new LockImpl((String) map.get("token"), principalFactory.getPrincipal((String) map
+            Lock lock = new Lock((String) map.get("token"), principalFactory.getPrincipal((String) map
                     .get("owner"), Principal.Type.USER), (String) map.get("ownerInfo"), Depth.fromString((String) map
                     .get("depth")), (Date) map.get("timeout"));
 
@@ -773,7 +772,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         for (Iterator<Map<String, Object>> i = locks.iterator(); i.hasNext();) {
             Map<String, Object> map = i.next();
-            LockImpl lock = new LockImpl((String) map.get("token"), principalFactory.getPrincipal((String) map
+            Lock lock = new Lock((String) map.get("token"), principalFactory.getPrincipal((String) map
                     .get("owner"), Principal.Type.USER), (String) map.get("ownerInfo"), Depth.fromString((String) map
                     .get("depth")), (Date) map.get("timeout"));
 

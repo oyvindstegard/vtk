@@ -907,10 +907,10 @@ public class RepositoryImpl implements Repository, ApplicationContextAware, Clus
                 timeout = new Date(System.currentTimeMillis() + this.lockDefaultTimeout);
             }
 
-            LockImpl lock = new LockImpl(newLockToken, principal, ownerInfo, depth, timeout);
+            Lock lock = new Lock(newLockToken, principal, ownerInfo, depth, timeout);
             r.setLock(lock);
         } else {
-            r.setLock(new LockImpl(r.getLock().getLockToken(), principal, ownerInfo, depth, new Date(System
+            r.setLock(new Lock(r.getLock().getLockToken(), principal, ownerInfo, depth, new Date(System
                     .currentTimeMillis() + (requestedTimeoutSeconds * 1000))));
         }
 
