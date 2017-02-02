@@ -36,15 +36,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import jdk.nashorn.internal.runtime.linker.NashornBeansLinker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,7 +133,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
      * Maps from mixin types to complete sets of primary resource types including
      * all descendants.
      */
-    private Map<MixinResourceTypeDefinition, Set<PrimaryResourceTypeDefinition>> mixinTypePrimaryTypesMap =
+    private final Map<MixinResourceTypeDefinition, Set<PrimaryResourceTypeDefinition>> mixinTypePrimaryTypesMap =
         new LinkedHashMap<>();
 
 
@@ -544,15 +541,11 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         if (parent == null) {
             throw new IllegalStateException("Must register resource type under an existing resource type");
         }
-        List<PrimaryResourceTypeDefinition> children = this.parentChildMap.get(parent);
-        if (children == null) {
-            children = new ArrayList<>();
-            this.parentChildMap.put(parent, children);
-        }
-        children.add(def);
-        addMixins(def);
+
+        this.parentChildMap.computeIfAbsent(parent, k -> new ArrayList<>()).add(def);
+
+        registerMixins(def);
         injectTypeLocalizationProvider(def);
-        mapMixinTypesToPrimaryTypes();
         mapPropertyDefinitionsToPrimaryTypes();
 
         this.resourceTypeDescendantNames = buildResourceTypeDescendantNamesMap();
@@ -602,16 +595,10 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
             
             // Don't add the root resource type's "parent"
             if (parent != null) {
-                List<PrimaryResourceTypeDefinition> children = this.parentChildMap.get(parent);
-
-                if (children == null) {
-                    children = new ArrayList<>();
-                    this.parentChildMap.put(parent, children);
-                } 
-                children.add(def);
+                this.parentChildMap.computeIfAbsent(parent, k -> new ArrayList<>()).add(def);
             }
 
-            addMixins(def);
+            registerMixins(def);
             
             // Inject localized type name provider
             // XXX: I wanted to avoid having to explicitly configure the dependency for
@@ -631,7 +618,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         this.resourceTypeDescendantNames = buildResourceTypeDescendantNamesMap();
     }
 
-    private void addMixins(PrimaryResourceTypeDefinition def) {
+    private void registerMixins(PrimaryResourceTypeDefinition def) {
         List<MixinResourceTypeDefinition> mixins = def.getMixinTypeDefinitions();
         if (mixins == null) {
             return;
@@ -677,13 +664,8 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
                 continue;
             }
             Namespace namespace = propDef.getNamespace();
-            Map<String, PropertyTypeDefinition> propDefMap = 
-                this.propertyTypeDefinitions.get(namespace);
-
-            if (propDefMap == null) {
-                propDefMap = new HashMap<>();
-                this.propertyTypeDefinitions.put(namespace, propDefMap);
-            }
+            Map<String, PropertyTypeDefinition> propDefMap =
+                    this.propertyTypeDefinitions.computeIfAbsent(namespace, k -> new HashMap<>());
             if (propDefMap.get(propDef.getName()) == null) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Registering property type definition "
@@ -695,19 +677,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         }
     }
 
-
-    private Set<PrimaryResourceTypeDefinition> getDescendantsAndSelf(PrimaryResourceTypeDefinition def) {
-        Set<PrimaryResourceTypeDefinition> s = new LinkedHashSet<>();
-        s.add(def);
-        List<PrimaryResourceTypeDefinition> children = this.parentChildMap.get(def);
-        if (children != null) {
-            for (PrimaryResourceTypeDefinition child: children) {
-                s.addAll(getDescendantsAndSelf(child));
-            }
-        }
-        return s;
-    }
-    
     /**
      * Build map of resource type names to names of all descendants
      */
