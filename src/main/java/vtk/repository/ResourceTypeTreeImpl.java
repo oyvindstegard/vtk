@@ -228,11 +228,25 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         return children;
     }
 
+    /**
+     * Get collection of all descendant type names of the provided type name.
+     *
+     * <p>If a mixin resource type name is provided, then descendats are all primary types
+     * which has the mixin and all their descendants.
+     *
+     * @param name
+     * @return collection of all descendant type names of the provided type name
+     */
     @Override
     public Collection<String> getDescendants(String name) {
          return this.resourceTypeDescendantNames.get(name);
     }
 
+    /**
+     * Root nodes include the root resource type definition, as well as
+     * all mixin types.
+     * @return collection of root nodes
+     */
     @Override
     public Collection<HierarchicalNode<String>> getRootNodes() {
         List<HierarchicalNode<String>> roots = new ArrayList<>();
@@ -243,6 +257,10 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         return roots;
     }
 
+    /**
+     *
+     * @return flat list of names of all resource type definitions including mixins.
+     */
     @Override
     public List<String> vocabularyValues() {
         return new ArrayList<>(resourceTypeNameMap.keySet());
@@ -284,6 +302,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     @Override
     public ResourceTypeDefinition getResourceTypeDefinitionByName(String name) {
         ResourceTypeDefinition type = this.resourceTypeNameMap.get(name);
+        // XXX inconsistent with other parts of API which simply return null instead of throwing IAE:
         if (type == null) {
             throw new IllegalArgumentException(
                 "No resource type of name '" + name + "' exists");
@@ -483,7 +502,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
             Set<PrimaryResourceTypeDefinition> rts 
                 = nsPropMap.get(definition.getName());
             
-            if (rts != null){
+            if (rts != null) {
                 return rts.toArray(new PrimaryResourceTypeDefinition[rts.size()]);
             }
         }
@@ -607,24 +626,9 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
             injectTypeLocalizationProvider(mixinDef);
         }
 
-        mapMixinTypesToPrimaryTypes();
-
         mapPropertyDefinitionsToPrimaryTypes();
     
         this.resourceTypeDescendantNames = buildResourceTypeDescendantNamesMap();
-    }
-
-    private void mapMixinTypesToPrimaryTypes() {
-        final Map<MixinResourceTypeDefinition, Set<PrimaryResourceTypeDefinition>> m = new HashMap<>();
-
-        mixinTypeDefinitionMap.forEach((def,mixins) -> {
-            mixins.forEach((mixin) -> {
-                Set<PrimaryResourceTypeDefinition> set = m.computeIfAbsent(mixin, (k) -> new HashSet<>());
-                set.addAll(getDescendantsAndSelf(def));
-            });
-        });
-
-        this.mixinTypePrimaryTypesMap = m;
     }
 
     private void addMixins(PrimaryResourceTypeDefinition def) {
@@ -635,6 +639,9 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         for (MixinResourceTypeDefinition mixin: mixins) {
             if (!this.namespaceUriMap.containsKey(mixin.getNamespace().getUri()))
                 this.namespaceUriMap.put(mixin.getNamespace().getUri(), mixin.getNamespace());
+
+
+            mixinTypePrimaryTypesMap.computeIfAbsent(mixin, k -> new HashSet<>()).add(def);
         }
 
         this.mixinTypeDefinitionMap.put(def, mixins);
@@ -727,8 +734,8 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
 
         for (MixinResourceTypeDefinition mixin: this.mixinTypes) {
             PropertyTypeDefinition[] mixinPropDefs = mixin.getPropertyTypeDefinitions();
-            Set<PrimaryResourceTypeDefinition> primaryTypes = mixinTypePrimaryTypesMap.get(mixin);
-            for (PrimaryResourceTypeDefinition primaryTypeDef: primaryTypes) {
+            Set<PrimaryResourceTypeDefinition> mixinPrimarySet = mixinTypePrimaryTypesMap.get(mixin);
+            for (PrimaryResourceTypeDefinition primaryTypeDef: mixinPrimarySet) {
                 mapPropertyDefinitionsToPrimaryType(mixinPropDefs, mixin.getNamespace(), primaryTypeDef);
             }
         }

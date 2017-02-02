@@ -239,7 +239,7 @@ public class RepositoryResourceHelper {
         for (Property suppliedProp : resource) {
             PropertyTypeDefinition propDef = suppliedProp.getDefinition();
 
-            ResourceTypeDefinition[] rts = resourceTypeTree.getPrimaryResourceTypesForPropDef(propDef);
+            PrimaryResourceTypeDefinition[] rts = resourceTypeTree.getPrimaryResourceTypesForPropDef(propDef);
 
             if (rts == null) {
                 // Dead property, no resource type connected to it.
