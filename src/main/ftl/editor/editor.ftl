@@ -510,10 +510,26 @@
             <#local dynamicValuesForName = dynamicValues[name]>
             <#list dynamicValuesForName?keys as dynamicValueKey>
               <#local dynamicValue = dynamicValuesForName[dynamicValueKey]>
-              <#if dynamicValue == value>
-                <option selected="selected" value="${dynamicValue}">${dynamicValueKey}</option>
+              <#if dynamicValue?is_string>
+                <!-- Regular dropdown value (Map<String, String>) -->
+                <#if dynamicValue == value>
+                  <option selected="selected" value="${dynamicValue}">${dynamicValueKey}</option>
+                <#else>
+                  <option value="${dynamicValue}">${dynamicValueKey}</option>
+                </#if>
               <#else>
-                <option value="${dynamicValue}">${dynamicValueKey}</option>
+                <!-- Optgroup in dropdown (Map<String, Map<String, String>>) -->
+                <optgroup label="${dynamicValueKey}">
+                  <#local dynamicValuesForOptGroup = dynamicValue>
+                  <#list dynamicValuesForOptGroup?keys as dynamicValueOptGroupKey>
+                    <#local optGroupValue = dynamicValuesForOptGroup[dynamicValueOptGroupKey]>
+                    <#if optGroupValue == value>
+                      <option selected="selected" value="${optGroupValue}">${dynamicValueOptGroupKey}</option>
+                    <#else>
+                      <option value="${optGroupValue}">${dynamicValueOptGroupKey}</option>
+                    </#if>
+                  </#list>
+                </optgroup>
               </#if>
             </#list>
           </select>
