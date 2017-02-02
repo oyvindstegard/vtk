@@ -34,12 +34,13 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
-import vtk.repository.resourcetype.PropertyEvaluator;
+import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
-public class PublishEvaluator implements PropertyEvaluator {
+public class PublishEvaluator implements LatePropertyEvaluator {
 
     private PropertyTypeDefinition publishDatePropDef;
     private PropertyTypeDefinition unpublishDatePropDef;
@@ -62,40 +63,7 @@ public class PublishEvaluator implements PropertyEvaluator {
                 }
             }
         }
-        
         return true;
-
-// Old logic temporarily kept for reference:
-//        
-//        if (publishDateProp != null) {
-//            Date publishDate = publishDateProp.getDateValue();
-//            if (unpublishDateProp != null) {
-//                Date unpublishDate = unpublishDateProp.getDateValue();
-//                if (publishDate.before(now) && unpublishDate.before(publishDate)) {
-//                    property.setBooleanValue(true);
-//                    
-//                    // XXX: deleting a property that is not evaluated by this evaluator:
-//                    ctx.getNewResource().removeProperty(this.unpublishDatePropDef);
-//                    
-//                    return true;
-//                } else if (unpublishDate.before(now)) {
-//                    property.setBooleanValue(false);
-//                    return true;
-//                }
-//            }
-//            if (publishDate.before(now)) {
-//                property.setBooleanValue(true);
-//            } else {
-//                property.setBooleanValue(false);
-//            }
-//            return true;
-//        }
-//        
-//        property.setBooleanValue(false);
-//        
-//        ctx.getNewResource().removeProperty(this.unpublishDatePropDef);
-//        
-//        return true;
     }
 
     @Required
