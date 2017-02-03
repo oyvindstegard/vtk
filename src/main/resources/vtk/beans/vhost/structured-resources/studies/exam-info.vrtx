@@ -159,7 +159,7 @@ resourcetype exam-info {
       <body id="vrtx-exam-info">
         <div id="vrtx-content">
           <div id="vrtx-main-content" class="vrtx-hide-additional-content-true">
-            <h1>[call "resource:property" {"id":"title"}]</h1>
+            <h1>[localized 'exam']</h1>
 
             [if ! settings.services.examInfo]
               <p>[localized 'external-service-unavailable'].</p>
