@@ -305,7 +305,7 @@ resourcetype structured-project {
     rssUrl : (en : "Webaddress",no : "Webadresse", nn :"Webadresse"),
     combinedPublications : (en : "Publications", no : "Publikasjoner", nn : "Publikasjonar"),
     getExternalScientificInformation : (en : "Show publications registered in Cristin", no : "Vis publikasjoner rapportert i Cristin", nn : "Vis publikasjonar rapporterte i Cristin"),
-    projectNr : (en : "", no : "The project's Cristin ID", nn : "Prosjektets Cristin-ID"),
+    projectNr : (en : "The project's Cristin ID", no : "Prosjektets Cristin-ID", nn : "Prosjektets Cristin-ID"),
     numberOfPublications : (en : "Maximum number of publications from Cristin", no : "Maks antall publikasjoner fra Cristin", nn : "Maks antall publikasjonar frå Cristin"),
     selectedPublications : (en : "Selected publications", no : "Utvalgte publikasjoner", nn : "Utvalde publikasjonar"),
     tags : (en : "Tags", no : "Emneord", nn : "Emneord"),
