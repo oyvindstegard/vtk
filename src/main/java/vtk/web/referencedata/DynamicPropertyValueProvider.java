@@ -45,10 +45,10 @@ public abstract class DynamicPropertyValueProvider implements ReferenceDataProvi
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
-        Map<String, Map<String, String>> allDynamicValues;
+        Map<String, Map<String, Object>> allDynamicValues;
 
         if (model.containsKey(DYNAMIC_VALUES)) {
-            allDynamicValues = (Map<String, Map<String, String>>) model.get(DYNAMIC_VALUES);
+            allDynamicValues = (Map<String, Map<String, Object>>) model.get(DYNAMIC_VALUES);
         } else {
             allDynamicValues = new HashMap<>();
         }
@@ -58,7 +58,7 @@ public abstract class DynamicPropertyValueProvider implements ReferenceDataProvi
         model.put(DYNAMIC_VALUES, allDynamicValues);
     }
 
-    public abstract Map<String, String> addDynamicValuesForProperty();
+    public abstract Map<String, Object> addDynamicValuesForProperty();
 
     @Required
     public void setPropDef(PropertyTypeDefinition propDef) {
