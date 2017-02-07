@@ -55,8 +55,6 @@
     <property name="namespace" value="vrtx" />
     <property name="prefix" value="vrtx" />
     <property name="name" value="localize" />
-
-    <property name="messageSource" ref="messageSource" />
     <property name="defaultLocale" value="${view.defaultLocale}" />
     <property name="localePropertyDefinition" ref="contentLocalePropDef" />
   </bean>

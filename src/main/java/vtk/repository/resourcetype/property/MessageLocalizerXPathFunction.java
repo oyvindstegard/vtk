@@ -37,9 +37,9 @@ import org.jaxen.Context;
 import org.jaxen.FunctionCallException;
 import org.jaxen.Navigator;
 import org.jaxen.function.StringFunction;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.MessageSource;
+import org.springframework.context.MessageSourceAware;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -47,39 +47,24 @@ import vtk.util.repository.LocaleHelper;
 import vtk.xml.xpath.AbstractXPathFunction;
 
 
-public class MessageLocalizerXPathFunction extends AbstractXPathFunction
-  implements InitializingBean {
+public class MessageLocalizerXPathFunction extends AbstractXPathFunction implements MessageSourceAware {
 
     private MessageSource messageSource;
     private Locale defaultLocale;
     private PropertyTypeDefinition localePropertyDefinition;
-    
-    public void setMessageSource(MessageSource messageSource) {
-        this.messageSource = messageSource;
-    }
 
+    @Required
     public void setDefaultLocale(Locale defaultLocale) {
         this.defaultLocale = defaultLocale;
     }
-    
+
+    @Required
     public void setLocalePropertyDefinition(PropertyTypeDefinition localePropertyDefinition) {
         this.localePropertyDefinition = localePropertyDefinition;
     }
 
-    public void afterPropertiesSet() {
-        if (this.messageSource == null) {
-            throw new BeanInitializationException("JavaBean property 'messageSource' not set");
-        }
-        if (this.defaultLocale == null) {
-            throw new BeanInitializationException("JavaBean property 'defaultLocale' not set");
-        }
-        if (this.localePropertyDefinition == null) {
-            throw new BeanInitializationException("JavaBean property 'localePropertyDefinition' not set");
-        }
-
-    }
-
     @SuppressWarnings("rawtypes")
+    @Override
     public Object call(Context context, List args) throws FunctionCallException {
 
         if (args.isEmpty()) {
@@ -98,8 +83,8 @@ public class MessageLocalizerXPathFunction extends AbstractXPathFunction
                     locale = LocaleHelper.getLocale(localeProperty.getStringValue());
                 }
             }
-            String localized = this.messageSource.getMessage(value, new Object[0], value, locale);
-            return localized;
+
+            return this.messageSource.getMessage(value, new Object[0], value, locale);
 
         } catch (Throwable t) {
             throw new FunctionCallException(t);
@@ -107,5 +92,8 @@ public class MessageLocalizerXPathFunction extends AbstractXPathFunction
 
     }
 
+    @Override
+    public void setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
 }
-

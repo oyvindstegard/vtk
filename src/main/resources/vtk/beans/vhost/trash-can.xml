@@ -61,13 +61,8 @@
     <property name="permanentDeleteOverdueLimitInDays" value="${repository.permanentDeleteOverdueLimitInDays}" />
   </bean>
 
-  <bean class="org.springframework.context.support.ResourceBundleMessageSource">
-    <property name="basenames">
-      <list>
-        <value>vtk.i18n.trash-can.trash-can</value>
-      </list>
-    </property>
-    <property name="fallbackToSystemLocale" value="false" />
+  <bean parent="messageSource.addBasenames">
+    <property name="arguments" value="vtk.i18n.trash-can.trash-can" />
   </bean>
 
 </beans>

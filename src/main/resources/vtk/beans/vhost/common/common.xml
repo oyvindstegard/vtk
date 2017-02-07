@@ -2,12 +2,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
   
-  <bean id="messageSource" class="vtk.web.context.ChildDelegatingMessageSource">
+  <bean id="messageSource" class="vtk.web.context.LocaleTranslatingMessageSource">
     <property name="localeTranslationMap" ref="localeTranslationMap" />
-  </bean>
-  
-  <bean id="defaultMessageSource"
-        class="org.springframework.context.support.ResourceBundleMessageSource">
     <property name="basenames">
       <list>
         <value>vtk.i18n.messages</value>
@@ -20,12 +16,20 @@
     <property name="sourceMap">
        <map>
          <entry key="no_NO_NY">
-           <bean id="locale.nn" class="java.util.Locale">
-             <constructor-arg><value>nn</value></constructor-arg>
+           <bean class="java.util.Locale">
+             <constructor-arg value="nn"/>
            </bean>
          </entry>
        </map>
     </property>
+  </bean>
+
+  <!-- Use this to add i18n resource bundles to common application context message source. -->
+  <bean id="messageSource.addBasenames"
+        class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="messageSource" />
+    <property name="targetMethod" value="addBasenames" />
   </bean>
 
   <bean id="queryStringParser" abstract="true" class="vtk.web.search.ParsedQueryBuilder">

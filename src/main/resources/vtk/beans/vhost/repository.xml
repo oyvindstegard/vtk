@@ -205,13 +205,13 @@
     <property name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
 
-  <bean id="typeLocalizationProvider" class="vtk.repository.resourcetype.MessageSourceTypeLocalizationProvider">
-    <property name="messageSource" ref="repository.typeLocalizationMessageSource" />
+  <!-- Register resource types i18n in global message source -->
+  <bean parent="messageSource.addBasenames">
+    <property name="arguments" value="vtk.i18n.resource-types" />
   </bean>
-
-  <bean id="repository.typeLocalizationMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-    <property name="basename" value="vtk.i18n.resource-types" />
-    <property name="fallbackToSystemLocale" value="false" />
+  <!-- TODO: get rid of this: -->
+  <bean id="typeLocalizationProvider" class="vtk.repository.resourcetype.MessageSourceTypeLocalizationProvider">
+    <property name="messageSource" ref="messageSource" />
   </bean>
 
   <!-- Picks up ContentFactory implementations from bean context: -->

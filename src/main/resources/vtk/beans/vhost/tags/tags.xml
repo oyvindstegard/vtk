@@ -201,20 +201,14 @@
   <bean id="tagsHelper" class="vtk.web.tags.TagsHelper">
     <property name="resourceTypeTree" ref="resourceTypeTree" />
     <property name="servesWebRoot" value="${servesWebRoot}" />
-    <property name="messageSource" ref="tags.messageSource" />
   </bean>
 
   <bean id="tags.tagsParameterAssertion" parent="vrtxParameterEquals">
     <property name="parameterValue" value="tags" />
   </bean>
 
-  <bean id="tags.messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-    <property name="basenames">
-      <list>
-        <value>vtk.i18n.tags</value>
-      </list>
-    </property>
-    <property name="fallbackToSystemLocale" value="false" />
+  <bean parent="messageSource.addBasenames">
+    <property name="arguments" value="vtk.i18n.tags" />
   </bean>
 
 </beans>
