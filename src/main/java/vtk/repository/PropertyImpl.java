@@ -327,8 +327,7 @@ public class PropertyImpl implements Property {
 
     @Override
     public void setBooleanValue(boolean booleanValue) throws ValueFormatException {
-        Value v = new Value(booleanValue);
-        setValue(v);
+        setValue(booleanValue ? Value.TRUE : Value.FALSE);
     }
     
     @Override

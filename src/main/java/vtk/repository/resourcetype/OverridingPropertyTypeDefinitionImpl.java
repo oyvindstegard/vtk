@@ -46,7 +46,7 @@ import vtk.repository.resourcetype.PropertyType.Type;
 
 public class OverridingPropertyTypeDefinitionImpl implements OverridablePropertyTypeDefinition, InitializingBean {
 
-    private Map<String, Object> metadata = new HashMap<String, Object>();
+    private Map<String, Object> metadata = new HashMap<>();
 	
     private OverridablePropertyTypeDefinition overriddenPropDef;
     private PropertyEvaluator propertyEvaluator;
@@ -60,11 +60,14 @@ public class OverridingPropertyTypeDefinitionImpl implements OverridableProperty
         return this.overriddenPropDef.getPropertyEvaluator();
     }
 
+    /**
+     * @return default value of this property type definition, or if unset, any default
+     * value set for the property type definition being overridden.
+     */
     @Override
     public Value getDefaultValue() {
-        
-        if (this.defaultValue != null) {
-            return this.defaultValue;
+        if (defaultValue != null) {
+            return defaultValue;
         }
         return this.overriddenPropDef.getDefaultValue();
     }
@@ -125,6 +128,14 @@ public class OverridingPropertyTypeDefinitionImpl implements OverridableProperty
         }
     
         this.metadata = Collections.unmodifiableMap(this.metadata);
+
+        if (defaultValue != null && defaultValue.getType() != overriddenPropDef.getType()) {
+            defaultValue = new Value(defaultValue.toString(), overriddenPropDef.getType());
+
+            if (overriddenPropDef.getVocabulary() != null && !overriddenPropDef.getVocabulary().vocabularyValues().contains(defaultValue)) {
+                throw new IllegalStateException("Default value is not part of overridden property type definition's vocabulary: " + defaultValue);
+            }
+        }
     }
 
     public void setPropertyEvaluator(
@@ -132,8 +143,18 @@ public class OverridingPropertyTypeDefinitionImpl implements OverridableProperty
         this.propertyEvaluator = propertyEvaluator;
     }
 
-    public void setDefaultValue(Value defaultValue) {
-        this.defaultValue = defaultValue;
+    /**
+     * Set a default value for properties of this type.
+     *
+     * <p>
+     * If provided {@code Value} instance is of a different type than this property type definition,
+     * then basic conversion as supported by {@link Value#Value(java.lang.String, vtk.repository.resourcetype.PropertyType.Type) Value(String,PropertyType.Type)}
+     * is attempted using the value's {@code toString} representation.
+     *
+     * @param value some value object, or <code>null</code> to unset
+     */
+    public void setDefaultValue(Value value) {
+        this.defaultValue = value;
     }
 
     @Override

@@ -1317,7 +1317,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         if (objectValue instanceof Date) {
             value = new Value((Date)objectValue, propDef.getType() == PropertyType.Type.DATE);
         } else if (objectValue instanceof Boolean) {
-            value = new Value((Boolean)objectValue);
+            value = ((Boolean)objectValue) ? Value.TRUE : Value.FALSE;
         } else if (objectValue instanceof Long) {
             value = new Value((Long)objectValue);
         } else if (objectValue instanceof Integer) {
@@ -1400,7 +1400,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     }
 
     private Map<String, Object> getResourceAsMap(ResourceImpl r) {
-        Map<String, Object> resourceMap = new HashMap<String, Object>(32, 1.0f);
+        Map<String, Object> resourceMap = new HashMap<>(32, 1.0f);
         Path parentPath = r.getURI().getParent();
         Integer aclInheritedFrom = r.getAclInheritedFrom() != PropertySetImpl.NULL_RESOURCE_ID ? r.getAclInheritedFrom() : null;
         
@@ -1423,7 +1423,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         resourceMap.put(PropertyType.CONTENTMODIFIEDBY_PROP_NAME, r.getContentModifiedBy().getQualifiedName());
         resourceMap.put(PropertyType.PROPERTIESLASTMODIFIED_PROP_NAME, r.getPropertiesLastModified());
         resourceMap.put(PropertyType.PROPERTIESMODIFIEDBY_PROP_NAME, r.getPropertiesModifiedBy().getQualifiedName());
-        resourceMap.put(PropertyType.CONTENTLENGTH_PROP_NAME, new Long(r.getContentLength()));
+        resourceMap.put(PropertyType.CONTENTLENGTH_PROP_NAME, r.getContentLength());
 
         return resourceMap;
     }
@@ -1434,7 +1434,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         @SuppressWarnings("unchecked")
         List<String> groupNames = getSqlSession().selectList(sqlMap, null);
 
-        Set<Principal> groups = new HashSet<Principal>();
+        Set<Principal> groups = new HashSet<>();
         for (String groupName : groupNames) {
             Principal group = principalFactory.getPrincipal(groupName, Principal.Type.GROUP, false);
             groups.add(group);
@@ -1480,9 +1480,9 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
 
         if (multiple) {
-            prop.setValues(values);
+            ((PropertyImpl)prop).setValues(values, false);
         } else {
-            prop.setValue(values[0]);
+            ((PropertyImpl)prop).setValue(values[0], false);
         }
     }
 

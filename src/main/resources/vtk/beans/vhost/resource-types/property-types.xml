@@ -3,96 +3,78 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
     
-    <import resource="protection-levels.xml" />
+  <import resource="protection-levels.xml" />
 
-    <!--
-        Protection level PROTECTION_LEVEL_UNEDITABLE and mandatory=false are
-        default values used by properties, should only be overwritten where
-        necessary. Default type of properties is STRING
-    -->
-    <bean id="abstractPropDef" abstract="true">
-        <property name="valueFactory" ref="valueFactory" />
-        <property name="valueFormatterRegistry" ref="valueFormatterRegistry" />
-        <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
-        <property name="mandatory" value="false" />
-    </bean>
+  <!--
+      Protection level PROTECTION_LEVEL_UNEDITABLE and mandatory=false are
+      default values used by properties, should only be overwritten where
+      necessary. Default type of properties is STRING
+  -->
+  <bean id="abstractPropDef" abstract="true">
+    <property name="valueFactory" ref="valueFactory" />
+    <property name="valueFormatterRegistry" ref="valueFormatterRegistry" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="false" />
+  </bean>
     
-    <bean id="valueFactory" class="vtk.repository.resourcetype.ValueFactoryImpl">
-        <property name="principalFactory" ref="principalFactory" />
-    </bean>
+  <bean id="valueFactory" class="vtk.repository.resourcetype.ValueFactoryImpl">
+    <property name="principalFactory" ref="principalFactory" />
+  </bean>
     
-    <bean id="valueFormatterRegistry"
-        class="vtk.repository.resourcetype.ValueFormatterRegistry">
-        <property name="valueFormatters">
-            <map>
-                <entry key="STRING">
-                    <bean class="vtk.repository.resourcetype.StringValueFormatter" />
-                </entry>
-                <entry key="HTML">
-                    <bean class="vtk.repository.resourcetype.HtmlValueFormatter">
-                        <property name="htmlUtil" ref="htmlUtil" />
-                    </bean>
-                </entry>
-                <entry key="IMAGE_REF">
-                    <bean class="vtk.repository.resourcetype.ImageRefValueFormatter">
-                        <property name="thumbnailServiceBeanName" value="displayThumbnailService" />
-                        <property name="requireThumbnailService" value="true" />
-                    </bean>
-                </entry>
-                <entry key="JSON">
-                    <bean class="vtk.repository.resourcetype.StringValueFormatter" />
-                </entry>
-                <entry key="INT">
-                    <bean class="vtk.repository.resourcetype.IntValueFormatter" />
-                </entry>
-                <entry key="LONG">
-                    <bean class="vtk.repository.resourcetype.LongValueFormatter" />
-                </entry>
-                <entry key="TIMESTAMP">
-                    <bean class="vtk.repository.resourcetype.DateValueFormatter" />
-                </entry>
-                <entry key="DATE">
-                    <bean class="vtk.repository.resourcetype.DateValueFormatter">
-                        <constructor-arg value="true" />
-                    </bean>
-                </entry>
-                <entry key="BOOLEAN">
-                    <bean class="vtk.repository.resourcetype.BooleanValueFormatter" />
-                </entry>
-                <entry key="PRINCIPAL">
-                    <bean
-                        class="vtk.repository.resourcetype.PrincipalValueFormatter">
-                        <property name="principalFactory" ref="principalFactory" />
-                    </bean>
-                </entry>
-            </map>
-        </property>
-    </bean>
+  <bean id="valueFormatterRegistry"
+          class="vtk.repository.resourcetype.ValueFormatterRegistry">
+    <property name="valueFormatters">
+      <map>
+        <entry key="STRING">
+          <bean class="vtk.repository.resourcetype.StringValueFormatter" />
+        </entry>
+        <entry key="HTML">
+          <bean class="vtk.repository.resourcetype.HtmlValueFormatter">
+            <property name="htmlUtil" ref="htmlUtil" />
+          </bean>
+        </entry>
+        <entry key="IMAGE_REF">
+          <bean class="vtk.repository.resourcetype.ImageRefValueFormatter">
+            <property name="thumbnailServiceBeanName" value="displayThumbnailService" />
+            <property name="requireThumbnailService" value="true" />
+          </bean>
+        </entry>
+        <entry key="JSON">
+          <bean class="vtk.repository.resourcetype.StringValueFormatter" />
+        </entry>
+        <entry key="INT">
+          <bean class="vtk.repository.resourcetype.IntValueFormatter" />
+        </entry>
+        <entry key="LONG">
+          <bean class="vtk.repository.resourcetype.LongValueFormatter" />
+        </entry>
+        <entry key="TIMESTAMP">
+          <bean class="vtk.repository.resourcetype.DateValueFormatter" />
+        </entry>
+        <entry key="DATE">
+          <bean class="vtk.repository.resourcetype.DateValueFormatter">
+            <constructor-arg value="true" />
+          </bean>
+        </entry>
+        <entry key="BOOLEAN">
+          <bean class="vtk.repository.resourcetype.BooleanValueFormatter" />
+        </entry>
+        <entry key="PRINCIPAL">
+          <bean
+            class="vtk.repository.resourcetype.PrincipalValueFormatter">
+            <property name="principalFactory" ref="principalFactory" />
+          </bean>
+        </entry>
+      </map>
+    </property>
+  </bean>
     
-    <bean id="VALUE_TRUE" class="vtk.repository.resourcetype.Value">
-        <constructor-arg type="boolean">
-            <value>true</value>
-        </constructor-arg>
-    </bean>
-    
-    <bean id="VALUE_FALSE" class="vtk.repository.resourcetype.Value">
-        <constructor-arg type="boolean">
-            <value>false</value>
-        </constructor-arg>
-    </bean>
-    
-    <bean id="TYPE_STRING" class="vtk.repository.resourcetype.PropertyType$Type"
-          factory-method="valueOf">
-      <constructor-arg>
-        <value>STRING</value>
-      </constructor-arg>
-    </bean>
+  <bean id="VALUE_TRUE" class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">
+    <property name="staticField" value="vtk.repository.resourcetype.Value.TRUE" />
+  </bean>
 
-    <bean id="TYPE_HTML" class="vtk.repository.resourcetype.PropertyType$Type"
-          factory-method="valueOf">
-      <constructor-arg>
-        <value>HTML</value>
-      </constructor-arg>
-    </bean>
+  <bean id="VALUE_FALSE" class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">
+    <property name="staticField" value="vtk.repository.resourcetype.Value.FALSE" />
+  </bean>
 
 </beans>

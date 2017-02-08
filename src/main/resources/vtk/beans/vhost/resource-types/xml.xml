@@ -68,13 +68,7 @@
         class="vtk.repository.resourcetype.OverridingPropertyTypeDefinitionImpl">
     <property name="overriddenPropDef" ref="guessedCharacterEncodingPropDef" />
     <property name="propertyEvaluator" ref="xmlGuessedCharacterEncodingEvaluator" />
-    <property name="defaultValue">
-      <bean class="vtk.repository.resourcetype.Value">
-        <constructor-arg type="java.lang.String"
-                         value="${defaultXmllResourceCharacterEncoding}" />
-        <constructor-arg ref="TYPE_STRING" />
-      </bean>
-    </property>
+    <property name="defaultValue" value="${defaultXmllResourceCharacterEncoding}"/>
   </bean>
 
   <bean id="xmlGuessedCharacterEncodingEvaluator" 

@@ -56,4 +56,13 @@
   <import resource="mixins/show-subfolder-mixin.xml" />
   <import resource="mixins/link-other-language-mixin.xml" />
 
+  <!-- Property editor for String to Value conversion -->
+  <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+    <property name="customEditors">
+      <map>
+        <entry key="vtk.repository.resourcetype.Value" value="vtk.repository.resourcetype.ValueEditor" />
+      </map>
+    </property>
+  </bean>
+
 </beans>

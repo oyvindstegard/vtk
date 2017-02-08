@@ -32,7 +32,7 @@
         <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.show-subfolder-menu" />
         <property name="values">
           <list>
-            <ref bean="VALUE_TRUE"/>
+            <ref bean="VALUE_TRUE" />
           </list>
         </property>
       </bean>

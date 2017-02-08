@@ -42,7 +42,10 @@ import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 
 /**
- * Holds a single property value of appropriate type. Does not enforce value limits.
+ * Holds a single property value of appropriate type.
+ * 
+ * <p>Does not enforce value limits or value formats. Only basic type
+ * conversions are supported.
  *
  * <p>Objects of this class are immutable.
  * 
@@ -60,6 +63,16 @@ public class Value implements Comparable<Value> {
     private long longValue;
     private Principal principalValue;
     private BinaryValue binaryValue;
+
+    /**
+     * Canonical boolean true {@code Value } instance.
+     */
+    public static final Value TRUE = new Value(true);
+
+    /**
+     * Canonical boolean false {@code Value } instance.
+     */
+    public static final Value FALSE = new Value(false);
 
     /**
      * Construct value from a string value with a specific type.
@@ -85,12 +98,7 @@ public class Value implements Comparable<Value> {
             break;
             
         case BOOLEAN:
-            if ("true".equals(stringValue) || "false".equals(stringValue)) {
-                this.booleanValue = "true".equals(stringValue);
-            } else {
-                throw new ValueFormatException("Cannot convert string value '" +
-                        stringValue + "' to a boolean value.");
-            }
+            this.booleanValue = Boolean.parseBoolean(stringValue);
             break;
 
         case INT:

@@ -42,7 +42,7 @@
         <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.plaintext-edit" />
         <property name="values">
           <list>
-            <ref bean="VALUE_TRUE"/>
+            <ref bean="VALUE_TRUE" />
           </list>
         </property>
       </bean>

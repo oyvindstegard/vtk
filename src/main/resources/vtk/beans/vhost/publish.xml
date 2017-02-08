@@ -379,7 +379,7 @@
         <constructor-arg value="BOOLEAN" />
         <property name="values">
           <list>
-            <ref bean="VALUE_TRUE"/>
+            <ref bean="VALUE_TRUE" />
           </list>
         </property>
       </bean>

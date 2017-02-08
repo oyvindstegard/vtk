@@ -201,6 +201,18 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
         }
 
         this.metadata = Collections.unmodifiableMap(this.metadata);
+
+        if (defaultValue != null) {
+            // Possibly attempt conversion to proper type set during init
+            if (defaultValue.getType() != type) {
+                defaultValue = new Value(defaultValue.toString(), type);
+            }
+
+            if (vocabulary != null && !vocabulary.vocabularyValues().contains(defaultValue)) {
+                throw new IllegalStateException(
+                        "Default value was not found in value vocabulary: " + defaultValue);
+            }
+        }
     }
 
     @Override
@@ -235,8 +247,18 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
         this.inheritable = inheritable;
     }
 
-    public void setDefaultValue(Value defaultValue) {
-        this.defaultValue = defaultValue;
+    /**
+     * Set a default value for properties of this type.
+     *
+     * <p>
+     * If provided {@code Value} instance is of a different type than this property type definition,
+     * then basic conversion as supported by {@link Value#Value(java.lang.String, vtk.repository.resourcetype.PropertyType.Type) Value(String,PropertyType.Type)}
+     * is attempted using the value's {@code toString} representation.
+     *
+     * @param value some value object, or <code>null</code> to unset
+     */
+    public void setDefaultValue(Value value) {
+        this.defaultValue = value;
     }
 
     @Override

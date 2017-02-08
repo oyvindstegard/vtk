@@ -70,7 +70,7 @@ public class ValueFactoryImpl implements ValueFactory {
     static {
         CACHED_DATE_FORMAT_PARSERS = new ReusableObjectCache[DATE_FORMATS.length];
         for (int i = 0; i < DATE_FORMATS.length; i++) {
-            CACHED_DATE_FORMAT_PARSERS[i] = new ReusableObjectArrayStackCache<SimpleDateFormat>(3);
+            CACHED_DATE_FORMAT_PARSERS[i] = new ReusableObjectArrayStackCache<>(3);
         }
     }
 
@@ -126,7 +126,7 @@ public class ValueFactoryImpl implements ValueFactory {
             return new Value(stringValue, type);
 
         case BOOLEAN:
-            return new Value("true".equalsIgnoreCase(stringValue));
+            return Boolean.parseBoolean(stringValue) ? Value.TRUE : Value.FALSE;
 
         case DATE:
             Date date = getDateFromStringValue(stringValue);
@@ -162,8 +162,8 @@ public class ValueFactoryImpl implements ValueFactory {
                 throw new ValueFormatException(e.getMessage(), e);
             }
         default:
-            throw new IllegalArgumentException("Cannot make string value '" + stringValue + "' into type '" + type
-                    + "'");
+            throw new IllegalArgumentException("Cannot make string value '"
+                    + stringValue + "' into type '" + type + "'");
         }
 
     }

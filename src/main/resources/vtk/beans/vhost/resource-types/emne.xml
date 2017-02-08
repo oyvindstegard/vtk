@@ -94,14 +94,7 @@
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
     <property name="mandatory" value="true" /> 
-    <property name="defaultValue">
-      <bean class="vtk.repository.resourcetype.Value">
-        <constructor-arg type="java.lang.String">
-          <value>annet</value>
-        </constructor-arg>
-        <constructor-arg ref="TYPE_STRING" />
-      </bean>
-    </property>
+    <property name="defaultValue" value="annet"/>
     <property name="propertyEvaluator" ref="emneUndervisningsSpraakEvaluator" />
   </bean>
 
@@ -116,14 +109,7 @@
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
     <property name="mandatory" value="true" />
-    <property name="defaultValue">
-      <bean class="vtk.repository.resourcetype.Value">
-        <constructor-arg type="java.lang.String">
-          <value>annet</value>
-        </constructor-arg>
-        <constructor-arg ref="TYPE_STRING" />
-      </bean>
-    </property>
+    <property name="defaultValue" value="annet"/>
     <property name="propertyEvaluator" ref="emneUndervisningsSemesterEvaluator" />
   </bean>
 
@@ -166,14 +152,7 @@
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
     <property name="mandatory" value="true" />
-    <property name="defaultValue">
-      <bean class="vtk.repository.resourcetype.Value">
-        <constructor-arg type="java.lang.String">
-          <value>annet</value>
-        </constructor-arg>
-        <constructor-arg ref="TYPE_STRING" />
-      </bean>
-    </property>
+    <property name="defaultValue" value="annet"/>
     <property name="propertyEvaluator" ref="emneEksamensSemesterEvaluator" />
   </bean>
 
@@ -231,14 +210,7 @@
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
     <property name="mandatory" value="true" />
-    <property name="defaultValue">
-      <bean class="vtk.repository.resourcetype.Value">
-        <constructor-arg type="java.lang.String">
-          <value>bokmaal</value>
-        </constructor-arg>
-        <constructor-arg ref="TYPE_STRING" />
-      </bean>
-    </property>
+    <property name="defaultValue" value="bokmaal"/>
     <property name="propertyEvaluator" ref="emneSpraakEvaluator" />
   </bean>
 

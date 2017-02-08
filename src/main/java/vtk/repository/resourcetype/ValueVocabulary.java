@@ -43,7 +43,7 @@ import vtk.repository.Vocabulary;
 public class ValueVocabulary implements Vocabulary<Value> {
 
     private final PropertyType.Type type;
-    private List<Value> allowedValues = new ArrayList<>();
+    private List<Value> values = new ArrayList<>();
     private MessageSourceValueFormatter messageSourceValueFormatter;
 
     /**
@@ -63,7 +63,12 @@ public class ValueVocabulary implements Vocabulary<Value> {
 
     @Override
     public List<Value> vocabularyValues() {
-        return allowedValues;
+        return values;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" + values.toString() + "}";
     }
 
     /**
@@ -74,14 +79,14 @@ public class ValueVocabulary implements Vocabulary<Value> {
      * other objects, conversion of their default string representation will
      * be attempted.
      *
-     * @param allowedValues initial list of allowed values for vocabulary
+     * @param vocabularyValues initial list of allowed values for vocabulary
      */
-    public void setValues(List<?> allowedValues) {
-        if (allowedValues == null) {
-            throw new IllegalArgumentException("allowedValues cannot be null");
+    public void setValues(List<Value> vocabularyValues) {
+        if (vocabularyValues == null) {
+            throw new IllegalArgumentException("values cannot be null");
         }
 
-        this.allowedValues = allowedValues.stream().map(this::convert).collect(Collectors.toList());
+        this.values = vocabularyValues.stream().map(this::convert).collect(Collectors.toList());
     }
 
     /**
@@ -89,13 +94,13 @@ public class ValueVocabulary implements Vocabulary<Value> {
      * @see #setValues(java.util.List)
      * @param value
      */
-    public void addValue(Object value) {
-        allowedValues.add(convert(value));
+    public void addValue(Value value) {
+        values.add(convert(value));
     }
 
-    private Value convert(Object value) {
-        if (value instanceof Value && ((Value)value).getType() == type) {
-            return (Value)value;
+    private Value convert(Value value) {
+        if (value.getType() == type) {
+            return value;
         }
 
         return new Value(value.toString(), type);

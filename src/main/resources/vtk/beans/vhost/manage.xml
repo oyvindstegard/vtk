@@ -1013,7 +1013,7 @@
         <entry key-ref="collection.recursiveListingPropDef">
           <bean class="vtk.repository.resourcetype.Value">
             <constructor-arg value="false" type="java.lang.String" />
-            <constructor-arg ref="TYPE_STRING" />
+            <constructor-arg value="STRING" />
           </bean>
         </entry>
       </map>
