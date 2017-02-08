@@ -182,6 +182,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />
@@ -207,6 +208,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />

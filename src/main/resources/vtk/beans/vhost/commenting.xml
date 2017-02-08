@@ -438,14 +438,8 @@
     </property>
   </bean>
 
-   <bean id="commenting.messageSource"
-         class="org.springframework.context.support.ResourceBundleMessageSource">
-     <property name="basenames">
-       <list>
-         <value>vtk.i18n.commenting</value>
-       </list>
-     </property>
-     <property name="fallbackToSystemLocale" value="false" />
-   </bean>
+  <bean parent="messageSource.addBasenames">
+    <property name="arguments" value="vtk.i18n.commenting" />
+  </bean>
 
 </beans>

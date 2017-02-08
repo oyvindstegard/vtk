@@ -35,8 +35,10 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.MessageSource;
 
-public class MessageSourceTypeLocalizationProvider implements  
-                                            TypeLocalizationProvider  {
+/**
+ * Provides i18n for properties and resource types.
+ */
+public class MessageSourceTypeLocalizationProvider implements TypeLocalizationProvider  {
 
     public static final String PROPERTY_TYPE_NAME_KEY_PREFIX = "proptype.name.";
     public static final String PROPERTY_TYPE_DESC_KEY_PREFIX = "proptype.description.";
@@ -44,6 +46,7 @@ public class MessageSourceTypeLocalizationProvider implements
     
     private MessageSource messageSource;
 
+    @Override
     public String getLocalizedPropertyName(PropertyTypeDefinition def,
             Locale locale) {
 
@@ -59,6 +62,7 @@ public class MessageSourceTypeLocalizationProvider implements
         return this.messageSource.getMessage(key, null, name, locale);
     }
 
+    @Override
     public String getPropertyDescription(PropertyTypeDefinition def,
             Locale locale) {
         String key = null;
@@ -73,6 +77,7 @@ public class MessageSourceTypeLocalizationProvider implements
         return this.messageSource.getMessage(key, null, null, locale);
     }
 
+    @Override
     public String getLocalizedResourceTypeName(ResourceTypeDefinition def,
             Locale locale) {
         String name = def.getName();

@@ -30,6 +30,7 @@
  */
 package vtk.repository.resourcetype;
 
+import java.util.Collections;
 import java.util.List;
 
 import vtk.web.service.RepositoryAssertion;
@@ -61,7 +62,7 @@ public class PrimaryResourceTypeDefinitionImpl
 
     public List<MixinResourceTypeDefinition> getMixinTypeDefinitions() {
         if (this.mixinTypeDefinitions == null) {
-            return AbstractResourceTypeDefinitionImpl.EMPTY_MIXIN_TYPE_LIST;
+            return Collections.emptyList();
         }
         return this.mixinTypeDefinitions;
     }

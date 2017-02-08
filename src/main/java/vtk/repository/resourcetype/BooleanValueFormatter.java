@@ -37,13 +37,15 @@ import java.util.Locale;
  */
 public class BooleanValueFormatter implements ValueFormatter {
 
+    @Override
     public String valueToString(Value value, String format, Locale locale)
             throws IllegalValueTypeException {
         return value.toString();
     }
 
+    @Override
     public Value stringToValue(String string, String format, Locale locale) {
-        return new Value(Boolean.parseBoolean(string));
+        return Boolean.parseBoolean(string) ? Value.TRUE : Value.FALSE;
     }
 
 }

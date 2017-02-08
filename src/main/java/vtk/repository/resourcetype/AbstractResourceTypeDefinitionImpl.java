@@ -30,8 +30,6 @@
  */
 package vtk.repository.resourcetype;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.BeanInitializationException;
@@ -48,9 +46,6 @@ import vtk.repository.Namespace;
 public abstract class AbstractResourceTypeDefinitionImpl
   implements ResourceTypeDefinition, InitializingBean {
 
-    protected final static List<MixinResourceTypeDefinition> EMPTY_MIXIN_TYPE_LIST =
-        new ArrayList<MixinResourceTypeDefinition>();
-    
     private String name;
     private Namespace namespace;
     private PropertyTypeDefinition[] propertyTypeDefinitions = new PropertyTypeDefinitionImpl[0];

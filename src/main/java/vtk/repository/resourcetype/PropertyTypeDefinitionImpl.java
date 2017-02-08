@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, University of Oslo, Norway
+/* Copyright (c) 2006–2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ import vtk.security.Principal;
 @SuppressWarnings("deprecation")
 public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, InitializingBean {
 
-    private Map<String, Object> metadata = new HashMap<String, Object>();
+    private Map<String, Object> metadata = new HashMap<>();
     private Namespace namespace;
     private String name;
     private Type type = PropertyType.Type.STRING;
@@ -66,12 +66,11 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     private boolean inheritable = false;
     private RepositoryAction protectionLevel = PropertyType.PROTECTION_LEVEL_ACL_WRITE;
     private Value defaultValue;
-    private Value[] allowedValues;
     private PropertyEvaluator propertyEvaluator;
     private PropertyValidator validator;
     private ValueFormatter valueFormatter;
     private ValueSeparator defaultValueSeparator = new ConfigurableValueSeparator();
-    private Map<String, ValueSeparator> valueSeparators = new HashMap<String, ValueSeparator>();
+    private Map<String, ValueSeparator> valueSeparators = new HashMap<>();
     private Vocabulary<Value> vocabulary;
     private ValueFactory valueFactory;
     private ValueFormatterRegistry valueFormatterRegistry;
@@ -95,37 +94,24 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
 
     @Override
     public Property createProperty() {
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(this);
-
-        if (this.getDefaultValue() != null) {
-            prop.setValue(this.getDefaultValue());
-        }
-
-        return prop;
+        return new PropertyImpl(this);
     }
 
     @Override
     public Property createProperty(Object value) throws ValueFormatException {
 
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(this);
+        PropertyImpl prop = new PropertyImpl(this);
 
         if (value instanceof Date) {
-            Date date = (Date) value;
-            prop.setDateValue(date);
+            prop.setDateValue((Date)value);
         } else if (value instanceof Boolean) {
-            Boolean bool = (Boolean) value;
-            prop.setBooleanValue(bool.booleanValue());
+            prop.setBooleanValue((Boolean)value);
         } else if (value instanceof Long) {
-            Long l = (Long) value;
-            prop.setLongValue(l.longValue());
+            prop.setLongValue((Long)value);
         } else if (value instanceof Integer) {
-            Integer i = (Integer) value;
-            prop.setIntValue(i.intValue());
+            prop.setIntValue((Integer)value);
         } else if (value instanceof Principal) {
-            Principal p = (Principal) value;
-            prop.setPrincipalValue(p);
+            prop.setPrincipalValue((Principal)value);
         } else if (!(value instanceof String)) {
             throw new ValueFormatException("Supplied value of property [namespaces: " + namespace + ", name: " + name
                     + "] not of any supported type " + "(type was: " + value.getClass() + ")");
@@ -144,8 +130,7 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     @Override
     public Property createProperty(String[] stringValues) throws ValueFormatException {
 
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(this);
+        PropertyImpl prop = new PropertyImpl(this);
 
         if (this.isMultiple()) {
             Value[] values = this.valueFactory.createValues(stringValues, getType());
@@ -187,8 +172,7 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
                 throw new ValueFormatException("Cannot create property of type " + getType() + " from binary value(s)");
         }
 
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(this);
+        PropertyImpl prop = new PropertyImpl(this);
         if (this.isMultiple()) {
             prop.setValues(this.valueFactory.createValues(binaryValues, type));
         } else {
@@ -208,14 +192,22 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     @Override
     public void afterPropertiesSet() {
         if (this.valueFormatter == null) {
-            if (this.vocabulary != null && this.vocabulary.getValueFormatter() != null) {
-                this.valueFormatter = this.vocabulary.getValueFormatter();
-            } else {
-                this.valueFormatter = this.valueFormatterRegistry.getValueFormatter(this.type);
-            }
+            this.valueFormatter = this.valueFormatterRegistry.getValueFormatter(this.type);
         }
 
         this.metadata = Collections.unmodifiableMap(this.metadata);
+
+        if (defaultValue != null) {
+            // Possibly attempt conversion to proper type set during init
+            if (defaultValue.getType() != type) {
+                defaultValue = new Value(defaultValue.toString(), type);
+            }
+
+            if (vocabulary != null && !vocabulary.vocabularyValues().contains(defaultValue)) {
+                throw new IllegalStateException(
+                        "Default value was not found in value vocabulary: " + defaultValue);
+            }
+        }
     }
 
     @Override
@@ -250,8 +242,18 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
         this.inheritable = inheritable;
     }
 
-    public void setDefaultValue(Value defaultValue) {
-        this.defaultValue = defaultValue;
+    /**
+     * Set a default value for properties of this type.
+     *
+     * <p>
+     * If provided {@code Value} instance is of a different type than this property type definition,
+     * then basic conversion as supported by {@link Value#Value(java.lang.String, vtk.repository.resourcetype.PropertyType.Type) Value(String,PropertyType.Type)}
+     * is attempted using the value's {@code toString} representation.
+     *
+     * @param value some value object, or <code>null</code> to unset
+     */
+    public void setDefaultValue(Value value) {
+        this.defaultValue = value;
     }
 
     @Override
@@ -297,10 +299,6 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
 
     public void setValidator(PropertyValidator validator) {
         this.validator = validator;
-    }
-
-    public Value[] getAllowedValues() {
-        return this.allowedValues;
     }
 
     @Override

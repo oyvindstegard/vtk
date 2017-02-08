@@ -48,7 +48,7 @@ import vtk.security.PrincipalFactory;
  * Class representing a resource ACL as a set of privileges, where each
  * privilege is mapped to a set of principals.
  * 
- * Objects of this class are immutable.
+ * <p>Objects of this class are immutable.
  */
 public final class Acl implements Serializable {
     

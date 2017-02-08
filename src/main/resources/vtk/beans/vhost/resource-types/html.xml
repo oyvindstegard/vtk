@@ -71,13 +71,7 @@
         class="vtk.repository.resourcetype.OverridingPropertyTypeDefinitionImpl">
     <property name="overriddenPropDef" ref="guessedCharacterEncodingPropDef" />
     <property name="propertyEvaluator" ref="htmlGuessedCharacterEncodingEvaluator" />
-    <property name="defaultValue">
-      <bean class="vtk.repository.resourcetype.Value">
-        <constructor-arg type="java.lang.String"
-                         value="${defaultHtmlResourceCharacterEncoding}" />
-        <constructor-arg ref="TYPE_STRING" />
-      </bean>
-    </property>
+    <property name="defaultValue" value="${defaultHtmlResourceCharacterEncoding}"/>
   </bean>
 
   <bean id="html.charsetEvaluatorMap" class="java.util.HashMap">
@@ -89,13 +83,13 @@
           <bean class="vtk.repository.resourcetype.Value">
             <constructor-arg type="java.lang.String"
                              value="macintosh" />
-            <constructor-arg ref="TYPE_STRING" />
+            <constructor-arg value="STRING" />
           </bean>
           </key>
             <bean class="vtk.repository.resourcetype.Value">
               <constructor-arg type="java.lang.String"
                                value="MacRoman" />
-              <constructor-arg ref="TYPE_STRING" />
+              <constructor-arg value="STRING" />
             </bean>
         </entry>
       </map>

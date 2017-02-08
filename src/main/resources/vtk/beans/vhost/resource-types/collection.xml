@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
 
   <!-- Resource type 'collection' -->
   <bean id="collectionResourceTypeDefinition" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
     <property name="name" value="collection" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
+    <property name="parentTypeDefinition" ref="resourceResourceTypeDefinition" />
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.ResourceIsCollectionAssertion" />
@@ -20,7 +23,6 @@
         <ref bean="linkOtherLanguageMixinResourceTypeDef" />
       </list>
     </property>
-    <property name="parentTypeDefinition" ref="resourceResourceTypeDefinition" />
     <property name="propertyTypeDefinitions">
       <list>
         <ref bean="collectionTitlePropDef" />
@@ -55,6 +57,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN" />
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />
@@ -97,6 +100,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />
@@ -169,170 +173,71 @@
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
   </bean>
 
+
+  <!-- Config for property 'collection-type' begins here. -->
+
+  <!-- Extension point for the 'collection-type' property.
+       Values may be added to this vocabulary to provide more choices. -->
+  <bean id="collection.collection-type-vocabulary" class="vtk.repository.resourcetype.ValueVocabulary">
+    <property name="values">
+      <list>
+        <value>article-listing</value>
+        <value>folder-listing</value>
+        <value>blog-listing</value>
+        <value>event-listing</value>
+        <value>person-listing</value>
+        <value>employee-listing</value>
+        <value>project-listing</value>
+        <value>research-group-listing</value>
+        <value>image-listing</value>
+        <value>message-listing</value>
+        <value>internal-organizational-unit-folder</value>
+        <value>course-context</value>
+        <value>course-group-listing</value>
+        <value>course-description-listing</value>
+        <value>semester-context</value>
+        <value>audio-video-listing</value>
+        <value>program-listing</value>
+        <value>program-option-listing</value>
+        <value>program-context</value>
+        <value>program-option-context</value>
+        <value>student-exchange-university-agreement-listing</value>
+        <value>student-exchange-agreement-listing</value>
+        <value>fixed-resources-collection</value>
+      </list>
+    </property>
+  </bean>
+
+  <!-- Use this abstract bean to add values to the collection-type property vocabulary -->
+  <bean id="collection.collection-type.addValue" class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="collection.collection-type-vocabulary"/>
+    <property name="targetMethod" value="addValue"/>
+  </bean>
+
+  <bean id="collection.collection-type.messageSourceValueFormatter"
+        class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+    <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-type" />
+    <property name="keyPrefix" value="collection-type.value."/>
+  </bean>
+
+  <!-- Use this abstract bean to add resource bundles to collection-type message source (for added values) -->
+  <bean id="collection.collection-type.messageSource.addBasenames" class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="collection.collection-type.messageSourceValueFormatter"/>
+    <property name="targetMethod" value="addMessageSourceBasenames"/>
+  </bean>
+
   <bean id="collection.typePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
     <property name="name" value="collection-type" />
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
-    <property name="valueFormatter">
-      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-type" />
-        <constructor-arg value="STRING" />
-      </bean>
-    </property>
-    <property name="vocabulary">
-      <bean class="vtk.repository.resourcetype.ValueVocabulary">
-        <property name="values">
-          <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>article-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>folder-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>blog-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>event-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>person-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>employee-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>project-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>research-group-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>image-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>message-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>internal-organizational-unit-folder</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>course-context</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>course-group-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>course-description-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>semester-context</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>audio-video-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>master-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>program-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>program-option-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>program-context</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>program-option-context</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>student-exchange-university-agreement-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>student-exchange-agreement-listing</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>fixed-resources-collection</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-          </list>
-        </property>
-      </bean>
-    </property>
+    <property name="vocabulary" ref="collection.collection-type-vocabulary"/>
+    <property name="valueFormatter" ref="collection.collection-type.messageSourceValueFormatter"/>
   </bean>
+
+  <!-- Config for property 'collection-type' ends here. -->
 
   <bean id="collection.indexFilePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
     parent="abstractPropDef">
@@ -372,46 +277,26 @@
     <property name="fallbackTitlePropDef" ref="collectionTitlePropDef" />
   </bean>
 
-
-  <bean id="collection.string_value_true" class="vtk.repository.resourcetype.Value">
-    <constructor-arg type="java.lang.String">
-      <value>true</value>
-    </constructor-arg>
-    <constructor-arg ref="TYPE_STRING" />
-  </bean>
-  <bean id="collection.string_value_false" class="vtk.repository.resourcetype.Value">
-    <constructor-arg type="java.lang.String">
-      <value>false</value>
-    </constructor-arg>
-    <constructor-arg ref="TYPE_STRING" />
-  </bean>
-  <bean id="collection.string_value_selected" class="vtk.repository.resourcetype.Value">
-    <constructor-arg type="java.lang.String">
-      <value>selected</value>
-    </constructor-arg>
-    <constructor-arg ref="TYPE_STRING" />
-  </bean>
-
   <bean id="collection.recursiveListingPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
         parent="abstractPropDef">
     <property name="name" value="recursive-listing" />
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="true" />
-    <property name="defaultValue" ref="collection.string_value_true" />
+    <property name="defaultValue" ref="VALUE_TRUE" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-listing-recursive-listing" />
         <constructor-arg value="STRING" />
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-listing-recursive-listing" />
       </bean>
     </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <property name="values">
           <list>
-            <ref bean="collection.string_value_false" />
-            <ref bean="collection.string_value_true" />
-            <ref bean="collection.string_value_selected" />
+            <value>false</value>
+            <value>true</value>
+            <value>selected</value>
           </list>
         </property>
       </bean>
@@ -452,54 +337,23 @@
     <property name="mandatory" value="false" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-page" />
         <constructor-arg value="INT" />
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-page" />
       </bean>
     </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="INT" />
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="int">
-                <value>0</value>
-              </constructor-arg>
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="int">
-                <value>5</value>
-              </constructor-arg>
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="int">
-                <value>10</value>
-              </constructor-arg>
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="int">
-                <value>15</value>
-              </constructor-arg>
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="int">
-                <value>20</value>
-              </constructor-arg>
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="int">
-                <value>50</value>
-              </constructor-arg>
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="int">
-                <value>100</value>
-              </constructor-arg>
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="int">
-                <value>500</value>
-              </constructor-arg>
-            </bean>
+            <value>0</value>
+            <value>5</value>
+            <value>10</value>
+            <value>15</value>
+            <value>20</value>
+            <value>50</value>
+            <value>100</value>
+            <value>500</value>
           </list>
         </property>
       </bean>
@@ -514,26 +368,16 @@
     <property name="mandatory" value="false" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-sorting" />
         <constructor-arg value="STRING" />
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-sorting" />
       </bean>
     </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>lastModified</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="java.lang.String">
-                <value>name</value>
-              </constructor-arg>
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
+            <value>lastModified</value>
+            <value>name</value>
           </list>
         </property>
       </bean>
@@ -557,6 +401,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN" />
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />
@@ -583,6 +428,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />
@@ -609,6 +455,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />
@@ -635,6 +482,7 @@
     <property name="mandatory" value="false" />
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN"/>
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />

@@ -4,13 +4,8 @@
 
   <import resource="include-components.xml" />
 
-  <bean id="decorating.componentsMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-    <property name="basenames">
-      <list>
-        <value>vtk.i18n.decorator-components</value>
-      </list>
-    </property>
-    <property name="fallbackToSystemLocale" value="false" />
+  <bean parent="messageSource.addBasenames">
+    <property name="arguments" value="vtk.i18n.decorator-components" />
   </bean>
 
   <bean id="decorating.documentNamespace" class="java.lang.String">

@@ -325,24 +325,22 @@ public class LinkReplacerTest {
     }
     
     private Property singleProperty(String name, Type type, String value) {
-        PropertyImpl p = new PropertyImpl();
         PropertyTypeDefinitionImpl def = new PropertyTypeDefinitionImpl();
         def.setNamespace(Namespace.DEFAULT_NAMESPACE);
         def.setName(name);
         def.setType(type);
-        p.setDefinition(def);
+        PropertyImpl p = new PropertyImpl(def);
         p.setStringValue(value);
         return p;
     }
     
     private Property multiProperty(String name, Type type, String... values) {
-        PropertyImpl p = new PropertyImpl();
         PropertyTypeDefinitionImpl def = new PropertyTypeDefinitionImpl();
         def.setNamespace(Namespace.DEFAULT_NAMESPACE);
         def.setName(name);
         def.setType(type);
-        p.setDefinition(def);
         def.setMultiple(true);
+        PropertyImpl p = new PropertyImpl(def);
         List<Value> list = new ArrayList<>();
         for (String v: values) {
             list.add(new Value(v, type));

@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.support.RequestContext;
 import vtk.repository.Path;
 import vtk.repository.Resource;
@@ -63,7 +62,6 @@ public final class TagsHelper {
 
     private ResourceTypeTree resourceTypeTree;
     private boolean servesWebRoot;
-    private ResourceBundleMessageSource messageSource;
 
     public Resource getScopedResource(String token, HttpServletRequest request) throws Exception {
         Path requestedScope = getScopePath(request);
@@ -132,7 +130,7 @@ public final class TagsHelper {
                 overrideResourceTypeTitle);
 
         if (preferredLocale != null) {
-            return messageSource.getMessage(titleKey, localizationParams, preferredLocale);
+            return rc.getMessageSource().getMessage(titleKey, localizationParams, preferredLocale);
         }
 
         return rc.getMessage(titleKey, localizationParams);
@@ -241,11 +239,6 @@ public final class TagsHelper {
 
     public void setServesWebRoot(boolean servesWebRoot) {
         this.servesWebRoot = servesWebRoot;
-    }
-
-    @Required
-    public void setMessageSource(ResourceBundleMessageSource messageSource) {
-        this.messageSource = messageSource;
     }
 
 }

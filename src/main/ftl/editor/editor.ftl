@@ -437,7 +437,7 @@
       <#else>
 
         <#if (propDef.vocabulary)?exists>
-          <#local allowedValues = propDef.vocabulary.allowedValues />
+          <#local allowedValues = propDef.vocabulary.vocabularyValues() />
 
           <#if allowedValues?size = 1 && !useRadioButtons>
 

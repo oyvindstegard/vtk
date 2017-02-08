@@ -205,15 +205,6 @@
     <property name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
 
-  <bean id="typeLocalizationProvider" class="vtk.repository.resourcetype.MessageSourceTypeLocalizationProvider">
-    <property name="messageSource" ref="repository.typeLocalizationMessageSource" />
-  </bean>
-
-  <bean id="repository.typeLocalizationMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-    <property name="basename" value="vtk.i18n.resource-types" />
-    <property name="fallbackToSystemLocale" value="false" />
-  </bean>
-
   <!-- Picks up ContentFactory implementations from bean context: -->
   <bean id="contentRepresentationRegistry" class="vtk.repository.content.ContentRepresentationRegistry" />
 
@@ -288,6 +279,7 @@
     <property name="trim" value="true" />
   </bean>
 
+  <!-- TODO get rid of this and/or move out of this config file: -->
   <!-- ## Will search across multiple hosts when configured to do so ## -->
   <bean id="multiHostSearcher" class="vtk.repository.MultiHostSearcher" />
   

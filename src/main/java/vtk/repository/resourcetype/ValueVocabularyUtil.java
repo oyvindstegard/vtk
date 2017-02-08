@@ -43,7 +43,7 @@ public class ValueVocabularyUtil {
     private ValueVocabularyUtil() {}
     
     public static List<Value> integerRangeValueList(int value1, int value2){
-        List<Value> valueList = new ArrayList<Value>();
+        List<Value> valueList = new ArrayList<>();
 
         if (value1 > value2) {
             for (int i=value1; i >= value2; i--) {

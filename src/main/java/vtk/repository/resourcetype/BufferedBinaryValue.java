@@ -32,41 +32,48 @@
 package vtk.repository.resourcetype;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import vtk.util.io.InputStreamWithLength;
 
 /**
  * Binary value buffer.
- * Note that this class is not strictly immutable, since it provides
- * access to internal byte array containing the actual value.
+ *
+ * <p>Objects of this class are immutable.
  */
-public final class BufferedBinaryValue implements BinaryValue, Cloneable {
+public final class BufferedBinaryValue implements BinaryValue {
 
-    private byte[] buffer;
-    private String contentType;
+    private final byte[] buffer;
+    private final String contentType;
 
     /**
      * Construct a buffered binary value.
-     * @param buffer byte array containing the octets of this value
+     * @param value byte array containing the octets of this value
      * @param contentType the media type of the data in this value
      */
-    public BufferedBinaryValue(byte[] buffer, String contentType) {
-        if (buffer == null) throw new IllegalArgumentException("buffer cannot be null");
-        this.buffer = buffer;
+    public BufferedBinaryValue(byte[] value, String contentType) {
+        if (value == null) throw new IllegalArgumentException("value cannot be null");
+        this.buffer = copy(value);
         this.contentType = contentType;
     }
     
     /**
      * Convenience constructor for a buffered binary value from a <code>String</code>. The
      * binary value will be the string encoded as UTF-8.
-     * @param string a string 
+     * @param value a string
      * @param contentType the content type
      */
-    public BufferedBinaryValue(String string, String contentType) {
-        if (string == null) throw new IllegalArgumentException("string cannot be null");
-        this.buffer = string.getBytes(StandardCharsets.UTF_8);
+    public BufferedBinaryValue(String value, String contentType) {
+        if (value == null) throw new IllegalArgumentException("value cannot be null");
+        this.buffer = value.getBytes(StandardCharsets.UTF_8);
         this.contentType = contentType;
+    }
+
+    private byte[] copy(byte[] buffer) {
+        byte[] copy = new byte[buffer.length];
+        System.arraycopy(buffer, 0, copy, 0, copy.length);
+        return copy;
     }
     
     @Override
@@ -76,31 +83,31 @@ public final class BufferedBinaryValue implements BinaryValue, Cloneable {
 
     @Override
     public InputStreamWithLength stream() {
-        ByteArrayInputStream bis = new ByteArrayInputStream(this.buffer);
-        return new InputStreamWithLength(bis, this.buffer.length);
+        ByteArrayInputStream bis = new ByteArrayInputStream(buffer);
+        return new InputStreamWithLength(bis, buffer.length);
     }
     
     @Override
     public byte[] getBytes() {
-        return this.buffer;
+        return copy(buffer);
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
-        BufferedBinaryValue clone = (BufferedBinaryValue)super.clone();
-        byte[] copy = new byte[this.buffer.length];
-        System.arraycopy(this.buffer, 0, copy, 0, this.buffer.length);
-        clone.buffer = copy;
-        clone.contentType = this.contentType;
-        return clone;
+    public String stringValue(Charset charset) {
+        return new String(buffer, charset);
+    }
+
+    @Override
+    public String stringValue() {
+        return new String(buffer, StandardCharsets.UTF_8);
     }
 
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder("BufferedBinaryValue[");
+        StringBuilder b = new StringBuilder("BufferedBinaryValue{");
         b.append("type = ").append(this.contentType);
         b.append(", length = ").append(this.buffer.length);
-        b.append("]");
+        b.append("}");
         return b.toString();
     }
 
@@ -129,4 +136,5 @@ public final class BufferedBinaryValue implements BinaryValue, Cloneable {
         hash = 97 * hash + (this.contentType != null ? this.contentType.hashCode() : 0);
         return hash;
     }
+
 }

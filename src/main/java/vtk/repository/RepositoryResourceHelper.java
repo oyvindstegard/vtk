@@ -239,7 +239,7 @@ public class RepositoryResourceHelper {
         for (Property suppliedProp : resource) {
             PropertyTypeDefinition propDef = suppliedProp.getDefinition();
 
-            ResourceTypeDefinition[] rts = resourceTypeTree.getPrimaryResourceTypesForPropDef(propDef);
+            PrimaryResourceTypeDefinition[] rts = resourceTypeTree.getPrimaryResourceTypesForPropDef(propDef);
 
             if (rts == null) {
                 // Dead property, no resource type connected to it.
@@ -319,8 +319,14 @@ public class RepositoryResourceHelper {
     }
     
     private void lateEvaluation(PropertyEvaluationContext ctx) throws IOException {
-        for (PropertyTypeDefinition def: ctx.getLateEvalutionPropertyTypeDefinitions()) {
-            evaluateManagedProperty(ctx, def);
+        List<PropertyTypeDefinition> lateEvalPropDefs = ctx.getLateEvalutionPropertyTypeDefinitions();
+
+        lateEvalPropDefs.sort((d1,d2) ->
+            ((LatePropertyEvaluator)d1.getPropertyEvaluator())
+                    .compareTo((LatePropertyEvaluator)d2.getPropertyEvaluator()));
+
+        for (PropertyTypeDefinition propDef: lateEvalPropDefs) {
+            evaluateManagedProperty(ctx, propDef);
         }
     }
 

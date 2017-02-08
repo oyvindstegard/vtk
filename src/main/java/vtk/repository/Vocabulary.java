@@ -30,12 +30,18 @@
  */
 package vtk.repository;
 
-import vtk.repository.resourcetype.ValueFormatter;
+import java.util.List;
 
-
+/**
+ * A fixed ordered set of values, possibly with customized formatting support.
+ * @param <T> value type
+ */
 public interface Vocabulary<T> {
-    
-    public T[] getAllowedValues();
-    
-    public ValueFormatter getValueFormatter();
+
+    /**
+     * Obtain a list of vocabulary values.
+     * @return collection of vocabulary values, empty if no values are present, never <code>null</code>.
+     */
+    public List<T> vocabularyValues();
+
 }

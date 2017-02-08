@@ -38,22 +38,38 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 
 public class MessageSourceValueFormatter implements ValueFormatter {
 
-    private String baseName;
-    private ReversableMessageSource messageSource;
+    private final ReversableMessageSource messageSource = new ReversableMessageSource();
+    private final PropertyType.Type type;
+
     private String keyPrefix = "value.";
     private String unsetKey = "unset";
-    private PropertyType.Type type;
-
     
-    public MessageSourceValueFormatter(String messageSourceBaseName, PropertyType.Type type) {
-        this.baseName = messageSourceBaseName;
-        ReversableMessageSource messageSource = new ReversableMessageSource();
-        messageSource.setBasename(messageSourceBaseName);
+    public MessageSourceValueFormatter(String... messageSourceBaseNames) {
+        this(PropertyType.Type.STRING, messageSourceBaseNames);
+    }
 
-        this.messageSource = messageSource;
+    public MessageSourceValueFormatter(PropertyType.Type type, String... messageSourceBaseNames) {
+        messageSource.addBasenames(messageSourceBaseNames);
         this.type = type;
     }
 
+    /**
+     * Add a base name to set of basenames for this message source.
+     * @param basenames like {@link ResourceBundleMessageSource#addBasenames(java.lang.String...) }
+     */
+    public void addMessageSourceBasenames(String... basenames) {
+        messageSource.addBasenames(basenames);
+    }
+
+    /**
+     * Set a single basename for i18n resource bundle.
+     * @param basename
+     */
+    public void setMessageSourceBasename(String basename) {
+        messageSource.setBasename(basename);
+    }
+
+    @Override
     public String valueToString(Value value, String format, Locale locale)
             throws IllegalValueTypeException {
         if ("localized".equals(format)) {
@@ -66,6 +82,7 @@ public class MessageSourceValueFormatter implements ValueFormatter {
         return value.toString();
     }
 
+    @Override
     public Value stringToValue(String string, String format, Locale locale) {
         if (string == null) {
             throw new IllegalArgumentException("Cannot get value for 'null' formatted value");
@@ -87,32 +104,44 @@ public class MessageSourceValueFormatter implements ValueFormatter {
     }
 
     private Value stringToValueInternal(String stringValue) {
-        
-        switch (this.type) {
-        case BOOLEAN:
-            return new Value(Boolean.parseBoolean(stringValue));
-            
-        case INT:
-            return new Value(Integer.parseInt(stringValue));
 
-        default:
-            return new Value(stringValue, PropertyType.Type.STRING);
-        }
+        return new Value(stringValue, type);
+
     }
-    
+
     private class ReversableMessageSource extends ResourceBundleMessageSource {
         
         public String getKeyFromMessage(String value, Locale locale) {
-            ResourceBundle resourceBundle = getResourceBundle(baseName, locale);
-            Enumeration<String> keys = resourceBundle.getKeys();
-            while (keys.hasMoreElements()) {
-                String key = keys.nextElement();
-                String keyValue = resourceBundle.getString(key);
-                if (keyValue.equals(value)) {
-                    return key;
+
+            for (String baseName : getBasenameSet()) {
+                ResourceBundle resourceBundle = getResourceBundle(baseName, locale);
+                Enumeration<String> keys = resourceBundle.getKeys();
+                while (keys.hasMoreElements()) {
+                    String key = keys.nextElement();
+                    String keyValue = resourceBundle.getString(key);
+                    if (keyValue.equals(value)) {
+                        return key;
+                    }
                 }
             }
+
             return null;
         }
+    }
+
+    /**
+     * Prefix used for value keys. Default is <code>"value."</code>.
+     * @param keyPrefix 
+     */
+    public void setKeyPrefix(String keyPrefix) {
+        this.keyPrefix = keyPrefix;
+    }
+
+    /**
+     * Name of the key for unset value. Default is <code>"unset"</code>.
+     * @param unsetKey
+     */
+    public void setUnsetKey(String unsetKey) {
+        this.unsetKey = unsetKey;
     }
 }

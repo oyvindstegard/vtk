@@ -30,22 +30,65 @@
  */
 package vtk.repository;
 
+import java.util.Date;
+
 import vtk.security.Principal;
 
 /**
- * This interface defines the meta information about a lock.
+ * Represents repository resource locks.
+ *
+ * <p>Instances of this class are immutable.
  */
-public interface Lock extends java.io.Serializable, Cloneable {
+public class Lock implements java.io.Serializable {
 
-    public Repository.Depth getDepth();
+    private static final long serialVersionUID = 3546639889186633783L;
 
-    public Principal getPrincipal();
+    private final Principal principal;
+    private final String ownerInfo;
+    private final Repository.Depth depth;
+    private final Date timeout;
+    private final String lockToken;
     
-    public String getOwnerInfo();
+    public Lock(String lockToken, Principal principal, String ownerInfo, Repository.Depth depth,
+        Date timeout) {
+        this.lockToken = lockToken;
+        this.principal = principal;
+        this.timeout = (Date)timeout.clone();
+        this.ownerInfo = ownerInfo;
+        this.depth = depth;
+    }
 
-    public java.util.Date getTimeout();
+    public String getOwnerInfo() {
+        return this.ownerInfo;
+    }
 
-    public String getLockToken();
+    public Repository.Depth getDepth() {
+        return this.depth;
+    }
+
+    public String getLockToken() {
+        return this.lockToken;
+    }
+
+    public Date getTimeout() {
+        return (Date)this.timeout.clone();
+    }
+
+    public Principal getPrincipal() {
+        return this.principal;
+    }
     
-    public Object clone() throws CloneNotSupportedException;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
+        sb.append("{");
+        sb.append("depth =").append(this.depth);
+        sb.append(", principal = ").append(this.principal);
+        sb.append(", ownerInfo = ").append(this.ownerInfo);
+        sb.append(", timeout = ").append(this.timeout);
+        sb.append(", token = ").append(this.lockToken);
+        sb.append("}");
+        return sb.toString();
+    }
+
 }

@@ -62,13 +62,7 @@
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
     <property name="mandatory" value="true" />
     <property name="propertyEvaluator" ref="contentLengthEvaluator" />
-    <property name="defaultValue">
-      <bean class="vtk.repository.resourcetype.Value">
-        <constructor-arg type="long">
-          <value>0</value>
-        </constructor-arg>
-      </bean>
-    </property>
+    <property name="defaultValue" value="0" />
   </bean>
 
   <bean id="contentLengthEvaluator" class="vtk.repository.resourcetype.property.ContentLengthEvaluator" />

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,42 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package vtk.web.context;
 
-package vtk.repository.resourcetype;
-
-import java.nio.charset.Charset;
-import vtk.util.io.InputStreamWithLength;
-import vtk.repository.store.DataAccessException;
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
+import org.springframework.context.support.ResourceBundleMessageSource;
 
 /**
- * Represents a binary value.
- * 
+ * Simple extension of {@link ResourceBundleMessageSource} with support for
+ * configuring an optional locale translation map.
  */
-public interface BinaryValue {
+public class LocaleTranslatingMessageSource extends ResourceBundleMessageSource {
 
-    /**
-     * Get binary value content type.
-     * @return content type as string or <code>null</code> if unknown.
-     * @throws DataAccessException 
-     */
-    public String getContentType() throws DataAccessException;
+    private Map<String, Locale> localeTranslationMap = Collections.emptyMap();
 
-    /**
-     * Get binary value content stream.
-     * @return
-     * @throws DataAccessException 
-     */
-    public InputStreamWithLength stream() throws DataAccessException;
-    
-    /**
-     * Get binary value byte buffer.
-     * May be an unsupported operation, depending on underlying implementation.
-     * 
-     * @return
-     * @throws DataAccessException 
-     */
-    public byte[] getBytes() throws DataAccessException;
+    @Override
+    protected MessageFormat resolveCode(String code, Locale locale) {
+        return super.resolveCode(code, translateLocale(locale));
+    }
 
-    /**
-     * Get value as string using the provided character set for decoding.
-     * @param charset the character set which should be used for decoding
-     * @return a decoded string
-     */
-    public String stringValue(Charset charset);
+    @Override
+    protected String resolveCodeWithoutArguments(String code, Locale locale) {
+        return super.resolveCodeWithoutArguments(code, translateLocale(locale));
+    }
 
-    /**
-     * Get value as string using UTF-8 for decoding.
-     * @return a decoded string
-     */
-    public String stringValue();
+    private Locale translateLocale(Locale locale) {
+        Locale mappedLocale = localeTranslationMap.get(locale.toString());
+        return mappedLocale != null ? mappedLocale : locale;
+    }
+
+    public void setLocaleTranslationMap(Map<String, Locale> localeTranslationMap) {
+        if (localeTranslationMap == null) {
+            throw new IllegalArgumentException("Property 'localeTranslationMap' cannot be null");
+        }
+        this.localeTranslationMap = localeTranslationMap;
+    }
+
 }

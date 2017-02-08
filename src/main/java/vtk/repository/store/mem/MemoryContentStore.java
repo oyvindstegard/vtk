@@ -270,7 +270,9 @@ public class MemoryContentStore implements ContentStore {
         }
 
         @Override
-        public abstract Object clone() throws CloneNotSupportedException;
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
     }
 
     private class ContentNode extends Node {
@@ -283,14 +285,13 @@ public class MemoryContentStore implements ContentStore {
 
         @Override
         public String toString() {
-            return "ContentNode[" + super.name + "]";
+            return "ContentNode{" + super.name + "}";
         }
 
         @Override
         public Object clone() throws CloneNotSupportedException {
-            ContentNode n = new ContentNode(this.name);
-            n.content = new byte[this.content.length];
-            System.arraycopy(this.content, 0, n.content, 0, this.content.length);
+            ContentNode n = (ContentNode)super.clone();
+            n.content = this.content.clone();
             return n;
         }
     }
@@ -300,19 +301,19 @@ public class MemoryContentStore implements ContentStore {
 
         public DirectoryNode(String name) {
             super(name);
-            this.entries = new HashMap<String, Node>();
+            this.entries = new HashMap<>();
         }
 
         @Override
         public String toString() {
-            return "DirectoryNode[" + super.name + "]";
+            return "DirectoryNode{" + super.name + "}";
         }
 
         // recursive clone of entire (sub)tree (for copying)
         @Override
         public Object clone() throws CloneNotSupportedException {
-            DirectoryNode n = new DirectoryNode(this.name);
-            n.entries = new HashMap<String, Node>(this.entries.size());
+            DirectoryNode n = (DirectoryNode)super.clone();
+            n.entries = new HashMap<>(this.entries.size());
             for (String key : this.entries.keySet()) {
                 Node child = this.entries.get(key);
                 n.entries.put(key, (Node) child.clone());

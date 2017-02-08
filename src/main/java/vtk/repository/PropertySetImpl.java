@@ -56,8 +56,7 @@ public class PropertySetImpl implements PropertySet, Cloneable {
     
     protected Path uri;
     protected String resourceType;
-    protected final Map<Namespace, Map<String, Property>> propertyMap =
-        new HashMap<Namespace, Map<String, Property>>();
+    protected Map<Namespace, Map<String, Property>> propertyMap = new HashMap<>();
     
     // Numeric ID used by database 
     protected int id = NULL_RESOURCE_ID;
@@ -129,7 +128,7 @@ public class PropertySetImpl implements PropertySet, Cloneable {
         PropertyTypeDefinition propDef = property.getDefinition();
         Map<String, Property> map = this.propertyMap.get(propDef.getNamespace());
         if (map == null) {
-            map = new HashMap<String, Property>();
+            map = new HashMap<>();
             this.propertyMap.put(propDef.getNamespace(), map);
         }
         map.put(propDef.getName(), property);
@@ -178,13 +177,13 @@ public class PropertySetImpl implements PropertySet, Cloneable {
     @Override
     public List<Property> getProperties(Namespace namespace) {
         Map<String, Property> map = this.propertyMap.get(namespace);
-        if (map == null) return new ArrayList<Property>(0);
-        return new ArrayList<Property>(map.values());
+        if (map == null) return new ArrayList<>(0);
+        return new ArrayList<>(map.values());
     }
 
     @Override
     public List<Property> getProperties() {
-        List<Property> props = new ArrayList<Property>(20);
+        List<Property> props = new ArrayList<>(20);
         for (Map<String, Property> map: this.propertyMap.values()) {
             props.addAll(map.values());
         }
@@ -194,17 +193,14 @@ public class PropertySetImpl implements PropertySet, Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         
-        PropertySetImpl clone = new PropertySetImpl();
-        clone.resourceType = this.resourceType;
-        clone.setUri(this.uri);
-        clone.setAclInheritedFrom(this.aclInheritedFrom);
-        clone.setInheritedAcl(this.aclInherited);
+        final PropertySetImpl clone = (PropertySetImpl)super.clone(); // Shallow copy of all fields
 
-        // Clone all props:
+        // Property map and sub-maps and Property instances it contains cannot be shared
+        clone.propertyMap = new HashMap<>();
         for (Map.Entry<Namespace, Map<String,Property>> entry: this.propertyMap.entrySet()) {
             Namespace ns = entry.getKey();
             Map<String,Property> propMap = entry.getValue();
-            Map<String,Property> clonePropMap = new HashMap<String,Property>(propMap.size() + propMap.size()/2);
+            Map<String,Property> clonePropMap = new HashMap<>(propMap.size() + propMap.size()/2);
             for (Map.Entry<String,Property> propEntry: propMap.entrySet()) {
                 clonePropMap.put(propEntry.getKey(), (Property)propEntry.getValue().clone());
             }
@@ -216,7 +212,7 @@ public class PropertySetImpl implements PropertySet, Cloneable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(" + uri + ")";
+        return getClass().getSimpleName() + "{" + uri + "}";
     }
     
     public void setUri(Path uri) {

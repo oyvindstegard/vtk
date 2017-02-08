@@ -31,7 +31,7 @@
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
     <property name="propertyEvaluator">
-      <bean id="mediaMetadataStatusEvaluator" class="vtk.repository.resourcetype.property.MediaMetadataStatusPropertyEvaluator" />
+      <bean class="vtk.repository.resourcetype.property.MediaMetadataStatusPropertyEvaluator" />
     </property>
 
     <!-- XXX Is a vocabulary for this property necessary, and does it makes sense when
@@ -39,40 +39,16 @@
          media-mixin type should be more general, no ? -->
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
-        <!-- XXX commentsEnabled !?: -->
-        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.properties.commentsEnabled" />
-        <property name="type" value="STRING" />
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg value="GENERATE" />
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg value="IMAGE_SIZE_EXCEEDS_LIMIT" />
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg value="MEMORY_USAGE_EXCEEDS_LIMIT" />
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg value="UNSUPPORTED_FORMAT" />
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg value="TOO_SMALL_FOR_THUMBNAIL" />
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
+            <value>GENERATE</value>
+            <value>IMAGE_SIZE_EXCEEDS_LIMIT</value>
+            <value>MEMORY_USAGE_EXCEEDS_LIMIT</value>
+            <value>UNSUPPORTED_FORMAT</value>
+            <value>TOO_SMALL_FOR_THUMBNAIL</value>
             <!-- XXX legacy value should be removed, but kept for compat. for now: -->
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg value="CONFIGURED_NOT_TO_SCALE_UP" />
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg value="CORRUPT" />
-              <constructor-arg ref="TYPE_STRING" />
-            </bean>
+            <value>CONFIGURED_NOT_TO_SCALE_UP</value>
+            <value>CORRUPT</value>
           </list>
         </property>
       </bean>

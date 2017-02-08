@@ -232,52 +232,6 @@ public class PropertyFields extends Fields {
                     + " has a value(s) containing invalid or non-indexable JSON data: "
                     + e.getMessage());
         }
-
-// Old code implementing one-level of JSON structure indexing:
-//        // Drill one level into JSON for possible extra indexable fields
-//        try {
-//            final List<Object> indexFieldValues = new ArrayList<Object>();
-//            for (Value jsonValue : jsonPropValues) {
-//                Json.MapContainer json = jsonValue.getJSONValue();
-//                
-//                for (final String jsonAttribute: json.keySet()) {
-//                    final Object value = json.get(jsonAttribute);
-//                    if (value == null) {
-//                        continue;
-//                    }
-//                    if (value instanceof List<?>) {
-//                        List<Object> list = json.arrayValue(jsonAttribute);
-//                        for (Object val: list) {
-//                            if (val != null && !(val instanceof List<?>) && !(val instanceof Map<?,?>)) {
-//                                indexFieldValues.add(val);
-//                            }
-//                        }
-//                    }
-//                    else if (!(value instanceof Map<?,?>)) {
-//                        indexFieldValues.add(value);
-//                    }
-//                    Type dataType = PropertyFields.jsonFieldDataType(def, jsonAttribute);
-//                    String fieldName = jsonFieldName(def, jsonAttribute, false);
-//                    for (Object indexFieldValue: indexFieldValues) {
-//                        // Indexed fields
-//                        fields.addAll(objectFields(fieldName, indexFieldValue, dataType, INDEXED));
-//                        
-//                        // Lowercased fields for STRING and HTML
-//                        if (dataType == Type.STRING || dataType == Type.HTML) {
-//                            String lcFieldName = jsonFieldName(def, jsonAttribute, true);
-//                            fields.addAll(objectFields(lcFieldName, indexFieldValue, dataType, INDEXED_LOWERCASE));
-//                        }
-//                    }
-//                    
-//                    // Sort field if single value STRING type
-//                    if (dataType == Type.STRING && indexFieldValues.size() == 1) {
-//                        fields.add(makeSortField(jsonSortFieldName(def, jsonAttribute), indexFieldValues.get(0).toString()));
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            logger.warn("JSON property " + prop + " has a value(s) containing invalid or non-indexable JSON data: " + e.getMessage());
-//        }
     }
     
     /**
@@ -290,8 +244,7 @@ public class PropertyFields extends Fields {
      * @throws DocumentMappingException 
      */
     Property fromFields(PropertyTypeDefinition def, List<IndexableField> fields) throws DocumentMappingException {
-        PropertyImpl property = new PropertyImpl();
-        property.setDefinition(def);
+        PropertyImpl property = new PropertyImpl(def);
         if (def.isMultiple()) {
             Value[] values = valuesFromFields(def.getType(), fields);
             property.setValues(values, false);

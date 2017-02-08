@@ -80,14 +80,7 @@
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
     <property name="mandatory" value="true" />
-    <property name="defaultValue">
-        <bean class="vtk.repository.resourcetype.Value">
-          <constructor-arg type="java.lang.String">
-            <value>bokmaal</value>
-          </constructor-arg>
-          <constructor-arg ref="TYPE_STRING" />
-        </bean>
-    </property>
+    <property name="defaultValue" value="bokmaal"/>
     <property name="propertyEvaluator" ref="semesterSpraakEvaluator" />
   </bean>
 

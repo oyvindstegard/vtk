@@ -56,8 +56,7 @@ public class ListingUriQueryBuilderTest {
     }
 
     private Property getRecursiveProperty(String value) {
-        PropertyImpl property = new PropertyImpl();
-        property.setDefinition(recursivePropertyDef);
+        PropertyImpl property = new PropertyImpl(recursivePropertyDef);
         property.setStringValue(value);
         return property;
     }

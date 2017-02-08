@@ -31,6 +31,7 @@
 
 package vtk.testing.mocktypes;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -142,6 +143,7 @@ public class MockResourceTypeTree implements ResourceTypeTree {
         resourceTypeNameMap.put(def.getName(), def);
     }
 
+
     public List<String> getDescendants(String entry) {
         return null;
     }
@@ -150,12 +152,14 @@ public class MockResourceTypeTree implements ResourceTypeTree {
         return null;
     }
 
-    public String[] getAllowedValues() {
-        return null;
+    @Override
+    public List<String> vocabularyValues() {
+        return Collections.EMPTY_LIST;
     }
 
     public ValueFormatter getValueFormatter() {
         return null;
     }
+
 
 }

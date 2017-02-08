@@ -30,13 +30,14 @@
  */
 package vtk.repository;
 
-import java.util.List;
+import java.util.Collection;
 
 import vtk.repository.resourcetype.HierarchicalNode;
 
 public interface HierarchicalVocabulary<T> extends Vocabulary<T> {
 
-    public List<T> getDescendants(T entry);
+    public Collection<T> getDescendants(T entry);
 
-    public List<HierarchicalNode<T>> getRootNodes();
+    public Collection<HierarchicalNode<T>> getRootNodes();
+
 }

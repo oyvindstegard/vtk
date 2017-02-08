@@ -39,7 +39,7 @@
       <bean class="vtk.repository.resourcetype.Value">
         <constructor-arg type="java.lang.String"
                          value="utf-8" />
-        <constructor-arg ref="TYPE_STRING" />
+        <constructor-arg value="STRING" />
       </bean>
     </constructor-arg>
   </bean>

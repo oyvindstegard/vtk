@@ -32,10 +32,10 @@ package vtk.repository;
 
 import vtk.util.io.InputStreamWithLength;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -61,13 +61,11 @@ import vtk.util.text.Json;
  * 
  * XXX: Fail in all getters if value not initialized ?
  */
-public class PropertyImpl implements Cloneable, Property {
-
-    private static final long serialVersionUID = 3762531209208410417L;
+public class PropertyImpl implements Property {
 
     private static final Map<PropertyType.Type, Set<PropertyType.Type>> COMPATIBILITY_MAP;
     static {
-        COMPATIBILITY_MAP = new EnumMap<Type, Set<Type>>(Type.class);
+        COMPATIBILITY_MAP = new EnumMap<>(Type.class);
 
         Set<Type> STRING = EnumSet.noneOf(Type.class);
         STRING.add(Type.HTML);
@@ -103,10 +101,18 @@ public class PropertyImpl implements Cloneable, Property {
 
     }
     
-    private PropertyTypeDefinition propertyTypeDefinition;
+    private final PropertyTypeDefinition propertyTypeDefinition;
     private Value value;
     private Value[] values;
     private boolean inherited = false;
+
+    public PropertyImpl(PropertyTypeDefinition propDef) {
+        if (propDef == null) {
+            throw new IllegalArgumentException("Property type definition cannot be null");
+        }
+        this.propertyTypeDefinition = propDef;
+        this.value = propDef.getDefaultValue();
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -321,8 +327,7 @@ public class PropertyImpl implements Cloneable, Property {
 
     @Override
     public void setBooleanValue(boolean booleanValue) throws ValueFormatException {
-        Value v = new Value(booleanValue);
-        setValue(v);
+        setValue(booleanValue ? Value.TRUE : Value.FALSE);
     }
     
     @Override
@@ -373,24 +378,16 @@ public class PropertyImpl implements Cloneable, Property {
     }
     
     @Override
-    public Object clone() {
-        PropertyImpl clone = new PropertyImpl();
-        
-        // "Dumb" clone, avoid all type checks, just copy data structures
-        clone.propertyTypeDefinition = this.propertyTypeDefinition;
-        
-        // Values
-        if (this.value != null) 
-            clone.value = (Value)this.value.clone();
+    public Object clone() throws CloneNotSupportedException {
 
+        PropertyImpl clone = (PropertyImpl)super.clone(); // magically shallow copies all fields
+        
         if (this.values != null) {
+            // Clone should not share values array with this object
+            // However, the values themselves are immutable and can be shared
             clone.values = new Value[this.values.length];
-            // Need to deep-copy array of values
-            for (int i=0; i<this.values.length; i++) {
-                clone.values[i] = (Value)this.values[i].clone();
-            }
+            System.arraycopy(this.values, 0, clone.values, 0, clone.values.length);
         }
-        clone.inherited = this.inherited;
         
         return clone;
     }
@@ -495,8 +492,8 @@ public class PropertyImpl implements Cloneable, Property {
         }
         
         Vocabulary<Value> vocabulary = propertyTypeDefinition.getVocabulary();
-        if (strictValidation && vocabulary != null && vocabulary.getAllowedValues() != null) {
-            List<Value> valuesList = Arrays.asList(vocabulary.getAllowedValues());
+        if (strictValidation && vocabulary != null && vocabulary.vocabularyValues() != null) {
+            Collection<Value> valuesList = vocabulary.vocabularyValues();
             if (!valuesList.contains(value)) {
                 ConstraintViolationException e = 
                     new ConstraintViolationException(
@@ -506,11 +503,6 @@ public class PropertyImpl implements Cloneable, Property {
                 throw e;
             }
         }
-    }
-    
-
-    public void setDefinition(PropertyTypeDefinition propertyTypeDefinition) {
-        this.propertyTypeDefinition = propertyTypeDefinition;
     }
     
     @Override

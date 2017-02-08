@@ -32,6 +32,7 @@ package vtk.repository.search.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -177,17 +178,14 @@ public class LuceneQueryBuilder implements InitializingBean {
             if (EQ == ttq.getOperator() || NE == ttq.getOperator()) {
                 builder = new TypeTermQueryBuilder(ttq.getTerm(), ttq.getOperator());
             } else {
-                List<String> values = new ArrayList<String>();
+                List<String> values = new ArrayList<>();
                 values.add(ttq.getTerm());
-                List<String> descendantTypes = this.resourceTypeTree.getDescendants(ttq.getTerm());
+                Collection<String> descendantTypes = this.resourceTypeTree.getDescendants(ttq.getTerm());
                 if (descendantTypes != null) {
                     values.addAll(descendantTypes);
                 }
                 builder = new TermsQueryBuilder(ResourceFields.RESOURCETYPE_FIELD_NAME, values,  
                         PropertyType.Type.STRING, ttq.getOperator(), documentMapper.getPropertyFields());
-                
-//                builder = new HierarchicalTermQueryBuilder<String>(this.resourceTypeTree, ttq.getOperator(),
-//                        FieldNames.RESOURCETYPE_FIELD_NAME, ttq.getTerm());
             }
         }
 

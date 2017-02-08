@@ -42,12 +42,17 @@ import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 
 /**
- * Holds a single property value of appropriate type. Does not enforce value limits.
+ * Holds a single property value of appropriate type.
+ * 
+ * <p>Does not enforce value limits or value formats. Only basic type
+ * conversions are supported.
+ *
+ * <p>Objects of this class are immutable.
  * 
  * JSON values are always stored in the stringValue field, even though they
  * can also be set and get as binary values.
  */
-public class Value implements Cloneable, Comparable<Value> {
+public class Value implements Comparable<Value> {
 
     private final Type type;
 
@@ -59,9 +64,31 @@ public class Value implements Cloneable, Comparable<Value> {
     private Principal principalValue;
     private BinaryValue binaryValue;
 
+    /**
+     * Canonical boolean true {@code Value } instance.
+     */
+    public static final Value TRUE = new Value(true);
+
+    /**
+     * Canonical boolean false {@code Value } instance.
+     */
+    public static final Value FALSE = new Value(false);
+
+    /**
+     * Construct value from a string value with a specific type.
+     *
+     * <p>Basic conversion from string value is <em>not supported</em> for types
+     * {@link PropertyType.Type#PRINCIPAL PRINCIPAL}, {@link PropertyType.Type#DATE DATE}
+     * and {@link PropertyType.Type#TIMESTAMP TIMESTAMP}. For these types,
+     * the type specific constructors should be used instead.
+     *
+     * @param stringValue
+     * @param type
+     */
     public Value(String stringValue, Type type) {
         if (stringValue == null || stringValue.isEmpty())
-            throw new IllegalArgumentException("Value object cannot be null or empty");
+            throw new IllegalArgumentException("Value cannot be null or empty");
+
         switch (type) {
         case STRING:
         case HTML:
@@ -71,13 +98,23 @@ public class Value implements Cloneable, Comparable<Value> {
             break;
             
         case BOOLEAN:
-            if ("true".equals(stringValue) || "false".equals(stringValue)) {
-                this.booleanValue = "true".equals(stringValue);
-                break;
-            }
+            this.booleanValue = Boolean.parseBoolean(stringValue);
+            break;
+
+        case INT:
+            this.intValue = Integer.parseInt(stringValue);
+            break;
+
+        case LONG:
+            this.longValue = Long.parseLong(stringValue);
+            break;
+
+        case BINARY:
+            this.binaryValue = new BufferedBinaryValue(stringValue, "text/plain");
+            break;
+
         default:
-            throw new IllegalArgumentException("Invalid type [" + type 
-                    + "] for constructor of value [" + stringValue + "]");
+            throw new ValueFormatException("Basic conversion of string value to type " + type + " is not supported.");
         }
         this.type = type;
     }
@@ -231,7 +268,7 @@ public class Value implements Cloneable, Comparable<Value> {
 
     public String getStringValue() {
         if (this.stringValue == null && this.binaryValue != null) {
-            return new String(this.binaryValue.getBytes(), StandardCharsets.UTF_8);
+            return this.binaryValue.stringValue();
         }
         return this.stringValue;
     }
@@ -361,37 +398,6 @@ public class Value implements Cloneable, Comparable<Value> {
             return this.binaryValue.hashCode();
         default:
             return hash + (getStringValue() == null ? 0 : getStringValue().hashCode());
-        }
-    }
-
-    @Override
-    public Object clone() {
-
-        switch (this.type) {
-        case BOOLEAN:
-            return new Value(this.booleanValue);
-        case INT:
-            return new Value(this.intValue);
-        case LONG:
-            return new Value(this.longValue);
-        case DATE:
-            return new Value(this.dateValue, true);
-        case TIMESTAMP:
-            return new Value(this.dateValue, false);
-        case PRINCIPAL:
-            return new Value(this.principalValue);
-
-        case BINARY:
-            return new Value(this.binaryValue, Type.BINARY);
-
-        default: // JSON, STRING, HTML or IMAGE_REF or other string based type
-            if (this.stringValue != null) {
-                return new Value(this.stringValue, this.type);
-            } else if (this.binaryValue != null) {
-                return new Value(this.binaryValue, this.type);
-            } else {
-                throw new IllegalStateException("Both string value and binary value null for value of type " + this.type);
-            }
         }
     }
 

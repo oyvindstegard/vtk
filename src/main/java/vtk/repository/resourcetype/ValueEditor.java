@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,24 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package vtk.repository.resourcetype;
 
-import java.nio.charset.Charset;
-import vtk.util.io.InputStreamWithLength;
-import vtk.repository.store.DataAccessException;
+import java.beans.PropertyEditorSupport;
 
 /**
- * Represents a binary value.
- * 
+ * Simple property editor which converts strings to {@code Value} instances
+ * of type {@link PropertyType.Type#STRING} and back.
  */
-public interface BinaryValue {
+public class ValueEditor extends PropertyEditorSupport {
 
-    /**
-     * Get binary value content type.
-     * @return content type as string or <code>null</code> if unknown.
-     * @throws DataAccessException 
-     */
-    public String getContentType() throws DataAccessException;
+    @Override
+    public String getAsText() {
+        return getValue().toString();
+    }
 
-    /**
-     * Get binary value content stream.
-     * @return
-     * @throws DataAccessException 
-     */
-    public InputStreamWithLength stream() throws DataAccessException;
-    
-    /**
-     * Get binary value byte buffer.
-     * May be an unsupported operation, depending on underlying implementation.
-     * 
-     * @return
-     * @throws DataAccessException 
-     */
-    public byte[] getBytes() throws DataAccessException;
+    @Override
+    public void setAsText(String text) throws IllegalArgumentException {
+        setValue(new Value(text, PropertyType.Type.STRING));
+    }
 
-    /**
-     * Get value as string using the provided character set for decoding.
-     * @param charset the character set which should be used for decoding
-     * @return a decoded string
-     */
-    public String stringValue(Charset charset);
-
-    /**
-     * Get value as string using UTF-8 for decoding.
-     * @return a decoded string
-     */
-    public String stringValue();
 }

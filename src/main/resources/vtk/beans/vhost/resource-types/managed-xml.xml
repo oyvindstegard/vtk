@@ -36,17 +36,18 @@
     <property name="type" value="BOOLEAN" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="BOOLEAN"/>
+        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.plaintext-edit"/>
+      </bean>
+    </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
-      <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.plaintext-edit" />
-        <property name="type" value="BOOLEAN" />
+        <constructor-arg value="BOOLEAN"/>
         <property name="values">
           <list>
-            <bean class="vtk.repository.resourcetype.Value">
-              <constructor-arg type="boolean">
-                <value>true</value>
-              </constructor-arg>
-            </bean>
+            <ref bean="VALUE_TRUE" />
           </list>
         </property>
       </bean>
@@ -77,13 +78,8 @@
     <property name="checkExistenceOnly" value="true" />
   </bean>
 
-  <bean id="managedXml.messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-    <property name="basenames">
-      <list>
-        <value>vtk.i18n.xmlprops</value>
-      </list>
-    </property>
-    <property name="fallbackToSystemLocale" value="false" />
+  <bean parent="messageSource.addBasenames">
+    <property name="arguments" value="vtk.i18n.xmlprops" />
   </bean>
 
   <bean id="managedXmlTitlePropertyEvaluator"

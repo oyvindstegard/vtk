@@ -248,8 +248,7 @@ public class PropertySetImplTest {
         def.setName(name);
         def.setNamespace(namespace);
         def.setType(PropertyType.Type.STRING);
-        PropertyImpl p = new PropertyImpl();
-        p.setDefinition(def);
+        PropertyImpl p = new PropertyImpl(def);
         p.setValue(new Value(value, PropertyType.Type.STRING));
         return p;
     }

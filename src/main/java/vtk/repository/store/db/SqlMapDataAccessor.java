@@ -31,6 +31,8 @@
 package vtk.repository.store.db;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -49,7 +51,6 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Acl;
 import vtk.repository.Lock;
-import vtk.repository.LockImpl;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -747,7 +748,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         Map<Path, Lock> result = new HashMap<Path, Lock>();
 
         for (Map<String, Object> map : locks) {
-            LockImpl lock = new LockImpl((String) map.get("token"), principalFactory.getPrincipal((String) map
+            Lock lock = new Lock((String) map.get("token"), principalFactory.getPrincipal((String) map
                     .get("owner"), Principal.Type.USER), (String) map.get("ownerInfo"), Depth.fromString((String) map
                     .get("depth")), (Date) map.get("timeout"));
 
@@ -771,7 +772,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
         for (Iterator<Map<String, Object>> i = locks.iterator(); i.hasNext();) {
             Map<String, Object> map = i.next();
-            LockImpl lock = new LockImpl((String) map.get("token"), principalFactory.getPrincipal((String) map
+            Lock lock = new Lock((String) map.get("token"), principalFactory.getPrincipal((String) map
                     .get("owner"), Principal.Type.USER), (String) map.get("ownerInfo"), Depth.fromString((String) map
                     .get("depth")), (Date) map.get("timeout"));
 
@@ -1144,10 +1145,9 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
                                         + property + ": native string size limit exceeded and type cannot be stored as binary.");
                         }
                         
-                        BinaryValue bval = new BufferedBinaryValue(nativeStringValue, valueContentType);
                         parameters.put("value", "#binary");
-                        parameters.put("binaryContent", bval.getBytes());
-                        parameters.put("binaryMimeType", bval.getContentType());
+                        parameters.put("binaryContent", nativeStringValue.getBytes(StandardCharsets.UTF_8));
+                        parameters.put("binaryMimeType", valueContentType);
 
                     } else {
                         // Value stored in regular "value" column, make sure binary ref columns are null
@@ -1308,8 +1308,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     Property createProperty(Namespace ns, String name, Object objectValue) {
         
         PropertyTypeDefinition propDef = this.resourceTypeTree.getPropertyTypeDefinition(ns, name);
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(propDef);
+        PropertyImpl prop = new PropertyImpl(propDef);
 
         // See also PropertyTypeDefinitionImppl#createProperty(Object value) 
         // which essentially does the same thing, but with strict validation of value.
@@ -1318,7 +1317,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         if (objectValue instanceof Date) {
             value = new Value((Date)objectValue, propDef.getType() == PropertyType.Type.DATE);
         } else if (objectValue instanceof Boolean) {
-            value = new Value((Boolean)objectValue);
+            value = ((Boolean)objectValue) ? Value.TRUE : Value.FALSE;
         } else if (objectValue instanceof Long) {
             value = new Value((Long)objectValue);
         } else if (objectValue instanceof Integer) {
@@ -1346,8 +1345,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     Property createProperty(PropHolder holder) {
         Namespace namespace = this.resourceTypeTree.getNamespace(holder.namespaceUri);
         PropertyTypeDefinition propDef = this.resourceTypeTree.getPropertyTypeDefinition(namespace, holder.name);
-        PropertyImpl prop = new PropertyImpl();
-        prop.setDefinition(propDef);
+        PropertyImpl prop = new PropertyImpl(propDef);
         
         // In case of multi-value props, some values may be stored as binary
         // and others directly as strings for the same property, depending on size.
@@ -1402,7 +1400,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     }
 
     private Map<String, Object> getResourceAsMap(ResourceImpl r) {
-        Map<String, Object> resourceMap = new HashMap<String, Object>(32, 1.0f);
+        Map<String, Object> resourceMap = new HashMap<>(32, 1.0f);
         Path parentPath = r.getURI().getParent();
         Integer aclInheritedFrom = r.getAclInheritedFrom() != PropertySetImpl.NULL_RESOURCE_ID ? r.getAclInheritedFrom() : null;
         
@@ -1425,7 +1423,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         resourceMap.put(PropertyType.CONTENTMODIFIEDBY_PROP_NAME, r.getContentModifiedBy().getQualifiedName());
         resourceMap.put(PropertyType.PROPERTIESLASTMODIFIED_PROP_NAME, r.getPropertiesLastModified());
         resourceMap.put(PropertyType.PROPERTIESMODIFIEDBY_PROP_NAME, r.getPropertiesModifiedBy().getQualifiedName());
-        resourceMap.put(PropertyType.CONTENTLENGTH_PROP_NAME, new Long(r.getContentLength()));
+        resourceMap.put(PropertyType.CONTENTLENGTH_PROP_NAME, r.getContentLength());
 
         return resourceMap;
     }
@@ -1436,7 +1434,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         @SuppressWarnings("unchecked")
         List<String> groupNames = getSqlSession().selectList(sqlMap, null);
 
-        Set<Principal> groups = new HashSet<Principal>();
+        Set<Principal> groups = new HashSet<>();
         for (String groupName : groupNames) {
             Principal group = principalFactory.getPrincipal(groupName, Principal.Type.GROUP, false);
             groups.add(group);
@@ -1482,9 +1480,9 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
 
         if (multiple) {
-            prop.setValues(values);
+            ((PropertyImpl)prop).setValues(values, false);
         } else {
-            prop.setValue(values[0]);
+            ((PropertyImpl)prop).setValue(values[0], false);
         }
     }
 
@@ -1499,7 +1497,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         public void addEntry(Privilege action, Principal principal) {
             Set<Principal> set = this.get(action);
             if (set == null) {
-                set = new HashSet<Principal>();
+                set = new HashSet<>();
                 this.put(action, set);
             }
             set.add(principal);
@@ -1530,8 +1528,8 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 /**
  * An on-demand loading binary value with reference and
  * access to value in DataAccesor.
- * 
  */
+
 final class BinaryValueReference implements BinaryValue {
 
     private final Integer ref;
@@ -1555,12 +1553,22 @@ final class BinaryValueReference implements BinaryValue {
         byte[] data = getBytes();
         return new InputStreamWithLength(new ByteArrayInputStream(data), data.length);
     }
-    
+
     @Override
     public byte[] getBytes() throws DataAccessException {
         return this.dao.getBinaryPropertyBytes(this.ref);
     }
-    
+
+    @Override
+    public String stringValue(Charset charset) {
+        return new String(getBytes(), charset);
+    }
+
+    @Override
+    public String stringValue() {
+        return new String(getBytes(), StandardCharsets.UTF_8);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -1585,9 +1593,8 @@ final class BinaryValueReference implements BinaryValue {
     
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder("BinaryValueReference[");
-        b.append("ref = ").append(this.ref).append("]");
+        StringBuilder b = new StringBuilder("BinaryValueReference{");
+        b.append("ref = ").append(this.ref).append("}");
         return b.toString();
     }
-
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, University of Oslo, Norway
+/* Copyright (c) 2007,2017 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,43 +30,77 @@
  */
 package vtk.repository.resourcetype;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.beans.factory.InitializingBean;
+import java.util.stream.Collectors;
 import vtk.repository.Vocabulary;
 
-public class ValueVocabulary implements Vocabulary<Value>, InitializingBean {
+/**
+ * An ordered list of allowed {@link Value values} of uniform type.
+ */
+public class ValueVocabulary implements Vocabulary<Value> {
 
-    private PropertyType.Type type = PropertyType.Type.STRING;
-    private String messageSourceBaseName;
-    private Value[] allowedValues;
-    private ValueFormatter valueFormatter;
-    
-    public Value[] getAllowedValues() {
-        return this.allowedValues;
+    private final PropertyType.Type type;
+    private List<Value> values = new ArrayList<>();
+
+    /**
+     * Construct vocabulary with default value type {@link PropertyType.Type#STRING}.
+     */
+    public ValueVocabulary() {
+        this.type = PropertyType.Type.STRING;
     }
 
-    public void setValues(List<Value> allowedValues) {
-        this.allowedValues = allowedValues.toArray(new Value[allowedValues.size()]);
-    }
-
-    
-    public void setMessageSourceBaseName(String messageSourceBaseName) {
-        this.messageSourceBaseName = messageSourceBaseName;
-    }
-
-    public ValueFormatter getValueFormatter() {
-        return this.valueFormatter;
-    }
-
-    
-    public void setType(PropertyType.Type type) {
+    /**
+     * Construct vocabulary with specified value type.
+     * @param type
+     */
+    public ValueVocabulary(PropertyType.Type type) {
         this.type = type;
     }
 
-    public void afterPropertiesSet() throws Exception {
-        if (this.messageSourceBaseName != null) {
-            this.valueFormatter = new MessageSourceValueFormatter(this.messageSourceBaseName, this.type);
-        } 
+    @Override
+    public List<Value> vocabularyValues() {
+        return values;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" + values.toString() + "}";
+    }
+
+    /**
+     * Set list of allowed values.
+     *
+     * <p>If list contains <code>Value</code> objects of a different type than
+     * declared for the vocabulary, then value will converted if possible. For
+     * other objects, conversion of their default string representation will
+     * be attempted.
+     *
+     * @param vocabularyValues initial list of allowed values for vocabulary
+     */
+    public void setValues(List<Value> vocabularyValues) {
+        if (vocabularyValues == null) {
+            throw new IllegalArgumentException("values cannot be null");
+        }
+
+        this.values = vocabularyValues.stream().map(this::convert).collect(Collectors.toList());
+    }
+
+    /**
+     * Add an allowed value to the vocabulary.
+     * @see #setValues(java.util.List)
+     * @param value
+     */
+    public void addValue(Value value) {
+        values.add(convert(value));
+    }
+
+    private Value convert(Value value) {
+        if (value.getType() == type) {
+            return value;
+        }
+
+        return new Value(value.toString(), type);
+    }
+
 }
