@@ -101,11 +101,10 @@ resourcetype exam-info {
       [endif]
 
       [def examParts ordning.examParts]
-      [if examParts]
+      [if examParts && examParts.length() > 0]
         [def isOrdningEksamensDel (ordning.examDate != null || ordning.availableDate != null || ordning.submissionDueDate != null)]
 
-        [def len examParts.length()]
-        [if len > 1 && ! isOrdningEksamensDel]
+        [if examParts.length() > 1 && ! isOrdningEksamensDel]
           <h2>[localized 'ordning']</h2>
           <p>[val ordning.name].</p>
         [endif]
