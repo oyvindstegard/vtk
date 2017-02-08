@@ -58,7 +58,7 @@ resourcetype exam-info {
       [endif]
       
       [def rooms part.rooms]
-      [if rooms != null]
+      [if rooms != null && rooms.length() > 0]
         <p class="exam-place-info"><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
         <ul class="exam-rooms">
         [list rooms r]
