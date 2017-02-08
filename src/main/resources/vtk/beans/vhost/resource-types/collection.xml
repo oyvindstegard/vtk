@@ -173,11 +173,12 @@
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
   </bean>
 
+
+  <!-- Config for property 'collection-type' begins here. -->
+
   <!-- Extension point for the 'collection-type' property.
-       Values and localization sources may be added to this vocabulary to
-       provide more choices. -->
+       Values may be added to this vocabulary to provide more choices. -->
   <bean id="collection.collection-type-vocabulary" class="vtk.repository.resourcetype.ValueVocabulary">
-    <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.properties.collection-type" />
     <property name="values">
       <list>
         <value>article-listing</value>
@@ -196,7 +197,6 @@
         <value>course-description-listing</value>
         <value>semester-context</value>
         <value>audio-video-listing</value>
-        <!--<value>master-listing</value>-->
         <value>program-listing</value>
         <value>program-option-listing</value>
         <value>program-context</value>
@@ -208,13 +208,36 @@
     </property>
   </bean>
 
+  <!-- Use this abstract bean to add values to the collection-type property vocabulary -->
+  <bean id="collection.collection-type.addValue" class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="collection.collection-type-vocabulary"/>
+    <property name="targetMethod" value="addValue"/>
+  </bean>
+
+  <bean id="collection.collection-type.messageSourceValueFormatter"
+        class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+    <constructor-arg value="vtk.beans.vhost.resource-types.properties.collection-type" />
+    <property name="keyPrefix" value="collection-type.value."/>
+  </bean>
+
+  <!-- Use this abstract bean to add resource bundles to collection-type message source (for added values) -->
+  <bean id="collection.collection-type.messageSource.addBasenames" class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="collection.collection-type.messageSourceValueFormatter"/>
+    <property name="targetMethod" value="addMessageSourceBasenames"/>
+  </bean>
+
   <bean id="collection.typePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
     <property name="name" value="collection-type" />
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
     <property name="vocabulary" ref="collection.collection-type-vocabulary"/>
+    <property name="valueFormatter" ref="collection.collection-type.messageSourceValueFormatter"/>
   </bean>
+
+  <!-- Config for property 'collection-type' ends here. -->
 
   <bean id="collection.indexFilePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl"
     parent="abstractPropDef">

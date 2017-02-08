@@ -39,4 +39,5 @@ public interface HierarchicalVocabulary<T> extends Vocabulary<T> {
     public Collection<T> getDescendants(T entry);
 
     public Collection<HierarchicalNode<T>> getRootNodes();
+
 }

@@ -31,10 +31,15 @@
     <property name="type" value="BOOLEAN"/>
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE"/>
     <property name="mandatory" value="false"/>
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="BOOLEAN"/>
+        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.navigation-hidden"/>
+      </bean>
+    </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <constructor-arg value="BOOLEAN" />
-        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-hidden" />
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />
@@ -60,10 +65,15 @@
     <property name="type" value="BOOLEAN" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="BOOLEAN"/>
+        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.navigation-sortdescending"/>
+      </bean>
+    </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <constructor-arg value="BOOLEAN" />
-        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-sortdescending" />        
         <property name="values">
           <list>
             <ref bean="VALUE_FALSE" />
@@ -89,10 +99,15 @@
     <property name="type" value="INT"/>
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE"/>
     <property name="mandatory" value="false"/>
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="INT"/>
+        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.navigation-importance"/>
+      </bean>
+    </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <constructor-arg value="INT"/>
-        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.navigation-importance" />
         <property name="values">
           <bean class="vtk.repository.resourcetype.ValueVocabularyUtil" factory-method="integerRangeValueList">
              <constructor-arg value="15" />

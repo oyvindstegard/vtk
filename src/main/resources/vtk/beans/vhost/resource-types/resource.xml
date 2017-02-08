@@ -8,8 +8,18 @@
   <import resource="mixins/content-description.xml" />
   <import resource="mixins/header-control.xml" />
 
+  <!-- Register resource types i18n in global message source -->
+  <bean parent="messageSource.addBasenames">
+    <property name="arguments" value="vtk.i18n.resource-types" />
+  </bean>
+
   <bean id="resourceTypeTree" class="vtk.repository.ResourceTypeTreeImpl">
-    <property name="typeLocalizationProvider" ref="typeLocalizationProvider" />
+    <property name="typeLocalizationProvider" >
+      <!-- TODO: get rid of this: -->
+      <bean class="vtk.repository.resourcetype.MessageSourceTypeLocalizationProvider">
+        <property name="messageSource" ref="messageSource" />
+      </bean>
+    </property>
     <property name="valueFactory" ref="valueFactory" />
     <property name="valueFormatterRegistry" ref="valueFormatterRegistry" />
   </bean>
@@ -66,9 +76,14 @@
     <property name="type" value="BOOLEAN" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="BOOLEAN"/>
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.commentsEnabled"/>
+      </bean>
+    </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
-        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.properties.commentsEnabled" />
         <constructor-arg value="BOOLEAN" />
         <property name="values">
           <list>
@@ -232,10 +247,14 @@
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
     <property name="inheritable" value="true" />
-    <!-- should have a constraint -->
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="BOOLEAN"/>
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.content-locale"/>
+      </bean>
+    </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
-        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.properties.content-locale" />
         <property name="values">
           <list>
             <value>no_NO</value>

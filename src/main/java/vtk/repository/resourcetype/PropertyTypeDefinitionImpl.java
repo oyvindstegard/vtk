@@ -66,7 +66,6 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     private boolean inheritable = false;
     private RepositoryAction protectionLevel = PropertyType.PROTECTION_LEVEL_ACL_WRITE;
     private Value defaultValue;
-    private Value[] allowedValues;
     private PropertyEvaluator propertyEvaluator;
     private PropertyValidator validator;
     private ValueFormatter valueFormatter;
@@ -193,11 +192,7 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
     @Override
     public void afterPropertiesSet() {
         if (this.valueFormatter == null) {
-            if (this.vocabulary != null && this.vocabulary.getValueFormatter() != null) {
-                this.valueFormatter = this.vocabulary.getValueFormatter();
-            } else {
-                this.valueFormatter = this.valueFormatterRegistry.getValueFormatter(this.type);
-            }
+            this.valueFormatter = this.valueFormatterRegistry.getValueFormatter(this.type);
         }
 
         this.metadata = Collections.unmodifiableMap(this.metadata);
@@ -304,10 +299,6 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
 
     public void setValidator(PropertyValidator validator) {
         this.validator = validator;
-    }
-
-    public Value[] getAllowedValues() {
-        return this.allowedValues;
     }
 
     @Override

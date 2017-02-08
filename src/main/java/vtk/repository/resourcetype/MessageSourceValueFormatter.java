@@ -39,10 +39,10 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 public class MessageSourceValueFormatter implements ValueFormatter {
 
     private final ReversableMessageSource messageSource = new ReversableMessageSource();
+    private final PropertyType.Type type;
 
     private String keyPrefix = "value.";
     private String unsetKey = "unset";
-    private PropertyType.Type type;
     
     public MessageSourceValueFormatter(String... messageSourceBaseNames) {
         this(PropertyType.Type.STRING, messageSourceBaseNames);
@@ -55,10 +55,18 @@ public class MessageSourceValueFormatter implements ValueFormatter {
 
     /**
      * Add a base name to set of basenames for this message source.
-     * @param baseNames like {@link ResourceBundleMessageSource#addBasenames(java.lang.String...) }
+     * @param basenames like {@link ResourceBundleMessageSource#addBasenames(java.lang.String...) }
      */
-    public void addMessageSourceBaseNames(String... baseNames) {
-        messageSource.addBasenames(baseNames);
+    public void addMessageSourceBasenames(String... basenames) {
+        messageSource.addBasenames(basenames);
+    }
+
+    /**
+     * Set a single basename for i18n resource bundle.
+     * @param basename
+     */
+    public void setMessageSourceBasename(String basename) {
+        messageSource.setBasename(basename);
     }
 
     @Override
@@ -100,7 +108,7 @@ public class MessageSourceValueFormatter implements ValueFormatter {
         return new Value(stringValue, type);
 
     }
-    
+
     private class ReversableMessageSource extends ResourceBundleMessageSource {
         
         public String getKeyFromMessage(String value, Locale locale) {

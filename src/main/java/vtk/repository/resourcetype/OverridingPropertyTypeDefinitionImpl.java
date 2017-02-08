@@ -44,6 +44,13 @@ import vtk.repository.RepositoryAction;
 import vtk.repository.Vocabulary;
 import vtk.repository.resourcetype.PropertyType.Type;
 
+/**
+ * Aspects of a property type definition that can be overridden:
+ * <ul><li>metadata
+ * <li>default value
+ * <li>evaluator
+ * </ul>
+ */
 public class OverridingPropertyTypeDefinitionImpl implements OverridablePropertyTypeDefinition, InitializingBean {
 
     private Map<String, Object> metadata = new HashMap<>();

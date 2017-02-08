@@ -60,11 +60,6 @@
     <constructor-arg value="http://www.uio.no/resource-types/audio-video-listing" />
   </bean>
 
-  <bean id="MASTER_LISTING_NAMESPACE" class="vtk.repository.Namespace">
-    <constructor-arg value="master" />
-    <constructor-arg value="http://www.uio.no/resource-types/master-listing" />
-  </bean>
-
   <bean id="MESSAGE_LISTING_NAMESPACE" class="vtk.repository.Namespace">
     <constructor-arg value="message" />
     <constructor-arg value="http://www.uio.no/resource-types/message-listing" />

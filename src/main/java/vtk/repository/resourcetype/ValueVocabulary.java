@@ -36,15 +36,12 @@ import java.util.stream.Collectors;
 import vtk.repository.Vocabulary;
 
 /**
- * An ordered set of allowed values of uniform type.
- *
- * <p>Supports formatting of values through resource bundle files.
+ * An ordered list of allowed {@link Value values} of uniform type.
  */
 public class ValueVocabulary implements Vocabulary<Value> {
 
     private final PropertyType.Type type;
     private List<Value> values = new ArrayList<>();
-    private MessageSourceValueFormatter messageSourceValueFormatter;
 
     /**
      * Construct vocabulary with default value type {@link PropertyType.Type#STRING}.
@@ -106,33 +103,4 @@ public class ValueVocabulary implements Vocabulary<Value> {
         return new Value(value.toString(), type);
     }
 
-    /**
-     * Set initial message source base name used for localized value formatting.
-     * @param baseName
-     */
-    public void setMessageSourceBaseName(String baseName) {
-        this.messageSourceValueFormatter = new MessageSourceValueFormatter(type, baseName);
-    }
-
-    /**
-     * Add a message source basename for the value vocabulary.
-     * @param baseName
-     */
-    public void addMessageSourceBaseName(String baseName) {
-        if (this.messageSourceValueFormatter == null) {
-            this.messageSourceValueFormatter = new MessageSourceValueFormatter(type, baseName);
-        } else {
-            this.messageSourceValueFormatter.addMessageSourceBaseNames(baseName);
-        }
-    }
-
-    /**
-     * @return a value formatter for this vocabulary, possibly <code>null</code> if
-     * no message source has been configured
-     */
-    @Override
-    public ValueFormatter getValueFormatter() {
-        return this.messageSourceValueFormatter;
-    }
-    
 }

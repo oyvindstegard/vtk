@@ -46,9 +46,14 @@ public interface TypeLocalizationProvider {
      *         the supplied locale, the canonical type name is always
      *         returned.
      */
-    public String getLocalizedPropertyName(PropertyTypeDefinition def,
-                                           Locale locale);
+    public String getLocalizedPropertyName(PropertyTypeDefinition def, Locale locale);
 
+    /**
+     *
+     * @param def
+     * @param locale
+     * @return
+     */
     public String getPropertyDescription(PropertyTypeDefinition def, Locale locale);
 
     /**
@@ -62,8 +67,7 @@ public interface TypeLocalizationProvider {
      *         the supplied locale, the canonical type name is always
      *         returned.
      */
-    public String getLocalizedResourceTypeName(ResourceTypeDefinition def,
-                                               Locale locale);
+    public String getLocalizedResourceTypeName(ResourceTypeDefinition def, Locale locale);
 
     
 }

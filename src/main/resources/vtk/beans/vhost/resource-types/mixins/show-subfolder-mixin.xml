@@ -26,10 +26,15 @@
     <property name="type" value="BOOLEAN" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="BOOLEAN"/>
+        <constructor-arg value="vtk.beans.vhost.resource-types.mixins.properties.show-subfolder-menu"/>
+      </bean>
+    </property>
     <property name="vocabulary">
       <bean class="vtk.repository.resourcetype.ValueVocabulary">
         <constructor-arg value="BOOLEAN" />
-        <property name="messageSourceBaseName" value="vtk.beans.vhost.resource-types.mixins.properties.show-subfolder-menu" />
         <property name="values">
           <list>
             <ref bean="VALUE_TRUE" />

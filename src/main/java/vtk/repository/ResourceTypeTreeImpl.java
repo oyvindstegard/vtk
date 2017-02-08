@@ -263,11 +263,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         return new ArrayList<>(resourceTypeNameMap.keySet());
     }
 
-    @Override
-    public ValueFormatter getValueFormatter() {
-        return null;
-    }
-
     private HierarchicalNode<String> hierarchicalNode(String name) {
         ResourceTypeDefinition def = resourceTypeNameMap.get(name);
         if (def instanceof MixinResourceTypeDefinition) {
