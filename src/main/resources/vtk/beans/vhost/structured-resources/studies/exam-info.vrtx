@@ -247,9 +247,9 @@ resourcetype exam-info {
                        no : "Mer informasjon om eksamen for dette emnet finner du på",
                        nn : "Meir informasjon om eksamen i dette emnet finn du på"),
     more-about-info-course-pages-link : (en : "course description", no : "emnesiden", nn : "emnesida"),
-    no-data : (en : "Information about time and place for the exam is not published yet for this course.",
-               no : "Informasjon om tid og stad for eksamen er ikkje publisert for dette emne.",
-               nn : "Informasjon om tid og sted for eksamen er ikke publisert for dette emnet."),
+    no-data : (en : "Information about time and place for the exam is not published yet for this course",
+               no : "Informasjon om tid og stad for eksamen er ikkje publisert for dette emne",
+               nn : "Informasjon om tid og sted for eksamen er ikke publisert for dette emnet"),
     lookup-unable : (en : "Could not look up exam info", no : "Kunne ikke hente eksamensinfo", nn : "Kunne ikkje henta eksamensinfo"),
     lookup-unable-error-msg : (en : "Error message", no : "Feilbeskjed", nn : "Feilbeskjed"),
     external-service-unavailable : (en: "No external service available", no : "Ingen ekstern tjeneste tilgjengelig", nn : "Ingen ekstern teneste tilgjengeleg")
