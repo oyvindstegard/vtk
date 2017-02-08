@@ -12,14 +12,14 @@ resourcetype exam-info {
   }
 
   view-components {
-  
+
     date-format(date) {
       ##
       [def dt to-date(date)]
       [val dt # "full-month-short"]
       ##
     }
-    
+
     time-format(time, date) {
       ##
       [def time concat(" ", time)]
@@ -28,7 +28,7 @@ resourcetype exam-info {
       [localized 'time-prefix'] [val dt # "hours-minutes"]
       ##
     }
-    
+
     duration-format(duration) {
       ##
       [def hours floor(duration)]
@@ -44,19 +44,19 @@ resourcetype exam-info {
           [val part.name]
         [if isSubPart = "true"]</h3>[else]</h2>[endif]
       [endif]
-      
+
       [if part.examDate]
         <p class="exam-date"><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.examDate }][if part.examTime] [call "comp:time-format" { "time" : part.examTime, "date": part.examDate }][endif][if part.durationHours][call "comp:duration-format" { "duration" : part.durationHours }][endif].</p>
       [endif]
-      
+
       [if part.availableDate]
         <p class="exam-available"><strong>[localized 'task-available']:</strong> [call "comp:date-format" { "date" : part.availableDate }][if part.availableTime] [call "comp:time-format" { "time" : part.availableTime, "date": part.availableDate }][endif]</p>
       [endif]
-      
+
       [if part.submissionDueDate]
         <p class="exam-submission"><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.submissionDueDate }][if part.submissionDueTime] [call "comp:time-format" { "time" : part.submissionDueTime, "date": part.submissionDueDate }][endif]</p>
       [endif]
-      
+
       [def rooms part.rooms]
       [if rooms != null && rooms.length() > 0]
         <p class="exam-place-info"><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
@@ -77,16 +77,16 @@ resourcetype exam-info {
         [endlist]
         </ul>
       [endif]
-      
+
       [if part.datasystem]
         <p class="exam-datasystem"><strong>[localized 'system']:</strong></p>
         [call "include:shared-text" { "folder": "/vrtx/fellestekst/eksamen", "file": "system", "key": part.datasystem }]
       [endif]
-      
+
       [if part.comment]
         <p class="exam-comment"><strong>[localized 'comment']:</strong> [val part.comment]</p>
       [endif]
-      
+
       [if part.announcement]
         <p class="exam-announcement"><strong>[localized 'announcement']:</strong> [call "comp:date-format" { "date" : part.announcement }]</p>
       [endif]
@@ -102,23 +102,17 @@ resourcetype exam-info {
 
       [def examParts ordning.examParts]
       [if examParts && examParts.length() > 0]
-        [def isOrdningEksamensDel (ordning.examDate != null || ordning.availableDate != null || ordning.submissionDueDate != null)]
-
-        [if examParts.length() > 1 && ! isOrdningEksamensDel]
+        [if examParts.length() > 1]
           <h2>[localized 'ordning']</h2>
           <p>[val ordning.name].</p>
         [endif]
-      
-        [if isOrdningEksamensDel]
-          [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "true" }]
-        [else]
-          [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "false" }]
-        [endif]
+
+        [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "false" }]
 
         [list examParts examPart]
           [if (examPart.termNr = null || termNr = null || (int(examPart.termNr) = int(termNr)))]
             [call "comp:exam-part" { "part" : examPart, "isSubPart": "false", "addTitle": "true" }]
-	          
+
 	        [def partDays examPart.partDays]
 	        [if partDays]
 	          [list partDays partDay]
@@ -137,10 +131,10 @@ resourcetype exam-info {
           [endlist]
         [endif]
       [endif]
-      
+
       <h2>[localized 'results']</h2>
       <p>[localized 'results-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
-      
+
       <h2>[localized 'more-about']</h2>
       <p>[localized 'more-about-info'] <a href="./../../#exam">[localized 'more-about-info-course-pages-link']</a>.</p>
       ##
@@ -177,9 +171,9 @@ resourcetype exam-info {
               [else]
                 [def lang "no"]
               [endif]
-              
+
               [def examInfoURL settings.services.examInfo]
-              
+
               [if course-code != null && term != null && year != null]
                 [def examInfoURL replace(examInfoURL, "%cid", course-code)]
                 [def examInfoURL replace(examInfoURL, "%sem", year)]
@@ -203,7 +197,7 @@ resourcetype exam-info {
                   [endlist]
                 [else]
                   <p>[localized 'no-data'].</p>
-                  
+
                   <h2>[localized 'more-about']</h2>
                   <p>[localized 'more-about-info'] <a href="./../../#exam">[localized 'more-about-info-course-pages-link']</a>.</p>
                 [endif]
