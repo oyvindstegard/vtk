@@ -37,11 +37,13 @@ resourcetype exam-info {
       ##
     }
 
-    exam-part (part, isSubPart) {
+    exam-part (part, isSubPart, addTitle) {
       ##
-      [if isSubPart = "true"]<h3>[else]<h2>[endif]
-        [val part.name]
-      [if isSubPart = "true"]</h3>[else]</h2>[endif]
+      [if addTitle = "true"]
+        [if isSubPart = "true"]<h3>[else]<h2>[endif]
+          [val part.name]
+        [if isSubPart = "true"]</h3>[else]</h2>[endif]
+      [endif]
       
       [if part.examDate]
         <p class="exam-date"><strong>[localized 'time']:</strong> [call "comp:date-format" { "date" : part.examDate }][if part.examTime] [call "comp:time-format" { "time" : part.examTime, "date": part.examDate }][endif][if part.durationHours][call "comp:duration-format" { "duration" : part.durationHours }][endif].</p>
@@ -56,10 +58,8 @@ resourcetype exam-info {
       [endif]
       
       [def rooms part.rooms]
-      [if part.examDate != null || rooms != null]
+      [if rooms != null]
         <p class="exam-place-info"><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
-      [endif]
-      [if rooms]
         <ul class="exam-rooms">
         [list rooms r]
           <li>
@@ -111,28 +111,30 @@ resourcetype exam-info {
         [endif]
       
         [if isOrdningEksamensDel]
-          [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
+          [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "true" }]
+        [else]
+          [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "false" }]
         [endif]
 
         [list examParts examPart]
           [if (examPart.termNr = null || termNr = null || (int(examPart.termNr) = int(termNr)))]
-            [call "comp:exam-part" { "part" : examPart, "isSubPart": "false" }]
+            [call "comp:exam-part" { "part" : examPart, "isSubPart": "false", "addTitle": "true" }]
 	          
 	        [def partDays examPart.partDays]
 	        [if partDays]
 	          [list partDays partDay]
-	            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true" }]
+	            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true", "addTitle": "true" }]
 	          [endlist]
 	        [endif]
           [endif]
         [endlist]
       [else]
-        [call "comp:exam-part" { "part" : ordning, "isSubPart": "false" }]
+        [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "true" }]
 
         [def partDays ordning.partDays]
         [if partDays]
           [list partDays partDay]
-            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true" }]
+            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true", "addTitle": "true" }]
           [endlist]
         [endif]
       [endif]
@@ -194,7 +196,7 @@ resourcetype exam-info {
                 <p>[localized 'lookup-unable-error-msg']: [val resp.errorMessage]</p>
               [else]
                 [def arrangements resp.payload.arrangements]
-                [if arrangements]
+                [if arrangements && arrangements.length() > 0]
                   [list arrangements arr]
                     [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
                       [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr }]
