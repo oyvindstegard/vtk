@@ -110,6 +110,7 @@
     <property name="spCookieHandlers" ref="spCookieAuthHandlers" />
     <property name="vrtxAuthSP" value="${saml.vrtxAuthSP}" />
     <property name="uioAuthIDP" value="${saml.uioAuthIDP}" />
+    <property name="uioAuthSSO" value="${saml.uioAuthSSO}" />
   </bean>
 
   <bean id="securityInitializer.spCookieAssertion" class="vtk.web.service.AndAssertion">

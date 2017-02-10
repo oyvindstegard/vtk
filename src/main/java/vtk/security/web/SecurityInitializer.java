@@ -88,6 +88,8 @@ public class SecurityInitializer {
 
     private String uioAuthIDP;
 
+	private String uioAuthSSO;
+
     private static Logger logger = LoggerFactory.getLogger(SecurityInitializer.class);
 
     private static Logger authLogger = LoggerFactory.getLogger("vtk.security.web.AuthLog");
@@ -290,6 +292,7 @@ public class SecurityInitializer {
             spCookies.add(vrtxAuthSP);
             spCookies.add(uioAuthIDP);
             spCookies.add(VRTXLINK_COOKIE);
+			spCookies.add(uioAuthSSO);
 
             for (String cookie : spCookies) {
                 Cookie c = getCookie(request, cookie);
@@ -633,4 +636,7 @@ public class SecurityInitializer {
         this.spCookieHandlers = spCookieHandlers;
     }
 
+	public void setUioAuthSSO(String uioAuthSSO) {
+		this.uioAuthSSO = uioAuthSSO;
+	}
 }
