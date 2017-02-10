@@ -69,7 +69,7 @@ public class DateFormatFunction extends Function {
 
         FastDateFormat f;
         if (o3.equals("en")) {
-            f = FastDateFormat.getInstance("MMM d, yyyy hh:mm a", new Locale("en"));
+            f = FastDateFormat.getInstance("MMM d, yyyy h:mm a", new Locale("en"));
         } else {
             f = FastDateFormat.getInstance("d. MMM. yyyy HH:mm", new Locale("no"));
         }

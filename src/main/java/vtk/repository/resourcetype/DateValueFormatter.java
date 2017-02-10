@@ -77,13 +77,13 @@ public class DateValueFormatter implements ValueFormatter {
         namedDateFormats.put("short_en", FastDateFormat.getInstance("MMM. d, yyyy", new Locale("en")));
         namedDateFormats.put("short_no", FastDateFormat.getInstance("d. MMM. yyyy", new Locale("no")));
         namedDateFormats.put("short_nn", FastDateFormat.getInstance("d. MMM. yyyy", new Locale("no")));
-        namedDateFormats.put("long_en", FastDateFormat.getInstance("MMM. d, yyyy hh:mm a", new Locale("en")));
+        namedDateFormats.put("long_en", FastDateFormat.getInstance("MMM. d, yyyy h:mm a", new Locale("en")));
         namedDateFormats.put("long_no", FastDateFormat.getInstance("d. MMM. yyyy HH:mm", new Locale("no")));
         namedDateFormats.put("long_nn", FastDateFormat.getInstance("d. MMM. yyyy HH:mm", new Locale("no")));
-        namedDateFormats.put("longlong_en", FastDateFormat.getInstance("MMM. d, yyyy hh:mm:ss a", new Locale("en")));
+        namedDateFormats.put("longlong_en", FastDateFormat.getInstance("MMM. d, yyyy h:mm:ss a", new Locale("en")));
         namedDateFormats.put("longlong_no", FastDateFormat.getInstance("d. MMM. yyyy HH:mm:ss", new Locale("no")));
         namedDateFormats.put("longlong_nn", FastDateFormat.getInstance("d. MMM. yyyy HH:mm:ss", new Locale("no")));
-        namedDateFormats.put("hours-minutes_en", FastDateFormat.getInstance("hh:mm a", new Locale("en")));
+        namedDateFormats.put("hours-minutes_en", FastDateFormat.getInstance("h:mm a", new Locale("en")));
         namedDateFormats.put("hours-minutes_no", FastDateFormat.getInstance("HH:mm", new Locale("no")));
         namedDateFormats.put("hours-minutes_nn", FastDateFormat.getInstance("HH:mm", new Locale("no")));
         namedDateFormats.put("iso-8601", FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ssZZ", new Locale("en")));
