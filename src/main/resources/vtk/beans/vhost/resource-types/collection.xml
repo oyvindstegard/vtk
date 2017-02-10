@@ -283,7 +283,7 @@
     <property name="type" value="STRING" />
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="true" />
-    <property name="defaultValue" ref="VALUE_TRUE" />
+    <property name="defaultValue" value="true"/>
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
         <constructor-arg value="STRING" />
