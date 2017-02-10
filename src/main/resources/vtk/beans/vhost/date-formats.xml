@@ -32,7 +32,7 @@
     <property name="targetMethod" value="getInstance" />
     <property name="arguments">
       <list>
-        <value type="java.lang.String">MMM d, yyyy hh:mm a</value>
+        <value type="java.lang.String">MMM d, yyyy h:mm a</value>
         <value type="java.util.Locale">en</value>
       </list>
     </property>
@@ -57,7 +57,7 @@
     <property name="targetMethod" value="getInstance" />
     <property name="arguments">
       <list>
-        <value type="java.lang.String">hh:mm a</value>
+        <value type="java.lang.String">h:mm a</value>
         <value type="java.util.Locale">en</value>
       </list>
     </property>
