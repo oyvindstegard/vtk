@@ -85,8 +85,9 @@ public class JSONBackedMapResource implements ReverseMap<Object, Object>, Initia
     
     public void load() throws Exception {
         
-        Map<Object, Object> newMap = null;
-        Map<Object, Set<Object>> newReverseMap = null;
+        Map<Object, Object> newMap = new LinkedHashMap<>();
+        Map<Object, Set<Object>> newReverseMap = new HashMap<>();
+        
         try {
             InputStream inputStream = repository.getInputStream(token, uri, false);
             Object parsed = Json.parseToContainer(inputStream);
@@ -96,9 +97,6 @@ public class JSONBackedMapResource implements ReverseMap<Object, Object>, Initia
             }
             Map<?, ?> m = (Map<?, ?>) parsed;
             
-            newMap = new LinkedHashMap<>();
-            newReverseMap = new HashMap<>();
-
             for (Object k: m.keySet()) {
                 Object v = m.get(k);
                 newMap.put(k, v);
