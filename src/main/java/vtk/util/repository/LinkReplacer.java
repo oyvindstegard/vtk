@@ -57,6 +57,7 @@ import vtk.text.html.HtmlFragment;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageFilter;
 import vtk.text.html.HtmlPageParser;
+import vtk.util.text.JsonStreamer;
 
 public class LinkReplacer {
     
@@ -194,7 +195,6 @@ public class LinkReplacer {
                 JSONPropertyDescription jsonDesc = (JSONPropertyDescription) pdesc;
                 if (jsonDesc.isWildcard()) continue;
                 List<JSONPropertyAttributeDescription> attributes = jsonDesc.getAttributes();
-                String before = prop.toString();
 
                 if (pdesc.isMultiple()) {
                     List<Map<String, Object>> elements = (List<Map<String, Object>>) prop;
@@ -209,9 +209,12 @@ public class LinkReplacer {
                 }
                 else {
                     Map<String, Object> jsonValue = (Map<String, Object>) prop;
+                    String before = prop.toString();
+                    
                     prop = filterJsonProp(jsonValue, attributes, ctx, 
                             "json_resource_field:" + pdesc.getName());
-                    if (!jsonValue.equals(before)) {
+                    
+                    if (!JsonStreamer.toJson(prop).equals(before)) {
                         modified = true;
                     }
                 }
@@ -285,7 +288,7 @@ public class LinkReplacer {
     private static String mapRef(Object ref, Context ctx, String logLabel) {
         String value = ref.toString();
         Optional<String> mapped = ctx.mapURL(value);
-        if (mapped.isPresent() && !mapped.equals(value)) {
+        if (mapped.isPresent() && !mapped.get().equals(value)) {
             ctx.log(value, mapped.get(), logLabel);
         }
         return mapped.orElse(value);
