@@ -41,6 +41,9 @@ public class ContentTypeHelper {
         return contentType != null && contentType.startsWith("text/");
     }
     
+    public static boolean isJsonContentType(String contentType) {
+        return contentType != null && contentType.equals("application/json");
+    }
 
     public static boolean isTextPlainContentType(String contentType) {
         return contentType != null && contentType.startsWith("text/plain");
