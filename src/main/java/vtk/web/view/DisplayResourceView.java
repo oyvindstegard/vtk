@@ -264,8 +264,7 @@ public class DisplayResourceView extends AbstractView
             HttpServletResponse response) throws Exception {
         String contentType = resource.getContentType();
 
-        if (ContentTypeHelper.isHTMLContentType(resource.getContentType())
-                && resource.getCharacterEncoding() == null) {
+        if (ContentTypeHelper.isHTMLContentType(resource.getContentType()) && resource.getCharacterEncoding() == null) {
             // FIXME: to prevent some servlet containers (resin) from
             // trying to be "smart" and append "charset=iso-8859-1" to
             // the Content-Type header when no character encoding has
@@ -274,11 +273,8 @@ public class DisplayResourceView extends AbstractView
             // is perfectly legal, although a single space is
             // preferred.
             contentType = " " + resource.getContentType();
-        } else if (resource.getCharacterEncoding() != null
-                && (ContentTypeHelper.isTextContentType(resource.getContentType())
-                || ContentTypeHelper.isJsonContentType(resource.getContentType()))) {
-            contentType = resource.getContentType() + ";charset="
-                    + resource.getCharacterEncoding();
+        } else if (resource.getCharacterEncoding() != null) {
+            contentType = resource.getContentType() + ";charset=" + resource.getCharacterEncoding();
         }
         setHeader(response, "Content-Type", contentType);
     }
