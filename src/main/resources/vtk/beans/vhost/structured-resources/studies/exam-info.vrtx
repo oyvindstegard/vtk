@@ -184,17 +184,24 @@ resourcetype exam-info {
               [else]
                 [def arrangements resp.payload.arrangements]
                 [if arrangements != null && arrangements.length() > 0]
-                  [def isMoreThanOneArrangements (arrangements.length() > 1)]
                   
-                  [if arr.deadlineWithdrawal && ! isMoreThanOneArrangements]
-                    <h2>[localized 'trekkfrist']</h2>
-                    <p>[call "comp:date-format" { "date" : arr.deadlineWithdrawal }]</p>
-                  [endif]
+                  [def arrCount 0]
+                  [list arrangements arr]
+                    [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
+                      [def arrCount arrCount + 1]
+                    [endif]
+                  [endlist]
+                  [def isMoreThanOneArrangements (arrCount > 1)]
                   
                   <h2>[localized 'ordning']</h2>
                   
                   [list arrangements arr]
                     [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
+	                  [if arr.deadlineWithdrawal && ! isMoreThanOneArrangements]
+	                    <h2>[localized 'trekkfrist']</h2>
+	                    <p>[call "comp:date-format" { "date" : arr.deadlineWithdrawal }]</p>
+	                  [endif]
+                    
                       [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr, "isMoreThanOneArrangements": isMoreThanOneArrangements }]
                     [endif]
                   [endlist]
