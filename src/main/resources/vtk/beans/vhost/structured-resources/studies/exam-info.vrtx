@@ -197,13 +197,16 @@ resourcetype exam-info {
                   [endlist]
                   [def isMoreThanOneArrangements (arrCount > 1)]
                   
-                  <h2>[localized 'ordning']</h2>
-                  
+                  [def count 0]
                   [list arrangements arr]
                     [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
 	                  [if arr.deadlineWithdrawal && ! isMoreThanOneArrangements]
 	                    <h2>[localized 'trekkfrist']</h2>
 	                    <p>[call "comp:date-format" { "date" : arr.deadlineWithdrawal }]</p>
+	                  [endif]
+	                  [if count = 0]
+	                    <h2>[localized 'ordning']</h2>
+	                    [def count count + 1]
 	                  [endif]
                     
                       [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr, "isMoreThanOneArrangements": isMoreThanOneArrangements }]
