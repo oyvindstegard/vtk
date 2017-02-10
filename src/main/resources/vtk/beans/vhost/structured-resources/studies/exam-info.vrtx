@@ -93,22 +93,22 @@ resourcetype exam-info {
       ##
     }
 
-    exam-ordning (ordning, termNr) {
+    exam-ordning (ordning, termNr, isMoreThanOneArrangements) {
       ##
-      [if ordning.deadlineWithdrawal]
-        <h2>[localized 'trekkfrist']</h2>
-        <p>[call "comp:date-format" { "date" : ordning.deadlineWithdrawal }]</p>
+      
+      [if isMoreThanOneArrangements]
+        <h2 class="accordion">[val ordning.name]</h2>
+        [if ordning.deadlineWithdrawal]
+          <p class="exam-deadline-withdrawal"><strong>[localized 'trekkfrist']:</strong> [call "comp:date-format" { "date" : ordning.deadlineWithdrawal }]</p>
+        [endif]
+      [else]
+        <p>[val ordning.name].</p>
       [endif]
+      
+      [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "false" }]
 
       [def examParts ordning.examParts]
       [if examParts && examParts.length() > 0]
-        [if examParts.length() > 1]
-          <h2>[localized 'ordning']</h2>
-          <p>[val ordning.name].</p>
-        [endif]
-
-        [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "false" }]
-
         [list examParts examPart]
           [if (examPart.termNr = null || termNr = null || (int(examPart.termNr) = int(termNr)))]
             [call "comp:exam-part" { "part" : examPart, "isSubPart": "false", "addTitle": "true" }]
@@ -131,12 +131,6 @@ resourcetype exam-info {
           [endlist]
         [endif]
       [endif]
-
-      <h2>[localized 'results']</h2>
-      <p>[localized 'results-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
-
-      <h2>[localized 'more-about']</h2>
-      <p>[localized 'more-about-info'] <a href="./../../#exam">[localized 'more-about-info-course-pages-link']</a>.</p>
       ##
     }
   }
@@ -190,11 +184,26 @@ resourcetype exam-info {
               [else]
                 [def arrangements resp.payload.arrangements]
                 [if arrangements && arrangements.length() > 0]
+                  [def isMoreThanOneArrangements (arrangements.length() > 1)]
+                  
+                  [if ordning.deadlineWithdrawal &&  ! isMoreThanOneArrangements]
+                    <h2>[localized 'trekkfrist']</h2>
+                    <p>[call "comp:date-format" { "date" : ordning.deadlineWithdrawal }]</p>
+                  [endif]
+                  
+                  <h2>[localized 'ordning']</h2>
+                  
                   [list arrangements arr]
                     [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
-                      [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr }]
+                      [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr, "isMoreThanOneArrangements": isMoreThanOneArrangements }]
                     [endif]
                   [endlist]
+
+			      <h2>[localized 'results']</h2>
+			      <p>[localized 'results-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
+			
+			      <h2>[localized 'more-about']</h2>
+			      <p>[localized 'more-about-info'] <a href="./../../#exam">[localized 'more-about-info-course-pages-link']</a>.</p>
                 [else]
                   <p>[localized 'no-data'].</p>
 
