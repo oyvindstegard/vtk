@@ -48,9 +48,9 @@ import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
+import org.openxri.IRIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openxri.IRIUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.View;
 
@@ -383,7 +383,7 @@ public class ListingFeedView implements View {
             Property picture = getProperty(propSet, picturePropDefPointer);
             if (picture != null) {
                 String imageRef = picture.getStringValue();
-                if (!imageRef.startsWith("/") && !imageRef.startsWith("https://")
+                if (!imageRef.startsWith("/") && !imageRef.startsWith("http://")
                         && !imageRef.startsWith("https://")) {
                     try {
                         imageRef = propSet.getURI().getParent().expand(imageRef).toString();

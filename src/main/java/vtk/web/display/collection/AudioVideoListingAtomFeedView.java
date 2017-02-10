@@ -41,8 +41,8 @@ import org.apache.abdera.model.Link;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import vtk.repository.Path;
 
+import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
@@ -102,7 +102,7 @@ public class AudioVideoListingAtomFeedView extends ListingFeedView {
             Property posterImageProp = result.getProperty(posterImagePropDef);
             if (posterImageProp != null) {
                 posterImageString = posterImageProp.getStringValue();
-                if (!posterImageString.startsWith("/") && !posterImageString.startsWith("https://")
+                if (!posterImageString.startsWith("/") && !posterImageString.startsWith("http://")
                         && !posterImageString.startsWith("https://")) {
                     try {
                         Path posterPath = result.getURI().getParent().expand(posterImageString);
