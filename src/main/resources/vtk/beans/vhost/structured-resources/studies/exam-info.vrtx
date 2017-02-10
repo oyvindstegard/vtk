@@ -79,7 +79,7 @@ resourcetype exam-info {
       [endif]
 
       [if part.datasystem]
-        <p class="exam-datasystem"><strong>[localized 'system']:</strong></p>
+        <p class="exam-datasystem"><strong>[localized 'system']:</strong> </p>
         [call "include:shared-text" { "folder": "/vrtx/fellestekst/eksamen", "file": "system", "key": part.datasystem }]
       [endif]
 
