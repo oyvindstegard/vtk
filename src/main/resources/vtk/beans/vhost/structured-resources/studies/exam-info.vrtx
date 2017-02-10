@@ -186,9 +186,9 @@ resourcetype exam-info {
                 [if arrangements != null && arrangements.length() > 0]
                   [def isMoreThanOneArrangements (arrangements.length() > 1)]
                   
-                  [if ordning.deadlineWithdrawal &&  ! isMoreThanOneArrangements]
+                  [if arr.deadlineWithdrawal && ! isMoreThanOneArrangements]
                     <h2>[localized 'trekkfrist']</h2>
-                    <p>[call "comp:date-format" { "date" : ordning.deadlineWithdrawal }]</p>
+                    <p>[call "comp:date-format" { "date" : arr.deadlineWithdrawal }]</p>
                   [endif]
                   
                   <h2>[localized 'ordning']</h2>
