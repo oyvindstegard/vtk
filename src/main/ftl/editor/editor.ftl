@@ -2,6 +2,9 @@
 <#--
   - File: editor.ftl
   -
+  - Content of this file is duplicated in some extensions with additional specifically needed code.
+  - Thus changes must also be done in these files if needed.
+  -
   - Required model data:
   -
   -  ckeditorBase.url
