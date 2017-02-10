@@ -203,8 +203,9 @@ public class ManuallyApproveResourcesSearcher {
             } else {
                 searchResults = repository.search(token, search);
             }
-
-            resourceSet.put(location, searchResults.getAllResults());
+            List<PropertySet> allResults = searchResults != null ? 
+                    searchResults.getAllResults() : Collections.emptyList();
+            resourceSet.put(location, allResults);
 
         }
 
