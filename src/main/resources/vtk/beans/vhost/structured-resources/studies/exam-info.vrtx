@@ -111,7 +111,11 @@ resourcetype exam-info {
       [if examParts != null && examParts.length() > 0]
         [list examParts examPart]
           [if (examPart.termNr = null || termNr = null || (int(examPart.termNr) = int(termNr)))]
-            [call "comp:exam-part" { "part" : examPart, "isSubPart": "false", "addTitle": "true" }]
+            [if isMoreThanOneArrangements]
+              [call "comp:exam-part" { "part" : examPart, "isSubPart": "true", "addTitle": "true" }]
+            [else]
+              [call "comp:exam-part" { "part" : examPart, "isSubPart": "false", "addTitle": "true" }]
+            [endif]
 
 	        [def partDays examPart.partDays]
 	        [if partDays]
