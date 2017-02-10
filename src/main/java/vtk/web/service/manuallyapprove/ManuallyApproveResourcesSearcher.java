@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -169,8 +170,10 @@ public class ManuallyApproveResourcesSearcher {
         // Get resources to manually approve
         for (String location : locations) {
 
-            URL locationURL = getLocaltionAsURL(location, localHostURL);
-            PropertySet resource = getResource(repository, token, locationURL, localHostURL);
+            Optional<URL> locationURL = getLocaltionAsURL(location, localHostURL);
+            if (!locationURL.isPresent()) continue;
+            PropertySet resource = getResource(repository, token, 
+                    locationURL.get(), localHostURL);
             if (resource == null) {
                 // Nothing found
                 continue;
@@ -180,9 +183,9 @@ public class ManuallyApproveResourcesSearcher {
 
             boolean isOtherHostLocation = isOtherHostLocation(location, localHostURL);
             boolean isMultiHostSearch = multiHostSearcher.isMultiHostSearchEnabled()
-                    && ((clar != null && clar.includesResourcesFromOtherHosts(localHostURL)) || isOtherHostLocation);
+                    && (clar.includesResourcesFromOtherHosts(localHostURL) || isOtherHostLocation);
             
-            Query query = generateQuery(locationURL, resourceTypeQuery, clar, localHostURL, isMultiHostSearch);
+            Query query = generateQuery(locationURL.get(), resourceTypeQuery, clar, localHostURL, isMultiHostSearch);
 
             Search search = new Search();
             if (RequestContext.getRequestContext().isPreviewUnpublished()) {
@@ -288,18 +291,18 @@ public class ManuallyApproveResourcesSearcher {
         }
     }
 
-    private URL getLocaltionAsURL(String location, URL localHostURL) {
-        URL url = getAsURL(location);
-        if (url == null) {
-            try {
-                Path localPath = Path.fromStringWithTrailingSlash(location);
-                url = URL.parse(localHostURL.toString());
-                url.setPath(localPath);
-            } catch (IllegalArgumentException iae) {
-                return null;
-            }
+    private Optional<URL> getLocaltionAsURL(String location, URL localHostURL) {
+        Optional<URL> url = getAsURL(location);
+        if (url.isPresent()) return url;
+        try {
+            Path localPath = Path.fromStringWithTrailingSlash(location);
+            URL parsed = URL.parse(localHostURL.toString());
+            parsed.setPath(localPath);
+            return Optional.of(parsed);
         }
-        return url;
+        catch (IllegalArgumentException iae) {
+                return Optional.empty();
+        }
     }
 
     private Query generateQuery(URL locationURL, Query resourceTypeQuery, CollectionListingAggregatedResources clar,
@@ -359,10 +362,11 @@ public class ManuallyApproveResourcesSearcher {
 
         Set<String> missingAlreadyApproved = new HashSet<String>();
         for (String s : alreadyApproved) {
-            URL url = getAsURL(s);
+            Optional<URL> url = getAsURL(s);
             boolean found = false;
             for (ManuallyApproveResource m : result) {
-                if (m.getUrl().equals(url)) {
+                if (!url.isPresent()) continue;
+                if (m.getUrl().equals(url.get())) {
                     found = true;
                 }
             }
@@ -383,9 +387,9 @@ public class ManuallyApproveResourcesSearcher {
                 if (localPath != null) {
                     localPathsAsStringSet.add(localPath.toString());
                 } else {
-                    URL url = getAsURL(approved);
-                    if (url != null) {
-                        urls.add(url);
+                    Optional<URL> url = getAsURL(approved);
+                    if (url.isPresent()) {
+                        urls.add(url.get());
                     }
                 }
 
@@ -417,8 +421,8 @@ public class ManuallyApproveResourcesSearcher {
     }
 
     private boolean isOtherHostLocation(String location, URL localHostURL) {
-        URL url = getAsURL(location);
-        return url == null || url.getHost().equals(localHostURL.getHost()) ? false : true;
+        Optional<URL> url = getAsURL(location);
+        return !url.isPresent() || !url.get().getHost().equals(localHostURL.getHost());
     }
 
     private Path getLocalPath(String location, URL localHostURL) {
@@ -442,11 +446,11 @@ public class ManuallyApproveResourcesSearcher {
         }
     }
 
-    private URL getAsURL(String location) {
+    private Optional<URL> getAsURL(String location) {
         try {
-            return URL.parse(location);
+            return Optional.of(URL.parse(location));
         } catch (Exception e) {
-            return null;
+            return Optional.empty();
         }
     }
 
