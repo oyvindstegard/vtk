@@ -108,7 +108,7 @@ resourcetype exam-info {
       [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "false" }]
 
       [def examParts ordning.examParts]
-      [if examParts && examParts.length() > 0]
+      [if examParts != null && examParts.length() > 0]
         [list examParts examPart]
           [if (examPart.termNr = null || termNr = null || (int(examPart.termNr) = int(termNr)))]
             [call "comp:exam-part" { "part" : examPart, "isSubPart": "false", "addTitle": "true" }]
@@ -183,7 +183,7 @@ resourcetype exam-info {
                 <p>[localized 'lookup-unable-error-msg']: [val resp.errorMessage]</p>
               [else]
                 [def arrangements resp.payload.arrangements]
-                [if arrangements && arrangements.length() > 0]
+                [if arrangements != null && arrangements.length() > 0]
                   [def isMoreThanOneArrangements (arrangements.length() > 1)]
                   
                   [if ordning.deadlineWithdrawal &&  ! isMoreThanOneArrangements]
