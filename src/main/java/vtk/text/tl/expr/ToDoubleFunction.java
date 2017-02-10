@@ -46,7 +46,7 @@ public class ToDoubleFunction extends Function {
             throw new IllegalArgumentException("Argument is NULL");
         }
         if (o instanceof Integer) {
-            return ((Double) o);
+            return ((Integer) o).doubleValue();
         }
         if (o instanceof Double) {
             return o;
