@@ -93,9 +93,17 @@ resourcetype exam-info {
       ##
     }
 
-    exam-ordning (ordning, termNr, isMoreThanOneArrangements) {
+    exam-ordning (ordning, termNr, isMoreThanOneArrangements, count) {
       ##
-      
+
+      [if ordning.deadlineWithdrawal && ! isMoreThanOneArrangements]
+        <h2>[localized 'trekkfrist']</h2>
+        <p>[call "comp:date-format" { "date" : ordning.deadlineWithdrawal }]</p>
+      [endif]
+      [if count = 0]
+        <h2>[localized 'ordning']</h2>
+      [endif]
+
       [if isMoreThanOneArrangements]
         <h2 class="accordion">[val ordning.name]</h2>
         [if ordning.deadlineWithdrawal]
@@ -104,7 +112,7 @@ resourcetype exam-info {
       [else]
         <p>[val ordning.name].</p>
       [endif]
-      
+
       [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "false" }]
 
       [def examParts ordning.examParts]
@@ -117,16 +125,15 @@ resourcetype exam-info {
               [call "comp:exam-part" { "part" : examPart, "isSubPart": "false", "addTitle": "true" }]
             [endif]
 
-	        [def partDays examPart.partDays]
-	        [if partDays]
-	          [list partDays partDay]
-	            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true", "addTitle": "true" }]
-	          [endlist]
-	        [endif]
+            [def partDays examPart.partDays]
+            [if partDays]
+              [list partDays partDay]
+                [call "comp:exam-part" { "part" : partDay, "isSubPart": "true", "addTitle": "true" }]
+              [endlist]
+            [endif]
           [endif]
         [endlist]
       [else]
-        [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "true" }]
 
         [def partDays ordning.partDays]
         [if partDays]
@@ -188,7 +195,7 @@ resourcetype exam-info {
               [else]
                 [def arrangements resp.payload.arrangements]
                 [if arrangements != null && arrangements.length() > 0]
-                  
+
                   [def arrCount 0]
                   [list arrangements arr]
                     [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
@@ -196,28 +203,20 @@ resourcetype exam-info {
                     [endif]
                   [endlist]
                   [def isMoreThanOneArrangements (arrCount > 1)]
-                  
+
                   [def count 0]
                   [list arrangements arr]
                     [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
-	                  [if arr.deadlineWithdrawal && ! isMoreThanOneArrangements]
-	                    <h2>[localized 'trekkfrist']</h2>
-	                    <p>[call "comp:date-format" { "date" : arr.deadlineWithdrawal }]</p>
-	                  [endif]
-	                  [if count = 0]
-	                    <h2>[localized 'ordning']</h2>
-	                    [def count count + 1]
-	                  [endif]
-                    
-                      [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr, "isMoreThanOneArrangements": isMoreThanOneArrangements }]
+                      [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr, "isMoreThanOneArrangements": isMoreThanOneArrangements, "count": count }]
+                      [def count count + 1]
                     [endif]
                   [endlist]
 
-			      <h2>[localized 'results']</h2>
-			      <p>[localized 'results-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
-			
-			      <h2>[localized 'more-about']</h2>
-			      <p>[localized 'more-about-info'] <a href="./../../#exam">[localized 'more-about-info-course-pages-link']</a>.</p>
+                  <h2>[localized 'results']</h2>
+                  <p>[localized 'results-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
+
+                  <h2>[localized 'more-about']</h2>
+                  <p>[localized 'more-about-info'] <a href="./../../#exam">[localized 'more-about-info-course-pages-link']</a>.</p>
                 [else]
                   <p>[localized 'no-data'].</p>
 
