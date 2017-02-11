@@ -128,7 +128,7 @@
     <spring.version>4.3.3.RELEASE</spring.version>
     <spring.boot.version>1.4.1.RELEASE</spring.boot.version>
     <lucene.version>4.10.4</lucene.version>
-    <akka.version>2.4.11</akka.version>
+    <akka.version>2.4.17</akka.version>
     <jetty.version>9.3.13.v20161014</jetty.version>
     <frontend.build.args>default --production</frontend.build.args>
   </properties>
