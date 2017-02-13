@@ -1,4 +1,4 @@
-/* Copyright (c) 2004, 2007, University of Oslo, Norway
+/* Copyright (c) 2004, 2007, 2017 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,46 +30,35 @@
  */
 package vtk.util.repository;
 
-
 /**
- * Utility methods for determining common resource types based on MIME
- * types.
+ * Utility methods for determining common resource types based on MIME types.
  */
 public class ContentTypeHelper {
-    
+
     public static boolean isTextContentType(String contentType) {
         return contentType != null && contentType.startsWith("text/");
-    }
-    
-    public static boolean isJsonContentType(String contentType) {
-        return contentType != null && contentType.equals("application/json");
     }
 
     public static boolean isTextPlainContentType(String contentType) {
         return contentType != null && contentType.startsWith("text/plain");
     }
 
-    
-    /**
-     * TODO: See "XML Media Types" [RFC2376]
-     */
+    //TODO: See "XML Media Types" [RFC2376]
     public static boolean isXMLContentType(String contentType) {
-        return (contentType != null) &&
-            (contentType.startsWith("text/xml")
-             || contentType.startsWith("application/xml")
-             || contentType.startsWith("application/x-xml"));
-    }   
-    
+        return (contentType != null)
+                && (contentType.startsWith("text/xml")
+                || contentType.startsWith("application/xml")
+                || contentType.startsWith("application/x-xml"));
+    }
 
     public static boolean isHTMLContentType(String contentType) {
         return (contentType != null) && (contentType.startsWith("text/html"));
-    }   
-    
+    }
 
     public static boolean isHTMLOrXHTMLContentType(String contentType) {
         return (contentType != null)
-            && (contentType.startsWith("text/html")
+                && (contentType.startsWith("text/html")
                 || contentType.startsWith("application/xhtml"));
-    }   
-    
+    }
+
 }
