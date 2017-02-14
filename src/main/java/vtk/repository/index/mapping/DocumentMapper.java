@@ -308,7 +308,7 @@ public class DocumentMapper implements InitializingBean {
             String name = PropertyFields.propertyName(fieldName);
             String nsPrefix = PropertyFields.propertyNamespace(fieldName);
             def = resourceTypeTree.getPropertyTypeDefinition(Namespace.getNamespaceFromPrefix(nsPrefix), name);
-            logger.warn("Definition for property '" + nsPrefix + PropertyFields.NAMESPACEPREFIX_NAME_SEPARATOR + name + "' not found by " + " property manager.");
+            logger.warn("Definition for property '" + nsPrefix + PropertyFields.NAMESPACEPREFIX_NAME_SEPARATOR + name + "' not found");
         }
         
         return propertyFields.fromFields(def, fields);

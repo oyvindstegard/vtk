@@ -78,12 +78,7 @@ class PropertySetIndexRandomAccessorImpl implements PropertySetIndexRandomAccess
 
         Term term = new Term(ResourceFields.URI_FIELD_NAME, uri.toString());
         try {
-            List<Document> docs = lookupDocs(term, new LoadFieldCallback() {
-                @Override
-                public boolean loadField(String fieldName) {
-                    return false;
-                }
-            });
+            List<Document> docs = lookupDocs(term, (String fieldName) -> false);
             return docs.size();
         } catch (IOException io) {
             throw new IndexException(io);
@@ -127,20 +122,17 @@ class PropertySetIndexRandomAccessorImpl implements PropertySetIndexRandomAccess
     public PropertySetInternalData getPropertySetInternalData(final Path uri) throws IndexException {
 
         try {
-            LoadFieldCallback lfc = new LoadFieldCallback() {
-                @Override
-                public boolean loadField(String fieldName) {
-                    if (ResourceFields.URI_FIELD_NAME.equals(fieldName)
-                            || ResourceFields.RESOURCETYPE_FIELD_NAME.equals(fieldName)
-                            || ResourceFields.ID_FIELD_NAME.equals(fieldName)) {
-                        return true;
-                    }
-                    if (fieldName.startsWith(AclFields.ACL_FIELD_PREFIX)) {
-                        return true;
-                    }
-                    
-                    return false;
+            LoadFieldCallback lfc = (String fieldName) -> {
+                if (ResourceFields.URI_FIELD_NAME.equals(fieldName)
+                        || ResourceFields.RESOURCETYPE_FIELD_NAME.equals(fieldName)
+                        || ResourceFields.ID_FIELD_NAME.equals(fieldName)) {
+                    return true;
                 }
+                if (fieldName.startsWith(AclFields.ACL_FIELD_PREFIX)) {
+                    return true;
+                }
+
+                return false;
             };
             
             List<Document> docs = lookupDocs(new Term(ResourceFields.URI_FIELD_NAME, uri.toString()), lfc);
@@ -189,7 +181,7 @@ class PropertySetIndexRandomAccessorImpl implements PropertySetIndexRandomAccess
     }
     
     private List<Document> lookupDocs(Term term, final LoadFieldCallback lfc) throws IOException {
-        final List<Document> documents = new ArrayList<Document>();
+        final List<Document> documents = new ArrayList<>();
         final TermFilter tf = new TermFilter(term);
         try {
             for (AtomicReaderContext arc : searcher.getIndexReader().leaves()) {
@@ -201,16 +193,16 @@ class PropertySetIndexRandomAccessorImpl implements PropertySetIndexRandomAccess
                     if (disi != null) {
                         int docId;
                         while ((docId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                            DocumentStoredFieldVisitor fv =
-                                new DocumentStoredFieldVisitor() {
-                                    @Override
-                                    public StoredFieldVisitor.Status needsField(FieldInfo fieldInfo) throws IOException {
-                                        if (lfc == null || lfc.loadField(fieldInfo.name)) {
-                                            return StoredFieldVisitor.Status.YES;
-                                        }
-                                        return StoredFieldVisitor.Status.NO;
+                            DocumentStoredFieldVisitor fv
+                                    = new DocumentStoredFieldVisitor() {
+                                @Override
+                                public StoredFieldVisitor.Status needsField(FieldInfo fieldInfo) throws IOException {
+                                    if (lfc == null || lfc.loadField(fieldInfo.name)) {
+                                        return StoredFieldVisitor.Status.YES;
                                     }
-                                };
+                                    return StoredFieldVisitor.Status.NO;
+                                }
+                            };
                             ar.document(docId, fv);
                             documents.add(fv.getDocument());
                         }

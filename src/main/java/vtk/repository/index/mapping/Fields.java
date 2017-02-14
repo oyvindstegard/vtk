@@ -122,7 +122,7 @@ public abstract class Fields {
     /**
      * Create special field used only for sorting string values in a localized
      * fashion. The field value will be encoded as a collation key using the
-     * configured default locale.
+     * configured default locale, and it will be stored in index as doc value.
      * 
      * @param name the field name
      * @param value the field value, a string.

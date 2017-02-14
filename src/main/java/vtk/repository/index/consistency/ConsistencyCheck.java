@@ -30,14 +30,13 @@
  */
 package vtk.repository.index.consistency;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +46,7 @@ import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.PropertySetImpl;
 import vtk.repository.index.IndexException;
+import vtk.repository.index.OrderedIndexSet;
 import vtk.repository.index.PropertySetIndex;
 import vtk.repository.index.PropertySetIndexRandomAccessor;
 import vtk.repository.index.PropertySetIndexRandomAccessor.PropertySetInternalData;
@@ -62,6 +62,8 @@ import vtk.repository.store.PropertySetHandler;
  * writing operations are known to occur during testing. This is necessary
  * so that the index isn't modified during testing, or between testing
  * and the call to {@link #repairErrors(boolean)} (in case of errors present).
+ *
+ * TODO clean up messy exception handling
  * 
  * @author oyviste
  */
@@ -74,15 +76,15 @@ public class ConsistencyCheck {
      * an exception will be thrown. This is so as to avoid filling memory with
      * error instances, which do carry some amount of data.
      */
-    public static final int ERROR_LIMIT = 10000;
+    public static final int ERROR_LIMIT = 5000;
 
     private final IndexDao indexDao;
     private final PropertySetIndex index;
+    private final File tempDir;
 
-    private final List<AbstractConsistencyError> errors = 
-        new ArrayList<AbstractConsistencyError>(); // List of detected inconsistencies
+    // List of detected inconsistencies
+    private final List<AbstractConsistencyError> errors = new ArrayList<>();
     private boolean completed = false; 
-    
 
     /**
      * 
@@ -90,9 +92,11 @@ public class ConsistencyCheck {
      * @param indexDataAccessor
      */
     private ConsistencyCheck(PropertySetIndex index,
-                             IndexDao indexDao) {
+                             IndexDao indexDao,
+                             File tempDir) {
         this.indexDao = indexDao;
         this.index = index;
+        this.tempDir = tempDir;
     }
 
     /**
@@ -100,14 +104,14 @@ public class ConsistencyCheck {
      * 
      * 
      * @param index
-     * @param indexDataAccessor
+     * @param indexDao
      * @return
      */
     public static ConsistencyCheck run(PropertySetIndex index,
-            IndexDao indexDao) throws IndexException,
+            IndexDao indexDao, File tempDir) throws IndexException,
             ConsistencyCheckException, StorageCorruptionException {
 
-        ConsistencyCheck check = new ConsistencyCheck(index, indexDao);
+        ConsistencyCheck check = new ConsistencyCheck(index, indexDao, tempDir);
         check.runInternal();
         return check;
     }
@@ -122,7 +126,7 @@ public class ConsistencyCheck {
         Iterator<Path> indexUriIterator = null;
         PropertySetIndexRandomAccessor randomIndexAccessor = null;
 
-        try {
+        try (OrderedIndexSet databaseUriSet = new OrderedIndexSet(this.tempDir)) {
             
             LOG.info("Running storage corruption test ..");
             // This has the positive side effect of warming up the Lucene reader cache
@@ -133,14 +137,16 @@ public class ConsistencyCheck {
             randomIndexAccessor = this.index.randomAccessor();
             
             LOG.info("Running consistency check ..");
-            runConsistencyCheck(randomIndexAccessor, indexUriIterator);
+            runConsistencyCheck(randomIndexAccessor, indexUriIterator, databaseUriSet);
             
             if (this.errors.size() > 0) {
                 LOG.warn("Consistency check completed, " + this.errors.size() + " inconsistencies detected.");
             } else {
                 LOG.info("Consistency check completed successfully without any errors detected.");
             }
-
+        } catch (IOException io) {
+            LOG.warn("IOException during consistency check: " + io.getClass().getSimpleName() + ": " + io.getMessage());
+            throw new RuntimeException(io);
         } catch (IndexException e) {
             LOG.warn("IndexException during consistency check: " + e.getClass().getSimpleName() + ": " + e.getMessage());
             throw e; // Re-throw, since we can't work on or fix a corrupted index
@@ -170,10 +176,9 @@ public class ConsistencyCheck {
     
     @SuppressWarnings("unchecked")
     private void runConsistencyCheck(final PropertySetIndexRandomAccessor randomIndexAccessor,
-                                     final Iterator<Path> indexUriIterator) 
-        throws IndexException {
-        
-        final Set<Path> validURIs = new HashSet<Path>(30000);
+                                     final Iterator<Path> indexUriIterator,
+                                     final OrderedIndexSet databaseUriSet)
+        throws IndexException, IOException {
         
         PropertySetHandler handler = new PropertySetHandler() {
 
@@ -208,8 +213,13 @@ public class ConsistencyCheck {
                     ConsistencyCheck.this.addError(
                             new MultiplesInconsistency(currentUri, indexInstances, daoPropSet, acl));
                 }
-                // Add to set of valid index property set URIs
-                validURIs.add(currentUri);
+                
+                try {
+                    // Add to set of valid index property set URIs
+                    databaseUriSet.add(currentUri.toString());
+                } catch (IOException io) {
+                    throw new ConsistencyCheckException("IOException while running consistency check", io);
+                }
                 
                 // Progress logging
                 if (++this.progressCount % 10000 == 0) {
@@ -224,12 +234,14 @@ public class ConsistencyCheck {
         };
         
         this.indexDao.orderedPropertySetIteration(handler);
+
+        databaseUriSet.commit();
         
         // Need to make a complete pass over index URIs to detect dangling inconsistencies
         LOG.info("Checking for dangling property sets in index ..");
         while (indexUriIterator.hasNext()) {
             Path currentUri = indexUriIterator.next();
-            if (! validURIs.contains(currentUri)) {
+            if (! databaseUriSet.contains(currentUri.toString())) {
                 this.addError(new DanglingInconsistency(currentUri));
             }
 
@@ -323,11 +335,7 @@ public class ConsistencyCheck {
                 return false;
             }
             
-            if (!Arrays.deepEquals(p1.getValues(), p2.getValues())) {
-                return false;
-            }
-            
-            return true;
+            return Arrays.deepEquals(p1.getValues(), p2.getValues());
         } else {
             if (p2.getDefinition().isMultiple()) return false;
             

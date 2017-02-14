@@ -40,6 +40,7 @@ import vtk.repository.index.consistency.ConsistencyCheck;
  */
 public interface IndexOperationManager {
 
+
     /**
      * Get the managed index instance.
      * @return

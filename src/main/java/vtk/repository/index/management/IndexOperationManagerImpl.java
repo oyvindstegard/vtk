@@ -1,4 +1,4 @@
-/* Copyright (c) 2007,2016 University of Oslo, Norway
+/* Copyright (c) 2007-2017 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
  */
 package vtk.repository.index.management;
 
+import java.io.File;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -39,6 +40,10 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import vtk.repository.index.DirectReindexer;
 import vtk.repository.index.IndexException;
 import vtk.repository.index.IndirectReindexer;
@@ -51,18 +56,69 @@ import vtk.repository.store.IndexDao;
 /**
  * High level stateful management of system index operations.
  */
-public class IndexOperationManagerImpl implements IndexOperationManager, DisposableBean {
+public class IndexOperationManagerImpl implements IndexOperationManager, DisposableBean,
+        InitializingBean, ApplicationListener<ContextRefreshedEvent>{
 
-    public static final String CONSISTENCY_CHECK_THREAD_NAME = 
-                                                          "consistencyChecker";
-    public static final String REINDEXER_THREAD_NAME = "reindexer";
-    
-    private static final Logger LOG = LoggerFactory.getLogger(
+    private final Logger logger = LoggerFactory.getLogger(
                                             IndexOperationManagerImpl.class);
-    
-    private final PropertySetIndex index;
-    private final PropertySetIndex secondaryIndex; // only used for re-indexing of primary index, and not required
-    private final IndexDao indexDao;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        switch (autoReindex) {
+            case AT_INIT:
+                logger.info("Starting automatic synchronous reindexing of index " + index.getId() + " ..");
+                reindex(false);
+            default:
+        }
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        switch (autoReindex) {
+            case AFTER_INIT:
+                logger.info("Starting automatic reindexing of index " + index.getId() + " ..");
+                reindex(true);
+                break;
+            case AFTER_INIT_IF_INCOMPATIBLE:
+                if (!index.isApplicationLevelCompatible()) {
+                    logger.info("Starting automatic reindexing of index "
+                            + index.getId() + " due to application level incompatibility ..");
+                    reindex(true);
+                }
+                break;
+            default:
+        }
+    }
+
+    /**
+     * Enum which specifices when to trigger automatic reindexing operation.
+     */
+    public enum AutoReindex {
+        /**
+         * Unconditionally reindex synchronously during bean init, before
+         * application context has finished initialization.
+         */
+        AT_INIT,
+        /**
+         * Unconditionally reindex asynchronously after application context has finished initialization.
+         */
+        AFTER_INIT,
+        /**
+         * Reindex asynchronously after application context has finished initialization
+         * <em>if index on disk is incompatible.</em>
+         */
+        AFTER_INIT_IF_INCOMPATIBLE,
+        /**
+         * Never perform any auto-reindexing at application init time.
+         */
+        NEVER
+    }
+
+    private PropertySetIndex index;
+    private PropertySetIndex secondaryIndex; // only used for re-indexing of primary index, and not required
+    private IndexDao indexDao;
+    private File tempDir;
+    private AutoReindex autoReindex = AutoReindex.AFTER_INIT_IF_INCOMPATIBLE;
 
     private ConsistencyCheck lastConsistencyCheck = null;
     private boolean isCheckingConsistency = false;
@@ -77,24 +133,12 @@ public class IndexOperationManagerImpl implements IndexOperationManager, Disposa
     private final ExecutorService executor = new ThreadPoolExecutor(0, 1, 1,
             TimeUnit.SECONDS, new SynchronousQueue<>(), r -> new Thread(r, "index-operation"));
     
-    public IndexOperationManagerImpl(PropertySetIndex index, IndexDao indexDao) {
-        this.index = index;
-        this.indexDao = indexDao;
-        this.secondaryIndex = null;
-    }
-    
-    public IndexOperationManagerImpl(PropertySetIndex index, PropertySetIndex secondaryIndex, IndexDao indexDao) {
-        this.index = index;
-        this.secondaryIndex = secondaryIndex;
-        this.indexDao = indexDao;
-    }
-    
     @Override
     public synchronized void checkConsistency(boolean asynchronous)
             throws IllegalStateException {
-        if (this.isCheckingConsistency) {
+        if (isCheckingConsistency) {
             throw new IllegalStateException("Consistency check is already running");
-        } else if (this.isReindexing) {
+        } else if (isReindexing) {
             throw new IllegalStateException("Cannot do consistency check while re-indexing is running");
         } else if (isClosed()) {
             throw new IllegalStateException("Cannot do consistency check on closed index");
@@ -109,73 +153,74 @@ public class IndexOperationManagerImpl implements IndexOperationManager, Disposa
     
     @Override
     public synchronized boolean lastConsistencyCheckCompletedNormally() {
-        if (this.lastConsistencyCheck == null) {
+        if (lastConsistencyCheck == null) {
             throw new IllegalStateException("No consistency check has been done yet");
         }
         
-        return (this.lastConsistencyCheckException == null);
+        return (lastConsistencyCheckException == null);
     }
     
     private void runConsistencyCheckInternal() {
-        this.isCheckingConsistency = true;
-        this.lastConsistencyCheckException = null;
+        isCheckingConsistency = true;
+        lastConsistencyCheckException = null;
         
-        LOG.info("Waiting for lock on index");
-        this.index.lock();
-        LOG.info("Lock acquired");
+        logger.info("Waiting for lock on index");
+        index.lock();
+        logger.info("Lock acquired");
         
         try {
-            this.lastConsistencyCheck = 
+            lastConsistencyCheck = 
                 ConsistencyCheck.run(
                     IndexOperationManagerImpl.this.index,
-                    IndexOperationManagerImpl.this.indexDao);
+                    IndexOperationManagerImpl.this.indexDao,
+                    IndexOperationManagerImpl.this.tempDir);
         } catch (TooManyErrorsException tme) {
-            LOG.info("Consistency check found too many errors");
-            this.lastConsistencyCheck = tme.getPartialCheck();
-            this.lastConsistencyCheckException = tme;
+            logger.info("Consistency check found too many errors");
+            lastConsistencyCheck = tme.getPartialCheck();
+            lastConsistencyCheckException = tme;
         } catch (IndexException e) {
-            LOG.info("Error running consistency check: " + e.getClass().getSimpleName() + ": " + e.getMessage());
-            this.lastConsistencyCheckException = e;
+            logger.info("Error running consistency check: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            lastConsistencyCheckException = e;
         } finally {
-            this.index.unlock();
-            LOG.info("Lock released");
-            this.isCheckingConsistency = false;
-            this.lastConsistencyCheckCompletionTime = new Date();
+            index.unlock();
+            logger.info("Lock released");
+            isCheckingConsistency = false;
+            lastConsistencyCheckCompletionTime = new Date();
         }
     }
 
     @Override
     public ConsistencyCheck getLastConsistencyCheck() {
-        return this.lastConsistencyCheck;
+        return lastConsistencyCheck;
     }
     
     @Override
     public Exception getLastConsistencyCheckException() {
-        return this.lastConsistencyCheckException;
+        return lastConsistencyCheckException;
     }
 
     @Override
     public Date getLastConsistencyCheckCompletionTime() {
-        return this.lastConsistencyCheckCompletionTime;
+        return lastConsistencyCheckCompletionTime;
     }
 
     @Override
     public synchronized boolean isCheckingConsistency() {
-        return this.isCheckingConsistency;
+        return isCheckingConsistency;
     }
 
     @Override
     public synchronized boolean isReindexing() {
-        return this.isReindexing;
+        return isReindexing;
     }
 
     @Override
     public synchronized void reindex(boolean asynchronous) throws IllegalStateException {
-        if (this.isReindexing) {
+        if (isReindexing) {
             throw new IllegalStateException("Reindexing is already running");
         } else if (isClosed()) {
             throw new IllegalStateException("Cannot start reindexing, index is closed");
-        } else if (this.isCheckingConsistency) {
+        } else if (isCheckingConsistency) {
             throw new IllegalStateException("Cannot start reindexing, consistency check is running");
         }
         
@@ -188,45 +233,44 @@ public class IndexOperationManagerImpl implements IndexOperationManager, Disposa
     
     private void runReindexingInternal() {
         
-        this.isReindexing = true;
-        this.lastReindexingException = null;
+        isReindexing = true;
+        lastReindexingException = null;
         
-        PropertySetIndexReindexer reindexer;
-        if (this.secondaryIndex != null) {
-             reindexer = new IndirectReindexer(this.index,
-                            this.secondaryIndex, this.indexDao);
+        final PropertySetIndexReindexer reindexer;
+        if (secondaryIndex != null) {
+             reindexer = new IndirectReindexer(index, secondaryIndex, indexDao);
         } else {
-            reindexer = new DirectReindexer(this.index, this.indexDao);
+            reindexer = new DirectReindexer(index, indexDao);
         }
 
         try {
-            this.resourcesReindexed = reindexer.run();
+            resourcesReindexed = reindexer.run();
         } catch (Exception e) {
-            this.lastReindexingException = e;
+            lastReindexingException = e;
         } finally {
-            this.isReindexing = false;
-            this.lastReindexingCompletionTime = new Date();
+            isReindexing = false;
+            lastReindexingCompletionTime = new Date();
         }
         
     }
 
     @Override
     public Exception getLastReindexingException() {
-        return this.lastReindexingException;
+        return lastReindexingException;
     }
 
 
     @Override
     public Date getLastReindexingCompletionTime() {
-        return this.lastReindexingCompletionTime;
+        return lastReindexingCompletionTime;
     }
 
     @Override
     public synchronized boolean lastReindexingCompletedNormally()
             throws IllegalStateException {
         
-        if (this.lastReindexingException == null) { 
-            if (this.resourcesReindexed == -1) {
+        if (lastReindexingException == null) { 
+            if (resourcesReindexed == -1) {
                 throw new IllegalStateException("No re-indexing has been run");
             }
             return true;
@@ -238,15 +282,15 @@ public class IndexOperationManagerImpl implements IndexOperationManager, Disposa
     public void reinitialize() {
         boolean acquired = false;
         try {
-            LOG.info("Waiting for lock");
-            acquired = this.index.lock();
-            LOG.info("Lock acquired");
-            LOG.info("Re-initializing ..");
-            this.index.reinitialize();
+            logger.info("Waiting for lock");
+            acquired = index.lock();
+            logger.info("Lock acquired");
+            logger.info("Re-initializing ..");
+            index.reinitialize();
         } finally {
             if (acquired) {
-                this.index.unlock();
-                LOG.info("Lock released");
+                index.unlock();
+                logger.info("Lock released");
             }
         }
     }
@@ -255,53 +299,53 @@ public class IndexOperationManagerImpl implements IndexOperationManager, Disposa
     public void optimize() {
         boolean acquired = false;
         try {
-            LOG.info("Waiting for lock");
-            acquired = this.index.lock();
-            LOG.info("Lock acquired");
-            LOG.info("Optimizing ..");
-            this.index.optimize();
+            logger.info("Waiting for lock");
+            acquired = index.lock();
+            logger.info("Lock acquired");
+            logger.info("Optimizing ..");
+            index.optimize();
         } finally {
             if (acquired) {
-                this.index.unlock();
-                LOG.info("Lock released");
+                index.unlock();
+                logger.info("Lock released");
             }
         }
     }
 
     @Override
     public boolean isClosed() {
-        return this.index.isClosed();
+        return index.isClosed();
     }
 
     @Override
     public void close() {
-        if (this.index.isClosed()) {
+        if (index.isClosed()) {
             throw new IllegalStateException("Index is already closed");
         }
         
         boolean acquired = false;
         try {
-            LOG.info("Waiting for lock");
-            acquired = this.index.lock();
-            LOG.info("Lock acquired");
-            LOG.info("Closing ..");
-            this.index.close();
+            logger.info("Waiting for lock");
+            acquired = index.lock();
+            logger.info("Lock acquired");
+            logger.info("Closing ..");
+            index.close();
         } finally {
             if (acquired) {
-                this.index.unlock();
-                LOG.info("Lock released");
+                index.unlock();
+                logger.info("Lock released");
             }
         }
     }
 
     @Override
     public boolean lock() {
-        return this.index.lock();
+        return index.lock();
     }
 
     @Override
     public void unlock() {
-        this.index.unlock();
+        index.unlock();
     }
 
     @Override
@@ -310,7 +354,7 @@ public class IndexOperationManagerImpl implements IndexOperationManager, Disposa
         long timeout = 100;
         boolean acquired = false;
         try {
-            acquired = this.index.lock(timeout);
+            acquired = index.lock(timeout);
         } finally {
             if (acquired) index.unlock();
         }
@@ -320,53 +364,85 @@ public class IndexOperationManagerImpl implements IndexOperationManager, Disposa
     
     @Override
     public PropertySetIndex getManagedInstance() {
-        return this.index;
+        return index;
     }
 
     @Override
     public synchronized void clearLastConsistencyCheckResults() {
-        if (this.isCheckingConsistency) {
+        if (isCheckingConsistency) {
             throw new IllegalStateException(
                     "Cannot clear results while consistency check is running");
         }
-        this.lastConsistencyCheck = null;
-        this.lastConsistencyCheckCompletionTime = null;
-        this.lastConsistencyCheckException = null;
+        lastConsistencyCheck = null;
+        lastConsistencyCheckCompletionTime = null;
+        lastConsistencyCheckException = null;
     }
 
     @Override
     public synchronized boolean hasReindexingResults() {
-        if (this.isReindexing) {
+        if (isReindexing) {
             return false;
         }
         
-        return this.resourcesReindexed != -1;
+        return resourcesReindexed != -1;
     }
     
     @Override
     public synchronized int getLastReindexingResourceCount() {
-        if (this.isReindexing) {
+        if (isReindexing) {
             throw new IllegalStateException(
                     "Cannot get resource count while reindexing is running");
         }
         
-        return this.resourcesReindexed;
+        return resourcesReindexed;
     }
     
     @Override
     public synchronized void clearLastReindexingResults() {
-        if (this.isReindexing){
+        if (isReindexing){
             throw new IllegalStateException(
                     "Cannot clear results while reindexing is running");
         }
         
-        this.lastReindexingCompletionTime = null;
-        this.lastReindexingException = null;
-        this.resourcesReindexed = -1;
+        lastReindexingCompletionTime = null;
+        lastReindexingException = null;
+        resourcesReindexed = -1;
     }
 
     @Override
     public void destroy() throws Exception {
         executor.shutdownNow();
     }
+
+    @Required
+    public void setIndex(PropertySetIndex index) {
+        this.index = index;
+    }
+
+    public void setSecondaryIndex(PropertySetIndex secondaryIndex) {
+        this.secondaryIndex = secondaryIndex;
+    }
+
+    @Required
+    public void setIndexDao(IndexDao indexDao) {
+        this.indexDao = indexDao;
+    }
+
+    @Required
+    public void setTempDir(File tempDir) {
+        this.tempDir = tempDir;
+    }
+
+    /**
+     * Set condition for when to initiate automatic reindexing of main index
+     * at startup.
+     *
+     * <p>Default is {@link AutoReindex#AFTER_INIT_IF_INCOMPATIBLE}.
+     * @param autoReindex
+     * @see AutoReindex
+     */
+    public void setAutoReindex(AutoReindex autoReindex) {
+        this.autoReindex = autoReindex;
+    }
+    
 }

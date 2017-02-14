@@ -32,7 +32,9 @@
 package vtk.repository.index;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -50,6 +52,9 @@ import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.IOContext;
+import org.apache.lucene.store.IndexInput;
+import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.store.SimpleFSLockFactory;
@@ -81,6 +86,26 @@ import vtk.util.threads.Mutex;
 public class IndexManager implements DisposableBean {
     
     private final Logger logger = LoggerFactory.getLogger(IndexManager.class.getName());
+
+    /**
+     * This version number is written as-is to the index directory whenever a new
+     * index is created.
+     *
+     * <p>When an index is opened, this version number can be compared to the one
+     * written in the index and optionally execute operations to make the index
+     * compatible with the current application code.
+     *
+     * <p>
+     * This integer should be bumped whenever changes in the application or
+     * indexing code base have been made that will be incompatible with indexes
+     * written by older code.
+     *
+     * To get the written application level of an opened index, use {@link #getApplicationCompatibilityLevel()
+     * }.
+     */
+    public static final int APPLICATION_COMPATIBILITY_LEVEL = 1;
+
+    private static final String APPLICATION_META_FILE = "vrtxmeta";
     
     private File storageRootPath;
     private String storageId;
@@ -298,7 +323,7 @@ public class IndexManager implements DisposableBean {
         
         return writer;
     }
-    
+
     /**
      * Obtain an index searcher.
      * 
@@ -368,15 +393,55 @@ public class IndexManager implements DisposableBean {
             IndexWriterConfig conf = newIndexWriterConfig();
             conf.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
             new IndexWriter(directory, conf).close();
-            logger.info("Created new index in directory " + directory);
+            writeApplicationCompatLevel(directory);
+            logger.info("Created new index (application level " + APPLICATION_COMPATIBILITY_LEVEL + ") in directory: " + directory);
+        }
+    }
+
+    private void writeApplicationCompatLevel(Directory directory) throws IOException {
+        try (IndexOutput output = directory.createOutput(APPLICATION_META_FILE, IOContext.DEFAULT)) {
+            output.writeInt(APPLICATION_COMPATIBILITY_LEVEL);
+        }
+    }
+
+    private int readApplicationCompatLevel(Directory directory) throws IOException {
+        try (IndexInput input = directory.openInput(APPLICATION_META_FILE, IOContext.DEFAULT)) {
+            return input.readInt();
+        }
+    }
+
+    /**
+     * Fetch the current application compatibility level from the open index.
+     *
+     * <p>If no application level has been written, then the static value
+     * <code>-1</code> is returned.
+     *
+     * <p>Compare with {@link #APPLICATION_COMPATIBILITY_LEVEL}, which is written
+     * to newly created indexes. If there is a mismatch, it could be considered a hint
+     * that a reindex should be performed to make index compatible with current
+     * application code.
+     *
+     * @return an integer, specifically the value <code>-1</code> if no
+     * application compatiblity level has been written to the opened index
+     * @throws IOException if index is closed or other IO error occurs
+     */
+    public int getApplicationCompatibilityLevel() throws IOException {
+        final Directory dir = directory;
+        if (dir == null) {
+            throw new IOException("Index is closed");
+        }
+        try {
+            return readApplicationCompatLevel(dir);
+        } catch (NoSuchFileException | FileNotFoundException e) {
+            return -1;
         }
     }
     
     private File initStorage(File storageRootPath, String storageId)
         throws IOException {
-        
+
         File storageDirectory = new File(storageRootPath, storageId);
-        
+
         if (storageDirectory.isDirectory()) {
             if (! storageDirectory.canWrite()) {
                 throw new IOException("Resolved storage directory '"
@@ -395,7 +460,7 @@ public class IndexManager implements DisposableBean {
                         + "'");
             }
         }
-        
+
         return storageDirectory;
     }
     
@@ -416,7 +481,7 @@ public class IndexManager implements DisposableBean {
         
         // Disable stored field compression, because it hurts performance
         // badly for our usage patterns:
-        cfg.setCodec(new Lucene410CodecWithNoFieldCompression());
+         cfg.setCodec(new Lucene410CodecWithNoFieldCompression());
         
         cfg.setWriteLockTimeout(writeLockTimeoutSeconds*1000);
 
@@ -639,6 +704,6 @@ public class IndexManager implements DisposableBean {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(" + storageId + ")";
+        return getClass().getSimpleName() + "{" + storageId + "}";
     }
 }
