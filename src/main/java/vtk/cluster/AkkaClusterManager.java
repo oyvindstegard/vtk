@@ -93,6 +93,7 @@ public class AkkaClusterManager implements ApplicationListener<ApplicationInitia
         );
         ClusterSingletonManagerSettings settings =
                 ClusterSingletonManagerSettings.create(system);
+
         system.actorOf(
                 ClusterSingletonManager.props(
                     Props.create(WriteToken.class),

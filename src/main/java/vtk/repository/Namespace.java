@@ -30,6 +30,13 @@
  */
 package vtk.repository;
 
+/**
+ * Represents a namespace with a prefix and URI.
+ *
+ * <p>Instances of this class are immutable.
+ *
+ * <p>Equality between instances is solely based on URI.
+ */
 public class Namespace {
 
     public static final Namespace DEFAULT_NAMESPACE = new Namespace(null, null);
@@ -43,8 +50,8 @@ public class Namespace {
     public static final Namespace STRUCTURED_RESOURCE_NAMESPACE = new Namespace("resource",
             "http://www.uio.no/vrtx/__vrtx/ns/structured-resources");
 
-    private String prefix;
-    private String uri;
+    private final String prefix;
+    private final String uri;
 
     public Namespace(String prefix, String uri) {
         this.prefix = prefix;

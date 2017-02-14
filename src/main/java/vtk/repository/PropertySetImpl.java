@@ -126,12 +126,8 @@ public class PropertySetImpl implements PropertySet, Cloneable {
 
     public void addProperty(Property property) {
         PropertyTypeDefinition propDef = property.getDefinition();
-        Map<String, Property> map = this.propertyMap.get(propDef.getNamespace());
-        if (map == null) {
-            map = new HashMap<>();
-            this.propertyMap.put(propDef.getNamespace(), map);
-        }
-        map.put(propDef.getName(), property);
+        this.propertyMap.computeIfAbsent(propDef.getNamespace(), ns -> new HashMap<>())
+                .put(propDef.getName(), property);
     }
  
     @Override
@@ -198,9 +194,9 @@ public class PropertySetImpl implements PropertySet, Cloneable {
         // Property map and sub-maps and Property instances it contains cannot be shared
         clone.propertyMap = new HashMap<>();
         for (Map.Entry<Namespace, Map<String,Property>> entry: this.propertyMap.entrySet()) {
-            Namespace ns = entry.getKey();
-            Map<String,Property> propMap = entry.getValue();
-            Map<String,Property> clonePropMap = new HashMap<>(propMap.size() + propMap.size()/2);
+            final Namespace ns = entry.getKey();
+            final Map<String,Property> propMap = entry.getValue();
+            final Map<String,Property> clonePropMap = new HashMap<>(propMap.size() + propMap.size()/2);
             for (Map.Entry<String,Property> propEntry: propMap.entrySet()) {
                 clonePropMap.put(propEntry.getKey(), (Property)propEntry.getValue().clone());
             }
