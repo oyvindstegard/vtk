@@ -43,6 +43,7 @@ import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
@@ -107,14 +108,18 @@ public abstract class Fields {
      * <p>Values:
      * <ul>
      *   <li>{@link #INDEXED} - Only indexed.
+     *   <li>{@link #INDEXED_WITH_DOCVALUE} - Indexed and doc value (only for single value fields)
      *   <li>{@link #INDEXED_STORED} - Both indexed and stored.
-     *   <li>{@link #INDEXED_LOWERCASE} - Lowercase-indexed, but not stored.
+     *   <li>{@link #INDEXED_STORED_WITH_DOCVALUE} - Indexed, stored and doc value (only for single value fields)
+     *   <li>{@link #INDEXED_LOWERCASE} - Lowercase-indexed, but not stored or any dedicated doc value field
      *   <li>{@link #STORED} - Only stored (not searchable, but retrievable from docs).
      * </ul>
      */
     public enum FieldSpec {
         INDEXED,
+        INDEXED_WITH_DOCVALUE,
         INDEXED_STORED,
+        INDEXED_STORED_WITH_DOCVALUE,
         INDEXED_LOWERCASE,
         STORED
     }
@@ -128,18 +133,21 @@ public abstract class Fields {
      * @param value the field value, a string.
      * @return 
      */
-    public IndexableField makeSortField(String name, String value) {
+    public IndexableField makeStringSortField(String name, String value) {
         RawCollationKey key = collator.getRawCollationKey(value, new RawCollationKey());
         return new SortedDocValuesField(name, new BytesRef(key.bytes));
     }
     
     public List<IndexableField> makeFields(String fieldName, String value, FieldSpec spec) {
-        List<IndexableField> fields = new ArrayList<IndexableField>(2);
+        List<IndexableField> fields = new ArrayList<>(2);
         if (isIndex(spec)) {
             if (isLowercase(spec)) {
                 value = lowercase(value, locale);
             }
             fields.add(new StringField(fieldName, value, Field.Store.NO));
+        }
+        if (isDocvalue(spec)) {
+            fields.add(new SortedDocValuesField(fieldName, new BytesRef(value)));
         }
         if (isStore(spec)) {
             fields.add(new StoredField(fieldName, value));
@@ -149,11 +157,14 @@ public abstract class Fields {
     }
     
     public List<IndexableField> makeFields(String fieldName, Date value, FieldSpec spec) {
-        List<IndexableField> fields = new ArrayList<IndexableField>(2);
+        List<IndexableField> fields = new ArrayList<>(3);
         long longValue = value.getTime();
         if (isIndex(spec)) {
             long indexValue = DateTools.round(longValue, DateTools.Resolution.SECOND);
             fields.add(new LongField(fieldName, indexValue, Field.Store.NO));
+            if (isDocvalue(spec)) {
+                fields.add(new NumericDocValuesField(fieldName, longValue));
+            }
         }
         if (isStore(spec)) {
             fields.add(new StoredField(fieldName, longValue));
@@ -169,9 +180,12 @@ public abstract class Fields {
     }
     
     public List<IndexableField> makeFields(String fieldName, long value, FieldSpec spec) {
-        List<IndexableField> fields = new ArrayList<IndexableField>(2);
+        List<IndexableField> fields = new ArrayList<>(3);
         if (isIndex(spec)) {
             fields.add(new LongField(fieldName, value, Field.Store.NO));
+            if (isDocvalue(spec)) {
+                fields.add(new NumericDocValuesField(fieldName, value));
+            }
         }
         if (isStore(spec)) {
             fields.add(new StoredField(fieldName, value));
@@ -180,9 +194,12 @@ public abstract class Fields {
     }
     
     public List<IndexableField> makeFields(String fieldName, int value, FieldSpec spec) {
-        List<IndexableField> fields = new ArrayList<IndexableField>(2);
+        List<IndexableField> fields = new ArrayList<>(3);
         if (isIndex(spec)) {
             fields.add(new IntField(fieldName, value, Field.Store.NO));
+            if (isDocvalue(spec)) {
+                fields.add(new NumericDocValuesField(fieldName, value));
+            }
         }
         if (isStore(spec)) {
             fields.add(new StoredField(fieldName, value));
@@ -191,19 +208,24 @@ public abstract class Fields {
     }
     
     public List<IndexableField> makeFields(String fieldName, byte[] value) {
-        List<IndexableField> fields = new ArrayList<IndexableField>(1);
+        List<IndexableField> fields = new ArrayList<>(1);
         fields.add(new StoredField(fieldName, value));
         return fields;
     }
     
     private boolean isIndex(FieldSpec spec) {
-        return spec == FieldSpec.INDEXED 
-                || spec == FieldSpec.INDEXED_LOWERCASE 
-                || spec == FieldSpec.INDEXED_STORED;
+        return spec != FieldSpec.STORED;
     }
     
     private boolean isStore(FieldSpec spec) {
-        return spec == FieldSpec.STORED || spec == FieldSpec.INDEXED_STORED;
+        return spec == FieldSpec.STORED
+                || spec == FieldSpec.INDEXED_STORED
+                || spec == FieldSpec.INDEXED_STORED_WITH_DOCVALUE;
+    }
+
+    private boolean isDocvalue(FieldSpec spec) {
+        return spec == FieldSpec.INDEXED_WITH_DOCVALUE
+                || spec == FieldSpec.INDEXED_STORED_WITH_DOCVALUE;
     }
     
     private boolean isLowercase(FieldSpec spec) {
@@ -248,7 +270,7 @@ public abstract class Fields {
             
         } else if (basicType == java.lang.Boolean.class) {
             boolean booleanValue = "true".equals(value) 
-                    || (value instanceof Boolean) && ((Boolean)value).booleanValue();
+                    || (value instanceof Boolean) && ((Boolean)value);
             return new Term(fieldName, booleanValue ? "true" : "false");
         } else {
             return new Term(fieldName, value.toString());

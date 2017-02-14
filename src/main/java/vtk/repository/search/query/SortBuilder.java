@@ -101,18 +101,18 @@ public class SortBuilder {
                 case TIMESTAMP:
                 case LONG:
                     luceneSortFields[j] = new org.apache.lucene.search.SortField(fieldName, 
-                    org.apache.lucene.search.SortField.Type.LONG, reverse);
+                        org.apache.lucene.search.SortField.Type.LONG, reverse);
                     break;
                     
                 case INT:
                     luceneSortFields[j] = new org.apache.lucene.search.SortField(fieldName, 
-                    org.apache.lucene.search.SortField.Type.INT, reverse);
+                        org.apache.lucene.search.SortField.Type.INT, reverse);
                     break;
                     
                 default:
                     // o.a.l.s.SortField.Type.STRING works for all dedicated sorting fields and other string types
-                    luceneSortFields[j] = new org.apache.lucene.search.SortField(
-                            fieldName, org.apache.lucene.search.SortField.Type.STRING, reverse);
+                    luceneSortFields[j] = new org.apache.lucene.search.SortField(fieldName,
+                        org.apache.lucene.search.SortField.Type.STRING, reverse);
                     
                 }
             } else {
