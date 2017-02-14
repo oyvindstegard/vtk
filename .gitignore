@@ -10,6 +10,7 @@
 /.externalToolBuilders
 /nb-configuration.xml
 /nbactions.xml
+/nbproject/
 
 /src/main/websources/node
 bower_components/
