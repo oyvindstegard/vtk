@@ -67,8 +67,8 @@ class PropertySetRowHandler implements ResultHandler {
     protected PropertySetHandler clientHandler;
     
     // Need to keep track of current property set ID since many rows from iBATIS
-    // can map to a single property set. The iteration from the database is 
-    // ordered, so ID change signals a new PropertySet
+    // can map to a single property set. The iteration from the database must be
+    // ordered, such that ID change signals a new PropertySet
     protected Integer currentId = null;
     protected List<Map<String, Object>> rowValueBuffer = new ArrayList<>();
 

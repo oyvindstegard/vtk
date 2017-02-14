@@ -104,8 +104,12 @@ public class PropertyFields extends Fields {
             throw new DocumentMappingException("Cannot create index field for property with null definition");
         }
         String fieldName = propertyFieldName(def, lowercase);
-        FieldSpec spec = lowercase ? INDEXED_LOWERCASE :
-                (def.isMultiple() ? INDEXED_STORED : INDEXED_STORED_WITH_DOCVALUE);
+        FieldSpec spec = INDEXED_STORED;
+        if (lowercase) {
+            spec = INDEXED_LOWERCASE;
+        } else if (!def.isMultiple() && def.getType() != Type.STRING) {
+            spec = INDEXED_STORED_WITH_DOCVALUE;
+        }
         if (def.isMultiple()) {
             for (Value v: property.getValues()) {
                 fields.addAll(valueFields(fieldName, v, spec));
