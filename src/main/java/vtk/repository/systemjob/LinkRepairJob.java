@@ -192,51 +192,41 @@ public class LinkRepairJob extends AbstractResourceJob {
     
     private static class UrlMapper {
         private final URL base;
-        private Map<String, String> vrtxIdMap;
-        private Map<String, String> relocMap;
+        private Map<String, URL> relocMap;
         
         public UrlMapper(Resource resource, URL base, ExecutionContext ctx) throws Exception {
             this.base = base;
-            this.vrtxIdMap = mapIds(resource);
-            this.relocMap = mapLinks(vrtxIdMap, ctx);
+            this.relocMap = mapLinks(resource, ctx);
         }
         
         public Optional<String> mapUrl(String input) {
-            if (vrtxIdMap.containsKey(input)) {
-                String vrtxid = vrtxIdMap.get(input);
-                return Optional.ofNullable(relocMap.get(vrtxid));
+            URL relocated = relocMap.get(input);
+            if (relocated == null) {
+                return Optional.empty();
             }
-            return Optional.empty();
+            return Optional.of(relocated.getPathRepresentation());
         }
-
-        private Map<String, String> mapIds(Resource resource) throws Exception {
+        
+        private Map<String, URL> mapLinks(Resource resource, ExecutionContext ctx) {
+            Map<String, URL> resultMap = new HashMap<>();
+            
             Map<String, String> vrtxIdMap = new HashMap<>();
             MapContainer jsonValue = resource
                     .getProperty(Namespace.DEFAULT_NAMESPACE, "link-check")
                     .getJSONValue();
+            if (jsonValue == null || !jsonValue.containsKey("relocatedLinks")) {
+                return resultMap;
+            }
+            
             jsonValue.arrayValue("relocatedLinks").forEach(urlObj-> {
                 Map<?,?> link = (Map<?,?>) urlObj;
                 if (link.containsKey("link") && link.containsKey("vrtxid")) {
-                    String key = link.get("link").toString();
+                    String url = link.get("link").toString();
                     String vrtxid = link.get("vrtxid").toString();
-                    vrtxIdMap.put(key, vrtxid);
-                    if (key.startsWith("http://") || key.startsWith("https://")) {
-                        try {
-                            URL url = URL.parse(key);
-                            if (url.getHost().equals(base.getHost())) {
-                                vrtxIdMap.put(url.getPathRepresentation(), vrtxid);
-                            }
-                        }
-                        catch (Throwable t) { }
-                    }
-                    
+                    vrtxIdMap.put(vrtxid, url);
                 }
             });
-            return vrtxIdMap;
-        }
-        
-        private Map<String, String> mapLinks(Map<String, String> vrtxIdMap, ExecutionContext ctx) {
-            Map<String, String> resultMap = new HashMap<>();
+            
             if (vrtxIdMap.isEmpty()) return resultMap;
             
             PropertyTypeDefinition idPropDef = ctx.getRepository()
@@ -246,7 +236,7 @@ public class LinkRepairJob extends AbstractResourceJob {
 
             OrQuery query = new OrQuery();
             vrtxIdMap.entrySet().forEach(entry -> {
-                query.add(new PropertyTermQuery(idPropDef, entry.getValue(), TermOperator.EQ));
+                query.add(new PropertyTermQuery(idPropDef, entry.getKey(), TermOperator.EQ));
             });
             
             Search search = new Search();
@@ -257,10 +247,19 @@ public class LinkRepairJob extends AbstractResourceJob {
             //search.setPropertySelect(PropertySelect.NONE);
             
             ResultSet hits = ctx.getRepository().search(ctx.getToken(), search);
-            hits.getAllResults().forEach(resource -> {
-                String vrtxid = resource.getProperty(idPropDef).getStringValue();
-                resultMap.put(vrtxid, resource.getURI().toString());
-            });
+            hits.getAllResults().forEach(r -> {
+                String vrtxid = r.getProperty(idPropDef).getStringValue();
+                String prev = vrtxIdMap.get(vrtxid);
+                if (prev != null) {
+                    try {
+                        URL mappedUrl = base.relativeURL(prev).setPath(r.getURI());
+                        resultMap.put(prev, mappedUrl);
+                    }
+                    catch (Throwable t) {
+                        // Nothing we can do with the (mangled) URL
+                    }
+                }
+             });
             return resultMap;
         }
     }
