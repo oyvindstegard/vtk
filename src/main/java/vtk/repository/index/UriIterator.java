@@ -43,7 +43,7 @@ import vtk.repository.Path;
 import vtk.repository.index.mapping.ResourceFields;
 
 /**
- * Ordered iteratinoall URIs of property sets present in index
+ * Ordered iteratin on all URIs of property sets present in index
  */
 public class UriIterator implements CloseableIterator<Path> {
 

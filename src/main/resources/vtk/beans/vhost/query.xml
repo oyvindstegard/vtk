@@ -103,11 +103,20 @@
     <property name="closeAfterInit" value="true"/>
   </bean>
 
-  <!-- High level system index operation manager -->
+  <!-- High level system index operation manager, primary index with secondary scratch index. -->
   <bean id="systemIndexOperationManager" class="vtk.repository.index.management.IndexOperationManagerImpl">
-    <constructor-arg><ref local="systemIndex"/></constructor-arg>
-    <constructor-arg><ref local="secondarySystemIndex"/></constructor-arg>
-    <constructor-arg><ref bean="repository.indexDao"/></constructor-arg>
+    <property name="index" ref="systemIndex"/>
+    <property name="secondaryIndex" ref="secondarySystemIndex"/>
+    <property name="indexDao" ref="repository.indexDao"/>
+    <property name="tempDir" value="${repository.tempDir}"/>
+    <property name="autoReindex" value="${repository.index.autoReindex}"/>
+  </bean>
+  <!-- High level system index operation manager, only for the secondary index -->
+  <bean id="secondarySystemIndexOperationManager" class="vtk.repository.index.management.IndexOperationManagerImpl">
+    <property name="index" ref="secondarySystemIndex"/>
+    <property name="indexDao" ref="repository.indexDao"/>
+    <property name="tempDir" value="${repository.tempDir}"/>
+    <property name="autoReindex" value="NEVER"/>
   </bean>
   
   <!-- Factory for building Lucene queries. -->

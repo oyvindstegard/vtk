@@ -89,6 +89,14 @@ public class PropertySetIndexImpl implements PropertySetIndex, ClusterAware, Ini
         }
     }
 
+    public boolean isApplicationLevelCompatible() throws IndexException {
+        try {
+            return IndexManager.APPLICATION_COMPATIBILITY_LEVEL == index.getApplicationCompatibilityLevel();
+        } catch (IOException io) {
+            throw new IndexException(io);
+        }
+    }
+
     @Override
     public boolean isClusterSharedReadOnly() {
         return clusterSharedStorage && clusterRole == ClusterRole.SLAVE;

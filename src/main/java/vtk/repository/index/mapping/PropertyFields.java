@@ -32,8 +32,10 @@
 package vtk.repository.index.mapping;
 
 import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED;
+import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_WITH_DOCVALUE;
 import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_LOWERCASE;
 import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_STORED;
+import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_STORED_WITH_DOCVALUE;
 import static vtk.repository.index.mapping.Fields.FieldSpec.STORED;
 
 import java.util.ArrayList;
@@ -87,7 +89,7 @@ public class PropertyFields extends Fields {
             throw new IllegalArgumentException("Sorting fields cannot be created for multi-value properties");
         }
         String fieldName = sortFieldName(property.getDefinition());
-        fields.add(makeSortField(fieldName, property.getStringValue()));
+        fields.add(makeStringSortField(fieldName, property.getStringValue()));
     }
 
     /**
@@ -102,7 +104,12 @@ public class PropertyFields extends Fields {
             throw new DocumentMappingException("Cannot create index field for property with null definition");
         }
         String fieldName = propertyFieldName(def, lowercase);
-        FieldSpec spec = lowercase ? INDEXED_LOWERCASE : INDEXED_STORED;
+        FieldSpec spec = INDEXED_STORED;
+        if (lowercase) {
+            spec = INDEXED_LOWERCASE;
+        } else if (!def.isMultiple() && def.getType() != Type.STRING) {
+            spec = INDEXED_STORED_WITH_DOCVALUE;
+        }
         if (def.isMultiple()) {
             for (Value v: property.getValues()) {
                 fields.addAll(valueFields(fieldName, v, spec));
@@ -223,7 +230,7 @@ public class PropertyFields extends Fields {
                 if (dataType == Type.STRING && values.size() == 1) {
                     final String stringValue = values.get(0).toString();
                     if (stringValue.length() <= Property.MAX_STRING_LENGTH) {
-                        fields.add(makeSortField(jsonSortFieldName(def, jsonDottedField), stringValue));
+                        fields.add(makeStringSortField(jsonSortFieldName(def, jsonDottedField), stringValue));
                     }
                 }
             }

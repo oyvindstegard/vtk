@@ -161,14 +161,9 @@ public class AclFields extends Fields {
         if (id.startsWith("pseudo:")) {
             type = Principal.Type.PSEUDO;
         }
-        
-        Set<Principal> principals = actionSets.get(action);
-        if (principals == null) {
-            principals = new HashSet<Principal>();
-            actionSets.put(action, principals);
-        }
-        
-        principals.add(principalFactory.getPrincipal(id, type, false));
+
+        actionSets.computeIfAbsent(action, a -> new HashSet<>())
+                .add(principalFactory.getPrincipal(id, type, false));
     }
     
     /**

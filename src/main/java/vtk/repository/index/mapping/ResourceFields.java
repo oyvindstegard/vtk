@@ -90,11 +90,11 @@ public class ResourceFields extends Fields {
     void addResourceFields(final List<IndexableField> fields, PropertySetImpl propSet) {
         // URI
         fields.addAll(makeFields(URI_FIELD_NAME, propSet.getURI().toString(), INDEXED_STORED));
-        fields.add(makeSortField(URI_SORT_FIELD_NAME, propSet.getURI().toString()));
+        fields.add(makeStringSortField(URI_SORT_FIELD_NAME, propSet.getURI().toString()));
 
         // URI depth (not stored, but indexed for use in searches)
         int uriDepth = propSet.getURI().getDepth();
-        fields.addAll(makeFields(URI_DEPTH_FIELD_NAME, uriDepth, INDEXED));
+        fields.addAll(makeFields(URI_DEPTH_FIELD_NAME, uriDepth, INDEXED_WITH_DOCVALUE));
 
         // Ancestor URIs (system field used for hierarchical queries)
         for (String ancestor : getPathAncestorStrings(propSet.getURI())) {
@@ -104,7 +104,7 @@ public class ResourceFields extends Fields {
         // URI name
         fields.addAll(makeFields(NAME_FIELD_NAME, propSet.getName(), INDEXED));
         fields.addAll(makeFields(NAME_LC_FIELD_NAME, propSet.getName(), INDEXED_LOWERCASE));
-        fields.add(makeSortField(NAME_SORT_FIELD_NAME, propSet.getName()));
+        fields.add(makeStringSortField(NAME_SORT_FIELD_NAME, propSet.getName()));
 
         // resourceType, stored and indexed
         fields.addAll(makeFields(RESOURCETYPE_FIELD_NAME, propSet.getResourceType(), INDEXED_STORED));

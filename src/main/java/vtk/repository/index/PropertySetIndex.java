@@ -173,6 +173,16 @@ public interface PropertySetIndex {
      * @return <code>true</code> if underlying index is closed.
      */
     public boolean isClosed();
+
+    /**
+     * High level test of index compatiblity to application code compatiblity.
+     *
+     * <p>This method can be used to test if a reindexing should be performed
+     * to make the underlying index compatible.
+     *
+     * @return <code>true</code> if compatible, <code>false</code> otherwise.
+     */
+    public boolean isApplicationLevelCompatible() throws IndexException;
     
     /**
      * Re-initialize the index. Should be used to re-open a previously
