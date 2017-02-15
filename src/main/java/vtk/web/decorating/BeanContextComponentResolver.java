@@ -156,7 +156,7 @@ public class BeanContextComponentResolver
                         + " has invalid name (NULL)");
             }
             String key = ns + ":" + name;
-            logger.info("Registering decorator component " + component);
+            logger.debug("Registering decorator component " + component);
             this.components.put(key, component);
         }
 
