@@ -58,6 +58,18 @@ B. Akka cluster manager, Redis shared session/cache store
 (Web access on http://localhost:9324, WebDAV access on http://localhost:9323)
 
 
+Cluster auto-down feature
+-------------------------
+
+It may be desireable to have unreachable nodes be automatically removed from
+cluster after a timeout, for instance during development. This is the
+"auto-down" feature of Akka-cluster, and it is not enabled in the VTK built in
+configuration by default. To use this feature, add the following to command
+lines:
+
+    -Dakka.cluster.auto-down-unreachable-after=10s
+
+
 Shared or node private system index
 -----------------------------------
 
