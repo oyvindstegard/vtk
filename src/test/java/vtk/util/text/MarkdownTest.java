@@ -110,9 +110,7 @@ public class MarkdownTest {
         
         output = Markdown.html(input, Flavor.GFM);
         assertTrue(output.indexOf("<li class=\"task-list-item\"") > 0);
-        assertTrue(output.indexOf("<input type=\"checkbox\" class=\"task-list-item\"") > 0);
-        System.out.println(output);
-        
+        assertTrue(output.indexOf("<input type=\"checkbox\" class=\"task-list-item-checkbox\"") > 0);
     }
     
     
