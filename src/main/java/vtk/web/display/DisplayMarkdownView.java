@@ -31,40 +31,29 @@
 package vtk.web.display;
 
 import java.io.InputStream;
-import java.time.Duration;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.pegdown.Extensions;
-import org.pegdown.PegDownProcessor;
 import org.springframework.web.servlet.View;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.util.io.IO;
+import vtk.util.text.Markdown;
+import vtk.util.text.Markdown.Flavor;
 import vtk.web.RequestContext;
 
 public class DisplayMarkdownView implements View {
-    
-    // Duplicated in MarkdownInfoContentFactory.java 
-    private static final int MARKDOWN_EXTENSIONS = 
-            Extensions.FENCED_CODE_BLOCKS | Extensions.AUTOLINKS 
-            | Extensions.TABLES | Extensions.DEFINITIONS | Extensions.ATXHEADERSPACE 
-            | Extensions.STRIKETHROUGH | Extensions.RELAXEDHRULES;
-
-    // Duplicated in MarkdownInfoContentFactory.java 
-    private static final int MARKDOWN_EXTENSIONS_GFM = MARKDOWN_EXTENSIONS | Extensions.HARDWRAPS | Extensions.TASKLISTITEMS;
-
     private static final String CONTENT_TYPE_MARKDOWN_GFM = "text/markdown.GFM";
 
     @Override
     public String getContentType() {
         return "text/html;charset=utf-8";
     }
-
+    
     @Override
     public void render(Map<String, ?> model, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
@@ -75,21 +64,22 @@ public class DisplayMarkdownView implements View {
         Path uri = requestContext.getResourceURI();
         Resource resource = repository.retrieve(token, uri, true);
         
-        int markdownExtensions = MARKDOWN_EXTENSIONS;
-        if (resource.getContentType().equals(CONTENT_TYPE_MARKDOWN_GFM)) {
-        	markdownExtensions = MARKDOWN_EXTENSIONS_GFM;
-        }
-
+        Markdown.Flavor flavor = 
+                resource.getContentType().equals(CONTENT_TYPE_MARKDOWN_GFM) ?
+                        Flavor.GFM : Flavor.DEFAULT;
+        
         try (InputStream inputStream = repository.getInputStream(token, uri, true)) {
 
-            long timeout = Duration.ofMillis(2000).toMillis();
-            PegDownProcessor processor = new PegDownProcessor(markdownExtensions, timeout);
             String input = IO.readString(inputStream, "utf-8").perform();
             
-            byte[] output = ("<!DOCTYPE html>\n<html>\n<head>\n<title>" 
-                    + resource.getTitle() + "</title>\n</head>\n<body>\n"
-                    + processor.markdownToHtml(input.toCharArray())
-                    + "\n</body>\n</html>\n").getBytes("utf-8");
+            byte[] output = new StringBuilder(
+                    "<!DOCTYPE html>\n<html>\n<head>\n<title>")
+                    .append(resource.getTitle())
+                    .append("</title>\n</head>\n<body>\n")
+                    .append(Markdown.html(input, flavor))
+                    .append("\n</body>\n</html>\n")
+                    .toString()
+                    .getBytes("utf-8");
             
             response.setContentType(getContentType());
             response.setContentLength(output.length);

@@ -32,6 +32,8 @@ package vtk.repository.content;
 
 import java.io.InputStream;
 
+import vtk.util.text.Markdown;
+
 public class MarkdownInfoContentFactory extends MarkdownAbstractContentFactory implements ContentFactory<MarkdownInfo> {
 	    
     @Override
@@ -42,7 +44,7 @@ public class MarkdownInfoContentFactory extends MarkdownAbstractContentFactory i
     @Override
     public MarkdownInfo getContentRepresentation(InputStream content) 
             throws Exception {
-    	InfoCollector collector = getInfoCollector(MARKDOWN_EXTENSIONS, content);
+    	InfoCollector collector = getInfoCollector(Markdown.Flavor.DEFAULT, content);
         return new MarkdownInfo(collector.getHeader(), collector.getSummary());
     }
         
