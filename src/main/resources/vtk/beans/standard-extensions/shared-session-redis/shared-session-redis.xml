@@ -5,9 +5,9 @@
   <!-- Redis versions of shared caches and session store -->
 
   <bean id="redis.pool.config" class="redis.clients.jedis.JedisPoolConfig">
-    <property name="maxTotal" value="2000" />
-    <property name="maxIdle" value="100" />
-    <property name="minIdle" value="50" />
+    <property name="maxTotal" value="200" />
+    <property name="maxIdle" value="10" />
+    <property name="minIdle" value="5" />
     <property name="testWhileIdle" value="true" />
   </bean>
 
