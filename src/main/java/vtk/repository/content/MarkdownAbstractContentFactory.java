@@ -31,42 +31,25 @@
 package vtk.repository.content;
 
 import java.io.InputStream;
-import java.time.Duration;
 import java.util.Collections;
-
-import org.pegdown.Extensions;
-import org.pegdown.PegDownProcessor;
 
 import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlElement;
 import vtk.text.html.HtmlNodeFilter;
 import vtk.text.html.HtmlPageParser;
 import vtk.util.io.IO;
+import vtk.util.text.Markdown;
 
 public abstract class MarkdownAbstractContentFactory  {
-	
-    // Duplicated in DisplayMarkdowView.java 
-    protected static final int MARKDOWN_EXTENSIONS = 
-            Extensions.FENCED_CODE_BLOCKS | Extensions.AUTOLINKS 
-            | Extensions.TABLES | Extensions.DEFINITIONS | Extensions.ATXHEADERSPACE 
-            | Extensions.STRIKETHROUGH | Extensions.RELAXEDHRULES;
-
-    // Duplicated in DisplayMarkdowView.java 
-    protected static final int MARKDOWN_EXTENSIONS_GFM = MARKDOWN_EXTENSIONS | Extensions.HARDWRAPS | Extensions.TASKLISTITEMS;
         
-    protected InfoCollector getInfoCollector(int mardownExtensions, InputStream content) 
+    protected InfoCollector getInfoCollector(Markdown.Flavor flavor, InputStream content) 
     		throws Exception {
-        long timeout = Duration.ofMillis(1000).toMillis();
-
-	    PegDownProcessor processor = new PegDownProcessor(mardownExtensions, timeout);
-	    String input = IO.readString(content, "utf-8").perform();
-	    String output = processor.markdownToHtml(input);
-	    
-	    HtmlPageParser htmlParser = new HtmlPageParser();
-	    InfoCollector collector = new InfoCollector();
-	    htmlParser.parseFragment(output, Collections.singletonList(collector));
-	
-	    return collector;
+        String input = IO.readString(content, "utf-8").perform();
+        String output = Markdown.html(input, flavor);
+        HtmlPageParser htmlParser = new HtmlPageParser();
+        InfoCollector collector = new InfoCollector();
+        htmlParser.parseFragment(output, Collections.singletonList(collector));
+        return collector;
     }
     
     protected static final class InfoCollector implements HtmlNodeFilter {
