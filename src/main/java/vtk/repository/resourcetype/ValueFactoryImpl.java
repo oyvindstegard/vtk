@@ -42,7 +42,7 @@ import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
-import vtk.util.cache.ReusableObjectArrayStackCache;
+import vtk.util.cache.ArrayStackCache;
 import vtk.util.cache.ReusableObjectCache;
 
 /**
@@ -70,7 +70,13 @@ public class ValueFactoryImpl implements ValueFactory {
     static {
         CACHED_DATE_FORMAT_PARSERS = new ReusableObjectCache[DATE_FORMATS.length];
         for (int i = 0; i < DATE_FORMATS.length; i++) {
-            CACHED_DATE_FORMAT_PARSERS[i] = new ReusableObjectArrayStackCache<>(3);
+            final String dateFormat = DATE_FORMATS[i];
+            CACHED_DATE_FORMAT_PARSERS[i] = new ArrayStackCache<>(
+                    () -> {
+                        SimpleDateFormat f = new SimpleDateFormat(dateFormat);
+                        f.setLenient(false);
+                        return f;
+                    }, 3);
         }
     }
 
@@ -187,25 +193,22 @@ public class ValueFactoryImpl implements ValueFactory {
             return new Date(Long.parseLong(stringValue));
         } catch (NumberFormatException nfe) {}
 
-        for (int i=0; i<DATE_FORMATS.length; i++) {
-            SimpleDateFormat formatter = CACHED_DATE_FORMAT_PARSERS[i].getInstance();
-            if (formatter == null) {
-                formatter = new SimpleDateFormat(DATE_FORMATS[i]);
-                formatter.setLenient(false);
-            }
-
+        // Try different date formats in order
+        for (ReusableObjectCache<SimpleDateFormat> dateFormatCache: CACHED_DATE_FORMAT_PARSERS) {
+            final SimpleDateFormat formatter = dateFormatCache.getInstance();
             try {
                 return formatter.parse(stringValue);
             } catch (ParseException e) {
-                this.logger.debug("Failed to parse date using format '" 
-                        + DATE_FORMATS[i]
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Failed to parse date using format '"
+                        + formatter.toPattern()
                         + "', input '" + stringValue + "'", e);
+                }
             } finally {
-                // Cache the constructed date parser for later re-use
-                CACHED_DATE_FORMAT_PARSERS[i].putInstance(formatter);
+                // Return constructed date parser for later re-use
+                dateFormatCache.putInstance(formatter);
             }
         }
-
         throw new ValueFormatException("Unable to parse date value for input string: '"
                 + stringValue + "'");
     }

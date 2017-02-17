@@ -31,6 +31,7 @@
 package vtk.util.web;
 
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +41,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.time.FastDateFormat;
+import org.joda.time.format.DateTimeFormatter;
+import vtk.util.cache.ArrayStackCache;
+import vtk.util.cache.ReusableObjectCache;
 
 
 /**
@@ -63,7 +67,7 @@ public class HttpUtil {
         HTTP_DATE_FORMAT_ASCTIME
     };
 
-    
+    private static final ReusableObjectCache<DateFormat>[] CACHED_HTTP_DATE_FORMATS;
 
     /* HTTP status codes defined by WebDAV */
     public static final int SC_PROCESSING = 102;
@@ -126,6 +130,12 @@ public class HttpUtil {
         statusMessages.put(SC_LOCKED, "Locked");
         statusMessages.put(SC_FAILED_DEPENDENCY, "Failed Dependency");
         statusMessages.put(SC_INSUFFICIENT_STORAGE, "Insufficient Storage");
+
+        CACHED_HTTP_DATE_FORMATS = new ReusableObjectCache[HTTP_DATE_PARSE_FORMATS.length];
+        for (int i=0; i<HTTP_DATE_PARSE_FORMATS.length; i++) {
+            final String dateFormat = HTTP_DATE_PARSE_FORMATS[i];
+            CACHED_HTTP_DATE_FORMATS[i] = new ArrayStackCache<>(() -> new SimpleDateFormat(dateFormat), 4);
+        }
     }
 
 
@@ -141,20 +151,20 @@ public class HttpUtil {
 
 
     public static Date parseHttpDate(String str) {
-        for (String format: HTTP_DATE_PARSE_FORMATS) {
+        for (ReusableObjectCache<DateFormat> dateFormatCache : CACHED_HTTP_DATE_FORMATS) {
+            final DateFormat parser = dateFormatCache.getInstance();
             try {
-                SimpleDateFormat parser =  new SimpleDateFormat(format);
                 return parser.parse(str);
-            } catch (Throwable t) { }
+            } catch (Throwable t) {
+            } finally {
+                dateFormatCache.putInstance(parser);
+            }
         }
         try {
             return new Date(Long.parseLong(str));
         } catch (Throwable t) { }
         return null;
     }
-
-    
-
 
     /**
      * Gets the MIME type part from the header of a request possibly containing a

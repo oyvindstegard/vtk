@@ -30,7 +30,6 @@
  */
 package vtk.web.report;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,6 +38,7 @@ import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang.time.FastDateFormat;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
@@ -75,7 +75,7 @@ public class BrokenLinksToTsvController implements Controller {
 
         String filename = this.webHostName;
         filename += resource.getName().equals("/") ? "" : "_" + resource.getName();
-        filename += "_" + new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        filename += "_" + FastDateFormat.getInstance("yyyy-MM-dd").format(new Date());
         filename += "_BrokenLinks";
 
         response.setStatus(HttpServletResponse.SC_OK);

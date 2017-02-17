@@ -30,7 +30,6 @@
  */
 package vtk.web.display.collection.event;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -44,6 +43,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang.time.FastDateFormat;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -209,7 +209,7 @@ public final class EventListingHelper implements InitializingBean {
     public String getCalendarWidgetMonthEventDates(List<PropertySet> events, Calendar requestedMonthCal) {
 
         Set<String> eventDatesList = new HashSet<String>();
-        SimpleDateFormat eventDateFormat = new SimpleDateFormat("yyyy-M-d");
+        FastDateFormat eventDateFormat = FastDateFormat.getInstance("yyyy-M-d");
 
         Calendar endOfRequestedMonthCal = Calendar.getInstance();
         endOfRequestedMonthCal.setTime(requestedMonthCal.getTime());
