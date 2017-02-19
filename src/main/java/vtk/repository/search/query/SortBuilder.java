@@ -67,7 +67,7 @@ public class SortBuilder {
             if (sortField instanceof TypedSortField) {
                 TypedSortField tsf =  (TypedSortField)sortField;
                 if (PropertySet.TYPE_IDENTIFIER.equals(tsf.getType())) {
-                    fieldName = ResourceFields.RESOURCETYPE_FIELD_NAME;
+                    fieldName = ResourceFields.RESOURCETYPE_NAME_FIELD_NAME;
                 } else if (PropertySet.URI_IDENTIFIER.equals(tsf.getType())) {
                     fieldName = ResourceFields.URI_SORT_FIELD_NAME;
                 } else if (PropertySet.NAME_IDENTIFIER.equals(tsf.getType())) {

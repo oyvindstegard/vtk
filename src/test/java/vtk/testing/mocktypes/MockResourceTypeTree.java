@@ -32,6 +32,7 @@
 package vtk.testing.mocktypes;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import vtk.repository.Namespace;
 import vtk.repository.ResourceTypeTree;
-import vtk.repository.resourcetype.HierarchicalNode;
 import vtk.repository.resourcetype.MixinResourceTypeDefinition;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl;
@@ -144,12 +144,12 @@ public class MockResourceTypeTree implements ResourceTypeTree {
     }
 
 
-    public List<String> getDescendants(String entry) {
+    public List<String> flattenedDescendants(String entry) {
         return null;
     }
 
-    public List<HierarchicalNode<String>> getRootNodes() {
-        return null;
+    public Collection<String> roots() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -159,6 +159,21 @@ public class MockResourceTypeTree implements ResourceTypeTree {
 
     public ValueFormatter getValueFormatter() {
         return null;
+    }
+
+    @Override
+    public Collection<String> parents(String entry) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<String> children(String entry) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<String> flattenedAncestors(String entry) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 

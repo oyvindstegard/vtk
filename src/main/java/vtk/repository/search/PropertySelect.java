@@ -50,7 +50,7 @@ public interface PropertySelect {
         }
         @Override
         public String toString() {
-            return "ALL_PROPERTIES";
+            return "PropertySelect{ALL_PROPERTIES}";
         }
         @Override
         public boolean isIncludeAcl() {
@@ -68,7 +68,7 @@ public interface PropertySelect {
         }
         @Override
         public String toString() {
-            return "ALL";
+            return "PropertySelect{ALL}";
         }
         @Override
         public boolean isIncludeAcl() {
@@ -86,7 +86,7 @@ public interface PropertySelect {
         }
         @Override
         public String toString() {
-            return "NONE";
+            return "PropertySelect{NONE}";
         }
         @Override
         public boolean isIncludeAcl() {

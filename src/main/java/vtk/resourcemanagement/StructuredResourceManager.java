@@ -67,7 +67,7 @@ import vtk.web.service.RepositoryAssertion;
 public class StructuredResourceManager {
     private static final Logger logger = LoggerFactory.getLogger(StructuredResourceManager.class);
 
-    private static final Map<String, PropertyType.Type> PROPTYPE_MAP = new HashMap<String, PropertyType.Type>();
+    private static final Map<String, PropertyType.Type> PROPTYPE_MAP = new HashMap<>();
     static {
         PROPTYPE_MAP.put(ParserConstants.PROPTYPE_STRING, PropertyType.Type.STRING);
         PROPTYPE_MAP.put(ParserConstants.PROPTYPE_HTML, PropertyType.Type.HTML);
@@ -142,11 +142,6 @@ public class StructuredResourceManager {
             }
 
         }
-    }
-
-    public void registrationComplete() {
-        logger.info("Default resource type tree:");
-        logger.info(this.resourceTypeTree.getResourceTypeTreeAsString());
     }
 
     public StructuredResourceDescription get(String name) {

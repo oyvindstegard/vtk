@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, University of Oslo, Norway
+/* Copyright (c) 2007-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@ package vtk.repository.search.query.builders;
 
 import static vtk.repository.search.query.TermOperator.EQ;
 import static vtk.repository.search.query.TermOperator.NE;
+import static vtk.repository.search.query.TermOperator.IN;
+import static vtk.repository.search.query.TermOperator.NI;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.TermFilter;
@@ -46,27 +48,39 @@ import vtk.repository.search.query.filter.FilterFactory;
 
 public class TypeTermQueryBuilder implements QueryBuilder {
 
-    private Object term;
-    private TermOperator op;
+    private final Object term;
+    private final TermOperator op;
     
     public TypeTermQueryBuilder(Object term, TermOperator op) {
-        this.term = term;
-
-        if (EQ != op && NE != op) {
-            throw new QueryBuilderException("Unsupported type operator: " + op);
+        switch (op) {
+            case EQ:
+            case NE:
+            case IN:
+            case NI:
+                break;
+            default:
+                throw new QueryBuilderException("Unsupported type operator: " + op);
         }
-        
+
+        this.term = term;
         this.op = op;
     }
 
     @Override
     public Query buildQuery() throws QueryBuilderException {
-        Term term = new Term(ResourceFields.RESOURCETYPE_FIELD_NAME, this.term.toString());
-        Filter filter = new TermFilter(term);
+        String fieldName;
+        if (op == EQ || op == NE) {
+            fieldName = ResourceFields.RESOURCETYPE_NAME_FIELD_NAME;
+        } else {
+            fieldName = ResourceFields.RESOURCETYPES_FIELD_NAME;
+        }
+
+        Term indexTerm = new Term(fieldName, this.term.toString());
+        Filter filter = new TermFilter(indexTerm);
         
-        if (op == TermOperator.NE) {
+        if (op == NE || op == NI) {
             filter = FilterFactory.inversionFilter(filter);
-        } 
+        }
 
         return new ConstantScoreQuery(filter);
     }

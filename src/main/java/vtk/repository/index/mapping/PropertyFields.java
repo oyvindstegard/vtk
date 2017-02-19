@@ -32,7 +32,6 @@
 package vtk.repository.index.mapping;
 
 import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED;
-import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_WITH_DOCVALUE;
 import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_LOWERCASE;
 import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_STORED;
 import static vtk.repository.index.mapping.Fields.FieldSpec.INDEXED_STORED_WITH_DOCVALUE;
@@ -61,7 +60,7 @@ import vtk.repository.resourcetype.ValueFactory;
 import vtk.util.text.Json;
 
 /**
- * TODO missing JavaDoc for most methods
+ * Supports index field name and value mappings for resource properties.
  */
 public class PropertyFields extends Fields {
 
@@ -501,7 +500,7 @@ public class PropertyFields extends Fields {
         return fieldName.startsWith(ns.getPrefix() + NAMESPACEPREFIX_NAME_SEPARATOR, offset);
     }
     
-    public static String propertyNamespace(String fieldName) {
+    public static String propertyNamespacePrefix(String fieldName) {
         if (!isPropertyField(fieldName)) {
             throw new IllegalArgumentException("Not a property field name: " + fieldName);
         }
