@@ -30,83 +30,50 @@
  */
 package vtk.repository.store.db;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
+import org.springframework.transaction.annotation.Transactional;
 
 import vtk.repository.ChangeLogEntry;
-import vtk.repository.store.ChangeLogDAO;
 import vtk.repository.store.DataAccessException;
+import vtk.repository.store.ChangeLogDao;
 
-public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor implements ChangeLogDAO {
+public class SqlMapChangeLogDao extends AbstractSqlMapDataAccessor implements ChangeLogDao {
 	
-    @SuppressWarnings("unchecked")
     @Override
-    public void removeChangeLogEntries(final List<ChangeLogEntry> entries)
-        throws DataAccessException {
-    	
-        //final SqlMapClientTemplate client = getSqlMapClientTemplate();
-        final SqlSession client = getSqlSession();
-        
-        String statement = getSqlMap("nextTempTableSessionId");
-        
-        final Integer sessionId = client.selectOne(statement);
-        
-        Map<String, Object> params = new HashMap<>();
-        params.put("sessionId", sessionId);
-        statement = getSqlMap("insertChangelogEntryIdIntoTempTable");
-        
-        // Batch inserts into temporary table and respect UPDATE_BATCH_SIZE_LIMIT
-        int statementCount = 0;
-        int rowsUpdated = 0;
-        for (ChangeLogEntry entry: entries) {
-            params.put("changelogEntryId", entry.getChangeLogEntryId());
-            // Insert into vortex_tmp:
-            client.insert(statement, params);
-            
-            if (++statementCount % UPDATE_BATCH_SIZE_LIMIT == 0) {
-                // Reached limit of how many inserts we batch, execute current batch immediately
-                rowsUpdated += client.flushStatements().size();
-            }
-        }
-        // Execute anything remaining in last batch
-        rowsUpdated += client.flushStatements().size();
-        
-        // Delete from changelog_entry:
-        statement = getSqlMap("removeChangelogEntriesByTempTable");
-        client.delete(statement, sessionId);
-        
-        // Flush session entries from vortex_tmp:
-        statement = getSqlMap("deleteFromTempTableBySessionId");
-        client.delete(statement, sessionId);
-        
-    }
-
-    @Override
-    public List<ChangeLogEntry> getChangeLogEntries(int loggerType, int loggerId) 
-        throws DataAccessException {
-        
-        //SqlMapClientTemplate client = getSqlMapClientTemplate();
+    @Transactional(readOnly = true)
+    public List<ChangeLogEntry> getChangeLogEntries(int loggerType, int loggerId, Date olderThan, int limit) {
         SqlSession client = getSqlSession();
 
-        Map<String, Object> params = new HashMap<>();
+        if (limit < 0) {
+            limit = Integer.MAX_VALUE;
+        }
+
+        Map<String, Object> params = new HashMap<>(5, 1f);
         params.put("loggerType", loggerType);
         params.put("loggerId", loggerId);
-        
-        String statement = getSqlMap("getChangeLogEntries");
-        
-        return client.selectList(statement, params);
+        params.put("olderThan", olderThan);
+        params.put("limit", limit);
+
+        return client.selectList(getSqlMap("getChangeLogEntries"), params);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ChangeLogEntry> getChangeLogEntries(int loggerType, int loggerId, int limit) 
         throws DataAccessException {
+
+        if (limit < 0) {
+            limit = Integer.MAX_VALUE;
+        }
         
         SqlSession client = getSqlSession();
 
-        Map<String, Object> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>(4, 1f);
         params.put("loggerType", loggerType);
         params.put("loggerId", loggerId);
         params.put("limit", limit);
@@ -119,7 +86,71 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor implements Ch
     }
 
     @Override
-    public void addChangeLogEntries(List<ChangeLogEntry> entries, GenerateDescendantEntries generate) throws DataAccessException {
+    @Transactional(readOnly = true)
+    public int countChangeLogEntries(int loggerType, int loggerId) {
+        final SqlSession client = getSqlSession();
+
+        Map<String, Object> params = new HashMap<>(3, 1f);
+        params.put("loggerType", loggerType);
+        params.put("loggerId", loggerId);
+
+        return client.<Integer>selectOne(getSqlMap("countChangeLogEntries"), params);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int countChangeLogEntries(int loggerType, int loggerId, Date olderThan) {
+        final SqlSession client = getSqlSession();
+
+        Map<String, Object> params = new HashMap<>(4, 1f);
+        params.put("loggerType", loggerType);
+        params.put("loggerId", loggerId);
+        params.put("olderThan", olderThan);
+
+        return client.<Integer>selectOne(getSqlMap("countChangeLogEntries"), params);
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public int removeChangeLogEntries(final List<ChangeLogEntry> entries)
+        throws DataAccessException {
+
+        final SqlSession client = getSqlSession();
+
+        final Integer sessionId = client.selectOne(getSqlMap("nextTempTableSessionId"));
+
+        Map<String, Object> params = new HashMap<>(3, 1f);
+        params.put("sessionId", sessionId);
+
+        // Batch inserts into temporary table and respect UPDATE_BATCH_SIZE_LIMIT
+        int statementCount = 0;
+        int rowsUpdated = 0;
+        final String insertStatement = getSqlMap("insertChangelogEntryIdIntoTempTable");
+        for (ChangeLogEntry entry: entries) {
+            params.put("changelogEntryId", entry.getChangeLogEntryId());
+            // Insert into vortex_tmp:
+            client.insert(insertStatement, params);
+
+            if (++statementCount % UPDATE_BATCH_SIZE_LIMIT == 0) {
+                // Reached limit of how many inserts we batch, execute current batch immediately
+                rowsUpdated += client.flushStatements().size();
+            }
+        }
+        // Execute anything remaining in last batch
+        rowsUpdated += client.flushStatements().size();
+
+        // Delete from changelog_entry:
+        client.delete(getSqlMap("removeChangelogEntriesByTempTable"), sessionId);
+
+        // Flush session entries from vortex_tmp:
+        client.delete(getSqlMap("deleteFromTempTableBySessionId"), sessionId);
+
+        return rowsUpdated;
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public void addChangeLogEntries(List<ChangeLogEntry> entries, DescendantsSpec generate) throws DataAccessException {
         SqlSession client = getSqlSession();
         for (ChangeLogEntry entry: entries) {
             addChangeLogEntryInternal(entry, generate, client);
@@ -127,11 +158,12 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor implements Ch
     }
 
     @Override
-    public void addChangeLogEntry(ChangeLogEntry entry, GenerateDescendantEntries generate) throws DataAccessException {
+    @Transactional(readOnly = false)
+    public void addChangeLogEntry(ChangeLogEntry entry, DescendantsSpec generate) throws DataAccessException {
         addChangeLogEntryInternal(entry, generate, getSqlSession());
     }
     
-    private void addChangeLogEntryInternal(ChangeLogEntry entry, GenerateDescendantEntries generate, SqlSession client) throws DataAccessException {
+    private void addChangeLogEntryInternal(ChangeLogEntry entry, DescendantsSpec generate, SqlSession client) throws DataAccessException {
         String sqlMap;
         switch (generate) {
             case NONE:
@@ -142,7 +174,7 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor implements Ch
             case SUBTREE:
                 if (entry.isCollection()) {
                     sqlMap = getSqlMap("insertChangeLogEntriesRecursively");
-                    Map<String, Object> parameters = new HashMap<>();
+                    Map<String, Object> parameters = new HashMap<>(3, 1f);
                     parameters.put("entry", entry);
                     parameters.put("uriWildcard",
                             SqlDaoUtils.getUriSqlWildcard(entry.getUri(), SQL_ESCAPE_CHAR));
@@ -161,7 +193,7 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor implements Ch
                 
             case ACL_INHERITED_TO_INHERITANCE:
                 sqlMap = getSqlMap("insertChangeLogEntryInheritedToInheritance");
-                Map<String, Object> parameters = new HashMap<>();
+                Map<String, Object> parameters = new HashMap<>(3, 1f);
                 parameters.put("entry", entry);
                 parameters.put("uriWildcard",
                         SqlDaoUtils.getUriSqlWildcard(entry.getUri(), SQL_ESCAPE_CHAR));
@@ -172,5 +204,5 @@ public class SqlMapChangeLogDAO extends AbstractSqlMapDataAccessor implements Ch
                 throw new IllegalArgumentException("Unsupported generate mode: " + generate);
         }
     }
-    
+
 }

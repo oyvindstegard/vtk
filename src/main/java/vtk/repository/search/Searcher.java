@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, University of Oslo, Norway
+/* Copyright (c) 2007-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -110,9 +110,15 @@ public interface Searcher {
      * unless it is specifically required !
      * </em>
      * 
-     * Since an iteration can potentially load a lot of documents, client code
+     * <p>Since an iteration can potentially load a lot of documents, client code
      * should take care to set a proper field/property-selector in <code>Search</code> for
      * better efficiency.
+     *
+     * <p>
+     * Note that if option {@link Search#setWaitForPendingUpdates(java.time.Instant, java.time.Duration) Search#setWaitForPendingUpdates
+     * } is set it will be handled like regular searches, potentially delaying
+     * the thread executing the search, but this callback API provides no way to
+     * check the recency of the search results afterwords.
      *
      * @param token
      * @param search A <code>Search</code> instance, encapsulating all aspects

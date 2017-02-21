@@ -30,9 +30,11 @@
  */
 package vtk.repository.search;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import vtk.repository.Acl;
 
 import vtk.repository.PropertySet;
@@ -44,13 +46,14 @@ public class ResultSetImpl implements ResultSet {
 
     protected final List<PropertySet> results;
     protected int totalHits;
+    protected Instant recency;
 
     public ResultSetImpl() {
-        this.results = new ArrayList<PropertySet>();
+        this.results = new ArrayList<>();
     }
 
     public ResultSetImpl(int initialCapacity) {
-        this.results = new ArrayList<PropertySet>(initialCapacity);
+        this.results = new ArrayList<>(initialCapacity);
     }
 
     @Override
@@ -123,6 +126,15 @@ public class ResultSetImpl implements ResultSet {
     @Override
     public boolean isInheritedAcl(int index) {
         return false; // ACLs not available through this simple impl
+    }
+
+    public void setRecency(Instant timestamp) {
+        this.recency = timestamp;
+    }
+
+    @Override
+    public Optional<Instant> recency() {
+        return Optional.ofNullable(recency);
     }
     
 }

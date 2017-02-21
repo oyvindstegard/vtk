@@ -177,7 +177,7 @@ public class LuceneQueryBuilder implements InitializingBean {
             builder = getACLQueryBuilder(query, searcher);
         }
 
-        else if (query instanceof MatchAllQuery) {
+        else if (query instanceof MatchAllQuery || query == null) {
             return new MatchAllDocsQuery();
         }
 

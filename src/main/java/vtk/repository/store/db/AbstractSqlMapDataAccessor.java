@@ -71,10 +71,7 @@ public abstract class AbstractSqlMapDataAccessor extends DaoSupport {
     }
     
     protected final String getSqlMap(String statementId) {
-        if (this.sqlMaps.containsKey(statementId)) {
-            return this.sqlMaps.get(statementId);
-        }
-        return statementId;
+        return sqlMaps.getOrDefault(statementId, statementId);
     }
 
     protected final SqlSession getSqlSession() {

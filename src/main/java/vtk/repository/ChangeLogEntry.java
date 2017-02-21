@@ -63,7 +63,7 @@ public class ChangeLogEntry {
             return this.operationId;
         }
     }
-    
+
     private Operation operation;
     private Path uri;
     private int changeLogEntryId = -1;
@@ -141,7 +141,7 @@ public class ChangeLogEntry {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         
-        builder.append("ChangeLogEntry[uri=").append(this.uri);
+        builder.append("ChangeLogEntry{uri=").append(this.uri);
         builder.append(", operation=").append(this.operation);
         builder.append(", changeLogEntryId=").append(this.changeLogEntryId);
         builder.append(", resourceId=").append(this.resourceId);
@@ -149,7 +149,7 @@ public class ChangeLogEntry {
         builder.append(", loggerType=").append(this.loggerType);
         builder.append(", timestamp=").append(this.timestamp);
         builder.append(", is collection=").append(this.collection ? 'Y' : 'N');
-        builder.append(']');
+        builder.append('}');
         
         return builder.toString();
     }

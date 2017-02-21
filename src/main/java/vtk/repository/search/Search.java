@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, University of Oslo, Norway
+/* Copyright (c) 2007-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,13 @@
  */
 package vtk.repository.search;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Optional;
 
 import vtk.repository.PropertySet;
-import vtk.repository.search.query.DumpQueryTreeVisitor;
 import vtk.repository.search.query.Query;
 
 /**
@@ -61,13 +64,66 @@ public final class Search {
         UNPUBLISHED,
         UNPUBLISHED_COLLECTIONS,
     }
-    
+
+    /**
+     * Specifies duration and timeout when waiting for pending updates
+     * is specified for the search.
+     */
+    public static final class WaitSpec {
+        private final Instant timestamp;
+        private final Duration timeout;
+        private WaitSpec(Instant timestamp, Duration timeout) {
+            this.timestamp = Objects.requireNonNull(timestamp, "timestamp must not be null");
+            this.timeout = Objects.requireNonNull(timeout, "timeout must not be null");
+        }
+        public Instant timestamp() {
+            return timestamp;
+        }
+        public Duration timeout() {
+            return timeout;
+        }
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 89 * hash + Objects.hashCode(this.timestamp);
+            hash = 89 * hash + Objects.hashCode(this.timeout);
+            return hash;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final WaitSpec other = (WaitSpec) obj;
+            if (!Objects.equals(this.timestamp, other.timestamp)) {
+                return false;
+            }
+            if (!Objects.equals(this.timeout, other.timeout)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "WaitSpec{" + "timestamp=" + timestamp + ", timeout=" + timeout + '}';
+        }
+        
+    }
+
     private PropertySelect propertySelect = PropertySelect.ALL_PROPERTIES;
     private Query query;
     private Sorting sorting;
     private int limit = DEFAULT_LIMIT;
     private int cursor = 0;
     private final EnumSet<FilterFlag> filterFlags;
+    private WaitSpec waitForPendingUpdatesSpec = null;
 
     public Search() {
         Sorting defaultSorting = new Sorting();
@@ -78,6 +134,48 @@ public final class Search {
 
     public int getCursor() {
         return this.cursor;
+    }
+
+    /**
+     * Requests that the thread which will execute this search get search
+     * results which are at least as recently updated as the provided timestamp,
+     * with regard to modifications to the resource repository.
+     *
+     * <p>The repository index is asynchronously updated after repository write
+     * operations, and the time it takes for the index to reflect actual repository
+     * state depends on the general write load and other factors.
+     * This search setting can be used to attempt a wait for updated results
+     * if it is important for client code to not be served search results
+     * reflecting earlier and stale repository resource states.
+     *
+     * <p>Be aware that setting this will cause searching threads to be blocked if
+     * there are pending updates older than the provided timestamp present in
+     * the repository change event log. If so, an attempt will be made to wait
+     * for the pending updates to be indexed before executing search, thus
+     * ensuring up to date results (as of at least the timestamp).
+     *
+     * <p>A timeout must also be provided, which when reached, will cause the
+     * search to proceed normally, but possibly with not as up to date results
+     * as requested. The search result set can be inspected to check for this
+     * condition using {@link ResultSet#recency() }, and action taken depends on client code needs (retry, accept
+     * whatever for best effort, etc.).
+     *
+     * @param timestamp a freshness timestamp, which must be provided
+     * @param timeout a timeout
+     * @return this search instance for easy setter-chaining.
+     */
+    public Search setWaitForPendingUpdates(Instant timestamp, Duration timeout) {
+        this.waitForPendingUpdatesSpec = new WaitSpec(timestamp, timeout);
+        return this;
+    }
+
+    /**
+     * Get wait spec for pending updates. Optional and only present if
+     * {@link #waitForPendingUpdatesSpec} has been set.
+     * @return
+     */
+    public Optional<WaitSpec> getWaitForPendingUpdates() {
+        return Optional.ofNullable(waitForPendingUpdatesSpec);
     }
 
     public Search setCursor(int cursor) {
@@ -149,22 +247,29 @@ public final class Search {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.getClass().getName()).append("[");
-        if (query != null) {
-            sb.append("query=").append(query.accept(new DumpQueryTreeVisitor(), null));
-        } else {
-            sb.append("query=null");
-        }
-        sb.append(", propertySelect=").append(this.propertySelect);
-        sb.append(", sorting=").append(this.sorting);
-        sb.append(", limit=").append(this.limit);
-        sb.append(", cursor=").append(this.cursor).append("]");
-        return sb.toString();
+        return "Search{" + "propertySelect=" + propertySelect + ", query=" + query
+                + ", sorting=" + sorting + ", limit=" + limit + ", cursor=" + cursor
+                + ", filterFlags=" + filterFlags + ", waitForPendingUpdatesSpec=" + waitForPendingUpdatesSpec + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 73 * hash + Objects.hashCode(this.propertySelect);
+        hash = 73 * hash + Objects.hashCode(this.query);
+        hash = 73 * hash + Objects.hashCode(this.sorting);
+        hash = 73 * hash + this.limit;
+        hash = 73 * hash + this.cursor;
+        hash = 73 * hash + Objects.hashCode(this.filterFlags);
+        hash = 73 * hash + Objects.hashCode(this.waitForPendingUpdatesSpec);
+        return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -172,40 +277,30 @@ public final class Search {
             return false;
         }
         final Search other = (Search) obj;
-        if (this.propertySelect != other.propertySelect
-                && (this.propertySelect == null || !this.propertySelect.equals(other.propertySelect))) {
-            return false;
-        }
-        if (this.query != other.query && (this.query == null || !this.query.equals(other.query))) {
-            return false;
-        }
-        if (this.sorting != other.sorting && (this.sorting == null || !this.sorting.equals(other.sorting))) {
-            return false;
-        }
-        if (!this.filterFlags.equals(other.filterFlags)) {
-            return false;
-        }
         if (this.limit != other.limit) {
             return false;
         }
         if (this.cursor != other.cursor) {
             return false;
         }
+        if (!Objects.equals(this.propertySelect, other.propertySelect)) {
+            return false;
+        }
+        if (!Objects.equals(this.query, other.query)) {
+            return false;
+        }
+        if (!Objects.equals(this.sorting, other.sorting)) {
+            return false;
+        }
+        if (!Objects.equals(this.filterFlags, other.filterFlags)) {
+            return false;
+        }
+        if (!Objects.equals(this.waitForPendingUpdatesSpec, other.waitForPendingUpdatesSpec)) {
+            return false;
+        }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 47 * hash + (this.propertySelect != null ? this.propertySelect.hashCode() : 0);
-        hash = 47 * hash + (this.query != null ? this.query.hashCode() : 0);
-        hash = 47 * hash + (this.sorting != null ? this.sorting.hashCode() : 0);
-        hash = 47 * hash + (this.filterFlags.contains(FilterFlag.UNPUBLISHED) ? 1 : 0);
-        hash = 47 * hash + (this.filterFlags.contains(FilterFlag.UNPUBLISHED_COLLECTIONS) ? 1 : 0);
-        hash = 47 * hash + this.limit;
-        hash = 47 * hash + this.cursor;
-        return hash;
-    }
 
     /*
      * Checks if a filter flag is set.

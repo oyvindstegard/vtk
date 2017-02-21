@@ -56,8 +56,7 @@ public abstract class AbstractDBEventDumper extends AbstractRepositoryEventDumpe
      * @param loggerIds 
      */
     public void setLoggerIds(List<Integer> loggerIds) {
-        Objects.requireNonNull(loggerIds, "Logger ids cannot be null");
-        this.loggerIds = loggerIds;
+        this.loggerIds = Objects.requireNonNull(loggerIds, "loggerIds cannot be null");
     }
     
     public void setLoggerId(int loggerId) {
