@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, University of Oslo, Norway
+/* Copyright (c) 2006-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
  */
 package vtk.repository;
 
+import vtk.repository.resourcetype.HierarchicalVocabulary;
 import java.util.List;
 
 import vtk.repository.resourcetype.MixinResourceTypeDefinition;
@@ -37,6 +38,12 @@ import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 
+/**
+ * Main interface for querying the resource type system.
+ *
+ * <p>Extends {@link HierarchicalVocabulary} for resource type names and
+ * their relationships. Resource type names must always be unique.
+ */
 public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
 
     public PropertyTypeDefinition getPropertyTypeDefinition(Namespace namespace, String name);
@@ -61,8 +68,7 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
      * @param def The <code>ResourceTypeDefinition</code> 
      * @return A <code>Set</code> of <code>PropertyTypeDefinition</code> instances.
      */
-    public List<PropertyTypeDefinition> getPropertyTypeDefinitionsIncludingAncestors(
-                                                    ResourceTypeDefinition def);
+    public List<PropertyTypeDefinition> getPropertyTypeDefinitionsIncludingAncestors(ResourceTypeDefinition def);
 
     /**
      * Determines whether a named resource type is contained in another resource type

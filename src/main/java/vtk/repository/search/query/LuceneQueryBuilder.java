@@ -32,7 +32,6 @@ package vtk.repository.search.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +52,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
-import vtk.repository.HierarchicalVocabulary;
+import vtk.repository.resourcetype.HierarchicalVocabulary;
 import vtk.repository.Path;
 import vtk.repository.PropertySetImpl;
 import vtk.repository.ResourceTypeTree;
@@ -66,8 +65,6 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.search.Search;
 import vtk.repository.search.Sorting;
-import static vtk.repository.search.query.TermOperator.EQ;
-import static vtk.repository.search.query.TermOperator.NE;
 import vtk.repository.search.query.builders.ACLInheritedFromQueryBuilder;
 import vtk.repository.search.query.builders.ACLReadForAllQueryBuilder;
 import vtk.repository.search.query.builders.AclPrivilegeQueryBuilder;
@@ -99,7 +96,6 @@ public class LuceneQueryBuilder implements InitializingBean {
 
     private final Logger logger = LoggerFactory.getLogger(LuceneQueryBuilder.class);
 
-    private ResourceTypeTree resourceTypeTree;
     private DocumentMapper documentMapper;
     
     private QueryAuthorizationFilterFactory queryAuthorizationFilterFactory;
@@ -174,19 +170,7 @@ public class LuceneQueryBuilder implements InitializingBean {
 
         else if (query instanceof TypeTermQuery) {
             TypeTermQuery ttq = (TypeTermQuery) query;
-
-            if (EQ == ttq.getOperator() || NE == ttq.getOperator()) {
-                builder = new TypeTermQueryBuilder(ttq.getTerm(), ttq.getOperator());
-            } else {
-                List<String> values = new ArrayList<>();
-                values.add(ttq.getTerm());
-                Collection<String> descendantTypes = this.resourceTypeTree.getDescendants(ttq.getTerm());
-                if (descendantTypes != null) {
-                    values.addAll(descendantTypes);
-                }
-                builder = new TermsQueryBuilder(ResourceFields.RESOURCETYPE_FIELD_NAME, values,  
-                        PropertyType.Type.STRING, ttq.getOperator(), documentMapper.getPropertyFields());
-            }
+            builder = new TypeTermQueryBuilder(ttq.getTerm(), ttq.getOperator());
         }
 
         else if (query instanceof AbstractAclQuery) {
@@ -259,9 +243,9 @@ public class LuceneQueryBuilder implements InitializingBean {
                 }
                 HierarchicalVocabulary<Value> hv = (HierarchicalVocabulary<Value>) vocabulary;
                 String fieldName = PropertyFields.propertyFieldName(propDef, false);
-                List<String> values = new ArrayList<String>();
+                List<String> values = new ArrayList<>();
                 values.add(ptq.getTerm());
-                for (Value v: hv.getDescendants(new Value(ptq.getTerm(), PropertyType.Type.STRING))) {
+                for (Value v: hv.flattenedDescendants(new Value(ptq.getTerm(), PropertyType.Type.STRING))) {
                     values.add(v.getStringValue());
                 }
 
@@ -284,20 +268,6 @@ public class LuceneQueryBuilder implements InitializingBean {
             } else {
                 return new PropertyTermQueryBuilder(ptq, documentMapper.getPropertyFields());
             }
-
-//            TermOperator op = ptq.getOperator();
-//            boolean lowercase = (op == TermOperator.EQ_IGNORECASE || op == TermOperator.NE_IGNORECASE);
-//            if (cva != null) {
-//                Type dataType = Field4ValueMapper.getJsonFieldDataType(propDef, cva);
-//                String fieldName = FieldNames.getJsonSearchFieldName(propDef, cva, lowercase);
-//                String fieldValue = fieldValueMapper.queryTerm(fieldName, ptq.getTerm(), dataType, lowercase);
-//                return new PropertyTermQueryBuilder(op, fieldName, fieldValue);
-//            } else {
-//                String fieldName = FieldNames.getSearchFieldName(propDef, lowercase);
-//                String fieldValue = fieldValueMapper.encodeIndexFieldValue(ptq.getTerm(), propDef.getType(),
-//                        lowercase);
-//                return new PropertyTermQueryBuilder(op, fieldName, fieldValue);
-//            }
         }
 
         if (query instanceof PropertyPrefixQuery) {
@@ -318,13 +288,7 @@ public class LuceneQueryBuilder implements InitializingBean {
                     && peq.getComplexValueAttributeSpecifier() == null
                     && peq.isInverted()) {
                 // Use common cached filter for "navigation:hidden NOT EXISTS" clause
-                return new QueryBuilder() {
-                    
-                    @Override
-                    public org.apache.lucene.search.Query buildQuery() throws QueryBuilderException {
-                        return new ConstantScoreQuery(hiddenFilter);
-                    }
-                };
+                return () -> new ConstantScoreQuery(hiddenFilter);
             }
             
             return new PropertyExistsQueryBuilder(peq);
@@ -488,11 +452,6 @@ public class LuceneQueryBuilder implements InitializingBean {
             return null;
 
         return new SortBuilder().buildSort(sort);
-    }
-
-    @Required
-    public void setResourceTypeTree(ResourceTypeTree resourceTypeTree) {
-        this.resourceTypeTree = resourceTypeTree;
     }
 
     @Required

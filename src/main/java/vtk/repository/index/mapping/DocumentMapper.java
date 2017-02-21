@@ -1,4 +1,4 @@
-/* Copyright (c) 2006,2012 University of Oslo, Norway
+/* Copyright (c) 2006-2017 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,12 @@
 package vtk.repository.index.mapping;
 
 import java.io.IOException;
-
 import java.util.HashMap;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,6 @@ import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertySetImpl;
 import vtk.repository.ResourceTypeTree;
-import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.search.PropertySelect;
@@ -57,17 +57,20 @@ import org.apache.lucene.document.DocumentStoredFieldVisitor;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.StoredFieldVisitor;
+import org.springframework.context.ApplicationListener;
 import vtk.repository.Acl;
+import vtk.repository.resourcetype.event.TypeConfigurationEvent;
 
 
 import vtk.repository.resourcetype.ValueFactory;
+import vtk.repository.search.ConfigurablePropertySelect;
 
 /**
  * Mapping from Lucene {@link org.apache.lucene.document.Document} to
  * {@link vtk.repository.PropertySet} objects and vice-versa.
  * 
  */
-public class DocumentMapper implements InitializingBean {
+public class DocumentMapper implements InitializingBean, ApplicationListener<TypeConfigurationEvent> {
 
     private final Logger logger = LoggerFactory.getLogger(DocumentMapper.class);
 
@@ -81,17 +84,11 @@ public class DocumentMapper implements InitializingBean {
     private PropertyFields propertyFields;
     private AclFields aclFields;
     
-
-    // Fast lookup maps for flat list of resource type prop defs and
-    // stored field-name to prop-def map
-    private final Map<String, PropertyTypeDefinition> fieldNamePropDefMap = new HashMap<>();
-
     @Override
     public void afterPropertiesSet() {
         aclFields = new AclFields(locale, principalFactory);
         propertyFields = new PropertyFields(locale, valueFactory);
-        resourceFields = new ResourceFields(locale);
-        populateTypeInfoCacheMaps(fieldNamePropDefMap, resourceTypeTree.getRoot());
+        resourceFields = new ResourceFields(locale, resourceTypeTree);
     }
 
     /**
@@ -118,23 +115,32 @@ public class DocumentMapper implements InitializingBean {
         return resourceFields;
     }
 
-    private void populateTypeInfoCacheMaps(Map<String, PropertyTypeDefinition> fieldPropDefMap, 
-            PrimaryResourceTypeDefinition rtDef) {
+    // Lazily built lookup map for index property field to property definition
+    // Used by query threads for mapping resources from index resoults and must support highly concurrent access
+    private final Map<String, PropertyTypeDefinition> propertyFieldToDef = new ConcurrentHashMap<>();
+    // Lazily built lookup map for resource type to property selector for property definitions.
+    // Typically used only by an indexing thread.
+    private final Map<ResourceTypeDefinition, PropertySelect> typeToPropertySelect = new HashMap<>();
 
-        // Prop-defs from mixins are included here.
-        List<PropertyTypeDefinition> propDefs
-                = this.resourceTypeTree.getPropertyTypeDefinitionsIncludingAncestors(rtDef);
+    private PropertyTypeDefinition propertyDefinitionFromField(String fieldName) {
+        return propertyFieldToDef.computeIfAbsent(fieldName, f -> {
+            String prefix = PropertyFields.propertyNamespacePrefix(f);
+            String name = PropertyFields.propertyName(f);
+            return resourceTypeTree.getPropertyDefinitionByPrefix(prefix, name);
+        });
+    }
 
-        for (PropertyTypeDefinition propDef : propDefs) {
-            String fieldName = PropertyFields.propertyFieldName(propDef);
-            if (!fieldPropDefMap.containsKey(fieldName)) {
-                fieldPropDefMap.put(fieldName, propDef);
-            }
+    private boolean propertyBelongsToType(ResourceTypeDefinition def, PropertyTypeDefinition propDef) {
+        // Called only by indexing threads, so there will never be much contention here.
+        // Still we'd like getDocument to be thread safe, so synchronize.
+        PropertySelect pSelect;
+        synchronized (this) {
+            pSelect = typeToPropertySelect.computeIfAbsent(def, d -> {
+                List<PropertyTypeDefinition> typePropDefs = resourceTypeTree.getPropertyTypeDefinitionsIncludingAncestors(d);
+                return new ConfigurablePropertySelect(typePropDefs);
+            });
         }
-
-        for (PrimaryResourceTypeDefinition child : this.resourceTypeTree.getResourceTypeDefinitionChildren(rtDef)) {
-            populateTypeInfoCacheMaps(fieldPropDefMap, child);
-        }
+        return pSelect.isIncludedProperty(propDef);
     }
 
     /**
@@ -159,27 +165,21 @@ public class DocumentMapper implements InitializingBean {
         // ACL fields
         aclFields.addAclFields(fields, propSet, acl);
         
-        final ResourceTypeDefinition rtDef = 
+        final ResourceTypeDefinition def =
                 this.resourceTypeTree.getResourceTypeDefinitionByName(propSet.getResourceType());
-        if (rtDef == null) {
+        if (def == null) {
             logger.warn("Missing type information for resource type '" + propSet.getResourceType()
                     + "', cannot create complete index document.");
             return doc;
         }
 
         // Property fields
-        List<PropertyTypeDefinition> rtPropDefs =
-                this.resourceTypeTree.getPropertyTypeDefinitionsIncludingAncestors(rtDef);
         for (Property property: propSet) {
-            // Completely ignore any Property without a definition
+            // Completely ignore any property without a definition
             if (property.getDefinition() == null) continue;
-            
-            // Resolve canonical prop-def instance
-            String propFieldName = PropertyFields.propertyFieldName(property.getDefinition());
-            PropertyTypeDefinition canonicalDef = this.fieldNamePropDefMap.get(propFieldName);
 
-            // Skip all props not part of type and that are not inheritable
-            if (!rtPropDefs.contains(canonicalDef) && !property.getDefinition().isInheritable()) {
+            if (!propertyBelongsToType(def, property.getDefinition()) && !property.isInherited()) {
+                // SKip all (dead/zombie) props which are not inherited
                 continue;
             }
 
@@ -195,7 +195,7 @@ public class DocumentMapper implements InitializingBean {
                 break;
 
             case STRING:
-                if (!canonicalDef.isMultiple()) {
+                if (!property.getDefinition().isMultiple()) {
                     propertyFields.addSortField(fields, property);
                 }
             
@@ -228,19 +228,19 @@ public class DocumentMapper implements InitializingBean {
             return new DocumentStoredFieldVisitor();
         } else if (select == PropertySelect.NONE) {
             return new DocumentStoredFieldVisitor() {
-                boolean haveUri = false, haveResourceType = false;
+                boolean haveUri = false, haveResourceTypePath = false;
                 @Override
                 public StoredFieldVisitor.Status needsField(FieldInfo fieldInfo) throws IOException {
                     if (ResourceFields.URI_FIELD_NAME.equals(fieldInfo.name)) {
                         haveUri = true;
                         return StoredFieldVisitor.Status.YES;
                     }
-                    if (ResourceFields.RESOURCETYPE_FIELD_NAME.equals(fieldInfo.name)) {
-                        haveResourceType = true;
+                    if (ResourceFields.RESOURCETYPE_PATH_FIELD_NAME.equals(fieldInfo.name)) {
+                        haveResourceTypePath = true;
                         return StoredFieldVisitor.Status.YES;
                     }
                     
-                    if (haveResourceType && haveUri) {
+                    if (haveResourceTypePath && haveUri) {
                         return StoredFieldVisitor.Status.STOP;
                     }
                     
@@ -253,7 +253,7 @@ public class DocumentMapper implements InitializingBean {
                 public StoredFieldVisitor.Status needsField(FieldInfo fieldInfo) throws IOException {
                     
                     if (PropertyFields.isPropertyField(fieldInfo.name)) {
-                        PropertyTypeDefinition def = fieldNamePropDefMap.get(fieldInfo.name);
+                        PropertyTypeDefinition def = propertyDefinitionFromField(fieldInfo.name);
                         if (def != null) {
                             if (select.isIncludedProperty(def)) {
                                 return StoredFieldVisitor.Status.YES;
@@ -273,7 +273,7 @@ public class DocumentMapper implements InitializingBean {
                     
                     // Check for required reserved fields
                     if (ResourceFields.URI_FIELD_NAME.equals(fieldInfo.name)
-                            || ResourceFields.RESOURCETYPE_FIELD_NAME.equals(fieldInfo.name)) {
+                            || ResourceFields.RESOURCETYPE_PATH_FIELD_NAME.equals(fieldInfo.name)) {
                         return StoredFieldVisitor.Status.YES;
                     }
                     
@@ -303,10 +303,10 @@ public class DocumentMapper implements InitializingBean {
     }
     
     Property propertyFromFields(String fieldName, List<IndexableField> fields) throws DocumentMappingException {
-        PropertyTypeDefinition def = fieldNamePropDefMap.get(fieldName);
+        PropertyTypeDefinition def = propertyDefinitionFromField(fieldName);
         if (def == null) {
             String name = PropertyFields.propertyName(fieldName);
-            String nsPrefix = PropertyFields.propertyNamespace(fieldName);
+            String nsPrefix = PropertyFields.propertyNamespacePrefix(fieldName);
             def = resourceTypeTree.getPropertyTypeDefinition(Namespace.getNamespaceFromPrefix(nsPrefix), name);
             logger.warn("Definition for property '" + nsPrefix + PropertyFields.NAMESPACEPREFIX_NAME_SEPARATOR + name + "' not found");
         }
@@ -340,6 +340,15 @@ public class DocumentMapper implements InitializingBean {
     @Required
     public void setValueFactory(ValueFactory valueFactory) {
         this.valueFactory = valueFactory;
+    }
+
+    @Override
+    public void onApplicationEvent(TypeConfigurationEvent event) {
+        // Clear all cached state from type configuration, regardless of type config change !
+        propertyFieldToDef.clear();
+        synchronized(this) {
+            typeToPropertySelect.clear();
+        }
     }
 
 }

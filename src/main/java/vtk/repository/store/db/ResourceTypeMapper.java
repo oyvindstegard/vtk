@@ -38,6 +38,7 @@ import vtk.repository.Path;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 
+// This class should be integrated into a refactored type system manager
 public final class ResourceTypeMapper {
     private final ResourceTypeTree resourceTypeTree;
 
@@ -104,7 +105,7 @@ public final class ResourceTypeMapper {
         }
         return "/" + String.join("/", typeHierarchyNames);
     }
-    
+
     // Types snapshot
     private static final String[] LEGACY_TYPES = new String[] {
         "/collection",

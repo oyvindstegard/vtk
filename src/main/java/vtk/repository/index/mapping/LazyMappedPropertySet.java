@@ -75,8 +75,8 @@ public final class LazyMappedPropertySet implements PropertySet {
                 continue;
             }
 
-            if (ResourceFields.RESOURCETYPE_FIELD_NAME.equals(f.name())) {
-                resourceType = f.stringValue();
+            if (ResourceFields.RESOURCETYPE_PATH_FIELD_NAME.equals(f.name())) {
+                resourceType = mapper.getResourceFields().resolveResourceType(f.stringValue());
                 continue;
             }
             
@@ -105,7 +105,7 @@ public final class LazyMappedPropertySet implements PropertySet {
         }
         if (resourceType == null) {
             throw new DocumentMappingException("Document missing required field "
-                    + ResourceFields.RESOURCETYPE_FIELD_NAME + ": " + doc);
+                    + ResourceFields.RESOURCETYPE_PATH_FIELD_NAME + ": " + doc);
         }
         this.mapper = mapper;
     }

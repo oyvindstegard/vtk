@@ -47,11 +47,7 @@
   </bean>
 
   <!-- Document mapper -->
-  <bean id="documentMapper" class="vtk.repository.index.mapping.DocumentMapper"
-        depends-on="structuredResource.parser">
-    <!-- XXX: This bean depends the structured resource parser being
-         initialized (because the resource type tree is not complete without it) -->
-
+  <bean id="documentMapper" class="vtk.repository.index.mapping.DocumentMapper">
     <property name="resourceTypeTree" ref="resourceTypeTree"/>
     <property name="principalFactory" ref="principalFactory" />
     <property name="valueFactory" ref="valueFactory" />
@@ -122,7 +118,6 @@
   <!-- Factory for building Lucene queries. -->
   <bean id="queryBuilder"
         class="vtk.repository.search.query.LuceneQueryBuilder">
-    <property name="resourceTypeTree" ref="resourceTypeTree"/>
     <property name="documentMapper" ref="documentMapper"/>
     <property name="queryAuthorizationFilterFactory" ref="queryAuthorizationFilterFactory"/>
     <property name="publishedPropDef" ref="publishedPropDef" />

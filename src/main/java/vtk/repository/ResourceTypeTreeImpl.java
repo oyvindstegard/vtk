@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, University of Oslo, Norway
+/* Copyright (c) 2006-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,16 @@
  */
 package vtk.repository;
 
+import vtk.repository.resourcetype.event.DynamicTypeRegistrationComplete;
+import vtk.repository.resourcetype.event.StaticTypesInitializedEvent;
+import vtk.repository.resourcetype.event.DynamicTypeRegisteredEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,16 +49,15 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
 
 import vtk.repository.resourcetype.AbstractResourceTypeDefinitionImpl;
-import vtk.repository.resourcetype.HierarchicalNode;
 import vtk.repository.resourcetype.LatePropertyEvaluator;
 import vtk.repository.resourcetype.MixinResourceTypeDefinition;
 import vtk.repository.resourcetype.OverridablePropertyTypeDefinition;
@@ -66,14 +69,28 @@ import vtk.repository.resourcetype.PropertyTypeDefinitionImpl;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.TypeLocalizationProvider;
 import vtk.repository.resourcetype.ValueFactory;
-import vtk.repository.resourcetype.ValueFormatter;
 import vtk.repository.resourcetype.ValueFormatterRegistry;
 
 
 /**
- * XXX in need of refactoring/cleanup.
+ * Repository resource type manager.
+ *
+ * <p>Gathers up static resource types defined in application context and allows
+ * various queries to be performed.
+ *
+ * <h2>Application events
+ * <p>Dispatches a {@link StaticTypesInitializedEvent } event when all static types have been initialized.
+ * 
+ * <p>Dispatches a {@link DynamicTypeRegisteredEvent} whenever a resource type
+ * is registered through the method {@link #registerDynamicResourceType(vtk.repository.resourcetype.PrimaryResourceTypeDefinition) registerDynamicResourceType}.
+ * 
+ * <p>Listens for a {@link DynamicTypeRegistrationComplete} event from an external
+ * dynamic type manager and logs the complete resource type tree upon reception of this event.
+ *
+ * <p><em>XXX in need of refactoring and cleanup.</em>
  */
-public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean, ApplicationContextAware {
+public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
+        ApplicationContextAware, ApplicationListener<DynamicTypeRegistrationComplete> {
 
     private final Logger logger = LoggerFactory.getLogger(ResourceTypeTreeImpl.class);
     
@@ -156,17 +173,26 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     private final Map<Namespace, Map<String, Set<PrimaryResourceTypeDefinition>>> propDefPrimaryTypesMap =
         new HashMap<>();
 
-    /**
-     * Map resource type name to flat list of _all_ descendant resource type names.
-     * (Supports fast lookup for 'IN'-resource-type queries)
-     */
-    private Map<String, List<String>> resourceTypeDescendantNames;
-
     private TypeLocalizationProvider typeLocalizationProvider;
 
     private ValueFormatterRegistry valueFormatterRegistry;
 
     private ValueFactory valueFactory;
+
+    // Lazy cache for method flattenedDescendants
+    private final Map<String, Set<String>> nameDescendantsCache = new ConcurrentHashMap<>();
+    // Lazy cache for method flattenedAncestors
+    private final Map<String, Set<String>> nameAncestorsCache = new ConcurrentHashMap<>();
+    // Lazy cache for method getPropertyTypeDefinitionsIncludingAncestors
+    private final Map<ResourceTypeDefinition, List<PropertyTypeDefinition>>
+                              propDefsIncludingAncestorsCache = new ConcurrentHashMap<>();
+
+    // Call whenever resource type tree is modified
+    private void clearLazyCaches() {
+        nameDescendantsCache.clear();
+        nameAncestorsCache.clear();
+        propDefsIncludingAncestorsCache.clear();
+    }
 
     @Override
     public PropertyTypeDefinition getPropertyTypeDefinition(Namespace namespace, String name) {
@@ -200,12 +226,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext)
-            throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
-    @Override
     public PrimaryResourceTypeDefinition getRoot() {
         return this.rootResourceTypeDefinition;
     }
@@ -218,11 +238,10 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     @Override
     public List<PrimaryResourceTypeDefinition> getResourceTypeDefinitionChildren(PrimaryResourceTypeDefinition def) {
         List<PrimaryResourceTypeDefinition> children = this.parentChildMap.get(def);
-        
         if (children == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
-        return children;
+        return Collections.unmodifiableList(children);
     }
 
     /**
@@ -235,21 +254,122 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
      * @return collection of all descendant type names of the provided type name
      */
     @Override
-    public Collection<String> getDescendants(String name) {
-         return this.resourceTypeDescendantNames.get(name);
+    public Set<String> flattenedDescendants(String name) {
+        return nameDescendantsCache.computeIfAbsent(name, n -> flattenedDescendantsInternal(n, false));
+    }
+
+    private Set<String> flattenedDescendantsInternal(String name, boolean includeSelf) {
+        Set<String> descendants = new LinkedHashSet<>();
+        if (includeSelf) {
+            descendants.add(name);
+        }
+        Collection<String> children = children(name);
+        for (String child: children) {
+            descendants.addAll(flattenedDescendantsInternal(child, true));
+        }
+
+        return Collections.unmodifiableSet(descendants);
     }
 
     /**
-     * Root nodes include the root resource type definition, as well as
+     * Get a flattened collection of all super type names of the given name.
+     *
+     * <p>If name is a mixin type, then there will never be any ancestors as these
+     * are considered root-only types.
+     *
+     * <p>If name is a primary type, then the following applies:
+     * <ul>
+     *    <li>The type itself is not included.
+     *    <li>Any mixin types defined on the type itself <strong>are included</strong>.
+     *    <li>All super types of the type, and any mixins defined on syper types are included.
+     * </ul>
+     *
+     * @param name
+     * @return
+     */
+    @Override
+    public Set<String> flattenedAncestors(String name) {
+        return nameAncestorsCache.computeIfAbsent(name, n -> flattenedAncestorsInternal(n, false));
+    }
+
+    private Set<String> flattenedAncestorsInternal(String name, boolean includeSelf) {
+        Set<String> ancestors = new LinkedHashSet<>();
+        if (includeSelf) {
+            ancestors.add(name);
+        }
+        Collection<String> parents = parents(name);
+        for (String parent: parents) {
+            ancestors.addAll(flattenedAncestorsInternal(parent, true));
+        }
+        return Collections.unmodifiableSet(ancestors);
+    }
+
+    /**
+     * Get parent types of given type name.
+     *
+     * <p>Includes all mixin types defined on the given type, and any single
+     * primary parent type.
+     * @param name
+     * @return
+     */
+    @Override
+    public Collection<String> parents(String name) {
+        ResourceTypeDefinition def = resourceTypeNameMap.get(name);
+        if (def == null || def instanceof MixinResourceTypeDefinition) {
+            return Collections.emptyList();
+        }
+        List<String> parents = new ArrayList<>();
+        PrimaryResourceTypeDefinition primaryDef = (PrimaryResourceTypeDefinition)def;
+        if (primaryDef.getParentTypeDefinition() != null) {
+            parents.add(primaryDef.getParentTypeDefinition().getName());
+        }
+        parents.addAll(primaryDef.getMixinTypeDefinitions().stream().map(m -> m.getName()).collect(Collectors.toList()));
+        return parents;
+    }
+
+    /**
+     * Get the immediate child type names of the given type name.
+     *
+     * <p>If the type is a mixin, then the children will be all primary types
+     * for which this mixin has been defined.
+     *
+     * <p>If the type is a primary type, then
+     * @param name
+     * @return
+     */
+    @Override
+    public Collection<String> children(String name) {
+        ResourceTypeDefinition def = resourceTypeNameMap.get(name);
+        if (def == null) {
+            return Collections.emptyList();
+        }
+        List<String> children = new ArrayList<>();
+        if (def instanceof MixinResourceTypeDefinition) {
+            Set<PrimaryResourceTypeDefinition> primaryTypesForMixin = mixinTypePrimaryTypesMap.get((MixinResourceTypeDefinition)def);
+            if (primaryTypesForMixin != null) {
+                children.addAll(primaryTypesForMixin.stream().map(p -> p.getName()).collect(Collectors.toList()));
+            }
+            return Collections.unmodifiableList(children);
+        } else {
+            List<PrimaryResourceTypeDefinition> childDefs = parentChildMap.get((PrimaryResourceTypeDefinition)def);
+            if (childDefs != null) {
+                children.addAll(childDefs.stream().map(d -> d.getName()).collect(Collectors.toList()));
+            }
+            return Collections.unmodifiableList(children);
+        }
+    }
+
+    /**
+     * Root type names include the root resource type definition, as well as
      * all mixin types.
      * @return collection of root nodes
      */
     @Override
-    public Collection<HierarchicalNode<String>> getRootNodes() {
-        List<HierarchicalNode<String>> roots = new ArrayList<>();
-        roots.add(hierarchicalNode(rootResourceTypeDefinition.getName()));
+    public Collection<String> roots() {
+        List<String> roots = new ArrayList<>();
+        roots.add(rootResourceTypeDefinition.getName());
         for (MixinResourceTypeDefinition m: mixinTypes) {
-            roots.add(hierarchicalNode(m.getName()));
+            roots.add(m.getName());
         }
         return roots;
     }
@@ -261,34 +381,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     @Override
     public List<String> vocabularyValues() {
         return new ArrayList<>(resourceTypeNameMap.keySet());
-    }
-
-    private HierarchicalNode<String> hierarchicalNode(String name) {
-        ResourceTypeDefinition def = resourceTypeNameMap.get(name);
-        if (def instanceof MixinResourceTypeDefinition) {
-            Set<PrimaryResourceTypeDefinition> defs =
-                    primaryTypes.stream()
-                    .filter(d -> d.getMixinTypeDefinitions() != null &&
-                            d.getMixinTypeDefinitions().contains(def)).collect(Collectors.toSet());
-
-            Set<HierarchicalNode<String>> children = 
-                    defs.stream().map(d -> hierarchicalNode(d.getName())).collect(Collectors.toSet());
-
-            return new HierarchicalNode<>(def.getName(), children);
-
-        } else if (def instanceof PrimaryResourceTypeDefinition) {
-            List<PrimaryResourceTypeDefinition> subTypes = parentChildMap.get((PrimaryResourceTypeDefinition) def);
-            List<HierarchicalNode<String>> children;
-            if (subTypes != null) {
-                children = subTypes.stream().map(d -> hierarchicalNode(d.getName())).collect(Collectors.toList());
-            } else {
-                children = Collections.emptyList();
-            }
-
-            return new HierarchicalNode<>(def.getName(), children);
-        } else {
-            return null;
-        }
     }
 
     @Override
@@ -358,14 +450,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     }
     
     /**
-     * Small cache to make method 
-     * {@link #getPropertyTypeDefinitionsIncludingAncestors(vtk.repository.resourcetype.ResourceTypeDefinition)
-     * less expensive.
-     */
-    private final Map<ResourceTypeDefinition, List<PropertyTypeDefinition>>
-                              propDefsIncludingAncestorsCache = new ConcurrentHashMap<>();
-    
-    /**
      * Search upwards in resource type tree, collect property type definitions
      * from all encountered resource type definitions including mixin resource types.
      * Assuming that mixin types can never have mixin parent.
@@ -418,8 +502,8 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     }
     
     private void addPropertyTypeDefinitions(Set<String> encountered,
-                                            List<PropertyTypeDefinition> collectedPropDef, 
-                                            PropertyTypeDefinition[] propDefs) {
+                                           List<PropertyTypeDefinition> collectedPropDef, 
+                                           PropertyTypeDefinition[] propDefs) {
         for (PropertyTypeDefinition propDef: propDefs) {
             String id = propDef.getNamespace().getUri() + ":" + propDef.getName();
             // Add only _first_ occurence of property type definition keyed on id
@@ -432,28 +516,33 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     
     @Override
     public boolean isContainedType(ResourceTypeDefinition def, String resourceTypeName) {
+        if (resourceTypeName == null) return false;
+        return flattenedAncestors(resourceTypeName).contains(def.getName())
+                        || def.getName().equals(resourceTypeName);
 
-        ResourceTypeDefinition type = this.resourceTypeNameMap.get(resourceTypeName);
-        if (type == null || !(type instanceof PrimaryResourceTypeDefinition)) {
-            return false;
-        }
-
-        PrimaryResourceTypeDefinition primaryDef = (PrimaryResourceTypeDefinition) type;
-
-        // recursive ascent on the parent axis
-        while (primaryDef != null) {
-            if (def instanceof MixinResourceTypeDefinition) {
-                for (MixinResourceTypeDefinition mixin: primaryDef.getMixinTypeDefinitions()) {
-                    if (mixin.equals(def)) {
-                        return true;
-                    }
-                }
-            } else if (primaryDef.equals(def)) {
-                return true;
-            }
-            primaryDef = primaryDef.getParentTypeDefinition();
-        }
-        return false;
+// Old logic kept for easy inspection:
+//
+//        ResourceTypeDefinition type = this.resourceTypeNameMap.get(resourceTypeName);
+//        if (type == null || !(type instanceof PrimaryResourceTypeDefinition)) {
+//            return false;
+//        }
+//
+//        PrimaryResourceTypeDefinition primaryDef = (PrimaryResourceTypeDefinition) type;
+//
+//        // recursive ascent on the parent axis
+//        while (primaryDef != null) {
+//            if (def instanceof MixinResourceTypeDefinition) {
+//                for (MixinResourceTypeDefinition mixin: primaryDef.getMixinTypeDefinitions()) {
+//                    if (mixin.equals(def)) {
+//                        return true;
+//                    }
+//                }
+//            } else if (primaryDef.equals(def)) {
+//                return true;
+//            }
+//            primaryDef = primaryDef.getParentTypeDefinition();
+//        }
+//        return false;
     }
 
     
@@ -487,8 +576,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     public PrimaryResourceTypeDefinition[] getPrimaryResourceTypesForPropDef(
             PropertyTypeDefinition definition) {
 
-        Map<String, Set<PrimaryResourceTypeDefinition>> nsPropMap =
-                this.propDefPrimaryTypesMap.get(definition.getNamespace());
+        Map<String, Set<PrimaryResourceTypeDefinition>> nsPropMap = propDefPrimaryTypesMap.get(definition.getNamespace());
         
         if (nsPropMap != null) {
             Set<PrimaryResourceTypeDefinition> rts 
@@ -542,8 +630,9 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         registerMixins(def);
         injectTypeLocalizationProvider(def);
         mapPropertyDefinitionsToPrimaryTypes();
+        clearLazyCaches();
 
-        this.resourceTypeDescendantNames = buildResourceTypeDescendantNamesMap();
+        applicationContext.publishEvent(new DynamicTypeRegisteredEvent(this, def));
     }
     
     private void init() {
@@ -609,8 +698,8 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         }
 
         mapPropertyDefinitionsToPrimaryTypes();
-    
-        this.resourceTypeDescendantNames = buildResourceTypeDescendantNamesMap();
+
+        applicationContext.publishEvent(new StaticTypesInitializedEvent(this));
     }
 
     private void registerMixins(PrimaryResourceTypeDefinition def) {
@@ -672,23 +761,6 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         }
     }
 
-    /**
-     * Build map of resource type names to names of all descendants
-     */
-    private Map<String, List<String>> buildResourceTypeDescendantNamesMap() {
-        Map<String, List<String>> descendantNamesMap = new HashMap<>();
-        getRootNodes().forEach((node) -> {
-            node.flatten().forEach(descendant -> {
-              descendantNamesMap.put(descendant.getEntry(), descendant.flatten()
-                                                .skip(1)
-                                                .map((n) -> n.getEntry())
-                                                .collect(Collectors.toList()));
-            });
-        });
-
-        return descendantNamesMap;
-    }
-
     private void mapPropertyDefinitionsToPrimaryTypes() {
 
         for (PrimaryResourceTypeDefinition primaryTypeDef: this.primaryTypes) {
@@ -709,26 +781,23 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
                                                     Namespace namespace,
                                                     PrimaryResourceTypeDefinition primaryTypeDef) {
         Map<String, Set<PrimaryResourceTypeDefinition>> propDefMap = 
-            this.propDefPrimaryTypesMap.get(namespace);
-        if (propDefMap == null) {
-            propDefMap = new HashMap<>();
-            this.propDefPrimaryTypesMap.put(namespace, propDefMap);
-        }
-            
+            this.propDefPrimaryTypesMap.computeIfAbsent(namespace, ns -> new HashMap<>());
         for (PropertyTypeDefinition propDef: propDefs) {
             // FIXME: should be removed
             if (propDef instanceof OverridingPropertyTypeDefinitionImpl) {
                 continue;
             }
-            Set<PrimaryResourceTypeDefinition> definitions = propDefMap.get(propDef.getName());
-            if (definitions == null) {
-                definitions = new HashSet<>();
-                propDefMap.put(propDef.getName(), definitions);
-            }
-            definitions.add(primaryTypeDef);
+            propDefMap.computeIfAbsent(propDef.getName(), n -> new HashSet<>()).add(primaryTypeDef);
         }
     }
         
+
+    @Override
+    public void onApplicationEvent(DynamicTypeRegistrationComplete event) {
+        logger.info("Default resource type tree:");
+        logger.info("\n" + getResourceTypeTreeAsString());
+    }
+
     private void printResourceTypes(StringBuilder sb, int level,
             ResourceTypeDefinition def) {
 
@@ -856,4 +925,8 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         this.valueFactory = valueFactory;
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 }

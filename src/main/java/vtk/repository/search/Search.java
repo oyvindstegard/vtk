@@ -67,7 +67,7 @@ public final class Search {
     private Sorting sorting;
     private int limit = DEFAULT_LIMIT;
     private int cursor = 0;
-    private EnumSet<FilterFlag> filterFlags;
+    private final EnumSet<FilterFlag> filterFlags;
 
     public Search() {
         Sorting defaultSorting = new Sorting();

@@ -414,13 +414,13 @@ public class PropertyFieldsTest {
 
         String fieldName = "p_foo";
 
-        String nsPrefix = PropertyFields.propertyNamespace(fieldName);
+        String nsPrefix = PropertyFields.propertyNamespacePrefix(fieldName);
 
         assertNull(nsPrefix);
 
         fieldName = "p_bar:foo";
 
-        nsPrefix = PropertyFields.propertyNamespace(fieldName);
+        nsPrefix = PropertyFields.propertyNamespacePrefix(fieldName);
 
         assertEquals("bar", nsPrefix);
     }

@@ -103,7 +103,7 @@ public class IndexManager implements DisposableBean {
      * To get the written application level of an opened index, use {@link #getApplicationCompatibilityLevel()
      * }.
      */
-    public static final int APPLICATION_COMPATIBILITY_LEVEL = 1;
+    public static final int APPLICATION_COMPATIBILITY_LEVEL = 2;
 
     private static final String APPLICATION_META_FILE = "vrtxmeta";
     
