@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>NEW EDITOR</title>
+    <link rel="stylesheet" type="text/css" href="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.css" />
   </head>
   <body>
     <h1>NEW EDITOR</h1>
