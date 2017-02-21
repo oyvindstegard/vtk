@@ -13,10 +13,15 @@
       </template>
     </#if>
     <script>
-      var content = document.getElementById("resource");
+      var resourceTemplate = document.getElementById("resource");
       var output = document.getElementById("output");
-      output.innerHTML = content.content.textContent;
-      output.innerHTML = content.content.textContent;
+      var resourceSource = resourceTemplate.content.textContent;
+      var resource = JSON.parse(resourceSource);
+      var outStr = "";
+      for (var propName in resource) {
+        outStr += "<div>" + propName + " = " + resource[propName] + "</div>";
+      }
+      output.innerHTML = outStr;
     </script>
     <script src="/vrtx/decorating/resources/dist/doctype/helseforsk/editor.js"></script>
   </body>
