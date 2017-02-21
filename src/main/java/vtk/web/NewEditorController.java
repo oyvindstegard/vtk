@@ -38,8 +38,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
+import vtk.repository.Repository;
+import vtk.util.io.IO;
 
 public class NewEditorController implements Controller {
+
     private final View editView;
 
     public NewEditorController(View editView) {
@@ -48,10 +51,13 @@ public class NewEditorController implements Controller {
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+        RequestContext rc = RequestContext.getRequestContext();
+        Repository repo = rc.getRepository();
+        String token = rc.getSecurityToken();
+
         Map<String, Object> model = new HashMap<>();
-        model.put("content", "hei");
+        model.put("resource", IO.readString(repo.getInputStream(token, rc.getResourceURI(), true)).perform());
         return new ModelAndView(editView, model);
     }
-
 
 }
