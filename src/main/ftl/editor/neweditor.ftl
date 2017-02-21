@@ -5,8 +5,9 @@
   </head>
   <body>
     <h1>NEW EDITOR</h1>
-    <div id="output">
-    </div>
+    
+    <div id="root"></div>
+    
     <#if resource?has_content>
       <template id="resource">
         ${resource}
@@ -14,15 +15,9 @@
     </#if>
     <script>
       var resourceTemplate = document.getElementById("resource");
-      var output = document.getElementById("output");
       var resourceSource = resourceTemplate.content.textContent;
       var resource = JSON.parse(resourceSource);
-      var outStr = "";
-      for (var propName in resource) {
-        outStr += "<div>" + propName + " = " + resource[propName] + "</div>";
-      }
-      output.innerHTML = outStr;
     </script>
-    <script src="/vrtx/decorating/resources/dist/doctype/helseforsk/editor.js"></script>
+    <script src="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.js"></script>
   </body>
 </html>
