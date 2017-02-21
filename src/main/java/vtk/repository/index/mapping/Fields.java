@@ -33,6 +33,7 @@ package vtk.repository.index.mapping;
 
 import com.ibm.icu.text.Collator;
 import com.ibm.icu.text.RawCollationKey;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.NumericUtils;
 import vtk.repository.resourcetype.ValueFormatException;
-import vtk.util.cache.ReusableObjectArrayStackCache;
+import vtk.util.cache.ArrayStackCache;
 import vtk.util.cache.ReusableObjectCache;
 
 /**
@@ -74,7 +75,7 @@ public abstract class Fields {
                                                 "yyyy-MM-dd HH",
                                                 "yyyy-MM-dd" };
     
-    private static final ReusableObjectCache<SimpleDateFormat>[] CACHED_DATE_FORMAT_PARSERS;
+    private static final ReusableObjectCache<DateFormat>[] CACHED_DATE_FORMAT_PARSERS;
 
     static {
         // Create parser caches for each date format (maximum capacity of 3
@@ -82,7 +83,9 @@ public abstract class Fields {
         CACHED_DATE_FORMAT_PARSERS = new ReusableObjectCache[SUPPORTED_DATE_FORMATS.length];
 
         for (int i = 0; i < SUPPORTED_DATE_FORMATS.length; i++) {
-            CACHED_DATE_FORMAT_PARSERS[i] = new ReusableObjectArrayStackCache<>(3);
+            final String dateFormat = SUPPORTED_DATE_FORMATS[i];
+            CACHED_DATE_FORMAT_PARSERS[i] = new ArrayStackCache<>(
+                    ()-> new SimpleDateFormat(dateFormat), 3);
         }
     }
     
@@ -135,7 +138,7 @@ public abstract class Fields {
      */
     public IndexableField makeStringSortField(String name, String value) {
         RawCollationKey key = collator.getRawCollationKey(value, new RawCollationKey());
-        return new SortedDocValuesField(name, new BytesRef(key.bytes));
+        return new SortedDocValuesField(name, new BytesRef(key.bytes, 0, key.size));
     }
     
     public List<IndexableField> makeFields(String fieldName, String value, FieldSpec spec) {
@@ -303,12 +306,8 @@ public abstract class Fields {
             } catch (NumberFormatException nfe) {
                 // Failed to parse "long" format, try other formats
                 Date d = null;
-                for (int i = 0; i < SUPPORTED_DATE_FORMATS.length; i++) {
-                    SimpleDateFormat formatter = CACHED_DATE_FORMAT_PARSERS[i].getInstance();
-                    if (formatter == null) {
-                        formatter = new SimpleDateFormat(SUPPORTED_DATE_FORMATS[i]);
-                    }
-
+                for (ReusableObjectCache<DateFormat> dateFormatCache: CACHED_DATE_FORMAT_PARSERS) {
+                    final DateFormat formatter = dateFormatCache.getInstance();
                     try {
                         d = formatter.parse(stringValue);
                         break;
@@ -316,9 +315,10 @@ public abstract class Fields {
                         // Ignore failed parsing attempt
                     } finally {
                         // Cache the constructed date parser for re-use
-                        CACHED_DATE_FORMAT_PARSERS[i].putInstance(formatter);
+                        dateFormatCache.putInstance(formatter);
                     }
                 }
+
                 if (d != null) {
                     longValue = d.getTime();
                 }

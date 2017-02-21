@@ -43,7 +43,7 @@ public class DateFormatFunction extends Function {
     public DateFormatFunction(Symbol symbol) {
         super(symbol, 3);
     }
-    
+
     /*
      * XXX: Can probably remove this function and replace with to-date() and val # "<format>"
      */

@@ -30,11 +30,11 @@
  */
 package vtk.web.display.collection;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang.time.FastDateFormat;
 
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.MultiHostSearcher;
@@ -106,7 +106,7 @@ public class AudioVideoListingRSSFeedGenerator extends RSSFeedGenerator {
             feedEntry.put("guid", urlString);
 
             // Item publish date
-            SimpleDateFormat rfc822_dateformat = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z");
+            FastDateFormat rfc822_dateformat = FastDateFormat.getInstance("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z");
             String rfc822FormattedPubDate = rfc822_dateformat.format(ps.getProperty(publishDatePropDef).getDateValue());
             feedEntry.put("pubDate", rfc822FormattedPubDate);
 
