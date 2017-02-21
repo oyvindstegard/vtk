@@ -111,6 +111,9 @@
         <#elseif collection.resourceType = 'student-exchange-agreement-listing'>
           <#import "/pages/studies/view-student-exchange-agreement-listing.ftl" as studentExchangeAgreement />
           <@studentExchangeAgreement.displayResult result />
+        <#elseif collection.resourceType = 'helseforsk-listing'>
+          <#import "/pages/helseforsk/view-helseforsk-listing.ftl" as helseforsk />
+          <@helseforsk.displayResult result />
         <#else>
           <ul>
             <#list result as res>
