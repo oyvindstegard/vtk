@@ -33,7 +33,6 @@ public class JsonSyntaxErrorsEvaluator implements PropertyEvaluator {
                 return true;
             }
             catch (Exception e) {
-                e.printStackTrace();
                 return false;
             }
         } 
