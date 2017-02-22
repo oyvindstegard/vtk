@@ -56,6 +56,7 @@ public class NewEditorController implements Controller {
         String token = rc.getSecurityToken();
 
         Map<String, Object> model = new HashMap<>();
+        model.put("url", rc.getRequestURL());
         model.put("resource", IO.readString(repo.getInputStream(token, rc.getResourceURI(), true)).perform());
         return new ModelAndView(editView, model);
     }
