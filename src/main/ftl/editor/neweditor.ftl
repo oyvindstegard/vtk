@@ -14,10 +14,20 @@
         ${resource}
       </template>
     </#if>
+    <#if url?has_content>
+      <template id="csrf-token">
+        ${VRTX_CSRF_PREVENTION_HANDLER.newToken(url)}
+      </template>
+    </#if>
     <script>
-      var resourceTemplate = document.getElementById("resource");
-      var resourceSource = resourceTemplate.content.textContent;
-      var resource = JSON.parse(resourceSource);
+      (function () {
+        var resourceSource = document.getElementById("resource").content.textContent;
+        var csrfToken = document.getElementById("csrf-token").content.textContent;
+        var resource = JSON.parse(resourceSource);
+        window.editor = {};
+        window.editor.resource = resource;
+        window.editor.csrfToken = csrfToken;
+      )();
     </script>
     <script src="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.js"></script>
   </body>
