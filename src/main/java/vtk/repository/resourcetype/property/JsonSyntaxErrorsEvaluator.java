@@ -13,7 +13,6 @@ public class JsonSyntaxErrorsEvaluator implements PropertyEvaluator {
     @Override
     public boolean evaluate(Property property, PropertyEvaluationContext ctx)
             throws PropertyEvaluationException {
-        System.out.println("__eval: " + property);
         if (ctx.getContent() == null) {
             return false;
         }
@@ -24,7 +23,6 @@ public class JsonSyntaxErrorsEvaluator implements PropertyEvaluator {
                 JsonParseResult json = ctx.getContent()
                         .getContentRepresentation(JsonParseResult.class);
                 if (!json.error.isPresent()) {
-                    System.out.println("__no_errors");
                     return false;
                 }
                 String msg = json.error.get().getMessage();
