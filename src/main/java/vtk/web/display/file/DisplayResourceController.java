@@ -199,7 +199,7 @@ public class DisplayResourceController
 
             InputStream stream = repository.getInputStream(token, uri, true);
 
-            if (!this.streamToString || !resource.getContentType().startsWith("text/")) {
+            if (!this.streamToString) {
                 model.put("resourceStream", stream);
                 if (this.view != null) {
                     return new ModelAndView(this.view, model);
