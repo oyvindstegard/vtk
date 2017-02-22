@@ -74,6 +74,7 @@ public abstract class FilteredCollectionListingController implements Controller 
     private static final String filterNamespace = "filter.";
 
     private String viewName;
+    private String customListing;
     private Map<String, List<String>> filters;
     private int pageLimit = 25;
     protected ResourceTypeTree resourceTypeTree;
@@ -212,9 +213,8 @@ public abstract class FilteredCollectionListingController implements Controller 
             }
         }
 
-        Optional<ListingPager.Pagination> pagination = 
-                ListingPager.pagination(rs.getTotalHits(), getPageLimit(),
-                        URL.create(request), page);
+        Optional<ListingPager.Pagination> pagination
+                = ListingPager.pagination(rs.getTotalHits(), getPageLimit(), URL.create(request), page);
         if (pagination.isPresent()) {
             List<ListingPagingLink> urls = pagination.get().pageThroughLinks();
             model.put("pageThroughUrls", urls);
@@ -230,6 +230,10 @@ public abstract class FilteredCollectionListingController implements Controller 
             }
         }
 
+        if (customListing != null) {
+            model.put("customListing", customListing);
+        }
+
         model.put("filters", urlFilters);
         model.put("result", rs.getAllResults());
         model.put("page", page);
@@ -243,11 +247,13 @@ public abstract class FilteredCollectionListingController implements Controller 
     }
 
     protected class FilterResult {
+
         ResultSet rs;
         List<String> facets;
     }
 
     public class FilterURL {
+
         private boolean marked;
         private URL url;
 
@@ -344,13 +350,18 @@ public abstract class FilteredCollectionListingController implements Controller 
         this.viewName = viewName;
     }
 
+    public void setCustomListing(String customListing) {
+        this.customListing = customListing;
+    }
+
     public void setFilters(Map<String, List<String>> filters) {
         this.filters = Collections.unmodifiableMap(filters);
     }
 
     public void setPageLimit(int pageLimit) {
-        if (pageLimit <= 0)
+        if (pageLimit <= 0) {
             throw new IllegalArgumentException("Limit must be a positive integer");
+        }
         this.pageLimit = pageLimit;
     }
 

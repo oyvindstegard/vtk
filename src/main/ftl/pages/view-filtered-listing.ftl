@@ -28,13 +28,13 @@
     </#if>
   </head>
   <body id="vrtx-${collection.resourceType}">
-  
+
     <#assign additionalContent = vrtx.propValue(collection, "additionalContents")! />
     <#if additionalContent?has_content>
       <div id="vrtx-content">
         <div id="vrtx-main-content">
     </#if>
-  
+
     <@vrtx.displayLinkOtherLang collection />
     <h1>${collection.title}<#if collectionSpecificValues?exists && collectionSpecificValues.currentUrl?exists> (${vrtx.getMsg("listing-filters.title.discontinued")})</#if></h1>
     <#if showSubfolderMenu?exists>
@@ -102,15 +102,9 @@
       </#if>
 
       <div id="vrtx-listing-filter-results">
-        <#if collection.resourceType = 'course-group-listing'>
-          <#import "/pages/studies/view-course-group-listing.ftl" as courseGroup />
-          <@courseGroup.displayResult result />
-        <#elseif collection.resourceType = 'course-description-listing'>
-          <#import "/pages/studies/view-course-description-listing.ftl" as courseDescription />
-          <@courseDescription.displayResult result />
-        <#elseif collection.resourceType = 'student-exchange-agreement-listing'>
-          <#import "/pages/studies/view-student-exchange-agreement-listing.ftl" as studentExchangeAgreement />
-          <@studentExchangeAgreement.displayResult result />
+        <#if customListing?exists>
+          <#import customListing as customListingImport />
+          <@customListingImport.displayResult result />
         <#else>
           <ul>
             <#list result as res>
@@ -142,7 +136,7 @@
         </#if>
       </div>
     </#if>
-    
+
     <#if additionalContent?has_content>
         </div><#-- end vrtx-main-content -->
         <div id="vrtx-additional-content">
@@ -152,6 +146,6 @@
         </div>
       </div><#-- end vrtx-content -->
     </#if>
-    
+
   </body>
 </html>
