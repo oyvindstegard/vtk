@@ -30,23 +30,28 @@
  */
 package vtk.resourcemanagement.parser;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+
+import vtk.repository.resourcetype.event.DynamicTypeRegistrationComplete;
 import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import vtk.repository.resourcetype.event.DynamicTypeRegistrationComplete;
+import vtk.resourcemanagement.parser.StructuredResourceParser.DefinitionSource;
 
 public class StructuredResourceSpringAdapter implements InitializingBean, ApplicationContextAware, ResourceLoaderAware {
     private static Logger logger = LoggerFactory.getLogger(StructuredResourceSpringAdapter.class);
@@ -55,6 +60,37 @@ public class StructuredResourceSpringAdapter implements InitializingBean, Applic
     private StructuredResourceManager structuredResourceManager;
     private ResourceLoader resourceLoader;
     private ApplicationContext applicationContext;
+    
+    public static class SpringResourceLoader implements StructuredResourceParser.DefinitionSource {
+        private Resource resource;
+        private ResourceLoader loader;
+        
+        public SpringResourceLoader(Resource resource, ResourceLoader loader) {
+            this.resource = resource;
+            this.loader = loader;
+        }
+        
+        @Override
+        public String description() {
+            return resource.getDescription();
+        }
+
+        @Override
+        public InputStream content() throws IOException {
+            return resource.getInputStream();
+        }
+
+        @Override
+        public Optional<DefinitionSource> relative(String rel) throws IOException {
+            Resource r = loader.getResource(rel);
+            if (!r.exists()) {
+                r = resource.createRelative(rel);
+            }
+            if (!r.exists()) return Optional.empty();
+            SpringResourceLoader relative = new SpringResourceLoader(r, loader);
+            return Optional.of(relative);
+        }
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -65,10 +101,12 @@ public class StructuredResourceSpringAdapter implements InitializingBean, Applic
     public synchronized void parseAndRegister(Resource sourceFile) throws Exception {
         if (sourceFile.exists()) {
             logger.info("Parse and register resources types in: " + sourceFile.getDescription());
-            StructuredResourceParser parser = new StructuredResourceParser(sourceFile, resourceLoader);
+            SpringResourceLoader src = new SpringResourceLoader(sourceFile, resourceLoader);
+            StructuredResourceParser parser = new StructuredResourceParser(src);
             registerParsedResourceDescriptions(parser.parse());
             typeDefinitionFileStore.add(sourceFile);
-        } else {
+        }
+        else {
             logger.warn("Resource not found: " + sourceFile.getURI());
         }
     }
@@ -79,10 +117,12 @@ public class StructuredResourceSpringAdapter implements InitializingBean, Applic
                 // Only refresh if the resource is not from the class path
                 if (!(sourceFile instanceof ClassPathResource)) {
                     logger.debug("Refresh resources types in: " + sourceFile.getDescription());
-                    StructuredResourceParser parser = new StructuredResourceParser(sourceFile, resourceLoader);
+                    SpringResourceLoader src = new SpringResourceLoader(sourceFile, resourceLoader);
+                    StructuredResourceParser parser = new StructuredResourceParser(src);
                     refreshParsedResourceDescriptions(parser.parse());
                 }
-            } else {
+            }
+            else {
                 logger.warn("Resource not found: " + sourceFile.getURI());
             }
         }

@@ -28,4 +28,20 @@
 
   <bean id="htmlDigester" class="vtk.text.html.HtmlDigester" />
 
+  <bean id="structuredResources.doctypeCollectionManager" class="vtk.resourcemanagement.RepoResourceTypeManager">
+    <constructor-arg name="repository" ref="repository" />
+    <constructor-arg name="collectionName" value="/vrtx/resource-types" />
+    <constructor-arg name="resourceManager" ref="structuredResources.resourceManager" />
+  </bean>
+
+  <bean id="structuredResources.doctypeCollectionManager.refreshTrigger"
+        class="vtk.util.repository.MethodInvokingRepositoryEventTrigger">
+    <property name="repository" ref="repository" />
+    <property name="uriPattern" value="/vrtx/resource-types/.*\.(vrtx)$" />
+    <property name="targetObject" ref="structuredResources.doctypeCollectionManager" />
+    <property name="method" value="load" />
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="structuredResources.doctypeCollectionManager.refreshTrigger" />
+  </bean>
 </beans>

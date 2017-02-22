@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -45,8 +46,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.LocaleUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
+
 import vtk.repository.resource.ResourcetreeLexer;
 import vtk.repository.resource.ResourcetreeParser;
 import vtk.resourcemanagement.ComponentDefinition;
@@ -56,8 +56,7 @@ import vtk.resourcemanagement.StructuredResourceDescription;
 @SuppressWarnings("unchecked")
 public class StructuredResourceParser {
     private static final Logger logger = LoggerFactory.getLogger(StructuredResourceParser.class);
-    private final Resource source;
-    private final ResourceLoader resourceLoader;
+    private final DefinitionSource src;
     private List<ParsedNode> parsedNodes = new ArrayList<>();
 
     private PropertyDescriptionParser propertyDescriptionParser = new PropertyDescriptionParser();
@@ -65,14 +64,21 @@ public class StructuredResourceParser {
     private ScriptDefinitionParser scriptDefinitionParser = new ScriptDefinitionParser();
     private ServiceDefinitionParser serviceDefinitionParser = new ServiceDefinitionParser();
     private VocabularyDefinitionParser vocabularyDefinitionParser  = new VocabularyDefinitionParser();
-
-    public StructuredResourceParser(Resource source, ResourceLoader resourceLoader) {
-        this.source = source;
-        this.resourceLoader = resourceLoader;
+    
+    public static interface DefinitionSource {
+        public String description();
+        public InputStream content() throws IOException;
+        public default Optional<DefinitionSource> relative(String rel) throws IOException {
+            return Optional.empty();
+        }
+    }
+    
+    public StructuredResourceParser(DefinitionSource src) {
+        this.src = src;
     }
 
     public List<ParsedNode> parse() throws Exception {
-        ParseUnit parseUnit = createParser(source);
+        ParseUnit parseUnit = createParser(src);
         parseResourceTypeDefinition(parseUnit);
 
         List<ParsedNode> tmp = new ArrayList<>();
@@ -105,8 +111,8 @@ public class StructuredResourceParser {
                         .append(m);
             }
             throw new IllegalStateException(
-                    "Unable to parse resource tree description: " + mainMessage.toString()
-            );
+                    "Unable to parse resource tree description: " 
+                            + mainMessage.toString());
         }
 
         CommonTree resourceTree = (CommonTree) resources.getTree();
@@ -114,7 +120,8 @@ public class StructuredResourceParser {
         List<CommonTree> children = resourceTree.getChildren();
         if (children.size() == 1) {
             handleResourceTypeDefinition(children.get(0));
-        } else {
+        }
+        else {
             for (CommonTree child : children) {
                 handleResourceTypeDefinition((CommonTree) child.getChild(0));
             }
@@ -125,21 +132,19 @@ public class StructuredResourceParser {
         if (ResourcetreeLexer.RESOURCETYPE == definition.getParent().getType()) {
             StructuredResourceDescription srd = createStructuredResourceDescription(definition);
             parsedNodes.add(new ParsedNode(srd));
-        } else if (ResourcetreeLexer.INCLUDE == definition.getParent().getType()) {
+        }
+        else if (ResourcetreeLexer.INCLUDE == definition.getParent().getType()) {
             String includeFileName = definition.getText();
             handleInclude(includeFileName);
         }
     }
 
-    private void handleInclude(String includeFileName) throws Exception {
-        Resource includeSource = resourceLoader.getResource(includeFileName);
-        if (!includeSource.exists()) {
-            includeSource = source.createRelative(includeFileName);
+    private void handleInclude(String includeFileName) throws Exception {        
+        Optional<DefinitionSource> rel = src.relative(includeFileName);
+        if (!rel.isPresent()) {
+          throw new IllegalArgumentException("Unable to include: " + includeFileName);
         }
-        if (!includeSource.exists()) {
-            throw new IllegalArgumentException("Unable to include: " + includeFileName);
-        }
-        ParseUnit parseUnit = createParser(includeSource);
+        ParseUnit parseUnit = createParser(rel.get());
         parseResourceTypeDefinition(parseUnit);
     }
 
@@ -217,19 +222,20 @@ public class StructuredResourceParser {
                 Locale locale = LocaleUtils.toLocale(lang.getText());
                 HashMap<Locale, String> localizationViewMap = new HashMap<>();
                 for (CommonTree label : (List<CommonTree>) lang.getChildren()) {
-                    List<CommonTree> view = (List<CommonTree>) label.getChildren();
-                    if(view == null) {
+                    List<CommonTree> view = label.getChildren();
+                    if (view == null) {
                         localizationViewMap.put(locale, label.getText());
                         localizationMap.put(locale, localizationViewMap);
                         localizationViewMap = new HashMap<>();
-                    } else {
+                    }
+                    else {
                         Locale localeView = LocaleUtils.toLocale(label.getText());
                         for (CommonTree labelView : view) {
                             localizationViewMap.put(localeView, labelView.getText());
                         }
                     }
                 }
-                if(!localizationViewMap.isEmpty()) {
+                if (!localizationViewMap.isEmpty()) {
                     localizationMap.put(locale, localizationViewMap);
                 }
             }
@@ -237,10 +243,8 @@ public class StructuredResourceParser {
         }
     }
 
-    private void handleViewComponents(
-            StructuredResourceDescription srd,
-            List<CommonTree> viewComponentDefinitions
-    ) {
+    private void handleViewComponents(StructuredResourceDescription srd,
+            List<CommonTree> viewComponentDefinitions) {
         if (!hasContent(viewComponentDefinitions)) {
             return;
         }
@@ -277,12 +281,12 @@ public class StructuredResourceParser {
         }
     }
 
-    private ParseUnit createParser(Resource source) throws IOException {
-        InputStream in = source.getInputStream();
+    private ParseUnit createParser(DefinitionSource source) throws IOException {
+        InputStream in = source.content();
         ResourcetreeLexer lexer = new ResourcetreeLexer(new ANTLRInputStream(in, "UTF-8"));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         ResourcetreeParser parser = new ResourcetreeParser(tokens);
-        ParseUnit parseUnit = new ParseUnit(parser, source.getDescription());
+        ParseUnit parseUnit = new ParseUnit(parser, source.description());
         return parseUnit;
     }
 
@@ -326,20 +330,19 @@ public class StructuredResourceParser {
             return this.srd.getInheritsFrom();
         }
 
+        @Override
         public String toString() {
             return this.srd.getName() + (this.hasChildren() ? this.children : "");
         }
 
     }
 
-    private ParsedNode getParent(
-            List<ParsedNode> l,
-            ParsedNode prd
-    ) {
+    private ParsedNode getParent(List<ParsedNode> l, ParsedNode prd) {
         for (ParsedNode p : l) {
             if (p.getName().equals(prd.getParentName())) {
                 return p;
-            } else if (p.hasChildren()) {
+            }
+            else if (p.hasChildren()) {
                 getParent(p.getChildren(), prd);
             }
         }

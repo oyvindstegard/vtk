@@ -30,14 +30,16 @@
  */
 package vtk.resourcemanagement.parser;
 
+import java.util.List;
+
 import org.junit.BeforeClass;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import vtk.resourcemanagement.StructuredResourceDescription;
 
-import java.util.List;
+import vtk.resourcemanagement.StructuredResourceDescription;
+import vtk.resourcemanagement.parser.StructuredResourceSpringAdapter.SpringResourceLoader;
 
 public abstract class StructuredResourceParserTest {
     private static final ResourceLoader resourceLoader = new DefaultResourceLoader();
@@ -49,7 +51,11 @@ public abstract class StructuredResourceParserTest {
 
     @BeforeClass
     public static void init() throws Exception {
-        StructuredResourceParser parser = new StructuredResourceParser(getSourceResource(), resourceLoader);
+        SpringResourceLoader src = 
+                new StructuredResourceSpringAdapter.SpringResourceLoader(
+                getSourceResource(), resourceLoader);
+        
+        StructuredResourceParser parser = new StructuredResourceParser(src);
         PARSE_TREE = parser.parse();
     }
 
