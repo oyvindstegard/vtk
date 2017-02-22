@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.RepositoryContentEvaluationAssertion;
 import vtk.repository.Resource;
+import vtk.repository.content.JsonParseResult;
 import vtk.repository.resourcetype.Content;
 import vtk.security.Principal;
 import vtk.util.text.Json;
@@ -84,9 +85,10 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
         if (resource.isCollection()) return false;
         
         try {
-            Json.MapContainer object = content.getContentRepresentation(Json.MapContainer.class);
+            JsonParseResult result = content.getContentRepresentation(JsonParseResult.class);
+            if (!result.document.isPresent()) return false;
             
-            Object o = Json.select(object, this.expression);
+            Object o = Json.select(result.document.get(), this.expression);
             if (this.expectedValues == null || this.expectedValues.isEmpty()) {
                 return o != null;
             }

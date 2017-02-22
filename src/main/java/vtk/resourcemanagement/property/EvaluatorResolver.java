@@ -44,6 +44,7 @@ import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.Resource;
+import vtk.repository.content.JsonParseResult;
 import vtk.repository.resourcetype.PropertyEvaluator;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatter;
@@ -73,9 +74,11 @@ public class EvaluatorResolver {
             StructuredResourceDescription resourceDesc) {
         if (desc instanceof SimplePropertyDescription) {
             return createSimplePropertyEvaluator((SimplePropertyDescription) desc, resourceDesc);
-        } else if (desc instanceof JSONPropertyDescription) {
+        }
+        else if (desc instanceof JSONPropertyDescription) {
             return createJSONPropertyEvaluator((JSONPropertyDescription) desc, resourceDesc);
-        } else if (desc instanceof BinaryPropertyDescription) {
+        }
+        else if (desc instanceof BinaryPropertyDescription) {
             return new BinaryPropertyEvaluator(desc);
         }
         return createDerivedPropertyEvaluator((DerivedPropertyDescription) desc, resourceDesc);
@@ -130,16 +133,24 @@ public class EvaluatorResolver {
 
             if (!emptyValue(value)) {
                 setPropValue(property, value);
-            } else {
-                Json.MapContainer json; 
+            }
+            else {
+                JsonParseResult json;
                 try {
-                    json = ctx.getContent().getContentRepresentation(Json.MapContainer.class);
-                } catch (Exception e) {
-                    throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
+                    json = ctx.getContent()
+                            .getContentRepresentation(JsonParseResult.class);
+                }
+                catch (Exception e) {
+                    throw new PropertyEvaluationException(
+                            "Unable to get JSON representation of content", e);
+                }
+                if (json.error.isPresent()) {
+                    throw new PropertyEvaluationException(
+                            "Unable to get JSON representation of content", json.error.get());
                 }
                 String expression = "properties." + property.getDefinition().getName();
                 if (propertyDesc instanceof JSONPropertyDescription) {
-                    value = Json.select(json, expression);
+                    value = Json.select(json.document.get(), expression);
                     
                     if (value != null) {
                         if (propertyDesc.isMultiple()) {
@@ -151,14 +162,20 @@ public class EvaluatorResolver {
                             for (Object o: (List<?>) value) {
                                 if (o != null) {
                                     tmp.add(JsonStreamer.toJson(o));
-                                } else tmp.add(null);
+                                }
+                                else {
+                                    tmp.add(null);
+                                }
                             }
                             value = tmp;
                         }
-                        else value = JsonStreamer.toJson(value);
+                        else {
+                            value = JsonStreamer.toJson(value);
+                        }
                     }
-                } else {
-                    value = Json.select(json, expression);
+                }
+                else {
+                    value = Json.select(json.document.get(), expression);
                 }
                 if (emptyValue(value)) {
                     if (propertyDesc.isOverrides()) {
@@ -167,13 +184,15 @@ public class EvaluatorResolver {
                             // XXX What about structured namespace?
                             ctx.getNewResource().removeProperty(Namespace.DEFAULT_NAMESPACE,
                                     propertyDesc.getOverrides());
-                        } else {
+                        }
+                        else {
                             Property overriddenProp = ctx.getNewResource().getProperty(Namespace.DEFAULT_NAMESPACE,
                                     propertyDesc.getOverrides());
                             if (overriddenProp != null) {
                                 if (overriddenProp.getDefinition().isMultiple()) {
                                     setPropValue(property, overriddenProp.getValues());
-                                } else {
+                                }
+                                else {
                                     setPropValue(property, overriddenProp.getValue());
                                 }
                             }
@@ -255,7 +274,8 @@ public class EvaluatorResolver {
                     return true;
                 }
                 return false;
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 return false;
             }
         }
@@ -280,7 +300,8 @@ public class EvaluatorResolver {
                 String v;
                 if (evaluationElement.isString()) {
                     v = evaluationElement.getValue();
-                } else {
+                }
+                else {
                     v = fieldValue(ctx, evaluationElement.getValue());
                 }
                 Operator operator = evaluationElement.getOperator();
@@ -302,15 +323,21 @@ public class EvaluatorResolver {
             if (prop != null) {
                 return prop.getStringValue();
             }
-            Json.MapContainer json; 
+            JsonParseResult json;
             try {
-                json = ctx.getContent().getContentRepresentation(Json.MapContainer.class);
-            } catch (Exception e) {
-                throw new PropertyEvaluationException("Unable to get JSON representation of content", e);
+                json = ctx.getContent()
+                        .getContentRepresentation(JsonParseResult.class);
             }
-
+            catch (Exception e) {
+                throw new PropertyEvaluationException(
+                        "Unable to get JSON representation of content", e);
+            }
+            if (json.error.isPresent()) {
+                throw new PropertyEvaluationException(
+                        "Unable to get JSON representation of content", json.error.get());
+            }
             String expression = "properties." + propName;
-            Object jsonObject = Json.select(json, expression);
+            Object jsonObject = Json.select(json.document.get(), expression);
             if (jsonObject != null) {
                 return jsonObject.toString();
             }
@@ -425,18 +452,23 @@ public class EvaluatorResolver {
                 Collection<?> c = (Collection<?>) value;
                 if (c.isEmpty()) {
                     value = null;
-                } else {
+                }
+                else {
                     value = c.toArray()[0];
                 }
             }
+            // XXX:
+            if (value == null) return;
             Value v = property.getDefinition().getValueFormatter().stringToValue(value.toString(), null, null);
             property.setValue(v);
 
-        } else {
+        }
+        else {
             List<Object> values = new ArrayList<Object>();
             if (value instanceof Collection<?> || value instanceof Value[]) {
                 values.addAll((Collection<?>) value);
-            } else {
+            }
+            else {
                 values.add(value);
             }
             ValueFormatter vf = property.getDefinition().getValueFormatter();

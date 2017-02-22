@@ -40,10 +40,10 @@ import java.util.regex.Pattern;
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertyEvaluationContext.Type;
+import vtk.repository.content.JsonParseResult;
 import vtk.repository.resourcetype.PropertyEvaluator;
 import vtk.util.io.IO;
 import vtk.util.repository.MimeHelper;
-import vtk.util.text.Json;
 
 public class ContentTypeEvaluator implements PropertyEvaluator {
 
@@ -97,9 +97,13 @@ public class ContentTypeEvaluator implements PropertyEvaluator {
                             // XXX: temporary hack:
                             if ("application/json".equals(mapping.get(pattern))) {
                                 try {
-                                    ctx.getContent().getContentRepresentation(Json.MapContainer.class);
-                                    property.setStringValue(mapping.get(pattern));
-                                    return true;
+                                    
+                                    JsonParseResult json = ctx.getContent()
+                                            .getContentRepresentation(JsonParseResult.class);
+                                    if (!json.error.isPresent()) {
+                                        property.setStringValue(mapping.get(pattern));
+                                        return true;
+                                    }
                                 } catch (Exception e) { }
                             }
                         }
