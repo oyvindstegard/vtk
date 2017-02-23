@@ -36,26 +36,26 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.ChangeLogEntry.Operation;
-import vtk.repository.store.ChangeLogDAO;
-import vtk.repository.store.ChangeLogDAO.GenerateDescendantEntries;
+import vtk.repository.store.ChangeLogDao.DescendantsSpec;
+import vtk.repository.store.ChangeLogDao;
 
 
 public class ProcessedContentEventDumperAll extends AbstractDBEventDumper {
 
-    private ChangeLogDAO changeLogDAO;
+    private ChangeLogDao changeLogDAO;
 
     @Override
     public void created(Resource resource) {
         List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.CREATED, -1, resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.SUBTREE);
+        this.changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.SUBTREE);
     }
 
     @Override
     public void deleted(Resource resource) {
         List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.DELETED, resource.getID(), resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.NONE);
+        this.changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
     }
 
     @Override
@@ -68,21 +68,21 @@ public class ProcessedContentEventDumperAll extends AbstractDBEventDumper {
     public void modified(Resource resource, Resource originalResource) {
         List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, -1, resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.NONE);
+        this.changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
     }
 
     @Override
     public void modifiedInheritableProperties(Resource resource, Resource originalResource) {
         List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_PROPS, -1, resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.SUBTREE);
+        this.changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.SUBTREE);
     }
     
     @Override
     public void contentModified(Resource resource, Resource original) {
         List<ChangeLogEntry> entries = changeLogEntries(resource.getURI(), Operation.MODIFIED_CONTENT, -1, resource.isCollection(), new Date());
         
-        this.changeLogDAO.addChangeLogEntries(entries, GenerateDescendantEntries.NONE);
+        this.changeLogDAO.addChangeLogEntries(entries, DescendantsSpec.NONE);
     }
 
 
@@ -101,26 +101,26 @@ public class ProcessedContentEventDumperAll extends AbstractDBEventDumper {
         final List<ChangeLogEntry> entries = changeLogEntries(
                 resource.getURI(), Operation.MODIFIED_ACL, ((ResourceImpl) resource).getID(), resource.isCollection(), new Date());
 
-        GenerateDescendantEntries generate = resource.isInheritedAcl() ? 
+        DescendantsSpec generate = resource.isInheritedAcl() ? 
                 // Resource ACL inheritance has been turned ON.
                 // Apply ACL modification event to:
                 // 1. The resource itself.
                 // 2. All descendants of the resource which used to inherit their ACL
                 //    from it. 
-                GenerateDescendantEntries.ACL_INHERITED_TO_INHERITANCE :
+                DescendantsSpec.ACL_INHERITED_TO_INHERITANCE :
 
                 // Resource ACL inheritance turned OFF or ACL has been modified.
                 // Apply ACL modification event to:
                 // 1. The resource itself.
                 // 2. All descendants of the resource which inherit their ACLa
                 //    from it.
-                GenerateDescendantEntries.ACL_INHERITED;
+                DescendantsSpec.ACL_INHERITED;
         
         changeLogDAO.addChangeLogEntries(entries, generate);
     }
 
     @Required
-    public void setChangeLogDAO(ChangeLogDAO changeLogDAO)  {
+    public void setChangeLogDAO(ChangeLogDao changeLogDAO)  {
         this.changeLogDAO = changeLogDAO;
     }
 

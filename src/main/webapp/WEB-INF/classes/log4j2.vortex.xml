@@ -32,6 +32,7 @@
     <Logger name="vtk.repository.OperationLog" level="info" />
     <Logger name="vtk.repository.ChangeHistoryLog" level="debug" />
     <Logger name="vtk.repository.store.db.SqlMapIndexDao" level="info" />
+    <Logger name="vtk.repository.index.update.IncrementalUpdater" level="info" />
     <Logger name="vtk.repository.RepositoryResourceHelper" level="info" />
     <Logger name="vtk.web.filter.ExpiresCacheResponseFilter" level="info" />
     <Logger name="vtk.util.cache" level="info" />
@@ -55,7 +56,6 @@
     <Logger name="org.springframework.transaction.support" level="info" />
     <Logger name="org.springframework.jdbc.datasource" level="info" />
     <Logger name="org.springframework.transaction.interceptor" level="info" />
-    <Logger name="java.sql" level="info" />
     <Logger name="org.apache.commons.dbcp" level="info" />
 
     <!-- To debug SQL statements, set level="debug": -->
@@ -63,6 +63,7 @@
     
     <Logger name="vtk.repository.index" level="info" />
     <Logger name="vtk.repository.search" level="info" />
+    <Logger name="vtk.repository.search.SearchDispatcher" level="info" />
 
     <Root level="info">
       <AppenderRef ref="stdout"/>
