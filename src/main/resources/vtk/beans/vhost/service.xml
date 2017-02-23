@@ -506,6 +506,7 @@
         </bean>
       </list>
     </property>
+    <property name="handlerInterceptors" ref="noCacheHandlerInterceptor" />
     <property name="handler" ref="isAuthorizedPrincipalServiceHandler" />
   </bean>
 

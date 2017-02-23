@@ -24,7 +24,6 @@ public class IsAuthorizedPrincipalController implements Controller {
 
     private AuthorizationManager authorizationManager;
     private String viewName;
-    private Map<String, String> staticHeaders = new HashMap<>();
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -78,10 +77,6 @@ public class IsAuthorizedPrincipalController implements Controller {
         model.put("json", body);
         model.put("status", 200);
 
-        for (String header : staticHeaders.keySet()) {
-            response.setHeader(header, staticHeaders.get(header));
-        }
-
         return new ModelAndView(viewName, model);
     }
 
@@ -93,11 +88,6 @@ public class IsAuthorizedPrincipalController implements Controller {
     @Required
     public void setViewName(String viewName) {
         this.viewName = viewName;
-    }
-
-    @Required
-    public void setStaticHeaders(Map<String, String> staticHeaders) {
-        this.staticHeaders = staticHeaders;
     }
 
 }
