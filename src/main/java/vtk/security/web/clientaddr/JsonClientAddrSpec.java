@@ -43,6 +43,19 @@ import vtk.util.text.Json.Container;
 import vtk.util.text.Json.ListContainer;
 import vtk.util.text.Json.MapContainer;
 
+/**
+ * Configuration implementation for {@link ClientAddressAuthenticationHandler},
+ * reading a list of JSON entries in the format:
+ * <code>
+ *   [
+ *     { "net": "ip regexp", "uri": "path", "uid": "principal@domain", 
+ *        valid_from: "timestamp", valid_to: "timestamp" },
+ *     { ... }
+ *   ]
+ *   
+ * </code>
+ * 
+ */
 public class JsonClientAddrSpec 
     implements Consumer<Result<Json.Container>>,
     Supplier<Collection<ClientAddrAuthSpec>> {
