@@ -831,16 +831,14 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     private int findNearestACL(Path uri, SqlSession sqlSession) {
 
-        List<Path> path = uri.getPaths();
+        List<Path> paths = uri.getPaths();
 
         // Reverse list to get deepest URI first
-        Collections.reverse(path);
+        Collections.reverse(paths);
 
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("path", path);
         String sqlMap = getSqlMap("findNearestAclResourceId");
 
-        List<Map<String, Object>> list = sqlSession.selectList(sqlMap, parameters);
+        List<Map<String, Object>> list = sqlSession.selectList(sqlMap, paths);
 
         Map<String, Integer> uris = new HashMap<String, Integer>();
         for (Map<String, Object> map : list) {
@@ -848,10 +846,10 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         }
 
         int nearestResourceId = -1;
-        for (Path p : path) {
+        for (Path p : paths) {
             String candidateUri = p.toString();
             if (uris.containsKey(candidateUri)) {
-                nearestResourceId = uris.get(candidateUri).intValue();
+                nearestResourceId = uris.get(candidateUri);
                 break;
             }
         }

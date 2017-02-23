@@ -662,8 +662,8 @@
     from acl_entry a
       inner join vortex_resource r on r.resource_id = a.resource_id 
     where r.uri in 
-    <foreach item="value" collection="path" open="(" close=")" separator=",">
-      #{value}
+    <foreach item="path" collection="list" open="(" close=")" separator=",">
+      #{path}
     </foreach>
   </select>
 
