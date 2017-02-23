@@ -70,6 +70,7 @@ import vtk.repository.content.ContentRepresentationRegistry;
 import vtk.repository.event.ACLModificationEvent;
 import vtk.repository.event.ContentModificationEvent;
 import vtk.repository.event.InheritablePropertiesModificationEvent;
+import vtk.repository.event.RepositoryInitEvent;
 import vtk.repository.event.ResourceCreationEvent;
 import vtk.repository.event.ResourceDeletionEvent;
 import vtk.repository.event.ResourceModificationEvent;
@@ -2214,6 +2215,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware, Clus
 
     public void init() {
         mm.init();
+        context.publishEvent(new RepositoryInitEvent(this));
     }
 
     public void destroy() {
