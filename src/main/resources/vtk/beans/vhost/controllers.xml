@@ -43,6 +43,13 @@
   <bean id="isAuthorizedPrincipalServiceHandler" class="vtk.web.service.IsAuthorizedPrincipalController">
     <property name="authorizationManager" ref="authorizationManager" />
     <property name="viewName" value="jsonView" />
+    <property name="staticHeaders">
+      <map>
+        <entry key="Cache-Control" value="no-cache, no-store, must-revalidate, max-age=0" />
+        <entry key="Expires" value="0" />
+        <entry key="Pragma" value="no-cache" />
+      </map>
+   </property>
   </bean>
 
 </beans>
