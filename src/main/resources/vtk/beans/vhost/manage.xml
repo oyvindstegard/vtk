@@ -778,9 +778,14 @@
     <property name="order" value="10" />
     <property name="parent" ref="previewService" />
     <property name="assertions">
-      <list>
-        <ref bean="contentTypeMatchesAnyText" />
-      </list>
+      <bean class="vtk.web.service.OrAssertion">
+        <property name="assertions">
+          <list>
+            <ref bean="contentTypeMatchesAnyText" />
+            <ref bean="json.contentTypeAssertion" />
+          </list>
+        </property>
+      </bean>
     </property>
     <property name="handler" ref="previewTextHandler" />
   </bean>

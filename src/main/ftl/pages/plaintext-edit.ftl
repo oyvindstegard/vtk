@@ -56,6 +56,12 @@
 
 </head>
 <body id="vrtx-edit-plaintext">
+  <#if vrtx.getProp(resourceContext.currentResource, 'jsonSyntaxErrors')?exists>
+    <#assign syntaxErrors = (vrtx.getProp(resourceContext.currentResource, 'jsonSyntaxErrors')).values />
+    <#list syntaxErrors as err>
+      ${err}
+    </#list>
+  </#if>
   <div>
   
     <#assign backupURL = vrtx.linkConstructor(".", 'copyBackupService') />

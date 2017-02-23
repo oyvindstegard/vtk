@@ -1,6 +1,6 @@
-/* Copyright (c) 2013, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -28,79 +28,46 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package vtk.repository.resourcetype.property;
-
-
-import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertyEvaluationContext.Type;
 import vtk.repository.content.JsonParseResult;
 import vtk.repository.resourcetype.PropertyEvaluator;
-import vtk.repository.resourcetype.ValueFactory;
-import vtk.util.text.Json;
+import vtk.repository.resourcetype.PropertyType;
+import vtk.repository.resourcetype.Value;
 
-/**
- * Set property value based on value extracted from JSON content. The value
- * is selected by a simple dotted keys expression.
- */
-public class JsonExtractEvaluator implements PropertyEvaluator {
+public class JsonSyntaxErrorsEvaluator implements PropertyEvaluator {
 
-    private ValueFactory valueFactory;
-    private String expression;
-    private boolean alwaysEvaluate = false;
-    
     @Override
-    public boolean evaluate(Property property, PropertyEvaluationContext ctx) throws PropertyEvaluationException {
+    public boolean evaluate(Property property, PropertyEvaluationContext ctx)
+            throws PropertyEvaluationException {
         if (ctx.getContent() == null) {
             return false;
         }
-        if (alwaysEvaluate
-                || ctx.getEvaluationType() == Type.ContentChange
+        if (ctx.getEvaluationType() == Type.ContentChange
                 || ctx.getEvaluationType() == Type.Create) {
 
             try {
                 JsonParseResult json = ctx.getContent()
                         .getContentRepresentation(JsonParseResult.class);
-                
-                if (json.document.isPresent()) {
-                    Object o = Json.select(json.document.get(), expression);
-                    if (o != null) {
-                        String stringValue = o.toString();
-                        property.setValue(valueFactory
-                                .createValue(stringValue, property.getType()));
-                        return true;
-                    }
+                if (!json.error.isPresent()) {
+                    return false;
                 }
-            } catch (Exception e) {}
-
-            return false;
+                String msg = json.error.get().getMessage();
+                if (msg == null) msg = "Syntax error";
+                property.setValues(new Value[] {
+                        new Value(msg, PropertyType.Type.STRING)
+                });
+                return true;
+            }
+            catch (Exception e) {
+                return false;
+            }
         } 
 
         return property.isValueInitialized();
     }
-    
-    @Required
-    public void setExpression(String expression) {
-        if (expression == null) throw new IllegalArgumentException("Expression cannot be null");
-        this.expression = expression;
-    }
-    
-    @Required
-    public void setValueFactory(ValueFactory vf) {
-        this.valueFactory = vf;
-    }
 
-    /**
-     * Specify whether to always evaluate from content regardless of current
-     * {@link Type evaluation type}. Normally, evaluation only occurs
-     * when content changes, but this setting can override that.
-     * 
-     * @param alwaysEvaluate 
-     */
-    public void setAlwaysEvaluate(boolean alwaysEvaluate) {
-        this.alwaysEvaluate = alwaysEvaluate;
-    }
 }

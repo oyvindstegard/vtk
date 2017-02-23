@@ -53,6 +53,7 @@ import vtk.repository.Repository;
 import vtk.repository.RepositoryException;
 import vtk.repository.Resource;
 import vtk.security.AuthenticationException;
+import vtk.util.io.BoundedInputStream;
 import vtk.util.io.IO;
 import vtk.web.RequestContext;
 
@@ -108,7 +109,8 @@ public class DisplayResourceController
 
     public static final String DEFAULT_VIEW_NAME = "displayResource";
     private static final String defaultCharacterEncoding = "utf-8";
-
+    private static final long streamToStringLimit = 2000000L;
+    
     private boolean displayProcessed = false;
 
     private static Logger logger = LoggerFactory.getLogger(DisplayResourceController.class);
@@ -198,14 +200,18 @@ public class DisplayResourceController
         if (!resource.isCollection()) {
 
             InputStream stream = repository.getInputStream(token, uri, true);
-
-            if (!this.streamToString || !resource.getContentType().startsWith("text/")) {
+            
+            if (this.streamToString) {
+                stream = new BoundedInputStream(stream, streamToStringLimit);
+            }
+            else {
                 model.put("resourceStream", stream);
                 if (this.view != null) {
                     return new ModelAndView(this.view, model);
                 }
                 return new ModelAndView(this.viewName, model);
             }
+            
 
             
             // Provide as string instead of stream

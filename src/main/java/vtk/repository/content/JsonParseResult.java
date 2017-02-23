@@ -1,21 +1,21 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -30,30 +30,33 @@
  */
 package vtk.repository.content;
 
-import java.io.InputStream;
+import java.util.Optional;
 
-import vtk.util.io.BoundedInputStream;
 import vtk.util.text.Json;
 
-/**
- * Content factory for JSON-type resources, produces instances of
- * {@link Json.MapContainer}.
- */
-public class JSONObjectContentFactory implements ContentFactory<Json.MapContainer> {
-
-    private int maxLength = 10000000;
+public final class JsonParseResult {
+    public final Optional<Json.MapContainer> document;
+    public final Optional<Throwable> error;
     
-    @Override
-    public Class<Json.MapContainer> getRepresentationType() {
-        return Json.MapContainer.class;
+    public static JsonParseResult success(Json.MapContainer document) {
+        return new JsonParseResult(Optional.of(document), Optional.empty());
     }
     
-    @Override
-    public Json.MapContainer getContentRepresentation(InputStream content) throws Exception {
-        return Json.parseToContainer(new BoundedInputStream(content, maxLength)).asObject();
+    public static JsonParseResult failure(Throwable error) {
+        return new JsonParseResult(Optional.empty(), Optional.of(error));
     }
 
-    public void setMaxLength(int maxLength) {
-        this.maxLength = maxLength;
+    
+    private JsonParseResult(Optional<Json.MapContainer> document, 
+            Optional<Throwable> error) {
+        if (document.isPresent() && error.isPresent()) {
+            throw new IllegalStateException("Both document and error present");
+        }
+        if (!document.isPresent() && !error.isPresent()) {
+            throw new IllegalStateException("Either document or error must be present");
+        }
+        this.document = document;
+        this.error = error;
     }
 }
+
