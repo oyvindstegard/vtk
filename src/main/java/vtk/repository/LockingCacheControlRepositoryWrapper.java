@@ -549,10 +549,9 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
         try {
             Resource r = this.wrappedRepository.store(token, resource, storeContext); // Tx
-            if (storeContext instanceof InheritablePropertiesStoreContext) {
-                flushFromCache(resource.getURI(), true, "store");
-                notifyFlush(resource.getURI(), true, "store");
-            }
+            boolean flushDescendants = (storeContext instanceof InheritablePropertiesStoreContext);
+            flushFromCache(resource.getURI(), flushDescendants, "store");
+            notifyFlush(resource.getURI(), flushDescendants, "store");
             return r;
         }
         finally {
