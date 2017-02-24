@@ -40,6 +40,7 @@ import org.springframework.beans.factory.InitializingBean;
 import vtk.repository.PropertySet;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.SortField.Direction;
 import vtk.repository.search.preprocessor.QueryStringPreProcessor;
 import vtk.repository.search.query.Query;
 
@@ -100,17 +101,17 @@ public class ParserImpl implements Parser, InitializingBean {
         String[] fields = sortString.split(",");
         List<SortField> result = new ArrayList<SortField>();
         Set<String> referencedFields = new HashSet<String>();
-        SortFieldDirection uriDirection = SortFieldDirection.ASC;
+        Direction uriDirection = Direction.ASC;
 
         for (int i = 0; i < fields.length; i++) {
             String specifier = fields[i].trim();
             String field = null;
-            SortFieldDirection direction = SortFieldDirection.ASC;
+            Direction direction = Direction.ASC;
             String[] pair = specifier.split("\\s+");
             if (pair.length == 2) {
                 field = pair[0];
                 if ("descending".startsWith(pair[1]) || "DESCENDING".startsWith(pair[1])) {
-                    direction = SortFieldDirection.DESC;
+                    direction = Direction.DESC;
                 }
             } else if (pair.length == 1) {
                 field = pair[0];
@@ -131,7 +132,7 @@ public class ParserImpl implements Parser, InitializingBean {
 
             if (PropertySet.TYPE_IDENTIFIER.equals(field) ||
                     PropertySet.NAME_IDENTIFIER.equals(field)) {
-                sortField = new TypedSortField(field, direction);
+                sortField = new ResourceSortField(field, direction);
             } else {
                 String prefix = null;
                 String nameAndCvaSpec = null;
@@ -164,7 +165,7 @@ public class ParserImpl implements Parser, InitializingBean {
             result.add(sortField);
         }
 
-        result.add(new TypedSortField(PropertySet.URI_IDENTIFIER, uriDirection));
+        result.add(new ResourceSortField(PropertySet.URI_IDENTIFIER, uriDirection));
 
         return new Sorting(result);
     }

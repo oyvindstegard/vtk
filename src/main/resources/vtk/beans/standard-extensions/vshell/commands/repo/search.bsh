@@ -46,7 +46,7 @@ void execute(context, args, out) {
         if (sortArg.trim().contains(" ")) {
             dir = sortArg.substring(sortArg.indexOf(" ") + 1);
             sortArg = sortArg.substring(0, sortArg.length() - dir.length() - 1);
-            direction = "asc".equals(dir) ? SortFieldDirection.ASC : SortFieldDirection.DESC;
+            direction = "asc".equals(dir) ? SortField.Direction.ASC : SortField.Direction.DESC;
         }
 
         sf = null;

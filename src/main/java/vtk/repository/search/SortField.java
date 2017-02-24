@@ -38,22 +38,36 @@ import java.util.Locale;
  */
 public abstract class SortField {
 
-    private SortFieldDirection direction = SortFieldDirection.ASC;
+    public enum Direction {
+        ASC("asc"), DESC("desc");
+
+        private String name;
+        private Direction(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return this.name;
+        }
+    }
+
+    private Direction direction = Direction.ASC;
 
     private Locale locale = Locale.getDefault();
 
     public SortField() {}
 
-    public SortField(SortFieldDirection direction) {
+    public SortField(Direction direction) {
         this.direction = direction;
     }
 
-    public SortField(SortFieldDirection direction, Locale locale) {
+    public SortField(Direction direction, Locale locale) {
         this.direction = direction;
         this.locale = locale;
     }
     
-    public SortFieldDirection getDirection() {
+    public Direction getDirection() {
         return this.direction;
     }
 

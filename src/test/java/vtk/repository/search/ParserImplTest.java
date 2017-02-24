@@ -51,10 +51,10 @@ public class ParserImplTest {
         // URI as first sort field renders all the following fields unnecessary.
         assertEquals(1, sorting.getSortFields().size());
         SortField f = sorting.getSortFields().get(0);
-        assertTrue(f instanceof TypedSortField);
-        TypedSortField tsf = (TypedSortField) f;
-        assertTrue(tsf.getType().equals(PropertySet.URI_IDENTIFIER));
-        assertTrue(tsf.getDirection() == SortFieldDirection.ASC);
+        assertTrue(f instanceof ResourceSortField);
+        ResourceSortField tsf = (ResourceSortField) f;
+        assertTrue(tsf.getIdentifier().equals(PropertySet.URI_IDENTIFIER));
+        assertTrue(tsf.getDirection() == SortField.Direction.ASC);
 
 
         sortSpec = "foo:bar desc,baz:bong@bing.bang DESC,uri";
@@ -67,7 +67,7 @@ public class ParserImplTest {
         assertEquals("foo", psf.getDefinition().getNamespace().getPrefix());
         assertEquals("bar", psf.getDefinition().getName());
         assertNull(psf.getComplexValueAttributeSpecifier());
-        assertEquals(SortFieldDirection.DESC, psf.getDirection());
+        assertEquals(SortField.Direction.DESC, psf.getDirection());
 
         f = sorting.getSortFields().get(1);
         assertTrue(f instanceof PropertySortField);
@@ -75,12 +75,12 @@ public class ParserImplTest {
         assertEquals("baz", psf.getDefinition().getNamespace().getPrefix());
         assertEquals("bong", psf.getDefinition().getName());
         assertEquals("bing.bang", psf.getComplexValueAttributeSpecifier());
-        assertEquals(SortFieldDirection.DESC, psf.getDirection());
+        assertEquals(SortField.Direction.DESC, psf.getDirection());
 
         f = sorting.getSortFields().get(2);
-        assertTrue(f instanceof TypedSortField);
-        tsf = (TypedSortField) f;
-        assertTrue(tsf.getType().equals(PropertySet.URI_IDENTIFIER));
-        assertTrue(tsf.getDirection() == SortFieldDirection.ASC);
+        assertTrue(f instanceof ResourceSortField);
+        tsf = (ResourceSortField) f;
+        assertTrue(tsf.getIdentifier().equals(PropertySet.URI_IDENTIFIER));
+        assertTrue(tsf.getDirection() == SortField.Direction.ASC);
     }
 }

@@ -39,7 +39,6 @@ import vtk.repository.ResourceWrapper;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.PropertySortField;
 import vtk.repository.search.SortField;
-import vtk.repository.search.SortFieldDirection;
 import vtk.repository.search.Sorting;
 import vtk.web.service.URL;
 
@@ -53,12 +52,12 @@ public class Listing {
     private String name;
     private int offset;
     private boolean more;
-    private List<PropertyTypeDefinition> displayPropDefs = new ArrayList<PropertyTypeDefinition>();
+    private List<PropertyTypeDefinition> displayPropDefs = new ArrayList<>();
     private int totalHits; /* Regardless of number of files ( files.size() ) */
     private Sorting sorting;
 
     // The actual resources to display
-    private List<ListingEntry> entries = new ArrayList<ListingEntry>();
+    private List<ListingEntry> entries = new ArrayList<>();
 
     public Listing(ResourceWrapper resource, String title, String name, int offset) {
         this.resource = resource;
@@ -166,7 +165,7 @@ public class Listing {
                     PropertySortField propertySortField = ((PropertySortField) sortField);
                     String sortPrefix = propertySortField.getDefinition().getNamespace().getPrefix();
                     String sortName = propertySortField.getDefinition().getName();
-                    SortFieldDirection sortDirection = propertySortField.getDirection();
+                    SortField.Direction sortDirection = propertySortField.getDirection();
                     StringBuilder paramValue = new StringBuilder();
                     if (sortPrefix != null) {
                         paramValue.append(URL.encode(sortPrefix + SORTING_PARAM_DELIMITER));

@@ -12,7 +12,7 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  * 
- *  * Neither the type of the University of Oslo nor the names of its
+ *  * Neither the field of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *      
@@ -30,69 +30,82 @@
  */
 package vtk.repository.search;
 
-import vtk.repository.PropertySet;
+import java.util.Locale;
+import static vtk.repository.PropertySet.NAME_IDENTIFIER;
+import static vtk.repository.PropertySet.TYPE_IDENTIFIER;
+import static vtk.repository.PropertySet.URI_IDENTIFIER;
+import vtk.repository.search.SortField.Direction;
 
 /**
- * Typed sort fields are for special non-property repository types:
- * URI, name and resource type.
+ * Sort on aspects of <code>Resource</code> which are not properties.
  */
-public class TypedSortField extends SortField {
+public class ResourceSortField extends SortField {
 
-    private String type;
+    private final String identifier;
     
-    public TypedSortField(String type) {
-        validateType(type);
-        this.type = type;
+    public ResourceSortField(String id) {
+        validateField(id);
+        this.identifier = id;
     }
     
-    public TypedSortField(String type, SortFieldDirection direction) {
+    public ResourceSortField(String id, Direction direction) {
         super(direction);
-        validateType(type);
-        this.type = type;
+        validateField(id);
+        this.identifier = id;
     }
     
-    private void validateType(String type) throws IllegalArgumentException {
-        if (!(PropertySet.NAME_IDENTIFIER.equals(type)
-                || PropertySet.URI_IDENTIFIER.equals(type)
-                || PropertySet.TYPE_IDENTIFIER.equals(type))) {
-            throw new IllegalArgumentException("Type must be one of "
-                    + PropertySet.NAME_IDENTIFIER + ", "
-                    + PropertySet.URI_IDENTIFIER + ", "
-                    + PropertySet.TYPE_IDENTIFIER);
+    public ResourceSortField(String id, Direction direction, Locale locale) {
+        super(direction, locale);
+        validateField(id);
+        this.identifier = id;
+    }
+
+    private void validateField(String type) throws IllegalArgumentException {
+        if (!(NAME_IDENTIFIER.equals(type)
+                || URI_IDENTIFIER.equals(type)
+                || TYPE_IDENTIFIER.equals(type))) {
+            throw new IllegalArgumentException("Identifier must be one of "
+                    + NAME_IDENTIFIER + ", "
+                    + URI_IDENTIFIER + ", "
+                    + TYPE_IDENTIFIER);
         }
     }
 
-    public String getType() {
-        return this.type;
+    public String getIdentifier() {
+        return this.identifier;
     }
-    
+
     @Override
     public String toString() {
-        return this.type + " " + getDirection().toString();
+        return this.identifier + " " + getDirection().toString();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
         if (obj == null) {
             return false;
         }
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final TypedSortField other = (TypedSortField) obj;
-        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+        final ResourceSortField other = (ResourceSortField) obj;
+        if ((this.identifier == null) ? (other.identifier != null) : !this.identifier.equals(other.identifier)) {
             return false;
         }
+        if (getDirection() != other.getDirection()) {
+            return false;
+        }
+        if (getLocale() != other.getLocale()) {
+            return false;
+        }
+
         return true;
     }
 
     @Override
     public int hashCode() {
         int hash = super.hashCode() * 7;
-        hash = 59 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 59 * hash + (this.identifier != null ? this.identifier.hashCode() : 0);
         return hash;
     }
     

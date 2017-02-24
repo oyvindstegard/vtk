@@ -61,7 +61,7 @@ import vtk.repository.search.ConfigurablePropertySelect;
 import vtk.repository.search.PropertySortField;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
-import vtk.repository.search.SortFieldDirection;
+import vtk.repository.search.SortField;
 import vtk.repository.search.Sorting;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
@@ -155,7 +155,7 @@ public class ManuallyApproveResourcesSearcher {
 
         // Sort on publish date
         Sorting sorting = new Sorting();
-        sorting.addSortField(new PropertySortField(this.publishDatePropDef, SortFieldDirection.DESC));
+        sorting.addSortField(new PropertySortField(this.publishDatePropDef, SortField.Direction.DESC));
 
         Query resourceTypeQuery = new TypeTermQuery("file", TermOperator.IN);
         String resourceTypePointer = this.listingResourceTypeMappingPointers.get(collection.getResourceType());

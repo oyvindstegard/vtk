@@ -8,12 +8,12 @@
     <property name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
 
-  <bean id="SORT_ORDER.ASC" class="vtk.repository.search.SortFieldDirection"
+  <bean id="SORT_ORDER.ASC" class="vtk.repository.search.SortField.Direction"
         factory-method="valueOf">
     <constructor-arg value="ASC" />
   </bean>
 
-  <bean id="SORT_ORDER.DESC" class="vtk.repository.search.SortFieldDirection"
+  <bean id="SORT_ORDER.DESC" class="vtk.repository.search.SortField.Direction"
         factory-method="valueOf">
     <constructor-arg value="DESC" />
   </bean>

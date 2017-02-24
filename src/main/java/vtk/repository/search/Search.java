@@ -127,7 +127,7 @@ public final class Search {
 
     public Search() {
         Sorting defaultSorting = new Sorting();
-        defaultSorting.addSortField(new TypedSortField(PropertySet.URI_IDENTIFIER));
+        defaultSorting.addSortField(new ResourceSortField(PropertySet.URI_IDENTIFIER));
         this.sorting = defaultSorting;
         this.filterFlags = EnumSet.allOf(FilterFlag.class);
     }

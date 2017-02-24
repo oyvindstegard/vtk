@@ -37,7 +37,7 @@ import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.PropertySortField;
 import vtk.repository.search.Search;
-import vtk.repository.search.SortFieldDirection;
+import vtk.repository.search.SortField;
 import vtk.repository.search.Sorting;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.PropertyTermQuery;
@@ -53,7 +53,7 @@ public class UnpublishedReporter extends DocumentReporter {
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition sortPropDef;
     private PropertyTypeDefinition publishedPropDef;
-    private SortFieldDirection sortOrder;
+    private SortField.Direction sortOrder;
     private String type;
     private boolean termIN = true;
 
@@ -96,7 +96,7 @@ public class UnpublishedReporter extends DocumentReporter {
     }
 
     @Required
-    public void setSortOrder(SortFieldDirection sortOrder) {
+    public void setSortOrder(SortField.Direction sortOrder) {
         this.sortOrder = sortOrder;
     }
 
