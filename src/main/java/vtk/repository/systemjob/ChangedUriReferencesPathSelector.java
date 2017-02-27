@@ -30,6 +30,8 @@
  */
 package vtk.repository.systemjob;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -188,6 +190,7 @@ public class ChangedUriReferencesPathSelector
         search.setLimit(mainQueryLimit);
         search.clearAllFilterFlags();
         search.setPropertySelect(PropertySelect.NONE);
+        search.setWaitForPendingUpdates(Instant.now(), Duration.ofSeconds(30));
         return search;
     }
     
