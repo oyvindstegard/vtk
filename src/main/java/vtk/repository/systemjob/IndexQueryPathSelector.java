@@ -32,6 +32,9 @@
 package vtk.repository.systemjob;
 
 
+import java.time.Duration;
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -63,7 +66,8 @@ public class IndexQueryPathSelector implements PathSelector {
     private String queryString;
     private String sortString;
     private boolean useDefaultExcludes = false;
-
+    private boolean waitForPendingUpdates = false;
+    
     private int limit = 2000;
 
     @Override
@@ -75,6 +79,9 @@ public class IndexQueryPathSelector implements PathSelector {
         Query query = getQuery(context);
         Sorting sort = getSorting(context);
         Search search = new Search();
+        if (waitForPendingUpdates) {
+            search.setWaitForPendingUpdates(Instant.now(), Duration.ofSeconds(30));
+        }
         search.setQuery(query);
         search.setSorting(sort);
         search.setLimit(this.limit);
@@ -88,6 +95,7 @@ public class IndexQueryPathSelector implements PathSelector {
             logger.debug("Ran query " + query + (sort != null ? ", sorting: " + sort + "," : "")
                     + " with " + results.getSize()
                     + " results of total " + results.getTotalHits());
+            
         }
 
         callback.beginBatch(results.getSize());
@@ -142,6 +150,10 @@ public class IndexQueryPathSelector implements PathSelector {
 
     public void setUseDefaultExcludes(boolean useDefaultExcludes) {
         this.useDefaultExcludes = useDefaultExcludes;
+    }
+    
+    public void setWaitForPendingUpdates(boolean waitForPendingUpdates) {
+        this.waitForPendingUpdates = waitForPendingUpdates;
     }
 
 }
