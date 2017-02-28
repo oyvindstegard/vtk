@@ -31,8 +31,14 @@
 package vtk.util.repository;
 
 import java.io.InputStream;
+import java.io.Serializable;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
+import vtk.cluster.ClusterAware;
+import vtk.cluster.ClusterContext;
+import vtk.cluster.ClusterRole;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.event.ContentModificationEvent;
@@ -40,33 +46,72 @@ import vtk.repository.event.RepositoryEvent;
 import vtk.repository.event.RepositoryInitEvent;
 import vtk.util.Result;
 
-public class ResourceContentEvents implements Consumer<RepositoryEvent> {
+public class ResourceContentEvents implements Consumer<RepositoryEvent>, ClusterAware  {
+    private Optional<ClusterContext> clusterContext = Optional.empty();
+    private Optional<ClusterRole> clusterRole = Optional.empty();
+
     private Path uri;
+    private Repository repository;
     private String token;
     private Consumer<Result<InputStream>> next;
     
-    public ResourceContentEvents(Path uri, String token, 
+    public ResourceContentEvents(Path uri, Repository repository, String token, 
             Consumer<Result<InputStream>> next) {
         this.uri = uri;
+        this.repository = repository;
         this.next = next;
         this.token = token;
     }
     
+    public static Function<RepositoryEvent, Boolean> filter(Path uri) {
+        return event -> 
+            (event instanceof RepositoryInitEvent)
+            || ((event instanceof ContentModificationEvent)
+                    && ((ContentModificationEvent) event).getURI().equals(uri));
+    }
+    
     @Override
     public void accept(RepositoryEvent event) {
-        boolean match = (event instanceof RepositoryInitEvent)
-                || ((event instanceof ContentModificationEvent)
-                        && ((ContentModificationEvent) event).getURI().equals(uri));
-        if (!match) {
-            return;
+        invokeNext();
+        if (clusterRole.isPresent() && clusterRole.get() == ClusterRole.MASTER) {
+            if (clusterContext.isPresent()) {
+                clusterContext.get().clusterMessage(EVENT_MESSAGE);
+            }
         }
+    }
+    
+    @Override
+    public void clusterMessage(Object message) throws Exception {
+        if (clusterRole.isPresent() && clusterRole.get() == ClusterRole.SLAVE) {
+            if (message instanceof EventMessage) {
+                invokeNext();
+            }
+        }
+    }
+    
+    @Override
+    public void roleChange(ClusterRole role) {
+        this.clusterRole = Optional.of(role);
+    }
+
+    @Override
+    public void clusterContext(ClusterContext context) {
+        this.clusterContext = Optional.of(context);
+        context.subscribe(EventMessage.class);
+    }
+
+    private void invokeNext() {
         try {
-            InputStream stream = ((Repository) event.getSource())
-                    .getInputStream(token, uri, true);
+            InputStream stream = repository.getInputStream(token, uri, true);
             next.accept(Result.success(stream));
         }
         catch (Throwable t) {
             next.accept(Result.failure(t));
         }
+    }
+    
+    private static final EventMessage EVENT_MESSAGE = new EventMessage();
+    private static class EventMessage implements Serializable {
+        private static final long serialVersionUID = 9020816790785926304L;
     }
 }

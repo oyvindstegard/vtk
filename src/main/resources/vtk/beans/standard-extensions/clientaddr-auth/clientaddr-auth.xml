@@ -13,20 +13,29 @@
     <constructor-arg name="consumer" ref="clientaddr.specProvider" />
   </bean>
 
-  <bean id="clientaddr.configEventSource" class="vtk.util.repository.ResourceContentEvents">
-    <constructor-arg name="uri">
-      <bean parent="uri.abstractBean">
-        <property name="arguments" value="${clientaddrauth.config}" />
-      </bean>
-    </constructor-arg>
-    <constructor-arg name="token" ref="trustedToken" />
-    <constructor-arg name="consumer" ref="clientaddr.jsonHandler" />
+  <bean id="clientAddr.configFile.uri" parent="uri.abstractBean">
+    <property name="arguments" value="${clientaddrauth.config}" />
   </bean>
 
-  <!-- XXX: must also send cluster events -->
+  <bean id="clientaddr.configFileEvents" class="vtk.util.repository.ResourceContentEvents">
+    <constructor-arg name="uri" ref="clientAddr.configFile.uri" />
+    <constructor-arg name="repository" ref="repository" />
+    <constructor-arg name="token" ref="trustedToken" />
+    <constructor-arg name="next" ref="clientaddr.jsonHandler" />
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="clientaddr.configFileEvents" />
+  </bean>
+
+  <bean id="clientAddr.configEventFilter" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+   <property name="staticMethod" value="vtk.util.repository.ResourceContentEvents.filter"/>
+   <property name="arguments" ref="clientAddr.configFile.uri" />
+ </bean>
+
   <bean id="clientaddr.eventEmitter" class="vtk.util.repository.RepositoryEventHandler">
     <constructor-arg name="async" value="true" />
-    <constructor-arg name="consumer" ref="clientaddr.configEventSource" />
+    <constructor-arg name="consumer" ref="clientaddr.configFileEvents" />
+    <constructor-arg name="filter" ref="clientAddr.configEventFilter" />
   </bean>
 
 </beans>

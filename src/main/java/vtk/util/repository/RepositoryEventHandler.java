@@ -31,20 +31,31 @@
 package vtk.util.repository;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import vtk.repository.event.RepositoryEvent;
 
 public class RepositoryEventHandler extends AbstractRepositoryEventHandler {
     private Consumer<RepositoryEvent> consumer;
-
-    public RepositoryEventHandler(boolean async, Consumer<RepositoryEvent> consumer) {
+    private Function<RepositoryEvent, Boolean> filter;
+    
+    public RepositoryEventHandler(boolean async,
+            Consumer<RepositoryEvent> consumer, 
+            Function<RepositoryEvent, Boolean> filter) {
+        
         super(async);
         this.consumer = consumer;
+        this.filter = filter;
     }
 
+    public RepositoryEventHandler(boolean async,
+            Consumer<RepositoryEvent> consumer) {
+        this(async, consumer, evt -> true);
+    }
+    
     @Override
     public void handleEvent(RepositoryEvent event) {
+        if (!filter.apply(event)) return;
         consumer.accept(event);
-    }
-
+    }    
 }
