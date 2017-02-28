@@ -36,7 +36,7 @@
 
   <!-- Main repository instance. -->
   <bean id="repository.internal" class="vtk.repository.RepositoryImpl"
-        init-method="init" destroy-method="destroy">
+        destroy-method="destroy">
     <property name="id" value="${repositoryID}" />
     <property name="tokenManager" ref="tokenManager" />
     <property name="authorizationManager" ref="authorizationManager" />
