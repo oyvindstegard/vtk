@@ -75,6 +75,7 @@ public abstract class FilteredCollectionListingController implements Controller 
 
     private String viewName;
     private String customListing;
+    private String customFilters;
     private Map<String, List<String>> filters;
     private int pageLimit = 25;
     protected ResourceTypeTree resourceTypeTree;
@@ -230,6 +231,10 @@ public abstract class FilteredCollectionListingController implements Controller 
             }
         }
 
+        if (customFilters != null) {
+            model.put("customFilters", customFilters);
+        }
+
         if (customListing != null) {
             model.put("customListing", customListing);
         }
@@ -348,6 +353,10 @@ public abstract class FilteredCollectionListingController implements Controller 
     @Required
     public void setViewName(String viewName) {
         this.viewName = viewName;
+    }
+
+    public void setCustomFilters(String customFilters) {
+        this.customFilters = customFilters;
     }
 
     public void setCustomListing(String customListing) {

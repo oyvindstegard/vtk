@@ -68,27 +68,24 @@
             <#if useFilterTitle?? && useFilterTitle>
               <h2>${vrtx.getMsg("listing-filters.${filterKey}.title")}</h2>
             </#if>
-            <ul>
-            <#list filter?keys as parameterKey>
-              <#assign url = filter[parameterKey].url>
-              <#assign marked = filter[parameterKey].marked>
-              <li id="vrtx-listing-filter-parameter-${filterKey}-${parameterKey}" class="vrtx-listing-filter-parameter<#if parameterKey = "all"> vrtx-listing-filter-parameter-all</#if><#if marked> vrtx-listing-filter-parameter-selected</#if>">
-                <#if parameterKey = "all">
-                  <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.all")}</a>
-                <#elseif filterKey = "semester"><#-- TODO: Hack to avoid year in i18n -->
-                  <#if parameterKey?starts_with("v")>
-                    <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.v")} 20${parameterKey?substring(1)}</a>
-                  <#elseif parameterKey?starts_with("h")>
-                    <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.h")} 20${parameterKey?substring(1)}</a>
-                  <#else>
-                    <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.s")} 20${parameterKey?substring(1)}</a>
-                  </#if>
-                <#else>
-                  <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.${parameterKey}")}</a>
-                </#if>
-              </li>
-            </#list>
-            </ul>
+            <#if customFilters?exists>
+              <#import customFilters as customFiltersImport />
+              <@customFiltersImport.displayFilter filterKey filter />
+            <#else>
+              <ul>
+                <#list filter?keys as parameterKey>
+                  <#assign url = filter[parameterKey].url>
+                  <#assign marked = filter[parameterKey].marked>
+                  <li id="vrtx-listing-filter-parameter-${filterKey}-${parameterKey}" class="vrtx-listing-filter-parameter<#if parameterKey = "all"> vrtx-listing-filter-parameter-all</#if><#if marked> vrtx-listing-filter-parameter-selected</#if>">
+                    <#if parameterKey = "all">
+                      <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.all")}</a>
+                    <#else>
+                      <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.${parameterKey}")}</a>
+                    </#if>
+                  </li>
+                </#list>
+              </ul>
+            </#if>
           </div>
         </#list>
       </div>
