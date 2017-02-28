@@ -99,13 +99,13 @@ public final class ClientAddrAuthSpec {
 
         public ClientAddrAuthSpec build() {
             if (!net.isPresent()) {
-                throw new IllegalStateException("Field 'net' is required ");
+                throw new IllegalStateException("Field 'net' is required");
             }
             if (!uri.isPresent()) {
-                throw new IllegalStateException("Field 'uri' is required ");
+                throw new IllegalStateException("Field 'uri' is required");
             }
             if (!uid.isPresent()) {
-                throw new IllegalStateException("Field 'uid' is required ");
+                throw new IllegalStateException("Field 'uid' is required");
             }
             return new ClientAddrAuthSpec(net.get(), uri.get(), 
                     uid.get(), validFrom, validTo);

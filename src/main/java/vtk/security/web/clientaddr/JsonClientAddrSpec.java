@@ -31,7 +31,6 @@
 package vtk.security.web.clientaddr;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -58,10 +57,8 @@ import vtk.util.text.Json.MapContainer;
  */
 public class JsonClientAddrSpec 
     implements Consumer<Result<Json.Container>>,
-    Supplier<Collection<ClientAddrAuthSpec>> {
-    
-    // XXX: List<Result<ClientAddrAuthSpec>> instead?
-    private List<ClientAddrAuthSpec> specs = Collections.emptyList();
+    Supplier<List<Result<ClientAddrAuthSpec>>> {
+    private List<Result<ClientAddrAuthSpec>> config = Collections.emptyList();
 
     @Override
     public void accept(Result<Json.Container> json) {
@@ -74,10 +71,11 @@ public class JsonClientAddrSpec
             return;
         }
         ListContainer array = container.asArray();
-        List<ClientAddrAuthSpec> result = new ArrayList<>();
+        List<Result<ClientAddrAuthSpec>> result = new ArrayList<>();
         for (int i = 0; i < array.size(); i++) {
+            MapContainer obj = null;
             try {
-                MapContainer obj = array.objectValue(i);
+                obj = array.objectValue(i);
                 
                 ClientAddrAuthSpec.Builder builder = ClientAddrAuthSpec.builder();
                 if (obj.containsKey("net")) {
@@ -95,19 +93,25 @@ public class JsonClientAddrSpec
                 if (obj.containsKey("valid_to")) {
                     builder.validTo(obj.stringValue("valid_to"));
                 }
-                result.add(builder.build());
+                result.add(Result.success(builder.build()));
             }
             catch (Throwable t) {
-                // Log error
-                continue;
+                if (obj != null) {
+                    IllegalStateException e = new IllegalStateException(
+                            "Error in entry " + obj + ": " + t.getMessage(), t);
+                    result.add(Result.failure(e));
+                }
+                else {
+                    result.add(Result.failure(t));
+                }
             }
         }
-        specs = Collections.unmodifiableList(result);
+        config = Collections.unmodifiableList(result);
     }
 
     @Override
-    public Collection<ClientAddrAuthSpec> get() {
-        return specs;
+    public List<Result<ClientAddrAuthSpec>> get() {
+        return config;
     }
 
 }

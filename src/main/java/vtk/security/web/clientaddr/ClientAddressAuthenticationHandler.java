@@ -31,8 +31,9 @@
 package vtk.security.web.clientaddr;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.Instant;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -41,22 +42,25 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.Principal;
 import vtk.security.web.AuthenticationChallenge;
 import vtk.security.web.AuthenticationHandler;
 import vtk.security.web.InvalidAuthenticationRequestException;
-import vtk.security.web.AuthenticationHandler.AuthResult;
+import vtk.util.Result;
 import vtk.web.service.URL;
 
 public class ClientAddressAuthenticationHandler
         implements AuthenticationHandler {
     private String identifier;
-    private Supplier<Collection<ClientAddrAuthSpec>> provider;
+    private Supplier<List<Result<ClientAddrAuthSpec>>> provider;
     
     public ClientAddressAuthenticationHandler(String identifier, 
-            Supplier<Collection<ClientAddrAuthSpec>> provider) {
+            Supplier<List<Result<ClientAddrAuthSpec>>> provider) {
         this.identifier = identifier;
         this.provider = provider;
     }
@@ -70,18 +74,27 @@ public class ClientAddressAuthenticationHandler
     public boolean isRecognizedAuthenticationRequest(HttpServletRequest req)
             throws AuthenticationProcessingException,
             InvalidAuthenticationRequestException {
-        return auth(req).isPresent();
+        Result<Optional<String>> auth = auth(req);
+        if (auth.failure.isPresent()) {
+            /// XXX: throw AuthenticationProcessingException()?
+            return false;
+        }
+        return true;
     }
 
     @Override
     public AuthResult authenticate(HttpServletRequest req)
             throws AuthenticationProcessingException, AuthenticationException,
             InvalidAuthenticationRequestException {
-        Optional<String> auth = auth(req);
-        if (!auth.isPresent()) {
+        Result<Optional<String>> auth = auth(req);
+        if (auth.failure.isPresent()) {
+            throw new AuthenticationProcessingException(auth.failure.get());
+        }
+        Optional<String> principal = auth.result.get();
+        if (!principal.isPresent()) {
             throw new AuthenticationException("No match for client: " + req.getRemoteAddr());
         }
-        return new AuthResult(auth.get());
+        return new AuthResult(principal.get());
     }
 
     @Override
@@ -114,12 +127,33 @@ public class ClientAddressAuthenticationHandler
             }
         };
     }
+    
+    public Controller displayRulesHandler() {
+        return new Controller() {
+            @Override
+            public ModelAndView handleRequest(HttpServletRequest request,
+                    HttpServletResponse response) throws Exception {
+                List<Result<ClientAddrAuthSpec>> config = provider.get();
+                response.setContentType("text/plain;charset=utf-8");
+                PrintWriter writer = response.getWriter();
+                writer.write("Entries (executed in order on each request):\n\n");
+                config.forEach(entry -> writer.write("- " + entry.toString() + "\n\n"));
+                response.flushBuffer();
+                return null;
+            }
+        };
+    }
 
-    private Optional<String> auth(HttpServletRequest req) {
+    private Result<Optional<String>> auth(HttpServletRequest req) {
         URL url = URL.parse(req.getRequestURL().toString());
         String clientAddr = req.getRemoteAddr();
+        List<Result<ClientAddrAuthSpec>> config = provider.get();
         
-        for (ClientAddrAuthSpec spec: provider.get()) {
+        for (Result<ClientAddrAuthSpec> entry: config) {
+            if (entry.failure.isPresent()) {
+                return Result.failure(entry.failure.get());
+            }
+            ClientAddrAuthSpec spec = entry.result.get();
             Matcher m = spec.net.matcher(clientAddr);
             if (!m.matches()) {
                 continue;
@@ -137,8 +171,8 @@ public class ClientAddressAuthenticationHandler
                     continue;
                 }
             }
-            return Optional.of(spec.uid);
+            return Result.success(Optional.of(spec.uid));
         }
-        return Optional.empty();
+        return Result.success(Optional.empty());
     }
 }

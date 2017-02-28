@@ -54,4 +54,12 @@ public final class Result<T> {
         this.result = result;
         this.failure = failure;
     }
+    
+    @Override
+    public String toString() {
+        if (failure.isPresent()) {
+            return "Failure(" + failure.get() + ")";
+        }
+        return "Success(" + result.get() + ")";
+    }
 }

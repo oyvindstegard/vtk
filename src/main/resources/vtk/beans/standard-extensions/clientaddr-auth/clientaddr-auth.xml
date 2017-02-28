@@ -38,5 +38,27 @@
     <constructor-arg name="filter" ref="clientAddr.configEventFilter" />
   </bean>
 
+  <bean id="clientAddr.displayRulesService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService" />
+    <property name="order" value="-96000" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="mode" />
+          <property name="parameterValue" value="auth-rules" />
+        </bean>
+        <bean class="vtk.web.service.RequestURIRegexpAssertion">
+          <property name="pattern" value="${clientaddrauth.config}" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="clientAddr.displayRulesHandler" />
+  </bean>
+
+  <bean id="clientAddr.displayRulesHandler" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    <property name="targetObject" ref="clientaddr.authenticationHandler" />
+    <property name="targetMethod" value="displayRulesHandler"/>
+ </bean>
+
 </beans>
 
