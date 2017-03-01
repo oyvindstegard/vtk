@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,6 +137,7 @@ public class EvaluatorResolver {
             }
             else {
                 JsonParseResult json;
+                
                 try {
                     json = ctx.getContent()
                             .getContentRepresentation(JsonParseResult.class);
@@ -144,13 +146,18 @@ public class EvaluatorResolver {
                     throw new PropertyEvaluationException(
                             "Unable to get JSON representation of content", e);
                 }
-                if (json.error.isPresent()) {
+                if (json.value.failure.isPresent()) {
                     throw new PropertyEvaluationException(
-                            "Unable to get JSON representation of content", json.error.get());
+                            "Unable to get JSON representation of content", json.value.failure.get());
+                }
+                Optional<Json.MapContainer> document = json.asObject();
+                if (!document.isPresent()) {
+                    throw new PropertyEvaluationException(
+                            "Unable to get JSON Object representation of content");
                 }
                 String expression = "properties." + property.getDefinition().getName();
                 if (propertyDesc instanceof JSONPropertyDescription) {
-                    value = Json.select(json.document.get(), expression);
+                    value = Json.select(document.get(), expression);
                     
                     if (value != null) {
                         if (propertyDesc.isMultiple()) {
@@ -175,7 +182,7 @@ public class EvaluatorResolver {
                     }
                 }
                 else {
-                    value = Json.select(json.document.get(), expression);
+                    value = Json.select(document.get(), expression);
                 }
                 if (emptyValue(value)) {
                     if (propertyDesc.isOverrides()) {
@@ -332,12 +339,18 @@ public class EvaluatorResolver {
                 throw new PropertyEvaluationException(
                         "Unable to get JSON representation of content", e);
             }
-            if (json.error.isPresent()) {
+            if (json.value.failure.isPresent()) {
                 throw new PropertyEvaluationException(
-                        "Unable to get JSON representation of content", json.error.get());
+                        "Unable to get JSON representation of content", 
+                        json.value.failure.get());
             }
             String expression = "properties." + propName;
-            Object jsonObject = Json.select(json.document.get(), expression);
+            Optional<Json.MapContainer> document = json.asObject();
+            if (!document.isPresent()) {
+                throw new PropertyEvaluationException(
+                        "Unable to get JSON object representation of content");
+            }
+            Object jsonObject = Json.select(document.get(), expression);
             if (jsonObject != null) {
                 return jsonObject.toString();
             }

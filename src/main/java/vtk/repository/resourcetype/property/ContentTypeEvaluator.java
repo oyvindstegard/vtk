@@ -100,7 +100,7 @@ public class ContentTypeEvaluator implements PropertyEvaluator {
                                     
                                     JsonParseResult json = ctx.getContent()
                                             .getContentRepresentation(JsonParseResult.class);
-                                    if (!json.error.isPresent()) {
+                                    if (json.value.result.isPresent()) {
                                         property.setStringValue(mapping.get(pattern));
                                         return true;
                                     }

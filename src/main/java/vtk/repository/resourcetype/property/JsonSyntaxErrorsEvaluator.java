@@ -52,10 +52,11 @@ public class JsonSyntaxErrorsEvaluator implements PropertyEvaluator {
             try {
                 JsonParseResult json = ctx.getContent()
                         .getContentRepresentation(JsonParseResult.class);
-                if (!json.error.isPresent()) {
+
+                if (!json.value.failure.isPresent()) {
                     return false;
                 }
-                String msg = json.error.get().getMessage();
+                String msg = json.value.failure.get().getMessage();
                 if (msg == null) msg = "Syntax error";
                 property.setValues(new Value[] {
                         new Value(msg, PropertyType.Type.STRING)

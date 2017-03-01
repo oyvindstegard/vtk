@@ -32,31 +32,37 @@ package vtk.repository.content;
 
 import java.util.Optional;
 
+import vtk.util.Result;
 import vtk.util.text.Json;
 
 public final class JsonParseResult {
-    public final Optional<Json.MapContainer> document;
-    public final Optional<Throwable> error;
+    public final Result<Json.Container> value;
     
-    public static JsonParseResult success(Json.MapContainer document) {
-        return new JsonParseResult(Optional.of(document), Optional.empty());
+    public JsonParseResult(Result<Json.Container> value) {
+        if (value == null) throw new NullPointerException("Constructor argument is null");
+        this.value = value;
     }
     
-    public static JsonParseResult failure(Throwable error) {
-        return new JsonParseResult(Optional.empty(), Optional.of(error));
+    public Optional<Json.MapContainer> asObject() {
+        if (value.failure.isPresent()) {
+            return Optional.empty();
+        }
+        Json.Container container = value.result.get();
+        if (container.isArray()) {
+            return Optional.empty();
+        }
+        return Optional.of(container.asObject());
     }
-
     
-    private JsonParseResult(Optional<Json.MapContainer> document, 
-            Optional<Throwable> error) {
-        if (document.isPresent() && error.isPresent()) {
-            throw new IllegalStateException("Both document and error present");
+    public Optional<Json.ListContainer> asArray() {
+        if (value.failure.isPresent()) {
+            return Optional.empty();
         }
-        if (!document.isPresent() && !error.isPresent()) {
-            throw new IllegalStateException("Either document or error must be present");
+        Json.Container container = value.result.get();
+        if (!container.isArray()) {
+            return Optional.empty();
         }
-        this.document = document;
-        this.error = error;
+        return Optional.of(container.asArray());
     }
 }
 

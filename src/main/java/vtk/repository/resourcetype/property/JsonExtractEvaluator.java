@@ -32,6 +32,8 @@
 package vtk.repository.resourcetype.property;
 
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
@@ -64,9 +66,13 @@ public class JsonExtractEvaluator implements PropertyEvaluator {
             try {
                 JsonParseResult json = ctx.getContent()
                         .getContentRepresentation(JsonParseResult.class);
+                if (json.value.failure.isPresent()) {
+                    return false;
+                }
+                Optional<Json.MapContainer> document = json.asObject();
                 
-                if (json.document.isPresent()) {
-                    Object o = Json.select(json.document.get(), expression);
+                if (document.isPresent()) {
+                    Object o = Json.select(document.get(), expression);
                     if (o != null) {
                         String stringValue = o.toString();
                         property.setValue(valueFactory

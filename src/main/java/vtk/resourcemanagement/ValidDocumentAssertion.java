@@ -30,6 +30,8 @@
  */
 package vtk.resourcemanagement;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.RepositoryContentEvaluationAssertion;
@@ -64,10 +66,14 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
             JsonParseResult json = content
                     .getContentRepresentation(JsonParseResult.class);
             
-            if (json.error.isPresent()) {
+            if (json.value.failure.isPresent()) {
                 return false;
             }
-            Object o = Json.select(json.document.get(), "resourcetype");
+            Optional<Json.MapContainer> document = json.asObject();
+            if (!document.isPresent()) {
+                return false;
+            }
+            Object o = Json.select(document.get(), "resourcetype");
             if (o == null) {
                 return false;
             }
@@ -76,7 +82,7 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
                 return false;
             }
             try {
-                description.buildFromMap(json.document.get());
+                description.buildFromMap(document.get());
                 return true;
             } catch (Throwable t) {
                 return false;

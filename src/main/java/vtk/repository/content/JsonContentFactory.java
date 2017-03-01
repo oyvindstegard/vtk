@@ -32,12 +32,13 @@ package vtk.repository.content;
 
 import java.io.InputStream;
 
+import vtk.util.Result;
 import vtk.util.io.BoundedInputStream;
 import vtk.util.text.Json;
 
 /**
  * Content factory for JSON-type resources, produces instances of
- * {@link Json.MapContainer}.
+ * {@link JsonParseResult}.
  */
 public class JsonContentFactory implements ContentFactory<JsonParseResult> {
 
@@ -51,13 +52,12 @@ public class JsonContentFactory implements ContentFactory<JsonParseResult> {
     @Override
     public JsonParseResult getContentRepresentation(InputStream content) throws Exception {
         try {
-            Json.MapContainer document = Json.parseToContainer(
-                    new BoundedInputStream(content, maxLength)).asObject();
-            return JsonParseResult.success(document);
-            
+            Json.Container json = Json.parseToContainer(
+                    new BoundedInputStream(content, maxLength));
+            return new JsonParseResult(Result.success(json));
         }
         catch (Exception e) {
-            return JsonParseResult.failure(e);
+            return new JsonParseResult(Result.failure(e));
         }
     }
 }
