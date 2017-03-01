@@ -79,6 +79,9 @@ public class ClientAddressAuthenticationHandler
             /// XXX: throw AuthenticationProcessingException()?
             return false;
         }
+        if (!auth.result.get().isPresent()) {
+            return false;
+        }
         return true;
     }
 
