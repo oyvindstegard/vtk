@@ -1,0 +1,35 @@
+resourcetype helseforsk {
+
+  properties {
+    title : string overrides title,
+    unit : string,
+    approval-internal : string,
+    approval-rek : string,
+    approval-nsd : string,
+    from-year : string,
+    from-month : string,
+    to-year : string,
+    to-month : string
+  }
+
+  view {
+    ##
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>[call "resource:contextual-title-new"]</title>
+      </head>
+      <body id="vrtx-helseforsk">
+        <h1>[call "resource:property" {"id":"title"}]</h1>
+      </body>
+    </html>
+    ##
+  }
+
+  localization {
+    helseforsk : (en : "helseforsk", no : "helseforsk", nn : "helseforsk"),
+    title : (en : "Title", no : "Tittel", nn : "Tittel"),
+    header : (en : "Edit helseforsk", no : "Rediger helseforsk", nn : "Rediger helseforsk"),
+    content : (en : "Content", no : "Innhold", nn : "Innhald")
+  }
+}
