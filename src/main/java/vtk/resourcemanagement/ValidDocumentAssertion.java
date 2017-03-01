@@ -30,10 +30,13 @@
  */
 package vtk.resourcemanagement;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.RepositoryContentEvaluationAssertion;
 import vtk.repository.Resource;
+import vtk.repository.content.JsonParseResult;
 import vtk.repository.resourcetype.Content;
 import vtk.repository.resourcetype.property.PropertyEvaluationException;
 import vtk.security.Principal;
@@ -60,8 +63,17 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
         if (resource.isCollection()) return false;
         
         try {
-            Json.MapContainer object = content.getContentRepresentation(Json.MapContainer.class);
-            Object o = Json.select(object, "resourcetype");
+            JsonParseResult json = content
+                    .getContentRepresentation(JsonParseResult.class);
+            
+            if (json.value.failure.isPresent()) {
+                return false;
+            }
+            Optional<Json.MapContainer> document = json.asObject();
+            if (!document.isPresent()) {
+                return false;
+            }
+            Object o = Json.select(document.get(), "resourcetype");
             if (o == null) {
                 return false;
             }
@@ -70,15 +82,14 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
                 return false;
             }
             try {
-                description.buildFromMap(object);
+                description.buildFromMap(document.get());
                 return true;
             } catch (Throwable t) {
                 return false;
             }
         }
         catch (Exception e) {
-            // XXX: return false and log warning instead ? We probably should allow invalid JSON
-            //      to be uploaded to repository (just evaluate type to '/file/text').
+            // This will generally never happen:
             throw new PropertyEvaluationException(
                     "Unable to get JSON representation of content: " + resource, e);
         }

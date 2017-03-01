@@ -33,12 +33,14 @@ package vtk.resourcemanagement;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.RepositoryContentEvaluationAssertion;
 import vtk.repository.Resource;
+import vtk.repository.content.JsonParseResult;
 import vtk.repository.resourcetype.Content;
 import vtk.security.Principal;
 import vtk.util.text.Json;
@@ -84,9 +86,15 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
         if (resource.isCollection()) return false;
         
         try {
-            Json.MapContainer object = content.getContentRepresentation(Json.MapContainer.class);
-            
-            Object o = Json.select(object, this.expression);
+            JsonParseResult result = content.getContentRepresentation(JsonParseResult.class);
+            if (result.value.failure.isPresent()) {
+                return false;
+            }
+            Optional<Json.MapContainer> document = result.asObject();
+            if (!document.isPresent()) {
+                return false;
+            }
+            Object o = Json.select(document.get(), this.expression);
             if (this.expectedValues == null || this.expectedValues.isEmpty()) {
                 return o != null;
             }

@@ -41,7 +41,7 @@ public class Sorting {
     private final List<SortField> sortFields;
     
     public Sorting() {
-        this.sortFields = new LinkedList<SortField>();
+        this.sortFields = new LinkedList<>();
     }
     
     public Sorting(List<SortField> sortFields) {

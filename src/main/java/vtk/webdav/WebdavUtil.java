@@ -37,6 +37,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.time.FastDateFormat;
+import vtk.util.cache.ArrayStackCache;
+import vtk.util.cache.ReusableObjectCache;
 import vtk.util.web.HttpUtil;
 
 /**
@@ -67,32 +69,39 @@ public final class WebdavUtil {
        
     }
 
-    
+
     /**
-     * Utility method for parsing date values of controlled properties for WebDAV.  
+     * WebDAV date format cache
      */
-    public static Date parsePropertyDateValue(String dateValue) 
-       throws ParseException {
-       SimpleDateFormat parser = 
-           new SimpleDateFormat(WebdavConstants.WEBDAV_PROPERTY_DATE_VALUE_FORMAT, 
-                   Locale.US);
-       
-       TimeZone tz = TimeZone.getTimeZone(WebdavConstants.WEBDAV_PROPERTY_DATE_VALUE_TIMEZONE);
-       parser.setTimeZone(tz);
-       
-       return parser.parse(dateValue);
+    private static final ReusableObjectCache<SimpleDateFormat> WEBDAV_DATE_FORMAT_CACHE
+            = new ArrayStackCache<>(() -> {
+                    SimpleDateFormat sdf = new SimpleDateFormat(WebdavConstants.WEBDAV_PROPERTY_DATE_VALUE_FORMAT, Locale.US);
+                    sdf.setTimeZone(TimeZone.getTimeZone(WebdavConstants.WEBDAV_PROPERTY_DATE_VALUE_TIMEZONE));
+                    return sdf;
+                }, 4);
+
+    /**
+     * Utility method for parsing date values of controlled properties for WebDAV.
+     */
+    public static Date parsePropertyDateValue(String dateValue) throws ParseException {
+       final SimpleDateFormat parser = WEBDAV_DATE_FORMAT_CACHE.getInstance();
+       try {
+            return parser.parse(dateValue);
+       } finally {
+           WEBDAV_DATE_FORMAT_CACHE.putInstance(parser);
+       }
     }
 
     /**
      * Utility method for formatting date values of controlled properties for WebDAV.
      */
     public static String formatPropertyDateValue(Date date) {
-
-        FastDateFormat formatter = FastDateFormat.getInstance(WebdavConstants.WEBDAV_PROPERTY_DATE_VALUE_FORMAT,
-                TimeZone.getTimeZone(WebdavConstants.WEBDAV_PROPERTY_DATE_VALUE_TIMEZONE),
-                Locale.US);
-
-        return formatter.format(date);
+        SimpleDateFormat formatter = WEBDAV_DATE_FORMAT_CACHE.getInstance();
+        try {
+            return formatter.format(date);
+        } finally {
+            WEBDAV_DATE_FORMAT_CACHE.putInstance(formatter);
+        }
     }
 
 }

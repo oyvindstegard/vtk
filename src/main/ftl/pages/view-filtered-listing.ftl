@@ -28,13 +28,13 @@
     </#if>
   </head>
   <body id="vrtx-${collection.resourceType}">
-  
+
     <#assign additionalContent = vrtx.propValue(collection, "additionalContents")! />
     <#if additionalContent?has_content>
       <div id="vrtx-content">
         <div id="vrtx-main-content">
     </#if>
-  
+
     <@vrtx.displayLinkOtherLang collection />
     <h1>${collection.title}<#if collectionSpecificValues?exists && collectionSpecificValues.currentUrl?exists> (${vrtx.getMsg("listing-filters.title.discontinued")})</#if></h1>
     <#if showSubfolderMenu?exists>
@@ -68,27 +68,24 @@
             <#if useFilterTitle?? && useFilterTitle>
               <h2>${vrtx.getMsg("listing-filters.${filterKey}.title")}</h2>
             </#if>
-            <ul>
-            <#list filter?keys as parameterKey>
-              <#assign url = filter[parameterKey].url>
-              <#assign marked = filter[parameterKey].marked>
-              <li id="vrtx-listing-filter-parameter-${filterKey}-${parameterKey}" class="vrtx-listing-filter-parameter<#if parameterKey = "all"> vrtx-listing-filter-parameter-all</#if><#if marked> vrtx-listing-filter-parameter-selected</#if>">
-                <#if parameterKey = "all">
-                  <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.all")}</a>
-                <#elseif filterKey = "semester"><#-- TODO: Hack to avoid year in i18n -->
-                  <#if parameterKey?starts_with("v")>
-                    <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.v")} 20${parameterKey?substring(1)}</a>
-                  <#elseif parameterKey?starts_with("h")>
-                    <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.h")} 20${parameterKey?substring(1)}</a>
-                  <#else>
-                    <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.s")} 20${parameterKey?substring(1)}</a>
-                  </#if>
-                <#else>
-                  <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.${parameterKey}")}</a>
-                </#if>
-              </li>
-            </#list>
-            </ul>
+            <#if customFilters?exists>
+              <#import customFilters as customFiltersImport />
+              <@customFiltersImport.displayFilter filterKey filter />
+            <#else>
+              <ul>
+                <#list filter?keys as parameterKey>
+                  <#assign url = filter[parameterKey].url>
+                  <#assign marked = filter[parameterKey].marked>
+                  <li id="vrtx-listing-filter-parameter-${filterKey}-${parameterKey}" class="vrtx-listing-filter-parameter<#if parameterKey = "all"> vrtx-listing-filter-parameter-all</#if><#if marked> vrtx-listing-filter-parameter-selected</#if>">
+                    <#if parameterKey = "all">
+                      <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.all")}</a>
+                    <#else>
+                      <a href="${url}">${vrtx.getMsg("listing-filters.${filterKey}.filter.${parameterKey}")}</a>
+                    </#if>
+                  </li>
+                </#list>
+              </ul>
+            </#if>
           </div>
         </#list>
       </div>
@@ -102,15 +99,9 @@
       </#if>
 
       <div id="vrtx-listing-filter-results">
-        <#if collection.resourceType = 'course-group-listing'>
-          <#import "/pages/studies/view-course-group-listing.ftl" as courseGroup />
-          <@courseGroup.displayResult result />
-        <#elseif collection.resourceType = 'course-description-listing'>
-          <#import "/pages/studies/view-course-description-listing.ftl" as courseDescription />
-          <@courseDescription.displayResult result />
-        <#elseif collection.resourceType = 'student-exchange-agreement-listing'>
-          <#import "/pages/studies/view-student-exchange-agreement-listing.ftl" as studentExchangeAgreement />
-          <@studentExchangeAgreement.displayResult result />
+        <#if customListing?exists>
+          <#import customListing as customListingImport />
+          <@customListingImport.displayResult result />
         <#else>
           <ul>
             <#list result as res>
@@ -142,7 +133,7 @@
         </#if>
       </div>
     </#if>
-    
+
     <#if additionalContent?has_content>
         </div><#-- end vrtx-main-content -->
         <div id="vrtx-additional-content">
@@ -152,6 +143,6 @@
         </div>
       </div><#-- end vrtx-content -->
     </#if>
-    
+
   </body>
 </html>

@@ -32,13 +32,14 @@
 package vtk.repository.resourcetype.property;
 
 
-import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Property;
 import vtk.repository.PropertyEvaluationContext;
 import vtk.repository.PropertyEvaluationContext.Type;
+import vtk.repository.content.JsonParseResult;
 import vtk.repository.resourcetype.PropertyEvaluator;
 import vtk.repository.resourcetype.ValueFactory;
 import vtk.util.text.Json;
@@ -63,13 +64,21 @@ public class JsonExtractEvaluator implements PropertyEvaluator {
                 || ctx.getEvaluationType() == Type.Create) {
 
             try {
-                Map<String, Object> json = ctx.getContent().getContentRepresentation(Json.MapContainer.class);
-
-                Object o = Json.select(json, expression);
-                if (o != null) {
-                    String stringValue = o.toString();
-                    property.setValue(valueFactory.createValue(stringValue, property.getType()));
-                    return true;
+                JsonParseResult json = ctx.getContent()
+                        .getContentRepresentation(JsonParseResult.class);
+                if (json.value.failure.isPresent()) {
+                    return false;
+                }
+                Optional<Json.MapContainer> document = json.asObject();
+                
+                if (document.isPresent()) {
+                    Object o = Json.select(document.get(), expression);
+                    if (o != null) {
+                        String stringValue = o.toString();
+                        property.setValue(valueFactory
+                                .createValue(stringValue, property.getType()));
+                        return true;
+                    }
                 }
             } catch (Exception e) {}
 

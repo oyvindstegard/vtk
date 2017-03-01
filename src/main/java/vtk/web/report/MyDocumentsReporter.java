@@ -40,7 +40,7 @@ import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.PropertySortField;
 import vtk.repository.search.Search;
-import vtk.repository.search.SortFieldDirection;
+import vtk.repository.search.SortField;
 import vtk.repository.search.Sorting;
 import vtk.repository.search.query.AclExistsQuery;
 import vtk.repository.search.query.AclPrivilegeQuery;
@@ -95,7 +95,7 @@ public class MyDocumentsReporter extends DocumentReporter {
 
     private PropertyTypeDefinition createdByPropDef;
     private PropertyTypeDefinition sortPropDef;
-    private SortFieldDirection sortOrder;
+    private SortField.Direction sortOrder;
 
     @Override
     protected Search getSearch(String token, Resource currentResource, HttpServletRequest request) {
@@ -185,7 +185,7 @@ public class MyDocumentsReporter extends DocumentReporter {
     }
 
     @Required
-    public void setSortOrder(SortFieldDirection sortOrder) {
+    public void setSortOrder(SortField.Direction sortOrder) {
         this.sortOrder = sortOrder;
     }
 

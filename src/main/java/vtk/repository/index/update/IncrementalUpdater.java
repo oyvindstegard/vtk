@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, 2007, 2016, University of Oslo, Norway
+/* Copyright (c) 2006-2017, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,15 +30,32 @@
  */
 package vtk.repository.index.update;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import vtk.repository.Acl;
 import vtk.repository.ChangeLogEntry;
@@ -46,36 +63,94 @@ import vtk.repository.ChangeLogEntry.Operation;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
 import vtk.repository.index.PropertySetIndex;
-import vtk.repository.store.ChangeLogDAO;
 import vtk.repository.store.IndexDao;
 import vtk.repository.store.PropertySetHandler;
+import vtk.repository.store.ChangeLogDao;
 
 /**
- * Incremental index updates from database resource change log.
+ * Executes incremental repository index updates periodically.
  */
-public class IncrementalUpdater {
+public class IncrementalUpdater implements DisposableBean, ApplicationListener<ContextRefreshedEvent> {
 
     private final Logger logger = LoggerFactory.getLogger(IncrementalUpdater.class);
 
     private PropertySetIndex index;
     private IndexDao indexDao;
-
-    private ChangeLogDAO changeLogDAO;
+    private ChangeLogDao changeLog;
     private int loggerType;
     private int loggerId;
+
     private int maxChangesPerUpdate = 40000;
+    private int updateIntervalSeconds = 5;
+
+    private TransactionTemplate transactionTemplate;
+    private final ScheduledExecutorService executor =
+            Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "incremental-index-updater"));
+    private ScheduledFuture<?> task = null;
+
+    // Syncro between threads waiting for current update batch to complete and incremental update thread
+    private final Lock batchProcessingLock = new ReentrantLock();
+    private final Condition processingBatchFinished = batchProcessingLock.newCondition();
+
+    public synchronized void start() {
+        if (task != null) {
+            logger.info("Restarting");
+            task.cancel(false);
+        } else {
+            logger.info("Starting");
+        }
+        task = executor.scheduleAtFixedRate(() -> {
+            transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus ts) {
+                    try {
+                        executeUpdateBatch();
+                    } catch (Throwable t) {
+                        ts.setRollbackOnly();
+                        logger.error("Unexpected error during index update", t);
+                    }
+                }
+            });
+        }, 1, updateIntervalSeconds, TimeUnit.SECONDS);
+    }
+
+    public synchronized void stop() {
+        if (task == null) {
+            logger.info("Already stopped");
+            return;
+        }
+
+        task.cancel(false);
+        task = null;
+        logger.info("Stopped");
+    }
 
     /**
-     * This method should be called periodically to poll database for resource
-     * change events and apply the updates to the index.
+     * Blocks the calling thread until the next batch of incremental index updates
+     * has been completed.
      *
-     * @throws java.lang.Exception for any kind of failure that occurs during update.
-     * In general, the database transaction should always be rolled back if updating
-     * index fails for some reason. Index updates are also idempotent, which
-     * works well with rollback.
+     * @param timeout how long to wait for the next batch to complete before timing out
+     * @return <code>true</code> if this method returned <em>before timeout was reached</em>, <code>false</code> otherwise
+     * @throws InterruptedException if thread is interrupted during wait
      */
-    @Transactional(readOnly=false)
-    public synchronized void update() throws Exception {
+    public boolean waitForNextBatch(Duration timeout) throws InterruptedException {
+        final Instant deadline = Instant.now().plus(timeout);
+
+        // This lock will never have much contention as each thread will immeditaly
+        // wait for the condition and release lock. After wake up, the lock is immediately
+        // released again before return.
+        batchProcessingLock.lock();
+        try {
+            return processingBatchFinished.awaitUntil(Date.from(deadline));
+        } finally {
+            batchProcessingLock.unlock();
+        }
+    }
+
+    /**
+     * Executes a single incremental update round with batch size limited by {@link #maxChangesPerUpdate}.
+     */
+    private synchronized void executeUpdateBatch() throws Exception {
 
         if (index.isClusterSharedReadOnly()) {
             // We are probably not cluster MASTER, so do nothing.
@@ -85,9 +160,7 @@ public class IncrementalUpdater {
         
         try {
             List<ChangeLogEntry> changes =
-            	this.changeLogDAO.getChangeLogEntries(this.loggerType,
-                                                      this.loggerId,
-                                                      this.maxChangesPerUpdate);
+            	changeLog.getChangeLogEntries(loggerType, loggerId, maxChangesPerUpdate);
 
             if (logger.isDebugEnabled() && changes.size() > 0) {
                 logger.debug("");
@@ -120,13 +193,20 @@ public class IncrementalUpdater {
                 logger.debug("--- update(): finished applying changes to index.");
 
                 // Remove changelog entries from DAO
-                this.changeLogDAO.removeChangeLogEntries(changes);
+                changeLog.removeChangeLogEntries(changes);
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("--- update(): End of window");
                     logger.debug("");
                     logger.debug("");
                 }
+            }
+
+            batchProcessingLock.lock();
+            try {
+                processingBatchFinished.signalAll();
+            } finally {
+                batchProcessingLock.unlock();
             }
         } catch (Throwable t) {
             logger.error("Unexpected exception during index update", t);
@@ -138,7 +218,7 @@ public class IncrementalUpdater {
 
         try {
             // Take lock immediately, we'll be doing some writing.
-            if (! this.index.lock()) {
+            if (! index.lock()) {
                 logger.error("Unable to acquire lock on index, will not attempt to " +
                              "apply modifications, changes are lost !");
                 return;
@@ -153,9 +233,9 @@ public class IncrementalUpdater {
                 // If delete, we do it immediately
                 if (change.getOperation() == Operation.DELETED) {
                     if (change.isCollection()) {
-                        this.index.deletePropertySetTree(change.getUri());
+                        index.deletePropertySetTree(change.getUri());
                     } else {
-                        this.index.deletePropertySet(change.getUri());
+                        index.deletePropertySet(change.getUri());
                     }
                 }
 
@@ -177,7 +257,7 @@ public class IncrementalUpdater {
                         Path uri = entry.getKey();
                         logger.debug(uri.toString());
 
-                        this.index.deletePropertySet(uri);
+                        index.deletePropertySet(uri);
                         updateUris.add(uri);
                     }
                 }
@@ -213,7 +293,7 @@ public class IncrementalUpdater {
 
                 CountingPropertySetHandler handler = new CountingPropertySetHandler();
 
-                this.indexDao.orderedPropertySetIterationForUris(updateUris, handler);
+                indexDao.orderedPropertySetIterationForUris(updateUris, handler);
 
                 if (logger.isInfoEnabled()) {
                     if (updateUris.size() >= 10000) {
@@ -231,10 +311,10 @@ public class IncrementalUpdater {
             }
 
             logger.debug("--- applyChanges(): Committing changes to index.");
-            this.index.commit();
+            index.commit();
 
         } finally {
-            this.index.unlock();
+            index.unlock();
         }
     }
 
@@ -249,8 +329,8 @@ public class IncrementalUpdater {
     }
 
     @Required
-    public void setChangeLogDAO(ChangeLogDAO changeLogDAO) {
-        this.changeLogDAO = changeLogDAO;
+    public void setChangeLogDao(ChangeLogDao changeLog) {
+        this.changeLog = changeLog;
     }
 
     @Required
@@ -268,6 +348,27 @@ public class IncrementalUpdater {
             throw new IllegalArgumentException("Number must be greater than zero");
         }
         this.maxChangesPerUpdate = maxChanges;
+    }
+
+    public void setUpdateIntervalSeconds(int interval) {
+        this.updateIntervalSeconds = interval;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        executor.shutdownNow();
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        start();
+    }
+
+    @Required
+    public void setTransactionManager(PlatformTransactionManager txManager) {
+        this.transactionTemplate = new TransactionTemplate(txManager);
+        this.transactionTemplate.setReadOnly(false);
+        this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
     }
     
 }

@@ -44,8 +44,8 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.SortField;
 import vtk.repository.search.PropertySortField;
 
-import vtk.repository.search.SortFieldDirection;
-import vtk.repository.search.TypedSortField;
+import vtk.repository.search.SortField;
+import vtk.repository.search.ResourceSortField;
 import vtk.web.service.URL;
 
 /**
@@ -56,8 +56,8 @@ import vtk.web.service.URL;
  */
 public class SearchSorting implements InitializingBean {
 
-    private SortFieldDirection defaultSortOrder;
-    private Map<String, SortFieldDirection> sortOrderMapping;
+    private SortField.Direction defaultSortOrder;
+    private Map<String, SortField.Direction> sortOrderMapping;
     private PropertyTypeDefinition sortPropDef;
     private List<String> sortOrderPropDefPointers;
     private List<PropertyTypeDefinition> sortOrderPropDefs;
@@ -79,7 +79,7 @@ public class SearchSorting implements InitializingBean {
 
     public List<SortField> getSortFields(Resource collection) {
         PropertyTypeDefinition sortProp = null;
-        SortFieldDirection sortFieldDirection = this.defaultSortOrder;
+        SortField.Direction sortFieldDirection = this.defaultSortOrder;
         if (this.sortPropDef != null && collection.getProperty(this.sortPropDef) != null) {
             String sortString = collection.getProperty(this.sortPropDef).getStringValue();
             sortProp = resourceTypeTree.getPropertyTypeDefinition(Namespace.DEFAULT_NAMESPACE, sortString);
@@ -94,19 +94,19 @@ public class SearchSorting implements InitializingBean {
 
         List<SortField> sortFields = new ArrayList<SortField>();
         if (sortProp != null) {
-            // XXX: "name" is not a property, and should use TypedSortField, not PropertySortField.
+            // XXX: "name" is not a property, and should use ResourceSortField, not PropertySortField.
             // Hack fix here, needs proper fix later:
             if ("name".equals(sortProp.getName()) && Namespace.DEFAULT_NAMESPACE == sortProp.getNamespace()) {
-                sortFields.add(new TypedSortField(PropertySet.NAME_IDENTIFIER, sortFieldDirection));
+                sortFields.add(new ResourceSortField(PropertySet.NAME_IDENTIFIER, sortFieldDirection));
             } else {
                 sortFields.add(new PropertySortField(sortProp, sortFieldDirection));                
             }
         } else {
             if (sortOrderPropDefs != null) {
                 for (PropertyTypeDefinition p : sortOrderPropDefs) {
-                    SortFieldDirection sortOrder = defaultSortOrder;
+                    SortField.Direction sortOrder = defaultSortOrder;
                     if (sortOrderMapping != null) {
-                        SortFieldDirection mappedDirection = sortOrderMapping.get(p.getName());
+                        SortField.Direction mappedDirection = sortOrderMapping.get(p.getName());
                         if (mappedDirection != null) {
                             sortOrder = mappedDirection;
                         }
@@ -114,7 +114,7 @@ public class SearchSorting implements InitializingBean {
                     
                     // XXX: "name" is treated as a property, fix me properly.
                     if ("name".equals(p.getName()) && Namespace.DEFAULT_NAMESPACE == p.getNamespace()) {
-                        sortFields.add(new TypedSortField(PropertySet.NAME_IDENTIFIER, sortOrder));
+                        sortFields.add(new ResourceSortField(PropertySet.NAME_IDENTIFIER, sortOrder));
                     } else {
                         sortFields.add(new PropertySortField(p, sortOrder));
                     }
@@ -145,7 +145,7 @@ public class SearchSorting implements InitializingBean {
                 propDef = this.resourceTypeTree.getPropertyDefinitionByPrefix(null, paramValues[0]);
             }
             if (propDef != null) {
-                SortFieldDirection sortDirection = null;
+                SortField.Direction sortDirection = null;
                 if (sortDirectionPointer != null) {
                     sortDirection = resolveSortOrderDirection(sortDirectionPointer);
                 } else {
@@ -153,7 +153,7 @@ public class SearchSorting implements InitializingBean {
                 }
                 // XXX: "name" treated as property, hack fix here:
                 if ("name".equals(propDef.getName()) && Namespace.DEFAULT_NAMESPACE == propDef.getNamespace()) {
-                    sortFields.add(new TypedSortField(PropertySet.NAME_IDENTIFIER, sortDirection));
+                    sortFields.add(new ResourceSortField(PropertySet.NAME_IDENTIFIER, sortDirection));
                 } else {
                     sortFields.add(new PropertySortField(propDef, sortDirection));
                 }
@@ -162,20 +162,20 @@ public class SearchSorting implements InitializingBean {
         return sortFields;
     }
 
-    private SortFieldDirection resolveSortOrderDirection(String sortDirectionPointer) {
+    private SortField.Direction resolveSortOrderDirection(String sortDirectionPointer) {
         try {
-            return SortFieldDirection.valueOf(sortDirectionPointer.toUpperCase());
+            return SortField.Direction.valueOf(sortDirectionPointer.toUpperCase());
         } catch (Exception e) {
             return this.defaultSortOrder;
         }
     }
 
     @Required
-    public void setDefaultSortOrder(SortFieldDirection defaultSortOrder) {
+    public void setDefaultSortOrder(SortField.Direction defaultSortOrder) {
         this.defaultSortOrder = defaultSortOrder;
     }
 
-    public void setSortOrderMapping(Map<String, SortFieldDirection> sortOrderMapping) {
+    public void setSortOrderMapping(Map<String, SortField.Direction> sortOrderMapping) {
         this.sortOrderMapping = sortOrderMapping;
     }
 

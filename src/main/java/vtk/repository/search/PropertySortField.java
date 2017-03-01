@@ -43,7 +43,7 @@ public class PropertySortField extends SortField {
         this.definition = def;
     }
 
-    public PropertySortField(PropertyTypeDefinition def, SortFieldDirection direction) {
+    public PropertySortField(PropertyTypeDefinition def, SortField.Direction direction) {
         super(direction);
         if (def == null) {
             throw new IllegalArgumentException("Argument 'def' cannot be NULL");
@@ -51,7 +51,7 @@ public class PropertySortField extends SortField {
         this.definition = def;
     }
     
-    public PropertySortField(PropertyTypeDefinition def, SortFieldDirection direction, Locale locale) {
+    public PropertySortField(PropertyTypeDefinition def, SortField.Direction direction, Locale locale) {
         super(direction, locale);
         if (def == null) {
             throw new IllegalArgumentException("Argument 'def' cannot be NULL");
@@ -84,9 +84,6 @@ public class PropertySortField extends SortField {
 
     @Override
     public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
         if (obj == null) {
             return false;
         }
@@ -100,6 +97,13 @@ public class PropertySortField extends SortField {
         if ((this.complexValueAttributeSpecifier == null) ? (other.complexValueAttributeSpecifier != null) : !this.complexValueAttributeSpecifier.equals(other.complexValueAttributeSpecifier)) {
             return false;
         }
+        if (getDirection() != other.getDirection()) {
+            return false;
+        }
+        if (getLocale() != other.getLocale()) {
+            return false;
+        }
+
         return true;
     }
 

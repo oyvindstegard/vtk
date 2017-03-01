@@ -30,19 +30,20 @@
  */
 package vtk.repository.store;
 
+import java.util.Date;
 import java.util.List;
 
 import vtk.repository.ChangeLogEntry;
 
 /**
- * Low level interface to changelog event storage.
+ * Low level interface to repository changelog event storage.
  */
-public interface ChangeLogDAO {
-    
+public interface ChangeLogDao {
+
     /**
-     * Specifies mode for generating extra events per added changelog entry.
+     * Specifies modes for generating extra events per added changelog entry.
      */
-    public enum GenerateDescendantEntries {
+    public enum DescendantsSpec {
         /**
          * No extra entries are generated, just the provided changelog entries
          * are inserted as-is.
@@ -74,35 +75,59 @@ public interface ChangeLogDAO {
     }
 
     /**
-     * Get changelog entries with the given logger type and id.
+     * Count number of change log entries currently present in persistent storage.
+     *
+     * @param loggerType logger type
+     * @param loggerId logger id
+     * @return number <code>&gt;= 0</code>
+     */
+    public int countChangeLogEntries(int loggerType, int loggerId);
+    
+    /**
+     * Count number of change log entries currently present in persistent storage
+     * which are older than or equal to a provided timestamp.
      * 
+     * @param loggerType logger type
+     * @param loggerId logger id
+     * @param olderThan a timestamp
+     * @return a number <code>&gt;= 0</code>
+     */
+    public int countChangeLogEntries(int loggerType, int loggerId, Date olderThan);
+
+    /**
+     * Get change log which are older than or equal to a timestamp.
+     *
+     * <p>Change log entries are ordered by time of occurence with the oldest
+     * present entries coming first.
+     *
      * @param loggerType
      * @param loggerId
+     * @param olderThan
      * @return
-     * @throws DataAccessException 
      */
-    public List<ChangeLogEntry> getChangeLogEntries(int loggerType, int loggerId)
-        throws DataAccessException;
+    public List<ChangeLogEntry> getChangeLogEntries(int loggerType, int loggerId, Date olderThan, int limit);
 
     /**
      * Get changelog entries with the given logger type and id.
+     *
+     * <p>Change log entries are ordered by time of occurence with the oldest
+     * present entries coming first.
      * 
      * @param loggerType
      * @param loggerId
-     * @param limit Limit the number of entries returned.
-     * @return
+     * @param limit Limit the number of entries returned, or negative for no practical limit
+     * @return a list of change log entries
      * @throws DataAccessException 
      */
-    public List<ChangeLogEntry> getChangeLogEntries(int loggerType, int loggerId, int limit)
-    	throws DataAccessException;
+    public List<ChangeLogEntry> getChangeLogEntries(int loggerType, int loggerId, int limit);
 
     /**
-     * Remove list of changelog entries.
+     * Remove changelog entries from persistent storage.
      * @param entries
+     * @return number of change log entries actually deleted from persistent storage
      * @throws DataAccessException 
      */
-    public void removeChangeLogEntries(List<ChangeLogEntry> entries)
-        throws DataAccessException;
+    public int removeChangeLogEntries(List<ChangeLogEntry> entries);
     
     /**
      * Add a changelog entry with spec for generating extra entries.
@@ -110,8 +135,7 @@ public interface ChangeLogDAO {
      * @param generate spec for how to generate extra entries
      * @throws DataAccessException 
      */
-    public void addChangeLogEntry(ChangeLogEntry entry, GenerateDescendantEntries generate)
-        throws DataAccessException;
+    public void addChangeLogEntry(ChangeLogEntry entry, DescendantsSpec generate);
     
     /**
      * Add a list of changelog entries with spec for generating extra entries
@@ -121,8 +145,6 @@ public interface ChangeLogDAO {
      * @param generate spec for hwo to generate extra entries.
      * @throws DataAccessException 
      */
-    public void addChangeLogEntries(List<ChangeLogEntry> entries, GenerateDescendantEntries generate)
-        throws DataAccessException;
-
+    public void addChangeLogEntries(List<ChangeLogEntry> entries, DescendantsSpec generate);
 
 }

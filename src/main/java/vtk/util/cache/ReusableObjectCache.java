@@ -30,6 +30,8 @@
  */
 package vtk.util.cache;
 
+import java.util.function.Supplier;
+
 
 /**
  * Defines an interface to a cache of of reusable objects.
@@ -46,33 +48,68 @@ package vtk.util.cache;
 public interface ReusableObjectCache<T> {
 
     /**
-     * Get an object instance from the cache. If the cache
-     * is empty, <code>null</code> will be returned, and the caller must construct
-     * a new instance.
-     * 
-     * It should never return the same instance twice, iff the instance has never been 
-     * been put back twice {@link #putInstance(Object)}. Therefore, it should be
-     * safe to use from multithreaded code for object types that aren't themselves
-     * thread safe.
-     * 
-     * @return An instance of T, or <code>null</code> if the cache is empty.
+     * Get an object instance from the cache.
+     *
+     * <p>
+     * If the cache is empty, <code>null</code> may be returned, depending
+     * on implementation.
+     *
+     * <p>
+     * Note that this method never populates the cache with created objects, as
+     * that is the responisbility of client code, by calling
+     * {@link #putInstance(java.lang.Object)  putInstance}.
+     *
+     * <p>
+     * This method must not return the same instance twice (with the exception
+     * of <code>null</code>), iff the instance has never been been put back
+     * twice {@link #putInstance(Object)}. Therefore, it should be safe to use
+     * from multithreaded code for object types that aren't themselves thread
+     * safe.
+     *
+     * @return An instance of T, or <code>null</code> if cache is empty and unable to create a new instance
      */
-    public T getInstance();
-    
+    T getInstance();
+
     /**
-     * Put an instance into the cache. This allows it to be returned later
-     * by {@link #getInstance()}, possibly avoiding the need to create a new object.
-     * Caller is responsible for not putting in the same instance twice. If the
-     * cache is full, the instance will be discarded, and the method will return false.
-     * 
-     * @param obj The instance to put back into the cache.
+     * Get an object instance from the cache.
+     *
+     * <p>The provided factory must never return <code>null</code> and should
+     * never return the same instance twice.
+     *
+     * <p>If the cache is empty, the provided factory will be used to create a new instance.
+     *
+     * <p>
+     * Note that this method never populates the cache with created objects, as
+     * that is the responisbility of client code, by calling
+     * {@link #putInstance(java.lang.Object)  putInstance}.
+     *
+     * <p>This method must not return the same instance twice, iff the
+     * instance has never been been put back twice {@link #putInstance(Object)}.
+     * Therefore, it should be safe to use from multithreaded code for object
+     * types that aren't themselves thread safe.
+     *
+     * @param factory a factory to create new instances of type T
+     * @return An instance of T
+     */
+    T getInstance(Supplier<? extends T> factory);
+
+    /**
+     * Put an instance into the cache. This allows it to be returned later by {@link #getInstance(java.util.function.Supplier)
+     * }, possibly avoiding the need to create a new object. Caller is
+     * responsible for not putting in the same instance twice. If the cache is
+     * full, the instance will be discarded, and this method will return
+     * <code>false</code>.
+     *
+     * @param obj The instance to put back into the cache, must never be <code>null</code>
      * @return <code>true</code> if the object was put into the cache, <code>false</code>
-     *         if cache was already full.
+     *         if cache was already full (in which case the instances is typically discarded).
      */
     public boolean putInstance(T obj);
     
     /**
      * Get current number of instances in cache.
+     * @return number of instances in cache
      */
     public int size();
+
 }

@@ -41,23 +41,27 @@ import vtk.resourcemanagement.StructuredResourceManager;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import org.springframework.context.ApplicationContext;
 
 public class StructuredResourceSpringAdapterTest {
     private StructuredResourceSpringAdapter springAdapter;
     private ResourceLoader resourceLoader;
     private StructuredResourceManager manager;
+    private ApplicationContext applicationContext;
 
     @Before
     public void setUp() throws Exception {
         springAdapter = new StructuredResourceSpringAdapter();
         resourceLoader = new DefaultResourceLoader();
         manager = mock(StructuredResourceManager.class);
+        applicationContext = mock(ApplicationContext.class);
 
         springAdapter.setDefaultTypeDefinitionFiles(
                 new String[]{"classpath:/vtk/beans/structured-resources-test.vrtx"}
         );
         springAdapter.setResourceLoader(resourceLoader);
         springAdapter.setStructuredResourceManager(manager);
+        springAdapter.setApplicationContext(applicationContext);
     }
 
     @Test(expected = IllegalArgumentException.class)

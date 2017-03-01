@@ -30,8 +30,10 @@
  */
 package vtk.repository.search;
 
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import vtk.repository.Acl;
 
 import vtk.repository.PropertySet;
@@ -151,5 +153,14 @@ public interface ResultSet extends Iterable<PropertySet> {
      */
     public boolean isInheritedAcl(int index);
     
+    /**
+     * A timestamp approximating the point in time at which the search results
+     * reflect the repository resource state.
+     *
+     * <p>May not be available, depending on search backend which produced
+     * the search result set and options set in search. Therefore it is marked as optional.
+     * @return an approximated point in time for the recency of the search results
+     */
+    public Optional<Instant> recency();
     
 }

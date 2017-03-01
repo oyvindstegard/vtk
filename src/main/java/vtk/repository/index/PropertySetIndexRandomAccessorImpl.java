@@ -32,10 +32,7 @@ package vtk.repository.index;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DocumentStoredFieldVisitor;
@@ -124,7 +121,7 @@ class PropertySetIndexRandomAccessorImpl implements PropertySetIndexRandomAccess
         try {
             LoadFieldCallback lfc = (String fieldName) -> {
                 if (ResourceFields.URI_FIELD_NAME.equals(fieldName)
-                        || ResourceFields.RESOURCETYPE_FIELD_NAME.equals(fieldName)
+                        || ResourceFields.RESOURCETYPE_PATH_FIELD_NAME.equals(fieldName)
                         || ResourceFields.ID_FIELD_NAME.equals(fieldName)) {
                     return true;
                 }
@@ -139,7 +136,8 @@ class PropertySetIndexRandomAccessorImpl implements PropertySetIndexRandomAccess
             if (docs.isEmpty()) return null;
 
             Document doc = docs.get(0); // Just pick first in case of duplicates
-            final String rt = doc.get(ResourceFields.RESOURCETYPE_FIELD_NAME);
+            final String rt = doc.get(ResourceFields.RESOURCETYPE_PATH_FIELD_NAME) != null ?
+                    mapper.getResourceFields().resolveResourceType(doc.get(ResourceFields.RESOURCETYPE_PATH_FIELD_NAME)) : null;
             final int id = ResourceFields.getResourceId(doc);
             final int aclInheritedFrom = AclFields.aclInheritedFrom(doc);
             final Acl acl = mapper.getAclFields().fromDocument(doc);

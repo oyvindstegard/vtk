@@ -1,21 +1,21 @@
-/* Copyright (c) 2007, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -28,39 +28,27 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.repository.resourcetype;
+package vtk.repository.resourcetype.event;
 
-import java.util.Collection;
-import java.util.stream.Stream;
+import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
+import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 
-public class HierarchicalNode<T> {
+/**
+ *
+ */
+public class DynamicTypeRegisteredEvent extends TypeConfigurationEvent {
 
-    private final T entry;
-    private final Collection<HierarchicalNode<T>> children;
+    private static final long serialVersionUID = -7509141508225034985L;
 
-    public HierarchicalNode(T entry, Collection<HierarchicalNode<T>> children) {
-        this.entry = entry;
-        this.children = children;
-    }
-    
-    public Collection<HierarchicalNode<T>> getChildren() {
-        return children;
-    }
+    private final PrimaryResourceTypeDefinition type;
 
-    public T getEntry() {
-        return entry;
+    public DynamicTypeRegisteredEvent(Object source, PrimaryResourceTypeDefinition def) {
+        super(source);
+        this.type = def;
     }
 
-    /**
-     * @return Stream of flattened hierarchy with this node as first element.
-     */
-    public Stream<HierarchicalNode<T>> flatten() {
-        return Stream.concat(Stream.of(this), children.stream().flatMap(HierarchicalNode::flatten));
-    }
-
-    @Override
-    public String toString() {
-        return "HierarchicalNode{" + "entry=" + entry + ", children=" + children + '}';
+    public PrimaryResourceTypeDefinition registeredType() {
+        return type;
     }
 
 }

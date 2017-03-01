@@ -37,7 +37,7 @@ import vtk.repository.search.PropertySortField;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
-import vtk.repository.search.SortFieldDirection;
+import vtk.repository.search.SortField;
 import vtk.repository.search.Sorting;
 import vtk.repository.search.query.Query;
 import vtk.text.tl.Context;
@@ -75,7 +75,7 @@ public class SearchResultValueProvider extends Function {
 
         if (args[1] != null && args[1].toString().equals("title")) {
             Sorting sorting = new Sorting();
-            sorting.addSortField(new PropertySortField(titlePropDef, SortFieldDirection.ASC));
+            sorting.addSortField(new PropertySortField(titlePropDef, SortField.Direction.ASC));
             search.setSorting(sorting);
         }
 

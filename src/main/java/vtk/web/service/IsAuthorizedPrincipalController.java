@@ -71,11 +71,12 @@ public class IsAuthorizedPrincipalController implements Controller {
         }
 
         body.put("isAuthorized", authorizationManager.authorize(principal, resource.getAcl(), privilege));
-        body.put("principal", principal != null ? principal.getQualifiedName(): null);
+        body.put("principal", principal != null ? principal.getQualifiedName() : null);
         body.put("privilege", privilege.getName());
 
         model.put("json", body);
         model.put("status", 200);
+
         return new ModelAndView(viewName, model);
     }
 

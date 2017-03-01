@@ -1,21 +1,21 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2017, University of Oslo, Norway
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -28,32 +28,38 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.repository.content;
+package vtk.util;
 
-import java.io.InputStream;
-
-import vtk.util.io.BoundedInputStream;
-import vtk.util.text.Json;
+import java.util.Optional;
 
 /**
- * Content factory for JSON-type resources, produces instances of
- * {@link Json.MapContainer}.
+ * Wrapper class representing the result of some operation,
+ * which was either a success or a failure. 
+ *
+ * @param <T> the type of the result
  */
-public class JSONObjectContentFactory implements ContentFactory<Json.MapContainer> {
-
-    private int maxLength = 10000000;
+public final class Result<T> {
+    public final Optional<Throwable> failure;
+    public final Optional<T> result;
     
-    @Override
-    public Class<Json.MapContainer> getRepresentationType() {
-        return Json.MapContainer.class;
+    public static <T> Result<T> success(T result) {
+        return new Result<>(Optional.of(result), Optional.empty());
+    }
+    
+    public static <T> Result<T> failure(Throwable error) {
+        return new Result<>(Optional.empty(), Optional.of(error));
+    }
+    
+    private Result(Optional<T> result, Optional<Throwable> failure) {
+        this.result = result;
+        this.failure = failure;
     }
     
     @Override
-    public Json.MapContainer getContentRepresentation(InputStream content) throws Exception {
-        return Json.parseToContainer(new BoundedInputStream(content, maxLength)).asObject();
-    }
-
-    public void setMaxLength(int maxLength) {
-        this.maxLength = maxLength;
+    public String toString() {
+        if (failure.isPresent()) {
+            return "Failure(" + failure.get() + ")";
+        }
+        return "Success(" + result.get() + ")";
     }
 }

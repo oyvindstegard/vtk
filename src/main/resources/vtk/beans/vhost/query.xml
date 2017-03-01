@@ -8,12 +8,12 @@
     <property name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
 
-  <bean id="SORT_ORDER.ASC" class="vtk.repository.search.SortFieldDirection"
+  <bean id="SORT_ORDER.ASC" class="vtk.repository.search.SortField.Direction"
         factory-method="valueOf">
     <constructor-arg value="ASC" />
   </bean>
 
-  <bean id="SORT_ORDER.DESC" class="vtk.repository.search.SortFieldDirection"
+  <bean id="SORT_ORDER.DESC" class="vtk.repository.search.SortField.Direction"
         factory-method="valueOf">
     <constructor-arg value="DESC" />
   </bean>
@@ -47,11 +47,7 @@
   </bean>
 
   <!-- Document mapper -->
-  <bean id="documentMapper" class="vtk.repository.index.mapping.DocumentMapper"
-        depends-on="structuredResource.parser">
-    <!-- XXX: This bean depends the structured resource parser being
-         initialized (because the resource type tree is not complete without it) -->
-
+  <bean id="documentMapper" class="vtk.repository.index.mapping.DocumentMapper">
     <property name="resourceTypeTree" ref="resourceTypeTree"/>
     <property name="principalFactory" ref="principalFactory" />
     <property name="valueFactory" ref="valueFactory" />
@@ -120,9 +116,7 @@
   </bean>
   
   <!-- Factory for building Lucene queries. -->
-  <bean id="queryBuilder"
-        class="vtk.repository.search.query.LuceneQueryBuilder">
-    <property name="resourceTypeTree" ref="resourceTypeTree"/>
+  <bean id="queryBuilder" class="vtk.repository.search.query.LuceneQueryBuilder">
     <property name="documentMapper" ref="documentMapper"/>
     <property name="queryAuthorizationFilterFactory" ref="queryAuthorizationFilterFactory"/>
     <property name="publishedPropDef" ref="publishedPropDef" />
@@ -130,10 +124,13 @@
     <property name="hiddenPropDef" ref="hiddenPropDef" />
   </bean>
 
-  <!-- Searcher implementation (wrapped in throttler)-->
-  <bean id="systemIndexSearcher"
-        class="vtk.repository.search.ThrottlingSearcherWrapper">
+  <!-- Searcher implementation (wrapped in dispatcher) -->
+  <bean id="systemIndexSearcher" class="vtk.repository.search.SearchDispatcher">
     <property name="maxConcurrentQueries" value="${indexMaxConcurrentQueries}" />
+    <property name="incrementalUpdater" ref="repository.index.incrementalUpdater"/>
+    <property name="changeLogDao" ref="repository.changeLogDAO"/>
+    <property name="loggerId" value="${repository.index.updateLoggerId}"/>
+    <property name="loggerType" value="3"/>
     <property name="searcher">
       <bean class="vtk.repository.search.SearcherImpl">
         <property name="indexAccessor" ref="systemIndexAccessor"/>
@@ -153,8 +150,7 @@
 
   <!-- Set up incremental index updates from repository changes -->
   <!-- Event database dumper for new system index (logger id = 1 and logger type = 3)  -->
-  <bean id="repository.index.eventDumper" 
-    class="vtk.repository.ProcessedContentEventDumperAll">
+  <bean id="repository.index.eventDumper" class="vtk.repository.ProcessedContentEventDumperAll">
     <property name="changeLogDAO" ref="repository.changeLogDAO"/>
     <property name="repository" ref="repository"/>
     <property name="loggerIds">
@@ -166,26 +162,15 @@
   </bean>
 
   <!-- Perform incremental updates on property set index from resource changes. -->
-  <bean id="repository.index.incrementalUpdater" 
-       class="vtk.repository.index.update.IncrementalUpdater">
+  <bean id="repository.index.incrementalUpdater" class="vtk.repository.index.update.IncrementalUpdater">
     <property name="index" ref="systemIndex"/>
     <property name="indexDao" ref="repository.indexDao"/>
-    <property name="changeLogDAO" ref="repository.changeLogDAO"/>
+    <property name="changeLogDao" ref="repository.changeLogDAO"/>
     <property name="loggerId" value="${repository.index.updateLoggerId}"/>
     <property name="loggerType" value="3" />
     <property name="maxChangesPerUpdate" value="${repository.index.updateBatchsize}" />
-  </bean>
-
-  <!-- Background thread for triggering incremental updates -->
-  <bean id="repository.index.updateTrigger"
-        class="vtk.scheduling.SimpleMethodInvokingTriggerBean">
-    <property name="targetMethodName" value="update"/>
-    <property name="targetObject" ref="repository.index.incrementalUpdater"/>
-    <property name="triggerThreadName" value="${repositoryID}.indexupdater"/>
-    <property name="startDelay" value="20000"/>
-    <property name="repeatInterval" value="${repository.index.updateInterval}"/>
-    <property name="startTriggerAfterInitialization" value="true"/>
-    <property name="abortTriggerOnTargetMethodException" value="false"/>
+    <property name="updateIntervalSeconds" value="${repository.index.updateIntervalSeconds}" />
+    <property name="transactionManager" ref="repository.transactionManager"/>
   </bean>
 
 </beans>

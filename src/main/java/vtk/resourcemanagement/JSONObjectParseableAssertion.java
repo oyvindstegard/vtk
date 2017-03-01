@@ -32,9 +32,9 @@ package vtk.resourcemanagement;
 
 import vtk.repository.RepositoryContentEvaluationAssertion;
 import vtk.repository.Resource;
+import vtk.repository.content.JsonParseResult;
 import vtk.repository.resourcetype.Content;
 import vtk.security.Principal;
-import vtk.util.text.Json;
 
 /**
  * XXX Not usable as web service assertion.
@@ -57,9 +57,13 @@ public class JSONObjectParseableAssertion implements RepositoryContentEvaluation
             return false;
 
         try {
-            content.getContentRepresentation(Json.MapContainer.class);
-            return true;
-        } catch (Exception e) {
+            JsonParseResult result = content.getContentRepresentation(JsonParseResult.class);
+            if (result.value.failure.isPresent()) {
+                return false;
+            }
+            return result.asObject().isPresent();
+        }
+        catch (Exception e) {
             return false;
         }
     }

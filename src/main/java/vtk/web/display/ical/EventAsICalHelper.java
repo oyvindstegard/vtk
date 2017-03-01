@@ -40,6 +40,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -150,9 +151,7 @@ public final class EventAsICalHelper {
     }
 
     private String getDtstamp() {
-        String dateFormat = "yyyyMMdd'T'HHmmss'Z'";
-        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-        return sdf.format(Calendar.getInstance().getTime());
+        return FastDateFormat.getInstance("yyyyMMdd'T'HHmmss'Z'").format(Calendar.getInstance().getTime());
     }
 
     private String getUiD(PropertySet event, String repositoryId) {
@@ -175,8 +174,8 @@ public final class EventAsICalHelper {
     private String getICalDate(Date date) {
         DateTimeZone zone = DateTimeZone.getDefault();
         Date UTCDate = new Date(zone.convertLocalToUTC(date.getTime(), true));
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        SimpleDateFormat timeFormat = new SimpleDateFormat("HHmmss");
+        FastDateFormat dateFormat = FastDateFormat.getInstance("yyyyMMdd");
+        FastDateFormat timeFormat = FastDateFormat.getInstance("HHmmss");
         return dateFormat.format(UTCDate) + "T" + timeFormat.format(UTCDate);
     }
 

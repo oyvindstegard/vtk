@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, University of Oslo, Norway
+/* Copyright (c) 2007-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,13 @@
 package vtk.repository.search;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import vtk.repository.Namespace;
 
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
@@ -41,8 +46,11 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
  * added {@link PropertyTypeDefinition property type definitions}.
  */
 public class ConfigurablePropertySelect implements PropertySelect {
-        
-    private final Set<PropertyTypeDefinition> properties = new HashSet<PropertyTypeDefinition>();
+
+    // XXX Compare property type definitions by namespace and name due to missing
+    // equals/hashcode in property type definition classes and use of overriding definitions, which
+    // causes issues with canonical instance when only using object compare
+    private final Map<Namespace, Set<String>> properties = new HashMap<>();
     
     private boolean includeAcl = false;
     
@@ -51,12 +59,12 @@ public class ConfigurablePropertySelect implements PropertySelect {
     
     public ConfigurablePropertySelect(Collection<PropertyTypeDefinition> properties) {
         for (PropertyTypeDefinition p: properties) {
-            this.properties.add(p);
+            addPropertyDefinition(p);
         }
     }
     
-    public void addPropertyDefinition(PropertyTypeDefinition def) {
-        this.properties.add(def);
+    public final void addPropertyDefinition(PropertyTypeDefinition pd) {
+        properties.computeIfAbsent(pd.getNamespace(), ns -> new HashSet<>()).add(pd.getName());
     }
 
     public boolean isEmpty() {
@@ -65,19 +73,32 @@ public class ConfigurablePropertySelect implements PropertySelect {
 
     @Override
     public boolean isIncludedProperty(PropertyTypeDefinition def) {
-        return properties.contains(def);
+        return properties.getOrDefault(def.getNamespace(), Collections.emptySet()).contains(def.getName());
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(this.getClass().getName()).append(":");
-        sb.append("properties = ").append(this.properties);
+        sb.append(this.getClass().getName()).append("{");
+        sb.append("properties: ").append(this.properties);
+        sb.append(", includeAcl: ").append(this.includeAcl);
+        sb.append("}");
         return sb.toString();
     }
 
     @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 71 * hash + Objects.hashCode(this.properties);
+        hash = 71 * hash + (this.includeAcl ? 1 : 0);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -85,18 +106,15 @@ public class ConfigurablePropertySelect implements PropertySelect {
             return false;
         }
         final ConfigurablePropertySelect other = (ConfigurablePropertySelect) obj;
-        if (this.properties != other.properties && (this.properties == null || !this.properties.equals(other.properties))) {
+        if (this.includeAcl != other.includeAcl) {
+            return false;
+        }
+        if (!Objects.equals(this.properties, other.properties)) {
             return false;
         }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.properties != null ? this.properties.hashCode() : 0);
-        return hash;
-    }
 
     /**
      * Set if ACLs objects should be included for search results. Default value

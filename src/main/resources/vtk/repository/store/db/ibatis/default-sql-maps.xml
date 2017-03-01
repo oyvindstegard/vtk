@@ -656,13 +656,13 @@
   </select>
 
 
-  <select id="findNearestAclResourceId" resultMap="UriResourceId">
+  <select id="findNearestAclResourceId" resultMap="UriResourceId" parameterType="java.util.List">
     select
       r.resource_id, r.uri 
     from acl_entry a
       inner join vortex_resource r on r.resource_id = a.resource_id 
     where r.uri in 
-    <foreach item="path" collection="path" open="(" close=")" separator=",">
+    <foreach item="path" collection="list" open="(" close=")" separator=",">
       #{path}
     </foreach>
   </select>
@@ -1070,10 +1070,23 @@
       <include refid="limitPrepend"/>
     </if>
     select * from changelog_entry
-      where logger_type=#{loggerType} and logger_id=#{loggerId} 
+      where logger_type=#{loggerType} and logger_id=#{loggerId}
+    <if test="olderThan != null">
+      and timestamp &lt;= #{olderThan}
+    </if>
       order by changelog_entry_id
     <if test="limit != null">
        <include refid="limitAppend"/>
+    </if>
+  </select>
+
+  <select id="countChangeLogEntries" parameterType="java.util.Map"
+                                     resultType="int">
+    select count(1) from changelog_entry
+    where logger_type=#{loggerType}
+    and   logger_id=#{loggerId}
+    <if test="olderThan != null">
+    and   timestamp &lt;= #{olderThan}
     </if>
   </select>
 

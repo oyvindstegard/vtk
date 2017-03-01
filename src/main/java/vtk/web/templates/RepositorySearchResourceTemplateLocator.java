@@ -47,7 +47,7 @@ import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
 import vtk.repository.search.Sorting;
-import vtk.repository.search.TypedSortField;
+import vtk.repository.search.ResourceSortField;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
 import vtk.repository.search.query.Query;
@@ -117,7 +117,7 @@ public class RepositorySearchResourceTemplateLocator implements ResourceTemplate
         search.setPropertySelect(select);
         
         Sorting sorting = new Sorting();
-        sorting.addSortField(new TypedSortField(PropertySet.NAME_IDENTIFIER));
+        sorting.addSortField(new ResourceSortField(PropertySet.NAME_IDENTIFIER));
         search.setSorting(sorting); 
         
         // Do repository search

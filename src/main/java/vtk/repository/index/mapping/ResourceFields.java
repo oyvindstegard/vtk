@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, University of Oslo, Norway
+/* Copyright (c) 2014-2017, University of Oslo, Norway
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,9 @@ import org.apache.lucene.index.IndexableField;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
 import vtk.repository.PropertySetImpl;
+import vtk.repository.ResourceTypeTree;
 import static vtk.repository.index.mapping.Fields.FieldSpec.*;
+import vtk.repository.store.db.ResourceTypeMapper;
 
 /**
  * Fields for resource meta properties, like URI and name and ID.
@@ -60,12 +62,14 @@ public class ResourceFields extends Fields {
     public static final String URI_DEPTH_FIELD_NAME = "uriDepth";
     public static final String URI_ANCESTORS_FIELD_NAME = "uriAncestors";
 
-    public static final String RESOURCETYPE_FIELD_NAME = "resourceType";
+    public static final String RESOURCETYPE_NAME_FIELD_NAME = "resourceType";
+    public static final String RESOURCETYPE_PATH_FIELD_NAME = "resourceTypePath";
+    public static final String RESOURCETYPES_FIELD_NAME = "resourceTypes";
 
     public static final String ID_FIELD_NAME = "ID";
 
     /* Set of all reserved fields */
-    private static final Set<String> RESOURCE_FIELD_NAMES = new HashSet<String>();
+    private static final Set<String> RESOURCE_FIELD_NAMES = new HashSet<>();
 
     static {
         RESOURCE_FIELD_NAMES.add(NAME_FIELD_NAME);
@@ -75,7 +79,9 @@ public class ResourceFields extends Fields {
         RESOURCE_FIELD_NAMES.add(URI_SORT_FIELD_NAME);
         RESOURCE_FIELD_NAMES.add(URI_ANCESTORS_FIELD_NAME);
         RESOURCE_FIELD_NAMES.add(URI_DEPTH_FIELD_NAME);
-        RESOURCE_FIELD_NAMES.add(RESOURCETYPE_FIELD_NAME);
+        RESOURCE_FIELD_NAMES.add(RESOURCETYPE_PATH_FIELD_NAME);
+        RESOURCE_FIELD_NAMES.add(RESOURCETYPE_NAME_FIELD_NAME);
+        RESOURCE_FIELD_NAMES.add(RESOURCETYPES_FIELD_NAME);
         RESOURCE_FIELD_NAMES.add(ID_FIELD_NAME);
     }
 
@@ -83,8 +89,13 @@ public class ResourceFields extends Fields {
         return RESOURCE_FIELD_NAMES.contains(fieldName);
     }
 
-    ResourceFields(Locale locale) {
+    private final ResourceTypeMapper resourceTypeMapper;
+    private final ResourceTypeTree resourceTypeTree;
+
+    ResourceFields(Locale locale, ResourceTypeTree resourceTypeTree) {
         super(locale);
+        this.resourceTypeTree = resourceTypeTree;
+        this.resourceTypeMapper = new ResourceTypeMapper(resourceTypeTree);
     }
 
     void addResourceFields(final List<IndexableField> fields, PropertySetImpl propSet) {
@@ -96,7 +107,7 @@ public class ResourceFields extends Fields {
         int uriDepth = propSet.getURI().getDepth();
         fields.addAll(makeFields(URI_DEPTH_FIELD_NAME, uriDepth, INDEXED_WITH_DOCVALUE));
 
-        // Ancestor URIs (system field used for hierarchical queries)
+        // Ancestor URIs (system field used for hierarchical URI namespace queries)
         for (String ancestor : getPathAncestorStrings(propSet.getURI())) {
             fields.addAll(makeFields(URI_ANCESTORS_FIELD_NAME, ancestor, INDEXED));
         }
@@ -106,11 +117,20 @@ public class ResourceFields extends Fields {
         fields.addAll(makeFields(NAME_LC_FIELD_NAME, propSet.getName(), INDEXED_LOWERCASE));
         fields.add(makeStringSortField(NAME_SORT_FIELD_NAME, propSet.getName()));
 
-        // resourceType, stored and indexed
-        fields.addAll(makeFields(RESOURCETYPE_FIELD_NAME, propSet.getResourceType(), INDEXED_STORED));
+        // Resource type fields
+        fields.addAll(makeFields(RESOURCETYPE_NAME_FIELD_NAME, propSet.getResourceType(), INDEXED_WITH_DOCVALUE));
+        fields.addAll(makeFields(RESOURCETYPE_PATH_FIELD_NAME, resourceTypeMapper.resourceTypePath(propSet.getResourceType()), STORED));
+        for (String ancestorType: resourceTypeTree.flattenedAncestors(propSet.getResourceType())) {
+            fields.addAll(makeFields(RESOURCETYPES_FIELD_NAME, ancestorType, INDEXED));
+        }
+        fields.addAll(makeFields(RESOURCETYPES_FIELD_NAME, propSet.getResourceType(), INDEXED)); // Include leaf type in types field
 
         // ID (system field, stored and indexed, but only as a string type)
         fields.addAll(makeFields(ID_FIELD_NAME, Integer.toString(propSet.getID()), INDEXED_STORED));
+    }
+    
+    public String resolveResourceType(String resourceTypePath) {
+        return resourceTypeMapper.resolveResourceType(resourceTypePath);
     }
 
     public static int getResourceId(Document doc) throws DocumentMappingException {

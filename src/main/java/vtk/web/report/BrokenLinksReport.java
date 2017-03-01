@@ -54,9 +54,9 @@ import vtk.repository.search.PropertySortField;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
 import vtk.repository.search.Searcher.MatchingResult;
-import vtk.repository.search.SortFieldDirection;
+import vtk.repository.search.SortField;
 import vtk.repository.search.Sorting;
-import vtk.repository.search.TypedSortField;
+import vtk.repository.search.ResourceSortField;
 import vtk.repository.search.query.AclReadForAllQuery;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
@@ -82,7 +82,7 @@ public class BrokenLinksReport extends DocumentReporter {
         this.unpublishedCollectionPropDef = unpublishedCollectionPropDef;
     }
 
-    private SortFieldDirection sortOrder;
+    private SortField.Direction sortOrder;
     private Parser parser;
     private String queryFilterExpression;
 
@@ -581,7 +581,7 @@ public class BrokenLinksReport extends DocumentReporter {
         Sorting sorting = new Sorting();
 
         if (sortPropDef == null) {
-            sorting.addSortField(new TypedSortField(PropertySet.URI_IDENTIFIER, sortOrder));
+            sorting.addSortField(new ResourceSortField(PropertySet.URI_IDENTIFIER, sortOrder));
         }
         else {
             sorting.addSortField(new PropertySortField(sortPropDef, sortOrder));
@@ -694,7 +694,7 @@ public class BrokenLinksReport extends DocumentReporter {
     }
 
     @Required
-    public void setSortOrder(SortFieldDirection sortOrder) {
+    public void setSortOrder(SortField.Direction sortOrder) {
         this.sortOrder = sortOrder;
     }
 

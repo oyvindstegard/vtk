@@ -18,7 +18,7 @@
 
         <ref bean="resourceTypeIsText" />
         <ref bean="resourceTypeIsNotManagedXml" />
-        <ref bean="resourceTypeIsNotJSON" />
+        <ref bean="resourceTypeIsNotManagedJSON" />
       </list>
     </property>
     <property name="handler">
@@ -74,8 +74,8 @@
     <property name="resourceTypeDefinition" ref="textResourceTypeDefinition" />
   </bean>
 
-  <bean id="resourceTypeIsNotJSON" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceTypeDefinition" ref="json.resourceType" />
+  <bean id="resourceTypeIsNotManagedJSON" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+    <property name="resourceTypeDefinition" ref="json.managedObjectResourceType" />
     <property name="invert" value="true" />
   </bean>
 
@@ -113,6 +113,7 @@
     <property name="url" value="pages/plaintext-edit.ftl" />
     <property name="referenceDataProviders">
       <list>
+        <ref bean="resourceContextProvider" />
         <bean class="vtk.web.referencedata.provider.StaticModelDataProvider">
           <property name="modelDataMap">
             <map>

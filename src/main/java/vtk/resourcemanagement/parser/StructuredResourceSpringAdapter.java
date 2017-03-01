@@ -43,17 +43,23 @@ import vtk.resourcemanagement.StructuredResourceManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import vtk.repository.resourcetype.event.DynamicTypeRegistrationComplete;
 
-public class StructuredResourceSpringAdapter implements InitializingBean, ResourceLoaderAware {
+public class StructuredResourceSpringAdapter implements InitializingBean, ApplicationContextAware, ResourceLoaderAware {
     private static Logger logger = LoggerFactory.getLogger(StructuredResourceSpringAdapter.class);
     private String[] defaultTypeDefinitionFiles;
     private List<Resource> typeDefinitionFileStore = new ArrayList<>();
     private StructuredResourceManager structuredResourceManager;
     private ResourceLoader resourceLoader;
+    private ApplicationContext applicationContext;
 
+    @Override
     public void afterPropertiesSet() throws Exception {
         this.parseAllAndRegister(defaultTypeDefinitionFiles);
-        structuredResourceManager.registrationComplete();
+        applicationContext.publishEvent(new DynamicTypeRegistrationComplete(this));
     }
 
     public synchronized void parseAndRegister(Resource sourceFile) throws Exception {
@@ -131,5 +137,10 @@ public class StructuredResourceSpringAdapter implements InitializingBean, Resour
                 registerParsedResourceDescriptions(node.getChildren());
             }
         }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

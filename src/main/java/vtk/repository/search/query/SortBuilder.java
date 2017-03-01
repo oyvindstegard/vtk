@@ -38,9 +38,8 @@ import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.PropertySortField;
 import vtk.repository.search.SortField;
-import vtk.repository.search.SortFieldDirection;
 import vtk.repository.search.Sorting;
-import vtk.repository.search.TypedSortField;
+import vtk.repository.search.ResourceSortField;
 
 /**
  * 
@@ -62,18 +61,18 @@ public class SortBuilder {
         for (Iterator<SortField> i = sort.getSortFields().iterator(); i.hasNext(); j++) {
             SortField sortField = i.next();
             String fieldName = null;
-            boolean reverse = sortField.getDirection() != SortFieldDirection.ASC;
+            boolean reverse = sortField.getDirection() != SortField.Direction.ASC;
 
-            if (sortField instanceof TypedSortField) {
-                TypedSortField tsf =  (TypedSortField)sortField;
-                if (PropertySet.TYPE_IDENTIFIER.equals(tsf.getType())) {
-                    fieldName = ResourceFields.RESOURCETYPE_FIELD_NAME;
-                } else if (PropertySet.URI_IDENTIFIER.equals(tsf.getType())) {
+            if (sortField instanceof ResourceSortField) {
+                ResourceSortField tsf =  (ResourceSortField)sortField;
+                if (PropertySet.TYPE_IDENTIFIER.equals(tsf.getIdentifier())) {
+                    fieldName = ResourceFields.RESOURCETYPE_NAME_FIELD_NAME;
+                } else if (PropertySet.URI_IDENTIFIER.equals(tsf.getIdentifier())) {
                     fieldName = ResourceFields.URI_SORT_FIELD_NAME;
-                } else if (PropertySet.NAME_IDENTIFIER.equals(tsf.getType())) {
+                } else if (PropertySet.NAME_IDENTIFIER.equals(tsf.getIdentifier())) {
                     fieldName = ResourceFields.NAME_SORT_FIELD_NAME;
                 } else {
-                    throw new SortBuilderException("Unknown typed sort field type: " + tsf.getType());
+                    throw new SortBuilderException("Unknown typed sort field type: " + tsf.getIdentifier());
                 }
                 
                 luceneSortFields[j] = new org.apache.lucene.search.SortField(

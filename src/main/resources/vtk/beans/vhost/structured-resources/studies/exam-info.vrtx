@@ -96,7 +96,7 @@ resourcetype exam-info {
     exam-ordning (ordning, termNr, isMoreThanOneArrangements, count) {
       ##
 
-      [if ordning.deadlineWithdrawal && ! isMoreThanOneArrangements]
+      [if ordning.deadlineWithdrawal != null && isMoreThanOneArrangements = false]
         <h2>[localized 'trekkfrist']</h2>
         <p>[call "comp:date-format" { "date" : ordning.deadlineWithdrawal }]</p>
       [endif]
@@ -172,7 +172,13 @@ resourcetype exam-info {
                 [def year year.substring(2, 4)]
               [endif]
               [if locale != null]
-                [def lang locale]
+                [if locale = "no" || locale = "no_NO"]
+                  [def lang "no"]
+                [elseif locale = "no_NO_NY"]
+                  [def lang "nn"]
+                [else]
+                  [def lang "en"]
+                [endif]
               [else]
                 [def lang "no"]
               [endif]

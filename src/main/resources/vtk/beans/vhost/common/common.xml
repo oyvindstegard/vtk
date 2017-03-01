@@ -2,6 +2,12 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
+  <bean id="uri.abstractBean" 
+        class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" abstract="true">
+    <property name="staticMethod" value="vtk.repository.Path.fromString" />    
+  </bean>
+
+
   <!-- Common message source. Bean id 'messageSource' is magically picked up by Spring application context
        and provided through various APIs from there.
        Extensions may add basenames to this message source for their own translation keys
