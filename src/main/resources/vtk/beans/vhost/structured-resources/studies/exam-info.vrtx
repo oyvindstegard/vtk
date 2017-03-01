@@ -174,7 +174,7 @@ resourcetype exam-info {
               [if locale != null]
                 [if locale = "no" || locale = "no_NO"]
                   [def lang "no"]
-                [elseif locale = "no_NO_NY"]
+                [elseif locale = "nn" || locale = "no_NO_NY"]
                   [def lang "nn"]
                 [else]
                   [def lang "en"]
