@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,15 +31,22 @@
 package vtk.repository.search;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DocumentStoredFieldVisitor;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DocsEnum;
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.FieldInfo.DocValuesType;
+import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiDocValues;
 import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.DocIdSet;
@@ -67,17 +74,16 @@ import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.Query;
 
 /**
- * Implementation of {@link vtk.repository.search.Searcher} based on
- * Lucene.
+ * Implementation of {@link vtk.repository.search.Searcher} based on Lucene.
  */
-public class SearcherImpl implements Searcher, InitializingBean {
+public class LuceneSearcher implements Searcher, InitializingBean {
 
-    private final Logger logger = LoggerFactory.getLogger(SearcherImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(LuceneSearcher.class);
 
     private IndexManager indexAccessor;
     private DocumentMapper documentMapper;
     private LuceneQueryBuilder queryBuilder;
-    
+
     private int resultCacheSize = LuceneResultCache.DEFAULT_MAX_ITEMS;
     private LuceneResultCache resultCache;
 
@@ -93,7 +99,7 @@ public class SearcherImpl implements Searcher, InitializingBean {
      * is <em>not</em> affected by this limit.
      */
     private int luceneSearchLimit = 60000;
-    
+
     @Override
     public void afterPropertiesSet() throws BeanInitializationException {
         if (luceneSearchLimit <= 0) {
@@ -144,7 +150,7 @@ public class SearcherImpl implements Searcher, InitializingBean {
             int need = clientCursor + clientLimit;
             int searchLimit = Math.min(this.luceneSearchLimit, need);
 
-            long totalTime=0, startTime, endTime;
+            long totalTime = 0, startTime, endTime;
             TopDocs topDocs;
             startTime = System.currentTimeMillis();
             // Use result caching only for anon searches for now.
@@ -162,9 +168,9 @@ public class SearcherImpl implements Searcher, InitializingBean {
                     logger.debug("Result cache hit ratio: " + resultCache.hitRatio());
                 }
             }
-            
+
             totalTime += (endTime - startTime);
-            
+
             ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 
             ResultSetWithAcls rs;
@@ -248,26 +254,45 @@ public class SearcherImpl implements Searcher, InitializingBean {
             org.apache.lucene.search.Sort luceneSort
                     = this.queryBuilder.buildSort(search.getSorting());
 
-            String iterationField = null;
             if (luceneSort != null) {
                 org.apache.lucene.search.SortField[] sf = luceneSort.getSort();
                 if (sf.length != 1) {
                     throw new UnsupportedOperationException("Only ONE sort field supported for iteration: " + search.getSorting());
                 }
-                if (sf[0].getReverse()) {
-                    throw new UnsupportedOperationException("Only ascending sort supported for iteration: " + search.getSorting());
+
+                DocValuesType dvt = docValuesType(sf[0].getField(), searcher.getIndexReader());
+                if (dvt != null) {
+                    switch (dvt) {
+                        case SORTED:
+                            iterateOnSortedDocValuesField(sf[0],
+                                    iterationFilter,
+                                    searcher.getIndexReader(),
+                                    search.getPropertySelect(), search.getCursor(), search.getLimit(),
+                                    callback);
+                            return;
+                        case NUMERIC:
+                            iterateOnNumericDocValuesField(sf[0],
+                                    iterationFilter,
+                                    searcher.getIndexReader(),
+                                    search.getPropertySelect(), search.getCursor(), search.getLimit(),
+                                    callback);
+                            return;
+                        default:
+                            return; // Ordered iteration not supported for doc value type
+                    }
+                } else {
+                    if (sf[0].getReverse()) {
+                        throw new UnsupportedOperationException("Only ascending sort supported for iteration on field : " + search.getSorting());
+                    }
+                    // Ordered iteration on index field (for non-docvalue fields)
+                    iterateOnIndexField(luceneSort.getSort()[0].getField(),
+                            iterationFilter,
+                            searcher.getIndexReader(),
+                            search.getPropertySelect(), search.getCursor(), search.getLimit(),
+                            callback);
                 }
-
-                iterationField = sf[0].getField();
-            }
-
-            if (iterationField != null) {
-                iterateOnField(iterationField,
-                        iterationFilter,
-                        searcher.getIndexReader(),
-                        search.getPropertySelect(), search.getCursor(), search.getLimit(),
-                        callback);
             } else {
+                // Index doc order iteration (unordered)
                 iterate(iterationFilter,
                         searcher.getIndexReader(),
                         search.getPropertySelect(), search.getCursor(), search.getLimit(),
@@ -287,8 +312,17 @@ public class SearcherImpl implements Searcher, InitializingBean {
         }
     }
 
+    private DocValuesType docValuesType(String field, IndexReader reader) {
+        FieldInfos s = MultiFields.getMergedFieldInfos(reader);
+        FieldInfo fieldInfo = s.fieldInfo(field);
+        if (fieldInfo != null) {
+            return fieldInfo.getDocValuesType();
+        }
+        return null;
+    }
+
     /**
-     * Iterator all docs matching filter in index order. Filter may be
+     * Iterator all docs matching filter in index document order. Filter may be
      * <code>null></code>, in which case all non-deleted docs are iterated.
      */
     private void iterate(org.apache.lucene.search.Filter iterationFilter,
@@ -304,11 +338,11 @@ public class SearcherImpl implements Searcher, InitializingBean {
 
         int matchDocCounter = 0;
         int callbackCounter = 0;
-        for (AtomicReaderContext ar : reader.leaves()) {
-            final AtomicReader r = ar.reader();
-            final Bits liveDocs = r.getLiveDocs();
+        for (AtomicReaderContext arc : reader.leaves()) {
+            final AtomicReader segment = arc.reader();
+            final Bits liveDocs = segment.getLiveDocs();
             if (iterationFilter != null) {
-                DocIdSet matchedDocs = iterationFilter.getDocIdSet(ar, liveDocs);
+                DocIdSet matchedDocs = iterationFilter.getDocIdSet(arc, liveDocs);
                 if (matchedDocs != null) {
                     DocIdSetIterator disi = matchedDocs.iterator();
                     if (disi != null) {
@@ -319,7 +353,7 @@ public class SearcherImpl implements Searcher, InitializingBean {
                             }
 
                             DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
-                            r.document(docId, visitor);
+                            segment.document(docId, visitor);
                             LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
                             boolean continueIteration = callback.matching(new MatchingResultImpl(ps, ps.getAcl()));
                             if (++callbackCounter == limit || !continueIteration) {
@@ -329,7 +363,7 @@ public class SearcherImpl implements Searcher, InitializingBean {
                     }
                 }
             } else { // No iteration filter
-                for (int i = 0; i < r.maxDoc(); i++) {
+                for (int i = 0; i < segment.maxDoc(); i++) {
                     if (liveDocs != null && !liveDocs.get(i)) {
                         continue;
                     }
@@ -337,7 +371,7 @@ public class SearcherImpl implements Searcher, InitializingBean {
                         continue;
                     }
                     DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
-                    r.document(i, visitor);
+                    segment.document(i, visitor);
                     LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
                     boolean continueIteration = callback.matching(new MatchingResultImpl(ps, ps.getAcl()));
                     if (++callbackCounter == limit || !continueIteration) {
@@ -348,11 +382,182 @@ public class SearcherImpl implements Searcher, InitializingBean {
         }
     }
 
+    // Iterating *without limits* on number of docs *and* requiring globally sorted order
+    // (unlimited "sorted scrolling")
+    // is somewhat in conflict with the Lucene segment model, where each segment
+    // is completely independent and has its own doc-id and ordinal spaces. So
+    // a global merge/sort in memory is necessary, because a pre-sorted global view simply
+    // does not exist. This method may use considerable amounts of memory depending on number
+    // of docs in index and number of docs matching query.
+    private void iterateOnNumericDocValuesField(org.apache.lucene.search.SortField sortField,
+            org.apache.lucene.search.Filter iterationFilter,
+            IndexReader reader,
+            PropertySelect propertySelect,
+            int cursor,
+            int limit,
+            MatchCallback callback) throws Exception {
+
+        final int reverseMultiplier = sortField.getReverse() ? -1 : 1;
+
+        final class DocNumber implements Comparable<DocNumber> {
+            final int docId;
+            final long n;
+            DocNumber(int docId, long n) {
+                this.docId = docId;
+                this.n = n;
+            }
+            @Override
+            public int compareTo(DocNumber o) {
+                int cmp = n < o.n ? -1 : (n > o.n ? 1 : 0);
+                if (cmp == 0) {
+                    cmp = docId < o.docId ? -1 : (docId > o.docId ? 1 : 0);
+                }
+                return cmp * reverseMultiplier;
+            }
+        }
+
+        int docCount = reader.getDocCount(sortField.getField());
+        final ArrayList<DocNumber> globalDocList = new ArrayList<>(Math.min(500000,docCount > 0 ? docCount : 500000));
+        for (AtomicReaderContext arc : reader.leaves()) {
+            AtomicReader segment = arc.reader();
+            final NumericDocValues ndv = segment.getNumericDocValues(sortField.getField());
+            if (iterationFilter != null) {
+                DocIdSet matched = iterationFilter.getDocIdSet(arc, segment.getLiveDocs());
+                if (matched != null) {
+                    DocIdSetIterator disi = matched.iterator();
+                    int segmentDocId;
+                    while ((segmentDocId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+                        long n = ndv != null ? ndv.get(segmentDocId) : -1;
+                        globalDocList.add(new DocNumber(arc.docBase + segmentDocId, n));
+                    }
+                }
+            } else {
+                Bits liveDocs = segment.getLiveDocs();
+                final int maxDoc = segment.maxDoc();
+                for (int segmentDocId = 0; segmentDocId < maxDoc; segmentDocId++) {
+                    if (liveDocs != null && !liveDocs.get(segmentDocId)) {
+                        continue;
+                    }
+                    long n = ndv != null ? ndv.get(segmentDocId) : -1;
+                    globalDocList.add(new DocNumber(arc.docBase + segmentDocId, n));
+                }
+            }
+        }
+
+        globalDocList.sort(null);
+
+        int callbackCounter = 0;
+        int size = globalDocList.size();
+        for (int i=0; i<size; i++) {
+            DocNumber doc = globalDocList.get(i);
+            globalDocList.set(i, null); // help gc
+            if (i < cursor) {
+                continue;
+            }
+
+            DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
+            reader.document(doc.docId, visitor);
+            LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
+            boolean continueIteration = callback.matching(new MatchingResultImpl(ps, ps.getAcl()));
+            if (++callbackCounter == limit || !continueIteration) {
+                return;
+            }
+        }
+    }
+
+    // Iterating *without limits* on number of docs *and* requiring globally sorted order (unlimited "sorted scrolling")
+    // is somewhat in conflict with the Lucene segment model, where each segment
+    // is completely independent and has its own doc-id and ordinal spaces. So
+    // a global merge/sort in memory is necessary..
+    private void iterateOnSortedDocValuesField(org.apache.lucene.search.SortField sortField,
+            org.apache.lucene.search.Filter iterationFilter,
+            IndexReader reader,
+            PropertySelect propertySelect,
+            int cursor,
+            int limit,
+            MatchCallback callback) throws Exception {
+
+        // Slightly naive approach for global sorted iteration is implemented here. Could probably be done
+        // more efficient with use of Lucene internals, but iterating is meant
+        // for heavier queries where higher latency must be acceptable.
+        final int reverseMultiplier = sortField.getReverse() ? -1 : 1;
+
+        final class DocOrd implements Comparable<DocOrd> {
+            final int docId;
+            final int ord;
+            DocOrd(int docId, int ord) {
+                this.docId = docId;
+                this.ord = ord;
+            }
+            @Override
+            public int compareTo(DocOrd o) {
+                int cmp = ord < o.ord ? -1 : (ord > o.ord ? 1 : 0);
+                // Stabilize order with fallback for doc ids
+                if (cmp == 0) {
+                    cmp = docId < o.docId ? -1 : (docId > o.docId ? 1 : 0);
+                }
+                return cmp * reverseMultiplier;
+            }
+        }
+
+        final int docCount = reader.getDocCount(sortField.getField());
+        final ArrayList<DocOrd> globalDocList = new ArrayList<>(Math.min(500000, docCount > 0 ? docCount : 500000));
+        final SortedDocValues sdv = MultiDocValues.getSortedValues(reader, sortField.getField());  // Map from segment to global ords, this is the costly
+        for (AtomicReaderContext arc : reader.leaves()) {
+            AtomicReader segment = arc.reader();
+
+            if (iterationFilter != null) {
+                DocIdSet matched = iterationFilter.getDocIdSet(arc, segment.getLiveDocs());
+                if (matched != null) {
+                    DocIdSetIterator disi = matched.iterator();
+                    int segmentDocId;
+                    while ((segmentDocId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+                        int globalOrdinal = sdv != null ? sdv.getOrd(arc.docBase + segmentDocId) : -1;
+                        globalDocList.add(new DocOrd(arc.docBase + segmentDocId, globalOrdinal));
+                    }
+                }
+            } else {
+                Bits liveDocs = segment.getLiveDocs();
+                final int maxDoc = segment.maxDoc();
+                for (int segmentDocId = 0; segmentDocId < maxDoc; segmentDocId++) {
+                    if (liveDocs != null && !liveDocs.get(segmentDocId)) {
+                        continue;
+                    }
+                    int ordinal = sdv != null ? sdv.getOrd(arc.docBase + segmentDocId) : -1;
+                    globalDocList.add(new DocOrd(arc.docBase + segmentDocId, ordinal));
+                }
+            }
+        }
+
+        globalDocList.sort(null);
+
+        int callbackCounter = 0;
+        int size = globalDocList.size();
+        for (int i=0; i<size; i++) {
+            final DocOrd orderedDoc = globalDocList.get(i);
+            globalDocList.set(i, null); // help gc
+            if (i < cursor) {
+                continue;
+            }
+
+            DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
+            reader.document(orderedDoc.docId, visitor);
+            LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
+            boolean continueIteration = callback.matching(new MatchingResultImpl(ps, ps.getAcl()));
+            if (++callbackCounter == limit || !continueIteration) {
+                return;
+            }
+        }
+    }
+
     /**
      * Iteration all docs with given field in lexicographic order. Filter may be
      * null.
+     *
+     * <p>For indexed fields without doc values. Iteration will not include
+     * docs missing the field.
      */
-    private void iterateOnField(final String field,
+    private void iterateOnIndexField(final String field,
             org.apache.lucene.search.Filter iterationFilter,
             IndexReader reader,
             PropertySelect propertySelect,
@@ -364,7 +569,9 @@ public class SearcherImpl implements Searcher, InitializingBean {
             return;
         }
 
-        // We'll need global ordering on the field values across all index segments ..
+        final Bits acceptDocs = matchingLiveDocs(reader, iterationFilter);
+
+        // We'll need global ordering on the ordinary index field values across all segments
         final Fields fields = MultiFields.getFields(reader);
         if (fields == null) {
             return;
@@ -375,12 +582,11 @@ public class SearcherImpl implements Searcher, InitializingBean {
             return;
         }
 
-        final Bits acceptDocs = matchingLiveDocs(reader, iterationFilter);
+        TermsEnum te = terms.iterator(null);
 
         int matchDocCounter = 0;
         int callbackCounter = 0;
         DocsEnum de = null;
-        final TermsEnum te = terms.iterator(null);
         while (te.next() != null) {
             de = te.docs(acceptDocs, de, DocsEnum.FLAG_NONE);
             int docId;
@@ -408,16 +614,16 @@ public class SearcherImpl implements Searcher, InitializingBean {
 
         final FixedBitSet fbs = new FixedBitSet(reader.maxDoc());
 
-        for (AtomicReaderContext segmentReaderContext : reader.leaves()) {
-            final AtomicReader segment = segmentReaderContext.reader();
+        for (AtomicReaderContext arc : reader.leaves()) {
+            final AtomicReader segment = arc.reader();
             final Bits liveDocs = segment.getLiveDocs();
-            final DocIdSet matchedDocs = filter.getDocIdSet(segmentReaderContext, liveDocs);
+            final DocIdSet matchedDocs = filter.getDocIdSet(arc, liveDocs);
             if (matchedDocs != null) {
                 DocIdSetIterator disi = matchedDocs.iterator();
                 if (disi != null) {
                     int docId;
                     while ((docId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                        fbs.set(docId + segmentReaderContext.docBase);
+                        fbs.set(docId + arc.docBase);
                     }
                 }
             }
@@ -427,8 +633,9 @@ public class SearcherImpl implements Searcher, InitializingBean {
     }
 
     private static final class MatchingResultImpl implements MatchingResult {
-        private PropertySet ps;
-        private Acl acl;
+
+        private final PropertySet ps;
+        private final Acl acl;
 
         MatchingResultImpl(PropertySet ps, Acl acl) {
             this.ps = ps;
@@ -464,13 +671,14 @@ public class SearcherImpl implements Searcher, InitializingBean {
     public void setLuceneSearchLimit(int luceneSearchLimit) {
         this.luceneSearchLimit = luceneSearchLimit;
     }
-    
+
     /**
      * Set size of internal search result cache. Default value is
      * {@link LuceneResultCache#DEFAULT_MAX_ITEMS}.
-     * 
-     * <p>The cache only applies to unauthenticated queries.
-      * 
+     *
+     * <p>
+     * The cache only applies to unauthenticated queries.
+     *
      * @param maxItems maximum number of cached results, or -1 to disable result
      * caching.
      */
