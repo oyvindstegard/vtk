@@ -18,10 +18,6 @@ resourcetype structured-project {
     numberOfParticipantsToDisplay : string defaultvalue("50"),
     relatedGroups : resource_ref multiple,
     rssFeeds : json (rssTitle:string, rssUrl:string) multiple,
-    getExternalScientificInformation : boolean defaultvalue("false"),
-    projectNr : string trim,
-    numberOfPublications : string,
-    selectedPublications : html noextract,
     related-content : html noextract,
     link-other-language: resource_ref
   }
@@ -33,9 +29,7 @@ resourcetype structured-project {
     group introImageAndCaption (picture, caption, hidePicture, pictureAlt) (after introduction),
     tags tooltip (en : "(Tag1, Tag2, ...)", no : "(Emneord1, Emneord2, ...)", nn : "(Emneord1, Emneord2, ...)"),
     tags (class[vrtx-autocomplete-tag]),
-    participantsCachedFullNames (noedit),
-    group combinedPublications (getExternalScientificInformation, projectNr, numberOfPublications, selectedPublications) (after rssFeeds),
-    numberOfPublications (dropdown)
+    participantsCachedFullNames (noedit)
   }
 
   scripts {
@@ -64,23 +58,6 @@ resourcetype structured-project {
       [def ongoing document.properties.status-ongoing]
       [if (ongoing = "false")]
         ([localized "completed"])
-      [endif]
-      ##
-    }
-    
-    publications {
-      ##
-      [def document structured-document()]
-      [def getExternalPublications document.properties.getExternalScientificInformation]
-      [def projectNr document.properties.projectNr]
-      [if getExternalPublications = "true" && projectNr != null]
-        [call "include:publications"]
-      [else]
-        [def selectedPublications document.properties.selectedPublications]
-        [if (selectedPublications != null && selectedPublications != "")]
-          <h2>[localized 'combinedPublications']</h2>
-          [val selectedPublications # unescaped]
-        [endif]
       [endif]
       ##
     }
@@ -238,7 +215,6 @@ resourcetype structured-project {
               [call "comp:introduction-image"]
             [endif]
             [call "json:field" {"select": "content"}]
-            [call "comp:publications"]
             [call "resource:tags"]
             [call "comp:vrtx-date-info"]
           </div>
@@ -270,16 +246,6 @@ resourcetype structured-project {
       en : ("true" = "Yes", "false" = "No"),
       no : ("true" = "Ja", "false" = "Nei"),
       nn : ("true" = "Ja", "false" = "Nei")
-    },
-    getExternalScientificInformation {
-      en : ("true" = "Yes", "false" = "No"),
-      no : ("true" = "Ja", "false" = "Nei"),
-      nn : ("true" = "Ja", "false" = "Nei")
-    },
-    numberOfPublications {
-      en : (range = "100,150,200,300,350,400,450,500,1000"),
-      no : (range = "100,150,200,300,350,400,450,500,1000"),
-      nn : (range = "100,150,200,300,350,400,450,500,1000")
     }
   }
   

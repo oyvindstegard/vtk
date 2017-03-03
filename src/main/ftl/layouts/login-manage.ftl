@@ -72,6 +72,6 @@
 
 <#function adminIndexFile type opt><#compress>
   <#assign isIndexFile = resourceContext.requestContext.indexFile />
-  <#if isIndexFile && type == "login-manage" && opt == "admin"><#return "&action=admin-index-file-from-view" /></#if>
+  <#if false && isIndexFile && type == "login-manage" && opt == "admin"><#return "&action=admin-index-file-from-view" /></#if>
   <#return "" />
 </#compress></#function>
