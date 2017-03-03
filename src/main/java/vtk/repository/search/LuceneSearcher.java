@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -76,9 +76,9 @@ import vtk.repository.search.query.Query;
 /**
  * Implementation of {@link vtk.repository.search.Searcher} based on Lucene.
  */
-public class SearcherImpl implements Searcher, InitializingBean {
+public class LuceneSearcher implements Searcher, InitializingBean {
 
-    private final Logger logger = LoggerFactory.getLogger(SearcherImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(LuceneSearcher.class);
 
     private IndexManager indexAccessor;
     private DocumentMapper documentMapper;
