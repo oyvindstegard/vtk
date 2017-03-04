@@ -21,7 +21,7 @@ void execute(context, args, out) {
 
     limit = args.get("limit");
     sortArg = args.get("sort");
-    directionArg = args.get("direction");
+    propertiesArg = args.get("properties");
 
     parser = queryParserFactory.getParser();
     query = null;
@@ -32,106 +32,130 @@ void execute(context, args, out) {
         out.println(t.getMessage());
         return;
     }
-
     search = new vtk.repository.search.Search();
     search.clearAllFilterFlags();
-    search.setPropertySelect(vtk.repository.search.PropertySelect.ALL);
     search.setQuery(query);
     if (limit != null && limit >= 0) {
         search.setLimit(limit);
     }
-    if (sortArg != null) {
-        sorting = new Sorting();
-        direction = null;
-        if (sortArg.trim().contains(" ")) {
-            dir = sortArg.substring(sortArg.indexOf(" ") + 1);
-            sortArg = sortArg.substring(0, sortArg.length() - dir.length() - 1);
-            direction = "asc".equals(dir) ? SortField.Direction.ASC : SortField.Direction.DESC;
-        }
-
-        sf = null;
-        if ("type".equals(sortArg) || "name".equals(sortArg) || "uri".equals(sortArg)) {
-            if (direction != null) {
-                sf = new TypedSortField(sortArg, direction);
-            } else {
-                sf = new TypedSortField(sortArg);
-            }
-        } 
-        else {
-            prefix = null;
-            name = null;
-            if (sortArg.contains(":")) {
-                prefix = sortArg.substring(0, sortArg.indexOf(":"));
-                name = sortArg.substring(prefix.length() + 1);
-            } else {
-                prefix = null;
-                name = sortArg;
-            }
-            propDef = rtt.getPropertyDefinitionByPrefix(prefix, name);
-            if (propDef != null) {
-                if (direction != null) {
-                    sf = new PropertySortField(propDef, direction);
-                } else {
-                    sf = new PropertySortField(propDef);
-                }
-            }
-        }
-        if (sf != null) {
-            sorting.addSortField(sf);
-            search.setSorting(sorting);
-        }
-    }
-
+    search.setSorting(parseSorting(sortArg, rtt));
+    search.setPropertySelect(parseSelect(propertiesArg, rtt));
+    displayResourceType = propertiesArg != null && (propertiesArg.contains("type") || propertiesArg.contains("*"));
 
     rs = indexSearcher.execute(token, search);
-
-    propList = args.get("properties");
-    wildcard = propList != null && propList.contains("*");
 
     for (i=0; i<rs.getSize(); i++) {
         r = rs.getResult(i);
         out.println(r.getURI());
-        if (propList != null) {
-            if (wildcard) {
-                for (prop: r.getProperties()) {
-                    printProp(prop, null, out);
-                }
-                acl = rs.getAcl(i);
-                if (acl != null) {
-                    printAcl(acl, rs.isInheritedAcl(i), out);
-                }
-            } 
-            else {
-                for (propName: propList) {
-                    if ("acl".equals(propName)) {
-                        acl = rs.getAcl(i);
-                        if (acl != null) {
-                            printAcl(acl, rs.isInheritedAcl(i), out);
-                        }
-                    } 
-                    else {
-                        field = null;
-                        if (propName.contains("@")) {
-                            field = propName.substring(propName.indexOf("@") + 1);
-                            propName = propName.substring(0, propName.indexOf("@"));
-                        }
-                        p = propName;
-                        prefix = null;
-
-                        if (p.contains(":")) {
-                            prefix = p.substring(0, p.indexOf(":"));
-                            p = p.substring(prefix.length() + 1);
-                        }
-                        prop = r.getPropertyByPrefix(prefix, p);
-                        if (prop == null) continue;
-                        printProp(prop, field, out);
-                    }
-                }
+        if (displayResourceType) {
+            out.println("  resourcetype: " + r.getResourceType());
+        }
+        for (property: r) {
+            field = null;
+            if (property.getType() == vtk.repository.resourcetype.PropertyType.Type.JSON) {
+                def = property.getDefinition();
+                field = getJsonFieldSelector(def.getNamespace().getPrefix(), def.getName(), propertiesArg);
             }
+            printProp(property, field, out);
+        }
+        acl = r.getAcl();
+        if (acl != null) {
+            printAcl(acl, rs.isInheritedAcl(i), out);
         }
     }
     out.println();
     out.println("[Total results fetched: " + rs.getSize() + ", total hits: " + rs.getTotalHits() + "]");
+
+}
+
+String getJsonFieldSelector(prefix, name, propertiesArg) {
+    if (propertiesArg == null || propertiesArg.isEmpty()) return null;
+
+    propSpec = name;
+    if (prefix != null) {
+        propSpec = prefix + ":" + name;
+    }
+
+    for (propSelect: propertiesArg) {
+        if (propSelect.startsWith(propSpec + "@")) {
+            fieldSelector = propSelect.substring(propSelect.indexOf("@"));
+            if (fieldSelector.length() > 1) {
+                return fieldSelector.substring(1);
+            }
+        }
+    }
+
+    return null;
+}
+
+Sorting parseSorting(sortArg, rtt) {
+    if (sortArg == null) return null;
+    sorting = new Sorting();
+    direction = SortField.Direction.ASC;
+    if (sortArg.trim().contains(" ")) {
+        dir = sortArg.substring(sortArg.indexOf(" ") + 1);
+        sortArg = sortArg.substring(0, sortArg.length() - dir.length() - 1);
+        direction = ("desc".equals(dir) || "DESC".equals(dir)) ? SortField.Direction.DESC : SortField.Direction.ASC;
+    }
+
+    sf = null;
+    if ("type".equals(sortArg) || "name".equals(sortArg) || "uri".equals(sortArg)) {
+        sf = new ResourceSortField(sortArg, direction);
+    }
+    else {
+        prefix = null;
+        name = null;
+        if (sortArg.contains(":")) {
+            prefix = sortArg.substring(0, sortArg.indexOf(":"));
+            name = sortArg.substring(prefix.length() + 1);
+        } else {
+            prefix = null;
+            name = sortArg;
+        }
+        propDef = rtt.getPropertyDefinitionByPrefix(prefix, name);
+        if (propDef != null) {
+            sf = new PropertySortField(propDef, direction);
+        }
+    }
+    if (sf != null) {
+        sorting.addSortField(sf);
+        return sorting;
+    }
+
+    return null;
+}
+
+PropertySelect parseSelect(propList, rtt) {
+    if (propList == null || propList.isEmpty()) return PropertySelect.NONE;
+
+    if (propList.contains("*")) return PropertySelect.ALL;
+
+    propertySelect = new ConfigurablePropertySelect();
+
+    for (propName: propList) {
+        if ("acl".equals(propName)) {
+            propertySelect.setIncludeAcl(true);
+            continue;
+        }
+
+        field = null;
+        if (propName.contains("@")) {
+            field = propName.substring(propName.indexOf("@") + 1);
+            propName = propName.substring(0, propName.indexOf("@"));
+        }
+        p = propName;
+        prefix = null;
+
+        if (p.contains(":")) {
+            prefix = p.substring(0, p.indexOf(":"));
+            p = p.substring(prefix.length() + 1);
+        }
+        def = rtt.getPropertyDefinitionByPrefix(prefix, p);
+        if (def == null) continue;
+        propertySelect.addPropertyDefinition(def);
+    }
+
+    return propertySelect;
 }
 
 void printProp(prop, field, out) {
