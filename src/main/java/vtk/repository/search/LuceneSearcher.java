@@ -447,8 +447,7 @@ public class LuceneSearcher implements Searcher, InitializingBean {
         globalDocList.sort(null);
 
         int callbackCounter = 0;
-        int size = globalDocList.size();
-        for (int i=0; i<size; i++) {
+        for (int i=0; i<globalDocList.size(); i++) {
             DocNumber doc = globalDocList.get(i);
             globalDocList.set(i, null); // help gc
             if (i < cursor) {
@@ -502,7 +501,7 @@ public class LuceneSearcher implements Searcher, InitializingBean {
 
         final int docCount = reader.getDocCount(sortField.getField());
         final ArrayList<DocOrd> globalDocList = new ArrayList<>(Math.min(500000, docCount > 0 ? docCount : 500000));
-        final SortedDocValues sdv = MultiDocValues.getSortedValues(reader, sortField.getField());  // Map from segment to global ords, this is the costly
+        SortedDocValues sdv = MultiDocValues.getSortedValues(reader, sortField.getField());  // Map from segment to global ords, this is costly
         for (AtomicReaderContext arc : reader.leaves()) {
             AtomicReader segment = arc.reader();
 
@@ -528,12 +527,12 @@ public class LuceneSearcher implements Searcher, InitializingBean {
                 }
             }
         }
+        sdv = null; // help gc
 
         globalDocList.sort(null);
 
         int callbackCounter = 0;
-        int size = globalDocList.size();
-        for (int i=0; i<size; i++) {
+        for (int i=0; i<globalDocList.size(); i++) {
             final DocOrd orderedDoc = globalDocList.get(i);
             globalDocList.set(i, null); // help gc
             if (i < cursor) {
