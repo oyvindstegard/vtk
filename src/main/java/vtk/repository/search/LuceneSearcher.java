@@ -278,6 +278,10 @@ public class LuceneSearcher implements Searcher, InitializingBean {
     @Override
     public void iterateMatching(String token, Search search, MatchCallback callback) throws QueryException {
 
+        if (search.getLimit() <= 0) {
+            return;  // Nothing to do
+        }
+
         IndexSearcher searcher = null;
         try {
             searcher = this.indexAccessor.getIndexSearcher();
@@ -367,10 +371,6 @@ public class LuceneSearcher implements Searcher, InitializingBean {
             int cursor,
             int limit,
             MatchCallback callback) throws Exception {
-
-        if (limit <= 0) {
-            return;
-        }
 
         int matchDocCounter = 0;
         int callbackCounter = 0;
@@ -599,10 +599,6 @@ public class LuceneSearcher implements Searcher, InitializingBean {
             int cursor,
             int limit,
             MatchCallback callback) throws Exception {
-
-        if (limit <= 0) {
-            return;
-        }
 
         final Bits acceptDocs = matchingLiveDocs(reader, iterationFilter);
 
