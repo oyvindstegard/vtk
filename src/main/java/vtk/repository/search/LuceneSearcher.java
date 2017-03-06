@@ -55,6 +55,7 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.FixedBitSet;
 import org.slf4j.Logger;
@@ -113,11 +114,11 @@ public class LuceneSearcher implements Searcher, InitializingBean {
 
     @Override
     public ResultSet execute(String token, Search search) throws QueryException {
-        Query query = search.getQuery();
-        Sorting sorting = search.getSorting();
-        int clientLimit = search.getLimit();
-        int clientCursor = search.getCursor();
-        PropertySelect selectedProperties = search.getPropertySelect();
+        final Query query = search.getQuery();
+        final Sorting sorting = search.getSorting();
+        final int clientLimit = search.getLimit();
+        final int clientCursor = search.getCursor();
+        final PropertySelect selectedProperties = search.getPropertySelect();
 
         IndexSearcher searcher = null;
         try {
@@ -145,6 +146,14 @@ public class LuceneSearcher implements Searcher, InitializingBean {
                         + "' from sorting '" + sorting + "'");
 
                 logger.debug("Built Lucene filter: " + luceneFilter);
+            }
+
+            if (clientLimit <= 0) {
+                // Client is not interested in actual search results, just provide total hits
+                int totalHits = countQueryTotalHits(searcher, luceneQuery, luceneFilter);
+                ResultSetImpl rs = new ResultSetImpl(0);
+                rs.setTotalHits(totalHits);
+                return rs;
             }
 
             int need = clientCursor + clientLimit;
@@ -225,6 +234,16 @@ public class LuceneSearcher implements Searcher, InitializingBean {
         }
     }
 
+    /**
+     * Execute regular query finding top-N docs with or without a specific result set sorting.
+     * @param searcher
+     * @param query
+     * @param filter
+     * @param sort
+     * @param limit
+     * @return
+     * @throws IOException
+     */
     private TopDocs doTopDocsQuery(IndexSearcher searcher,
             org.apache.lucene.search.Query query,
             org.apache.lucene.search.Filter filter,
@@ -237,6 +256,23 @@ public class LuceneSearcher implements Searcher, InitializingBean {
         }
 
         return searcher.search(query, filter, limit);
+    }
+
+    /**
+     * Just count number of documents matching provided query and filter.
+     * @param searcher
+     * @param query
+     * @param filter
+     * @return
+     * @throws IOException
+     */
+    private int countQueryTotalHits(IndexSearcher searcher,
+            org.apache.lucene.search.Query query,
+            org.apache.lucene.search.Filter filter) throws IOException {
+
+        TotalHitCountCollector collector = new TotalHitCountCollector();
+        searcher.search(query, filter, collector);
+        return collector.getTotalHits();
     }
 
     @Override

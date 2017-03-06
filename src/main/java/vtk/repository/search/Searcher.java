@@ -94,9 +94,8 @@ public interface Searcher {
      * 
      * Note however that the following limitations do apply:
      * <ul>
-     *   <li>The iteration can support simple ASCENDING ordering on
-     *       a single field/property only. If provided sorting specification violates
-     *       these constraints, an exception will be thrown.
+     *   <li>For some fields, only ascending sort is supported. An exception
+     * will be thrown if this happens.
      * 
      *   <li>If sorting on a field, then ONLY docs which have the property/field
      *       are included in the matching iteration. If you want to make sure you
