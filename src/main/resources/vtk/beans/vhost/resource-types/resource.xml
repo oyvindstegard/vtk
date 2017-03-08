@@ -66,6 +66,7 @@
         <ref bean="systemJobStatusPropDef" />
         <ref bean="sslMixedModePropDef" />
         <ref bean="locationHistoryPropDef" />
+        <ref bean="linkRepairEnabledPropDef" /><!-- Inheritable -->
       </list>
     </property>
   </bean>
@@ -427,5 +428,31 @@
   </bean>
 
   <bean id="locationHistoryEvaluator" class="vtk.repository.resourcetype.property.LocationHistoryEvaluator" />
+
+  <bean id="linkRepairEnabledPropDef" 
+        class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="linkRepairEnabled" />
+    <property name="inheritable" value="true" />
+    <property name="type" value="BOOLEAN" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="BOOLEAN"/>
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.linkRepairEnabled"/>
+      </bean>
+    </property>
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN" />
+        <property name="values">
+          <list>
+            <ref bean="VALUE_TRUE" />
+            <ref bean="VALUE_FALSE" />
+          </list>
+        </property>
+      </bean>
+    </property>
+  </bean>
 
 </beans>

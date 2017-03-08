@@ -285,7 +285,7 @@
     <property name="pathSelector">
       <bean class="vtk.repository.systemjob.IndexQueryPathSelector" 
             parent="repository.systemjob.indexPathSelector">
-        <property name="queryString" value="link-check@relocatedLinks.vrtxid exists" />
+        <property name="queryString" value="linkRepairEnabled=true AND link-check@relocatedLinks.vrtxid exists" />
         <property name="sortString" value="system-job-status@linkrepair ASC" />
         <property name="limit" value="${systemjob.linkcheck.batch}" />
         <property name="waitForPendingUpdates" value="true" />
