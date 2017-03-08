@@ -115,7 +115,8 @@ public class LinkRepairJob extends AbstractResourceJob {
             @Override
             public void storeProperties() {
                 try {
-                    ctx.getRepository().store(ctx.getToken(), resource);
+                    ctx.getRepository().store(ctx.getToken(), resource, 
+                            ctx.getSystemChangeContext());
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);
@@ -136,9 +137,15 @@ public class LinkRepairJob extends AbstractResourceJob {
             @Override
             public void writeContent(InputStream content) {
                 try {
-                    ctx.getRepository().storeContent(
+                    Resource updated = ctx.getRepository().storeContent(
                             ctx.getToken(), resource.getURI(), 
                             ContentInputSources.fromStream(content));
+                    
+                    // Update system job status:
+                    ctx.getRepository().store(ctx.getToken(), updated, 
+                            ctx.getSystemChangeContext());
+
+                    
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);
@@ -159,6 +166,8 @@ public class LinkRepairJob extends AbstractResourceJob {
                     Resource stored = ctx.getRepository()
                             .storeContent(ctx.getToken(), resource.getURI(), 
                                     ContentInputSources.fromBytes(buffer));
+                    
+                    // Update system job status:
                     ctx.getRepository().store(ctx.getToken(), stored, 
                             ctx.getSystemChangeContext());
                 }
