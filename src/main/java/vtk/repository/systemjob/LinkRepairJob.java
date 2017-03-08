@@ -54,7 +54,6 @@ import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
 import vtk.util.repository.LinkReplacer;
 import vtk.util.repository.PropertyAspectDescription;
-import vtk.util.repository.PropertyAspectResolver;
 import vtk.util.text.Json.MapContainer;
 import vtk.util.text.JsonStreamer;
 import vtk.web.service.CanonicalUrlConstructor;
@@ -92,18 +91,7 @@ public class LinkRepairJob extends AbstractResourceJob {
             return;
         }
         URL base = urlConstructor.canonicalUrl(resource).setImmutable();
-        PropertyAspectResolver resolver = 
-                new PropertyAspectResolver(ctx.getRepository(), 
-                        aspectsPropDef, aspectFieldDesc, ctx.getToken());
         
-        MapContainer aspect = resolver.resolve(resource.getURI(), enabledAspect);
-        boolean enabled = aspect != null && "true".equals(aspect.get("link-repair"));
-        
-        if (!enabled) {
-            logger.debug("Link repair disabled for " + resource);
-            ctx.getRepository().store(ctx.getToken(), resource, ctx.getSystemChangeContext());
-            return;
-        }
         logger.debug("Correcting links for resource " + resource + "; " + ctx);
         final UrlMapper mapper = new UrlMapper(resource, base, ctx);
         
@@ -127,7 +115,8 @@ public class LinkRepairJob extends AbstractResourceJob {
             @Override
             public void storeProperties() {
                 try {
-                    ctx.getRepository().store(ctx.getToken(), resource);
+                    ctx.getRepository().store(ctx.getToken(), resource, 
+                            ctx.getSystemChangeContext());
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);
@@ -148,9 +137,15 @@ public class LinkRepairJob extends AbstractResourceJob {
             @Override
             public void writeContent(InputStream content) {
                 try {
-                    ctx.getRepository().storeContent(
+                    Resource updated = ctx.getRepository().storeContent(
                             ctx.getToken(), resource.getURI(), 
                             ContentInputSources.fromStream(content));
+                    
+                    // Update system job status:
+                    ctx.getRepository().store(ctx.getToken(), updated, 
+                            ctx.getSystemChangeContext());
+
+                    
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);
@@ -171,6 +166,8 @@ public class LinkRepairJob extends AbstractResourceJob {
                     Resource stored = ctx.getRepository()
                             .storeContent(ctx.getToken(), resource.getURI(), 
                                     ContentInputSources.fromBytes(buffer));
+                    
+                    // Update system job status:
                     ctx.getRepository().store(ctx.getToken(), stored, 
                             ctx.getSystemChangeContext());
                 }
