@@ -44,6 +44,7 @@ import vtk.repository.Resource;
 import vtk.repository.Revision.Type;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.search.ConfigurablePropertySelect;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.query.OrQuery;
@@ -241,10 +242,10 @@ public class LinkRepairJob extends AbstractResourceJob {
             search.setLimit(vrtxIdMap.size());
             search.clearAllFilterFlags();
             search.setSorting(null);
-            //search.setPropertySelect(PropertySelect.NONE);
+            search.setPropertySelect(new ConfigurablePropertySelect(idPropDef));
             
             ResultSet hits = ctx.getRepository().search(ctx.getToken(), search);
-            hits.getAllResults().forEach(r -> {
+            hits.forEach(r -> {
                 String vrtxid = r.getProperty(idPropDef).getStringValue();
                 String prev = vrtxIdMap.get(vrtxid);
                 if (prev != null) {
