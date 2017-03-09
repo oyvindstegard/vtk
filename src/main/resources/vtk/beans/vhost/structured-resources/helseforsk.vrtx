@@ -6,10 +6,10 @@ resourcetype helseforsk {
     approval-internal : string,
     approval-rek : string,
     approval-nsd : string,
-    from-year : string,
-    from-month : string,
-    to-year : string,
-    to-month : string
+    startup-month : string,
+    startup-year : string,
+    completed-month : string,
+    completed-year : string
   }
 
   view {
