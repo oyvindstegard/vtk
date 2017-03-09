@@ -536,13 +536,6 @@
       <version>${flexmark.version}</version>
     </dependency>
 
-    <!-- OpenID -->
-    <dependency>
-      <groupId>org.openid4java</groupId>
-      <artifactId>openid4java-consumer</artifactId>
-      <version>0.9.5</version>
-    </dependency>
-
     <!-- Abdera Atom Feed -->
     <dependency>
       <groupId>org.apache.abdera</groupId>
