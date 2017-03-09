@@ -28,7 +28,7 @@
         window.editor.resource = resource;
         window.editor.csrfToken = csrfToken;
         window.editor.lang = "no";
-      )();
+      }();
     </script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/ckeditor.js"></script>
