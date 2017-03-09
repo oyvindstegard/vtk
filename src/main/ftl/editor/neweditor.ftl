@@ -27,8 +27,12 @@
         window.editor = {};
         window.editor.resource = resource;
         window.editor.csrfToken = csrfToken;
+        window.editor.lang = "no";
       )();
     </script>
+    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/ckeditor.js"></script>
+    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/adapters/jquery.js"></script>
     <script src="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.js"></script>
   </body>
 </html>
