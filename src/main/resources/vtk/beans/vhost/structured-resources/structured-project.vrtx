@@ -68,21 +68,21 @@ resourcetype structured-project {
       ##
     }
     
-    publications {
-      ##
-      [def document structured-document()]
-      [def getExternalPublications document.properties.getExternalScientificInformation]
-      [def projectNr document.properties.projectNr]
-      [if getExternalPublications = "true" && projectNr != null]
-        [call "include:publications"]
-      [else]
-        [def selectedPublications document.properties.selectedPublications]
-        [if (selectedPublications != null && selectedPublications != "")]
-          <h2>[localized 'combinedPublications']</h2>
-          [val selectedPublications # unescaped]
-        [endif]
-      [endif]
-      ##
+	 publications {
+	  ##
+	  [def document structured-document()]
+	  [def getExternalPublications document.properties.getExternalScientificInformation]
+	  [def projectNr document.properties.projectNr]
+	  [if getExternalPublications = "true" && projectNr != null]
+	    [call "include:publications"]
+	  [else]
+	    [def selectedPublications document.properties.selectedPublications]
+	    [if (selectedPublications != null && selectedPublications != "")]
+	      <h2>[localized 'combinedPublications']</h2>
+	      [val selectedPublications # unescaped]
+	    [endif]
+	  [endif]
+	  ##
     }
    
    related-content-in-additional-column {

@@ -132,7 +132,7 @@
     <property name="loggerId" value="${repository.index.updateLoggerId}"/>
     <property name="loggerType" value="3"/>
     <property name="searcher">
-      <bean class="vtk.repository.search.SearcherImpl">
+      <bean class="vtk.repository.search.LuceneSearcher">
         <property name="indexAccessor" ref="systemIndexAccessor"/>
         <property name="documentMapper" ref="documentMapper"/>
         <property name="queryBuilder" ref="queryBuilder"/>

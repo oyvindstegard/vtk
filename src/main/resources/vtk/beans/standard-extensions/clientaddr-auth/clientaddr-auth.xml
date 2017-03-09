@@ -5,6 +5,8 @@
   <bean id="clientaddr.authenticationHandler" class="vtk.security.web.clientaddr.ClientAddressAuthenticationHandler">
     <constructor-arg name="identifier" value="ClientAddr" />
     <constructor-arg name="provider" ref="clientaddr.specProvider" />
+    <constructor-arg name="principalFactory" ref="principalFactory" />
+    <constructor-arg name="principalManager" ref="principalManager" />
   </bean>
 
   <bean id="clientaddr.specProvider" class="vtk.security.web.clientaddr.JsonClientAddrSpec" />

@@ -184,9 +184,9 @@ public class DiagramReport extends AbstractReporter {
 
         /* Include unpublished */
         search.clearAllFilterFlags();
-
+        search.setSorting(null);
         search.setQuery(mainQuery);
-        search.setLimit(1);
+        search.setLimit(0);
 
         return this.searcher.execute(token, search).getTotalHits();
     }
@@ -205,9 +205,9 @@ public class DiagramReport extends AbstractReporter {
 
         /* Include unpublished */
         search.clearAllFilterFlags();
-
+        search.setSorting(null);
         search.setQuery(mainQuery);
-        search.setLimit(1);
+        search.setLimit(0);
 
         return this.searcher.execute(token, search).getTotalHits();
     }

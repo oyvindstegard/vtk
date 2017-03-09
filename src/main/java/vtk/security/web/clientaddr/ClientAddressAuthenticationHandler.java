@@ -32,6 +32,7 @@ package vtk.security.web.clientaddr;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -48,6 +49,8 @@ import org.springframework.web.servlet.mvc.Controller;
 import vtk.security.AuthenticationException;
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.Principal;
+import vtk.security.PrincipalFactory;
+import vtk.security.PrincipalManager;
 import vtk.security.web.AuthenticationChallenge;
 import vtk.security.web.AuthenticationHandler;
 import vtk.security.web.InvalidAuthenticationRequestException;
@@ -58,11 +61,17 @@ public class ClientAddressAuthenticationHandler
         implements AuthenticationHandler {
     private String identifier;
     private Supplier<List<Result<ClientAddrAuthSpec>>> provider;
+    private PrincipalFactory principalFactory;
+    private PrincipalManager principalManager;
     
     public ClientAddressAuthenticationHandler(String identifier, 
-            Supplier<List<Result<ClientAddrAuthSpec>>> provider) {
+            Supplier<List<Result<ClientAddrAuthSpec>>> provider,
+            PrincipalFactory principalFactory,
+            PrincipalManager principalManager) {
         this.identifier = identifier;
         this.provider = provider;
+        this.principalFactory = principalFactory;
+        this.principalManager = principalManager;
     }
     
     @Override
@@ -79,6 +88,9 @@ public class ClientAddressAuthenticationHandler
             /// XXX: throw AuthenticationProcessingException()?
             return false;
         }
+        if (!auth.result.get().isPresent()) {
+            return false;
+        }
         return true;
     }
 
@@ -90,11 +102,18 @@ public class ClientAddressAuthenticationHandler
         if (auth.failure.isPresent()) {
             throw new AuthenticationProcessingException(auth.failure.get());
         }
-        Optional<String> principal = auth.result.get();
-        if (!principal.isPresent()) {
+        Optional<String> uid = auth.result.get();
+        if (!uid.isPresent()) {
             throw new AuthenticationException("No match for client: " + req.getRemoteAddr());
         }
-        return new AuthResult(principal.get());
+        Result<Optional<Principal>> principal = principal(uid.get());
+        if (principal.failure.isPresent()) {
+            throw new AuthenticationProcessingException(principal.failure.get());
+        }
+        if (!principal.result.get().isPresent()) {
+            throw new AuthenticationException("Invalid principal: " + uid.get());
+        }
+        return new AuthResult(uid.get());
     }
 
     @Override
@@ -124,6 +143,19 @@ public class ClientAddressAuthenticationHandler
                     HttpServletResponse resp)
                     throws AuthenticationProcessingException, ServletException,
                     IOException {
+                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                Writer writer = resp.getWriter();
+                Result<Optional<String>> auth = auth(req);
+                if (auth.result.isPresent()) {
+                    Optional<String> uid = auth.result.get();
+                    if (uid.isPresent()) {
+                        writer.write("Invalid user: " + uid.get());
+                    }
+                    else {
+                        writer.write("Could not map request to a valid user");
+                    }
+                }
+                resp.flushBuffer();
             }
         };
     }
@@ -143,7 +175,24 @@ public class ClientAddressAuthenticationHandler
             }
         };
     }
-
+    
+    private Result<Optional<Principal>> principal(String uid) {
+        try {
+            Principal principal = 
+                    principalFactory.getPrincipal(uid, Principal.Type.USER);
+            if (principal == null) {
+                return Result.success(Optional.empty());
+            }
+            if (!principalManager.validatePrincipal(principal)) {
+                return Result.success(Optional.empty());
+            }
+            return Result.success(Optional.of(principal));
+        }
+        catch (Throwable t) {
+            return Result.failure(t);
+        }
+    }
+    
     private Result<Optional<String>> auth(HttpServletRequest req) {
         URL url = URL.parse(req.getRequestURL().toString());
         String clientAddr = req.getRemoteAddr();

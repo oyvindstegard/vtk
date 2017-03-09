@@ -346,42 +346,42 @@ public class LinkCheckJob extends AbstractResourceJob {
                         }
                         break;
                     case NOT_FOUND:
+                        Optional<PropertySet> relocated = Optional.empty();
                         if (vrtxid != null && base.getHost().equals(resourceURL.getHost())) {
-                            // Check if resource is relocated:
-                            Optional<PropertySet> relocated = findResourceByID(execContext, vrtxid);
+                            relocated = findResourceByID(execContext, vrtxid);
+                        }
 
-                            if (relocated.isPresent()) {
-                                Map<String, String> m = new HashMap<>();
-                                m.put("link", url);
-                                if (type != null) {
-                                    m.put("type", type);
-                                }
-                                m.put("vrtxid", vrtxid);
-                                
-                                if (published(relocated.get())) {
-                                    state.relocatedLinks.add(m);
-                                    logger.debug("URL " + url + " (referenced from " 
-                                            + resource.getURI() + ") has moved, "
-                                            + " vrtxid: " + vrtxid + " still valid");
-                                }
-                                else {
-                                    logger.debug("URL " + url + " (referenced from " 
-                                            + resource.getURI() + ") is unpublished, "
-                                            + " vrtxid: " + vrtxid + " still valid");
-                                    m.put("status", result.getStatus().toString());
-                                    state.brokenLinks.add(m);
-                                }
+                        if (relocated.isPresent()) {
+                            Map<String, String> m = new HashMap<>();
+                            m.put("link", url);
+                            if (type != null) {
+                                m.put("type", type);
+                            }
+                            m.put("vrtxid", vrtxid);
+
+                            if (published(relocated.get())) {
+                                state.relocatedLinks.add(m);
+                                logger.debug("URL " + url + " (referenced from " 
+                                        + resource.getURI() + ") has moved, "
+                                        + " vrtxid: " + vrtxid + " still valid");
                             }
                             else {
-                                // Else mark as broken:
-                                Map<String, String> m = new HashMap<>();
-                                m.put("link", url);
-                                if (type != null) {
-                                    m.put("type", type);
-                                }
+                                logger.debug("URL " + url + " (referenced from " 
+                                        + resource.getURI() + ") is unpublished, "
+                                        + " vrtxid: " + vrtxid + " still valid");
                                 m.put("status", result.getStatus().toString());
                                 state.brokenLinks.add(m);
                             }
+                        }
+                        else {
+                            // Else mark as broken:
+                            Map<String, String> m = new HashMap<>();
+                            m.put("link", url);
+                            if (type != null) {
+                                m.put("type", type);
+                            }
+                            m.put("status", result.getStatus().toString());
+                            state.brokenLinks.add(m);
                         }
                         break;
                         
