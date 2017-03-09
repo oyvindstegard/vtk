@@ -2,9 +2,10 @@
 <html>
   <head>
     <title>NEW EDITOR</title>
+    <link rel="stylesheet" href="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.10.4.custom/css/smoothness/jquery-ui-1.10.4.custom.min.css" type="text/css"/>
     <link rel="stylesheet" type="text/css" href="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.css" />
   </head>
-  <body>
+  <body class="js forms-new">
     <h1>NEW EDITOR</h1>
     
     <div id="root"></div>
@@ -33,6 +34,8 @@
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/ckeditor.js"></script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/adapters/jquery.js"></script>
+    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/frameworks/es5-shim-dejavu.js"></script>
+    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/vrtx-simple-dialogs.js"></script>
     <script src="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.js"></script>
   </body>
 </html>
