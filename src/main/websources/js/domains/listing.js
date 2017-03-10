@@ -688,6 +688,7 @@ function ajaxUploadPerform(opts/*, size*/) {
   opts.form.append("<input type='hidden' name='overwrite' value='overwrite' />");
 
   opts.form.ajaxSubmit({
+    timeout: 0, // No timeout for upload, rely on the server timeout
     uploadProgress: function(event, position, total, percent) {
       _$("#" + dialogUploadingSelectorPrefix + "-percent").text(percent + "%");
       dialogUploadingBar.css("width", percent + "%");
