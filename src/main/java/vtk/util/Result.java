@@ -31,6 +31,8 @@
 package vtk.util;
 
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Wrapper class representing the result of some operation,
@@ -48,6 +50,28 @@ public final class Result<T> {
     
     public static <T> Result<T> failure(Throwable error) {
         return new Result<>(Optional.empty(), Optional.of(error));
+    }
+    
+    public static <T> Result<T> attempt(Supplier<T> supplier) {
+        try {
+            return new Result<>(Optional.of(supplier.get()), Optional.empty());
+        }
+        catch (Throwable t) {
+            return new Result<>(Optional.empty(), Optional.of(t));
+        }
+    }
+    
+    public <U> Result<U> map(Function<T,U> mapper) {
+        if (failure.isPresent()) {
+            return new Result<>(Optional.empty(), Optional.of(failure.get()));
+        }
+        try {
+            U u = mapper.apply(result.get());
+            return new Result<>(Optional.of(u), Optional.empty());
+        }
+        catch (Throwable t) {
+            return new Result<>(Optional.empty(), Optional.of(t));
+        }
     }
     
     private Result(Optional<T> result, Optional<Throwable> failure) {
