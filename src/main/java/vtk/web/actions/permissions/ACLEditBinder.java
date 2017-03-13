@@ -31,11 +31,11 @@
 package vtk.web.actions.permissions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletRequest;
 
-import org.apache.commons.collections4.EnumerationUtils;
 import org.springframework.web.bind.ServletRequestDataBinder;
 
 public class ACLEditBinder extends ServletRequestDataBinder {
@@ -54,8 +54,8 @@ public class ACLEditBinder extends ServletRequestDataBinder {
         
         List<String> removedUsers = new ArrayList<String>();
         List<String> removedGroups = new ArrayList<String>();
-        @SuppressWarnings("unchecked")
-        List<String> params = EnumerationUtils.toList(request.getParameterNames());
+        List<String> params = Collections.list(request.getParameterNames());
+        
         extractGroupsAndUsersForRemoval(removedUsers, removedGroups, params);
         if (!removedGroups.isEmpty()) {
             String[] groupList = removedGroups.toArray(new String[]{});
@@ -68,7 +68,7 @@ public class ACLEditBinder extends ServletRequestDataBinder {
             command.setUserNames(userList); 
         }
     }
-
+    
     /**
      * Extracts groups and users for removal (from request parameters)
      * 

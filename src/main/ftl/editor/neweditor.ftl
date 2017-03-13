@@ -1,11 +1,16 @@
 <#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
+<!DOCTYPE html>
 <html>
   <head>
     <title>NEW EDITOR</title>
-    <link rel="stylesheet" href="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.10.4.custom/css/smoothness/jquery-ui-1.10.4.custom.min.css" type="text/css"/>
+    <link rel="stylesheet"  type="text/css" href="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.10.4.custom/css/smoothness/jquery-ui-1.10.4.custom.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/themes/default/forms.css" />
+    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/themes/default/upload.css" />
+    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.autocomplete.css" />
+    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/js/autocomplete/autocomplete.override.css" />
     <link rel="stylesheet" type="text/css" href="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.css" />
   </head>
-  <body class="js forms-new">
+  <body class="forms-new js">
     <h1>NEW EDITOR</h1>
     
     <div id="root"></div>
@@ -21,6 +26,7 @@
       </template>
     </#if>
     <script>
+      //<![CDATA[
       (function () {
         var resourceSource = document.getElementById("resource").content.textContent;
         var csrfToken = document.getElementById("csrf-token").content.textContent;
@@ -28,10 +34,11 @@
         window.editor = {};
         window.editor.resource = resource;
         window.editor.csrfToken = csrfToken;
-        window.editor.lang = "no";
       })();
+      //]]>
     </script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.autocomplete.js"></script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/ckeditor.js"></script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/adapters/jquery.js"></script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/frameworks/es5-shim-dejavu.js"></script>

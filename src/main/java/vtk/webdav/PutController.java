@@ -37,6 +37,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.ModelAndView;
 import vtk.repository.ContentInputSources;
 import vtk.repository.IllegalOperationException;
@@ -101,8 +102,10 @@ public class PutController extends AbstractWebdavController {
     }
     
 
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    public ModelAndView handleRequest(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws Exception {
          
         if (this.maxUploadSize > 0) {
             request = new UploadLimitInputStreamFilter(this.maxUploadSize).
@@ -193,7 +196,7 @@ public class PutController extends AbstractWebdavController {
             }
 
             if (exists) {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_OK);
+                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_NO_CONTENT);
             } else {
                 model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_CREATED);
             }
@@ -220,7 +223,6 @@ public class PutController extends AbstractWebdavController {
         } catch (ReadOnlyException e) {
             model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
             model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_FORBIDDEN);
-
         }
         return new ModelAndView("PUT", model);
     }

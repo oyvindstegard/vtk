@@ -39,7 +39,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 import vtk.repository.Repository;
+import vtk.repository.Resource;
 import vtk.util.io.IO;
+import vtk.util.text.JsonStreamer;
 
 public class NewEditorController implements Controller {
 
@@ -54,10 +56,16 @@ public class NewEditorController implements Controller {
         RequestContext rc = RequestContext.getRequestContext();
         Repository repo = rc.getRepository();
         String token = rc.getSecurityToken();
-
+        Resource resource = repo.retrieve(token, rc.getResourceURI(), true);
+        String content;
+        if (resource.isCollection()) {
+            content = JsonStreamer.toJson(resource.getProperties());
+        } else {
+            content = IO.readString(repo.getInputStream(token, rc.getResourceURI(), true)).perform();
+        }
         Map<String, Object> model = new HashMap<>();
         model.put("url", rc.getRequestURL());
-        model.put("resource", IO.readString(repo.getInputStream(token, rc.getResourceURI(), true)).perform());
+        model.put("resource", content);
         return new ModelAndView(editView, model);
     }
 
