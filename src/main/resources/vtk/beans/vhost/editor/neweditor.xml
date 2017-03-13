@@ -6,7 +6,7 @@
     <property name="order" value="-9800" />
     <property name="assertions">
       <list>
-        <ref bean="editor.modeParameterAssertion" />
+        <ref bean="neweditor.modeParameterAssertion" />
       </list>
     </property>
     <property name="attributes">
@@ -22,7 +22,7 @@
     <property name="handler" ref="neweditor.handler" />
   </bean>
 
-  <bean id="editor.modeParameterAssertion" class="vtk.web.service.RequestParameterAssertion">
+  <bean id="neweditor.modeParameterAssertion" class="vtk.web.service.RequestParameterAssertion">
     <property name="parameterName" value="mode" />
     <property name="parameterValue" value="neweditor" />
   </bean>
