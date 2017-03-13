@@ -70,4 +70,16 @@ public class ResultTest {
         integer = string.map(str -> Integer.parseInt(str));
         assertTrue(integer.failure.isPresent());
     }
+
+    @Test
+    public void testFlatMap() {
+        Result<Integer> integer = Result.success(22);
+        Result<String> string = integer.flatMap(i -> Result.success(String.valueOf(i)));
+        assertTrue(string.result.isPresent());
+        assertEquals("22", string.result.get());
+        
+        string = string.flatMap(str -> Result.success("NaN"));
+        integer = string.flatMap(str -> Result.attempt(() -> Integer.parseInt(str)));
+        assertTrue(integer.failure.isPresent());
+    }
 }

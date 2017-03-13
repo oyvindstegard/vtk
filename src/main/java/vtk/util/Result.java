@@ -61,7 +61,19 @@ public final class Result<T> {
         }
     }
     
-    public <U> Result<U> map(Function<T,U> mapper) {
+    public <U> Result<U> flatMap(Function<? super T, ? extends Result<U>> mapper) {
+        if (failure.isPresent()) {
+            return new Result<>(Optional.empty(), Optional.of(failure.get()));
+        }
+        try {
+            return mapper.apply(result.get());
+        }
+        catch (Throwable t) {
+            return new Result<>(Optional.empty(), Optional.of(t));
+        }
+    }
+    
+    public <U> Result<U> map(Function<? super T, ? extends U> mapper) {
         if (failure.isPresent()) {
             return new Result<>(Optional.empty(), Optional.of(failure.get()));
         }
