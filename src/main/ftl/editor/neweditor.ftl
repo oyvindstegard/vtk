@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.autocomplete.css" />
     <link rel="stylesheet" type="text/css" href="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.css" />
   </head>
-  <body>
+  <body class="forms-new js">
     <h1>NEW EDITOR</h1>
     
     <div id="root"></div>
