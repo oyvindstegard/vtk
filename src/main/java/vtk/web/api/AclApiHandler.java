@@ -133,7 +133,7 @@ public class AclApiHandler implements Controller {
             return;
         }
         
-        Result<Acl> acl = json.map(aclMapper);
+        Result<Acl> acl = json.flatMap(aclMapper);
         if (acl.failure.isPresent()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("text/plain;charset=utf-8");
@@ -202,7 +202,7 @@ public class AclApiHandler implements Controller {
         });
     }
     
-    private Function<Json.MapContainer, Acl> aclMapper = (map) -> {
+    private Function<Json.MapContainer, Result<Acl>> aclMapper = (map) -> {
         Acl result = Arrays.stream(Privilege.values()).reduce(Acl.EMPTY_ACL, (acc, action) -> {
             Acl acl = acc;
             if (map.containsKey(action.getName())) {
@@ -234,7 +234,10 @@ public class AclApiHandler implements Controller {
             }
             return acl;
         }, (a1, a2) -> a1);
-        return result;
+        if (result.isEmpty()) {
+            return Result.failure(new Throwable("Resulting ACL has no entries"));
+        }
+        return Result.success(result);
     };
     
     
