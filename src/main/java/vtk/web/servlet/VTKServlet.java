@@ -30,6 +30,8 @@
  */
 package vtk.web.servlet;
 
+import java.io.EOFException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -359,11 +361,16 @@ public class VTKServlet extends DispatcherServlet {
      * event regardless of the outcome.  The actual event handling is
      * performed by the doService() method in DispatcherServlet.
      * 
+     * @param request
+     * @param servletResponse
+     * @throws javax.servlet.ServletException
+     * @throws java.io.IOException
+     * @throws java.lang.Exception
      */
     @Override
     protected void service(HttpServletRequest request,
-                                 HttpServletResponse servletResponse) 
-        throws ServletException {
+                           HttpServletResponse servletResponse) throws ServletException, IOException {
+
         long startTime = System.currentTimeMillis();
         Throwable failureCause = null;
 
@@ -420,6 +427,11 @@ public class VTKServlet extends DispatcherServlet {
         } catch (InvalidAuthenticationRequestException e) {
             responseWrapper.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logError(request, e);
+
+        } catch (EOFException eof) {
+            // Likely cause client disconnect, rethrow to avoid general error logging
+            logger.warn("Client disconnect for request: " + request); // TODO remove this warning eventually ..
+            throw eof;
         } catch (Throwable t) {
             if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
                 responseWrapper.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
