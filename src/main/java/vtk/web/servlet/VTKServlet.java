@@ -420,9 +420,6 @@ public class VTKServlet extends DispatcherServlet {
         } catch (InvalidAuthenticationRequestException e) {
             responseWrapper.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logError(request, e);
-        } catch (java.io.EOFException eof) {
-            // Likely cause of this is abrupt client disconnect, which we mostly ignore
-            logger.warn("Client disconnect for request: " + request);
         } catch (Throwable t) {
             if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
                 responseWrapper.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
