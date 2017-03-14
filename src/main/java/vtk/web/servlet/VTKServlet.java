@@ -365,7 +365,6 @@ public class VTKServlet extends DispatcherServlet {
      * @param servletResponse
      * @throws javax.servlet.ServletException
      * @throws java.io.IOException
-     * @throws java.lang.Exception
      */
     @Override
     protected void service(HttpServletRequest request,
