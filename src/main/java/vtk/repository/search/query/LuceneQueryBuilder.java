@@ -445,10 +445,11 @@ public class LuceneQueryBuilder implements InitializingBean {
      * {@link vtk.repository.search.Sorting}.
      * 
      * @param sort
-     * @return
+     * @return a lucene Sort instance with at least one field, or <code>null</code>
+     * if no sort fields are present
      */
     public org.apache.lucene.search.Sort buildSort(Sorting sort) {
-        if (sort == null)
+        if (sort == null || sort.getSortFields().isEmpty())
             return null;
 
         return new SortBuilder().buildSort(sort);
