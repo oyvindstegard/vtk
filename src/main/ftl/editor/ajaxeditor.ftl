@@ -7,9 +7,9 @@
   </head>
   <body>
     <h1>NEW EDITOR</h1>
-    
+
     <div id="root"></div>
-    
+
     <#if resource?has_content>
       <template id="resource">
         ${resource}

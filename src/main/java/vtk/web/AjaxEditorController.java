@@ -41,11 +41,11 @@ import java.util.Map;
 import vtk.repository.Repository;
 import vtk.util.io.IO;
 
-public class NewEditorController implements Controller {
+public class AjaxEditorController implements Controller {
 
     private final View editView;
 
-    public NewEditorController(View editView) {
+    public AjaxEditorController(View editView) {
         this.editView = editView;
     }
 
