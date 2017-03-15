@@ -453,7 +453,6 @@ public class VTKServlet extends DispatcherServlet {
             }
         }
         catch (AuthenticationException ex) {
-            ex.printStackTrace();
             this.securityInitializer.challenge(request, responseWrapper, ex);
                 
         }
