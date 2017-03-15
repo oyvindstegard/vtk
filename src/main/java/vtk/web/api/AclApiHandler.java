@@ -35,7 +35,9 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -46,9 +48,11 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
 import vtk.repository.Acl;
+import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
 import vtk.repository.Resource;
+import vtk.repository.ResourceNotFoundException;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 import vtk.util.Result;
@@ -95,68 +99,87 @@ public class AclApiHandler implements Controller {
         
         if (resource.isInheritedAcl()) {
             Resource ancestor = nearestAcl(requestContext, resource.getURI().getParent());
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             URL url = new URL(requestContext.getRequestURL());
             url.setPath(ancestor.getURI());
-            response.addHeader("Link", "<" + url + ">; rel=\"inherited-acl\"");
-            response.setContentType("text/plain;charset=utf-8");
-            PrintWriter writer = response.getWriter();
-            writer.write("ACL Not Found on \n" + resource.getURI());
-            writer.write("Nearest ACL: " + ancestor.getURI() + "\n");
-            response.flushBuffer();
+            
+            ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .header("Link", "<" + url + ">; rel=\"inherited-acl\"")
+                .message("ACL Not Found on " + resource.getURI() + "\n"
+                        + "Nearest ACL: " + ancestor.getURI() + "\n")
+                .writeTo(response);
+            return;
         }
-        
-        response.setContentType("application/json");
-        PrintWriter writer = response.getWriter();
-        writer.write(JsonStreamer.toJson(aclToJson(resource.getAcl()), 2, true));
-        response.flushBuffer();
+        ResponseBuilder(HttpServletResponse.SC_OK)
+            .header("Content-Type", "application/json")
+            .message(JsonStreamer.toJson(aclToJson(resource.getAcl()), 2, true))
+            .writeTo(response);
     }
     
 
     private void updateAcl(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
         if (!"application/json".equals(request.getContentType())) {
-            response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
-            response.setContentType("text/plain;charset=utf-8");
-            response.getWriter().write("Content-Type application/json required for " 
-                    + request.getMethod() + " method");
+            ResponseBuilder(HttpServletResponse.SC_NOT_ACCEPTABLE)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Content-Type application/json required for " 
+                    + request.getMethod() + " method\n")
+                .writeTo(response);
             return;
         }
         
         Result<Json.MapContainer> json = parseJson(request.getInputStream());
         if (json.failure.isPresent()) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setContentType("text/plain;charset=utf-8");
-            response.getWriter().write("Failed to parse JSON from input: " 
-                    + json.failure.get().getMessage() + "\n");
-            response.flushBuffer();
+            ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Failed to parse JSON from input: " 
+                        + json.failure.get().getMessage() + "\n")
+                .writeTo(response);
             return;
         }
         
+        
         Result<Acl> acl = json.flatMap(aclMapper);
         if (acl.failure.isPresent()) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setContentType("text/plain;charset=utf-8");
-            response.getWriter().write("Failed to map JSON input to a valid ACL: " 
-                    + acl.failure.get().getMessage() + "\n");
-            response.flushBuffer();
+            ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Failed to map JSON input to a valid ACL: " 
+                        + acl.failure.get().getMessage() + "\n")
+                .writeTo(response);
             return;
         }
         
         RequestContext requestContext = RequestContext.getRequestContext();
         try {
-            Resource updated = requestContext.getRepository().storeACL(requestContext.getSecurityToken(), 
+            Resource updated = requestContext.getRepository()
+                    .storeACL(requestContext.getSecurityToken(), 
                             requestContext.getResourceURI(), acl.result.get());
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("text/plain;charset=utf-8");
-            response.getWriter().write("ACL updated\n");
-            response.flushBuffer();
+            ResponseBuilder(HttpServletResponse.SC_OK)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("ACL updated\n")
+                .writeTo(response);
+        }
+        catch (AuthorizationException e) {
+            ResponseBuilder(HttpServletResponse.SC_UNAUTHORIZED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Principal " + requestContext.getPrincipal() 
+                    + " not authorized to update ACL on resource " 
+                    + requestContext.getResourceURI() + "\n")
+                .writeTo(response);
+        }
+        catch (ResourceNotFoundException e) {
+            ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+            .header("Content-Type", "text/plain;charset=utf-8")
+            .message("Resource not found: " + requestContext.getResourceURI())
+            .writeTo(response);
         }
         catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            ResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("An unexpected error occurred: " + e.getMessage() + "\n")
+                .writeTo(response);
         }
     }
-    
     
     private void deleteAcl(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
@@ -165,22 +188,25 @@ public class AclApiHandler implements Controller {
                 requestContext.getResourceURI(), true);
         
         if (resource.isInheritedAcl()) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            PrintWriter writer = response.getWriter();
-            writer.write("404 Not Found\n");
-            response.flushBuffer();
+            ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("404 Not Found\n")
+                .writeTo(response);
+            return;
         }
-        response.setStatus(HttpServletResponse.SC_OK);
-        PrintWriter writer = response.getWriter();
-        writer.write("Deleted ACL\n");
-        response.flushBuffer();
+        ResponseBuilder(HttpServletResponse.SC_OK)
+            .header("Content-Type", "text/plain;charset=utf-8")
+            .message("Deleted ACL\n")
+            .writeTo(response);
     }
 
     private void unknownMethod(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        throw new UnsupportedOperationException("Not implemented");
+        ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+            .header("Content-Type", "text/plain;charset=utf-8")
+            .message("Request method not supported: " + request.getMethod())
+            .writeTo(response);
     }
-    
     
     private Resource nearestAcl(RequestContext requestContext, Path uri) throws Exception {
         String token = requestContext.getSecurityToken();
@@ -268,6 +294,35 @@ public class AclApiHandler implements Controller {
             json.put(action.getName(), entry);
         });
         return json;
+    }
+    
+    private static ResponseBuilder ResponseBuilder(int status) { 
+        return new ResponseBuilder(status); 
+    }
+    
+    private static class ResponseBuilder {
+        private int status;
+        private Map<String, String> headers = new HashMap<>();
+        private String message = null;
+        
+        public ResponseBuilder(int status) 
+            { this.status = status; }
+        public ResponseBuilder message(String message) 
+            { this.message = message; return this; }
+        public ResponseBuilder header(String name, String value) 
+            { this.headers.put(name, value); return this; }
+        
+        public void writeTo(HttpServletResponse response) throws Exception {
+            response.setStatus(status);
+            for (String name: headers.keySet()) {
+                response.setHeader(name, headers.get(name));
+            }
+            if (message != null) {
+                PrintWriter writer = response.getWriter();
+                writer.write(message);
+                response.flushBuffer();
+            }
+        }
     }
     
 }
