@@ -6,7 +6,15 @@
     <property name="order" value="-9800" />
     <property name="assertions">
       <list>
-        <ref bean="editor.modeParameterAssertion" />
+        <ref bean="fileAssertion" />
+        <ref bean="requiresWritePermissionAssertion" />
+        <bean class="vtk.web.service.RequestMethodAssertion">
+          <property name="method" value="GET"/>
+        </bean>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="mode" />
+          <property name="parameterValue" value="neweditor" />
+        </bean>
       </list>
     </property>
     <property name="attributes">
@@ -22,9 +30,63 @@
     <property name="handler" ref="neweditor.handler" />
   </bean>
 
-  <bean id="editor.modeParameterAssertion" class="vtk.web.service.RequestParameterAssertion">
-    <property name="parameterName" value="mode" />
-    <property name="parameterValue" value="neweditor" />
+  <bean id="neweditor.adminJsonPutService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService" />
+    <property name="order" value="-100" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestHeaderRegexpAssertion">
+          <property name="header" value="Content-Type"/>
+          <property name="pattern" value="application/(json|.+\+json)" />
+        </bean>
+        <bean class="vtk.web.service.RequestMethodAssertion">
+          <property name="method" value="PUT" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="neweditor.putHandler"/>
+  </bean>
+
+  <bean id="neweditor.adminJsonGetService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService"/>
+    <property name="order" value="-100" />
+    <property name="assertions">
+      <list>
+        <ref bean="fileAssertion" />
+        <ref bean="neweditor.jsonAcceptAssertion" />
+        <bean class="vtk.web.service.RequestMethodAssertion">
+          <property name="method" value="GET" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="neweditor.getHandler"/>
+  </bean>
+
+  <bean id="neweditor.jsonGetService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="viewService"/>
+    <property name="order" value="-100" />
+    <property name="assertions">
+      <list>
+        <ref bean="resourceIsPublishedAssertion" />
+        <ref bean="fileAssertion" />
+        <ref bean="neweditor.jsonAcceptAssertion" />
+        <bean class="vtk.web.service.RequestMethodAssertion">
+          <property name="method" value="GET" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="neweditor.getHandler"/>
+  </bean>
+
+  <bean id="neweditor.putHandler" class="vtk.web.api.PutController">
+    <constructor-arg value="${upload.maxFileSize}" />
+    <constructor-arg value="${revisionStore.maxFileSize}" />
+    <constructor-arg ref="versioning.handleRevisionAssertions" />
+  </bean>
+
+  <bean id="neweditor.getHandler" class="vtk.web.display.file.DisplayResourceController">
+    <property name="viewName" value="webdavDisplayResource" />
+    <property name="ignoreLastModified" value="true" />
   </bean>
 
   <bean id="neweditor.handler" class="vtk.web.NewEditorController">
@@ -33,6 +95,11 @@
 
   <bean id="neweditor.editView" parent="freemarkerView">
     <property name="url" value="editor/neweditor.ftl" />
+  </bean>
+
+  <bean id="neweditor.jsonAcceptAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
+    <property name="header" value="Accept"/>
+    <property name="pattern" value=".*application/json.*" />
   </bean>
 
 </beans>

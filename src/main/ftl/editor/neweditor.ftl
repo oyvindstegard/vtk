@@ -1,4 +1,5 @@
 <#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
+<!DOCTYPE html>
 <html>
   <head>
     <title>NEW EDITOR</title>
@@ -20,6 +21,7 @@
       </template>
     </#if>
     <script>
+      //<![CDATA[
       (function () {
         var resourceSource = document.getElementById("resource").content.textContent;
         var csrfToken = document.getElementById("csrf-token").content.textContent;
@@ -27,7 +29,8 @@
         window.editor = {};
         window.editor.resource = resource;
         window.editor.csrfToken = csrfToken;
-      )();
+      })();
+      //]]>
     </script>
     <script src="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.js"></script>
   </body>
