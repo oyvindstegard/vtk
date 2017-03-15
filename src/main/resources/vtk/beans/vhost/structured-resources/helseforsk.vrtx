@@ -9,7 +9,7 @@ resourcetype helseforsk {
 	unitCachedFullName : json(unit:string, name:string, url:string),
 	participantsUsernames : string multiple,
 	participantsCachedFullNames : json(username:string, name:string, url:string) multiple,
-	participants : json (participantName:string, participantAffiliation:string) multiple,
+	participants : json (name:string, affiliation:string) multiple,
     startup-month : string,
     startup-year : string,
     completed-month : string,
