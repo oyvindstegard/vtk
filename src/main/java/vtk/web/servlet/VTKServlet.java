@@ -519,7 +519,7 @@ public class VTKServlet extends DispatcherServlet {
             
             if (nextIdx < servletFilters.size()) {
                 Filter filter = servletFilters.get(nextIdx);
-                logger.warn("Invoking servlet filter: " + filter);
+                logger.debug("Invoking servlet filter: " + filter);
                 filter.doFilter(request, response, this);
             }
             else {
