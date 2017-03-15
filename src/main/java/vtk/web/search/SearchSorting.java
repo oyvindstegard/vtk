@@ -31,17 +31,16 @@
 package vtk.web.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Namespace;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.repository.search.SortField;
 import vtk.repository.search.PropertySortField;
 
 import vtk.repository.search.SortField;
@@ -54,28 +53,14 @@ import vtk.web.service.URL;
  *     and so returns a generated fallback PropertyTypeDefinition instance. And the resulting property field name happens to
  *     match the index URI name field name. Lucky.
  */
-public class SearchSorting implements InitializingBean {
+public class SearchSorting {
 
     private SortField.Direction defaultSortOrder;
     private Map<String, SortField.Direction> sortOrderMapping;
     private PropertyTypeDefinition sortPropDef;
-    private List<String> sortOrderPropDefPointers;
-    private List<PropertyTypeDefinition> sortOrderPropDefs;
+    private List<String> sortOrderPropDefPointers = Collections.emptyList();
 
     private ResourceTypeTree resourceTypeTree;
-
-    @Override
-    public void afterPropertiesSet() {
-        this.sortOrderPropDefs = new ArrayList<PropertyTypeDefinition>();
-        if (this.sortOrderPropDefPointers != null) {
-            for (String pointer : this.sortOrderPropDefPointers) {
-                PropertyTypeDefinition prop = this.resourceTypeTree.getPropertyDefinitionByPointer(pointer);
-                if (prop != null) {
-                    this.sortOrderPropDefs.add(prop);
-                }
-            }
-        }
-    }
 
     public List<SortField> getSortFields(Resource collection) {
         PropertyTypeDefinition sortProp = null;
@@ -92,7 +77,7 @@ public class SearchSorting implements InitializingBean {
             }
         }
 
-        List<SortField> sortFields = new ArrayList<SortField>();
+        List<SortField> sortFields = new ArrayList<>();
         if (sortProp != null) {
             // XXX: "name" is not a property, and should use ResourceSortField, not PropertySortField.
             // Hack fix here, needs proper fix later:
@@ -102,21 +87,22 @@ public class SearchSorting implements InitializingBean {
                 sortFields.add(new PropertySortField(sortProp, sortFieldDirection));                
             }
         } else {
-            if (sortOrderPropDefs != null) {
-                for (PropertyTypeDefinition p : sortOrderPropDefs) {
+            if (! sortOrderPropDefPointers.isEmpty()) {
+                for (String propDefPointer: sortOrderPropDefPointers) {
+                    PropertyTypeDefinition propDef = resourceTypeTree.getPropertyDefinitionByPointer(propDefPointer);
                     SortField.Direction sortOrder = defaultSortOrder;
                     if (sortOrderMapping != null) {
-                        SortField.Direction mappedDirection = sortOrderMapping.get(p.getName());
+                        SortField.Direction mappedDirection = sortOrderMapping.get(propDef.getName());
                         if (mappedDirection != null) {
                             sortOrder = mappedDirection;
                         }
                     }
                     
                     // XXX: "name" is treated as a property, fix me properly.
-                    if ("name".equals(p.getName()) && Namespace.DEFAULT_NAMESPACE == p.getNamespace()) {
+                    if ("name".equals(propDef.getName()) && Namespace.DEFAULT_NAMESPACE == propDef.getNamespace()) {
                         sortFields.add(new ResourceSortField(PropertySet.NAME_IDENTIFIER, sortOrder));
                     } else {
-                        sortFields.add(new PropertySortField(p, sortOrder));
+                        sortFields.add(new PropertySortField(propDef, sortOrder));
                     }
                 }
             }
@@ -184,6 +170,9 @@ public class SearchSorting implements InitializingBean {
     }
 
     public void setSortOrderPropDefPointers(List<String> sortOrderPropDefPointers) {
+        if (sortOrderPropDefPointers == null) {
+            throw new IllegalArgumentException("sortOrderPropDefPointers cannot be null");
+        }
         this.sortOrderPropDefPointers = sortOrderPropDefPointers;
     }
 

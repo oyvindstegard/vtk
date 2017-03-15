@@ -109,7 +109,7 @@
     <property name="subfolderPropDef" ref="collection.recursiveListingSubfoldersPropDef" />
   </bean>
 
-  <bean id="collectionListing.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+  <bean id="collectionListing.searchSorting" class="vtk.web.search.SearchSorting">
     <property name="sortPropDef" ref="collection.sortingPropDef" />
     <property name="sortOrderPropDefPointers">
       <list>
