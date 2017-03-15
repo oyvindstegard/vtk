@@ -511,9 +511,13 @@ public class VTKServlet extends DispatcherServlet {
 
     private class FilterChain implements javax.servlet.FilterChain {
         private int idx = 0;
+        boolean terminated = false;
         @Override
         public void doFilter(ServletRequest request, ServletResponse response)
                 throws IOException, ServletException {
+            if (terminated) {
+                throw new IllegalStateException("FilterChain has terminated");
+            }
             
             int nextIdx = idx++;
             
@@ -524,6 +528,7 @@ public class VTKServlet extends DispatcherServlet {
             }
             else {
                 doService((HttpServletRequest) request, (HttpServletResponse) response);
+                terminated = true;
             }
         }
     }
