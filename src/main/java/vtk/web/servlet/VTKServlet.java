@@ -30,6 +30,8 @@
  */
 package vtk.web.servlet;
 
+
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -403,7 +405,7 @@ public class VTKServlet extends DispatcherServlet {
     @Override
     protected void doService(HttpServletRequest request,
                                  HttpServletResponse servletResponse) 
-        throws ServletException {
+        throws ServletException, IOException {
         long startTime = System.currentTimeMillis();
         Throwable failureCause = null;
         
@@ -464,11 +466,10 @@ public class VTKServlet extends DispatcherServlet {
             responseWrapper.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logError(request, e);
         }
-        catch (java.io.EOFException eof) {
-            // Likely cause of this is abrupt client disconnect, which we mostly ignore
-            logger.warn("Client disconnect for request: " + request);
-        }
-        catch (Throwable t) {
+        catch (EOFException ignore) {
+            // Likely cause client disconnect, rethrow to avoid general error logging
+            throw ignore;
+        } catch (Throwable t) {
             if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
                 responseWrapper.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
