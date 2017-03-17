@@ -45,7 +45,7 @@ import org.springframework.context.ApplicationContextAware;
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
-import vtk.web.StaticResourceLocation;
+import vtk.resourcemanagement.StaticResourceLocation;
 
 
 public class StaticResourceLocationsAssertion

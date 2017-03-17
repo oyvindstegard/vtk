@@ -34,9 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,8 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.ClassPathResource;
@@ -54,12 +50,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.LastModified;
-import vtk.repository.Path;
+import vtk.resourcemanagement.StaticResourceResolver;
 import vtk.util.io.IO;
 import vtk.util.repository.MimeHelper;
-import vtk.util.web.LinkTypesPrefixes;
 import vtk.web.RequestContext;
-import vtk.web.StaticResourceLocation;
 import vtk.web.service.URL;
 
 /**
@@ -72,55 +66,25 @@ import vtk.web.service.URL;
  * response headers</li>
  * </ul>
  */
-public class DisplayClassPathResourceController implements Controller, LastModified, InitializingBean,
-        ApplicationContextAware {
+public class DisplayClassPathResourceController implements
+        Controller, LastModified, ApplicationContextAware {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private Map<Path, String> locationsMap;
-    private Map<String, String> headers;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private StaticResourceResolver staticResourceResolver;
     private ApplicationContext applicationContext;
+    private Map<String, String> headers;
     private boolean handleLastModified;
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-    }
-
-    public void setHeaders(Map<String, String> headers) {
-        this.headers = headers;
-    }
-
-    public void setHandleLastModified(boolean handleLastModified) {
-        this.handleLastModified = handleLastModified;
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-
-        Map<String, StaticResourceLocation> matchingBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(
-                this.applicationContext, StaticResourceLocation.class, true, false);
-        Collection<StaticResourceLocation> allLocations = matchingBeans.values();
-        this.locationsMap = new HashMap<Path, String>();
-
-        for (StaticResourceLocation location : allLocations) {
-            Path uri = location.getPrefix();
-            String resourceLocation = location.getResourceLocation();
-            this.locationsMap.put(uri, resourceLocation);
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Locations map: " + this.locationsMap);
-        }
-    }
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
         if (!("GET".equals(request.getMethod()) || "HEAD".equals(request.getMethod()))) {
             response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return null;
         }
 
-        Resource resource = resolveResource(request);
+        URL url = URL.create(request);
+        Resource resource = this.staticResourceResolver.resolve(url.getPath());
         if (resource == null || !resource.exists()) {
             if (this.logger.isDebugEnabled()) {
                 StringBuilder sb = new StringBuilder("Unable to serve resource: " + resource);
@@ -171,7 +135,8 @@ public class DisplayClassPathResourceController implements Controller, LastModif
             return -1;
         }
 
-        Resource resource = resolveResource(request);
+        URL url = URL.create(request);
+        Resource resource = this.staticResourceResolver.resolve(url.getPath());
         if (resource.exists()) {
             try {
                 File f = resource.getFile();
@@ -181,6 +146,23 @@ public class DisplayClassPathResourceController implements Controller, LastModif
             }
         }
         return -1;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    public void setStaticResourceResolver(StaticResourceResolver staticResourceResolver) {
+        this.staticResourceResolver = staticResourceResolver;
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    }
+
+    public void setHandleLastModified(boolean handleLastModified) {
+        this.handleLastModified = handleLastModified;
     }
 
     private static final class Stream {
@@ -203,54 +185,6 @@ public class DisplayClassPathResourceController implements Controller, LastModif
             stream.stream = resource.getInputStream();
         }
         return stream;
-    }
-
-    private Resource resolveResource(HttpServletRequest request) {
-        URL url = URL.create(request);
-        List<Path> paths = url.getPath().getPaths();
-
-        Path uriPrefix = null;
-        String resourceLocation = null;
-        for (int i = paths.size() - 1; i >= 0; i--) {
-            Path prefix = paths.get(i);
-            if (this.locationsMap.containsKey(prefix)) {
-                resourceLocation = this.locationsMap.get(prefix);
-                uriPrefix = prefix;
-            }
-        }
-
-        if (resourceLocation == null) {
-            return null;
-        }
-
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Path uri = requestContext.getResourceURI();
-        if (uriPrefix != null) {
-            Path p = Path.ROOT;
-            int offset = uriPrefix.getDepth() + 1;
-            List<String> elements = uri.getElements();
-            for (int i = offset; i < elements.size(); i++) {
-                p = p.extend(elements.get(i));
-            }
-            uri = p;
-        }
-
-        String loc = resourceLocation;
-        if (loc.endsWith("/")) {
-            loc = loc.substring(0, loc.length() - 1);
-        }
-        loc += uri;
-
-        if (loc.startsWith(LinkTypesPrefixes.FILE + "//")) {
-            String actualPath = loc.substring((LinkTypesPrefixes.FILE + "//").length());
-            return new FileSystemResource(actualPath);
-        }
-
-        if (loc.startsWith("classpath://")) {
-            String actualPath = loc.substring("classpath://".length());
-            return new ClassPathResource(actualPath);
-        }
-        return null;
     }
 
 }
