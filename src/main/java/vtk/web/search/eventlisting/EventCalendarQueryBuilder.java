@@ -34,7 +34,6 @@ import java.util.Calendar;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Resource;
 import vtk.repository.ResourceTypeTree;
@@ -48,26 +47,22 @@ import vtk.repository.search.query.TermOperator;
 import vtk.web.display.collection.event.EventListingHelper;
 import vtk.web.search.SearchComponentQueryBuilder;
 
-public class EventCalendarQueryBuilder implements SearchComponentQueryBuilder, InitializingBean {
+public class EventCalendarQueryBuilder implements SearchComponentQueryBuilder {
 
     private EventListingHelper helper;
     private ResourceTypeTree resourceTypeTree;
     private String startPropDefPointer;
     private String endPropDefPointer;
-    private PropertyTypeDefinition startPropDef;
-    private PropertyTypeDefinition endPropDef;
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        this.startPropDef = this.resourceTypeTree.getPropertyDefinitionByPointer(this.startPropDefPointer);
-        this.endPropDef = this.resourceTypeTree.getPropertyDefinitionByPointer(this.endPropDefPointer);
-    }
 
     @Override
     public Query build(Resource base, HttpServletRequest request) {
-
-        if (this.startPropDef == null || this.endPropDef == null) {
-            throw new IllegalArgumentException("Both start and end date properties must be available");
+        final PropertyTypeDefinition startPropDef = resourceTypeTree.getPropertyDefinitionByPointer(startPropDefPointer);
+        final PropertyTypeDefinition endPropDef = resourceTypeTree.getPropertyDefinitionByPointer(endPropDefPointer);
+        if (startPropDef == null) {
+            throw new IllegalStateException("Could not find property definition for '" + startPropDefPointer + "'");
+        }
+        if (endPropDef == null) {
+            throw new IllegalStateException("Could not find property definition for '" + endPropDefPointer + "'");
         }
 
         Calendar startCal = this.helper.getCurrentMonth();
@@ -78,7 +73,7 @@ public class EventCalendarQueryBuilder implements SearchComponentQueryBuilder, I
         baseQuery.add(new PropertyExistsQuery(startPropDef, false));
 
         // Start time is not yet passed
-        Query notYetStarted = new PropertyTermQuery(this.startPropDef, String.valueOf(start), TermOperator.GT);
+        Query notYetStarted = new PropertyTermQuery(startPropDef, String.valueOf(start), TermOperator.GT);
 
         // Start time is passed, but end time is not yet passed
         AndQuery notYetEnded = new AndQuery();
@@ -93,8 +88,8 @@ public class EventCalendarQueryBuilder implements SearchComponentQueryBuilder, I
         // supplied.
         AndQuery noEndDate = new AndQuery();
         long oneHourEarlier = this.getOneHourEarlier();
-        noEndDate.add(new PropertyTermQuery(this.startPropDef, String.valueOf(oneHourEarlier), TermOperator.GE));
-        noEndDate.add(new PropertyExistsQuery(this.endPropDef, true));
+        noEndDate.add(new PropertyTermQuery(startPropDef, String.valueOf(oneHourEarlier), TermOperator.GE));
+        noEndDate.add(new PropertyExistsQuery(endPropDef, true));
 
         OrQuery calendarQueryConditions = new OrQuery();
         calendarQueryConditions.add(notYetStarted);
