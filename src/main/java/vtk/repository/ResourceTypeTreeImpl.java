@@ -165,7 +165,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
      */
     private final Map<String, Namespace> namespacePrefixMap = new HashMap<>();
 
-    
+
     /**
      * Maps from namespaces to maps which map property names to a set
      * of primary resource types
@@ -405,37 +405,30 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         return propertyTypeDefinition;
     }
 
-    private static final Pattern PROPDEF_POINTER_DELIMITER = Pattern.compile(":");
     @Override
-    public PropertyTypeDefinition getPropertyDefinitionByPointer(String pointer) {
-        
-        String[] pointerParts = PROPDEF_POINTER_DELIMITER.split(pointer);
-        if (pointerParts.length == 1) {
-            return this.getPropertyDefinitionByPrefix(null, pointer);
+    public PropertyTypeDefinition getPropertyDefinitionByPointer(String qname) {
+        String[] qnameParts = qname.split(":");
+
+        if (qnameParts.length == 1) {
+            return getPropertyDefinitionByPrefix(null, qname);
         }
-        if (pointerParts.length == 2) {
-            return this.getPropertyDefinitionByPrefix(pointerParts[0], pointerParts[1]);
+        if (qnameParts.length == 2) {
+            return getPropertyDefinitionByPrefix(qnameParts[0].isEmpty() ? null : qnameParts[0], qnameParts[1]);
         }
-        if (pointerParts.length == 3) {
-            return this.getPropertyDefinitionForResource(pointerParts[0], pointerParts[1], pointerParts[2]);
+        if (qnameParts.length == 3) {
+            return getPropertyDefinitionForResourceType(qnameParts[0], qnameParts[1].isEmpty() ? null : qnameParts[1], qnameParts[2]);
         }
 
         return null;
     }
 
-    // XXX What about ancestor+mixin resource type prop defs ? Looks like they are not handled here.
-    private PropertyTypeDefinition getPropertyDefinitionForResource(String resourceType,
-                                                                    String prefix, String name) {
-        if (prefix != null && prefix.trim().length() == 0) {
-            prefix = null;
-        }
-
-        ResourceTypeDefinition resourceTypeDefinition = this.getResourceTypeDefinitionByName(resourceType);
+    private PropertyTypeDefinition getPropertyDefinitionForResourceType(String resourceType, String prefix, String name) {
+        ResourceTypeDefinition resourceTypeDefinition = getResourceTypeDefinitionByName(resourceType);
         if (resourceTypeDefinition == null) {
             return null;
         }
 
-        Namespace namespace = this.namespacePrefixMap.get(prefix);
+        Namespace namespace = namespacePrefixMap.get(prefix);
         if (namespace == null) {
             return null;
         }
@@ -844,7 +837,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         }
 
         PropertyTypeDefinition[] propDefs = def.getPropertyTypeDefinitions();
-        printPropertyDefinitions(sb, level, def, propDefs);
+        printPropertyDefinitions(sb, level, propDefs);
         
         List<PrimaryResourceTypeDefinition> children = this.parentChildMap.get(def);
 
@@ -855,15 +848,14 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         }
     }
 
-    private void printPropertyDefinitions(StringBuilder sb, int level, 
-            ResourceTypeDefinition resourceType, PropertyTypeDefinition[] propDefs) {
+    private void printPropertyDefinitions(StringBuilder sb, int level, PropertyTypeDefinition[] propDefs) {
         if (propDefs != null) {
             for (PropertyTypeDefinition definition: propDefs) {
                 sb.append("  ");
                 for (int j = 0; j < level; j++) sb.append("  ");
 
-                if (resourceType.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
-                    sb.append(resourceType.getNamespace().getPrefix()).append(":");
+                if (definition.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
+                    sb.append(definition.getNamespace().getPrefix()).append(":");
                 }
                 sb.append(definition.getName());
                 sb.append(" ");
@@ -873,7 +865,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
                 if (definition.isMultiple())
                     sb.append("[]");
                 sb.append(" ");
-                List<String> flags = new ArrayList<String>();
+                List<String> flags = new ArrayList<>();
                 if (definition.getProtectionLevel() == RepositoryAction.UNEDITABLE_ACTION) {
                     flags.add("readonly");
                 }

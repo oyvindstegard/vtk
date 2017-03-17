@@ -46,7 +46,8 @@ import vtk.repository.resourcetype.PropertyType.Type;
 
 /**
  * Aspects of a property type definition that can be overridden:
- * <ul><li>metadata
+ * <ul>
+ * <li>metadata
  * <li>default value
  * <li>evaluator
  * </ul>
@@ -122,6 +123,10 @@ public class OverridingPropertyTypeDefinitionImpl implements OverridableProperty
     @Override
     public boolean isMultiple() {
         return this.overriddenPropDef.isMultiple();
+    }
+
+    public OverridablePropertyTypeDefinition getOverriddenPropDef() {
+        return overriddenPropDef;
     }
 
     public void setOverriddenPropDef(OverridablePropertyTypeDefinition overriddenPropDef) {
