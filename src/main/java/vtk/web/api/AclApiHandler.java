@@ -245,6 +245,9 @@ public class AclApiHandler implements Controller {
             catch (ResourceNotFoundException e) {
                 return Optional.empty();
             }
+            catch (AuthorizationException e) {
+                throw e;
+            }
             catch (Exception e) {
                 throw new RuntimeException(e);
             }
