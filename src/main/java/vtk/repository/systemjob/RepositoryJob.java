@@ -140,8 +140,8 @@ public abstract class RepositoryJob extends AbstractTask implements ClusterAware
         this.resourceTypeTree = resourceTypeTree;
     }
 
-    public void setAffectedPropDefPointers(List<String> affectedPropDefPointers) {
-        this.affectedPropertyNames = affectedPropDefPointers;
+    public void setAffectedPropertyNames(List<String> affectedPropertyNames) {
+        this.affectedPropertyNames = affectedPropertyNames;
     }
 
     /**
