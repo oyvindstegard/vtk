@@ -38,27 +38,74 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
+
+import vtk.repository.Path;
 import vtk.repository.Repository;
+import vtk.repository.Resource;
+import vtk.resourcemanagement.StaticResourceResolver;
 import vtk.util.io.IO;
+import vtk.web.service.URL;
 
 public class AjaxEditorController implements Controller {
 
     private final View editView;
+    private final StaticResourceResolver staticResourceResolver;
+    private final String appResourceURL;
+    private final String appPath;
+    private final String staticResourcesURL;
 
-    public AjaxEditorController(View editView) {
+    public AjaxEditorController(
+            View editView,
+            StaticResourceResolver staticResourceResolver,
+            String appResourceURL,
+            String appPath,
+            String staticResourcesURL
+    ) {
         this.editView = editView;
+        this.staticResourceResolver = staticResourceResolver;
+        this.appResourceURL = appResourceURL;
+        this.appPath = appPath;
+        this.staticResourcesURL = staticResourcesURL;
     }
 
     @Override
-    public ModelAndView handleRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+    public ModelAndView handleRequest(
+            HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse
+    ) throws Exception {
         RequestContext rc = RequestContext.getRequestContext();
-        Repository repo = rc.getRepository();
+        Repository repository = rc.getRepository();
         String token = rc.getSecurityToken();
+
+        Resource resource = repository.retrieve(token, rc.getResourceURI(), false);
+        String type = resource.getResourceType();
 
         Map<String, Object> model = new HashMap<>();
         model.put("url", rc.getRequestURL());
-        model.put("resource", IO.readString(repo.getInputStream(token, rc.getResourceURI(), true)).perform());
+        model.put("editorJsURI", getStaticResourcePath(type, "editor.js"));
+        model.put("editorCssURI", getStaticResourcePath(type, "editor.css"));
+        model.put("resource", resource);
+        model.put("resourceContent", IO.readString(
+                repository.getInputStream(token, rc.getResourceURI(), false)
+        ).perform());
         return new ModelAndView(editView, model);
+    }
+
+    private Path getStaticResourcePath(String type, String filename) throws Exception {
+        RequestContext rc = RequestContext.getRequestContext();
+        Path repositoryPath = Path.fromString(this.appPath + "/" + type + "/" + filename);
+        org.springframework.core.io.Resource systemPath = this.staticResourceResolver.resolve(
+                Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename)
+        );
+
+        Path path;
+        if (rc.getRepository().exists(rc.getSecurityToken(), repositoryPath)) {
+            path = Path.fromString(this.appResourceURL + "/" + type + "/" + filename);
+        } else if (systemPath != null && systemPath.exists()) {
+            path = Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename);
+        } else {
+            path = Path.fromString(this.staticResourcesURL + "/" + filename);
+        }
+        return path;
     }
 
 }

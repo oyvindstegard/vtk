@@ -91,6 +91,10 @@
 
   <bean id="ajaxeditor.handler" class="vtk.web.AjaxEditorController">
     <constructor-arg ref="ajaxeditor.editView"/>
+    <constructor-arg ref="manage.staticResourceResolver" />
+    <constructor-arg value="${doctypes.appResourceURL}" />
+    <constructor-arg value="${doctypes.appPath}" />
+    <constructor-arg value="${doctypes.staticResourceURL}" />
   </bean>
 
   <bean id="ajaxeditor.editView" parent="freemarkerView">
