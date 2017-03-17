@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -48,11 +49,11 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
 import vtk.repository.Acl;
-import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
 import vtk.repository.Resource;
 import vtk.repository.ResourceNotFoundException;
+import vtk.security.InvalidPrincipalException;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 import vtk.util.Result;
@@ -73,148 +74,183 @@ public class AclApiHandler implements Controller {
     @Override
     public ModelAndView handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        switch (request.getMethod()) {
-            case "GET": 
-                getAcl(request, response);
-                break;
-            case "PUT":
-            case "POST": 
-                updateAcl(request, response);
-                break;
-            case "DELETE": 
-                deleteAcl(request, response);
-                break;
-            default: 
-                unknownMethod(request, response);
-        }
+        
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Result<Optional<Resource>> res = retrieve(requestContext, requestContext.getResourceURI());
+        
+        Result<ResponseBuilder> bldr = res.flatMap(opt -> {
+           if (!opt.isPresent()) {
+               return Result.success(ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                       .message("404 Not Found: " + requestContext.getResourceURI()));
+           }
+           else {
+               Resource resource = opt.get();
+               switch (request.getMethod()) {
+               case "GET": 
+                   return getAcl(resource, requestContext);
+               case "PUT":
+               case "POST": 
+                   return updateAcl(resource, requestContext);
+               case "DELETE": 
+                   return deleteAcl(resource, requestContext);
+               default: 
+                   return unknownMethod(resource, requestContext);
+               }
+           }
+        });
+        
+        bldr.recover(ex -> {
+            if (ex instanceof InvalidRequestException) {
+                return ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                        .message(ex.getMessage());
+            }
+            return ResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                    .message("An unexpected error occurred: " + ex.getMessage());
+        }).forEach(resp -> {
+            try {
+                resp.writeTo(response);
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
         return null;
     }
     
-    
-    private void getAcl(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Resource resource = requestContext.getRepository().retrieve(requestContext.getSecurityToken(), 
-                requestContext.getResourceURI(), true);
-        
+    private Result<ResponseBuilder> getAcl(Resource resource, 
+            RequestContext requestContext) {
+
         if (resource.isInheritedAcl()) {
-            Resource ancestor = nearestAcl(requestContext, resource.getURI().getParent());
-            URL url = new URL(requestContext.getRequestURL());
-            url.setPath(ancestor.getURI());
-            
-            ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
-                .header("Content-Type", "text/plain;charset=utf-8")
-                .header("Link", "<" + url + ">; rel=\"inherited-acl\"")
-                .message("ACL Not Found on " + resource.getURI() + "\n"
-                        + "Nearest ACL: " + ancestor.getURI() + "\n")
-                .writeTo(response);
-            return;
+            Result<Optional<Resource>> ancestor = 
+                    nearestAcl(requestContext, resource.getURI().getParent());
+            return ancestor.map(opt -> {
+                Resource ans = opt.get();
+                URL url = new URL(requestContext.getRequestURL()).setPath(ans.getURI());
+                return ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                    .header("Content-Type", "text/plain;charset=utf-8")
+                    .header("Link", "<" + url + ">; rel=\"inherited-acl\"")
+                    .message("ACL Not Found on " + resource.getURI() + "\n"
+                            + "Nearest ACL: " + ans.getURI() + "\n");
+            });
         }
-        ResponseBuilder(HttpServletResponse.SC_OK)
+        return Result.success(ResponseBuilder(HttpServletResponse.SC_OK)
             .header("Content-Type", "application/json")
-            .message(JsonStreamer.toJson(aclToJson(resource.getAcl()), 2, true))
-            .writeTo(response);
+            .message(JsonStreamer.toJson(aclToJson(resource.getAcl()), 2, true)));
     }
     
 
-    private void updateAcl(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+    private Result<ResponseBuilder> updateAcl(Resource resource, 
+            RequestContext requestContext) {
+
+        HttpServletRequest request = requestContext.getServletRequest();
+        
         if (!"application/json".equals(request.getContentType())) {
-            ResponseBuilder(HttpServletResponse.SC_NOT_ACCEPTABLE)
+            return Result.success(ResponseBuilder(HttpServletResponse.SC_NOT_ACCEPTABLE)
                 .header("Content-Type", "text/plain;charset=utf-8")
                 .message("Content-Type application/json required for " 
-                    + request.getMethod() + " method\n")
-                .writeTo(response);
-            return;
+                    + request.getMethod() + " method\n"));
         }
+        boolean existed = !resource.isInheritedAcl();
+        Result<InputStream> stream = Result.attempt(() -> {
+           try {
+               return request.getInputStream();
+           }
+           catch (IOException e) {
+               throw new RuntimeException(e);
+           }
+        });
+        Result<Json.MapContainer> json = stream.flatMap(is -> parseJson(is))
+                .recoverWith(t -> Result.failure(new InvalidRequestException(t.getMessage())));
+
+        Result<Acl> newAcl = json.flatMap(aclMapper)
+                .recoverWith(t -> Result.failure(new InvalidRequestException(t.getMessage())));
         
-        Result<Json.MapContainer> json = parseJson(request.getInputStream());
-        if (json.failure.isPresent()) {
-            ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
-                .header("Content-Type", "text/plain;charset=utf-8")
-                .message("Failed to parse JSON from input: " 
-                        + json.failure.get().getMessage() + "\n")
-                .writeTo(response);
-            return;
-        }
-        
-        
-        Result<Acl> acl = json.flatMap(aclMapper);
-        if (acl.failure.isPresent()) {
-            ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
-                .header("Content-Type", "text/plain;charset=utf-8")
-                .message("Failed to map JSON input to a valid ACL: " 
-                        + acl.failure.get().getMessage() + "\n")
-                .writeTo(response);
-            return;
-        }
-        
-        RequestContext requestContext = RequestContext.getRequestContext();
-        try {
-            Resource updated = requestContext.getRepository()
-                    .storeACL(requestContext.getSecurityToken(), 
-                            requestContext.getResourceURI(), acl.result.get());
-            ResponseBuilder(HttpServletResponse.SC_OK)
-                .header("Content-Type", "text/plain;charset=utf-8")
-                .message("ACL updated\n")
-                .writeTo(response);
-        }
-        catch (AuthorizationException e) {
-            ResponseBuilder(HttpServletResponse.SC_UNAUTHORIZED)
-                .header("Content-Type", "text/plain;charset=utf-8")
-                .message("Principal " + requestContext.getPrincipal() 
-                    + " not authorized to update ACL on resource " 
-                    + requestContext.getResourceURI() + "\n")
-                .writeTo(response);
-        }
-        catch (ResourceNotFoundException e) {
-            ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
-            .header("Content-Type", "text/plain;charset=utf-8")
-            .message("Resource not found: " + requestContext.getResourceURI())
-            .writeTo(response);
-        }
-        catch (Exception e) {
-            ResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
-                .header("Content-Type", "text/plain;charset=utf-8")
-                .message("An unexpected error occurred: " + e.getMessage() + "\n")
-                .writeTo(response);
-        }
+        Result<Resource> updated = newAcl.flatMap(acl -> {
+            return Result.attempt(() -> {
+                try {
+                    return requestContext.getRepository()
+                            .storeACL(requestContext.getSecurityToken(), 
+                                    requestContext.getResourceURI(), acl);
+                }
+                catch (InvalidPrincipalException e) {
+                    throw new InvalidRequestException(
+                            "Invalid principal: " + e.getMessage(), e);
+                }
+                catch (Throwable t) {
+                    throw new RuntimeException(t); 
+                }
+            });
+        });
+        Result<ResponseBuilder> result = updated.map(res -> 
+                ResponseBuilder(existed ? HttpServletResponse.SC_OK : HttpServletResponse.SC_CREATED)
+                    .header("Content-Type", "text/plain;charset=utf-8")
+                    .message("ACL updated on resource " + resource.getURI() + "\n"));
+        return result;
     }
     
-    private void deleteAcl(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Resource resource = requestContext.getRepository().retrieve(requestContext.getSecurityToken(), 
-                requestContext.getResourceURI(), true);
+    private static class InvalidRequestException extends RuntimeException {
+        private static final long serialVersionUID = -6500270423148285948L;
+        public InvalidRequestException(String message) { super(message); }
+        public InvalidRequestException(String message, Throwable cause) { super(message, cause); }
+    }
+    
+    private Result<ResponseBuilder> deleteAcl(Resource resource, 
+            RequestContext requestContext) {
         
         if (resource.isInheritedAcl()) {
-            ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+            return Result.success(ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
                 .header("Content-Type", "text/plain;charset=utf-8")
-                .message("404 Not Found\n")
-                .writeTo(response);
-            return;
+                .message("404 Not Found\n"));
         }
-        ResponseBuilder(HttpServletResponse.SC_OK)
+        
+        Result<Resource> updated = Result.attempt(() -> {
+            try {
+                return requestContext.getRepository()
+                        .deleteACL(requestContext.getSecurityToken(), resource.getURI());
+            }
+            catch (Exception e) {
+                    throw new RuntimeException(e);
+            }            
+        });
+        
+        return updated.map(r -> {
+            return ResponseBuilder(HttpServletResponse.SC_OK)
+                    .header("Content-Type", "text/plain;charset=utf-8")
+                    .message("Deleted ACL on resource " + r.getURI() + "\n");
+        });
+    }
+    
+    private Result<ResponseBuilder> unknownMethod(Resource resource, 
+            RequestContext requestContext) {
+        return Result.success(ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
             .header("Content-Type", "text/plain;charset=utf-8")
-            .message("Deleted ACL\n")
-            .writeTo(response);
+            .message("Request method " + requestContext.getServletRequest().getMethod() 
+                    + " not supported: on " + resource.getURI()));
+    }
+    
+    private Result<Optional<Resource>> retrieve(RequestContext requestContext, Path uri) {
+        return Result.attempt(() -> {
+            try {
+                return Optional.of(requestContext.getRepository()
+                        .retrieve(requestContext.getSecurityToken(), uri, false));
+            }
+            catch (ResourceNotFoundException e) {
+                return Optional.empty();
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
-    private void unknownMethod(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
-        ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
-            .header("Content-Type", "text/plain;charset=utf-8")
-            .message("Request method not supported: " + request.getMethod())
-            .writeTo(response);
-    }
-    
-    private Resource nearestAcl(RequestContext requestContext, Path uri) throws Exception {
-        String token = requestContext.getSecurityToken();
-        Resource resource = requestContext.getRepository().retrieve(token, uri, false);
-        if (resource.isInheritedAcl()) {
-            return nearestAcl(requestContext, uri.getParent());
-        }
-        return resource;
+    private Result<Optional<Resource>> nearestAcl(RequestContext requestContext, Path uri) {
+        Result<Optional<Resource>> retrieval = retrieve(requestContext, uri);
+        return retrieval.flatMap(option -> {
+           if (!option.isPresent())  return Result.success(option);
+           Resource r = option.get();
+           if (!r.isInheritedAcl()) return Result.success(option);
+           return nearestAcl(requestContext, r.getURI().getParent());
+        });
     }
     
     private Result<Json.MapContainer> parseJson(InputStream input) {
@@ -307,8 +343,10 @@ public class AclApiHandler implements Controller {
         
         public ResponseBuilder(int status) 
             { this.status = status; }
+        
         public ResponseBuilder message(String message) 
             { this.message = message; return this; }
+        
         public ResponseBuilder header(String name, String value) 
             { this.headers.put(name, value); return this; }
         

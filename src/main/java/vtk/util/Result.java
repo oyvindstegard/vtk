@@ -31,6 +31,7 @@
 package vtk.util;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -83,6 +84,31 @@ public final class Result<T> {
         }
         catch (Throwable t) {
             return new Result<>(Optional.empty(), Optional.of(t));
+        }
+    }
+    
+    public void forEach(Consumer<? super T> consumer) {
+        if (result.isPresent()) {
+            consumer.accept(result.get());
+        }
+    }
+    
+    public Result<T> recover(Function<? super Throwable, ? extends T> recovery) {
+        if (failure.isPresent()) {
+            T t = recovery.apply(failure.get());
+            return new Result<>(Optional.of(t), Optional.empty());
+        }
+        else {
+            return this;
+        }
+    }
+
+    public Result<T> recoverWith(Function<? super Throwable, ? extends Result<T>> recovery) {
+        if (failure.isPresent()) {
+            return recovery.apply(failure.get());
+        }
+        else {
+            return this;
         }
     }
     
