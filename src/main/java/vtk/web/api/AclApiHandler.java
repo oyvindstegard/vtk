@@ -49,6 +49,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
 import vtk.repository.Acl;
+import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
 import vtk.repository.Resource;
@@ -102,6 +103,10 @@ public class AclApiHandler implements Controller {
         bldr.recover(ex -> {
             if (ex instanceof InvalidRequestException) {
                 return ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                        .message(ex.getMessage());
+            }
+            if (ex instanceof AuthorizationException) {
+                return ResponseBuilder(HttpServletResponse.SC_FORBIDDEN)
                         .message(ex.getMessage());
             }
             return ResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
@@ -176,8 +181,11 @@ public class AclApiHandler implements Controller {
                     throw new InvalidRequestException(
                             "Invalid principal: " + e.getMessage(), e);
                 }
-                catch (Throwable t) {
-                    throw new RuntimeException(t); 
+                catch (AuthorizationException e) {
+                    throw e;
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e); 
                 }
             });
         });
