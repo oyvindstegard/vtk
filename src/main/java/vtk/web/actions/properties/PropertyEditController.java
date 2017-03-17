@@ -641,6 +641,7 @@ public class PropertyEditController extends SimpleFormController<PropertyEditCom
         this.documentPrincipalMetadataRetriever = documentPrincipalMetadataRetriever;
     }
 
+    @Override
     public ReferenceDataProvider[] getReferenceDataProviders() {
         return new ReferenceDataProvider[] { this };
     }
