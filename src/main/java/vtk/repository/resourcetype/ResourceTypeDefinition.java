@@ -37,13 +37,28 @@ import vtk.repository.Namespace;
 
 public interface ResourceTypeDefinition {
 
-    public String getQName();
-    
+    /**
+     * Obtain the name of the resource type.
+     *
+     * <p>The resource type name is also the type identifier and must always be
+     * unique within the resource repository..
+     *
+     * @return the resource type name
+     */
     public String getName();
-    
-    public String getLocalizedName(Locale locale);
 
+    /**
+     * Obtain the resource type namespace.
+     *
+     * <p>This namespace is used for all regular property definitions on the resource
+     * type. (Overriding property definitions however will inherit the namespace of the property
+     * definition they override.)
+     *
+     * @return
+     */
     public Namespace getNamespace();
+
+    public String getLocalizedName(Locale locale);
 
     public PropertyTypeDefinition[] getPropertyTypeDefinitions();
 

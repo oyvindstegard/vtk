@@ -73,17 +73,12 @@ public abstract class AbstractResourceTypeDefinitionImpl implements ResourceType
         }
     }
 
-    public String getQName() {
-        if (Namespace.DEFAULT_NAMESPACE.equals(this.namespace))
-            return this.name;
-        
-        return this.namespace.getPrefix() + ":" + this.name;
-    }
-    
+    @Override
     public String getName() {
         return this.name;
     }
     
+    @Override
     public String getLocalizedName(Locale locale) {
         if (this.typeLocalizationProvider != null) {
             return this.typeLocalizationProvider.getLocalizedResourceTypeName(
@@ -97,6 +92,7 @@ public abstract class AbstractResourceTypeDefinitionImpl implements ResourceType
         this.name = name;
     }
 
+    @Override
     public Namespace getNamespace() {
         return this.namespace;
     }
