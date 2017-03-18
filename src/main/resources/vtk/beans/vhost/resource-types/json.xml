@@ -4,8 +4,6 @@
 
   <bean id="jsonObjectContentFactory" class="vtk.repository.content.JsonContentFactory" />
 
-  <import resource="mixins/structured-resource-mixin.xml"/>
-
   <bean id="json.resourceType" class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
     <property name="name" value="json-resource" />
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
@@ -77,7 +75,6 @@
     </property>
     <property name="mixinTypeDefinitions">
       <list>
-        <ref bean="structuredResourceMixinResourceTypeDef" />
         <ref bean="ssiMixinResourceTypeDef" />
       </list>
     </property>

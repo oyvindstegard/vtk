@@ -47,6 +47,7 @@
         <ref bean="modifiedByPropDef" />
         <ref bean="userTitlePropDef" />
         <ref bean="titlePropDef" />
+        <ref bean="tagsPropDef" />
         <ref bean="externalIdPropDef" />
 
         <ref bean="contentLocalePropDef" /><!-- Inheritable -->
@@ -127,6 +128,14 @@
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
     <property name="valueFormatter" ref="htmlFormatter" />
+  </bean>
+
+  <bean id="tagsPropDef" class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="tags" />
+    <property name="type" value="STRING" />
+    <property name="multiple" value="true" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
   </bean>
 
   <!-- Value is generated internally by repository. -->  
