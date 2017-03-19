@@ -406,7 +406,7 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
     }
 
     @Override
-    public PropertyTypeDefinition getPropertyDefinitionByPointer(String qname) {
+    public PropertyTypeDefinition getPropertyDefinitionByName(String qname) {
         String[] qnameParts = qname.split(":");
 
         if (qnameParts.length == 1) {

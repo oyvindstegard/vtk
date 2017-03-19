@@ -98,7 +98,7 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
     public PropertyTypeDefinition getPropertyDefinitionByPrefix(String prefix, String name);
 
     /**
-     * Look up a property definition by qualified name ("pointer").
+     * Look up a property definition by name.
      *
      * <p>Name may have one of three forms:
      * <ol>
@@ -109,7 +109,7 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
      *   <li>A qualified property name consisting of a {@link Namespace#getPrefix() namespace prefix}, a colon and a name.
      *   An empty namespace, like in <code>":title"</code> is mapped to the {@link Namespace#DEFAULT_NAMESPACE default namespace} and is
      *   equivalent to <code>"title"</code>.
-     *   <br>Example: <code>"resource:tags"</code>
+     *   <br>Example: <code>"resource:tags"</code>, for the property named "tags" in namespace with prefix "resource".
      *
      *   <li>Like the second form, but with an additional resource type name as first field.
      *   This restricts the possible property definitions to only those defined on the provided resource type.<br>
@@ -118,10 +118,10 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
      *   in namespace <em>navigation</em> of resource type <em>navigation</em>.
      * </ol>
      *
-     * @param qname a possibly qualified property definition name
+     * @param qualifiedName a possibly qualified property definition name
      * @return a property definition, or <code>null</code> if none could be found.
      */
-    public PropertyTypeDefinition getPropertyDefinitionByPointer(String qname);
+    public PropertyTypeDefinition getPropertyDefinitionByName(String qualifiedName);
 
     /**
      * XXX: equivalent methods for resource-types, mixin-types, etc ?

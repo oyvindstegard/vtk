@@ -56,8 +56,8 @@ public class EventCalendarQueryBuilder implements SearchComponentQueryBuilder {
 
     @Override
     public Query build(Resource base, HttpServletRequest request) {
-        final PropertyTypeDefinition startPropDef = resourceTypeTree.getPropertyDefinitionByPointer(startPropDefPointer);
-        final PropertyTypeDefinition endPropDef = resourceTypeTree.getPropertyDefinitionByPointer(endPropDefPointer);
+        final PropertyTypeDefinition startPropDef = resourceTypeTree.getPropertyDefinitionByName(startPropDefPointer);
+        final PropertyTypeDefinition endPropDef = resourceTypeTree.getPropertyDefinitionByName(endPropDefPointer);
         if (startPropDef == null) {
             throw new IllegalStateException("Could not find property definition for '" + startPropDefPointer + "'");
         }

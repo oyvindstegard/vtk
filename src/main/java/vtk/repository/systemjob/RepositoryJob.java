@@ -102,7 +102,7 @@ public abstract class RepositoryJob extends AbstractTask implements ClusterAware
     private List<PropertyTypeDefinition> lookupPropDefs(List<String> qualifiedNames) {
         List<PropertyTypeDefinition> propDefs = new ArrayList<>(qualifiedNames.size());
         for (String qname: qualifiedNames) {
-            PropertyTypeDefinition def = resourceTypeTree.getPropertyDefinitionByPointer(qname);
+            PropertyTypeDefinition def = resourceTypeTree.getPropertyDefinitionByName(qname);
             if (def == null) {
                 throw new IllegalStateException("Unable to find property definition '" + qname + "'");
             }

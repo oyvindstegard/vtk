@@ -89,7 +89,7 @@ public class SearchSorting {
         } else {
             if (! sortOrderPropDefPointers.isEmpty()) {
                 for (String propDefPointer: sortOrderPropDefPointers) {
-                    PropertyTypeDefinition propDef = resourceTypeTree.getPropertyDefinitionByPointer(propDefPointer);
+                    PropertyTypeDefinition propDef = resourceTypeTree.getPropertyDefinitionByName(propDefPointer);
                     SortField.Direction sortOrder = defaultSortOrder;
                     if (sortOrderMapping != null) {
                         SortField.Direction mappedDirection = sortOrderMapping.get(propDef.getName());

@@ -294,7 +294,7 @@ public final class EventListingHelper {
     }
 
     public Property getStartDateProperty(PropertySet ps) {
-        PropertyTypeDefinition propDef = resourceTypeTree.getPropertyDefinitionByPointer(startPropDefPointer);
+        PropertyTypeDefinition propDef = resourceTypeTree.getPropertyDefinitionByName(startPropDefPointer);
         if (propDef == null) {
             throw new IllegalStateException("Could not find property definition for '" + startPropDefPointer + "'");
         }
@@ -302,7 +302,7 @@ public final class EventListingHelper {
     }
 
     public Property getEndDateProperty(PropertySet ps) {
-        PropertyTypeDefinition propDef = resourceTypeTree.getPropertyDefinitionByPointer(endPropDefPointer);
+        PropertyTypeDefinition propDef = resourceTypeTree.getPropertyDefinitionByName(endPropDefPointer);
         if (propDef == null) {
             throw new IllegalStateException("Could not find property definition for '" + endPropDefPointer + "'");
         }
