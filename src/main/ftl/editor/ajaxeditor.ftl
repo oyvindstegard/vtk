@@ -12,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="${editorCssURI}" />
   </head>
   <body>
-    <div id="editor"></div>
+    <div id="editor" class="js forms-new"></div>
 
     <template id="content">
       ${resourceContent}
