@@ -31,7 +31,6 @@
 package vtk.web.servlet;
 
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.Filter;
@@ -466,10 +466,7 @@ public class VTKServlet extends DispatcherServlet {
             responseWrapper.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logError(request, e);
         }
-        catch (EOFException ignore) {
-            // Likely cause client disconnect, rethrow to avoid general error logging
-            throw ignore;
-        } catch (Throwable t) {
+        catch (Throwable t) {
             if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
                 responseWrapper.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
@@ -701,7 +698,12 @@ public class VTKServlet extends DispatcherServlet {
     @SuppressWarnings("rawtypes")
     private void handleError(HttpServletRequest req, HttpServletResponse resp,
                              Throwable t) throws ServletException {
-
+        if (t.getCause() != null && (t.getCause() instanceof TimeoutException)) {
+            logger.info("Client disconnect: " + req.getRequestURI() 
+                + ": " + t.getMessage());
+            return;
+        }
+    
         WebApplicationContext springContext = null;
         try {
             springContext = RequestContextUtils.getWebApplicationContext(req);
@@ -767,8 +769,7 @@ public class VTKServlet extends DispatcherServlet {
             throw new ServletException("Unable to resolve error view for handler "
                                        + handler, t);
         }
-
-
+        
         // Logger '500 internal server error' incidents to the error log:
         if (statusCode == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) {
             logError(req, t);
