@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/util  http://www.springframework.org/schema/util/spring-util.xsd">
 
   <bean id="versioning.displayDiffService" class="vtk.web.service.ServiceImpl">
     <description>
@@ -83,8 +87,7 @@
         <ref bean="versioning.displayActionParameter" />
         <!-- XXX: false when repo read-only: -->
         <ref bean="versioning.displayPermissionAssertion" />
-        <ref bean="json.isManagedObjectResourceType" />
-        <ref bean="showVersioningForResourceAssertion" />
+        <ref bean="versioning.handleRevisionAssertions" />
       </list>
     </property>
     <property name="handler">
@@ -96,9 +99,10 @@
     <property name="arguments" ref="versioning.displayRevisionsService" />
   </bean>
 
-  <bean id="showVersioningForResourceAssertion" class="vtk.web.service.AndAssertion">
+  <bean id="versioning.handleRevisionAssertions" class="vtk.web.service.AndAssertion">
     <property name="assertions">
       <list>
+        <ref bean="json.isManagedObjectResourceType" />
         <ref bean="resourceTypeIsNotSamletProgram" />
         <ref bean="resourceTypeIsNotSamletRetning" />
         <ref bean="resourceTypeIsNotCourseSchedule" />
@@ -159,6 +163,8 @@
       <ref bean="versioning.deleteRevisionHandler" />
     </property>
   </bean>
+
+
 
   <bean id="versioning.deleteRevisionService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />

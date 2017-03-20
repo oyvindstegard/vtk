@@ -43,7 +43,7 @@
 
   <!-- Default editor -->
   <import resource="editor/editor.xml" />
-  <import resource="editor/neweditor.xml" />
+  <import resource="editor/ajaxeditor.xml" />
 
   <import resource="resource-wrapper.xml" />
 

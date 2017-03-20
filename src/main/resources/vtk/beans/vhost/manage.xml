@@ -1857,10 +1857,12 @@
   </bean>
 
   <!-- Static files for manage service: -->
-  <bean id="manageStaticResourceLocation" class="vtk.web.StaticResourceLocation">
+  <bean id="manageStaticResourceLocation" class="vtk.resourcemanagement.StaticResourceLocation">
     <property name="uriPrefix" value="${webResources.baseURL}" />
     <property name="resourceLocation" value="${webResources.physicalLocation}" />
   </bean>
+
+  <bean id="manage.staticResourceResolver" class="vtk.resourcemanagement.StaticResourceResolver" />
 
   <bean class="vtk.web.AdminMedia">
     <constructor-arg ref="manage.javascriptRegistry" />
