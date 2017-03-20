@@ -62,6 +62,11 @@
         </bean>
       </list>
     </property>
+    <property name="attributes">
+      <map>
+        <entry key="localeResolver" value-ref="viewServiceResourceAwareLocaleResolver" />
+      </map>
+    </property>
     <property name="handler" ref="ajaxeditor.getHandler"/>
   </bean>
 
