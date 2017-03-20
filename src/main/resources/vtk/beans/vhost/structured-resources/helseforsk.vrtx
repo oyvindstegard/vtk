@@ -15,10 +15,12 @@ resourcetype helseforsk {
     completed-month : string,
     completed-year : string,
 	summary: string,
+	biobank: string,
+	biobank-place: string,
+	biobank-number: string,
 	documents: string multiple,
 	approval-internal-status : string,
-	approval-internal : string multiple,
-	approval-internal-no-need-reason : string,
+	approval-internal : string multiple
 	approval-rek-status : string,
 	approval-rek : string multiple,
 	approval-rek-no-need-reason : string,
@@ -34,8 +36,7 @@ resourcetype helseforsk {
 	approval-stat-legemiddelverk-status : string,
 	approval-stat-legemiddelverk : string multiple,
 	approval-stat-legemiddelverk-no-need-reason : string,
-	approval-others : string multiple,
-	approval-others-no-need-reason : string
+	approval-others : string multiple
   }
 
   view {
