@@ -3,12 +3,12 @@
 <html>
   <head>
     <title>NEW EDITOR</title>
-    <link rel="stylesheet"  type="text/css" href="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.10.4.custom/css/smoothness/jquery-ui-1.10.4.custom.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.10.4.custom/css/smoothness/jquery-ui-1.10.4.custom.min.css"/>
     <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/themes/default/forms.css" />
     <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/themes/default/upload.css" />
     <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.autocomplete.css" />
     <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/js/autocomplete/autocomplete.override.css" />
-    <link rel="stylesheet" type="text/css" href="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.css" />
+    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/app-resources/doctypes/helseforsk/editor.css" />
   </head>
   <body class="forms-new js">
     <h1>NEW EDITOR</h1>
@@ -43,6 +43,6 @@
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/adapters/jquery.js"></script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/frameworks/es5-shim-dejavu.js"></script>
     <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/vrtx-simple-dialogs.js"></script>
-    <script src="https://vortex-systest.uio.no/vrtx/decorating/resources/dist/doctype/helseforsk/editor.js"></script>
+    <script type="text/javascript" src="/vrtx/__vrtx/app-resources/doctypes/helseforsk/editor.js"></script>
   </body>
 </html>
