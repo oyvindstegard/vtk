@@ -31,6 +31,7 @@
 package vtk.web.servlet;
 
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -465,6 +466,10 @@ public class VTKServlet extends DispatcherServlet {
         catch (InvalidAuthenticationRequestException e) {
             responseWrapper.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logError(request, e);
+        }
+        catch (EOFException ignore) {
+            // Likely cause client disconnect, rethrow to avoid general error logging
+            throw ignore;
         }
         catch (Throwable t) {
             if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
