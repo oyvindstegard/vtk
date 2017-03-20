@@ -133,8 +133,6 @@ public class PutController implements Controller {
                 response.setHeader("Location", location.toString());
             }
 
-            return null;
-
         } catch (ResourceNotFoundException e) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } catch (ResourceLockedException e) {
