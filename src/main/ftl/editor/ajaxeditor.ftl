@@ -11,8 +11,8 @@
     <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/js/autocomplete/autocomplete.override.css" />
     <link rel="stylesheet" type="text/css" href="${editorCssURI}" />
   </head>
-  <body>
-    <div id="editor" class="js forms-new"></div>
+  <body class="js forms-new">
+    <div id="editor"></div>
 
     <template id="content">
       ${resourceContent}
