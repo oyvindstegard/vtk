@@ -43,8 +43,7 @@ import vtk.repository.Namespace;
  *      but that does not really make sense, since mixins should not have their
  *      own mixin types) 
  */
-public abstract class AbstractResourceTypeDefinitionImpl
-  implements ResourceTypeDefinition, InitializingBean {
+public abstract class AbstractResourceTypeDefinitionImpl implements ResourceTypeDefinition, InitializingBean {
 
     private String name;
     private Namespace namespace;
@@ -56,14 +55,17 @@ public abstract class AbstractResourceTypeDefinitionImpl
     public void afterPropertiesSet() {
         if (name == null) {
             throw new BeanInitializationException("Property 'name' not set.");
-        } else if (name.contains("/")) {
-            throw new IllegalArgumentException("Resource type name cannot contain '/': " + name);
-        } else if (namespace == null) {
+        }
+        
+        if (name.contains("/") || name.contains(":")) {
+            throw new IllegalArgumentException("Resource type name cannot contain '/' or ':': " + name);
+        }
+
+        if (namespace == null) {
             throw new BeanInitializationException("Property 'namespace' not set.");
         }
 
-        // XXX hack:
-        // Setting namespace of all property type definitions to namespace of this resource type
+        // All regular property definitions for this resource type inherit the type's namespace
         for (int i = 0; i < propertyTypeDefinitions.length; i++) {
             if (propertyTypeDefinitions[i] instanceof PropertyTypeDefinitionImpl) {
                 ((PropertyTypeDefinitionImpl) propertyTypeDefinitions[i]).setNamespace(namespace);
@@ -71,17 +73,12 @@ public abstract class AbstractResourceTypeDefinitionImpl
         }
     }
 
-    public String getQName() {
-        if (Namespace.DEFAULT_NAMESPACE.equals(this.namespace))
-            return this.name;
-        
-        return this.namespace.getPrefix() + ":" + this.name;
-    }
-    
+    @Override
     public String getName() {
         return this.name;
     }
     
+    @Override
     public String getLocalizedName(Locale locale) {
         if (this.typeLocalizationProvider != null) {
             return this.typeLocalizationProvider.getLocalizedResourceTypeName(
@@ -95,6 +92,7 @@ public abstract class AbstractResourceTypeDefinitionImpl
         this.name = name;
     }
 
+    @Override
     public Namespace getNamespace() {
         return this.namespace;
     }
@@ -103,6 +101,7 @@ public abstract class AbstractResourceTypeDefinitionImpl
         this.namespace = namespace;
     }
 
+    @Override
     public PropertyTypeDefinition[] getPropertyTypeDefinitions() {
         return this.propertyTypeDefinitions;
     }
@@ -115,6 +114,7 @@ public abstract class AbstractResourceTypeDefinitionImpl
         this.typeLocalizationProvider = provider;
     }
 
+    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder(this.getClass().getName());
         buffer.append("[ namespace = ").append(this.namespace);

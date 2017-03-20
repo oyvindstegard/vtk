@@ -37,7 +37,7 @@
         </property>
       </bean>
     </property>
-    <property name="affectedPropDefPointers">
+    <property name="affectedPropertyNames">
       <list>
         <value>thumbnail</value>
         <value>pixelHeight</value>
@@ -87,7 +87,7 @@
         </property>
       </bean>
     </property>
-    <property name="affectedPropDefPointers">
+    <property name="affectedPropertyNames">
       <list>
         <value>published</value>
       </list>
@@ -115,7 +115,7 @@
     <property name="updateBatch" value="${systemjob.linkcheck.batch}" />
     <property name="minRecheckSeconds" value="-1" />
     <property name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
-    <property name="affectedPropDefPointers">
+    <property name="affectedPropertyNames">
       <list>
         <value>resource::hrefs</value>
         <value>resource::link-check</value>
@@ -152,7 +152,7 @@
     <property name="minRecheckSeconds" value="${systemjob.linkcheck.minRecheckSeconds}" />
     <!--property name="minRecheckSeconds" value="-1" /-->
     <property name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
-    <property name="affectedPropDefPointers">
+    <property name="affectedPropertyNames">
       <list>
         <value>resource::hrefs</value>
         <value>resource::link-check</value>
@@ -200,7 +200,7 @@
     <property name="minRecheckSeconds" value="${systemjob.linkcheck.minRecheckSeconds}" />
     <property name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
 
-    <property name="affectedPropDefPointers">
+    <property name="affectedPropertyNames">
       <list>
         <value>resource::hrefs</value>
         <value>resource::link-check</value>
@@ -277,7 +277,7 @@
     <property name="triggerExpression" value="${systemjob.linkrepair.trigger}" />
     <property name="enabled" value="${systemjob.linkrepair.enabled}" />
     <property name="id" value="linkrepair" />
-    <property name="affectedPropDefPointers">
+    <property name="affectedPropertyNames">
       <list>
         <value>resource::hrefs</value>
       </list>

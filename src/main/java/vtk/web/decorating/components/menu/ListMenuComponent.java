@@ -338,7 +338,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
 
         // We are searching for collections
         AndQuery q = new AndQuery();
-        q.add(new TypeTermQuery(this.menuGenerator.getCollectionResourceType().getQName(), TermOperator.IN));
+        q.add(new TypeTermQuery(this.menuGenerator.getCollectionResourceType().getName(), TermOperator.IN));
         q.add(query);
 
         ConfigurablePropertySelect select = new ConfigurablePropertySelect();

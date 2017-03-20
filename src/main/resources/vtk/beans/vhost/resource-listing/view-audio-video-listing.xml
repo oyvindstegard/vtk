@@ -56,7 +56,7 @@
     </property>
   </bean>
 
-  <bean id="audioVideoListing.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+  <bean id="audioVideoListing.searchSorting" class="vtk.web.search.SearchSorting">
     <property name="sortPropDef" ref="audioVideoListing.sortingPropDef" />
     <property name="sortOrderPropDefPointers">
       <list>

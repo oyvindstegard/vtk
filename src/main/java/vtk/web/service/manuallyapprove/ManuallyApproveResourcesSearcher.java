@@ -143,7 +143,7 @@ public class ManuallyApproveResourcesSearcher {
         ConfigurablePropertySelect propertySelect = null;
         if (this.configurablePropertySelectPointers != null && this.resourceTypeTree != null) {
             for (String propPointer : this.configurablePropertySelectPointers) {
-                PropertyTypeDefinition ptd = this.resourceTypeTree.getPropertyDefinitionByPointer(propPointer);
+                PropertyTypeDefinition ptd = this.resourceTypeTree.getPropertyDefinitionByName(propPointer);
                 if (ptd != null) {
                     if (propertySelect == null) {
                         propertySelect = new ConfigurablePropertySelect();

@@ -98,13 +98,30 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
     public PropertyTypeDefinition getPropertyDefinitionByPrefix(String prefix, String name);
 
     /**
-     * Gets a property type definition by a pointer
+     * Look up a property definition by name.
      *
-     * @param pointer a pointer referring to a property, given as [resource]:[namespace]:[name]
-     *                 resource and namespace are optional, default namespace is blank e.g. article::title
-     * @return a the property definition, or <code>null</code> if not found
+     * <p>Name may have one of three forms:
+     * <ol>
+     *   <li>A simple unqualified property name, where the default <code>null</code> or empty
+     *   namespace is assumed.
+     *   <br>Example: <code>"title"</code>
+     *
+     *   <li>A qualified property name consisting of a {@link Namespace#getPrefix() namespace prefix}, a colon and a name.
+     *   An empty namespace, like in <code>":title"</code> is mapped to the {@link Namespace#DEFAULT_NAMESPACE default namespace} and is
+     *   equivalent to <code>"title"</code>.
+     *   <br>Example: <code>"resource:tags"</code>, for the property named "tags" in namespace with prefix "resource".
+     *
+     *   <li>Like the second form, but with an additional resource type name as first field.
+     *   This restricts the possible property definitions to only those defined on the provided resource type.<br>
+     *   Also like the second form, an empty namespace string is mapped to the default namespace.<br>
+     *   <br>Example: <code>"navigation:navigation:hidden"</code>, which refers to property <em>hidden</em>
+     *   in namespace <em>navigation</em> of resource type <em>navigation</em>.
+     * </ol>
+     *
+     * @param qualifiedName a possibly qualified property definition name
+     * @return a property definition, or <code>null</code> if none could be found.
      */
-    public PropertyTypeDefinition getPropertyDefinitionByPointer(String pointer);
+    public PropertyTypeDefinition getPropertyDefinitionByName(String qualifiedName);
 
     /**
      * XXX: equivalent methods for resource-types, mixin-types, etc ?

@@ -200,7 +200,7 @@
     </property>
   </bean>
 
-  <bean id="eventListing.upcoming.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+  <bean id="eventListing.upcoming.searchSorting" class="vtk.web.search.SearchSorting">
     <property name="sortOrderPropDefPointers">
       <list>
         <ref bean="eventListing.startDatePropDefPointer" />
@@ -226,7 +226,7 @@
     <property name="configurablePropertySelectPointers" ref="event.configurablePropertySelectPointersList" />
   </bean>
 
-  <bean id="eventListing.previous.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+  <bean id="eventListing.previous.searchSorting" class="vtk.web.search.SearchSorting">
     <property name="sortOrderPropDefPointers">
       <list>
         <ref bean="eventListing.startDatePropDefPointer" />

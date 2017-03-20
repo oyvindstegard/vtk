@@ -58,7 +58,7 @@ import org.springframework.web.servlet.ModelAndView;
  */
 public class ThrottleHandlerInterceptor implements HandlerInterceptor {
 
-    private Map<String, Integer> requestCache = new HashMap<String, Integer>();
+    private final Map<String, Integer> requestCache = new HashMap<>();
     private int maxConcurrentRequests = -1;
     private int rejectStatus = 503;
 

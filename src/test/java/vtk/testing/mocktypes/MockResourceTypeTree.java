@@ -103,7 +103,7 @@ public class MockResourceTypeTree implements ResourceTypeTree {
         return resourceTypeNameMap.get(name);
     }
 
-    public PropertyTypeDefinition getPropertyDefinitionByPointer(String pointer) {
+    public PropertyTypeDefinition getPropertyDefinitionByName(String pointer) {
 
         if (StringUtils.isBlank(pointer)) {
             return null;

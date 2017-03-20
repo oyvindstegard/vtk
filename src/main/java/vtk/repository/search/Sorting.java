@@ -32,6 +32,7 @@ package vtk.repository.search;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a query result sorting specification, with one or more sorting fields.
@@ -45,7 +46,7 @@ public class Sorting {
     }
     
     public Sorting(List<SortField> sortFields) {
-        this.sortFields = sortFields;
+        this.sortFields = Objects.requireNonNull(sortFields, "sortFields cannot be null");
     }
     
     public void addSortField(SortField sortField) {

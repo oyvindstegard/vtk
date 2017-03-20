@@ -34,6 +34,8 @@ import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
+import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.testing.mocktypes.MockResourceTypeTree;
 
 public class EventCalendarQueryBuilderTest {
 
@@ -42,6 +44,14 @@ public class EventCalendarQueryBuilderTest {
     @Before
     public void init() {
         this.queryBuilder = new EventCalendarQueryBuilder();
+        this.queryBuilder.setStartPropDefPointer("resource:start-date");
+        this.queryBuilder.setEndPropDefPointer("resource:start-date");
+        this.queryBuilder.setResourceTypeTree(new MockResourceTypeTree() {
+            @Override
+            public PropertyTypeDefinition getPropertyDefinitionByName(String name) {
+                return null;
+            }
+        });
     }
 
     @Test
@@ -49,7 +59,7 @@ public class EventCalendarQueryBuilderTest {
         try {
             this.queryBuilder.build(null, null);
             fail("Should've faild!");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalStateException e) {
             // Expected
         }
     }
