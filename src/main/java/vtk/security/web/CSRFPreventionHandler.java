@@ -34,7 +34,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +58,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.security.AuthenticationException;
@@ -137,8 +137,12 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
             } finally {
                 multipartRequest.cleanup();
             }
-        } else {
+        }
+        else if (contentType != null && contentType.startsWith("application/x-www-form-urlencoded")) {
             verifyToken(request);
+            chain.filter(request);
+        }
+        else {
             chain.filter(request);
         }
     }
