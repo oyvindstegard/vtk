@@ -703,7 +703,8 @@ public class VTKServlet extends DispatcherServlet {
     @SuppressWarnings("rawtypes")
     private void handleError(HttpServletRequest req, HttpServletResponse resp,
                              Throwable t) throws ServletException {
-        if (t.getCause() != null && (t.getCause() instanceof TimeoutException)) {
+        if (t instanceof java.io.EOFException || 
+                (t.getCause() != null && (t.getCause() instanceof TimeoutException))) { 
             logger.info("Client disconnect: " + req.getRequestURI() 
                 + ": " + t.getMessage());
             return;
