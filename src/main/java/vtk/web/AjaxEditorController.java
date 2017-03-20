@@ -44,7 +44,6 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.resourcemanagement.StaticResourceResolver;
 import vtk.util.io.IO;
-import vtk.web.service.URL;
 
 public class AjaxEditorController implements Controller {
 
@@ -76,7 +75,14 @@ public class AjaxEditorController implements Controller {
         Repository repository = rc.getRepository();
         String token = rc.getSecurityToken();
 
-        Resource resource = repository.retrieve(token, rc.getResourceURI(), false);
+        Resource resource = repository.lock(
+                token,
+                rc.getResourceURI(),
+                rc.getPrincipal().getQualifiedName(),
+                Repository.Depth.ZERO,
+                600,
+                null
+        );
         String type = resource.getResourceType();
 
         Map<String, Object> model = new HashMap<>();

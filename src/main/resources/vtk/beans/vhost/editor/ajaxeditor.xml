@@ -44,6 +44,9 @@
         </bean>
       </list>
     </property>
+    <property name="handlerFilters">
+      <ref bean="system.csrfPreventionHandler" />
+    </property>
     <property name="handler" ref="ajaxeditor.putHandler"/>
   </bean>
 
