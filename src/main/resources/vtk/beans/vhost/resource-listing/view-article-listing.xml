@@ -159,7 +159,7 @@
   </bean>
 
 
-  <bean id="articleListing.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+  <bean id="articleListing.searchSorting" class="vtk.web.search.SearchSorting">
     <property name="sortPropDef" ref="articleListing.sortingPropDef" />
     <property name="sortOrderPropDefPointers">
       <ref bean="articleListing.sortPropDefPointers" />

@@ -330,7 +330,7 @@ public abstract class FilteredCollectionListingController implements Controller 
         ConfigurablePropertySelect propertySelect = null;
         if (configurablePropertySelectPointers != null && resourceTypeTree != null) {
             for (String propPointer : configurablePropertySelectPointers) {
-                PropertyTypeDefinition ptd = resourceTypeTree.getPropertyDefinitionByPointer(propPointer);
+                PropertyTypeDefinition ptd = resourceTypeTree.getPropertyDefinitionByName(propPointer);
                 if (ptd != null) {
                     if (propertySelect == null) {
                         propertySelect = new ConfigurablePropertySelect();

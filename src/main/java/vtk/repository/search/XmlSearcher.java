@@ -228,7 +228,7 @@ public class XmlSearcher {
     private URL getUrl(PropertySet propSet) {
         Path uri = propSet.getURI();
         URL url = this.linkToService.constructURL(uri);
-        if (collectionResourceTypeDef != null && collectionResourceTypeDef.getQName().equals(propSet.getResourceType())) {
+        if (collectionResourceTypeDef != null && collectionResourceTypeDef.getName().equals(propSet.getResourceType())) {
             url.setCollection(true);
         }
         return url;

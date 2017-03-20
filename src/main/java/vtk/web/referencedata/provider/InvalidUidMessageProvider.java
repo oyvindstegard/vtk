@@ -63,7 +63,7 @@ public class InvalidUidMessageProvider implements ReferenceDataProvider {
         Path resourcePath = context.getResourceURI();
         String token = SecurityContext.getSecurityContext().getToken();
         Resource resource = repository.retrieve(token, resourcePath, false);
-        PropertyTypeDefinition ptd = this.resourceTypeTree.getPropertyDefinitionByPointer("resource:username");
+        PropertyTypeDefinition ptd = this.resourceTypeTree.getPropertyDefinitionByName("resource:username");
         if (ptd == null) {
             return;
         }
