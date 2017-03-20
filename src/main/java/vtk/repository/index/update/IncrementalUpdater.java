@@ -62,10 +62,12 @@ import vtk.repository.ChangeLogEntry;
 import vtk.repository.ChangeLogEntry.Operation;
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
+import vtk.repository.index.IndexException;
 import vtk.repository.index.PropertySetIndex;
 import vtk.repository.store.IndexDao;
 import vtk.repository.store.PropertySetHandler;
 import vtk.repository.store.ChangeLogDao;
+import vtk.repository.store.DataAccessException;
 
 /**
  * Executes incremental repository index updates periodically.
@@ -99,18 +101,26 @@ public class IncrementalUpdater implements DisposableBean, ApplicationListener<C
         } else {
             logger.info("Starting");
         }
+
         task = executor.scheduleAtFixedRate(() -> {
-            transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-                @Override
-                protected void doInTransactionWithoutResult(TransactionStatus ts) {
-                    try {
-                        executeUpdateBatch();
-                    } catch (Throwable t) {
-                        ts.setRollbackOnly();
-                        logger.error("Unexpected error during index update", t);
+            try {
+                transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus ts) {
+                        executeUpdateBatch(); // Rollback occurs automatically on any exceptions thrown
                     }
+                });
+            } catch (Throwable t) { // Must never let exceptions propagate to keep scheduled task active
+                logger.error("Unexpected error during index update", t);
+            } finally {
+                // Signal any waiting searcher threads to continue
+                batchProcessingLock.lock();
+                try {
+                    processingBatchFinished.signalAll();
+                } finally {
+                    batchProcessingLock.unlock();
                 }
-            });
+            }
         }, 1, updateIntervalSeconds, TimeUnit.SECONDS);
     }
 
@@ -150,7 +160,7 @@ public class IncrementalUpdater implements DisposableBean, ApplicationListener<C
     /**
      * Executes a single incremental update round with batch size limited by {@link #maxChangesPerUpdate}.
      */
-    private synchronized void executeUpdateBatch() throws Exception {
+    private synchronized void executeUpdateBatch() throws DataAccessException, IndexException {
 
         if (index.isClusterSharedReadOnly()) {
             // We are probably not cluster MASTER, so do nothing.
@@ -158,63 +168,52 @@ public class IncrementalUpdater implements DisposableBean, ApplicationListener<C
             return;
         }
         
-        try {
-            List<ChangeLogEntry> changes =
-            	changeLog.getChangeLogEntries(loggerType, loggerId, maxChangesPerUpdate);
+        List<ChangeLogEntry> changes
+                = changeLog.getChangeLogEntries(loggerType, loggerId, maxChangesPerUpdate);
 
-            if (logger.isDebugEnabled() && changes.size() > 0) {
-                logger.debug("");
-                logger.debug("--- update(): Start of window");
-                logger.debug("--- update(): Got the following changelog events from DAO");
-                for (ChangeLogEntry change: changes) {
-                    StringBuilder log = new StringBuilder();
-                    if (change.getOperation() == Operation.DELETED) {
-                        log.append("DEL    ");
-                    } else {
-                        log.append("UPDATE ");
-                    }
-
-                    if (change.isCollection()) {
-                        log.append("COL ");
-                    }
-                    log.append(change.getUri());
-
-                    log.append(", RESOURCE ID=").append(change.getResourceId());
-                    log.append(", EVENT ID=").append(change.getChangeLogEntryId());
-                    logger.debug(log.toString());
+        if (logger.isDebugEnabled() && changes.size() > 0) {
+            logger.debug("");
+            logger.debug("--- update(): Start of window");
+            logger.debug("--- update(): Got the following changelog events from DAO");
+            for (ChangeLogEntry change : changes) {
+                StringBuilder log = new StringBuilder();
+                if (change.getOperation() == Operation.DELETED) {
+                    log.append("DEL    ");
+                } else {
+                    log.append("UPDATE ");
                 }
-                logger.debug("--- update(): End of list, going to dispatch to observers");
-                logger.debug("");
-            }
 
-            if (changes.size() > 0) {
-                logger.debug("--- update(): applying changes to index");
-                applyChanges(changes);
-                logger.debug("--- update(): finished applying changes to index.");
-
-                // Remove changelog entries from DAO
-                changeLog.removeChangeLogEntries(changes);
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug("--- update(): End of window");
-                    logger.debug("");
-                    logger.debug("");
+                if (change.isCollection()) {
+                    log.append("COL ");
                 }
-            }
+                log.append(change.getUri());
 
-            batchProcessingLock.lock();
-            try {
-                processingBatchFinished.signalAll();
-            } finally {
-                batchProcessingLock.unlock();
+                log.append(", RESOURCE ID=").append(change.getResourceId());
+                log.append(", EVENT ID=").append(change.getChangeLogEntryId());
+                logger.debug(log.toString());
             }
-        } catch (Throwable t) {
-            logger.error("Unexpected exception during index update", t);
-            throw t; // Rethrow to roll back transaction
+            logger.debug("--- update(): End of list, going to dispatch to observers");
+            logger.debug("");
         }
+
+        if (changes.size() > 0) {
+            logger.debug("--- update(): applying changes to index");
+            applyChanges(changes);
+            logger.debug("--- update(): finished applying changes to index.");
+
+            // Remove changelog entries from DAO
+            changeLog.removeChangeLogEntries(changes);
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("--- update(): End of window");
+                logger.debug("");
+                logger.debug("");
+            }
+        }
+
     }
 
-    private void applyChanges(final List<ChangeLogEntry> changes) throws Exception {
+    private void applyChanges(final List<ChangeLogEntry> changes) throws IndexException, DataAccessException {
 
         try {
             // Take lock immediately, we'll be doing some writing.

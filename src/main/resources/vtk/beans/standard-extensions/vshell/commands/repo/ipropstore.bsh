@@ -1,4 +1,5 @@
 import vtk.repository.*;
+import vtk.repository.resourcetype.*;
 import java.util.ArrayList;
 
 getDescription() {
@@ -56,13 +57,22 @@ void execute(context, args, out) {
                vals[i] = new vtk.repository.resourcetype.Value((String)valueargs.get(i), vtk.repository.resourcetype.PropertyType.Type.STRING);
            }
            property.setValues(vals);
-        } else {
-           property.setStringValue((String)valueargs.get(0));
+        }
+        else {
+            // Support BOOLEAN and STRING for now:
+            if (propDef.getType() == PropertyType.Type.BOOLEAN) {
+                property.setBooleanValue(Boolean.valueOf((String)valueargs.get(0)));
+            }
+            else {
+                property.setStringValue((String)valueargs.get(0));
+            }
         }
         r.addProperty(property);
-    } else if ("del".equals(command) || "delete".equals(command)) {
+    }
+    else if ("del".equals(command) || "delete".equals(command)) {
         r.removeProperty(propDef);
-    } else {
+    }
+    else {
         out.println("Must provide command: 'store' or 'delete'");
         return;
     }

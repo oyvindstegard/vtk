@@ -1,4 +1,4 @@
-/* Copyright (c) 2010, University of Oslo, Norway
+/* Copyright (c) 2010-2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,11 @@
  */
 package vtk.web.display.collection.event;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -45,9 +50,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.time.FastDateFormat;
 
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.support.RequestContext;
 
@@ -61,21 +63,41 @@ import vtk.repository.resourcetype.Value;
 import vtk.web.display.listing.ListingPager;
 import vtk.web.servlet.ResourceAwareLocaleResolver;
 
-public final class EventListingHelper implements InitializingBean {
+public final class EventListingHelper {
+
+    public enum SpecificDateSearchType {
+        Day, Month, Year;
+    }
 
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern MONTH_PATTERN = Pattern.compile("\\d{4}-\\d{2}");
     private static final Pattern YEAR_PATTERN = Pattern.compile("\\d{4}");
-    private Map<Pattern, DateTimeFormatter> dateformats;
-    private Map<Pattern, SpecificDateSearchType> searchTypes;
+    private static final Map<Pattern, DateTimeFormatter> DATE_FORMATS;
+    private static final Map<Pattern, SpecificDateSearchType> SEARCH_TYPES;
+    static {
+        // These formatters must provide defaults for day and month when they are not part of pattern
+        DATE_FORMATS = new HashMap<>(4, 1f);
+        DATE_FORMATS.put(DATE_PATTERN, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        DATE_FORMATS.put(MONTH_PATTERN, new DateTimeFormatterBuilder()
+                                            .appendPattern("yyyy-MM")
+                                            .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+                                            .toFormatter());
+        DATE_FORMATS.put(YEAR_PATTERN, new DateTimeFormatterBuilder()
+                                            .appendPattern("yyyy")
+                                            .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1)
+                                            .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+                                            .toFormatter());
+        SEARCH_TYPES = new HashMap<>(4, 1f);
+        SEARCH_TYPES.put(DATE_PATTERN, SpecificDateSearchType.Day);
+        SEARCH_TYPES.put(MONTH_PATTERN, SpecificDateSearchType.Month);
+        SEARCH_TYPES.put(YEAR_PATTERN, SpecificDateSearchType.Year);
+    }
 
     private DateValueFormatter dateValueFormatter;
     private ResourceAwareLocaleResolver localeResolver;
     private PropertyTypeDefinition eventTypeTitlePropDef;
     private String startPropDefPointer;
     private String endPropDefPointer;
-    private PropertyTypeDefinition startPropDef;
-    private PropertyTypeDefinition endPropDef;
     private ResourceTypeTree resourceTypeTree;
 
     public static final String REQUEST_PARAMETER_DATE = "date";
@@ -84,32 +106,12 @@ public final class EventListingHelper implements InitializingBean {
     public static final String VIEW_TYPE_ALL_PREVIOUS = "allprevious";
     public static final String DISPLAY_LISTING_ICAL_LINK = "displayEventListingICalLink";
 
-    public enum SpecificDateSearchType {
-        Day, Month, Year;
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        this.dateformats = new HashMap<Pattern, DateTimeFormatter>();
-
-        this.dateformats.put(DATE_PATTERN, DateTimeFormat.forPattern("yyyy-MM-dd"));
-        this.dateformats.put(MONTH_PATTERN, DateTimeFormat.forPattern("yyyy-MM"));
-        this.dateformats.put(YEAR_PATTERN, DateTimeFormat.forPattern("yyyy"));
-        this.searchTypes = new HashMap<Pattern, SpecificDateSearchType>();
-        this.searchTypes.put(DATE_PATTERN, SpecificDateSearchType.Day);
-        this.searchTypes.put(MONTH_PATTERN, SpecificDateSearchType.Month);
-        this.searchTypes.put(YEAR_PATTERN, SpecificDateSearchType.Year);
-
-        this.startPropDef = this.resourceTypeTree.getPropertyDefinitionByPointer(this.startPropDefPointer);
-        this.endPropDef = this.resourceTypeTree.getPropertyDefinitionByPointer(this.endPropDefPointer);
-    }
-
     public SpecificDateSearchType getSpecificDateSearchType(HttpServletRequest request) {
         String specificDate = request.getParameter(EventListingHelper.REQUEST_PARAMETER_DATE);
         if (specificDate != null && !"".equals(specificDate.trim())) {
-            for (Pattern regex : searchTypes.keySet()) {
+            for (Pattern regex : SEARCH_TYPES.keySet()) {
                 if (regex.matcher(specificDate).matches()) {
-                    return searchTypes.get(regex);
+                    return SEARCH_TYPES.get(regex);
                 }
             }
         }
@@ -118,18 +120,17 @@ public final class EventListingHelper implements InitializingBean {
 
     public Date getSpecificSearchDate(HttpServletRequest request) {
         String specificDate = request.getParameter(EventListingHelper.REQUEST_PARAMETER_DATE);
-        if (specificDate != null && !"".equals(specificDate.trim())) {
-            DateTimeFormatter sdf = null;
-            for (Pattern regex : searchTypes.keySet()) {
+        if (specificDate != null && !(specificDate = specificDate.trim()).isEmpty()) {
+            DateTimeFormatter dateFormatter = null;
+            for (Pattern regex : SEARCH_TYPES.keySet()) {
                 if (regex.matcher(specificDate).matches()) {
-                    sdf = dateformats.get(regex);
+                    dateFormatter = DATE_FORMATS.get(regex);
                 }
             }
-            if (sdf != null) {
+            if (dateFormatter != null) {
                 try {
-                    long millis = sdf.parseMillis(specificDate);
-                    Date date = new Date(millis);
-                    return date;
+                    LocalDate localDate = LocalDate.parse(specificDate, dateFormatter);
+                    return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
                 } catch (IllegalArgumentException e) {
                     // Ignore, return null
                 }
@@ -144,7 +145,7 @@ public final class EventListingHelper implements InitializingBean {
 
     public String getEventTypeTitle(HttpServletRequest request, Resource collection, SpecificDateSearchType searchType,
             Date date, String key, boolean capitalize, boolean includePage) {
-        List<Object> params = new ArrayList<Object>();
+        List<Object> params = new ArrayList<>();
         String eventTypeTitle = getEventTypeTitle(collection, capitalize);
         if (eventTypeTitle != null) {
             key = key + ".overrideDefault";
@@ -208,7 +209,7 @@ public final class EventListingHelper implements InitializingBean {
 
     public String getCalendarWidgetMonthEventDates(List<PropertySet> events, Calendar requestedMonthCal) {
 
-        Set<String> eventDatesList = new HashSet<String>();
+        Set<String> eventDatesList = new HashSet<>();
         FastDateFormat eventDateFormat = FastDateFormat.getInstance("yyyy-M-d");
 
         Calendar endOfRequestedMonthCal = Calendar.getInstance();
@@ -277,7 +278,7 @@ public final class EventListingHelper implements InitializingBean {
             if (!first) {
                 sb.append(", ");
             }
-            sb.append("'" + it.next() + "'");
+            sb.append("'").append(it.next()).append("'");
             first = false;
         }
         sb.append("]");
@@ -293,11 +294,19 @@ public final class EventListingHelper implements InitializingBean {
     }
 
     public Property getStartDateProperty(PropertySet ps) {
-        return ps.getProperty(startPropDef);
+        PropertyTypeDefinition propDef = resourceTypeTree.getPropertyDefinitionByName(startPropDefPointer);
+        if (propDef == null) {
+            throw new IllegalStateException("Could not find property definition for '" + startPropDefPointer + "'");
+        }
+        return ps.getProperty(propDef);
     }
 
     public Property getEndDateProperty(PropertySet ps) {
-        return ps.getProperty(endPropDef);
+        PropertyTypeDefinition propDef = resourceTypeTree.getPropertyDefinitionByName(endPropDefPointer);
+        if (propDef == null) {
+            throw new IllegalStateException("Could not find property definition for '" + endPropDefPointer + "'");
+        }
+        return ps.getProperty(propDef);
     }
 
     @Required

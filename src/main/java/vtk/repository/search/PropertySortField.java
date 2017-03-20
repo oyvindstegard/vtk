@@ -38,7 +38,7 @@ public class PropertySortField extends SortField {
 
     private PropertyTypeDefinition definition;
     private String complexValueAttributeSpecifier;
-    
+
     public PropertySortField(PropertyTypeDefinition def) {
         this.definition = def;
     }

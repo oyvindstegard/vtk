@@ -103,7 +103,7 @@
     <property name="authorPropDefPointer" value="createdBy" />
   </bean>
 
-  <bean id="messageListing.searchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+  <bean id="messageListing.searchSorting" class="vtk.web.search.SearchSorting">
     <property name="sortOrderPropDefPointers">
       <list>
         <value>publish-date</value>

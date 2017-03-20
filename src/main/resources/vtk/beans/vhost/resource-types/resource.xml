@@ -47,6 +47,7 @@
         <ref bean="modifiedByPropDef" />
         <ref bean="userTitlePropDef" />
         <ref bean="titlePropDef" />
+        <ref bean="tagsPropDef" />
         <ref bean="externalIdPropDef" />
 
         <ref bean="contentLocalePropDef" /><!-- Inheritable -->
@@ -66,6 +67,7 @@
         <ref bean="systemJobStatusPropDef" />
         <ref bean="sslMixedModePropDef" />
         <ref bean="locationHistoryPropDef" />
+        <ref bean="linkRepairEnabledPropDef" /><!-- Inheritable -->
       </list>
     </property>
   </bean>
@@ -126,6 +128,14 @@
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
     <property name="mandatory" value="false" />
     <property name="valueFormatter" ref="htmlFormatter" />
+  </bean>
+
+  <bean id="tagsPropDef" class="vtk.repository.resourcetype.OverridablePropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="tags" />
+    <property name="type" value="STRING" />
+    <property name="multiple" value="true" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
   </bean>
 
   <!-- Value is generated internally by repository. -->  
@@ -427,5 +437,31 @@
   </bean>
 
   <bean id="locationHistoryEvaluator" class="vtk.repository.resourcetype.property.LocationHistoryEvaluator" />
+
+  <bean id="linkRepairEnabledPropDef" 
+        class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="linkRepairEnabled" />
+    <property name="inheritable" value="true" />
+    <property name="type" value="BOOLEAN" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="BOOLEAN"/>
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.linkRepairEnabled"/>
+      </bean>
+    </property>
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="BOOLEAN" />
+        <property name="values">
+          <list>
+            <ref bean="VALUE_TRUE" />
+            <ref bean="VALUE_FALSE" />
+          </list>
+        </property>
+      </bean>
+    </property>
+  </bean>
 
 </beans>

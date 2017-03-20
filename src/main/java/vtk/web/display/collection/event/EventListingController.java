@@ -193,7 +193,7 @@ public class EventListingController extends BaseCollectionListingController {
     private int getOngoingLastIdx(List<ListingEntry> entries) {
         int ongoingLastIdx = -1;
         long now = Calendar.getInstance().getTimeInMillis();
-        PropertyTypeDefinition startDatePropDef = resourceTypeTree.getPropertyDefinitionByPointer(startPropDefPointer);
+        PropertyTypeDefinition startDatePropDef = resourceTypeTree.getPropertyDefinitionByName(startPropDefPointer);
         for (int i = 0; i < entries.size(); i++) {
             PropertySet event = entries.get(i).getPropertySet();
             Property startProp = event.getProperty(startDatePropDef);

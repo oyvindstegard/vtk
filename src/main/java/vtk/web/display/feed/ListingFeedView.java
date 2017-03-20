@@ -537,7 +537,7 @@ public class ListingFeedView implements View {
 
     protected Property getProperty(PropertySet resource, String propDefPointer) {
         PropertyTypeDefinition propDef = resourceTypeTree
-                .getPropertyDefinitionByPointer(propDefPointer);
+                .getPropertyDefinitionByName(propDefPointer);
 
         if (propDef != null) {
             Property prop = resource.getProperty(propDef);
@@ -545,7 +545,7 @@ public class ListingFeedView implements View {
                 String defaultPropDefPointer = propDefPointer
                         .substring(propDefPointer.indexOf(":") + 1,
                                 propDefPointer.length());
-                propDef = resourceTypeTree.getPropertyDefinitionByPointer(defaultPropDefPointer);
+                propDef = resourceTypeTree.getPropertyDefinitionByName(defaultPropDefPointer);
                 if (propDef != null) {
                     prop = resource.getProperty(propDef);
                 }

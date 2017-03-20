@@ -30,15 +30,24 @@
  */
 package vtk.web.servlet;
 
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.servlet.Filter;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -133,6 +142,7 @@ public class VTKServlet extends DispatcherServlet {
     private static final String SECURITY_INITIALIZER_BEAN_NAME = "securityInitializer";
     private static final String REQUEST_CONTEXT_INITIALIZER_BEAN_NAME = "requestContextInitializer";
     private static final String REPOSITORY_CONTEXT_INITIALIZER_BEAN_NAME = "repositoryContextInitializer";
+    private static final String SERVLET_FILTERS_BEAN_NAME = "vtk.servletFilters";
     private static final String REQUEST_FILTERS_BEAN_NAME = "defaultRequestFilters";
     private static final String RESPONSE_FILTERS_BEAN_NAME = "defaultResponseFilters";
     private static final String GLOBAL_HEADERS_BEAN_NAME = "globalHeaders";
@@ -150,6 +160,7 @@ public class VTKServlet extends DispatcherServlet {
 
     private RequestFilter[] requestFilters = new RequestFilter[0];
     private ResponseFilter[] responseFilters = new ResponseFilter[0];
+    private List<Filter> servletFilters = Collections.emptyList();
     private SecurityInitializer securityInitializer;
     private RepositoryContextInitializer repositoryContextInitializer;
     private RequestContextInitializer requestContextInitializer;
@@ -188,6 +199,7 @@ public class VTKServlet extends DispatcherServlet {
     protected void initFrameworkServlet()
         throws ServletException, BeansException {
         super.initFrameworkServlet();
+        initServletFilters();
         initRequestFilters();
         initResponseFilters();
         initSecurityInitializer();
@@ -229,6 +241,29 @@ public class VTKServlet extends DispatcherServlet {
         }
     }
     
+    private void initServletFilters() {
+        List<?> filterList = null;
+        try {
+            filterList = getWebApplicationContext()
+                .getBean(SERVLET_FILTERS_BEAN_NAME, List.class);
+        } catch (NoSuchBeanDefinitionException e) { }
+        
+        if (filterList == null || filterList.size() == 0) {
+            this.logger.info("No servlet filters found under name " 
+                    + SERVLET_FILTERS_BEAN_NAME);
+            return;
+        }
+        List<Filter> result = new ArrayList<>();
+        for (Object o: filterList) {
+            if (o instanceof Filter) {
+                result.add((Filter) o);
+            }
+        }
+        this.servletFilters = Collections.unmodifiableList(result);
+        this.logger.info("Using servlet filters: " + servletFilters);
+        
+    }
+
     private void initRequestFilters() {
         RequestFilter[] filterArray = null;
         try {
@@ -262,7 +297,7 @@ public class VTKServlet extends DispatcherServlet {
         this.responseFilters = filterArray;
         this.logger.info("Response filters: " + filterArray + " set up successfully");
     }
-
+    
     private void initGlobalHeaders() {
         try { 
             Map<?,?> headers = 
@@ -333,7 +368,8 @@ public class VTKServlet extends DispatcherServlet {
                     // Round down to the nearest second for a proper compare
                     // A ifModifiedSince of -1 will always be less
                     maybeSetLastModified(response, lastModified);
-                } else {
+                }
+                else {
                     response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
                     if (this.logger.isDebugEnabled()) {
                         this.logger.debug("Skipping service of "
@@ -343,7 +379,8 @@ public class VTKServlet extends DispatcherServlet {
                     return false;
                 }
             }
-        } else if (method.equals(METHOD_HEAD)) {
+        }
+        else if (method.equals(METHOD_HEAD)) {
             long lastModified = getLastModified(request);
             maybeSetLastModified(response, lastModified);
         }
@@ -351,22 +388,27 @@ public class VTKServlet extends DispatcherServlet {
         return true;
     }
     
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        FilterChain chain = new FilterChain();
+        chain.doFilter(request, response);
+    }
+    
     /**
-     * Overriding service to be able to handle dav requests,
+     * Override doService to be able to handle dav requests,
      * duplicating Spring FrameworkServlet's serviceWrapper
      * funcionality, and duplicating httpservlet's handling of
-     * lastModified in service.  Handle this request, publishing an
+     * lastModified in service.  Handle this request and publish an
      * event regardless of the outcome.  The actual event handling is
-     * performed by the doService() method in DispatcherServlet.
-     * 
+     * performed by super.doService().
      */
     @Override
-    protected void service(HttpServletRequest request,
+    protected void doService(HttpServletRequest request,
                                  HttpServletResponse servletResponse) 
-        throws ServletException {
+        throws ServletException, IOException {
         long startTime = System.currentTimeMillis();
         Throwable failureCause = null;
-
+        
         String threadName = Thread.currentThread().getName();
         long number = this.requests.incrementAndGet();
 
@@ -411,25 +453,30 @@ public class VTKServlet extends DispatcherServlet {
             if (proceedService) {
                 super.doService(request, responseWrapper);
             }
-        } catch (AuthenticationException ex) {
+        }
+        catch (AuthenticationException ex) {
             this.securityInitializer.challenge(request, responseWrapper, ex);
                 
-        } catch (AuthenticationProcessingException e) {
+        }
+        catch (AuthenticationProcessingException e) {
             handleAuthenticationProcessingError(request, responseWrapper, e);
         	
-        } catch (InvalidAuthenticationRequestException e) {
+        }
+        catch (InvalidAuthenticationRequestException e) {
             responseWrapper.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logError(request, e);
-        } catch (java.io.EOFException eof) {
-            // Likely cause of this is abrupt client disconnect, which we mostly ignore
-            logger.warn("Client disconnect for request: " + request);
+        }
+        catch (EOFException ignore) {
+            // Likely cause client disconnect, rethrow to avoid general error logging
+            throw ignore;
         } catch (Throwable t) {
             if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
                 responseWrapper.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
             failureCause = t;
             handleError(request, responseWrapper, t);
-        } finally {
+        }
+        finally {
             long processingTime = System.currentTimeMillis() - startTime;
 
             if (request.getAttribute(INDEX_FILE_REQUEST_ATTRIBUTE) == null) {
@@ -450,7 +497,7 @@ public class VTKServlet extends DispatcherServlet {
             BaseContext.popContext();
         }
     }
-
+    
     private void handleAuthenticationProcessingError(HttpServletRequest request, HeaderAwareResponseWrapper responseWrapper, AuthenticationProcessingException e) throws ServletException {
 
         if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
@@ -462,6 +509,31 @@ public class VTKServlet extends DispatcherServlet {
                 "performing authentication", e);
     }
 
+    private class FilterChain implements javax.servlet.FilterChain {
+        private int idx = 0;
+        boolean terminated = false;
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response)
+                throws IOException, ServletException {
+            if (terminated) {
+                throw new IllegalStateException("FilterChain has terminated");
+            }
+            
+            int nextIdx = idx++;
+            
+            if (nextIdx < servletFilters.size()) {
+                Filter filter = servletFilters.get(nextIdx);
+                logger.debug("Invoking servlet filter: " + filter);
+                filter.doFilter(request, response, this);
+            }
+            else {
+                doService((HttpServletRequest) request, (HttpServletResponse) response);
+                terminated = true;
+            }
+        }
+    }
+
+    
     private HttpServletRequest filterRequest(HttpServletRequest request) {
         for (RequestFilter filter: this.requestFilters) {
             if (this.logger.isDebugEnabled()) {
@@ -633,7 +705,8 @@ public class VTKServlet extends DispatcherServlet {
         WebApplicationContext springContext = null;
         try {
             springContext = RequestContextUtils.getWebApplicationContext(req);
-        } catch (Throwable x) { }
+        }
+        catch (Throwable x) { }
 
         if (springContext == null) {
             // When no Spring WebApplicationContext is found, we
@@ -674,14 +747,16 @@ public class VTKServlet extends DispatcherServlet {
             Object obj = handler.getErrorView(req, resp, t);
             if (obj instanceof View) {
                 view = (View) obj;
-            } else {
+            }
+            else {
                 Locale locale = RequestContextUtils.getLocale(req);
                 view = this.resolveViewName((String) obj, model, locale, req);
             }
 
             statusCode = handler.getHttpStatusCode(req, resp, t);
 
-        } catch (Throwable errorHandlerException) {
+        }
+        catch (Throwable errorHandlerException) {
             //errorHandlerException.initCause(t);
             logError("Caught exception while performing error handling: " 
                     + errorHandlerException, req, t);
@@ -710,10 +785,12 @@ public class VTKServlet extends DispatcherServlet {
             }
             view.render(model, req, resp);
             
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             try {
                 e.initCause(t);
-            } catch (Throwable unhandled) { }
+            }
+            catch (Throwable unhandled) { }
             throw new ServletException("Error while rendering error view", e);
         }
     }
@@ -736,38 +813,32 @@ public class VTKServlet extends DispatcherServlet {
         ErrorHandler selected = null;
 
         for (int i = 0; i < this.errorHandlers.length; i++) {
-
             ErrorHandler candidate = this.errorHandlers[i];
 
             if (!candidate.getErrorType().isAssignableFrom(t.getClass())) {
                 continue;
-            }
-            
+            }            
             if ((candidate.getService() != null && currentService == null)
                 || (candidate.getService() != null && currentService != null
                     && !(currentService == candidate.getService() ||
                          currentService.isDescendantOf(candidate.getService())))) {
-
                 continue;
             }
-
             if (selected == null) {
                 
                 selected = candidate;
 
-            } else if (!selected.getErrorType().equals(candidate.getErrorType())
+            }
+            else if (!selected.getErrorType().equals(candidate.getErrorType())
                        && selected.getErrorType().isAssignableFrom(
-                           candidate.getErrorType())) {
-                
+                           candidate.getErrorType())) {                
                 selected = candidate;
-
-            } else if (candidate.getService() != null && selected.getService() == null) {
-                
+            }
+            else if (candidate.getService() != null && selected.getService() == null) {                
                 selected = candidate;
-
-            } else if (candidate.getService() != null && selected.getService() != null
+            }
+            else if (candidate.getService() != null && selected.getService() != null
                        && candidate.getService().isDescendantOf(selected.getService())) {
-
                 selected = candidate;
             }
 

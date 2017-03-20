@@ -134,7 +134,8 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
             HtmlContent filteredNode = invokeComponentsAsContent(new ComponentInvocation[] {ssiInvocation});
             return filteredNode;
 
-        } else if (node instanceof HtmlElement && this.parseAttributes) {
+        }
+        else if (node instanceof HtmlElement && this.parseAttributes) {
             HtmlElement element = (HtmlElement) node;
             HtmlAttribute[] attributes = element.getAttributes();
             if (attributes.length > 0) {
@@ -146,10 +147,12 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
                                 this.contentComponentParser.parse(
                                         new java.io.StringReader(value));
                             value = invokeComponentsAsString(parsedValue);
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e) {
                             if (e.getMessage() == null) {
                                 value = e.getClass().getName();
-                            } else {
+                            }
+                            else {
                                 value = e.getMessage();
                             }
                         }
@@ -157,7 +160,8 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
                     attribute.setValue(value);
                 }
             }
-        } else if (node instanceof HtmlText) {
+        }
+        else if (node instanceof HtmlText) {
 
             if (this.contentComponentParser == null) {
                 return node;
@@ -168,7 +172,8 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
                     this.contentComponentParser.parse(new java.io.StringReader(content));
                 HtmlContent filteredNode = invokeComponentsAsContent(parsedContent);
                 return filteredNode;
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 return node;
             }
         }
@@ -218,6 +223,7 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
             public String getName() {
                 return component.getName();
             }
+            @Override
             public String toString() {
                 StringBuilder sb = new StringBuilder(this.getClass().getName());
                 sb.append("; component=").append(component);
@@ -273,17 +279,20 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
                 component.render(decoratorRequest, response);
                 result = response.getContentAsString();
 
-            } catch (Throwable t) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Error invoking component on page " + 
-                            servletRequest.getRequestURI() + ": " + invocation, t);
-                } else if (logger.isInfoEnabled()) {
-                    logger.info("Error invoking component on page " + 
-                            servletRequest.getRequestURI() + ": " + invocation);
-                }
+            }
+            catch (Throwable t) {
                 String msg = t.getMessage();
                 if (msg == null) {
                     msg = t.getClass().getName();
+                }
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Error invoking component on page " + 
+                            servletRequest.getRequestURI() + ": " + invocation, t);
+                }
+                else if (logger.isInfoEnabled()) {
+                    logger.info("Error invoking component on page " + 
+                            servletRequest.getRequestURI() + ": " + invocation + ": "
+                            + msg);
                 }
                 result = "Error: " + msg;
             }

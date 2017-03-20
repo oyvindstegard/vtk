@@ -58,7 +58,10 @@ public class JSONObjectParseableAssertion implements RepositoryContentEvaluation
 
         try {
             JsonParseResult result = content.getContentRepresentation(JsonParseResult.class);
-            return result.document.isPresent();
+            if (result.value.failure.isPresent()) {
+                return false;
+            }
+            return result.asObject().isPresent();
         }
         catch (Exception e) {
             return false;

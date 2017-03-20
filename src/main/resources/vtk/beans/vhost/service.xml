@@ -193,6 +193,7 @@
 
   <bean id="displayClassPathResourceHandler"
         class="vtk.web.display.classpath.DisplayClassPathResourceController">
+    <property name="staticResourceResolver" ref="manage.staticResourceResolver" />
     <property name="headers">
       <map>
         <entry key="Cache-Control" value="public,max-age=${staticResourcesCacheSeconds}" />

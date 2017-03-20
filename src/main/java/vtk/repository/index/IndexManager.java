@@ -38,8 +38,6 @@ import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.CheckIndex;
 import org.apache.lucene.index.DirectoryReader;
@@ -59,6 +57,8 @@ import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -103,7 +103,7 @@ public class IndexManager implements DisposableBean {
      * To get the written application level of an opened index, use {@link #getApplicationCompatibilityLevel()
      * }.
      */
-    public static final int APPLICATION_COMPATIBILITY_LEVEL = 2;
+    public static final int APPLICATION_COMPATIBILITY_LEVEL = 3;
 
     private static final String APPLICATION_META_FILE = "vrtxmeta";
     

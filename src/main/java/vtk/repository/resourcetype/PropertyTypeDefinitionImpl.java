@@ -247,8 +247,8 @@ public class PropertyTypeDefinitionImpl implements PropertyTypeDefinition, Initi
      *
      * <p>
      * If provided {@code Value} instance is of a different type than this property type definition,
-     * then basic conversion as supported by {@link Value#Value(java.lang.String, vtk.repository.resourcetype.PropertyType.Type) Value(String,PropertyType.Type)}
-     * is attempted using the value's {@code toString} representation.
+     * then basic conversion as supported by {@link Value#Value(java.lang.String, vtk.repository.resourcetype.PropertyType.Type)
+     * Value(String,PropertyType.Type)} is attempted using the value's {@code toString} representation.
      *
      * @param value some value object, or <code>null</code> to unset
      */

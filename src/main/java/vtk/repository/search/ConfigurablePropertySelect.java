@@ -53,10 +53,27 @@ public class ConfigurablePropertySelect implements PropertySelect {
     private final Map<Namespace, Set<String>> properties = new HashMap<>();
     
     private boolean includeAcl = false;
-    
+
+    /**
+     * Construct an empty select instance which initially selects no properties and no ACLs.
+     */
     public ConfigurablePropertySelect() {
     }
-    
+
+    /**
+     * Construct a select instance which initially selects the single provided property
+     * and no ACLs.
+     * @param def
+     */
+    public ConfigurablePropertySelect(PropertyTypeDefinition def) {
+        addPropertyDefinition(def);
+    }
+
+    /**
+     * Construct a select instance which initially selects all properties in the provided collection
+     * and no ACLs.
+     * @param properties
+     */
     public ConfigurablePropertySelect(Collection<PropertyTypeDefinition> properties) {
         for (PropertyTypeDefinition p: properties) {
             addPropertyDefinition(p);
@@ -68,7 +85,7 @@ public class ConfigurablePropertySelect implements PropertySelect {
     }
 
     public boolean isEmpty() {
-        return this.properties.isEmpty();
+        return properties.isEmpty();
     }
 
     @Override

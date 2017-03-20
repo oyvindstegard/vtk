@@ -57,11 +57,12 @@ public final class MenuGenerator {
     private Service viewService;
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition hiddenPropDef;
-	private PropertyTypeDefinition sortDescendingPropDef;
+    private PropertyTypeDefinition sortDescendingPropDef;
     private PropertyTypeDefinition importancePropDef;
-    private ResourceTypeDefinition collectionResourceType;
     private PropertyTypeDefinition navigationTitlePropDef;
     private PropertyTypeDefinition unpublishedCollectionPropDef;
+
+    private ResourceTypeDefinition collectionResourceType;
 
     public MenuRequest getMenuRequest(DecoratorRequest request) {
         MenuRequest menuRequest = new MenuRequest(request, this.titlePropDef, this.collectionResourceType);

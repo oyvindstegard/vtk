@@ -32,12 +32,12 @@
 package vtk.repository.systemjob;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.cluster.ClusterAware;
@@ -60,7 +60,7 @@ import vtk.security.SecurityContext;
  *
  * <p>XXX not sure if cluster role should be checked at this level, or some lower or higher level..
  */
-public abstract class RepositoryJob extends AbstractTask implements InitializingBean, ClusterAware {
+public abstract class RepositoryJob extends AbstractTask implements ClusterAware {
 
     private Optional<ClusterRole> clusterRole = Optional.empty();
 
@@ -69,8 +69,7 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
 
     private PropertyTypeDefinition systemJobStatusPropDef;
     private ResourceTypeTree resourceTypeTree;
-    private List<String> affectedPropDefPointers;
-    private List<PropertyTypeDefinition> affectedProperties;
+    private List<String> affectedPropertyNames = Collections.emptyList();
     private boolean ignoreLockingOnStore = false;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -87,7 +86,7 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
             SecurityContext.setSecurityContext(securityContext);
 
             SystemChangeContext systemChangeContext =
-                    new SystemChangeContext(getId(), affectedProperties,
+                    new SystemChangeContext(getId(), lookupPropDefs(affectedPropertyNames),
                             systemJobStatusPropDef, ignoreLockingOnStore);
 
             executeWithRepository(repository, systemChangeContext);
@@ -100,19 +99,16 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
         }
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        if (affectedPropDefPointers != null) {
-            for (String pointer : affectedPropDefPointers) {
-                PropertyTypeDefinition prop = resourceTypeTree.getPropertyDefinitionByPointer(pointer);
-                if (affectedProperties == null) {
-                    affectedProperties = new ArrayList<>();
-                }
-                if (prop != null) {
-                    affectedProperties.add(prop);
-                }
+    private List<PropertyTypeDefinition> lookupPropDefs(List<String> qualifiedNames) {
+        List<PropertyTypeDefinition> propDefs = new ArrayList<>(qualifiedNames.size());
+        for (String qname: qualifiedNames) {
+            PropertyTypeDefinition def = resourceTypeTree.getPropertyDefinitionByName(qname);
+            if (def == null) {
+                throw new IllegalStateException("Unable to find property definition '" + qname + "'");
             }
+            propDefs.add(def);
         }
+        return propDefs;
     }
 
     /**
@@ -144,8 +140,8 @@ public abstract class RepositoryJob extends AbstractTask implements Initializing
         this.resourceTypeTree = resourceTypeTree;
     }
 
-    public void setAffectedPropDefPointers(List<String> affectedPropDefPointers) {
-        this.affectedPropDefPointers = affectedPropDefPointers;
+    public void setAffectedPropertyNames(List<String> affectedPropertyNames) {
+        this.affectedPropertyNames = affectedPropertyNames;
     }
 
     /**

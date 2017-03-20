@@ -56,6 +56,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,6 +72,7 @@ import vtk.repository.content.ContentRepresentationRegistry;
 import vtk.repository.event.ACLModificationEvent;
 import vtk.repository.event.ContentModificationEvent;
 import vtk.repository.event.InheritablePropertiesModificationEvent;
+import vtk.repository.event.RepositoryInitEvent;
 import vtk.repository.event.ResourceCreationEvent;
 import vtk.repository.event.ResourceDeletionEvent;
 import vtk.repository.event.ResourceModificationEvent;
@@ -115,7 +118,8 @@ import vtk.util.repository.MimeHelper;
  * XXX: duplication of owner and inherited between resource and acl.
  * XXX: too big.
  */
-public class RepositoryImpl implements Repository, ApplicationContextAware, ClusterAware {
+public class RepositoryImpl implements Repository, ApplicationContextAware, 
+    ApplicationListener<ContextRefreshedEvent>, ClusterAware {
 
     private ApplicationContext context;
     private DataAccessor dao;
@@ -2212,10 +2216,12 @@ public class RepositoryImpl implements Repository, ApplicationContextAware, Clus
         clusterRole = Optional.of(role);
     }
 
-    public void init() {
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         mm.init();
+        context.publishEvent(new RepositoryInitEvent(this));
     }
-
+    
     public void destroy() {
         mm.destroy();
     }

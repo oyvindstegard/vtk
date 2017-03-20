@@ -57,9 +57,9 @@ public class EventsDateAndTimeQueryBuilder implements SearchComponentQueryBuilde
     public Query build(Resource base, HttpServletRequest request) {
 
         PropertyTypeDefinition startPropDef = this.resourceTypeTree
-                .getPropertyDefinitionByPointer(this.startPropDefPointer);
+                .getPropertyDefinitionByName(this.startPropDefPointer);
         PropertyTypeDefinition endPropDef = this.resourceTypeTree
-                .getPropertyDefinitionByPointer(this.endPropDefPointer);
+                .getPropertyDefinitionByName(this.endPropDefPointer);
 
         if (startPropDef == null || endPropDef == null) {
             throw new IllegalArgumentException("Both start and end date properties must be available");

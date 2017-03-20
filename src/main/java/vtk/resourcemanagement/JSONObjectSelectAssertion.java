@@ -33,6 +33,7 @@ package vtk.resourcemanagement;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -86,9 +87,14 @@ public class JSONObjectSelectAssertion implements RepositoryContentEvaluationAss
         
         try {
             JsonParseResult result = content.getContentRepresentation(JsonParseResult.class);
-            if (!result.document.isPresent()) return false;
-            
-            Object o = Json.select(result.document.get(), this.expression);
+            if (result.value.failure.isPresent()) {
+                return false;
+            }
+            Optional<Json.MapContainer> document = result.asObject();
+            if (!document.isPresent()) {
+                return false;
+            }
+            Object o = Json.select(document.get(), this.expression);
             if (this.expectedValues == null || this.expectedValues.isEmpty()) {
                 return o != null;
             }

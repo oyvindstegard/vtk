@@ -134,7 +134,7 @@ public class ManuallyApproveResourcesSearcher {
             Set<String> alreadyApproved) throws Exception {
 
         // The final product. Will be populated with search results.
-        List<ManuallyApproveResource> result = new ArrayList<ManuallyApproveResource>();
+        List<ManuallyApproveResource> result = new ArrayList<>();
 
         Repository repository = RequestContext.getRequestContext().getRepository();
         String token = SecurityContext.getSecurityContext().getToken();
@@ -143,7 +143,7 @@ public class ManuallyApproveResourcesSearcher {
         ConfigurablePropertySelect propertySelect = null;
         if (this.configurablePropertySelectPointers != null && this.resourceTypeTree != null) {
             for (String propPointer : this.configurablePropertySelectPointers) {
-                PropertyTypeDefinition ptd = this.resourceTypeTree.getPropertyDefinitionByPointer(propPointer);
+                PropertyTypeDefinition ptd = this.resourceTypeTree.getPropertyDefinitionByName(propPointer);
                 if (ptd != null) {
                     if (propertySelect == null) {
                         propertySelect = new ConfigurablePropertySelect();
@@ -251,7 +251,7 @@ public class ManuallyApproveResourcesSearcher {
 
         // Enforce hard limit lastly
         if (result.size() > this.maxManuallyApproveResources) {
-            result = result.subList(0, this.maxManuallyApproveResources);
+            result = new ArrayList<>(result.subList(0, this.maxManuallyApproveResources));
         }
         return result;
     }

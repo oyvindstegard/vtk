@@ -77,7 +77,7 @@
     <property name="searchSorting" ref="tags.personSearchSorting" />
   </bean>
 
-  <bean id="tags.personSearchSorting" class="vtk.web.search.SearchSorting" depends-on="resourceTypeTree">
+  <bean id="tags.personSearchSorting" class="vtk.web.search.SearchSorting">
     <property name="sortOrderPropDefPointers">
       <list>
         <value>resource:surname</value>

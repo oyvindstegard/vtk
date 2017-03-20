@@ -60,7 +60,6 @@ public class EventListingHelperTest {
         this.eventListingHelper.setStartPropDefPointer("resource:start-date");
         this.eventListingHelper.setEndPropDefPointer("resource:end-date");
         this.eventListingHelper.setResourceTypeTree(new MockResourceTypeTree());
-        this.eventListingHelper.afterPropertiesSet();
         this.mockRequest = this.context.mock(HttpServletRequest.class);
     }
 

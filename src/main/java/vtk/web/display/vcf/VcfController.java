@@ -192,7 +192,7 @@ public class VcfController implements Controller {
     }
 
     private Property getProperty(Resource person, String propDefPointer) {
-        PropertyTypeDefinition propDef = this.resourceTypeTree.getPropertyDefinitionByPointer(propDefPointer);
+        PropertyTypeDefinition propDef = this.resourceTypeTree.getPropertyDefinitionByName(propDefPointer);
         if (propDef != null)
             return person.getProperty(propDef);
 
