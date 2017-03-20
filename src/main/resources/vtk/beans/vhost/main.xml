@@ -48,6 +48,7 @@
   <import resource="resource-wrapper.xml" />
 
   <import resource="manage.xml" />
+  <import resource="api.xml" />
   <import resource="actions-listing.xml" />
   <import resource="property-edit.xml" />
   <import resource="visual-profile-aspect.xml" />
