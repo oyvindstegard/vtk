@@ -467,10 +467,6 @@ public class VTKServlet extends DispatcherServlet {
             responseWrapper.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logError(request, e);
         }
-        catch (EOFException ignore) {
-            // Likely cause client disconnect, rethrow to avoid general error logging
-            throw ignore;
-        }
         catch (Throwable t) {
             if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
                 responseWrapper.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -703,7 +699,7 @@ public class VTKServlet extends DispatcherServlet {
     @SuppressWarnings("rawtypes")
     private void handleError(HttpServletRequest req, HttpServletResponse resp,
                              Throwable t) throws ServletException {
-        if (t instanceof java.io.EOFException || 
+        if (t instanceof EOFException || 
                 (t.getCause() != null && (t.getCause() instanceof TimeoutException))) { 
             logger.info("Client disconnect: " + req.getRequestURI() 
                 + ": " + t.getMessage());
