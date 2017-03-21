@@ -55,7 +55,6 @@ import vtk.security.web.AuthenticationChallenge;
 import vtk.security.web.AuthenticationHandler;
 import vtk.security.web.InvalidAuthenticationRequestException;
 import vtk.util.Result;
-import vtk.web.service.URL;
 
 public class ClientAddressAuthenticationHandler
         implements AuthenticationHandler {
@@ -194,7 +193,6 @@ public class ClientAddressAuthenticationHandler
     }
     
     private Result<Optional<String>> auth(HttpServletRequest req) {
-        URL url = URL.parse(req.getRequestURL().toString());
         String clientAddr = req.getRemoteAddr();
         List<Result<ClientAddrAuthSpec>> config = provider.get();
         
@@ -205,9 +203,6 @@ public class ClientAddressAuthenticationHandler
             ClientAddrAuthSpec spec = entry.result.get();
             Matcher m = spec.net.matcher(clientAddr);
             if (!m.matches()) {
-                continue;
-            }
-            if (!(spec.uri.isAncestorOf(url.getPath()) || spec.uri.equals(url.getPath()))) {
                 continue;
             }
             if (spec.validFrom.isPresent()) {
