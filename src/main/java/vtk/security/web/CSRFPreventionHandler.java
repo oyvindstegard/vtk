@@ -162,6 +162,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
                 return;
             }
         }
+        chain.filter(request);
     }
     
     private void verifyMultipartPost(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
@@ -261,16 +262,10 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         if (secret == null) {
             throw new AuthorizationException("Missing CSRF prevention secret in session");
         }
-
-        //String suppliedToken = request.getParameter(TOKEN_REQUEST_PARAMETER);
-
         if (token == null) {
             throw new AuthorizationException("Missing CSRF prevention token in request");
         }
-
-        //URL requestURL = URL.create(request);
         String computed = generateToken(requestURL, session);
-
         if (logger.isDebugEnabled()) {
             logger.debug("Check token: url: " + requestURL + ", supplied token: " + token
                     + ", computed token: " + computed + ", secret: " + secret);
