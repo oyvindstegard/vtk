@@ -39,18 +39,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.tidy.Tidy;
+
 import vtk.text.html.HtmlNodeFilter;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageFilter;
 import vtk.text.html.HtmlPageParser;
-import org.w3c.dom.Document;
-import org.w3c.tidy.Tidy;
 
 public class TemplateDecorator implements Decorator {
 
@@ -69,9 +71,9 @@ public class TemplateDecorator implements Decorator {
     private DecorationResolver decorationResolver;
     boolean tidyXhtml = true;
     
-    private List<HtmlNodeFilter> initialFilters;
-    private List<HtmlNodeFilter> userFilters;
-    private List<HtmlPageFilter> postFilters;
+    private List<HtmlNodeFilterFactory> initialFilters;
+    private List<HtmlNodeFilterFactory> userFilters;
+    private List<HtmlPageFilterFactory> postFilters;
 
     private String preventDecoratingParameter;
 
@@ -106,11 +108,17 @@ public class TemplateDecorator implements Decorator {
         boolean filter = descriptor.parse();
         List<HtmlNodeFilter> filters = new ArrayList<HtmlNodeFilter>();
         if (this.initialFilters != null) {
-            filters.addAll(this.initialFilters);
+            filters.addAll(this.initialFilters.stream()
+                    .map(factory -> factory.nodeFilter(request))
+                    .collect(Collectors.toList()));
         }
         
-        if (filter && this.userFilters != null) {
-            filters.addAll(this.userFilters);
+        List<HtmlNodeFilter> userFilters = this.userFilters == null ? Collections.emptyList() :
+            this.userFilters.stream()
+                .map(factory -> factory.nodeFilter(request))
+                .collect(Collectors.toList());
+        if (filter) {
+            filters.addAll(userFilters);
         }
         HtmlPageContent htmlContent = parseHtml(content, filters);
 
@@ -133,7 +141,7 @@ public class TemplateDecorator implements Decorator {
                 logger.debug("Rendering request for " + request.getRequestURI()
                         + " using template '" + template + "'");
             }
-            HtmlPageContent c = parseHtml(content, this.userFilters);
+            HtmlPageContent c = parseHtml(content, userFilters);
             TemplateExecution execution = template.newTemplateExecution(c, request, model, 
                     descriptor.getParameters(template));
             content = execution.render();
@@ -144,9 +152,12 @@ public class TemplateDecorator implements Decorator {
         }
         
         if (this.postFilters != null) {
+            List<HtmlPageFilter> postFilters = this.postFilters.stream()
+                    .map(factory -> factory.pageFilter(request))
+                    .collect(Collectors.toList());
             htmlContent = parseHtml(content, null);
             HtmlPage p = htmlContent.getHtmlContent();
-            for (HtmlPageFilter f: this.postFilters) {
+            for (HtmlPageFilter f: postFilters) {
                 if (f.match(p)) {
                     p.filter(f);
                 }
@@ -255,15 +266,15 @@ public class TemplateDecorator implements Decorator {
         };
     }
         
-    public void setUserFilters(List<HtmlNodeFilter> userFilters) {
+    public void setUserFilters(List<HtmlNodeFilterFactory> userFilters) {
         this.userFilters = userFilters;
     }
     
-    public void setInitialFilters(List<HtmlNodeFilter> initialFilters) {
+    public void setInitialFilters(List<HtmlNodeFilterFactory> initialFilters) {
         this.initialFilters = initialFilters;
     }
     
-    public void setPostFilters(List<HtmlPageFilter> postFilters) {
+    public void setPostFilters(List<HtmlPageFilterFactory> postFilters) {
         this.postFilters = postFilters;
     }
 

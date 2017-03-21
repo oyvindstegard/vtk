@@ -56,7 +56,8 @@ import vtk.text.html.HtmlText;
 import vtk.web.RequestContext;
 
 
-public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilter, InitializingBean {
+public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilter, 
+    HtmlNodeFilterFactory, HtmlPageFilterFactory, InitializingBean {
 
     private static final Pattern SSI_DIRECTIVE_REGEXP = Pattern.compile(
             "#([a-zA-Z]+)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -103,6 +104,16 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
             throw new BeanInitializationException(
             "JavaBean property 'ssiDirectiveComponentMap' not specified");
         }
+    }
+
+    @Override
+    public HtmlPageFilter pageFilter(HttpServletRequest request) {
+        return this;
+    }
+
+    @Override
+    public HtmlNodeFilter nodeFilter(HttpServletRequest request) {
+        return this;
     }
 
     @Override

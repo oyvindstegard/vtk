@@ -33,6 +33,7 @@ package vtk.web.display.linkcheck;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.text.html.HtmlAttribute;
 import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlElement;
@@ -40,8 +41,11 @@ import vtk.text.html.HtmlNodeFilter;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageFilter;
 import vtk.web.RequestContext;
+import vtk.web.decorating.HtmlNodeFilterFactory;
+import vtk.web.decorating.HtmlPageFilterFactory;
 
-public class LinkCheckFilter implements HtmlPageFilter, HtmlNodeFilter {
+public class LinkCheckFilter implements 
+    HtmlPageFilter, HtmlPageFilterFactory, HtmlNodeFilter, HtmlNodeFilterFactory {
 
     private String elementClass = null;
     
@@ -50,6 +54,16 @@ public class LinkCheckFilter implements HtmlPageFilter, HtmlNodeFilter {
         this.elementClass = elementClass;
     }
 
+    @Override
+    public HtmlNodeFilter nodeFilter(HttpServletRequest request) {
+        return this;
+    }
+
+    @Override
+    public HtmlPageFilter pageFilter(HttpServletRequest request) {
+        return this;
+    }
+   
     @Override
     public boolean match(HtmlPage page) {
         return match();
@@ -130,4 +144,5 @@ public class LinkCheckFilter implements HtmlPageFilter, HtmlNodeFilter {
             this.singleQuotes = singleQuotes;
         }
     }
+
 }
