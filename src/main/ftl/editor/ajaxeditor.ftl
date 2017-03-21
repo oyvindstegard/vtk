@@ -2,13 +2,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>${resource.name}</title>
-    <!-- TODO include (VTK-4894) -->
-    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/jquery/plugins/ui/jquery-ui-1.10.4.custom/css/smoothness/jquery-ui-1.10.4.custom.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/themes/default/forms.css" />
-    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/themes/default/upload.css" />
-    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.autocomplete.css" />
-    <link rel="stylesheet" type="text/css" href="/vrtx/__vrtx/static-resources/js/autocomplete/autocomplete.override.css" />
+    <title>${resourceName}</title>
     <link rel="stylesheet" type="text/css" href="${editorCssURI}" />
   </head>
   <body class="js forms-new">
@@ -21,31 +15,39 @@
     <script>
       //<![CDATA[
       (function () {
+        function getCookie(name) {
+            var value = " " + document.cookie;
+            var c_start = value.indexOf(" " + name + "=");
+            if (c_start == -1) {
+                value = null;
+            }
+            else {
+                c_start = value.indexOf("=", c_start) + 1;
+                var c_end = value.indexOf(";", c_start);
+                if (c_end == -1) {
+                    c_end = value.length;
+                }
+                value = unescape(value.substring(c_start,c_end));
+            }
+            return value;
+        }
         var contentSource = document.getElementById("content").content.textContent;
-        var csrfToken = "${VRTX_CSRF_PREVENTION_HANDLER.newToken(url)?json_string}";
-        var contentType = "${resource.contentType?json_string}";
-        var contentLanguage = "${resource.contentLanguage?json_string}";
+        var contentType = "${contentType}";
         var content = contentSource;
         if (contentType == "application/json") {
           content = JSON.parse(contentSource);
         }
+
         window.editor = {};
         window.editor.resource = {
           content: content,
           contentType: contentType,
-          contentLanguage: contentLanguage
+          contentLanguage: "${contentLanguage}"
         };
-        window.editor.csrfToken = csrfToken;
+        window.editor.csrfToken = getCookie("csrftoken");
       })();
       //]]>
     </script>
-     <!-- TODO include (VTK-4894) -->
-    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/jquery.min.js"></script>
-    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/jquery/plugins/jquery.autocomplete.js"></script>
-    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/ckeditor.js"></script>
-    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/ckeditor-build/adapters/jquery.js"></script>
-    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/frameworks/es5-shim-dejavu.js"></script>
-    <script type="text/javascript" src="/vrtx/__vrtx/static-resources/js/vrtx-simple-dialogs.js"></script>
     <script src="${editorJsURI}"></script>
   </body>
 </html>

@@ -30,19 +30,25 @@
  */
 package vtk.web;
 
+import org.json.simple.JSONObject;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.Controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.*;
 
+import org.springframework.web.servlet.support.RequestContextUtils;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.resourcemanagement.StaticResourceResolver;
+import vtk.text.tl.*;
+import vtk.text.tl.expr.Expression;
 import vtk.util.io.IO;
 
 public class AjaxEditorController implements Controller {
@@ -89,10 +95,18 @@ public class AjaxEditorController implements Controller {
         model.put("url", rc.getRequestURL());
         model.put("editorJsURI", getStaticResourcePath(type, "editor.js"));
         model.put("editorCssURI", getStaticResourcePath(type, "editor.css"));
-        model.put("resource", resource);
+        model.put("contentType", JSONObject.escape(resource.getContentType()));
+        model.put("contentLanguage", JSONObject.escape(resource.getContentLanguage()));
+        model.put("resourceName", resource.getName());
         model.put("resourceContent", IO.readString(
                 repository.getInputStream(token, rc.getResourceURI(), false)
         ).perform());
+
+        Optional<Reader> template = getTemplateReader(type, "editor.tl");
+        if (template.isPresent()) {
+            this.renderTemplate(template.get(), model, httpServletRequest, httpServletResponse);
+            return null;
+        }
         return new ModelAndView(editView, model);
     }
 
@@ -112,6 +126,72 @@ public class AjaxEditorController implements Controller {
             path = Path.fromString(this.staticResourcesURL + "/" + filename);
         }
         return path;
+    }
+
+    private Optional<Reader> getTemplateReader(String type, String filename) throws Exception {
+        RequestContext rc = RequestContext.getRequestContext();
+        Path repositoryPath = Path.fromString(this.appPath + "/" + type + "/" + filename);
+        org.springframework.core.io.Resource systemPath = this.staticResourceResolver.resolve(
+                Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename)
+        );
+
+        if (rc.getRepository().exists(rc.getSecurityToken(), repositoryPath)) {
+            return Optional.of(new InputStreamReader(rc.getRepository().getInputStream(
+                    rc.getSecurityToken(), repositoryPath, false
+            )));
+        } else if (systemPath != null && systemPath.exists()) {
+            return Optional.of(new InputStreamReader(systemPath.getInputStream()));
+        }
+        return Optional.empty();
+    }
+
+    private void renderTemplate(
+            Reader reader,
+            Map<String, Object> model,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws Exception {
+        Expression.FunctionResolver functionResolver = new Expression.FunctionResolver();
+        List<DirectiveHandler> handlers = Arrays.asList(
+                new IfHandler(functionResolver),
+                new ValHandler(null, functionResolver)
+        );
+        new TemplateParser(reader, handlers, new TemplateHandler() {
+            @Override
+            public void success(NodeList nodeList) {
+                Locale locale = RequestContextUtils.getLocale(request);
+                Context ctx = new Context(locale);
+
+                for (String key: model.keySet()) {
+                    ctx.define(key, model.get(key), true);
+                }
+
+                response.setContentType("text/html;charset=utf-8");
+                try {
+                    nodeList.render(ctx, response.getWriter());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void error(String message, int line) {
+                Locale locale = RequestContextUtils.getLocale(request);
+                Context ctx = new Context(locale);
+                NodeList nodeList = new NodeList();
+                nodeList.add(new Node() {
+                    public boolean render(Context ctx, Writer out) throws Exception {
+                        out.write("Template parse error \"" + message + "\" in line: " + line);
+                        return true;
+                    }
+                });
+                try {
+                    nodeList.render(ctx, response.getWriter());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).parse();
     }
 
 }
