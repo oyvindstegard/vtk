@@ -728,15 +728,17 @@ public final class AuthorizationManager implements ClusterAware {
             aclAuthorize(acl, principal, privileges);
         } catch (AuthenticationException e) {
             throw new AuthenticationException(
-                    "Unauthenticated principal not authorized to access " 
-                    + resource.getURI() + " for privilege(s) " 
-                    + Arrays.asList(privileges));
+                    "Unauthenticated principal "
+                            + " does not have any of privileges(s) "
+                            + Arrays.asList(privileges) + " on resource "
+                            + resource.getURI());
             
         } catch (AuthorizationException e) {
             throw new AuthorizationException(
-                    "Principal " + principal + " not authorized to access " 
-                    + resource.getURI() + " for privilege(s) " 
-                    + Arrays.asList(privileges));
+                    "Principal " + principal 
+                    + " does not have any of privileges(s) "
+                    + Arrays.asList(privileges) + " on resource "
+                    + resource.getURI());
         }
     }
     
