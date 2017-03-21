@@ -4,7 +4,7 @@
 
   <bean id="api.aclService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
-    <property name="order" value="-99" />
+    <property name="order" value="-101" />
     <property name="assertions">
       <list>
         <bean class="vtk.web.service.RequestParameterAssertion">
