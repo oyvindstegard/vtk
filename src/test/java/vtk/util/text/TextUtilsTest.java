@@ -45,6 +45,59 @@ import org.junit.Test;
 public class TextUtilsTest {
 
     @Test
+    public void testTokenizeWithPhrases() {
+
+        testTokenizeWithPhrases_expectTokens("a", "a");
+        testTokenizeWithPhrases_expectTokens("a b c", "a", "b", "c");
+        testTokenizeWithPhrases_expectTokens("'some phrase' here", "some phrase", "here");
+        testTokenizeWithPhrases_expectTokens("'some phrase ' here", "some phrase ", "here");
+
+        testTokenizeWithPhrases_expectTokens("'\"a dquote inside squotes\"' \"'an squote inside dquotes'\"",
+                                             "\"a dquote inside squotes\"", "'an squote inside dquotes'");
+
+        testTokenizeWithPhrases_expectTokens("foo 'an unterminated squote phrase", "foo", "an unterminated squote phrase");
+
+        testTokenizeWithPhrases_expectTokens("x'phrase'", "xphrase");
+        testTokenizeWithPhrases_expectTokens("'phrase'y", "phrasey");
+        testTokenizeWithPhrases_expectTokens("x'phrase'y", "xphrasey");
+        testTokenizeWithPhrases_expectTokens("x 'phrase'y", "x", "phrasey");
+        testTokenizeWithPhrases_expectTokens("x'phrase' y", "xphrase", "y");
+        testTokenizeWithPhrases_expectTokens("x\"phrase\"", "xphrase");
+        testTokenizeWithPhrases_expectTokens("\"phrase\"y", "phrasey");
+        testTokenizeWithPhrases_expectTokens("x \"phrase\"y", "x","phrasey");
+        testTokenizeWithPhrases_expectTokens("x\"phrase\" y", "xphrase","y");
+
+        testTokenizeWithPhrases_expectTokens(" 'two become'' one' ", "two become one");
+        testTokenizeWithPhrases_expectTokens(" \"two become\"' one' ", "two become one");
+        testTokenizeWithPhrases_expectTokens(" 'two become'\" one\" ", "two become one");
+        testTokenizeWithPhrases_expectTokens(" \"two become\"\" one\" ", "two become one");
+
+        // Cornerish cases
+        testTokenizeWithPhrases_expectTokens("", new String[0]);
+        testTokenizeWithPhrases_expectTokens("'", new String[0]);
+        testTokenizeWithPhrases_expectTokens("''", new String[0]);
+        testTokenizeWithPhrases_expectTokens("''''", new String[0]);
+        testTokenizeWithPhrases_expectTokens("'' ''", new String[0]);
+        testTokenizeWithPhrases_expectTokens("\"", new String[0]);
+        testTokenizeWithPhrases_expectTokens("\"\"", new String[0]);
+        testTokenizeWithPhrases_expectTokens("\\\\", "\\");
+        testTokenizeWithPhrases_expectTokens("           ", new String[0]);
+        testTokenizeWithPhrases_expectTokens("     x      ", "x");
+        testTokenizeWithPhrases_expectTokens("    ' x '     ", " x ");
+        testTokenizeWithPhrases_expectTokens("\\  \\ ", " ", " ");
+        testTokenizeWithPhrases_expectTokens("'\\x\\''", "x'");
+        testTokenizeWithPhrases_expectTokens("\"\\x\\\"\"", "x\"");
+    }
+
+    private void testTokenizeWithPhrases_expectTokens(String text, String...expectedTokens) {
+        List<String> tokens = TextUtils.tokenizeWithPhrases(text);
+        assertEquals(expectedTokens.length, tokens.size());
+        for (int i=0; i<expectedTokens.length; i++) {
+            assertEquals(expectedTokens[i], tokens.get(i));
+        }
+    }
+
+    @Test
     public void testRemoveDuplicatesIgnoreCase() {
 
         // OLD: String testData = "Forskning, Røed Ødegård, forskning, FoRsKning, forskNING";

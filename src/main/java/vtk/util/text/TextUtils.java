@@ -32,6 +32,7 @@ package vtk.util.text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -209,7 +210,7 @@ public class TextUtils {
             boolean removeDelimiter, boolean capitalizeWords) {
 
         StringTokenizer tokens = new StringTokenizer(string, stringDelimiter, false);
-        Set<String> set = new HashSet<String>(tokens.countTokens() + 10);
+        Set<String> set = new HashSet<>(tokens.countTokens() + 10);
 
         int count = 0;
         StringBuilder noDupes = new StringBuilder();
@@ -599,4 +600,98 @@ public class TextUtils {
         }
         return result.toString();
     }
+
+    /**
+     * Tokenizes a string by splitting on whitespace and handling
+     * of phrases, which will be kept as single tokens.
+     *
+     * <p>Whitespace inside phrases is preserved verbatim.
+     *
+     * <p>The characters <code>"</code> and <code>'</code>.are used to surround
+     * text as a phrase.
+     *
+     * <p>Backslash may be used to escape pharse characters and whitespace outside
+     * of phrases. Two consecutive backslashes must be present in input to get a single literal
+     * backslash in an output token.
+     *
+     * <p>Unquoted characters next to start or end of a quoted phrase are included
+     * in the phrase, like <code>"x'some phrase'"</code> will result in a single token: <code>"xsome phrase"</code>.
+     * Directly adjacent phrases are also collapsed to a single phrase token.
+     *
+     * <p>Empty tokens are always discarded and not returned.
+     *
+     * @param text the text to tokenize
+     * @return a mutable list of tokens
+     */
+    public static List<String> tokenizeWithPhrases(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean squotes = false;
+        boolean dquotes = false;
+        boolean esc = false;
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+
+            if (c == '\\' && !esc) {
+                esc = true;
+                continue;
+            }
+            
+            if (Character.isWhitespace(c) && !esc) {
+                if (squotes || dquotes) {
+                    current.append(c);
+                    continue;
+                }
+                if (current.length() > 0) {
+                    result.add(current.toString());
+                    current.setLength(0);
+                }
+                continue;
+            }
+            if (c == '"' && !esc) {
+                if (dquotes) {
+                    if (current.length() > 0
+                            && i < text.length()-1 && Character.isWhitespace(text.charAt(i+1))) {
+                        result.add(current.toString());
+                        current.setLength(0);
+                    }
+                    dquotes = false;
+                    continue;
+                }
+                if (!squotes) {
+                    dquotes = true;
+                    continue;
+                }
+            }
+            if (c == '\'' && !esc) {
+                if (squotes) {
+                    if (current.length() > 0
+                            && i < text.length()-1 && Character.isWhitespace(text.charAt(i+1))) {
+                        result.add(current.toString());
+                        current.setLength(0);
+                    }
+                    squotes = false;
+                    continue;
+                }
+                if (!dquotes) {
+                    squotes = true;
+                    continue;
+                }
+            }
+
+            esc = false;
+            current.append(c);
+        }
+
+        if (current.length() > 0) {
+            result.add(current.toString());
+        }
+
+        return result;
+    }
+
 }
