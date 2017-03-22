@@ -110,7 +110,6 @@
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
-    <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
     <property name="useRepositoryLocks" value="${systemjob.linkcheck.locking}" />
     <property name="updateBatch" value="${systemjob.linkcheck.batch}" />
     <property name="minRecheckSeconds" value="-1" />
@@ -146,7 +145,6 @@
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
-    <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
     <property name="useRepositoryLocks" value="${systemjob.linkcheck.locking}" />
     <property name="updateBatch" value="${systemjob.linkcheck.batch}" />
     <property name="minRecheckSeconds" value="${systemjob.linkcheck.minRecheckSeconds}" />
@@ -194,7 +192,6 @@
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
     <property name="linkCheckPropDef" ref="linkCheckPropDef" />
     <property name="linkChecker" ref="linkCheck.validator" />
-    <property name="blackList" ref="repository.systemjob.linkcheck.blacklist" />
     <property name="useRepositoryLocks" value="${systemjob.linkcheck.locking}" />
     <property name="updateBatch" value="${systemjob.linkcheck.batch}" />
     <property name="minRecheckSeconds" value="${systemjob.linkcheck.minRecheckSeconds}" />
@@ -235,31 +232,6 @@
     <property name="async" value="false" /><!-- No need for async, only records role changes without any blocking. -->
   </bean>
 
-
-  <bean id="repository.systemjob.linkcheck.blacklist" class="vtk.util.repository.JSONBackedListResource"
-    parent="repositoryAware">
-    <property name="uri" value="${systemjob.linkcheck.blacklist}" />
-    <property name="token" ref="trustedToken" />
-  </bean>
-
-  <bean id="repository.systemjob.linkcheck.blacklist.refreshTrigger" class="vtk.util.repository.MethodInvokingRepositoryEventTrigger">
-    <property name="repository" ref="repository" />
-    <property name="uri" value="${systemjob.linkcheck.blacklist}" />
-    <property name="multipleInvocations">
-      <bean class="org.springframework.beans.factory.config.MapFactoryBean">
-        <property name="targetMapClass" value="java.util.LinkedHashMap" />
-        <property name="sourceMap">
-          <map>
-            <entry key-ref="repository.systemjob.linkcheck.blacklist" value="load" />
-            <entry key-ref="repository.systemjob.linkcheck" value="refreshBlackList" />
-          </map>
-        </property>
-      </bean>
-    </property>
-  </bean>
-  <bean parent="cluster.componentRegistration">
-    <property name="component" ref="repository.systemjob.linkcheck.blacklist.refreshTrigger"/>
-  </bean>
 
   <bean id="repository.systemjob.linkrepair" 
         class="vtk.repository.systemjob.LinkRepairJob" parent="repository.systemjob">

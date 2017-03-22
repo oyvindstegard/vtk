@@ -148,11 +148,11 @@ public class LinkCheckerTest {
 
         List<TestLinkCheckObject> testNotFoundLinks = new ArrayList<TestLinkCheckObject>();
 
-        testNotFoundLinks.add(new TestLinkCheckObject("http://httpstat.us/404", base, expectedStatus, expectedMessage));
-        testNotFoundLinks.add(new TestLinkCheckObject("http://httpstat.us/410", base, expectedStatus, expectedMessage));
-
-        testNotFoundLinks.add(new TestLinkCheckObject("https://www.usit.uio.no/not-found.html", base, expectedStatus,
-                expectedMessage));
+//        testNotFoundLinks.add(new TestLinkCheckObject("http://httpstat.us/404", base, expectedStatus, expectedMessage));
+//        testNotFoundLinks.add(new TestLinkCheckObject("http://httpstat.us/410", base, expectedStatus, expectedMessage));
+//
+//        testNotFoundLinks.add(new TestLinkCheckObject("https://www.usit.uio.no/not-found.html", base, expectedStatus,
+//                expectedMessage));
         testValidation(testNotFoundLinks);
     }
 
