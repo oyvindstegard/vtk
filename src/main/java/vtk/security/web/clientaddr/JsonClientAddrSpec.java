@@ -81,9 +81,6 @@ public class JsonClientAddrSpec
                 if (obj.containsKey("net")) {
                     builder.net(obj.stringValue("net"));
                 }
-                if (obj.containsKey("uri")) {
-                    builder.uri(obj.stringValue("uri"));
-                }
                 if (obj.containsKey("uid")) {
                     builder.uid(obj.stringValue("uid"));
                 }

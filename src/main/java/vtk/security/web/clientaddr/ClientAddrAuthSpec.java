@@ -36,11 +36,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import vtk.repository.Path;
-
 public final class ClientAddrAuthSpec {
     public final Pattern net;
-    public final Path uri;
     public final String uid;
     public final Optional<Instant> validFrom;
     public final Optional<Instant> validTo;
@@ -49,10 +46,9 @@ public final class ClientAddrAuthSpec {
         return new Builder();
     }
     
-    private ClientAddrAuthSpec(Pattern net, Path uri, String uid, 
+    private ClientAddrAuthSpec(Pattern net, String uid, 
             Optional<Instant> validFrom, Optional<Instant> validTo) {
         this.net = net;
-        this.uri = uri;
         this.uid = uid;
         this.validFrom = validFrom;
         this.validTo = validTo;
@@ -61,23 +57,18 @@ public final class ClientAddrAuthSpec {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "("
-                + net + ", " + uri + ", " + uid + ", "
+                + net + ", " + uid + ", "
                 + validFrom + ", " + validTo + ")";
     }
     
     public static final class Builder {
         private Optional<Pattern> net = Optional.empty();
-        private Optional<Path> uri = Optional.empty();
         private Optional<String> uid = Optional.empty();
         private Optional<Instant> validFrom = Optional.empty();
         private Optional<Instant> validTo = Optional.empty();
         
         public Builder net(String net) {
             this.net = Optional.of(Pattern.compile(net));
-            return this;
-        }
-        public Builder uri(String uri) {
-            this.uri = Optional.of(Path.fromString(uri));
             return this;
         }
         public Builder uid(String uid) {
@@ -101,13 +92,10 @@ public final class ClientAddrAuthSpec {
             if (!net.isPresent()) {
                 throw new IllegalStateException("Field 'net' is required");
             }
-            if (!uri.isPresent()) {
-                throw new IllegalStateException("Field 'uri' is required");
-            }
             if (!uid.isPresent()) {
                 throw new IllegalStateException("Field 'uid' is required");
             }
-            return new ClientAddrAuthSpec(net.get(), uri.get(), 
+            return new ClientAddrAuthSpec(net.get(), 
                     uid.get(), validFrom, validTo);
         }
         

@@ -48,8 +48,10 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.servlet.ServletInputStream;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.fileupload.FileItemIterator;
@@ -68,11 +70,13 @@ import vtk.text.html.HtmlAttribute;
 import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlElement;
 import vtk.text.html.HtmlPage;
+import vtk.text.html.HtmlPageFilter;
 import vtk.text.html.HtmlText;
 import vtk.text.html.HtmlUtil;
 import vtk.util.io.IO;
 import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
+import vtk.web.decorating.HtmlPageFilterFactory;
 import vtk.web.filter.HandlerFilter;
 import vtk.web.filter.HandlerFilterChain;
 import vtk.web.service.Service;
@@ -82,21 +86,29 @@ import vtk.web.service.URL;
  * Cross Site Request Forgery (CSRF) prevention handler. This class performs two
  * tasks:
  * <ol>
- * <li>{@link #filter(HtmlContent) Generates tokens} in HTML forms on the page
+ * <li>{@link FormRewritingFilter Generates tokens} in HTML forms on the page
  * being served</li>
  * <li>{@link #filter(HttpServletRequest, HandlerFilterChain) Verifies} that
- * valid tokens are present in POST requests</li>
+ * valid tokens are present in POST requests. In addition, a {@code csrfToken} 
+ * cookie is set on each response, and is required to be present as the header 
+ * {@code X-CSRF-TOKEN} in requests that are not form POSTS. 
+ * 
+ * The token in the cookie is more canonical than the token embedded HTML forms 
+ * (corresponds with the user's session rather than the specific action URL 
+ * in each form)</li>
  * </ol>
  */
-public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements HandlerFilter {
+public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFactory {
 
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));
     private long maxUploadSize = 2*1024*1024*1024; // 2G max by default
 
     public static final String TOKEN_REQUEST_PARAMETER = "csrf-prevention-token";
+    private static final String TOKEN_COOKIE = "csrfToken";
+    private static final String TOKEN_HEADER = "X-CSRF-Token";
     private static final String SECRET_SESSION_ATTRIBUTE = "csrf-prevention-secret";
     private static Logger logger = LoggerFactory.getLogger(CSRFPreventionHandler.class);
-    private String ALGORITHM = "HmacSHA1";
+    private static final String ALGORITHM = "HmacSHA1";
 
     /**
      * Utility method that can be called, e.g. from views
@@ -116,104 +128,92 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
     }
 
     @Override
-    public boolean match(HtmlPage page) {
-        return true;
+    public HtmlPageFilter pageFilter(HttpServletRequest request) {
+        return new FormRewritingFilter(request);
     }
 
     @Override
     public void filter(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
-        if (!"POST".equals(request.getMethod())) {
+        switch (request.getMethod()) {
+        case "GET": 
+            setTokenCookie(request, chain.getResponse());
             chain.filter(request);
             return;
-        }
-        String contentType = request.getContentType();
-        if (contentType != null && contentType.startsWith("multipart/form-data")) {
-            MultipartWrapper multipartRequest = new MultipartWrapper(request, this.tempDir, this.maxUploadSize);
-            try {
-                multipartRequest.writeTempFile();
-                multipartRequest.parseRequest();
-                verifyToken(multipartRequest);
-                chain.filter(multipartRequest);
-            } finally {
-                multipartRequest.cleanup();
+        case "PUT":
+        case "DELETE":
+            verifyApiRequest(request, chain);
+            return;
+        case "POST":
+            String contentType = request.getContentType();
+            if (contentType == null) {
+                chain.filter(request);
+                return;
+            }
+            if (contentType.startsWith("multipart/form-data")) {
+                verifyMultipartPost(request, chain);
+                return;
+            }
+            else if (contentType.startsWith("application/x-www-form-urlencoded")) {
+                verifyFormPost(request, chain);
+                return;
+            }
+            else {
+                verifyApiRequest(request, chain);
+                return;
             }
         }
-        else if (contentType != null && contentType.startsWith("application/x-www-form-urlencoded")) {
-            verifyToken(request);
-            chain.filter(request);
+        chain.filter(request);
+    }
+    
+    private void verifyMultipartPost(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
+        MultipartWrapper multipartRequest = new MultipartWrapper(request, this.tempDir, this.maxUploadSize);
+        try {
+            multipartRequest.writeTempFile();
+            multipartRequest.parseRequest();
+            String token = request.getParameter(TOKEN_REQUEST_PARAMETER);
+            URL url = URL.create(request);
+            verifyToken(multipartRequest, token, url);
+            chain.filter(multipartRequest);
         }
-        else {
-            chain.filter(request);
+        finally {
+            multipartRequest.cleanup();
         }
     }
 
-    @Override
-    public NodeResult filter(HtmlContent node) {
-        if (!(node instanceof HtmlElement)) {
-            return NodeResult.keep;
-        }
-        HtmlElement element = ((HtmlElement) node);
-        if (!"form".equals(element.getName().toLowerCase())) {
-            return NodeResult.keep;
-        }
-        HtmlAttribute method = element.getAttribute("method");
-        if (method == null || "".equals(method.getValue().trim()) || "get".equals(method.getValue().toLowerCase())) {
-            return NodeResult.keep;
-        }
-
-        HtmlElement[] inputs = element.getChildElements("input");
-        for (HtmlElement input : inputs) {
-            HtmlAttribute name = input.getAttribute("name");
-            if (name != null && TOKEN_REQUEST_PARAMETER.equals(name.getValue())) {
-                return NodeResult.keep;
-            }
-        }
-
-        URL url;
-        HtmlAttribute actionAttr = element.getAttribute("action");
-        if (actionAttr == null || actionAttr.getValue() == null || "".equals(actionAttr.getValue().trim())) {
-            HttpServletRequest request = RequestContext.getRequestContext().getServletRequest();
-            url = URL.create(request);
-        } else {
-            try {
-                url = parseActionURL(actionAttr.getValue());
-            } catch (Throwable t) {
-                logger.warn("Unable to find URL in action attribute: " + actionAttr.getValue(), t);
-                return NodeResult.keep;
-            }
-        }
-        url.setRef(null);
-
-        RequestContext requestContext = RequestContext.getRequestContext();
-        HttpSession session = requestContext.getServletRequest().getSession(false);
-
-        if (session != null) {
-
-            String csrfPreventionToken = generateToken(url, session);
-            HtmlElement input = createElement("input", true, true);
-            List<HtmlAttribute> attrs = new ArrayList<HtmlAttribute>();
-            attrs.add(createAttribute("name", TOKEN_REQUEST_PARAMETER));
-            attrs.add(createAttribute("type", "hidden"));
-            attrs.add(createAttribute("value", csrfPreventionToken));
-            input.setAttributes(attrs.toArray(new HtmlAttribute[attrs.size()]));
-            element.addContent(0, input);
-            element.addContent(0, new HtmlText() {
-                @Override
-                public String getContent() {
-                    return "\r\n";
-                }
-            });
-            element.addContent(new HtmlText() {
-                @Override
-                public String getContent() {
-                    return "\r\n";
-                }
-            });
-        }
-        return NodeResult.keep;
+    private void verifyFormPost(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
+        String token = request.getParameter(TOKEN_REQUEST_PARAMETER);
+        URL url = URL.create(request);
+        verifyToken(request, token, url);
+        chain.filter(request);
     }
 
-    private String generateToken(URL url, HttpSession session) {
+    private void verifyApiRequest(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
+        String token = request.getHeader(TOKEN_HEADER);
+        URL url = URL.create(request)
+                .clearParameters()
+                .setPath(Path.ROOT);
+        verifyToken(request, token, url);
+        chain.filter(request);
+    }
+    
+    
+    private void setTokenCookie(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return;
+        }
+        URL url = URL.create(request)
+                .clearParameters().setPath(Path.ROOT);
+        String token = generateToken(url, session);
+        Cookie cookie = new Cookie(TOKEN_COOKIE, token);
+        cookie.setSecure(request.isSecure());
+        cookie.setMaxAge(-1);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+    }
+
+    
+    private static String generateToken(URL url, HttpSession session) {
         SecretKey secret = (SecretKey) session.getAttribute(SECRET_SESSION_ATTRIBUTE);
         if (secret == null) {
             secret = generateSecret();
@@ -229,62 +229,23 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
                 logger.debug("Generate token: url: " + url + ", token: " + result + ", secret: " + secret);
             }
             return result;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new IllegalStateException("Unable to generate token", e);
         }
     }
 
-    private SecretKey generateSecret() {
+    private static SecretKey generateSecret() {
         try {
             KeyGenerator kg = KeyGenerator.getInstance(ALGORITHM);
             return kg.generateKey();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new IllegalStateException("Failed to generate secret key", e);
         }
     }
 
-    private URL parseActionURL(String action) {
-        if (action.startsWith("http://") || action.startsWith("https://")) {
-            URL url = URL.parse(HtmlUtil.decodeBasicEntities(action));
-            return url;
-        }
-
-        HttpServletRequest request = RequestContext.getRequestContext().getServletRequest();
-        URL url = URL.create(request);
-        url.clearParameters();
-        Path path;
-        String[] segments = action.split("/");
-        int startIdx = 0;
-        if (action.startsWith("/")) {
-            path = Path.ROOT;
-            startIdx = 1;
-        } else {
-            path = RequestContext.getRequestContext().getCurrentCollection();
-        }
-
-        String query = null;
-        for (int i = startIdx; i < segments.length; i++) {
-            String elem = segments[i];
-            if (elem.contains("?")) {
-                query = elem.substring(elem.indexOf("?"));
-                elem = elem.substring(0, elem.indexOf("?"));
-            }
-            path = path.expand(elem);
-        }
-
-        url.setPath(path);
-        if (query != null) {
-            Map<String, String[]> queryMap = URL.splitQueryString(query);
-            for (String key : queryMap.keySet()) {
-                for (String value : queryMap.get(key)) {
-                    url.addParameter(key, value);
-                }
-            }
-        }
-        return url;
-    }
-
-    private void verifyToken(HttpServletRequest request) throws Exception {
+    private void verifyToken(HttpServletRequest request, String token, URL requestURL) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
         if (requestContext.getPrincipal() == null) {
             throw new AuthenticationException("Illegal anonymous action");
@@ -301,25 +262,19 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
         if (secret == null) {
             throw new AuthorizationException("Missing CSRF prevention secret in session");
         }
-
-        String suppliedToken = request.getParameter(TOKEN_REQUEST_PARAMETER);
-
-        if (suppliedToken == null) {
+        if (token == null) {
             throw new AuthorizationException("Missing CSRF prevention token in request");
         }
-
-        URL requestURL = URL.create(request);
         String computed = generateToken(requestURL, session);
-
         if (logger.isDebugEnabled()) {
-            logger.debug("Check token: url: " + requestURL + ", supplied token: " + suppliedToken
+            logger.debug("Check token: url: " + requestURL + ", supplied token: " + token
                     + ", computed token: " + computed + ", secret: " + secret);
         }
-        if (!computed.equals(suppliedToken)) {
+        if (!computed.equals(token)) {
             throw new AuthorizationException("CSRF prevention token mismatch");
         }
     }
-
+    
     private static class MultipartWrapper extends HttpServletRequestWrapper {
         private HttpServletRequest request;
         private IO.TempFile tempFile;
@@ -462,7 +417,8 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
                     }
                     String value = IO.readString(item.openStream(), encoding).limit(2000).perform();
                     addParameter(name, value);
-                } else {
+                }
+                else {
                     multipartUploadFileItemNames.add(item.getName());
                 }
             }
@@ -474,6 +430,128 @@ public class CSRFPreventionHandler extends AbstractHtmlPageFilter implements Han
         }
     }
 
+    private static class FormRewritingFilter extends AbstractHtmlPageFilter {
+        private HttpServletRequest request;
+        
+        public FormRewritingFilter(HttpServletRequest request) {
+            this.request = request;
+        }
+        
+        @Override
+        public boolean match(HtmlPage page) {
+            return true;
+        }
+
+        @Override
+        public NodeResult filter(HtmlContent node) {
+            if (!(node instanceof HtmlElement)) {
+                return NodeResult.keep;
+            }
+            HtmlElement element = ((HtmlElement) node);
+            if (!"form".equals(element.getName().toLowerCase())) {
+                return NodeResult.keep;
+            }
+            HtmlAttribute method = element.getAttribute("method");
+            if (method == null || "".equals(method.getValue().trim()) || "get".equals(method.getValue().toLowerCase())) {
+                return NodeResult.keep;
+            }
+
+            HtmlElement[] inputs = element.getChildElements("input");
+            for (HtmlElement input : inputs) {
+                HtmlAttribute name = input.getAttribute("name");
+                if (name != null && TOKEN_REQUEST_PARAMETER.equals(name.getValue())) {
+                    return NodeResult.keep;
+                }
+            }
+
+            URL url;
+            HtmlAttribute actionAttr = element.getAttribute("action");
+            if (actionAttr == null || actionAttr.getValue() == null || "".equals(actionAttr.getValue().trim())) {
+                url = URL.create(request);
+            }
+            else {
+                try {
+                    url = parseActionURL(actionAttr.getValue(), request);
+                }
+                catch (Throwable t) {
+                    logger.warn("Unable to find URL in action attribute: " + actionAttr.getValue(), t);
+                    return NodeResult.keep;
+                }
+            }
+            url.setRef(null);
+
+            RequestContext requestContext = RequestContext.getRequestContext();
+            HttpSession session = requestContext.getServletRequest().getSession(false);
+
+            if (session != null) {
+
+                String csrfPreventionToken = generateToken(url, session);
+                HtmlElement input = createElement("input", true, true);
+                List<HtmlAttribute> attrs = new ArrayList<HtmlAttribute>();
+                attrs.add(createAttribute("name", TOKEN_REQUEST_PARAMETER));
+                attrs.add(createAttribute("type", "hidden"));
+                attrs.add(createAttribute("value", csrfPreventionToken));
+                input.setAttributes(attrs.toArray(new HtmlAttribute[attrs.size()]));
+                element.addContent(0, input);
+                element.addContent(0, new HtmlText() {
+                    @Override
+                    public String getContent() {
+                        return "\r\n";
+                    }
+                });
+                element.addContent(new HtmlText() {
+                    @Override
+                    public String getContent() {
+                        return "\r\n";
+                    }
+                });
+            }
+            return NodeResult.keep;
+        }
+    }
+    
+    private static URL parseActionURL(String action, HttpServletRequest request) {
+        if (action.startsWith("http://") || action.startsWith("https://")) {
+            URL url = URL.parse(HtmlUtil.decodeBasicEntities(action));
+            return url;
+        }
+
+        URL url = URL.create(request);
+        url.clearParameters();
+        Path path;
+        String[] segments = action.split("/");
+        int startIdx = 0;
+        if (action.startsWith("/")) {
+            path = Path.ROOT;
+            startIdx = 1;
+        }
+        else {
+            path = RequestContext.getRequestContext().getCurrentCollection();
+        }
+
+        String query = null;
+        for (int i = startIdx; i < segments.length; i++) {
+            String elem = segments[i];
+            if (elem.contains("?")) {
+                query = elem.substring(elem.indexOf("?"));
+                elem = elem.substring(0, elem.indexOf("?"));
+            }
+            path = path.expand(elem);
+        }
+
+        url.setPath(path);
+        if (query != null) {
+            Map<String, String[]> queryMap = URL.splitQueryString(query);
+            for (String key : queryMap.keySet()) {
+                for (String value : queryMap.get(key)) {
+                    url.addParameter(key, value);
+                }
+            }
+        }
+        return url;
+    }
+
+    
     /**
      * Maximum size in bytes of POST multipart requests to process.
      * -1 means no limit.
