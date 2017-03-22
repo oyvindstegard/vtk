@@ -171,7 +171,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
             multipartRequest.writeTempFile();
             multipartRequest.parseRequest();
             String token = request.getParameter(TOKEN_REQUEST_PARAMETER);
-            URL url = URL.parse(request.getRequestURL().toString());
+            URL url = URL.create(request);
             verifyToken(multipartRequest, token, url);
             chain.filter(multipartRequest);
         }
@@ -182,14 +182,14 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
 
     private void verifyFormPost(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
         String token = request.getParameter(TOKEN_REQUEST_PARAMETER);
-        URL url = URL.parse(request.getRequestURL().toString());
+        URL url = URL.create(request);
         verifyToken(request, token, url);
         chain.filter(request);
     }
 
     private void verifyApiRequest(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
         String token = request.getHeader(TOKEN_HEADER);
-        URL url = URL.parse(request.getRequestURL().toString())
+        URL url = URL.create(request)
                 .clearParameters()
                 .setPath(Path.ROOT);
         verifyToken(request, token, url);
@@ -202,7 +202,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         if (session == null) {
             return;
         }
-        URL url = URL.parse(request.getRequestURL().toString())
+        URL url = URL.create(request)
                 .clearParameters().setPath(Path.ROOT);
         String token = generateToken(url, session);
         Cookie cookie = new Cookie(TOKEN_COOKIE, token);
@@ -467,7 +467,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
             URL url;
             HtmlAttribute actionAttr = element.getAttribute("action");
             if (actionAttr == null || actionAttr.getValue() == null || "".equals(actionAttr.getValue().trim())) {
-                url = URL.parse(request.getRequestURL().toString());
+                url = URL.create(request);
             }
             else {
                 try {
