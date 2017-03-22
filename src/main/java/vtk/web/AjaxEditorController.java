@@ -102,11 +102,14 @@ public class AjaxEditorController implements Controller {
                 repository.getInputStream(token, rc.getResourceURI(), false)
         ).perform());
 
-        Optional<Reader> template = getTemplateReader(type, "editor.tl");
+        Optional<ReaderWithPath> template = getTemplateReader(type, "editor.tl");
         if (template.isPresent()) {
+            ReaderWithPath reader = template.get();
+            model.put("staticURL", reader.path.getParent());
             this.renderTemplate(template.get(), model, httpServletRequest, httpServletResponse);
             return null;
         }
+        model.put("staticURL", this.staticResourcesURL);
         return new ModelAndView(editView, model);
     }
 
@@ -128,7 +131,9 @@ public class AjaxEditorController implements Controller {
         return path;
     }
 
-    private Optional<Reader> getTemplateReader(String type, String filename) throws Exception {
+    private Optional<ReaderWithPath> getTemplateReader(
+            String type, String filename
+    ) throws Exception {
         RequestContext rc = RequestContext.getRequestContext();
         Path repositoryPath = Path.fromString(this.appPath + "/" + type + "/" + filename);
         org.springframework.core.io.Resource systemPath = this.staticResourceResolver.resolve(
@@ -136,17 +141,33 @@ public class AjaxEditorController implements Controller {
         );
 
         if (rc.getRepository().exists(rc.getSecurityToken(), repositoryPath)) {
-            return Optional.of(new InputStreamReader(rc.getRepository().getInputStream(
-                    rc.getSecurityToken(), repositoryPath, false
-            )));
+            return Optional.of(new ReaderWithPath(
+                    new InputStreamReader(rc.getRepository().getInputStream(
+                        rc.getSecurityToken(), repositoryPath, false
+                    )),
+                    Path.fromString(this.appResourceURL + "/" + type + "/" + filename)
+            ));
         } else if (systemPath != null && systemPath.exists()) {
-            return Optional.of(new InputStreamReader(systemPath.getInputStream()));
+            return Optional.of(new ReaderWithPath(
+                    new InputStreamReader(systemPath.getInputStream()),
+                    Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename)
+            ));
         }
         return Optional.empty();
     }
 
+    private static class ReaderWithPath {
+        public final Reader reader;
+        public final Path path;
+
+        private ReaderWithPath(Reader reader, Path path) {
+            this.reader = reader;
+            this.path = path;
+        }
+    }
+
     private void renderTemplate(
-            Reader reader,
+            ReaderWithPath readerWithPath,
             Map<String, Object> model,
             HttpServletRequest request,
             HttpServletResponse response
@@ -156,7 +177,7 @@ public class AjaxEditorController implements Controller {
                 new IfHandler(functionResolver),
                 new ValHandler(null, functionResolver)
         );
-        new TemplateParser(reader, handlers, new TemplateHandler() {
+        new TemplateParser(readerWithPath.reader, handlers, new TemplateHandler() {
             @Override
             public void success(NodeList nodeList) {
                 Locale locale = RequestContextUtils.getLocale(request);
@@ -181,10 +202,14 @@ public class AjaxEditorController implements Controller {
                 NodeList nodeList = new NodeList();
                 nodeList.add(new Node() {
                     public boolean render(Context ctx, Writer out) throws Exception {
-                        out.write("Template parse error \"" + message + "\" in line: " + line);
+                        out.write(String.format(
+                                "Template parse error:\n---\n%s\n---\nLine %d in file \"%s\"",
+                                message, line, readerWithPath.path
+                        ));
                         return true;
                     }
                 });
+                response.setContentType("text/plain;charset=utf-8");
                 try {
                     nodeList.render(ctx, response.getWriter());
                 } catch (Exception e) {
