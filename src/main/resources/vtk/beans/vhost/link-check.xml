@@ -32,6 +32,34 @@
     <property name="connectTimeout" value="5000" />
     <property name="readTimeout" value="10000" />
     <property name="userAgent" value="Link checker for ${repositoryID}" />
+    <property name="blackList" ref="linkCheck.blacklist" />
   </bean>
+
+
+  <bean id="linkCheck.blacklist" class="vtk.util.repository.JSONBackedListResource"
+    parent="repositoryAware">
+    <property name="uri" value="${linkcheck.blacklist}" />
+    <property name="token" ref="trustedToken" />
+  </bean>
+
+  <bean id="linkCheck.blacklist.refreshTrigger" class="vtk.util.repository.MethodInvokingRepositoryEventTrigger">
+    <property name="repository" ref="repository" />
+    <property name="uri" value="${linkcheck.blacklist}" />
+    <property name="multipleInvocations">
+      <bean class="org.springframework.beans.factory.config.MapFactoryBean">
+        <property name="targetMapClass" value="java.util.LinkedHashMap" />
+        <property name="sourceMap">
+          <map>
+            <entry key-ref="linkCheck.blacklist" value="load" />
+            <entry key-ref="linkCheck.validator" value="refreshBlackList" />
+          </map>
+        </property>
+      </bean>
+    </property>
+  </bean>
+  <bean parent="cluster.componentRegistration">
+    <property name="component" ref="linkCheck.blacklist.refreshTrigger"/>
+  </bean>
+
 
 </beans>

@@ -38,9 +38,13 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +62,9 @@ public class LinkChecker {
     private int connectTimeout = 5000;
     private int readTimeout = 5000;
     private String userAgent = "Link checker";
-    
+    private List<String> blackListConfig = new ArrayList<>();
+    private List<Pattern> blackList = new ArrayList<>();
+
     public static final class LinkCheckRequest {
         private String href;
         private URL base;
@@ -283,8 +289,22 @@ public class LinkChecker {
         return result;
     }
     
+    private boolean checkBlackList(String url) {
+        for (Pattern p: blackList) {
+            Matcher m = p.matcher(url.toString());
+            if (m.matches()) {
+                logger.debug("Black-listed: " + url + ", skipping link-check");
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private Status validateURL(java.net.URL url, URL referrer, 
             Map<String, String> customHeaders, String method) {
+        if (checkBlackList(url.toString())) {
+            return Status.OK;
+        }
         HttpURLConnection urlConnection = null;
         try {
             urlConnection = createRequest(url, referrer, method, customHeaders);
@@ -330,6 +350,9 @@ public class LinkChecker {
             urlConnection.disconnect();
             if (location == null) {
                 return responseCode;
+            }
+            if (checkBlackList(location)) {
+                return HttpURLConnection.HTTP_OK;
             }
             
             urlConnection = createRequest(
@@ -382,5 +405,19 @@ public class LinkChecker {
     
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
+    }
+    
+    public void setBlackList(List<String> blackList) {
+        this.blackListConfig = blackList;
+    }
+    
+    public void refreshBlackList() {
+        if (blackListConfig != null) {
+            List<Pattern> patterns = new ArrayList<>();
+            for (String regexp: blackListConfig) {
+                patterns.add(Pattern.compile(regexp));
+            }
+            blackList = patterns;
+        }
     }
 }

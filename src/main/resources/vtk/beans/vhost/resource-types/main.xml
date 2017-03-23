@@ -33,14 +33,6 @@
   <import resource="employee-listing.xml" />
   <import resource="person-listing.xml" />
 
-  <!-- Studinfo (obsolete) -->
-  <import resource="emne.xml" />
-  <import resource="semester.xml" />
-  <import resource="emnegruppe.xml" />
-  <import resource="studieprogram.xml" />
-  <import resource="studieretning.xml" />
-  <import resource="utvekslingsavtale.xml" />
-
   <!-- Traktater (obsolete, to be removed) -->
   <import resource="treaty.xml" />
 
