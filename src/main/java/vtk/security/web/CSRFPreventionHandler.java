@@ -170,7 +170,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         try {
             multipartRequest.writeTempFile();
             multipartRequest.parseRequest();
-            String token = request.getParameter(TOKEN_REQUEST_PARAMETER);
+            String token = multipartRequest.getParameter(TOKEN_REQUEST_PARAMETER);
             URL url = URL.create(request);
             verifyToken(multipartRequest, token, url);
             chain.filter(multipartRequest);
