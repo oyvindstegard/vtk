@@ -1,0 +1,148 @@
+/* Copyright (c) 2017, University of Oslo, Norway
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of the University of Oslo nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package vtk.web.api;
+
+import java.util.Objects;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.Controller;
+
+import vtk.repository.AuthorizationException;
+import vtk.repository.Path;
+import vtk.util.Result;
+import vtk.web.RequestContext;
+
+public class CopyApiHandler implements Controller {
+    
+    @Override
+    public ModelAndView handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+        if ("GET".equals(request.getMethod())) {
+            handleGet(request, response);
+        }
+        else if ("POST".equals(request.getMethod())) {
+            handlePost(request, response);
+        }
+        else {
+            unknownMethod(request, response);
+        }
+        return null;
+    }
+    
+    private void handleGet(HttpServletRequest request, 
+            HttpServletResponse response) throws Exception {
+        new ApiResponseBuilder(HttpServletResponse.SC_OK)
+            .header("Content-Type", "text/plain;charset=utf-8")
+            .message("A POST request is required, with path parameters "
+                     + "'source' and 'destination' specified\n")
+            .writeTo(response);
+    }
+
+    private void handlePost(HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+        Result<CopyRequest> copyRequest = copyRequest(request);
+        if (copyRequest.failure.isPresent()) {
+            new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(copyRequest.failure.get().getMessage())
+                .writeTo(response);
+            return;
+        }
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Result<ApiResponseBuilder> result = 
+                doCopy(copyRequest.result.get(), requestContext);
+        if (result.failure.isPresent()) {
+            new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(copyRequest.failure.get().getMessage())
+                .writeTo(response);
+            return;
+        }
+        result.result.get().writeTo(response);
+    }
+    
+    private void unknownMethod(HttpServletRequest request, 
+            HttpServletResponse response) throws Exception {
+        new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+        .header("Content-Type", "text/plain;charset=utf-8")
+        .message("A POST request is required, with path parameters "
+                 + "'source' and 'destination' specified\n")
+        .writeTo(response);
+    }
+
+    private Result<ApiResponseBuilder> doCopy(CopyRequest req, 
+            RequestContext requestContext) {
+        return Result.attempt(() -> {
+            try {
+                requestContext.getRepository()
+                    .copy(requestContext.getSecurityToken(), 
+                        req.source, req.destination, false, false);
+                return new ApiResponseBuilder(HttpServletResponse.SC_OK)
+                        .header("ContentType", "text/plain;charset=utf-8")
+                        .message("Copy " + req.source + " to " + req.destination
+                                    + " succeeded\n");
+            }
+            catch (AuthorizationException e) {
+                return new ApiResponseBuilder(HttpServletResponse.SC_FORBIDDEN)
+                        .header("Content-Type", "text/plain;charset=utf-8")
+                        .message(e.getMessage());
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private Result<CopyRequest> copyRequest(HttpServletRequest request) {
+        return Result.attempt(() -> 
+            Objects.requireNonNull(request.getParameter("source"),  
+                "Missing request parameter 'source'"))
+            .flatMap(sourceStr -> Result.attempt(() -> Path.fromString(sourceStr)))
+            .flatMap(sourcePath -> {
+                return Result.attempt(() -> Objects.requireNonNull(
+                        request.getParameter("destination"), 
+                        "Missing request parameter 'destination'"))
+                  .flatMap(destStr -> Result.attempt(() -> Path.fromString(destStr))
+                          .map(destPath -> new CopyRequest(sourcePath, destPath)));
+            });
+    }
+    
+    private static class CopyRequest {
+        public final Path source;
+        public final Path destination;
+        private CopyRequest(Path source, Path destination) {
+            this.source = source; this.destination = destination;
+        }
+    }
+}
