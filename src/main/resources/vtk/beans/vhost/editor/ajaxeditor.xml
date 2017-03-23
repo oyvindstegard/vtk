@@ -57,6 +57,7 @@
       <list>
         <ref bean="fileAssertion" />
         <ref bean="ajaxeditor.jsonAcceptAssertion" />
+        <ref bean="json.contentTypeAssertion" />
         <bean class="vtk.web.service.RequestMethodAssertion">
           <property name="method" value="GET" />
         </bean>
@@ -78,6 +79,7 @@
         <ref bean="resourceIsPublishedAssertion" />
         <ref bean="fileAssertion" />
         <ref bean="ajaxeditor.jsonAcceptAssertion" />
+        <ref bean="json.contentTypeAssertion" />
         <bean class="vtk.web.service.RequestMethodAssertion">
           <property name="method" value="GET" />
         </bean>
@@ -111,7 +113,7 @@
 
   <bean id="ajaxeditor.jsonAcceptAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
     <property name="header" value="Accept"/>
-    <property name="pattern" value=".*application/json.*" />
+    <property name="pattern" value="^application/json.*" />
   </bean>
 
 </beans>
