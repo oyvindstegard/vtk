@@ -146,7 +146,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         case "POST":
             String contentType = request.getContentType();
             if (contentType == null) {
-                chain.filter(request);
+                verifyApiRequest(request, chain);
                 return;
             }
             if (contentType.startsWith("multipart/form-data")) {
