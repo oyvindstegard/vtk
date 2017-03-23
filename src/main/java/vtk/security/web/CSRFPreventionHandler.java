@@ -280,7 +280,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         private IO.TempFile tempFile;
         private long maxMultipartSize;
         private File tempDir;
-        private Map<String, List<String>> params = new HashMap<String, List<String>>();
+        private Map<String, List<String>> params = new HashMap<>();
 
         public MultipartWrapper(HttpServletRequest request, File tempDir, long maxMultipartSize) {
             super(request);
@@ -316,11 +316,11 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         @Override
         @SuppressWarnings({ "rawtypes", "unchecked" })
         public Map getParameterMap() {
-            Map<String, List<String>> combined = new HashMap<String, List<String>>();
+            Map<String, List<String>> combined = new HashMap<>();
             Map<String, String[]> m = super.getParameterMap();
             for (String s : m.keySet()) {
                 String[] values = m.get(s);
-                List<String> l = new ArrayList<String>();
+                List<String> l = new ArrayList<>();
                 for (String v : values) {
                     l.add(v);
                 }
@@ -330,14 +330,14 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
             for (String s : this.params.keySet()) {
                 List<String> l = combined.get(s);
                 if (l == null) {
-                    l = new ArrayList<String>();
+                    l = new ArrayList<>();
                 }
                 for (String v : this.params.get(s)) {
                     l.add(v);
                 }
                 combined.put(s, l);
             }
-            Map<String, String[]> result = new HashMap<String, String[]>();
+            Map<String, String[]> result = new HashMap<>();
             for (String name : combined.keySet()) {
                 List<String> values = combined.get(name);
                 result.put(name, values.toArray(new String[values.size()]));
@@ -348,7 +348,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         @Override
         @SuppressWarnings("unchecked")
         public Enumeration<String> getParameterNames() {
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             Enumeration<String> names = super.getParameterNames();
             while (names.hasMoreElements()) {
                 result.add(names.nextElement());
@@ -359,7 +359,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
 
         @Override
         public String[] getParameterValues(String name) {
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
             String[] names = super.getParameterValues(name);
             if (names != null) {
                 for (String s : names) {
@@ -381,7 +381,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         private void addParameter(String name, String value) {
             List<String> values = this.params.get(name);
             if (values == null) {
-                values = new ArrayList<String>();
+                values = new ArrayList<>();
                 this.params.put(name, values);
             }
             values.add(value);
@@ -405,7 +405,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         private void parseRequest() throws FileUploadException, IOException {
             ServletFileUpload upload = new ServletFileUpload();
             FileItemIterator iter = upload.getItemIterator(this);
-            List<String> multipartUploadFileItemNames = new ArrayList<String>();
+            List<String> multipartUploadFileItemNames = new ArrayList<>();
             while (iter.hasNext()) {
                 FileItemStream item = iter.next();
                 if (item.isFormField()) {
@@ -487,7 +487,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
 
                 String csrfPreventionToken = generateToken(url, session);
                 HtmlElement input = createElement("input", true, true);
-                List<HtmlAttribute> attrs = new ArrayList<HtmlAttribute>();
+                List<HtmlAttribute> attrs = new ArrayList<>();
                 attrs.add(createAttribute("name", TOKEN_REQUEST_PARAMETER));
                 attrs.add(createAttribute("type", "hidden"));
                 attrs.add(createAttribute("value", csrfPreventionToken));
