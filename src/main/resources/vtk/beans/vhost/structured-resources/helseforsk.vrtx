@@ -72,57 +72,71 @@ resourcetype helseforsk {
             [endif]
             [if approval-internal-status != "NOT_APPLIED"]
               <h2 class="accordion">approval-internal</h2>
+              <ul>
               [if approval-internal != null]
                 [list approval-internal doc]
-                  <a href="[val doc]">[val doc]</a>
+                  <li><a href="[val doc]">[val doc]</a></li>
                 [endlist]
               [endif]
+              </ul>
             [endif]
             [if approval-rek-status != "NOT_APPLIED"]
               <h2 class="accordion">approval-rek</h2>
+              <ul>
               [if approval-rek != null]
                 [list approval-rek doc]
-                  <a href="[val doc]">[val doc]</a>
+                  <li><a href="[val doc]">[val doc]</a></li>
                 [endlist]
               [endif]
+              </ul>
             [endif]
             [if approval-nsd-status != "NOT_APPLIED"]
               <h2 class="accordion">approval-nsd</h2>
+              <ul>
               [if approval-nsd != null]
                 [list approval-nsd doc]
-                  <a href="[val doc]">[val doc]</a>
+                  <li><a href="[val doc]">[val doc]</a></li>
                 [endlist]
               [endif]
+              </ul>
             [endif]
             [if approval-datatilsynet-status != "NOT_APPLIED"]
               <h2 class="accordion">approval-datatilsynet</h2>
+              <ul>
               [if approval-datatilsynet != null]
                 [list approval-datatilsynet doc]
-                  <a href="[val doc]">[val doc]</a>
+                  <li><a href="[val doc]">[val doc]</a></li>
                 [endlist]
               [endif]
+              </ul>
             [endif]
             [if approval-helsedir-status != "NOT_APPLIED"]
               <h2 class="accordion">approval-helsedir</h2>
+              <ul>
               [if approval-helsedir != null]
                 [list approval-helsedir doc]
-                  <a href="[val doc]">[val doc]</a>
+                  <li><a href="[val doc]">[val doc]</a></li>
                 [endlist]
               [endif]
+              </ul>
             [endif]
             [if approval-stat-legemiddelverk-status != "NOT_APPLIED"]
               <h2 class="accordion">approval-stat-legemiddelverk</h2>
+              <ul>
               [if approval-stat-legemiddelverk != null]
                 [list approval-stat-legemiddelverk doc]
-                  <a href="[val doc]">[val doc]</a>
+                  <li><a href="[val doc]">[val doc]</a></li>
                 [endlist]
               [endif]
+              </ul>
             [endif]
             [if approval-others != null]
               <h2 class="accordion">approval-others</h2>
+              <ul>
               [list approval-others doc]
-                <a href="[val doc]">[val doc]</a>
+                <li><a href="[val doc]">[val doc]</a></li>
               [endlist]
+              </ul>
             [endif]
           </div>
           <div id="vrtx-additional-content">
