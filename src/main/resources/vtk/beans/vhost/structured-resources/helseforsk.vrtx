@@ -112,8 +112,8 @@ resourcetype helseforsk {
             [endif]
             [if approval-stat-legemiddelverk-status != "NOT_APPLIED"]
               <h2 class="accordion">approval-stat-legemiddelverk</h2>
-              [if approval-legemiddelverk != null]
-                [list approval-legemiddelverk doc]
+              [if approval-stat-legemiddelverk != null]
+                [list approval-stat-legemiddelverk doc]
                   <a href="[val doc]">[val doc]</a>
                 [endlist]
               [endif]
