@@ -41,13 +41,71 @@ resourcetype helseforsk {
 
   view {
     ##
+    [resource-props "."]
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
         <title>[call "resource:contextual-title-new"]</title>
       </head>
       <body id="vrtx-helseforsk">
-        <h1>[call "resource:property" {"id":"title"}]</h1>
+      [def document structured-document()]
+      [def participants document.properties.participants]
+      [def participantsCachedFullNames document.properties.participantsCachedFullNames]
+       
+        <div id="vrtx-content">
+          <div id="vrtx-main-content">
+            <h1>[call "resource:property" {"id":"title"}]</h1>
+            [if summary != null]
+              <div class="vrtx-introduction">[val summary # unescaped]</div>
+            [endif]
+            [if biobank-place != null]
+              <h2>Biobank</h2>
+              <p>[val biobank-place][if biobank-number != null] ([val biobank-number])[endif]</p>
+            [endif]
+            [if documents != null]
+              <h2>[localized "documents"]</h2>
+              <ul>
+                [list documents doc]
+                  <li><a href="[val doc]">[val doc]</a></li>
+                [endlist]
+              </ul>
+            [endif]
+          </div>
+          <div id="vrtx-additional-content">
+            <h2>[localized "projectLeader"]</h2>
+	        [if projectLeaderCachedFullName != null]
+	          <p><a href="[val projectLeaderCachedFullName.url]">[val projectLeaderCachedFullName.name]</p>
+	        [endif]
+              
+            <h2>[localized "unit"]</h2>
+            [if unitCachedFullName != null]
+              <p><a href="[val unitCachedFullName.url]">[val unitCachedFullName.name]</p>
+            [endif]
+              
+            <h2>[localized "researchers"]</h2>
+	        <ul>
+	          [if participantsCachedFullNames != null]
+	            [list participantsCachedFullNames user]
+	              <li><a href="[val user.url]">[val user.name]</a></li>
+	            [endlist]
+	          [endif]
+	          [if participants != null]
+	            [list participants user]
+	              <li>[val user.name] ([val user.affiliation])</li>
+	            [endlist]
+	          [endif]
+            </ul>
+              
+            <h2>[localized "timePeriod"]</h2>
+            <ul>
+              [if startup-month != null && startup-year != null]
+                <li>[localized "timeStartup"]: [val startup-month] / [val startup-year]</li>
+              [endif]
+              [if completed-month != null && completed-year != null]
+                <li>[localized "timeCompleted"]: [val completed-month] / [val completed-year]</li>
+              [endif]
+            </ul>
+          </div>
       </body>
     </html>
     ##
@@ -57,6 +115,12 @@ resourcetype helseforsk {
     helseforsk : (en : "helseforsk", no : "helseforsk", nn : "helseforsk"),
     title : (en : "Title", no : "Tittel", nn : "Tittel"),
     header : (en : "Edit helseforsk", no : "Rediger helseforsk", nn : "Rediger helseforsk"),
-    content : (en : "Content", no : "Innhold", nn : "Innhald")
+    projectLeader : (en : "Projectleader", no : "Prosjektleder", nn : "Prosjektleder"),
+    unit : (en : "Responsible unit", no : "Ansvarlig enhet", nn : "Ansvarlig enhet"),
+    researchers : (en : "Researchers", no : "Forskere", nn : "Forskere"),
+    timePeriod : (en : "Time period", no : "Tidsperiode", nn : "Tidsperiode"),
+    timeStartup : (en : "Start", no : "Start", nn : "Start"),
+    timeCompleted : (en : "End", no : "Slutt", nn : "Slutt"),
+    documents : (en : "Project description", no : "Prosjektbeskrivelse", nn : "Prosjektbeskrivelse")
   }
 }
