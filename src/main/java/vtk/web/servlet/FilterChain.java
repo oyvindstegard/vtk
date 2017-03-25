@@ -28,35 +28,63 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.filter;
+package vtk.web.servlet;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class AbstractServletFilter implements Filter {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+public class FilterChain implements javax.servlet.FilterChain {
+    private static final Logger logger = LoggerFactory.getLogger(FilterChain.class);
+    private List<Filter> filters;
+    private RequestHandler terminator;
+    private int idx = 0;
+    private boolean terminated = false;
+    
+    @FunctionalInterface
+    public static interface RequestHandler {
+        public void accept(HttpServletRequest request, HttpServletResponse response) 
+                throws IOException, ServletException;
+    }    
+    
+    public FilterChain(List<Filter> filters, RequestHandler terminator) {
+        this.filters = new ArrayList<>(filters);
+        this.terminator = terminator;
     }
-
+    
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
-        doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
-    }
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse)
+            throws IOException, ServletException {
+        
+        if (terminated) {
+            throw new IllegalStateException("FilterChain has terminated");
+        }
+        
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+        
+        int nextIdx = idx++;
+        
+        if (nextIdx < filters.size()) {
+            Filter filter = filters.get(nextIdx);
+            logger.debug("Request: " + request.getMethod() + " " 
+                    + request.getRequestURL() + ": Invoking servlet filter: " + filter);
+            filter.doFilter(request, response, this);
+        }
+        else {
+            terminated = true;
+            terminator.accept(request, response);
 
-    @Override
-    public void destroy() { 
+        }
     }
-
-    protected abstract void doFilter(HttpServletRequest request, HttpServletResponse response, 
-            FilterChain chain) throws IOException, ServletException;
 }

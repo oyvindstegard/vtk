@@ -173,13 +173,17 @@
     <property name="targetMethod" value="add" />
   </bean>
 
-  <bean id="vtk.servletFilters" class="java.util.ArrayList">
+  <bean id="vtk.initializingServletFilters" class="java.util.ArrayList">
     <constructor-arg>
       <list>
-        <bean class="vtk.web.filter.TranslateURLFilter">
-          <constructor-arg name="replacements">
-            <bean class="vtk.context.JSONFactoryBean">
-              <constructor-arg value="${vtk.urlTranslations}" />
+        <bean class="vtk.web.servlet.DefaultFilterFactory">
+          <constructor-arg name="filter">
+            <bean class="vtk.web.filter.TranslateURLFilter">
+              <constructor-arg name="replacements">
+                <bean class="vtk.context.JSONFactoryBean">
+                  <constructor-arg value="${vtk.urlTranslations}" />
+                </bean>
+              </constructor-arg>
             </bean>
           </constructor-arg>
         </bean>
@@ -188,6 +192,19 @@
   </bean>
 
 
+  <bean id="vtk.contextualServletFilters" class="java.util.ArrayList">
+    <constructor-arg>
+      <list>
+        <ref bean="metrics.requestListener" />
+        <bean class="vtk.web.servlet.DefaultFilterFactory">
+          <constructor-arg name="filter">
+            <bean class="vtk.web.filter.ServiceFilterInvoker" />
+          </constructor-arg>
+        </bean>
+      </list>
+    </constructor-arg>
+  </bean>
+  
   <bean id="defaultResponseFilters" class="vtk.util.SortedCollection">
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
@@ -226,11 +243,9 @@
 
        Source: org/springframework/web/servlet/DispatcherServlet.properties -->
 
-  <!-- Custom handlerAdapter for all Controller instances: -->
-  <bean class="vtk.web.filter.ServiceHandlerFilterAdapter" />
+  <bean id="handlerAdapter" class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter" /> 
 
   <!-- Spring HandlerAdapter for all HttpRequestHandler instances: -->
   <bean class="org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter" />
-  
   
 </beans>

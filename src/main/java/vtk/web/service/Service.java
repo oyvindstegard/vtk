@@ -33,6 +33,7 @@ package vtk.web.service;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.Ordered;
@@ -239,7 +240,7 @@ public interface Service extends Ordered {
      * @return a <code>List</code> of {@link HandlerFilter} objects, 
      * or <code>null</code> if none configured.
      */
-    public List<HandlerFilter> getHandlerFilters();
+    public List<Filter> getServletFilters();
 
     /**
      * Gets this service's authentication challenge. 

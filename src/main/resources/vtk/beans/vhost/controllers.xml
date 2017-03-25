@@ -18,7 +18,6 @@
 
   <bean id="httpOptionsHandler"
         class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="supportedMethods" value="OPTIONS" />
     <property name="viewName" value="httpOptions" />
   </bean>
   

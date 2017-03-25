@@ -7,9 +7,12 @@
 
   <bean id="metrics.registry" class="com.codahale.metrics.MetricRegistry" />
 
-  <bean id="requestLoadListener"
-        class="vtk.web.context.RequestLoadListener">
-    <constructor-arg name="registry" ref="metrics.registry" />
+  <bean id="metrics.requestListener" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.context.RequestLoadListener">
+        <constructor-arg name="registry" ref="metrics.registry" />
+      </bean>
+    </constructor-arg>
   </bean>
 
 

@@ -97,15 +97,16 @@
         </bean>
       </list>
     </property>
-    <property name="handlerFilters">
-      <list>
         <!-- XXX: temporarily disabled: will not work
              when using different session cookie setup to
              store CSRF prevention secret: -->
-
-        <!--ref bean="system.csrfPreventionHandler" /-->
+    <!--
+    <property name="servletFilters">
+      <list>
+        <ref bean="system.csrfPreventionHandler" />
       </list>
     </property>
+    -->
     <property name="handler" ref="logoutHandler" />
   </bean>
 
