@@ -37,21 +37,23 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ReadListener;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationListener;
-import org.springframework.web.context.support.ServletRequestHandledEvent;
 
-import vtk.context.BaseContext;
 import vtk.web.RequestContext;
-import vtk.web.filter.CaptureInputRequestFilter.CaptureInputRequestWrapper;
 import vtk.web.service.Service;
+import vtk.web.servlet.AbstractServletFilter;
 import vtk.web.servlet.HeaderAwareResponseWrapper;
 
 /**
@@ -70,16 +72,16 @@ import vtk.web.servlet.HeaderAwareResponseWrapper;
  * 
  * @see CaptureInputRequestFilter
  */
-public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter implements
-        ApplicationListener<ServletRequestHandledEvent>, InitializingBean {
+public class CaptureOutputLoggingFilter extends AbstractServletFilter 
+    implements InitializingBean {
 
-    private int maxLogBytesBody = 4096;
+    private int maxCaptureBytes = 4096;
     private Service service;
     private Logger logger;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String loggerId = CaptureOutputLoggingResponseFilter.class.getName();
+        String loggerId = CaptureOutputLoggingFilter.class.getName();
         if (this.service != null) {
             loggerId += "." + this.service.getName();
         }
@@ -87,38 +89,24 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
     }
 
     @Override
-    public HttpServletResponse filter(HttpServletRequest request, HttpServletResponse response) {
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
         if (!logForService(RequestContext.getRequestContext().getService())) {
-            return response;
-        }
-
-        // Add self to thread local context
-        BaseContext ctx = BaseContext.getContext();
-        CaptureOutputResponseWrapper responseWrapper = new CaptureOutputResponseWrapper(response);
-        ctx.setAttribute(CaptureOutputResponseWrapper.class.getName(), responseWrapper);
-
-        return responseWrapper;
-    }
-
-    @Override
-    public void onApplicationEvent(ServletRequestHandledEvent event) {
-        // Look for wrappers in thread local context and write captured
-        // data to log
-
-        BaseContext ctx = BaseContext.getContext();
-        CaptureInputRequestWrapper reqWrap = (CaptureInputRequestWrapper) ctx
-                .getAttribute(CaptureInputRequestWrapper.class.getName());
-        CaptureOutputResponseWrapper resWrap = (CaptureOutputResponseWrapper) ctx
-                .getAttribute(CaptureOutputResponseWrapper.class.getName());
-
-        if (reqWrap == null) {
-            logger.warn("No request wrapper found in thread local context, check that input capture filter is configured.");
-        }
-
-        if (reqWrap == null || resWrap == null) {
+            chain.doFilter(request, response);
             return;
         }
+
+        CaptureInputRequestWrapper requestWrapper = new CaptureInputRequestWrapper(request);
+        CaptureOutputResponseWrapper responseWrapper = new CaptureOutputResponseWrapper(response);
+        
+        chain.doFilter(requestWrapper, responseWrapper);
+        
+        log(requestWrapper, responseWrapper);
+    }
+
+    private void log(CaptureInputRequestWrapper reqWrap, CaptureOutputResponseWrapper resWrap) {
 
         StringBuilder logbuf = new StringBuilder();
 
@@ -159,8 +147,89 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
         }
         return false;
     }
+    
+    
+    class CaptureInputRequestWrapper extends HttpServletRequestWrapper {
 
-    @SuppressWarnings("unchecked")
+        private InputStreamCopyWrapper streamWrapper;
+
+        public CaptureInputRequestWrapper(HttpServletRequest request) {
+            super(request);
+        }
+
+        @Override
+        public ServletInputStream getInputStream() throws IOException {
+            if (this.streamWrapper == null) {
+                this.streamWrapper = new InputStreamCopyWrapper(super.getInputStream());
+            }
+            return this.streamWrapper;
+        }
+
+        InputStreamCopyWrapper getInputStreamWrapper() {
+            return this.streamWrapper;
+        }
+        
+        byte[] getCapturedBytes() {
+            if (this.streamWrapper != null) {
+                return this.streamWrapper.getCopiedBytes();
+            }
+            return new byte[0];
+        }
+        
+        int getStreamBytesRead() {
+            if (this.streamWrapper != null) {
+                return this.streamWrapper.getStreamBytesRead();
+            }
+            return 0;
+        }
+
+    }
+
+    private class InputStreamCopyWrapper extends ServletInputStream {
+
+        private final ByteArrayOutputStream streamCopyBuffer;
+        private final ServletInputStream wrappedStream;
+        private int streamBytesRead = 0;
+
+        InputStreamCopyWrapper(ServletInputStream wrappedStream) {
+            this.wrappedStream = wrappedStream;
+            this.streamCopyBuffer = new ByteArrayOutputStream();
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = this.wrappedStream.read();
+            if (b > -1 && streamBytesRead++ < maxCaptureBytes) {
+                streamCopyBuffer.write(b);
+            }
+            return b;
+        }
+
+        byte[] getCopiedBytes() {
+            return streamCopyBuffer.toByteArray();
+        }
+        
+        int getStreamBytesRead() {
+            return streamBytesRead;
+        }
+
+        @Override
+        public boolean isFinished() {
+            return wrappedStream.isFinished();
+        }
+
+        @Override
+        public boolean isReady() {
+            return wrappedStream.isReady();
+        }
+
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            wrappedStream.setReadListener(readListener);
+        }
+
+    }
+    
     private void addHeadersForLogging(CaptureInputRequestWrapper requestWrapper, StringBuilder logBuffer) {
         Enumeration<String> headerNames = requestWrapper.getHeaderNames();
         while (headerNames.hasMoreElements()) {
@@ -183,7 +252,7 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
     }
 
     private void addBytesForLogging(byte[] data, int totalBytes, String contentType, StringBuilder logBuffer) {
-        int logBytes = Math.min(maxLogBytesBody, data.length);
+        int logBytes = Math.min(maxCaptureBytes, data.length);
         String rawString = getRawAsciiString(data, 0, logBytes, isProbablyBinary(contentType));
         logBuffer.append(rawString);
         if (totalBytes > logBytes) {
@@ -280,7 +349,7 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
 
         @Override
         public void write(int b) throws IOException {
-            if (b > -1 && (streamBytesWritten++ < maxLogBytesBody)) {
+            if (b > -1 && (streamBytesWritten++ < maxCaptureBytes)) {
                 streamCopyBuffer.write(b);
             }
             wrappedStream.write(b);
@@ -312,18 +381,16 @@ public class CaptureOutputLoggingResponseFilter extends AbstractResponseFilter i
     }
 
     /**
-     * Set max number of raw bytes to capture for body of response, and max number
-     * of bytes to log for body of request and response.
-     * Default value is 4096 bytes.
+     * Set maximum nunber of bytes to capture and store in memory 
+     * from request or response body.
      * 
-     * @param maxLogBytesBody
+     * <p>Default value is <code>4096</code> bytes.
+     * @param maxCaptureBytes the maxCapturedBytes to set
      */
-    public void setMaxLogBytesBody(int maxLogBytesBody) {
-        if (maxLogBytesBody < 0) {
-            throw new IllegalArgumentException("maxLogBytesBody must be >= 0");
-        }
-        this.maxLogBytesBody = maxLogBytesBody;
+    public void setMaxCaptureBytes(int maxCaptureBytes) {
+        this.maxCaptureBytes = maxCaptureBytes;
     }
+
 
     /**
      * Set an explicit service filter for logging. Only requests for this

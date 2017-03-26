@@ -3,24 +3,18 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <!-- Enable this extension to log protocol for all webdav service requests. -->
-    
-  <bean id="davRequestLogger" class="vtk.web.filter.CaptureInputRequestFilter" >
-    <property name="order" value="-1000" />
-    <property name="maxCaptureBytes" value="${davlogger.maxLogBytesBody}"/>
-  </bean>
-  
-  <bean parent="defaultRequestFilters.builder">
-    <property name="arguments" ref="davRequestLogger" />
+
+  <bean id="davLogger" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.filter.CaptureOutputLoggingFilter" >
+        <property name="service" ref="webdavService" />
+        <property name="maxCaptureBytes" value="${davlogger.maxLogBytesBody}" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean id="davResponseLogger" class="vtk.web.filter.CaptureOutputLoggingResponseFilter" >
-    <property name="order" value="-1000" />
-    <property name="service" ref="webdavService" />
-    <property name="maxLogBytesBody" value="${davlogger.maxLogBytesBody}" />
-  </bean>
-
-  <bean parent="defaultResponseFilters.builder">
-    <property name="arguments" ref="davResponseLogger" />
+  <bean parent="vtk.contextualServletFilters.builder">
+    <property name="arguments" ref="davLogger" />
   </bean>
 
 </beans>
