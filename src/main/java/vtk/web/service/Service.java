@@ -43,7 +43,6 @@ import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.web.AuthenticationChallenge;
-import vtk.web.filter.HandlerFilter;
 
 /**
  * A service is an abstraction added to the thin web layer in web
