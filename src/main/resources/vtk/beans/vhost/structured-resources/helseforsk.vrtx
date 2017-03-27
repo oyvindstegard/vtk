@@ -8,7 +8,7 @@ resourcetype helseforsk {
 	unit: string,
 	unitCachedFullName : json(unit:string, name:string, url:string),
 	participantsUsernames : string multiple,
-	participantsCachedFullNames : json(username:string, name:string, url:string) multiple,
+	participantsCachedFullName : json(username:string, name:string, url:string) multiple,
 	participants : json (name:string, affiliation:string) multiple,
     startup-month : string,
     startup-year : string,
@@ -42,17 +42,16 @@ resourcetype helseforsk {
   view {
     ##
     [resource-props "."]
+    [def document structured-document()]
+    [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
+    [def participantsCachedFullName document.properties.participantsCachedFullName]
+    [def participants document.properties.participants]
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
         <title>[call "resource:contextual-title-new"]</title>
       </head>
       <body id="vrtx-helseforsk">
-        [def document structured-document()]
-        [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
-        [def participantsCachedFullNames document.properties.participantsCachedFullNames]
-        [def participants document.properties.participants]
-       
         <div id="vrtx-content">
           <div id="vrtx-main-content">
             <h1>[call "resource:property" {"id":"title"}]</h1>
@@ -175,10 +174,10 @@ resourcetype helseforsk {
             <h2>[localized "unit"]</h2>
               
             <h2>[localized "researchers"]</h2>
-	        [if participantsCachedFullNames != null || participants != null]
+	        [if participantsCachedFullName != null || participants != null]
 	          <ul>
-	            [if participantsCachedFullNames != null]
-	              [list participantsCachedFullNames user]
+	            [if participantsCachedFullName != null]
+	              [list participantsCachedFullName user]
 	                <li>
 	                  [if user.url != null]
 	                    <a href="[val user.url]">[val user.name]</a>
