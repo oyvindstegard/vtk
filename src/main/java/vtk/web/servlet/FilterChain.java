@@ -78,11 +78,15 @@ public class FilterChain implements javax.servlet.FilterChain {
         if (nextIdx < filters.size()) {
             Filter filter = filters.get(nextIdx);
             logger.debug("Request: " + request.getMethod() + " " 
-                    + request.getRequestURL() + ": Invoking servlet filter: " + filter + "(" + request + ", " + response + ")");
+                    + request.getRequestURL() + ": Invoking servlet filter: " 
+                    + filter + "(" + request + ", " + response + ")");
             filter.doFilter(request, response, this);
         }
         else {
             terminated = true;
+            logger.debug("Request: " + request.getMethod() + " " 
+                    + request.getRequestURL() + ": Invoking filter chain terminator: " 
+                    + terminator + "(" + request + ", " + response + ")");
             terminator.accept(request, response);
 
         }
