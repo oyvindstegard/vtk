@@ -32,12 +32,9 @@ package vtk.web.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -79,9 +76,9 @@ public class AclApiHandler implements Controller {
         RequestContext requestContext = RequestContext.getRequestContext();
         Result<Optional<Resource>> res = retrieve(requestContext, requestContext.getResourceURI());
         
-        Result<ResponseBuilder> bldr = res.flatMap(opt -> {
+        Result<ApiResponseBuilder> bldr = res.flatMap(opt -> {
            if (!opt.isPresent()) {
-               return Result.success(ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+               return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
                        .message("404 Not Found: " + requestContext.getResourceURI()));
            }
            else {
@@ -102,14 +99,14 @@ public class AclApiHandler implements Controller {
         
         bldr.recover(ex -> {
             if (ex instanceof InvalidRequestException) {
-                return ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                return new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
                         .message(ex.getMessage());
             }
             if (ex instanceof AuthorizationException) {
-                return ResponseBuilder(HttpServletResponse.SC_FORBIDDEN)
+                return new ApiResponseBuilder(HttpServletResponse.SC_FORBIDDEN)
                         .message(ex.getMessage());
             }
-            return ResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+            return new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                     .message("An unexpected error occurred: " + ex.getMessage());
         }).forEach(resp -> {
             try {
@@ -122,7 +119,7 @@ public class AclApiHandler implements Controller {
         return null;
     }
     
-    private Result<ResponseBuilder> getAcl(Resource resource, 
+    private Result<ApiResponseBuilder> getAcl(Resource resource, 
             RequestContext requestContext) {
 
         if (resource.isInheritedAcl()) {
@@ -131,26 +128,26 @@ public class AclApiHandler implements Controller {
             return ancestor.map(opt -> {
                 Resource ans = opt.get();
                 URL url = new URL(requestContext.getRequestURL()).setPath(ans.getURI());
-                return ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                return new ApiResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
                     .header("Content-Type", "text/plain;charset=utf-8")
                     .header("Link", "<" + url + ">; rel=\"inherited-acl\"")
                     .message("ACL Not Found on " + resource.getURI() + "\n"
                             + "Nearest ACL: " + ans.getURI() + "\n");
             });
         }
-        return Result.success(ResponseBuilder(HttpServletResponse.SC_OK)
+        return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_OK)
             .header("Content-Type", "application/json")
             .message(JsonStreamer.toJson(aclToJson(resource.getAcl()), 2, true)));
     }
     
 
-    private Result<ResponseBuilder> updateAcl(Resource resource, 
+    private Result<ApiResponseBuilder> updateAcl(Resource resource, 
             RequestContext requestContext) {
 
         HttpServletRequest request = requestContext.getServletRequest();
         
         if (!"application/json".equals(request.getContentType())) {
-            return Result.success(ResponseBuilder(HttpServletResponse.SC_NOT_ACCEPTABLE)
+            return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_NOT_ACCEPTABLE)
                 .header("Content-Type", "text/plain;charset=utf-8")
                 .message("Content-Type application/json required for " 
                     + request.getMethod() + " method\n"));
@@ -189,24 +186,18 @@ public class AclApiHandler implements Controller {
                 }
             });
         });
-        Result<ResponseBuilder> result = updated.map(res -> 
-                ResponseBuilder(existed ? HttpServletResponse.SC_OK : HttpServletResponse.SC_CREATED)
+        Result<ApiResponseBuilder> result = updated.map(res -> 
+                new ApiResponseBuilder(existed ? HttpServletResponse.SC_OK : HttpServletResponse.SC_CREATED)
                     .header("Content-Type", "text/plain;charset=utf-8")
                     .message("ACL updated on resource " + resource.getURI() + "\n"));
         return result;
     }
     
-    private static class InvalidRequestException extends RuntimeException {
-        private static final long serialVersionUID = -6500270423148285948L;
-        public InvalidRequestException(String message) { super(message); }
-        public InvalidRequestException(String message, Throwable cause) { super(message, cause); }
-    }
-    
-    private Result<ResponseBuilder> deleteAcl(Resource resource, 
+    private Result<ApiResponseBuilder> deleteAcl(Resource resource, 
             RequestContext requestContext) {
         
         if (resource.isInheritedAcl()) {
-            return Result.success(ResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+            return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
                 .header("Content-Type", "text/plain;charset=utf-8")
                 .message("404 Not Found\n"));
         }
@@ -222,15 +213,15 @@ public class AclApiHandler implements Controller {
         });
         
         return updated.map(r -> {
-            return ResponseBuilder(HttpServletResponse.SC_OK)
+            return new ApiResponseBuilder(HttpServletResponse.SC_OK)
                     .header("Content-Type", "text/plain;charset=utf-8")
                     .message("Deleted ACL on resource " + r.getURI() + "\n");
         });
     }
     
-    private Result<ResponseBuilder> unknownMethod(Resource resource, 
+    private Result<ApiResponseBuilder> unknownMethod(Resource resource, 
             RequestContext requestContext) {
-        return Result.success(ResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+        return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
             .header("Content-Type", "text/plain;charset=utf-8")
             .message("Request method " + requestContext.getServletRequest().getMethod() 
                     + " not supported: on " + resource.getURI()));
@@ -341,37 +332,6 @@ public class AclApiHandler implements Controller {
             json.put(action.getName(), entry);
         });
         return json;
-    }
-    
-    private static ResponseBuilder ResponseBuilder(int status) { 
-        return new ResponseBuilder(status); 
-    }
-    
-    private static class ResponseBuilder {
-        private int status;
-        private Map<String, String> headers = new HashMap<>();
-        private String message = null;
-        
-        public ResponseBuilder(int status) 
-            { this.status = status; }
-        
-        public ResponseBuilder message(String message) 
-            { this.message = message; return this; }
-        
-        public ResponseBuilder header(String name, String value) 
-            { this.headers.put(name, value); return this; }
-        
-        public void writeTo(HttpServletResponse response) throws Exception {
-            response.setStatus(status);
-            for (String name: headers.keySet()) {
-                response.setHeader(name, headers.get(name));
-            }
-            if (message != null) {
-                PrintWriter writer = response.getWriter();
-                writer.write(message);
-                response.flushBuffer();
-            }
-        }
     }
     
 }
