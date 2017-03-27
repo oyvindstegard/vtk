@@ -37,16 +37,19 @@ import org.springframework.web.servlet.mvc.Controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.*;
 
 import org.springframework.web.servlet.support.RequestContextUtils;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.resourcemanagement.StaticResourceResolver;
+import vtk.security.Principal;
 import vtk.text.tl.*;
 import vtk.text.tl.expr.Expression;
 import vtk.util.io.IO;
@@ -80,11 +83,12 @@ public class AjaxEditorController implements Controller {
         RequestContext rc = RequestContext.getRequestContext();
         Repository repository = rc.getRepository();
         String token = rc.getSecurityToken();
+        Principal p = rc.getPrincipal();
 
         Resource resource = repository.lock(
                 token,
                 rc.getResourceURI(),
-                rc.getPrincipal().getQualifiedName(),
+                p.getQualifiedName(),
                 Repository.Depth.ZERO,
                 600,
                 null
@@ -102,9 +106,9 @@ public class AjaxEditorController implements Controller {
                 repository.getInputStream(token, rc.getResourceURI(), false)
         ).perform());
         
-        model.put("username", rc.getPrincipal().getName());
-        model.put("name", rc.getPrincipal().getQualifiedName());
-        model.put("url", rc.getPrincipal().getURL());
+        model.put("username", p.getName());
+        model.put("name", p.getDescription());
+        model.put("url", p.getURL());
         
         Optional<ReaderWithPath> template = getTemplateReader(type, "editor.tl");
         if (template.isPresent()) {
