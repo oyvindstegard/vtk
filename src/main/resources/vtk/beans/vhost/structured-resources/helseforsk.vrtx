@@ -49,8 +49,9 @@ resourcetype helseforsk {
       </head>
       <body id="vrtx-helseforsk">
       [def document structured-document()]
-      [def participants document.properties.participants]
+      [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
       [def participantsCachedFullNames document.properties.participantsCachedFullNames]
+      [def participants document.properties.participants]
        
         <div id="vrtx-content">
           <div id="vrtx-main-content">
@@ -168,29 +169,28 @@ resourcetype helseforsk {
 	        [endif]
               
             <h2>[localized "unit"]</h2>
-            [if unitCachedFullName != null]
-              <p><a href="[val unitCachedFullName.url]">[val unitCachedFullName.name]</p>
-            [endif]
               
             <h2>[localized "researchers"]</h2>
-	        <ul>
-	          [if participantsCachedFullNames != null]
-	            [list participantsCachedFullNames user]
-	              <li>
-	                [if user.url != null]
-	                  <a href="[val user.url]">[val user.name]</a>
-	                [else]
-	                  [val user.name]
-	                [endif]
-	              </li>
-	            [endlist]
-	          [endif]
-	          [if participants != null]
-	            [list participants user]
-	              <li>[val user.name][if user.affiliation != null] ([val user.affiliation])[endif]</li>
-	            [endlist]
-	          [endif]
-            </ul>
+	        [if participantsCachedFullNames != null || participants != null]
+	          <ul>
+	            [if participantsCachedFullNames != null]
+	              [list participantsCachedFullNames user]
+	                <li>
+	                  [if user.url != null]
+	                    <a href="[val user.url]">[val user.name]</a>
+	                  [else]
+	                    [val user.name]
+	                  [endif]
+	                </li>
+	              [endlist]
+	            [endif]
+	            [if participants != null]
+	              [list participants user]
+	                <li>[val user.name][if user.affiliation != null] ([val user.affiliation])[endif]</li>
+	              [endlist]
+	            [endif]
+              </ul>
+            [endif]
               
             <h2>[localized "timePeriod"]</h2>
             <ul>
