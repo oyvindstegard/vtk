@@ -63,7 +63,6 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     private URL wrappedURL;
     private boolean anonymous = false;
     private Map<String, Set<String>> headers;
-    private Map<String, Object> attributes = new HashMap<String, Object>();
     
     /**
      * Creates a new request wrapper.
@@ -97,6 +96,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
         this.method = method;
     }
     
+    @Override
     public String getMethod() {
         return this.method;
     }
@@ -115,7 +115,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
      * Sets a header, replacing any existing values.
      */
     public void setHeader(String name, String value) {
-        Set<String> values = new HashSet<String>();
+        Set<String> values = new HashSet<>();
         values.add(value);
         this.headers.put(name, values);
     }
@@ -127,7 +127,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     public void addHeader(String name, String value) {
         Set<String> values = this.headers.get(name);
         if (values == null) {
-            values = new HashSet<String>();
+            values = new HashSet<>();
             this.headers.put(name, values);
         }
         values.add(value);
@@ -137,7 +137,7 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
      * Clears all previously set headers.
      */
     public void clearHeaders() {
-        this.headers = new HashMap<String, Set<String>>();
+        this.headers = new HashMap<>();
     }
     
     @Override
@@ -228,20 +228,19 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Map<String, String[]> getParameterMap() {
         Map<String, String[]> params;
         if ("POST".equals(getMethod()) && this.url.equals(this.wrappedURL)) {
-            params = new HashMap<String, String[]>(super.getParameterMap());
+            params = new HashMap<>(super.getParameterMap());
         } else {
-            params = new HashMap<String, String[]>();
+            params = new HashMap<>();
         }
         
         List<String> queryNames = this.url.getParameterNames();
         for (String queryParam: queryNames) {
             if (params.containsKey(queryParam)) {
                 String[] oldValues = params.get(queryParam);
-                List<String> newValues = new ArrayList<String>(Arrays.asList(oldValues));
+                List<String> newValues = new ArrayList<>(Arrays.asList(oldValues));
                 List<String> queryValues = this.url.getParameters(queryParam);
                 if (queryValues != null) {
                     for (String queryValue: queryValues) {
@@ -420,32 +419,8 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     }
     
 
-    @Override
-    public Object getAttribute(String name) {
-        if (this.attributes.containsKey(name)) {
-            return this.attributes.get(name);
-        }
-        return super.getAttribute(name);
-    }
-
-    @Override
-    public Enumeration<String> getAttributeNames() {
-        Set<String> names = new HashSet<String>();
-        Enumeration<String> e = super.getAttributeNames();
-        while (e.hasMoreElements()) {
-            names.add(e.nextElement());
-        }
-        names.addAll(this.attributes.keySet());
-        return Collections.enumeration(names);
-    }
-
-    @Override
-    public void setAttribute(String name, Object o) {
-        this.attributes.put(name, o);
-    }
-
     private Cookie[] filterAnonymousCookies() {
-        List<Cookie> result = new ArrayList<Cookie>();
+        List<Cookie> result = new ArrayList<>();
         Cookie[] cookies = super.getCookies();
         String sessionID = null;
         HttpSession session = super.getSession(false);
@@ -462,13 +437,13 @@ public class ConfigurableRequestWrapper extends HttpServletRequestWrapper {
     }
 
     private void initHeaders() {
-        this.headers = new HashMap<String, Set<String>>();
+        this.headers = new HashMap<>();
         Enumeration<?> headerNames = super.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String name = (String) headerNames.nextElement();
             Set<String> values = this.headers.get(name);
             if (values == null) {
-                values = new HashSet<String>();
+                values = new HashSet<>();
                 this.headers.put(name, values);
             }
             Enumeration<?> headerValues = super.getHeaders(name);
