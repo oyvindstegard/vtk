@@ -79,7 +79,6 @@ import vtk.util.io.IO;
 import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
 import vtk.web.decorating.HtmlPageFilterFactory;
-import vtk.web.filter.HandlerFilterChain;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 import vtk.web.servlet.AbstractServletFilter;
