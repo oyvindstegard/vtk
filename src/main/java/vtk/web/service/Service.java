@@ -234,9 +234,9 @@ public interface Service extends Ordered {
     
 
     /**
-     * Gets the list of handler filters for this service, if any.
+     * Gets the list of servlet filters for this service, if any.
      *
-     * @return a <code>List</code> of {@link HandlerFilter} objects, 
+     * @return a <code>List</code> of {@link Filter} objects, 
      * or <code>null</code> if none configured.
      */
     public List<Filter> getServletFilters();
