@@ -48,21 +48,24 @@ resourcetype helseforsk {
         <title>[call "resource:contextual-title-new"]</title>
       </head>
       <body id="vrtx-helseforsk">
-      [def document structured-document()]
-      [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
-      [def participantsCachedFullNames document.properties.participantsCachedFullNames]
-      [def participants document.properties.participants]
+        [def document structured-document()]
+        [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
+        [def participantsCachedFullNames document.properties.participantsCachedFullNames]
+        [def participants document.properties.participants]
        
         <div id="vrtx-content">
           <div id="vrtx-main-content">
             <h1>[call "resource:property" {"id":"title"}]</h1>
+            
             [if summary != null]
               <div class="vrtx-introduction">[val summary # unescaped]</div>
             [endif]
+            
             [if biobank-place != null]
               <h2>Biobank</h2>
               <p>[val biobank-place][if biobank-number != null] ([val biobank-number])[endif]</p>
             [endif]
+            
             [if documents != null]
               <h2>[localized "documents"]</h2>
               <ul>
@@ -71,6 +74,7 @@ resourcetype helseforsk {
                 [endlist]
               </ul>
             [endif]
+            
             <h2>[localized "approvals"]</h2>
             [if approval-internal-status != null &&
                 approval-internal-status != "NOT_APPLIED"]
@@ -202,6 +206,7 @@ resourcetype helseforsk {
               [endif]
             </ul>
           </div>
+        </div>
       </body>
     </html>
     ##
