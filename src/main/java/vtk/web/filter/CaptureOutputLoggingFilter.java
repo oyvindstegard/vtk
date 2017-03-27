@@ -58,19 +58,14 @@ import vtk.web.servlet.HeaderAwareResponseWrapper;
 
 /**
  * HTTP protocol logger/dumper. Logs headers and body by providing a request and
- * response filter in bean context, and then logging the captured data when a
- * {@link ServletRequestHandletEvent } is received.
+ * response filter, and then logging the captured data after the request has 
+ * completed.
  * 
  * There is one log message sent per request-response cycle, and log output will
  * consist of multiple lines of data. So configuring a separate log
  * appender/formatter for this class makes sense. It will generally use a logger
  * with the same name as the fully qualified class, but if a specific service is
  * configured, that service name will be appended to the logger id.
- * 
- * Note: in order for logging to occur, you must also configure an instance of
- * {@link CaptureInputRequestFilter} in the bean context.
- * 
- * @see CaptureInputRequestFilter
  */
 public class CaptureOutputLoggingFilter extends AbstractServletFilter 
     implements InitializingBean {
