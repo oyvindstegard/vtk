@@ -366,7 +366,12 @@
          <entry key="VRTX_RESOURCE_TYPE_TREE" value-ref="resourceTypeTree" />
          <entry key="VRTX_HTML_UTIL" value-ref="htmlUtil" />
          <entry key="VRTX_DECORATING_NODE_FILTER" value-ref="decorating.ssiNodeFilter" />
-         <entry key="VRTX_CSRF_PREVENTION_HANDLER" value-ref="system.csrfPreventionHandler" />
+         <entry key="VRTX_CSRF_PREVENTION_HANDLER">
+             <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+               <property name="targetObject" ref="system.csrfPreventionHandler" />
+               <property name="targetMethod" value="filter" />
+             </bean>
+         </entry>
          <entry key="VRTX_LINK_CONSTRUCTOR" value-ref="linkConstructor" />
        </map>
      </property>

@@ -142,6 +142,7 @@
   
   <!-- Spring session filter (works only with spring boot) -->
   <!--bean id="springSessionRepositoryFilter" class="vtk.web.servlet.NullFilter" /-->
+
   <bean id="springSessionRepositoryFilter" 
         class="vtk.web.servlet.SessionRepositoryFilter">
     <constructor-arg name="sessionRepository" ref="spring.sessionRepository" />
@@ -173,21 +174,55 @@
     <property name="targetMethod" value="add" />
   </bean>
 
-  <bean id="vtk.servletFilters" class="java.util.ArrayList">
-    <constructor-arg>
-      <list>
-        <bean class="vtk.web.filter.TranslateURLFilter">
-          <constructor-arg name="replacements">
-            <bean class="vtk.context.JSONFactoryBean">
-              <constructor-arg value="${vtk.urlTranslations}" />
-            </bean>
-          </constructor-arg>
-        </bean>
-      </list>
+  
+  <bean id="vtk.initializingServletFilters" class="java.util.ArrayList">
+  </bean>
+
+  <bean id="vtk.initializingServletFilters.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="vtk.initializingServletFilters" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+  <bean parent="vtk.initializingServletFilters.builder">
+    <property name="arguments" ref="vtk.translateURLFilter" />
+  </bean>
+
+  <bean id="vtk.translateURLFilter" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.filter.TranslateURLFilter">
+        <constructor-arg name="replacements">
+          <bean class="vtk.context.JSONFactoryBean">
+            <constructor-arg value="${vtk.urlTranslations}" />
+          </bean>
+        </constructor-arg>
+      </bean>
     </constructor-arg>
   </bean>
 
+  <bean id="vtk.contextualServletFilters" class="java.util.ArrayList">
+  </bean>
 
+  <bean id="vtk.contextualServletFilters.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="vtk.contextualServletFilters" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+  <bean parent="vtk.contextualServletFilters.builder">
+    <property name="arguments" ref="metrics.requestListener" />
+  </bean>
+
+  <bean parent="vtk.contextualServletFilters.builder">
+    <property name="arguments" ref="vtk.serviceFilterInvoker" />
+  </bean>
+
+  <bean id="vtk.serviceFilterInvoker" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.filter.ServiceFilterInvoker" />
+    </constructor-arg>
+  </bean>
+  
   <bean id="defaultResponseFilters" class="vtk.util.SortedCollection">
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
@@ -226,11 +261,9 @@
 
        Source: org/springframework/web/servlet/DispatcherServlet.properties -->
 
-  <!-- Custom handlerAdapter for all Controller instances: -->
-  <bean class="vtk.web.filter.ServiceHandlerFilterAdapter" />
+  <bean id="handlerAdapter" class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter" /> 
 
   <!-- Spring HandlerAdapter for all HttpRequestHandler instances: -->
   <bean class="org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter" />
-  
   
 </beans>

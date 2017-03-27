@@ -52,9 +52,6 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 
-import vtk.web.RequestContext;
-import vtk.web.service.Service;
-
 public class RequestLoadListener implements ApplicationListener<ServletRequestHandledEvent>, Filter {
     private final ExecutorService executorService;
     private final MetricsHandler metricsHandler;
@@ -81,11 +78,7 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
 
     @Override
     public void onApplicationEvent(ServletRequestHandledEvent event) {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        if (requestContext == null) return;
-        Service service = requestContext.getService();
-        boolean auth = requestContext.getPrincipal() != null;
-        VrtxEvent vrtxEvent = new VrtxEvent(event, service, auth);
+        VrtxEvent vrtxEvent = new VrtxEvent(event);
         executorService.submit(() -> {
             metricsHandler.event(vrtxEvent);
         });
@@ -97,38 +90,30 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
     @Override
     public void destroy() { }
 
-
     private static class VrtxEvent {
-        public final Service service;
-        public final boolean auth;
         public final boolean failure;
         public final long processingTimeMillis;
         public final Optional<Long> statusCode;
-        public VrtxEvent(ServletRequestHandledEvent reqEvent, Service service, boolean auth) {
-            this.service = service;
-            this.auth = auth;
+
+        public VrtxEvent(ServletRequestHandledEvent reqEvent) {
             this.failure = reqEvent.wasFailure();
             this.processingTimeMillis = reqEvent.getProcessingTimeMillis();
             long sc = reqEvent.getStatusCode();
             this.statusCode = sc != -1 ? Optional.of(sc) : Optional.empty();
-            
         }
     }
-
+    
     private static final class MetricsHandler {
         private final MetricRegistry registry;
         private final Meter requests;
         private final Meter errors;
-        private final Meter authenticated;
         private final Histogram processing;
-        private final Map<String, Counter> services = new HashMap<>();;
         private final Map<String, Counter> status = new HashMap<>();;
 
         public MetricsHandler(MetricRegistry registry) {
             this.registry = registry;
             this.requests = registry.meter("requests.processed");
             this.errors = registry.meter("requests.failed");
-            this.authenticated = registry.meter("requests.authenticated");
             this.processing = registry.histogram("requests.processing.time");
         }
 
@@ -137,18 +122,6 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
             processing.update(event.processingTimeMillis);
             if (event.failure) {
                 errors.mark();
-            }
-            if (event.service != null) {
-                String name = "requests.services." + event.service.getName();
-                Counter counter = services.get(name);
-                if (counter == null) {
-                    counter = registry.counter(name);
-                    services.put(name, counter);
-                }
-                counter.inc();
-            }
-            if (event.auth) {
-                authenticated.mark();
             }
             event.statusCode.ifPresent(code -> {
                 String statusKey = String.valueOf("requests.status." + event.statusCode);

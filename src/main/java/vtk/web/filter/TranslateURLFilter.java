@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import vtk.web.service.URL;
+import vtk.web.servlet.AbstractServletFilter;
 
 public class TranslateURLFilter extends AbstractServletFilter {
     private static Logger logger = LoggerFactory.getLogger(TranslateURLFilter.class);

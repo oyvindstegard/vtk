@@ -47,8 +47,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.servlet.Filter;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -143,7 +141,8 @@ public class VTKServlet extends DispatcherServlet {
     private static final String SECURITY_INITIALIZER_BEAN_NAME = "securityInitializer";
     private static final String REQUEST_CONTEXT_INITIALIZER_BEAN_NAME = "requestContextInitializer";
     private static final String REPOSITORY_CONTEXT_INITIALIZER_BEAN_NAME = "repositoryContextInitializer";
-    private static final String SERVLET_FILTERS_BEAN_NAME = "vtk.servletFilters";
+    private static final String INITIALIZING_SERVLET_FILTERS_BEAN_NAME = "vtk.initializingServletFilters";
+    private static final String CONTEXTUAL_SERVLET_FILTERS_BEAN_NAME = "vtk.contextualServletFilters";
     private static final String REQUEST_FILTERS_BEAN_NAME = "defaultRequestFilters";
     private static final String RESPONSE_FILTERS_BEAN_NAME = "defaultResponseFilters";
     private static final String GLOBAL_HEADERS_BEAN_NAME = "globalHeaders";
@@ -161,7 +160,10 @@ public class VTKServlet extends DispatcherServlet {
 
     private RequestFilter[] requestFilters = new RequestFilter[0];
     private ResponseFilter[] responseFilters = new ResponseFilter[0];
-    private List<Filter> servletFilters = Collections.emptyList();
+    // Servlet filters invoked before any contexts are set up:
+    private List<Filter> initializingServletFilters = Collections.emptyList();
+    // Servlet filters invoked just before super.doService(), with initialized contexts
+    private List<Filter> contextualServletFilters = Collections.emptyList();
     private SecurityInitializer securityInitializer;
     private RepositoryContextInitializer repositoryContextInitializer;
     private RequestContextInitializer requestContextInitializer;
@@ -246,23 +248,43 @@ public class VTKServlet extends DispatcherServlet {
         List<?> filterList = null;
         try {
             filterList = getWebApplicationContext()
-                .getBean(SERVLET_FILTERS_BEAN_NAME, List.class);
-        } catch (NoSuchBeanDefinitionException e) { }
+                .getBean(INITIALIZING_SERVLET_FILTERS_BEAN_NAME, List.class);
+        }
+        catch (NoSuchBeanDefinitionException e) { }
         
         if (filterList == null || filterList.size() == 0) {
             this.logger.info("No servlet filters found under name " 
-                    + SERVLET_FILTERS_BEAN_NAME);
+                    + INITIALIZING_SERVLET_FILTERS_BEAN_NAME);
             return;
         }
         List<Filter> result = new ArrayList<>();
         for (Object o: filterList) {
-            if (o instanceof Filter) {
-                result.add((Filter) o);
+            if (o instanceof FilterFactory) {
+                result.add(((FilterFactory) o).filter());
             }
         }
-        this.servletFilters = Collections.unmodifiableList(result);
-        this.logger.info("Using servlet filters: " + servletFilters);
+        this.initializingServletFilters = Collections.unmodifiableList(result);
+        this.logger.info("Using init servlet filters: " + initializingServletFilters);
         
+        try {
+            filterList = getWebApplicationContext()
+                .getBean(CONTEXTUAL_SERVLET_FILTERS_BEAN_NAME, List.class);
+        }
+        catch (NoSuchBeanDefinitionException e) { }
+        
+        if (filterList == null || filterList.size() == 0) {
+            this.logger.info("No servlet filters found under name " 
+                    + CONTEXTUAL_SERVLET_FILTERS_BEAN_NAME);
+            return;
+        }
+        result = new ArrayList<>();
+        for (Object o: filterList) {
+            if (o instanceof FilterFactory) {
+                result.add(((FilterFactory) o).filter());
+            }
+        }
+        this.contextualServletFilters = Collections.unmodifiableList(result);
+        this.logger.info("Using contextual servlet filters: " + contextualServletFilters);
     }
 
     private void initRequestFilters() {
@@ -270,7 +292,8 @@ public class VTKServlet extends DispatcherServlet {
         try {
             filterArray = getWebApplicationContext()
                 .getBean(REQUEST_FILTERS_BEAN_NAME, RequestFilter[].class);
-        } catch (NoSuchBeanDefinitionException e) { }
+        }
+        catch (NoSuchBeanDefinitionException e) { }
         
         if (filterArray == null || filterArray.length == 0) {
             this.logger.info("No request filters found under name " 
@@ -287,7 +310,8 @@ public class VTKServlet extends DispatcherServlet {
         try {
             filterArray = getWebApplicationContext()
                 .getBean(RESPONSE_FILTERS_BEAN_NAME, ResponseFilter[].class);
-        } catch (NoSuchBeanDefinitionException e) { }
+        }
+        catch (NoSuchBeanDefinitionException e) { }
         
         if (filterArray == null || filterArray.length == 0) {
             this.logger.info("No response filters found under name " 
@@ -315,7 +339,8 @@ public class VTKServlet extends DispatcherServlet {
                     }
                     
             }
-        } catch (NoSuchBeanDefinitionException e) { }
+        }
+        catch (NoSuchBeanDefinitionException e) { }
     }
 
     @SuppressWarnings("rawtypes")
@@ -359,7 +384,8 @@ public class VTKServlet extends DispatcherServlet {
                 long ifModifiedSince = -1;
                 try {
                     ifModifiedSince = request.getDateHeader(HEADER_IFMODSINCE);
-                } catch (IllegalArgumentException e) {
+                }
+                catch (IllegalArgumentException e) {
                     // The client is sending an illegal header format, so we ignore it.
                     ifModifiedSince = -1;
                 }
@@ -389,117 +415,125 @@ public class VTKServlet extends DispatcherServlet {
         return true;
     }
     
-    @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        FilterChain chain = new FilterChain();
-        chain.doFilter(request, response);
-    }
     
-    /**
-     * Override doService to be able to handle dav requests,
-     * duplicating Spring FrameworkServlet's serviceWrapper
-     * funcionality, and duplicating httpservlet's handling of
-     * lastModified in service.  Handle this request and publish an
-     * event regardless of the outcome.  The actual event handling is
-     * performed by super.doService().
-     */
-    @Override
-    protected void doService(HttpServletRequest request,
-                                 HttpServletResponse servletResponse) 
-        throws ServletException, IOException {
-        long startTime = System.currentTimeMillis();
-        Throwable failureCause = null;
-        
-        String threadName = Thread.currentThread().getName();
-        long number = this.requests.incrementAndGet();
+   @Override
+   protected void service(HttpServletRequest request, HttpServletResponse response) 
+           throws ServletException, IOException {
+       FilterChain chain = new FilterChain(initializingServletFilters, (req, resp) -> 
+           super.service(req, resp));
+       chain.doFilter(request,  response);
+   }
+   
+   @Override
+   protected void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
+       long startTime = System.currentTimeMillis();
+       Throwable failureCause = null;
+       
+       String threadName = Thread.currentThread().getName();
+       long number = this.requests.incrementAndGet();
 
-        boolean proceedService = true;
-        HeaderAwareResponseWrapper responseWrapper = 
-            new HeaderAwareResponseWrapper(servletResponse);
-        
-        try {
-            
-            if (this.globalHeaders != null) {
-                for (String header: this.globalHeaders.keySet()) {
-                    responseWrapper.setHeader(header, this.globalHeaders.get(header));
-                }
-            }
+       boolean proceedService = true;
+       response = new HeaderAwareResponseWrapper(response);
 
-            request.setAttribute(SERVLET_NAME_REQUEST_ATTRIBUTE, getServletName());
-            BaseContext.pushContext();
-            Thread.currentThread().setName(this.getServletName() + "." + String.valueOf(number));
-            
-            request = filterRequest(request);
-            
-            if (this.repositoryContextInitializer != null) {
-                this.repositoryContextInitializer.createContext(request);
-            }
-            
-            if (!this.securityInitializer.createContext(request, responseWrapper)) {
-                if (this.logger.isDebugEnabled()) {
-                    this.logger.debug("Request " + request + " handled by " + 
-                            "security initializer (authentication challenge)");
-                }
-                return;
-            }
+       try {
 
-            this.requestContextInitializer.createContext(request);
+           if (this.globalHeaders != null) {
+               for (String header: this.globalHeaders.keySet()) {
+                   response.setHeader(header, this.globalHeaders.get(header));
+               }
+           }
+           request.setAttribute(SERVLET_NAME_REQUEST_ATTRIBUTE, getServletName());
+           BaseContext.pushContext();
+           Thread.currentThread().setName(this.getServletName() + "." + String.valueOf(number));
 
-            servletResponse = filterResponse(request, servletResponse);
-            responseWrapper = 
-                new HeaderAwareResponseWrapper(servletResponse);
+           request = filterRequest(request);
 
-            proceedService = checkLastModified(request, responseWrapper);
+           if (this.repositoryContextInitializer != null) {
+               this.repositoryContextInitializer.createContext(request);
+           }
 
-            if (proceedService) {
-                super.doService(request, responseWrapper);
-            }
-        }
-        catch (AuthenticationException ex) {
-            this.securityInitializer.challenge(request, responseWrapper, ex);
-                
-        }
-        catch (AuthenticationProcessingException e) {
-            handleAuthenticationProcessingError(request, responseWrapper, e);
-        	
-        }
-        catch (InvalidAuthenticationRequestException e) {
-            responseWrapper.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            logError(request, e);
-        }
-        catch (Throwable t) {
-            if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
-                responseWrapper.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
-            failureCause = t;
-            handleError(request, responseWrapper, t);
-        }
-        finally {
-            long processingTime = System.currentTimeMillis() - startTime;
+           if (!this.securityInitializer.createContext(request, response)) {
+               if (this.logger.isDebugEnabled()) {
+                   this.logger.debug("Request " + request + " handled by " + 
+                           "security initializer (authentication challenge)");
+               }
+               return;
+           }
 
-            if (request.getAttribute(INDEX_FILE_REQUEST_ATTRIBUTE) == null) {
-                logRequest(request, responseWrapper, processingTime, !proceedService);
-                getWebApplicationContext().publishEvent(
-                        new ServletRequestHandledEvent(this, request
-                                .getRequestURI(), request.getRemoteAddr(),
-                                request.getMethod(), getServletConfig()
-                                        .getServletName(), WebUtils
-                                        .getSessionId(request),
-                                getUsernameForRequest(request), processingTime,
-                                failureCause));
-            }
+           this.requestContextInitializer.createContext(request);
+           response = filterResponse(request, response);
+           response = new HeaderAwareResponseWrapper(response);
+           proceedService = checkLastModified(request, response);
+           if (proceedService) {
+               FilterChain chain = new FilterChain(contextualServletFilters, (req, resp) -> {
+                   try {
+                       super.doService(req, resp);
+                   }
+                   catch (Exception e) {
+                       throw new NestedException(e);
+                   }
+               });
+               try {
+                   chain.doFilter(request,  response);
+               }
+               catch (NestedException e) {
+                   throw e.getCause();
+               }
+           }
+       }
+       catch (AuthenticationException ex) {
+           this.securityInitializer.challenge(request, response, ex);
 
-            this.securityInitializer.destroyContext();
-            this.requestContextInitializer.destroyContext();
-            Thread.currentThread().setName(threadName);
-            BaseContext.popContext();
-        }
-    }
-    
-    private void handleAuthenticationProcessingError(HttpServletRequest request, HeaderAwareResponseWrapper responseWrapper, AuthenticationProcessingException e) throws ServletException {
+       }
+       catch (AuthenticationProcessingException e) {
+           handleAuthenticationProcessingError(request, response, e);
 
-        if (HttpServletResponse.SC_OK == responseWrapper.getStatus()) {
-            responseWrapper.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+       }
+       catch (InvalidAuthenticationRequestException e) {
+           response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+           logError(request, e);
+       }
+       catch (Throwable t) {
+           if (HttpServletResponse.SC_OK == response.getStatus()) {
+               response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+           }
+           failureCause = t;
+           handleError(request, response, t);
+       }
+       finally {
+           long processingTime = System.currentTimeMillis() - startTime;
+
+           if (request.getAttribute(INDEX_FILE_REQUEST_ATTRIBUTE) == null) {
+               logRequest(request, response, processingTime, !proceedService);
+               getWebApplicationContext().publishEvent(
+                       new ServletRequestHandledEvent(this, request
+                               .getRequestURI(), request.getRemoteAddr(),
+                               request.getMethod(), getServletConfig()
+                               .getServletName(), WebUtils
+                               .getSessionId(request),
+                               getUsernameForRequest(request), processingTime,
+                               failureCause));
+           }
+
+           this.securityInitializer.destroyContext();
+           this.requestContextInitializer.destroyContext();
+           Thread.currentThread().setName(threadName);
+           BaseContext.popContext();
+       }
+   }
+   
+   private static class NestedException extends RuntimeException {
+       private static final long serialVersionUID = -4848728377305849143L;
+       public NestedException(Exception cause) {
+           super(cause);
+       }
+   }
+   
+    private void handleAuthenticationProcessingError(HttpServletRequest request, 
+            HttpServletResponse response, AuthenticationProcessingException e) throws ServletException {
+
+        if (HttpServletResponse.SC_OK == response.getStatus()) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
 
         logError(request, e);
@@ -507,31 +541,6 @@ public class VTKServlet extends DispatcherServlet {
                 "performing authentication", e);
     }
 
-    private class FilterChain implements javax.servlet.FilterChain {
-        private int idx = 0;
-        boolean terminated = false;
-        @Override
-        public void doFilter(ServletRequest request, ServletResponse response)
-                throws IOException, ServletException {
-            if (terminated) {
-                throw new IllegalStateException("FilterChain has terminated");
-            }
-            
-            int nextIdx = idx++;
-            
-            if (nextIdx < servletFilters.size()) {
-                Filter filter = servletFilters.get(nextIdx);
-                logger.debug("Invoking servlet filter: " + filter);
-                filter.doFilter(request, response, this);
-            }
-            else {
-                doService((HttpServletRequest) request, (HttpServletResponse) response);
-                terminated = true;
-            }
-        }
-    }
-
-    
     private HttpServletRequest filterRequest(HttpServletRequest request) {
         for (RequestFilter filter: this.requestFilters) {
             if (this.logger.isDebugEnabled()) {
@@ -571,7 +580,7 @@ public class VTKServlet extends DispatcherServlet {
             resp.setDateHeader(HEADER_LASTMOD, lastModified);
     }
    
-    private void logRequest(HttpServletRequest req, HeaderAwareResponseWrapper resp,
+    private void logRequest(HttpServletRequest req, HttpServletResponse resp,
                             long processingTime, boolean wasCacheRequest) {
         if (!this.requestLogger.isInfoEnabled()) {
             return;
@@ -614,7 +623,7 @@ public class VTKServlet extends DispatcherServlet {
         msg.append(" - user-agent: ").append(userAgent);
         msg.append(" - lastmod: ").append(wasCacheRequest);
         msg.append(" - referrer: ").append(req.getHeader("Referer"));
-        msg.append(" - bytes: ").append(resp.getHeaderValue("Content-Length"));
+        msg.append(" - bytes: ").append(resp.getHeader("Content-Length"));
         msg.append(" - time: ").append(processingTime);
         this.requestLogger.info(msg.toString());
     }
@@ -696,7 +705,6 @@ public class VTKServlet extends DispatcherServlet {
      * @exception ServletException if an error occurs during error
      * handling
      */
-    @SuppressWarnings("rawtypes")
     private void handleError(HttpServletRequest req, HttpServletResponse resp,
                              Throwable t) throws ServletException {
         if (t instanceof EOFException || 
@@ -708,7 +716,7 @@ public class VTKServlet extends DispatcherServlet {
     
         WebApplicationContext springContext = null;
         try {
-            springContext = RequestContextUtils.getWebApplicationContext(req);
+            springContext = RequestContextUtils.findWebApplicationContext(req);
         }
         catch (Throwable x) { }
 
@@ -726,7 +734,6 @@ public class VTKServlet extends DispatcherServlet {
                              + " with no Spring context available, "
                              + "logging as internal server error");
             }
-
             logError(req, t);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             throw new ServletException(t);

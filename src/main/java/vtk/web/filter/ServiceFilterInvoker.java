@@ -31,32 +31,55 @@
 package vtk.web.filter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class AbstractServletFilter implements Filter {
+import vtk.web.RequestContext;
+import vtk.web.service.Service;
+import vtk.web.servlet.AbstractServletFilter;
+import vtk.web.servlet.FilterChain;
 
+/**
+ * {@link Filter} that invokes a chain of {@link Filter 
+ * servlet filters} that are configured to run on the 
+ * current {@link Service} (including ancestors).
+ */
+public final class ServiceFilterInvoker extends AbstractServletFilter {
+    
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, javax.servlet.FilterChain chain)
+            throws IOException, ServletException {
+        
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Service service = requestContext.getService();
+        List<Filter> filters = getServiceFilters(service);
+        if (filters != null) {
+            FilterChain serviceChain = new FilterChain(filters, (req, resp) -> 
+                chain.doFilter(request, response));
+            serviceChain.doFilter(request, response);
+        }
     }
 
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
-        doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
+    private List<Filter> getServiceFilters(Service service) {
+        List<Filter> servletFilters = new ArrayList<>();
+        
+        if (service.getParent() != null) {
+            List<Filter> parentFilters = getServiceFilters(service.getParent());
+            if (parentFilters != null) {
+                servletFilters.addAll(parentFilters);
+            }
+        }
+        List<Filter> myServletFilters = service.getServletFilters();
+        if (myServletFilters != null) { 
+            servletFilters.addAll(myServletFilters);
+        }
+        return servletFilters;
     }
-
-    @Override
-    public void destroy() { 
-    }
-
-    protected abstract void doFilter(HttpServletRequest request, HttpServletResponse response, 
-            FilterChain chain) throws IOException, ServletException;
+    
 }

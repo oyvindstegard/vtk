@@ -47,6 +47,8 @@ import java.util.Set;
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -77,10 +79,9 @@ import vtk.util.io.IO;
 import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
 import vtk.web.decorating.HtmlPageFilterFactory;
-import vtk.web.filter.HandlerFilter;
-import vtk.web.filter.HandlerFilterChain;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
+import vtk.web.servlet.AbstractServletFilter;
 
 /**
  * Cross Site Request Forgery (CSRF) prevention handler. This class performs two
@@ -98,7 +99,7 @@ import vtk.web.service.URL;
  * in each form)</li>
  * </ol>
  */
-public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFactory {
+public class CSRFPreventionHandler extends AbstractServletFilter implements HtmlPageFilterFactory {
 
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));
     private long maxUploadSize = 2*1024*1024*1024; // 2G max by default
@@ -133,39 +134,42 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
     }
 
     @Override
-    public void filter(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         switch (request.getMethod()) {
         case "GET": 
-            setTokenCookie(request, chain.getResponse());
-            chain.filter(request);
+            setTokenCookie(request, response);
+            chain.doFilter(request, response);
             return;
         case "PUT":
         case "DELETE":
-            verifyApiRequest(request, chain);
+            verifyApiRequest(request, response, chain);
             return;
         case "POST":
             String contentType = request.getContentType();
             if (contentType == null) {
-                verifyApiRequest(request, chain);
+                verifyApiRequest(request, response, chain);
                 return;
             }
             if (contentType.startsWith("multipart/form-data")) {
-                verifyMultipartPost(request, chain);
+                verifyMultipartPost(request, response, chain);
                 return;
             }
             else if (contentType.startsWith("application/x-www-form-urlencoded")) {
-                verifyFormPost(request, chain);
+                verifyFormPost(request, response, chain);
                 return;
             }
             else {
-                verifyApiRequest(request, chain);
+                verifyApiRequest(request, response, chain);
                 return;
             }
         }
-        chain.filter(request);
+        chain.doFilter(request, response);
     }
     
-    private void verifyMultipartPost(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
+    private void verifyMultipartPost(HttpServletRequest request, HttpServletResponse response, 
+            FilterChain chain) throws IOException, ServletException {
         MultipartWrapper multipartRequest = new MultipartWrapper(request, this.tempDir, this.maxUploadSize);
         try {
             multipartRequest.writeTempFile();
@@ -173,27 +177,32 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
             String token = multipartRequest.getParameter(TOKEN_REQUEST_PARAMETER);
             URL url = URL.create(request);
             verifyToken(multipartRequest, token, url);
-            chain.filter(multipartRequest);
+            chain.doFilter(multipartRequest, response);
+        }
+        catch (FileUploadException e) {
+            throw new IOException(e);
         }
         finally {
             multipartRequest.cleanup();
         }
     }
 
-    private void verifyFormPost(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
+    private void verifyFormPost(HttpServletRequest request, HttpServletResponse response, 
+            FilterChain chain) throws IOException, ServletException {
         String token = request.getParameter(TOKEN_REQUEST_PARAMETER);
         URL url = URL.create(request);
         verifyToken(request, token, url);
-        chain.filter(request);
+        chain.doFilter(request, response);
     }
 
-    private void verifyApiRequest(HttpServletRequest request, HandlerFilterChain chain) throws Exception {
+    private void verifyApiRequest(HttpServletRequest request, HttpServletResponse response, 
+            FilterChain chain) throws IOException, ServletException  {
         String token = request.getHeader(TOKEN_HEADER);
         URL url = URL.create(request)
                 .clearParameters()
                 .setPath(Path.ROOT);
         verifyToken(request, token, url);
-        chain.filter(request);
+        chain.doFilter(request, response);
     }
     
     
@@ -245,7 +254,7 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         }
     }
 
-    private void verifyToken(HttpServletRequest request, String token, URL requestURL) throws Exception {
+    private void verifyToken(HttpServletRequest request, String token, URL requestURL) {
         RequestContext requestContext = RequestContext.getRequestContext();
         if (requestContext.getPrincipal() == null) {
             throw new AuthenticationException("Illegal anonymous action");
@@ -263,7 +272,8 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
             throw new AuthorizationException("Missing CSRF prevention secret in session");
         }
         if (token == null) {
-            throw new AuthorizationException("Missing CSRF prevention token in request");
+            throw new AuthorizationException("Missing CSRF prevention token in request: " 
+                    + request.getMethod() + " " + URL.create(request));
         }
         String computed = generateToken(requestURL, session);
         if (logger.isDebugEnabled()) {
@@ -346,7 +356,6 @@ public class CSRFPreventionHandler implements HandlerFilter, HtmlPageFilterFacto
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public Enumeration<String> getParameterNames() {
             Set<String> result = new HashSet<>();
             Enumeration<String> names = super.getParameterNames();

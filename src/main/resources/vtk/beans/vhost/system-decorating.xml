@@ -29,10 +29,13 @@
     </property>
   </bean>
 
-  <bean id="system.csrfPreventionHandler"
-        class="vtk.security.web.CSRFPreventionHandler">
-    <property name="tempDir" value="${upload.tempDir}" />
-    <property name="maxUploadSize" value="${upload.maxFileSize}" />
+  <bean id="system.csrfPreventionHandler" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.security.web.CSRFPreventionHandler">
+        <property name="tempDir" value="${upload.tempDir}" />
+        <property name="maxUploadSize" value="${upload.maxFileSize}" />
+      </bean>
+    </constructor-arg>
   </bean>
 
 
@@ -43,7 +46,10 @@
     <!--property name="parseFilters" ref="decorating.userFilters" /-->
     <property name="postFilters">
       <list>
-        <ref bean="system.csrfPreventionHandler" />
+      <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="system.csrfPreventionHandler" />
+        <property name="targetMethod" value="filter" />
+      </bean>
       </list>
     </property>
     <property name="tidyXhtml" value="false" />

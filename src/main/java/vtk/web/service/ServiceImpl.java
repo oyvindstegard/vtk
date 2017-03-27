@@ -35,7 +35,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
@@ -48,8 +50,8 @@ import vtk.security.Principal;
 import vtk.security.web.AuthenticationChallenge;
 import vtk.util.net.NetUtils;
 import vtk.web.RequestContext;
-import vtk.web.filter.HandlerFilter;
 import vtk.web.service.provider.ServiceNameProvider;
+import vtk.web.servlet.FilterFactory;
 
 
 /**
@@ -80,14 +82,14 @@ public class ServiceImpl implements Service, BeanNameAware {
 
     private AuthenticationChallenge authenticationChallenge;
     private Object handler;
-    private List<Assertion> assertions = new ArrayList<Assertion>();
+    private List<Assertion> assertions = new ArrayList<>();
     private Service parent;
     private String name;
-    private Map<String, Object> attributes = new HashMap<String, Object>();
+    private Map<String, Object> attributes = new HashMap<>();
     private List<HandlerInterceptor> handlerInterceptors;
-    private List<HandlerFilter> handlerFilters;
+    private List<Filter> servletFilters;
     private int order = 0;
-    private List<URLPostProcessor> urlPostProcessors = new ArrayList<URLPostProcessor>();
+    private List<URLPostProcessor> urlPostProcessors = new ArrayList<>();
     private List<URLPostProcessor> accumulatedUrlPostProcessors = null;
     private ServiceNameProvider serviceNameProvider;
     
@@ -98,7 +100,7 @@ public class ServiceImpl implements Service, BeanNameAware {
                 if (this.allAssertions != null) {
                     return this.allAssertions;
                 }
-                this.allAssertions = new ArrayList<Assertion>();
+                this.allAssertions = new ArrayList<>();
                 if (this.parent != null) {
                     this.allAssertions.addAll(parent.getAllAssertions());
                 }
@@ -171,7 +173,7 @@ public class ServiceImpl implements Service, BeanNameAware {
             return this.accumulatedUrlPostProcessors;
         }
 
-        List<URLPostProcessor> allPostProcessors = new ArrayList<URLPostProcessor>();
+        List<URLPostProcessor> allPostProcessors = new ArrayList<>();
         Service s = this;
         while (s != null) {
             
@@ -356,16 +358,20 @@ public class ServiceImpl implements Service, BeanNameAware {
         return Collections.unmodifiableList(this.handlerInterceptors);
     }
 
-    public void setHandlerFilters(List<HandlerFilter> handlerFilters) {
-        this.handlerFilters = handlerFilters;
+    public void setServletFilters(List<FilterFactory> servletFilters) {
+        if (servletFilters != null) {
+            this.servletFilters = servletFilters.stream()
+                    .map(factory -> factory.filter())
+                    .collect(Collectors.toList());
+        }
     }
     
     @Override
-    public List<HandlerFilter> getHandlerFilters() {
-        if (this.handlerFilters == null) {
+    public List<Filter> getServletFilters() {
+        if (this.servletFilters == null) {
             return null;
         }
-        return Collections.unmodifiableList(this.handlerFilters);
+        return Collections.unmodifiableList(this.servletFilters);
     }
     
 

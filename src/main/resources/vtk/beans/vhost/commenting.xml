@@ -13,7 +13,7 @@
         <ref bean="commenting.commentsEnabled" />
       </list>
     </property>
-    <property name="handlerFilters">
+    <property name="servletFilters">
       <list>
         <ref bean="system.csrfPreventionHandler" />
       </list>
@@ -31,7 +31,7 @@
         <ref bean="commenting.hasDeletePermission" />
       </list>
     </property>
-    <property name="handlerFilters">
+    <property name="servletFilters">
       <list>
         <ref bean="system.csrfPreventionHandler" />
       </list>
@@ -49,7 +49,7 @@
         <ref bean="commenting.hasDeletePermission" />
       </list>
     </property>
-    <property name="handlerFilters">
+    <property name="servletFilters">
       <list>
         <ref bean="system.csrfPreventionHandler" />
       </list>

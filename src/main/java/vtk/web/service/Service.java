@@ -33,6 +33,7 @@ package vtk.web.service;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.core.Ordered;
@@ -42,7 +43,6 @@ import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.web.AuthenticationChallenge;
-import vtk.web.filter.HandlerFilter;
 
 /**
  * A service is an abstraction added to the thin web layer in web
@@ -234,12 +234,12 @@ public interface Service extends Ordered {
     
 
     /**
-     * Gets the list of handler filters for this service, if any.
+     * Gets the list of servlet filters for this service, if any.
      *
-     * @return a <code>List</code> of {@link HandlerFilter} objects, 
+     * @return a <code>List</code> of {@link Filter} objects, 
      * or <code>null</code> if none configured.
      */
-    public List<HandlerFilter> getHandlerFilters();
+    public List<Filter> getServletFilters();
 
     /**
      * Gets this service's authentication challenge. 

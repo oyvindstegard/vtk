@@ -137,7 +137,7 @@
       </list>
     </property>
     <property name="urlPostProcessors" ref="manage.urlPostProcessors" />
-    <property name="handlerFilters">
+    <property name="servletFilters">
       <ref bean="system.csrfPreventionHandler" />
     </property>
     <property name="handlerInterceptors">
