@@ -124,7 +124,7 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
 
-        Map<String, Object> resourceContextModel = new HashMap<String, Object>();
+        Map<String, Object> resourceContextModel = new HashMap<>();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Service currentService = requestContext.getService();
@@ -176,15 +176,10 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
             catch (Exception e) { }
         }
 
-//        if (this.resourceWrapperManager != null && resource != null) {
-//            if (!(resource instanceof ResourceWrapper)) {
-//                resource = this.resourceWrapperManager.createResourceWrapper(resource);
-//            }
-//        }
-
         resourceContextModel.put("principal", principal);
         resourceContextModel.put("currentResource", resource);
         resourceContextModel.put("currentURI", requestContext.getResourceURI());
+        resourceContextModel.put("currentCollection", requestContext.getCurrentCollection());
         if (resource != null) {
             resourceContextModel.put("parentURI", resource.getURI().getParent());
         }
