@@ -31,10 +31,14 @@
 package vtk.security.web;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -43,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
@@ -50,10 +55,12 @@ import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.fileupload.FileItemIterator;
@@ -62,6 +69,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.HtmlUtils;
 
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
@@ -73,6 +81,7 @@ import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlElement;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageFilter;
+import vtk.text.html.HtmlPageParser;
 import vtk.text.html.HtmlText;
 import vtk.text.html.HtmlUtil;
 import vtk.util.io.IO;
@@ -82,6 +91,7 @@ import vtk.web.decorating.HtmlPageFilterFactory;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 import vtk.web.servlet.AbstractServletFilter;
+import vtk.web.servlet.WrappedServletOutputStream;
 
 /**
  * Cross Site Request Forgery (CSRF) prevention handler. This class performs two
@@ -89,7 +99,7 @@ import vtk.web.servlet.AbstractServletFilter;
  * <ol>
  * <li>{@link FormRewritingFilter Generates tokens} in HTML forms on the page
  * being served</li>
- * <li>{@link #filter(HttpServletRequest, HandlerFilterChain) Verifies} that
+ * <li>{@link #doFilter(HttpServletRequest, HttpServletResponse) Verifies} that
  * valid tokens are present in POST requests. In addition, a {@code csrfToken} 
  * cookie is set on each response, and is required to be present as the header 
  * {@code X-CSRF-TOKEN} in requests that are not form POSTS. 
@@ -130,6 +140,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
 
     @Override
     public HtmlPageFilter pageFilter(HttpServletRequest request) {
+        request.setAttribute("csrf-html-filtered", true);
         return new FormRewritingFilter(request);
     }
 
@@ -137,6 +148,11 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
     protected void doFilter(HttpServletRequest request,
             HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
+        
+        response = new HtmlParsingResponseWrapper(response, 
+                () -> request.getAttribute("csrf-html-filtered") == null,
+                () -> pageFilter(request));
+
         switch (request.getMethod()) {
         case "GET": 
             setTokenCookie(request, response);
@@ -324,8 +340,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
         }
 
         @Override
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        public Map getParameterMap() {
+        public Map<String, String[]> getParameterMap() {
             Map<String, List<String>> combined = new HashMap<>();
             Map<String, String[]> m = super.getParameterMap();
             for (String s : m.keySet()) {
@@ -520,6 +535,11 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
     }
     
     private static URL parseActionURL(String action, HttpServletRequest request) {
+        URL url = URL.create(request);
+        return url.relativeURL(HtmlUtils.htmlUnescape(action));
+    }    
+    
+    private static URL parseActionURL_OLD(String action, HttpServletRequest request) {
         if (action.startsWith("http://") || action.startsWith("https://")) {
             URL url = URL.parse(HtmlUtil.decodeBasicEntities(action));
             return url;
@@ -560,6 +580,100 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
         return url;
     }
 
+    private static class HtmlParsingResponseWrapper extends HttpServletResponseWrapper {
+        private Supplier<Boolean> parse;
+        private Supplier<HtmlPageFilter> filter;
+        private boolean streamOpened = false;
+        private boolean committed = false;
+        private PrintWriter writer = null;
+        private ByteArrayOutputStream bufferStream = null;
+        private OutputStream responseStream = null;
+        
+        public HtmlParsingResponseWrapper(HttpServletResponse response, 
+                Supplier<Boolean> parse, Supplier<HtmlPageFilter> filter) {
+            super(response);
+            this.parse = parse;
+            this.filter = filter;
+        }
+        
+        @Override
+        public void setContentType(String type) {
+            super.setContentType(type);
+        }
+        
+        private boolean parseable() {
+            String ct = super.getContentType();
+            if (ct == null) return false;
+            return ct.startsWith("text/html");
+        }
+
+        @Override
+        public ServletOutputStream getOutputStream() throws IOException {
+            if (!parse.get()) {
+                return super.getOutputStream();
+            }
+            if (!parseable()) {
+                return super.getOutputStream();
+            }
+            if (streamOpened) throw new IOException("Output stream already opened");
+            streamOpened = true;
+            responseStream = super.getOutputStream();
+            bufferStream = new ByteArrayOutputStream();
+            return new WrappedServletOutputStream(bufferStream, super.getCharacterEncoding());
+        }
+        
+        @Override
+        public PrintWriter getWriter() throws IOException {
+            if (!parse.get()) return super.getWriter();
+            if (!parseable()) return super.getWriter();
+            writer = new PrintWriter(getOutputStream());
+            return writer;
+        }
+        
+        @Override
+        public void sendError(int sc, String msg) throws IOException {
+            super.sendError(sc, msg);
+        }
+
+        @Override
+        public void sendError(int sc) throws IOException {
+            super.sendError(sc);
+        }
+
+        @Override
+        public void sendRedirect(String location) throws IOException {
+            super.sendRedirect(location);
+        }
+
+        @Override
+        public void flushBuffer() throws IOException {
+            if (parse.get() && parseable()) parseAndCommit();
+            super.flushBuffer();
+        }
+        
+        private void parseAndCommit() throws IOException {
+            if (committed) return;
+            if (writer != null) writer.flush();
+            else if (bufferStream != null) {
+                bufferStream.flush();
+            }
+            
+            HtmlPageParser parser = new HtmlPageParser();
+            try {
+                HtmlPage page = parser.parse(new ByteArrayInputStream(bufferStream.toByteArray()), 
+                        super.getCharacterEncoding());
+                page.filter(filter.get());
+                responseStream.write(page.getStringRepresentation().getBytes(super.getCharacterEncoding()));
+                responseStream.flush();
+            }
+            catch (Exception e) {
+                throw new IOException(e);
+            }
+            finally {
+                committed = true;
+            }
+        }
+    }
     
     /**
      * Maximum size in bytes of POST multipart requests to process.
