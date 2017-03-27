@@ -101,7 +101,11 @@ public class AjaxEditorController implements Controller {
         model.put("resourceContent", IO.readString(
                 repository.getInputStream(token, rc.getResourceURI(), false)
         ).perform());
-
+        
+        model.put("username", rc.getPrincipal().getName());
+        model.put("name", rc.getPrincipal().getQualifiedName());
+        model.put("url", rc.getPrincipal().getURL());
+        
         Optional<ReaderWithPath> template = getTemplateReader(type, "editor.tl");
         if (template.isPresent()) {
             ReaderWithPath reader = template.get();
