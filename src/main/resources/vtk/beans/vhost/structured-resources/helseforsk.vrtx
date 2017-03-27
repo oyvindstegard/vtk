@@ -209,8 +209,6 @@ resourcetype helseforsk {
 
   localization {
     helseforsk : (en : "helseforsk", no : "helseforsk", nn : "helseforsk"),
-    title : (en : "Title", no : "Tittel", nn : "Tittel"),
-    header : (en : "Edit helseforsk", no : "Rediger helseforsk", nn : "Rediger helseforsk"),
     projectLeader : (en : "Projectleader", no : "Prosjektleder", nn : "Prosjektleder"),
     unit : (en : "Responsible unit", no : "Ansvarlig enhet", nn : "Ansvarlig enhet"),
     researchers : (en : "Researchers", no : "Forskere", nn : "Forskere"),
