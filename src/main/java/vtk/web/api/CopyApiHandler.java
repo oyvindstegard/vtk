@@ -39,7 +39,9 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
 import vtk.repository.AuthorizationException;
+import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
+import vtk.repository.ResourceOverwriteException;
 import vtk.util.Result;
 import vtk.web.RequestContext;
 
@@ -82,10 +84,11 @@ public class CopyApiHandler implements Controller {
         RequestContext requestContext = RequestContext.getRequestContext();
         Result<ApiResponseBuilder> result = 
                 doCopy(copyRequest.result.get(), requestContext);
+        
         if (result.failure.isPresent()) {
             new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                 .header("Content-Type", "text/plain;charset=utf-8")
-                .message(copyRequest.failure.get().getMessage())
+                .message(result.failure.get().getMessage())
                 .writeTo(response);
             return;
         }
@@ -113,10 +116,12 @@ public class CopyApiHandler implements Controller {
                         .message("Copy " + req.source + " to " + req.destination
                                     + " succeeded\n");
             }
-            catch (AuthorizationException e) {
+            catch (AuthorizationException | ResourceOverwriteException 
+                    | IllegalOperationException e) {
                 return new ApiResponseBuilder(HttpServletResponse.SC_FORBIDDEN)
                         .header("Content-Type", "text/plain;charset=utf-8")
-                        .message(e.getMessage());
+                        .message("Copy " + req.source + " to " + req.destination + 
+                                " failed: " + e.getMessage());
             }
             catch (Exception e) {
                 throw new RuntimeException(e);
@@ -143,6 +148,11 @@ public class CopyApiHandler implements Controller {
         public final Path destination;
         private CopyRequest(Path source, Path destination) {
             this.source = source; this.destination = destination;
+        }
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + 
+                    "(" + source + ", " + destination + ")";
         }
     }
 }
