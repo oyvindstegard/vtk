@@ -38,7 +38,7 @@ resourcetype helseforsk {
 	approval-stat-legemiddelverk-no-need-reason : string,
 	approval-others : string multiple
   }
-
+  
   view {
     ##
     [resource-props "."]
@@ -70,72 +70,94 @@ resourcetype helseforsk {
                 [endlist]
               </ul>
             [endif]
-            [if approval-internal-status != "NOT_APPLIED"]
-              <h2 class="accordion">approval-internal</h2>
-              <ul>
+            <h2>[localized "approvals"]</h2>
+            [if approval-internal-status != null &&
+                approval-internal-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-internal"]</h3>
               [if approval-internal != null]
-                [list approval-internal doc]
-                  <li><a href="[val doc]">[val doc]</a></li>
-                [endlist]
+                <ul>
+                  [list approval-internal doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
               [endif]
-              </ul>
             [endif]
-            [if approval-rek-status != "NOT_APPLIED"]
-              <h2 class="accordion">approval-rek</h2>
-              <ul>
+            [if approval-rek-status != null &&
+                approval-rek-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-rek"]</h3>
               [if approval-rek != null]
-                [list approval-rek doc]
-                  <li><a href="[val doc]">[val doc]</a></li>
-                [endlist]
+                <ul>
+                  [list approval-rek doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
               [endif]
-              </ul>
+              [if approval-rek-no-need-reason != null]
+                [val approval-rek-no-need-reason]
+              [endif]
             [endif]
-            [if approval-nsd-status != "NOT_APPLIED"]
-              <h2 class="accordion">approval-nsd</h2>
-              <ul>
+            [if approval-nsd-status != null &&
+                approval-nsd-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-nsd"]</h3>
               [if approval-nsd != null]
-                [list approval-nsd doc]
-                  <li><a href="[val doc]">[val doc]</a></li>
-                [endlist]
+                <ul>
+                  [list approval-nsd doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
               [endif]
-              </ul>
+              [if approval-nsd-no-need-reason != null]
+                [val approval-nsd-no-need-reason]
+              [endif]
             [endif]
-            [if approval-datatilsynet-status != "NOT_APPLIED"]
-              <h2 class="accordion">approval-datatilsynet</h2>
-              <ul>
+            [if approval-datatilsynet-status != null &&
+                approval-datatilsynet-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-datatilsynet"]</h3>
               [if approval-datatilsynet != null]
-                [list approval-datatilsynet doc]
-                  <li><a href="[val doc]">[val doc]</a></li>
-                [endlist]
+                <ul>
+                  [list approval-datatilsynet doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
               [endif]
-              </ul>
+              [if approval-datatilsynet-no-need-reason != null]
+                [val approval-datatilsynet-no-need-reason]
+              [endif]
             [endif]
-            [if approval-helsedir-status != "NOT_APPLIED"]
-              <h2 class="accordion">approval-helsedir</h2>
-              <ul>
+            [if approval-helsedir-status != null &&
+                approval-helsedir-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-helsedir"]</h3>
               [if approval-helsedir != null]
-                [list approval-helsedir doc]
-                  <li><a href="[val doc]">[val doc]</a></li>
-                [endlist]
+                <ul>
+                  [list approval-helsedir doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
               [endif]
-              </ul>
+              [if approval-helsedir-no-need-reason != null]
+                [val approval-helsedir-no-need-reason]
+              [endif]
             [endif]
-            [if approval-stat-legemiddelverk-status != "NOT_APPLIED"]
-              <h2 class="accordion">approval-stat-legemiddelverk</h2>
-              <ul>
+            [if approval-stat-legemiddelverk-status != null &&
+                approval-stat-legemiddelverk-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-stat-legemiddelverk"]</h3>
               [if approval-stat-legemiddelverk != null]
-                [list approval-stat-legemiddelverk doc]
-                  <li><a href="[val doc]">[val doc]</a></li>
-                [endlist]
+                <ul>
+                  [list approval-stat-legemiddelverk doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
               [endif]
-              </ul>
+              [if approval-stat-legemiddelverk-no-need-reason != null]
+                [val approval-stat-legemiddelverk-no-need-reason]
+              [endif]
             [endif]
             [if approval-others != null]
-              <h2 class="accordion">approval-others</h2>
+              <h3 class="accordion">[localized "approval-others"]</h3>
               <ul>
-              [list approval-others doc]
-                <li><a href="[val doc]">[val doc]</a></li>
-              [endlist]
+                [list approval-others doc]
+                  <li><a href="[val doc]">[val doc]</a></li>
+                [endlist]
               </ul>
             [endif]
           </div>
@@ -154,12 +176,18 @@ resourcetype helseforsk {
 	        <ul>
 	          [if participantsCachedFullNames != null]
 	            [list participantsCachedFullNames user]
-	              <li><a href="[val user.url]">[val user.name]</a></li>
+	              <li>
+	                [if user.url != null]
+	                  <a href="[val user.url]">[val user.name]</a>
+	                [else]
+	                  [val user.name]
+	                [endif]
+	              </li>
 	            [endlist]
 	          [endif]
 	          [if participants != null]
 	            [list participants user]
-	              <li>[val user.name] ([val user.affiliation])</li>
+	              <li>[val user.name][if user.affiliation != null] ([val user.affiliation])[endif]</li>
 	            [endlist]
 	          [endif]
             </ul>
@@ -189,6 +217,14 @@ resourcetype helseforsk {
     timePeriod : (en : "Time period", no : "Tidsperiode", nn : "Tidsperiode"),
     timeStartup : (en : "Start", no : "Start", nn : "Start"),
     timeCompleted : (en : "End", no : "Slutt", nn : "Slutt"),
-    documents : (en : "Project description", no : "Prosjektbeskrivelse", nn : "Prosjektbeskrivelse")
+    documents : (en : "Project description", no : "Prosjektbeskrivelse", nn : "Prosjektbeskrivelse"),
+    approvals : (en : "Approvals", no : "Godkjenninger", nn : "Godkjenningar"),
+    approval-internal : (en : "Internal approval", no : "Intern godkjenning", nn : "Intern godkjenning"),
+    approval-rek : (en : "REK", no : "REK", nn : "REK"),
+    approval-nsd : (en : "NSD", no : "NSD", nn : "NSD"),
+    approval-datatilsynet : (en : "Datatilsynet", no : "Datatilsynet", nn : "Datatilsynet"),
+    approval-helsedir : (en : "Helsedirektoratet", no : "Helsedirektoratet", nn : "Helsedirektoratet"),
+    approval-stat-legemiddelverk : (en : "Statens legemiddelverk", no : "Statens legemiddelverk", nn : "Statens legemiddelverk"),
+    approval-others : (en : "Others approval", no : "Andre godkjenninger", nn : "Andre godkjenningar")
   }
 }
