@@ -2397,4 +2397,35 @@
     <property name="url" value="pages/reauth.ftl"></property>
   </bean>
 
+
+  <bean id="manage.actionService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService" />
+    <property name="order" value="-100" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestMethodAssertion">
+          <property name="method" value="GET"/>
+        </bean>
+        <bean class="vtk.web.service.RequestParameterExistsAssertion">
+          <property name="parameterName" value="admin-action" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="manage.actionService.handler" />
+  </bean>
+
+  <bean id="manage.actionService.handler" class="vtk.web.ActionTemplateHandler">
+    <constructor-arg name="prefix" value="${manage.dynamicActionsLocation}" />
+    <constructor-arg name="parameter" value="admin-action" />
+    <constructor-arg name="referenceDataProviders">
+      <list>
+        <bean class="vtk.web.referencedata.provider.ParameterizableBeanProvider">
+          <property name="modelName" value="webResources" />
+          <property name="object" value="${webResources.baseURL}" />
+        </bean>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </constructor-arg>
+  </bean>
+
 </beans>
