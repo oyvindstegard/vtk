@@ -37,6 +37,7 @@ import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlElement;
 import vtk.text.html.HtmlNodeFilter;
 import vtk.text.html.HtmlPageParser;
+import vtk.text.html.HtmlUtil;
 import vtk.util.io.IO;
 import vtk.util.text.Markdown;
 
@@ -73,19 +74,19 @@ public abstract class MarkdownAbstractContentFactory  {
                 switch (element.getName()) {
                 case "h1":
                     if (header == null || headerLevel > 1) {
-                        header = element.getContent();
+                        header = HtmlUtil.flatten(element.getContent());
                         headerLevel = 1;
                     }
                     break;
                 case "h2":
                     if (header == null || headerLevel > 2) {
-                        header = element.getContent();
+                        header = HtmlUtil.flatten(element.getContent());
                         headerLevel = 2;
                     }
                     break;
                 case "h3":
                     if (header == null || headerLevel > 3) {
-                        header = element.getContent();
+                        header = HtmlUtil.flatten(element.getContent());
                         headerLevel = 3;
                     }
                     break;
