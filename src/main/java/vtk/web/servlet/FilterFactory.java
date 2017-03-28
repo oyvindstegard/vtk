@@ -32,7 +32,9 @@ package vtk.web.servlet;
 
 import javax.servlet.Filter;
 
-public interface FilterFactory {
+import org.springframework.core.Ordered;
+
+public interface FilterFactory extends Ordered {
     
     public Filter filter();
 }

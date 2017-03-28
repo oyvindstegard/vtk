@@ -34,14 +34,25 @@ import javax.servlet.Filter;
 
 public class DefaultFilterFactory implements FilterFactory {
     private Filter filter;
-
+    private int order = 0;
+    
     public DefaultFilterFactory(Filter filter) {
+        this(filter, 0);
+    }
+
+    public DefaultFilterFactory(Filter filter, int order) {
         this.filter = filter;
+        this.order = order;
     }
     
     @Override
     public Filter filter() {
         return filter;
+    }
+
+    @Override
+    public int getOrder() {
+        return order;
     }
 
 }

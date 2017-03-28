@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.filter;
+package vtk.web.servlet;
 
 import static org.junit.Assert.assertEquals;
 
@@ -46,6 +46,8 @@ import org.junit.Test;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import vtk.web.servlet.TranslateURLFilter;
 
 public class TranslateURLFilterTest {
     

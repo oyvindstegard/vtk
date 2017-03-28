@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.filter;
+package vtk.web.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import vtk.web.service.URL;
-import vtk.web.servlet.AbstractServletFilter;
 
 public class TranslateURLFilter extends AbstractServletFilter {
     private static Logger logger = LoggerFactory.getLogger(TranslateURLFilter.class);

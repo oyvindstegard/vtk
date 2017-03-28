@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.filter;
+package vtk.web.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,8 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
-import vtk.web.servlet.AbstractServletFilter;
-import vtk.web.servlet.FilterChain;
 
 /**
  * {@link Filter} that invokes a chain of {@link Filter 

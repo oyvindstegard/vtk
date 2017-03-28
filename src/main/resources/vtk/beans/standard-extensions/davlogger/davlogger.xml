@@ -6,7 +6,7 @@
 
   <bean id="davLogger" class="vtk.web.servlet.DefaultFilterFactory">
     <constructor-arg name="filter">
-      <bean class="vtk.web.filter.CaptureOutputLoggingFilter" >
+      <bean class="vtk.web.servlet.CaptureOutputLoggingFilter" >
         <property name="service" ref="webdavService" />
         <property name="maxCaptureBytes" value="${davlogger.maxLogBytesBody}" />
       </bean>

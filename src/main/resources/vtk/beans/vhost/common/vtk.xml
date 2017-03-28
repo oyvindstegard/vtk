@@ -175,7 +175,11 @@
   </bean>
 
   
-  <bean id="vtk.initializingServletFilters" class="java.util.ArrayList">
+  <bean id="vtk.initializingServletFilters" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="vtk.initializingServletFilters.builder"
@@ -190,7 +194,7 @@
 
   <bean id="vtk.translateURLFilter" class="vtk.web.servlet.DefaultFilterFactory">
     <constructor-arg name="filter">
-      <bean class="vtk.web.filter.TranslateURLFilter">
+      <bean class="vtk.web.servlet.TranslateURLFilter">
         <constructor-arg name="replacements">
           <bean class="vtk.context.JSONFactoryBean">
             <constructor-arg value="${vtk.urlTranslations}" />
@@ -200,7 +204,11 @@
     </constructor-arg>
   </bean>
 
-  <bean id="vtk.contextualServletFilters" class="java.util.ArrayList">
+  <bean id="vtk.contextualServletFilters" class="vtk.util.SortedCollection">
+    <constructor-arg>
+      <bean class="org.springframework.core.OrderComparator" />
+    </constructor-arg>
+    <constructor-arg name="unique" value="true" />
   </bean>
 
   <bean id="vtk.contextualServletFilters.builder"
@@ -219,7 +227,7 @@
 
   <bean id="vtk.serviceFilterInvoker" class="vtk.web.servlet.DefaultFilterFactory">
     <constructor-arg name="filter">
-      <bean class="vtk.web.filter.ServiceFilterInvoker" />
+      <bean class="vtk.web.servlet.ServiceFilterInvoker" />
     </constructor-arg>
   </bean>
   

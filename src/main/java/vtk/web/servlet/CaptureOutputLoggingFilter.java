@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.filter;
+package vtk.web.servlet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -53,8 +53,6 @@ import org.springframework.beans.factory.InitializingBean;
 
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
-import vtk.web.servlet.AbstractServletFilter;
-import vtk.web.servlet.HeaderAwareResponseWrapper;
 
 /**
  * HTTP protocol logger/dumper. Logs headers and body by providing a request and
