@@ -21,7 +21,6 @@
     <property name="htmlDigester" ref="htmlDigester" />
     <property name="defaultLocale" value="${view.defaultLocale}" />
     <property name="sharedTextResolver" ref="sharedTextResolver" />
-    <property name="htmlUtil" ref="htmlUtil" />
   </bean>
 
   <bean id="externalServiceInvoker" class="vtk.resourcemanagement.service.ExternalServiceInvoker" />

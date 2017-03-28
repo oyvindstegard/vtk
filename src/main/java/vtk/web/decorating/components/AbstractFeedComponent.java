@@ -33,6 +33,8 @@ package vtk.web.decorating.components;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.syndication.feed.synd.SyndEntry;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -49,11 +51,8 @@ import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.service.URL;
 
-import com.sun.syndication.feed.synd.SyndEntry;
-
 public abstract class AbstractFeedComponent extends ViewRenderingDecoratorComponent {
 
-    protected HtmlUtil htmlUtil;
     protected HtmlPageFilter safeHtmlFilter;
 
     protected static final String PARAMETER_ITEM_PICTURE = "item-picture";
@@ -161,11 +160,11 @@ public abstract class AbstractFeedComponent extends ViewRenderingDecoratorCompon
             return null;
         }
         
-        return htmlUtil.linkResolveFilter(value, baseURL, requestURL, false);
+        return HtmlUtil.linkResolveFilter(value, baseURL, requestURL, false);
     }
 
     protected List<String> getElementOrder(String param, DecoratorRequest request) {
-        List<String> resultOrder = new ArrayList<String>();
+        List<String> resultOrder = new ArrayList<>();
 
         String[] order = null;
         try {
@@ -195,14 +194,6 @@ public abstract class AbstractFeedComponent extends ViewRenderingDecoratorCompon
 
     public List<String> getDefaultElementOrder() {
         return defaultElementOrder;
-    }
-
-    public void setHtmlUtil(HtmlUtil htmlUtil) {
-        this.htmlUtil = htmlUtil;
-    }
-
-    public HtmlUtil getHtmlUtil() {
-        return htmlUtil;
     }
 
     public void setSafeHtmlFilter(HtmlPageFilter safeHtmlFilter) {

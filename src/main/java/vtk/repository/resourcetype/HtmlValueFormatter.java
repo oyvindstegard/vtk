@@ -32,7 +32,6 @@ package vtk.repository.resourcetype;
 
 import java.util.Locale;
 
-import org.springframework.beans.factory.annotation.Required;
 import vtk.text.html.HtmlUtil;
 
 /**
@@ -45,15 +44,14 @@ public class HtmlValueFormatter implements ValueFormatter {
     public static final String ESCAPED_FORMAT = "escaped";
     public static final String FLATTENED_FORMAT = "flattened";
 
-    private HtmlUtil htmlUtil;
-    
     @Override
     public String valueToString(Value value, String format, Locale locale) throws IllegalValueTypeException {
         String html = value.toString();
         if (ESCAPED_FORMAT.equals(format)) {
             return HtmlUtil.encodeBasicEntities(html);
-        } else if (FLATTENED_FORMAT.equals(format)) {
-            return this.htmlUtil.flatten(html);
+        }
+        else if (FLATTENED_FORMAT.equals(format)) {
+            return HtmlUtil.flatten(html);
         }
         return html;
     }
@@ -65,11 +63,6 @@ public class HtmlValueFormatter implements ValueFormatter {
         } 
         
         return new Value(string, PropertyType.Type.HTML);
-    }
-
-    @Required
-    public void setHtmlUtil(HtmlUtil htmlUtil) {
-        this.htmlUtil = htmlUtil;
     }
 
 }

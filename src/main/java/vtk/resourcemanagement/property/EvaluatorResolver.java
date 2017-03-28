@@ -69,7 +69,6 @@ public class EvaluatorResolver {
     private HtmlDigester htmlDigester;
     private Locale defaultLocale;
     private SharedTextResolver sharedTextResolver;
-    private HtmlUtil htmlUtil;
 
     public PropertyEvaluator createPropertyEvaluator(PropertyDescription desc,
             StructuredResourceDescription resourceDesc) {
@@ -386,7 +385,7 @@ public class EvaluatorResolver {
                 if (prop != null) {
                     sharedText = sharedTextResolver.resolveSharedText(ctx.getOriginalResource(), prop);
                     if (sharedText != null) {
-                        sharedText = htmlUtil.flatten(sharedText);
+                        sharedText = HtmlUtil.flatten(sharedText);
                     }
                 }
                 return sharedText;
@@ -477,7 +476,7 @@ public class EvaluatorResolver {
 
         }
         else {
-            List<Object> values = new ArrayList<Object>();
+            List<Object> values = new ArrayList<>();
             if (value instanceof Collection<?> || value instanceof Value[]) {
                 values.addAll((Collection<?>) value);
             }
@@ -485,7 +484,7 @@ public class EvaluatorResolver {
                 values.add(value);
             }
             ValueFormatter vf = property.getDefinition().getValueFormatter();
-            List<Value> result = new ArrayList<Value>();
+            List<Value> result = new ArrayList<>();
             for (Object object : values) {
                 Value v = vf.stringToValue(object.toString(), null, null);
                 result.add(v);
@@ -532,11 +531,6 @@ public class EvaluatorResolver {
     @Required
     public void setSharedTextResolver(SharedTextResolver sharedTextResolver) {
         this.sharedTextResolver = sharedTextResolver;
-    }
-
-    @Required
-    public void setHtmlUtil(HtmlUtil htmlUtil) {
-        this.htmlUtil = htmlUtil;
     }
 
 }

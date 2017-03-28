@@ -28,11 +28,7 @@
         <entry key="STRING">
           <bean class="vtk.repository.resourcetype.StringValueFormatter" />
         </entry>
-        <entry key="HTML">
-          <bean class="vtk.repository.resourcetype.HtmlValueFormatter">
-            <property name="htmlUtil" ref="htmlUtil" />
-          </bean>
-        </entry>
+        <entry key="HTML" value-ref="htmlFormatter" />
         <entry key="IMAGE_REF">
           <bean class="vtk.repository.resourcetype.ImageRefValueFormatter">
             <property name="thumbnailServiceBeanName" value="displayThumbnailService" />

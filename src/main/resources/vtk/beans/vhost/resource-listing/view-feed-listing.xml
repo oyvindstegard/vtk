@@ -57,8 +57,6 @@
         <value>video</value>
       </list>
     </property>
-
-    <property name="htmlUtil" ref="htmlUtil" />
   </bean>
   
   <!-- ## Parent RSS 2.0 feed generator ## -->

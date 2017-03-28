@@ -40,6 +40,7 @@ import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.text.html.HtmlFragment;
+import vtk.text.html.HtmlUtil;
 import vtk.web.RequestContext;
 import vtk.web.display.feed.ListingFeedView;
 import vtk.web.service.URL;
@@ -56,7 +57,7 @@ public class MessageListingAtomFeedView extends ListingFeedView {
         if (messageProp != null) {
             try {
                 URL baseURL = viewService.constructURL(result.getURI());
-                HtmlFragment summary = htmlUtil.linkResolveFilter(
+                HtmlFragment summary = HtmlUtil.linkResolveFilter(
                         messageProp.getStringValue(), baseURL, RequestContext
                         .getRequestContext().getRequestURL(), 
                         useProtocolRelativeImages);

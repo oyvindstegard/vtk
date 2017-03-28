@@ -536,7 +536,6 @@
     <property name="contentCache" ref="decorating.feedComponent.contentCache" />
     <property name="localFeedFetcher" ref="decorating.feedComponent.localFeedFetcher" />
     <property name="safeHtmlFilter" ref="safeHtml.filter" />
-    <property name="htmlUtil" ref="htmlUtil" />
     <property name="defaultElementOrder">
       <list>
         <value>picture</value>
@@ -565,7 +564,6 @@
     <property name="view" ref="decorating.feedComponent.view" />
     <property name="contentCache" ref="decorating.feedComponent.contentCache" />
     <property name="localFeedFetcher" ref="decorating.feedComponent.localFeedFetcher" />
-    <property name="htmlUtil" ref="htmlUtil" />
     <property name="safeHtmlFilter" ref="safeHtml.filter" />
     <property name="defaultElementOrder">
       <list>

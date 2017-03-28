@@ -101,7 +101,6 @@ public class ListingFeedView implements View {
     protected Abdera abdera;
     protected ResourceTypeTree resourceTypeTree;
     protected PropertyTypeDefinition publishDatePropDef;
-    protected HtmlUtil htmlUtil;
     protected TitleResolver titleResolver;
     protected boolean useProtocolRelativeImages = true;
 
@@ -357,7 +356,7 @@ public class ListingFeedView implements View {
             }
         }
         if (imageCaption != null) {
-            entry.addSimpleExtension("vrtx", "image-caption", "v", htmlUtil.flatten(imageCaption));
+            entry.addSimpleExtension("vrtx", "image-caption", "v", HtmlUtil.flatten(imageCaption));
         }
     }
 
@@ -405,7 +404,7 @@ public class ListingFeedView implements View {
         }
 
         if (sb.length() > 0) {
-            HtmlFragment summary = htmlUtil.linkResolveFilter(sb.toString(), baseURL, RequestContext
+            HtmlFragment summary = HtmlUtil.linkResolveFilter(sb.toString(), baseURL, RequestContext
                     .getRequestContext().getRequestURL(), useProtocolRelativeImages);
             return summary;
         }
@@ -433,7 +432,7 @@ public class ListingFeedView implements View {
              * protocol-relative URLs, should have been a utility function operating directly on the values.
              */
             String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imageRef) + "\" />";
-            HtmlFragment imgElem = htmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
+            HtmlFragment imgElem = HtmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
                     .getRequestContext().getRequestURL(), useProtocolRelativeImages);
             try {
                 ret = ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
@@ -468,7 +467,7 @@ public class ListingFeedView implements View {
                  * protocol-relative URLs, should have been a utility function operating directly on the values.
                  */
                 String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imageRef) + "\" />";
-                HtmlFragment imgElem = htmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
+                HtmlFragment imgElem = HtmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
                         .getRequestContext().getRequestURL(), useProtocolRelativeImages);
                 try {
                     ret = ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
@@ -715,11 +714,6 @@ public class ListingFeedView implements View {
     public void setIntroductionAsXHTMLSummaryResourceTypes(
             List<String> introductionAsXHTMLSummaryResourceTypes) {
         this.introductionAsXHTMLSummaryResourceTypes = introductionAsXHTMLSummaryResourceTypes;
-    }
-
-    @Required
-    public void setHtmlUtil(HtmlUtil htmlUtil) {
-        this.htmlUtil = htmlUtil;
     }
 
     public void setTitleResolver(TitleResolver titleResolver) {
