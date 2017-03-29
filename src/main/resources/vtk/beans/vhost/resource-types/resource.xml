@@ -259,7 +259,6 @@
     <property name="inheritable" value="true" />
     <property name="valueFormatter">
       <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
-        <constructor-arg value="BOOLEAN"/>
         <constructor-arg value="vtk.beans.vhost.resource-types.properties.content-locale"/>
       </bean>
     </property>
