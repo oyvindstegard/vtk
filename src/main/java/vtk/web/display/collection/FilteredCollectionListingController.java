@@ -40,6 +40,8 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
@@ -71,11 +73,14 @@ import vtk.web.service.URL;
 
 public abstract class FilteredCollectionListingController implements Controller {
 
-    private static final String filterNamespace = "filter.";
+    private final Logger logger = LoggerFactory.getLogger(FilteredCollectionListingController.class);
+
+    protected static final String filterNamespace = "filter.";
 
     private String viewName;
-    private String customListing;
+    private String customSearch;
     private String customFilters;
+    private String customListing;
     private Map<String, List<String>> filters;
     private int pageLimit = 25;
     protected ResourceTypeTree resourceTypeTree;
@@ -142,7 +147,7 @@ public abstract class FilteredCollectionListingController implements Controller 
 
     /* Override if collection requires specific values for view. */
     protected Map<String, Object> getCollectionSpecificValues(Resource collection) {
-        return new HashMap<String, Object>();
+        return new HashMap<>();
     }
 
     @Override
@@ -154,7 +159,7 @@ public abstract class FilteredCollectionListingController implements Controller 
         Path uri = rc.getResourceURI();
         Resource collection = repository.retrieve(token, uri, false);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         Map<String, Object> collectionSpecificValues = getCollectionSpecificValues(collection);
 
         int page = ListingPager.getPage(request, ListingPager.UPCOMING_PAGE_PARAM);
@@ -164,24 +169,24 @@ public abstract class FilteredCollectionListingController implements Controller 
         Query baseQuery = buildBaseQuery(request, collectionSpecificValues, collection);
         Query facetQuery = baseQuery != null ? combineQueries(locationQuery, baseQuery) : locationQuery;
 
-        Map<String, List<String>> filters = runFacetSearch(request, collectionSpecificValues, collection, facetQuery,
+        Map<String, List<String>> facets = runFacetSearch(request, collectionSpecificValues, collection, facetQuery,
                 getFilters());
 
-        Query filterQuery = buildFilterQuery(request, collectionSpecificValues, collection, filters);
+        Query filterQuery = buildFilterQuery(request, collectionSpecificValues, collection, facets);
 
         Query fullQuery = filterQuery != null ? combineQueries(facetQuery, filterQuery) : facetQuery;
 
         ResultSet rs = search(collection, fullQuery, offset);
 
-        Map<String, Map<String, FilterURL>> urlFilters = new LinkedHashMap<String, Map<String, FilterURL>>();
-        if (filters != null) {
+        Map<String, Map<String, FilterURL>> urlFilters = new LinkedHashMap<>();
+        if (facets != null) {
             Map<String, FilterURL> urlList;
             FilterURL filterUrl;
 
             String parameterKey;
-            for (String filter : filters.keySet()) {
-                List<String> parameterValues = filters.get(filter);
-                urlList = new LinkedHashMap<String, FilterURL>();
+            for (String filter : facets.keySet()) {
+                List<String> parameterValues = facets.get(filter);
+                urlList = new LinkedHashMap<>();
                 parameterKey = filterNamespace + filter;
 
                 URL url = ListingPager.removePagerParms(URL.create(request));
@@ -231,6 +236,10 @@ public abstract class FilteredCollectionListingController implements Controller 
             }
         }
 
+        if (customSearch != null) {
+            model.put("customSearch", customSearch);
+        }
+
         if (customFilters != null) {
             model.put("customFilters", customFilters);
         }
@@ -259,8 +268,8 @@ public abstract class FilteredCollectionListingController implements Controller 
 
     public class FilterURL {
 
-        private boolean marked;
-        private URL url;
+        private final boolean marked;
+        private final URL url;
 
         public FilterURL(boolean marked, URL url) {
             this.marked = marked;
@@ -278,13 +287,13 @@ public abstract class FilteredCollectionListingController implements Controller 
 
     protected Map<String, List<String>> getRequestFilters(HttpServletRequest request, Map<String, List<String>> filters) {
 
-        Map<String, List<String>> requestFilters = new HashMap<String, List<String>>();
+        Map<String, List<String>> requestFilters = new HashMap<>();
 
         String[] parameterValues;
         for (String parameterKey : filters.keySet()) {
             parameterValues = request.getParameterValues(filterNamespace + parameterKey);
             if (parameterValues != null) {
-                List<String> requestParameterValues = new ArrayList<String>();
+                List<String> requestParameterValues = new ArrayList<>();
                 for (String parameterValue : parameterValues) {
                     if (parameterValue != null && valueExistsInFilters(parameterKey, parameterValue, filters)) {
                         requestParameterValues.add(parameterValue);
@@ -353,6 +362,10 @@ public abstract class FilteredCollectionListingController implements Controller 
     @Required
     public void setViewName(String viewName) {
         this.viewName = viewName;
+    }
+
+    public void setCustomSearch(String customSearch) {
+        this.customSearch = customSearch;
     }
 
     public void setCustomFilters(String customFilters) {

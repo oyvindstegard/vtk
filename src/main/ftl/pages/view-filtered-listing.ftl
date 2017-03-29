@@ -56,6 +56,11 @@
       </div>
     </#if>
 
+    <#if customSearch?exists>
+      <#import customSearch as customSearchImport />
+      <@customSearchImport.displaySearch collectionSpecificValues />
+    </#if>
+
     <#if filters?exists>
       <div id="vrtx-listing-filters" class="vrtx-listing-filters-${filters?size}-col<#if showSubfolderMenu?exists> vrtx-listing-filters-collapsed</#if>">
         <script type="text/javascript"><!--
@@ -101,7 +106,7 @@
       <div id="vrtx-listing-filter-results">
         <#if customListing?exists>
           <#import customListing as customListingImport />
-          <@customListingImport.displayResult result />
+          <@customListingImport.displayResult result collectionSpecificValues />
         <#else>
           <ul>
             <#list result as res>
