@@ -13,6 +13,7 @@ include structured-resources/organizational-unit.vrtx
 include structured-resources/research-group.vrtx
 include structured-resources/message.vrtx
 include structured-resources/external-work-listing.vrtx
+include structured-resources/helseforsk.vrtx
 
 include structured-resources/studies/shared-text.vrtx
 include structured-resources/studies/oppbygning.vrtx

@@ -1,0 +1,232 @@
+resourcetype helseforsk {
+
+  properties {
+    title : string overrides title,
+    unit : string,
+	projectLeader: string,
+	projectLeaderCachedFullName: json(username:string, name:string, url:string),
+	unit: string,
+	unitCachedFullName : json(unit:string, name:string, url:string),
+	participantsUsernames : string multiple,
+	participantsCachedFullName : json(username:string, name:string, url:string) multiple,
+	participants : json (name:string, affiliation:string) multiple,
+    startup-month : string,
+    startup-year : string,
+    completed-month : string,
+    completed-year : string,
+	summary: string,
+	biobank: string,
+	biobank-place: string,
+	biobank-number: string,
+	documents: string multiple,
+	approval-internal-status : string,
+	approval-internal : string multiple
+	approval-rek-status : string,
+	approval-rek : string multiple,
+	approval-rek-no-need-reason : string,
+	approval-nsd-status : string,
+	approval-nsd : string multiple,
+	approval-nsd-no-need-reason : string,
+	approval-datatilsynet-status : string,
+	approval-datatilsynet : string multiple,
+	approval-datatilsynet-no-need-reason : string,
+	approval-helsedir-status : string,
+	approval-helsedir : string multiple,
+	approval-helsedir-no-need-reason : string,
+	approval-stat-legemiddelverk-status : string,
+	approval-stat-legemiddelverk : string multiple,
+	approval-stat-legemiddelverk-no-need-reason : string,
+	approval-others : string multiple
+  }
+  
+  view {
+    ##
+    [resource-props "."]
+    [def document structured-document()]
+    [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
+    [def participantsCachedFullName document.properties.participantsCachedFullName]
+    [def participants document.properties.participants]
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>[call "resource:contextual-title-new"]</title>
+      </head>
+      <body id="vrtx-helseforsk">
+        <div id="vrtx-content">
+          <div id="vrtx-main-content">
+            <h1>[call "resource:property" {"id":"title"}]</h1>
+            
+            [if summary != null]
+              <div class="vrtx-introduction">[val summary # unescaped]</div>
+            [endif]
+            
+            [if biobank-place != null]
+              <h2>Biobank</h2>
+              <p>[val biobank-place][if biobank-number != null] ([val biobank-number])[endif]</p>
+            [endif]
+            
+            [if documents != null]
+              <h2>[localized "documents"]</h2>
+              <ul>
+                [list documents doc]
+                  <li><a href="[val doc]">[val doc]</a></li>
+                [endlist]
+              </ul>
+            [endif]
+            
+            <h2>[localized "approvals"]</h2>
+            [if approval-internal-status != null &&
+                approval-internal-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-internal"]</h3>
+              [if approval-internal != null]
+                <ul>
+                  [list approval-internal doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
+              [endif]
+            [endif]
+            [if approval-rek-status != null &&
+                approval-rek-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-rek"]</h3>
+              [if approval-rek != null]
+                <ul>
+                  [list approval-rek doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
+              [endif]
+              [if approval-rek-no-need-reason != null]
+                [val approval-rek-no-need-reason]
+              [endif]
+            [endif]
+            [if approval-nsd-status != null &&
+                approval-nsd-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-nsd"]</h3>
+              [if approval-nsd != null]
+                <ul>
+                  [list approval-nsd doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
+              [endif]
+              [if approval-nsd-no-need-reason != null]
+                [val approval-nsd-no-need-reason]
+              [endif]
+            [endif]
+            [if approval-datatilsynet-status != null &&
+                approval-datatilsynet-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-datatilsynet"]</h3>
+              [if approval-datatilsynet != null]
+                <ul>
+                  [list approval-datatilsynet doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
+              [endif]
+              [if approval-datatilsynet-no-need-reason != null]
+                [val approval-datatilsynet-no-need-reason]
+              [endif]
+            [endif]
+            [if approval-helsedir-status != null &&
+                approval-helsedir-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-helsedir"]</h3>
+              [if approval-helsedir != null]
+                <ul>
+                  [list approval-helsedir doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
+              [endif]
+              [if approval-helsedir-no-need-reason != null]
+                [val approval-helsedir-no-need-reason]
+              [endif]
+            [endif]
+            [if approval-stat-legemiddelverk-status != null &&
+                approval-stat-legemiddelverk-status != "NOT_APPLIED"]
+              <h3 class="accordion">[localized "approval-stat-legemiddelverk"]</h3>
+              [if approval-stat-legemiddelverk != null]
+                <ul>
+                  [list approval-stat-legemiddelverk doc]
+                    <li><a href="[val doc]">[val doc]</a></li>
+                  [endlist]
+                </ul>
+              [endif]
+              [if approval-stat-legemiddelverk-no-need-reason != null]
+                [val approval-stat-legemiddelverk-no-need-reason]
+              [endif]
+            [endif]
+            [if approval-others != null]
+              <h3 class="accordion">[localized "approval-others"]</h3>
+              <ul>
+                [list approval-others doc]
+                  <li><a href="[val doc]">[val doc]</a></li>
+                [endlist]
+              </ul>
+            [endif]
+          </div>
+          <div id="vrtx-additional-content">
+            <h2>[localized "projectLeader"]</h2>
+	        [if projectLeaderCachedFullName != null]
+	          <p><a href="[val projectLeaderCachedFullName.url]">[val projectLeaderCachedFullName.name]</p>
+	        [endif]
+              
+            <h2>[localized "unit"]</h2>
+              
+            <h2>[localized "researchers"]</h2>
+	        [if participantsCachedFullName != null || participants != null]
+	          <ul>
+	            [if participantsCachedFullName != null]
+	              [list participantsCachedFullName user]
+	                <li>
+	                  [if user.url != null]
+	                    <a href="[val user.url]">[val user.name]</a>
+	                  [else]
+	                    [val user.name]
+	                  [endif]
+	                </li>
+	              [endlist]
+	            [endif]
+	            [if participants != null]
+	              [list participants user]
+	                <li>[val user.name][if user.affiliation != null] ([val user.affiliation])[endif]</li>
+	              [endlist]
+	            [endif]
+              </ul>
+            [endif]
+              
+            <h2>[localized "timePeriod"]</h2>
+            <ul>
+              [if startup-month != null && startup-year != null]
+                <li>[localized "timeStartup"]: [val startup-month] / [val startup-year]</li>
+              [endif]
+              [if completed-month != null && completed-year != null]
+                <li>[localized "timeCompleted"]: [val completed-month] / [val completed-year]</li>
+              [endif]
+            </ul>
+          </div>
+        </div>
+      </body>
+    </html>
+    ##
+  }
+
+  localization {
+    helseforsk : (en : "helseforsk", no : "helseforsk", nn : "helseforsk"),
+    projectLeader : (en : "Projectleader", no : "Prosjektleder", nn : "Prosjektleder"),
+    unit : (en : "Responsible unit", no : "Ansvarlig enhet", nn : "Ansvarlig enhet"),
+    researchers : (en : "Researchers", no : "Forskere", nn : "Forskere"),
+    timePeriod : (en : "Time period", no : "Tidsperiode", nn : "Tidsperiode"),
+    timeStartup : (en : "Start", no : "Start", nn : "Start"),
+    timeCompleted : (en : "End", no : "Slutt", nn : "Slutt"),
+    documents : (en : "Project description", no : "Prosjektbeskrivelse", nn : "Prosjektbeskrivelse"),
+    approvals : (en : "Approvals", no : "Godkjenninger", nn : "Godkjenningar"),
+    approval-internal : (en : "Internal approval", no : "Intern godkjenning", nn : "Intern godkjenning"),
+    approval-rek : (en : "REK", no : "REK", nn : "REK"),
+    approval-nsd : (en : "NSD", no : "NSD", nn : "NSD"),
+    approval-datatilsynet : (en : "Datatilsynet", no : "Datatilsynet", nn : "Datatilsynet"),
+    approval-helsedir : (en : "Helsedirektoratet", no : "Helsedirektoratet", nn : "Helsedirektoratet"),
+    approval-stat-legemiddelverk : (en : "Statens legemiddelverk", no : "Statens legemiddelverk", nn : "Statens legemiddelverk"),
+    approval-others : (en : "Others approval", no : "Andre godkjenninger", nn : "Andre godkjenningar")
+  }
+}
