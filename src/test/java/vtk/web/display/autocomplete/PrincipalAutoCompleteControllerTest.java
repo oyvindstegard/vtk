@@ -37,7 +37,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import vtk.repository.Path;
@@ -48,10 +47,6 @@ import vtk.security.PrincipalImpl;
 import vtk.web.display.autocomplete.AutoCompleteController.Suggestion;
 
 public class PrincipalAutoCompleteControllerTest {
-
-    // Definition copied from AbstractLdapAccessor in Vortex
-    private static final String USER_SCOPED_AFFILIATION_ATTRIBUTE = "uioPersonScopedAffiliation1";
-
     private PrincipalMetadataImpl fooMeta = getTestPrincipalMetadata("foo@uio.no", "Foo User",
             Arrays.asList("PRIMARY:ANSATT/vitenskapelig@120000,900000", "secondary:TILKNYTTET/bilag@140000,900000"),
             false);
@@ -120,7 +115,7 @@ public class PrincipalAutoCompleteControllerTest {
         if (affiliations != null) {
             List<Object> affs = new ArrayList<Object>();
             affs.addAll(affiliations);
-            testPm.setAttributeValues(USER_SCOPED_AFFILIATION_ATTRIBUTE, affs);
+            testPm.setAttributeValues(PrincipalAutoCompleteController.USER_SCOPED_AFFILIATION_ATTRIBUTE, affs);
         }
         return testPm;
     }

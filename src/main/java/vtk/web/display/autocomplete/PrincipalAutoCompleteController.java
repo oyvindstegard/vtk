@@ -40,6 +40,9 @@ import vtk.security.Principal.Type;
 
 public class PrincipalAutoCompleteController extends AutoCompleteController {
 
+    // Definition copied from AbstractLdapAccessor in Vortex
+    public static final String USER_SCOPED_AFFILIATION_ATTRIBUTE = "uioPersonScopedAffiliation1";
+
     private VocabularyDataProvider<Principal> dataProvider;
     private boolean invert;
 
@@ -83,7 +86,7 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
     }
 
     private String areaCodes(Principal principal) {
-        final List<Object> values = principal.getMetadata().getValues("uioPersonScopedAffiliation1");
+        final List<Object> values = principal.getMetadata().getValues(USER_SCOPED_AFFILIATION_ATTRIBUTE);
         if (values != null && values.size() > 0 && values.get(0) instanceof String) {
             final String s = (String)values.get(0);
             final int delimiterIdx = s.indexOf('@');
