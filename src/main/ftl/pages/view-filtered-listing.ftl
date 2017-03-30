@@ -96,6 +96,11 @@
       </div>
     </#if>
 
+    <#if preResult?exists>
+      <#import preResult as preResultImport />
+      <@preResultImport.displayPreResult collectionSpecificValues />
+    </#if>
+
     <#if (result?exists && result?has_content)>
       <#if from?exists && to?exists && total?exists>
         <div id="vrtx-listing-filter-hits">
@@ -129,7 +134,7 @@
       </div>
     </#if>
 
-    <#if collectionSpecificValues?exists>
+    <#if collectionSpecificValues?exists && (collectionSpecificValues.discontinuedUrl?exists || collectionSpecificValues.currentUrl?exists)>
       <div id="vrtx-listing-filter-status">
         <#if collectionSpecificValues.discontinuedUrl?exists>
           <a href="${collectionSpecificValues.discontinuedUrl}">${vrtx.getMsg("listing-filters.status.filter.${collection.resourceType}.discontinued")}</a>

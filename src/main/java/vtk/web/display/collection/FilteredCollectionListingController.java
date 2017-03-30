@@ -79,6 +79,7 @@ public abstract class FilteredCollectionListingController implements Controller 
 
     private String viewName;
     private String customSearch;
+    private String preResult;
     private String customFilters;
     private String customListing;
     private Map<String, List<String>> filters;
@@ -240,6 +241,10 @@ public abstract class FilteredCollectionListingController implements Controller 
             model.put("customSearch", customSearch);
         }
 
+        if (preResult != null) {
+            model.put("preResult", preResult);
+        }
+
         if (customFilters != null) {
             model.put("customFilters", customFilters);
         }
@@ -366,6 +371,10 @@ public abstract class FilteredCollectionListingController implements Controller 
 
     public void setCustomSearch(String customSearch) {
         this.customSearch = customSearch;
+    }
+
+    public void setPreResult(String preResult) {
+        this.preResult = preResult;
     }
 
     public void setCustomFilters(String customFilters) {
