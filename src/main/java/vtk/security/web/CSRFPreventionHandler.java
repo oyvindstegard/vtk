@@ -147,13 +147,18 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
     protected void doFilter(HttpServletRequest request,
             HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        
-        HtmlParsingResponseWrapper responseWrapper = new HtmlParsingResponseWrapper(response, 
-                () -> request.getAttribute("csrf-html-filtered") == null,
-                () -> pageFilter(request));
-        
-        doFilterInternal(request, responseWrapper, chain);
-        responseWrapper.commit();
+
+        if ("GET".equals(request.getMethod()) || "POST".equals(request.getMethod())) {
+            HtmlParsingResponseWrapper responseWrapper = new HtmlParsingResponseWrapper(response, 
+                    () -> request.getAttribute("csrf-html-filtered") == null,
+                    () -> pageFilter(request));
+
+            doFilterInternal(request, responseWrapper, chain);
+            responseWrapper.commit();
+        }
+        else {
+            doFilterInternal(request, response, chain);
+        }
     }
     
     private void doFilterInternal(HttpServletRequest request,
@@ -606,6 +611,10 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
                 return;
             }
             committed = true;
+            if (writer == null && bufferStream == null) {
+                return;
+            }
+            
             if (writer != null) {
                 writer.flush();
                 writer.close();
