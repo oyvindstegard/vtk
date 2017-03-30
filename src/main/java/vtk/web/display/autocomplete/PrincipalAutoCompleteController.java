@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2009,2017, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 
 public class PrincipalAutoCompleteController extends AutoCompleteController {
+
+    // Definition copied from AbstractLdapAccessor in Vortex
+    public static final String USER_SCOPED_AFFILIATION_ATTRIBUTE = "uioPersonScopedAffiliation1";
 
     private VocabularyDataProvider<Principal> dataProvider;
     private boolean invert;
@@ -49,7 +53,7 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
 
         List<Suggestion> suggestions = new ArrayList<Suggestion>(completions.size());
         for (Principal principal : completions) {
-            Suggestion suggestion = new Suggestion(3);
+            Suggestion suggestion = new Suggestion(4);
 
             // XXX: Only list uio.no and pseudo users
             if (principal.isUser()) {
@@ -64,6 +68,7 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
                     suggestion.setField(this.invert ? 0 : 1, principal.getUnqualifiedName() + "@webid.uio.no");
                     suggestion.setField(this.invert ? 1 : 0, principal.getDescription());
                     suggestion.setField(2, principal.getURL());
+                    suggestion.setField(3, areaCodes(principal));
                 } else {
                     continue;
                 }
@@ -71,12 +76,24 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
                 suggestion.setField(this.invert ? 0 : 1, principal.getUnqualifiedName());
                 suggestion.setField(this.invert ? 1 : 0, principal.getDescription());
                 suggestion.setField(2, principal.getURL());
+                suggestion.setField(3, areaCodes(principal));
             }
 
             suggestions.add(suggestion);
         }
 
         return suggestions;
+    }
+
+    private String areaCodes(Principal principal) {
+        final List<Object> values = principal.getMetadata().getValues(USER_SCOPED_AFFILIATION_ATTRIBUTE);
+        if (values != null && values.size() > 0 && values.get(0) instanceof String) {
+            final String s = (String)values.get(0);
+            final int delimiterIdx = s.indexOf('@');
+            return s.substring(delimiterIdx + 1);
+        } else {
+            return null;
+        }
     }
 
     @Required
