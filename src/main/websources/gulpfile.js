@@ -61,7 +61,7 @@ gulp.task('theme-compile-editor-structured-resources-sass', function () {
 
 gulp.task('theme-copy-css', function () {
     return gulp.src(['themes/**/*.css'])
-        .pipe((config.production) ? minifyCss({processImport: false}) : util.noop())
+        .pipe((config.production) ? minifyCss({inline: ['none']}) : util.noop())
         .pipe(gulp.dest(TARGET + '/themes'));
 });
 
