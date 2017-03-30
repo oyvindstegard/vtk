@@ -44,7 +44,7 @@
           contentType: contentType,
           contentLanguage: "${contentLanguage}"
         };
-        window.editor.csrfToken = getCookie("csrftoken");
+        window.editor.csrfToken = getCookie("csrfToken");
       })();
       //]]>
     </script>
