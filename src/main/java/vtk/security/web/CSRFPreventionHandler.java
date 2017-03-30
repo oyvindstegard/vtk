@@ -37,7 +37,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,7 +82,6 @@ import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageFilter;
 import vtk.text.html.HtmlPageParser;
 import vtk.text.html.HtmlText;
-import vtk.text.html.HtmlUtil;
 import vtk.util.io.IO;
 import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
@@ -143,16 +141,24 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
         request.setAttribute("csrf-html-filtered", true);
         return new FormRewritingFilter(request);
     }
+    
 
     @Override
     protected void doFilter(HttpServletRequest request,
             HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         
-        response = new HtmlParsingResponseWrapper(response, 
+        HtmlParsingResponseWrapper responseWrapper = new HtmlParsingResponseWrapper(response, 
                 () -> request.getAttribute("csrf-html-filtered") == null,
                 () -> pageFilter(request));
-
+        
+        doFilterInternal(request, responseWrapper, chain);
+        responseWrapper.commit();
+    }
+    
+    private void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         switch (request.getMethod()) {
         case "GET": 
             setTokenCookie(request, response);
@@ -539,66 +545,18 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
         return url.relativeURL(HtmlUtils.htmlUnescape(action));
     }    
     
-    private static URL parseActionURL_OLD(String action, HttpServletRequest request) {
-        if (action.startsWith("http://") || action.startsWith("https://")) {
-            URL url = URL.parse(HtmlUtil.decodeBasicEntities(action));
-            return url;
-        }
-
-        URL url = URL.create(request);
-        url.clearParameters();
-        Path path;
-        String[] segments = action.split("/");
-        int startIdx = 0;
-        if (action.startsWith("/")) {
-            path = Path.ROOT;
-            startIdx = 1;
-        }
-        else {
-            path = RequestContext.getRequestContext().getCurrentCollection();
-        }
-
-        String query = null;
-        for (int i = startIdx; i < segments.length; i++) {
-            String elem = segments[i];
-            if (elem.contains("?")) {
-                query = elem.substring(elem.indexOf("?"));
-                elem = elem.substring(0, elem.indexOf("?"));
-            }
-            path = path.expand(elem);
-        }
-
-        url.setPath(path);
-        if (query != null) {
-            Map<String, String[]> queryMap = URL.splitQueryString(query);
-            for (String key : queryMap.keySet()) {
-                for (String value : queryMap.get(key)) {
-                    url.addParameter(key, value);
-                }
-            }
-        }
-        return url;
-    }
-
     private static class HtmlParsingResponseWrapper extends HttpServletResponseWrapper {
         private Supplier<Boolean> parse;
         private Supplier<HtmlPageFilter> filter;
-        private boolean streamOpened = false;
         private boolean committed = false;
         private PrintWriter writer = null;
         private ByteArrayOutputStream bufferStream = null;
-        private OutputStream responseStream = null;
         
         public HtmlParsingResponseWrapper(HttpServletResponse response, 
                 Supplier<Boolean> parse, Supplier<HtmlPageFilter> filter) {
             super(response);
             this.parse = parse;
             this.filter = filter;
-        }
-        
-        @Override
-        public void setContentType(String type) {
-            super.setContentType(type);
         }
         
         private boolean parseable() {
@@ -609,15 +567,10 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
 
         @Override
         public ServletOutputStream getOutputStream() throws IOException {
-            if (!parse.get()) {
+            if (!parse.get() || !parseable()) {
                 return super.getOutputStream();
             }
-            if (!parseable()) {
-                return super.getOutputStream();
-            }
-            if (streamOpened) throw new IOException("Output stream already opened");
-            streamOpened = true;
-            responseStream = super.getOutputStream();
+            if (bufferStream != null) throw new IOException("Output stream already opened");
             bufferStream = new ByteArrayOutputStream();
             return new WrappedServletOutputStream(bufferStream, super.getCharacterEncoding());
         }
@@ -632,28 +585,31 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
         
         @Override
         public void sendError(int sc, String msg) throws IOException {
+            committed = true;
             super.sendError(sc, msg);
         }
 
         @Override
         public void sendError(int sc) throws IOException {
+            committed = true;
             super.sendError(sc);
         }
 
         @Override
         public void sendRedirect(String location) throws IOException {
+            committed = true;
             super.sendRedirect(location);
         }
 
-        @Override
-        public void flushBuffer() throws IOException {
-            if (parse.get() && parseable()) parseAndCommit();
-            super.flushBuffer();
-        }
-        
-        private void parseAndCommit() throws IOException {
-            if (committed) return;
-            if (writer != null) writer.flush();
+        public void commit() throws IOException {
+            if (committed) {
+                return;
+            }
+            committed = true;
+            if (writer != null) {
+                writer.flush();
+                writer.close();
+            }
             else if (bufferStream != null) {
                 bufferStream.flush();
             }
@@ -663,14 +619,12 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
                 HtmlPage page = parser.parse(new ByteArrayInputStream(bufferStream.toByteArray()), 
                         super.getCharacterEncoding());
                 page.filter(filter.get());
-                responseStream.write(page.getStringRepresentation().getBytes(super.getCharacterEncoding()));
-                responseStream.flush();
+                byte[] buffer = page.getStringRepresentation().getBytes(super.getCharacterEncoding());
+                super.setContentLength(buffer.length);
+                getResponse().getOutputStream().write(buffer);
             }
             catch (Exception e) {
                 throw new IOException(e);
-            }
-            finally {
-                committed = true;
             }
         }
     }
