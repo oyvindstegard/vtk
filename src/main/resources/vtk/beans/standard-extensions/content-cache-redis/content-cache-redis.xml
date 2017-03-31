@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <!-- Override: -->
+  <bean id="decorating.feedComponent.contentCache" class="vtk.util.cache.RedisContentCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="vrtx:feed-component:cache:" />
+    <constructor-arg name="timeoutSeconds" value="${decorating.feedComponent.cacheTimeoutSeconds}" />
+    <constructor-arg name="updateTimeouts" value="true" />
+    <constructor-arg ref="decorating.feedComponent.contentCache.loader" />
+  </bean>
+
+  <!-- Override: -->
+  <bean id="decorating.includeComponent.httpIncludeCache" class="vtk.util.cache.RedisContentCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="vrtx:feed-component:cache:" />
+    <constructor-arg name="timeoutSeconds" value="${decorating.includeComponent.cacheTimeoutSeconds}" />
+    <constructor-arg name="updateTimeouts" value="true" />
+    <constructor-arg ref="decorating.includeComponent.httpIncludeCache.loader" />
+  </bean>
+
+  <!-- Override: -->
+  <bean id="xmlSchemaRegistry.cache" class="vtk.util.cache.RedisContentCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="vrtx:xmlschema:cache:" />
+    <constructor-arg name="timeoutSeconds" value="${xmlSchemaRegistry.cacheSeconds}" />
+    <constructor-arg name="updateTimeouts" value="true" />
+    <constructor-arg ref="xmlSchemaRegistry.cache.loader" />
+  </bean>
+
+  <!-- Override: -->
+  <bean id="structuredResources.jsonURLCache" class="vtk.util.cache.RedisContentCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="vrtx:structuredresources:jsonurl:cache:" />
+    <constructor-arg name="timeoutSeconds" value="600" />
+    <constructor-arg name="updateTimeouts" value="true" />
+    <constructor-arg ref="structuredResources.jsonURLCacheLoader" />
+  </bean>
+
+  <!-- Override: -->
+  <bean id="structuredResources.freeCapacityURLCache" class="vtk.util.cache.RedisContentCache">
+    <constructor-arg name="jedisPool" ref="redis.pool" />
+    <constructor-arg name="prefix" value="vrtx:structuredresources:freecapacityurl:cache:" />
+    <constructor-arg name="timeoutSeconds" value="600" />
+    <constructor-arg name="updateTimeouts" value="true" />
+    <constructor-arg ref="structuredResources.freeCapacityURLCacheLoader" />
+  </bean>
+
+
+</beans>

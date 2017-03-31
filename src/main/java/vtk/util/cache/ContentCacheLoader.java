@@ -38,6 +38,7 @@ package vtk.util.cache;
  * @param <K> identifier type for loader objects
  * @param <V> value type for loaded objects
  */
+@FunctionalInterface
 public interface ContentCacheLoader<K, V> {
 
     public V load(K identifier) throws Exception;
