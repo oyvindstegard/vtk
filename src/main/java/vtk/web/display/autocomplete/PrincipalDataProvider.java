@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.repository.store.PrincipalSearch.SearchType;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
@@ -69,7 +70,7 @@ public class PrincipalDataProvider implements VocabularyDataProvider<Principal> 
                     result.add(singleUser);
                 }
             }
-            List<Principal> searchResult = principalFactory.search(input, type);
+            List<Principal> searchResult = principalFactory.search(input, type, SearchType.FULL_USER_SEARCH);
             if (searchResult != null && searchResult.size() > 0) {
                 result.addAll(searchResult);
             }
