@@ -36,4 +36,78 @@
     </property>
   </bean>
 
+  <bean id="api.adminJsonPutService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService" />
+    <property name="order" value="-101" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestHeaderRegexpAssertion">
+          <property name="header" value="Content-Type"/>
+          <property name="pattern" value="application/(json|.+\+json)" />
+        </bean>
+        <bean class="vtk.web.service.RequestMethodAssertion">
+          <property name="method" value="PUT" />
+        </bean>
+      </list>
+    </property>
+    <property name="servletFilters">
+      <ref bean="system.csrfPreventionHandler" />
+    </property>
+    <property name="handler" ref="api.putHandler"/>
+  </bean>
+
+  <bean id="api.adminJsonGetService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService"/>
+    <property name="order" value="-101" />
+    <property name="assertions">
+      <list>
+        <ref bean="fileAssertion" />
+        <ref bean="api.jsonAcceptAssertion" />
+        <ref bean="json.contentTypeAssertion" />
+        <bean class="vtk.web.service.RequestMethodAssertion">
+          <property name="method" value="GET" />
+        </bean>
+      </list>
+    </property>
+    <property name="attributes">
+      <map>
+        <entry key="localeResolver" value-ref="viewServiceResourceAwareLocaleResolver" />
+      </map>
+    </property>
+    <property name="handler" ref="api.getHandler"/>
+  </bean>
+
+  <bean id="api.jsonGetService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="viewService"/>
+    <property name="order" value="-101" />
+    <property name="assertions">
+      <list>
+        <ref bean="resourceIsPublishedAssertion" />
+        <ref bean="fileAssertion" />
+        <ref bean="api.jsonAcceptAssertion" />
+        <ref bean="json.contentTypeAssertion" />
+        <bean class="vtk.web.service.RequestMethodAssertion">
+          <property name="method" value="GET" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="api.getHandler"/>
+  </bean>
+
+  <bean id="api.putHandler" class="vtk.web.api.PutController">
+    <constructor-arg value="${upload.maxFileSize}" />
+    <constructor-arg value="${revisionStore.maxFileSize}" />
+    <constructor-arg ref="versioning.handleRevisionAssertions" />
+  </bean>
+
+  <bean id="api.getHandler" class="vtk.web.display.file.DisplayResourceController">
+    <property name="viewName" value="webdavDisplayResource" />
+    <property name="ignoreLastModified" value="true" />
+  </bean>
+
+  <bean id="api.jsonAcceptAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
+    <property name="header" value="Accept"/>
+    <property name="pattern" value="^application/json.*" />
+  </bean>
+
 </beans>

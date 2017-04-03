@@ -27,75 +27,6 @@
     <property name="handler" ref="ajaxeditor.handler" />
   </bean>
 
-  <bean id="ajaxeditor.adminJsonPutService" class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="manageService" />
-    <property name="order" value="-100" />
-    <property name="assertions">
-      <list>
-        <bean class="vtk.web.service.RequestHeaderRegexpAssertion">
-          <property name="header" value="Content-Type"/>
-          <property name="pattern" value="application/(json|.+\+json)" />
-        </bean>
-        <bean class="vtk.web.service.RequestMethodAssertion">
-          <property name="method" value="PUT" />
-        </bean>
-      </list>
-    </property>
-    <property name="servletFilters">
-      <ref bean="system.csrfPreventionHandler" />
-    </property>
-    <property name="handler" ref="ajaxeditor.putHandler"/>
-  </bean>
-
-  <bean id="ajaxeditor.adminJsonGetService" class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="manageService"/>
-    <property name="order" value="-100" />
-    <property name="assertions">
-      <list>
-        <ref bean="fileAssertion" />
-        <ref bean="ajaxeditor.jsonAcceptAssertion" />
-        <ref bean="json.contentTypeAssertion" />
-        <bean class="vtk.web.service.RequestMethodAssertion">
-          <property name="method" value="GET" />
-        </bean>
-      </list>
-    </property>
-    <property name="attributes">
-      <map>
-        <entry key="localeResolver" value-ref="viewServiceResourceAwareLocaleResolver" />
-      </map>
-    </property>
-    <property name="handler" ref="ajaxeditor.getHandler"/>
-  </bean>
-
-  <bean id="ajaxeditor.jsonGetService" class="vtk.web.service.ServiceImpl">
-    <property name="parent" ref="viewService"/>
-    <property name="order" value="-100" />
-    <property name="assertions">
-      <list>
-        <ref bean="resourceIsPublishedAssertion" />
-        <ref bean="fileAssertion" />
-        <ref bean="ajaxeditor.jsonAcceptAssertion" />
-        <ref bean="json.contentTypeAssertion" />
-        <bean class="vtk.web.service.RequestMethodAssertion">
-          <property name="method" value="GET" />
-        </bean>
-      </list>
-    </property>
-    <property name="handler" ref="ajaxeditor.getHandler"/>
-  </bean>
-
-  <bean id="ajaxeditor.putHandler" class="vtk.web.api.PutController">
-    <constructor-arg value="${upload.maxFileSize}" />
-    <constructor-arg value="${revisionStore.maxFileSize}" />
-    <constructor-arg ref="versioning.handleRevisionAssertions" />
-  </bean>
-
-  <bean id="ajaxeditor.getHandler" class="vtk.web.display.file.DisplayResourceController">
-    <property name="viewName" value="webdavDisplayResource" />
-    <property name="ignoreLastModified" value="true" />
-  </bean>
-
   <bean id="ajaxeditor.handler" class="vtk.web.AjaxEditorController">
     <constructor-arg ref="ajaxeditor.editView"/>
     <constructor-arg ref="manage.staticResourceResolver" />
@@ -106,11 +37,6 @@
 
   <bean id="ajaxeditor.editView" parent="freemarkerView">
     <property name="url" value="editor/ajaxeditor.ftl" />
-  </bean>
-
-  <bean id="ajaxeditor.jsonAcceptAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
-    <property name="header" value="Accept"/>
-    <property name="pattern" value="^application/json.*" />
   </bean>
 
 </beans>
