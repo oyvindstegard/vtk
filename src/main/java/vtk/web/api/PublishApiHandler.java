@@ -32,7 +32,6 @@ package vtk.web.api;
 
 import java.util.Date;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,23 +53,23 @@ public class PublishApiHandler implements Controller {
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+            HttpServletResponse response) {
         RequestContext requestContext = RequestContext.getRequestContext();
         
         Result<PublishRequest> publishRequest = publishRequest(requestContext);
+        
         Result<ApiResponseBuilder> builder = publishRequest.flatMap(req -> {
-            if (!req.resource.isPresent()) {
-                return Result.success(new ApiResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
-                        .header("Content-Type", "text/plain")
-                        .message("Resource " + requestContext.getResourceURI() 
-                        + " does not exist"));
-            }
             return req.action == PublishAction.PUBLISH ? 
-                    publish(req.resource.get(), requestContext) : 
-                        unpublish(req.resource.get(), requestContext);
-        });
-
-        builder.recover(ex -> {
+                    publish(req.resource, requestContext) : 
+                        unpublish(req.resource, requestContext);
+        })
+        .recover(ex -> {
+            if (ex instanceof ResourceNotFoundException) {
+                return new ApiResponseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                    .header("Content-Type", "text/plain")
+                    .message("Resource " + requestContext.getResourceURI() 
+                    + " does not exist");
+            }
             if (ex instanceof InvalidRequestException) {
                 return new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
                         .message(ex.getMessage());
@@ -81,16 +80,15 @@ public class PublishApiHandler implements Controller {
             }
             return new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                     .message("An unexpected error occurred: " + ex.getMessage());
-        })
-        .forEach(resp -> {
-            try {
-                resp.writeTo(response);
-            }
-            catch (Exception e) {
-                throw new RuntimeException(e);
-            }
         });
-        return null;
+        
+        try {
+            builder.get().writeTo(response);
+            return null;
+        }
+        catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
     
     
@@ -101,8 +99,8 @@ public class PublishApiHandler implements Controller {
     
     private static class PublishRequest {
         public final PublishAction action;
-        public final Optional<Resource> resource;
-        public PublishRequest(PublishAction action, Optional<Resource> resource) {
+        public final Resource resource;
+        public PublishRequest(PublishAction action, Resource resource) {
             this.action = action;
             this.resource = resource;
         } 
@@ -130,12 +128,9 @@ public class PublishApiHandler implements Controller {
                     Resource resource = requestContext.getRepository()
                             .retrieve(requestContext.getSecurityToken(), 
                                     requestContext.getResourceURI(), false);
-                    return new PublishRequest(action, Optional.of(resource));
+                    return new PublishRequest(action, resource);
                 }
-                catch (ResourceNotFoundException e) {
-                    return new PublishRequest(action, Optional.empty());
-                }
-                catch (AuthorizationException e) {
+                catch (AuthorizationException | ResourceNotFoundException e) {
                     throw e;
                 }
                 catch (Exception e) {
