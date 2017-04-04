@@ -419,13 +419,24 @@ public class VTKServlet extends DispatcherServlet {
    @Override
    protected void service(HttpServletRequest request, HttpServletResponse response) 
            throws ServletException, IOException {
-       FilterChain chain = new FilterChain(initializingServletFilters, (req, resp) -> 
-           super.service(req, resp));
-       chain.doFilter(request,  response);
+       FilterChain chain = new FilterChain(initializingServletFilters, (req, resp) -> {
+           try {
+               serviceInternal(req, resp);   
+           }
+           catch (Exception e) {
+               throw new NestedException(e);
+           }
+       });
+       try {
+           chain.doFilter(request,  response);
+       }
+       catch (NestedException e) {
+           handleError(request, response, e.getCause());
+       }
    }
-   
-   @Override
-   protected void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+
+   protected void serviceInternal(HttpServletRequest request, HttpServletResponse response) throws Exception {
        long startTime = System.currentTimeMillis();
        Throwable failureCause = null;
        
