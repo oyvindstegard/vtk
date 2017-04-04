@@ -42,8 +42,7 @@ import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.Controller;
+import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.Acl;
 import vtk.repository.AuthorizationException;
@@ -62,7 +61,7 @@ import vtk.util.text.JsonStreamer;
 import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
-public class AclApiHandler implements Controller {
+public class AclApiHandler implements HttpRequestHandler {
     private PrincipalFactory principalFactory;
     
     public AclApiHandler(PrincipalFactory principalFactory) {
@@ -70,8 +69,7 @@ public class AclApiHandler implements Controller {
     }
 
     @Override
-    public ModelAndView handleRequest(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) {
         
         RequestContext requestContext = RequestContext.getRequestContext();
         Result<Optional<Resource>> res = retrieve(requestContext, requestContext.getResourceURI());
@@ -116,7 +114,6 @@ public class AclApiHandler implements Controller {
                 throw new RuntimeException(e);
             }
         });
-        return null;
     }
     
     private Result<ApiResponseBuilder> getAcl(Resource resource, 

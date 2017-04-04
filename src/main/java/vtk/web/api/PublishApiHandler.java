@@ -36,8 +36,7 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.Controller;
+import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.AuthorizationException;
 import vtk.repository.Namespace;
@@ -49,10 +48,10 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.util.Result;
 import vtk.web.RequestContext;
 
-public class PublishApiHandler implements Controller {
+public class PublishApiHandler implements HttpRequestHandler {
 
     @Override
-    public ModelAndView handleRequest(HttpServletRequest request,
+    public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) {
         RequestContext requestContext = RequestContext.getRequestContext();
         
@@ -84,7 +83,6 @@ public class PublishApiHandler implements Controller {
         
         try {
             builder.get().writeTo(response);
-            return null;
         }
         catch (Throwable t) {
             throw new RuntimeException(t);

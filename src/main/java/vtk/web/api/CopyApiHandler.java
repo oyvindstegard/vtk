@@ -30,13 +30,13 @@
  */
 package vtk.web.api;
 
+import java.io.IOException;
 import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.Controller;
+import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.AuthorizationException;
 import vtk.repository.IllegalOperationException;
@@ -45,63 +45,61 @@ import vtk.repository.ResourceOverwriteException;
 import vtk.util.Result;
 import vtk.web.RequestContext;
 
-public class CopyApiHandler implements Controller {
+public class CopyApiHandler implements HttpRequestHandler {
     
     @Override
-    public ModelAndView handleRequest(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
-        if ("GET".equals(request.getMethod())) {
-            handleGet(request, response);
+    public void handleRequest(HttpServletRequest request, 
+            HttpServletResponse response) {
+        
+        ApiResponseBuilder builder = 
+                "GET".equals(request.getMethod()) ? 
+                        handleGet(request, response)
+                : "POST".equals(request.getMethod()) ?
+                        handlePost(request, response)
+                        : unknownMethod(request, response);
+
+        try {
+            builder.writeTo(response);
         }
-        else if ("POST".equals(request.getMethod())) {
-            handlePost(request, response);
+        catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        else {
-            unknownMethod(request, response);
-        }
-        return null;
     }
     
-    private void handleGet(HttpServletRequest request, 
-            HttpServletResponse response) throws Exception {
-        new ApiResponseBuilder(HttpServletResponse.SC_OK)
+    private ApiResponseBuilder handleGet(HttpServletRequest request, 
+            HttpServletResponse response) {
+        return new ApiResponseBuilder(HttpServletResponse.SC_OK)
             .header("Content-Type", "text/plain;charset=utf-8")
             .message("A POST request is required, with path parameters "
-                     + "'source' and 'destination' specified\n")
-            .writeTo(response);
+                     + "'source' and 'destination' specified\n");
     }
 
-    private void handlePost(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+    private ApiResponseBuilder  handlePost(HttpServletRequest request,
+            HttpServletResponse response) {
         Result<CopyRequest> copyRequest = copyRequest(request);
         if (copyRequest.failure.isPresent()) {
-            new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+            return new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
                 .header("Content-Type", "text/plain;charset=utf-8")
-                .message(copyRequest.failure.get().getMessage())
-                .writeTo(response);
-            return;
+                .message(copyRequest.failure.get().getMessage());
         }
         RequestContext requestContext = RequestContext.getRequestContext();
         Result<ApiResponseBuilder> result = 
                 doCopy(copyRequest.result.get(), requestContext);
         
         if (result.failure.isPresent()) {
-            new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+            return new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                 .header("Content-Type", "text/plain;charset=utf-8")
-                .message(result.failure.get().getMessage())
-                .writeTo(response);
-            return;
+                .message(result.failure.get().getMessage());
         }
-        result.result.get().writeTo(response);
+        return result.result.get();
     }
     
-    private void unknownMethod(HttpServletRequest request, 
-            HttpServletResponse response) throws Exception {
-        new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+    private ApiResponseBuilder unknownMethod(HttpServletRequest request, 
+            HttpServletResponse response) {
+        return new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
         .header("Content-Type", "text/plain;charset=utf-8")
         .message("A POST request is required, with path parameters "
-                 + "'source' and 'destination' specified\n")
-        .writeTo(response);
+                 + "'source' and 'destination' specified\n");
     }
 
     private Result<ApiResponseBuilder> doCopy(CopyRequest req, 

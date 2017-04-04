@@ -30,6 +30,7 @@
  */
 package vtk.web.api;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +51,7 @@ class ApiResponseBuilder {
     public ApiResponseBuilder header(String name, String value) 
         { this.headers.put(name, value); return this; }
     
-    public void writeTo(HttpServletResponse response) throws Exception {
+    public void writeTo(HttpServletResponse response) throws IOException {
         response.setStatus(status);
         for (String name: headers.keySet()) {
             response.setHeader(name, headers.get(name));
