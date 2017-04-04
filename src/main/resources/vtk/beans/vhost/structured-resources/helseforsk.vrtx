@@ -39,6 +39,26 @@ resourcetype helseforsk {
 	approval-others : string multiple
   }
   
+  view-components {
+  
+    filenameFromPath(doc) {
+      ##
+        [def docSplit doc.split("/")]
+        [if docSplit.length() > 0]
+          [def count 1]
+          [list docSplit s]
+            [if count = docSplit.length()]
+              <li><a href="[val doc]">[val s]</a></li>
+            [endif]
+            [def count count + 1]
+          [endlist]
+        [else]
+          <li><a href="[val doc]">[val doc]</a></li>
+        [endif]
+      ##
+    }
+  }
+  
   view {
     ##
     [resource-props "."]
@@ -69,7 +89,7 @@ resourcetype helseforsk {
               <h2>[localized "documents"]</h2>
               <ul>
                 [list documents doc]
-                  <li><a href="[val doc]">[val doc]</a></li>
+                  [call "comp:filenameFromPath" { "doc": doc }]
                 [endlist]
               </ul>
             [endif]
@@ -81,7 +101,7 @@ resourcetype helseforsk {
               [if approval-internal != null]
                 <ul>
                   [list approval-internal doc]
-                    <li><a href="[val doc]">[val doc]</a></li>
+                    [call "comp:filenameFromPath" { "doc": doc }]
                   [endlist]
                 </ul>
               [endif]
@@ -92,7 +112,7 @@ resourcetype helseforsk {
               [if approval-rek != null]
                 <ul>
                   [list approval-rek doc]
-                    <li><a href="[val doc]">[val doc]</a></li>
+                    [call "comp:filenameFromPath" { "doc": doc }]
                   [endlist]
                 </ul>
               [endif]
@@ -106,7 +126,7 @@ resourcetype helseforsk {
               [if approval-nsd != null]
                 <ul>
                   [list approval-nsd doc]
-                    <li><a href="[val doc]">[val doc]</a></li>
+                    [call "comp:filenameFromPath" { "doc": doc }]
                   [endlist]
                 </ul>
               [endif]
@@ -120,7 +140,7 @@ resourcetype helseforsk {
               [if approval-datatilsynet != null]
                 <ul>
                   [list approval-datatilsynet doc]
-                    <li><a href="[val doc]">[val doc]</a></li>
+                    [call "comp:filenameFromPath" { "doc": doc }]
                   [endlist]
                 </ul>
               [endif]
@@ -134,7 +154,7 @@ resourcetype helseforsk {
               [if approval-helsedir != null]
                 <ul>
                   [list approval-helsedir doc]
-                    <li><a href="[val doc]">[val doc]</a></li>
+                    [call "comp:filenameFromPath" { "doc": doc }]
                   [endlist]
                 </ul>
               [endif]
@@ -148,7 +168,7 @@ resourcetype helseforsk {
               [if approval-stat-legemiddelverk != null]
                 <ul>
                   [list approval-stat-legemiddelverk doc]
-                    <li><a href="[val doc]">[val doc]</a></li>
+                    [call "comp:filenameFromPath" { "doc": doc }]
                   [endlist]
                 </ul>
               [endif]
@@ -160,7 +180,7 @@ resourcetype helseforsk {
               <h3 class="accordion">[localized "approval-others"]</h3>
               <ul>
                 [list approval-others doc]
-                  <li><a href="[val doc]">[val doc]</a></li>
+                  [call "comp:filenameFromPath" { "doc": doc }]
                 [endlist]
               </ul>
             [endif]
@@ -172,7 +192,8 @@ resourcetype helseforsk {
 	        [endif]
               
             <h2>[localized "unit"]</h2>
-              
+            <p>[val unit]</p>
+            
             <h2>[localized "researchers"]</h2>
 	        [if participantsCachedFullName != null || participants != null]
 	          <ul>
