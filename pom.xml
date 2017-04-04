@@ -79,7 +79,7 @@
       <url>/LICENSE.txt</url>
     </license>
   </licenses>
-  
+
   <distributionManagement>
     <site>
       <id>webdav-site</id>
@@ -94,7 +94,7 @@
       <url>https://repo.usit.uio.no/nexus/content/repositories/internal-snapshots</url>
     </snapshotRepository>
   </distributionManagement>
-  
+
   <pluginRepositories>
     <pluginRepository>
       <id>nexus-public</id>
@@ -107,7 +107,7 @@
       </snapshots>
     </pluginRepository>
   </pluginRepositories>
-  
+
   <repositories>
     <repository>
       <id>nexus-public</id>
@@ -169,7 +169,7 @@
         <filtering>true</filtering>
       </resource>
     </resources>
-    
+
     <testResources>
       <testResource>
         <directory>src/test/resources</directory>
@@ -369,7 +369,7 @@
         <artifactId>maven-war-plugin</artifactId>
         <version>2.6</version>
         <configuration>
-          <!-- Exclude spring-boot (prevent annotation-based 
+          <!-- Exclude spring-boot (prevent annotation-based
                automatic loading of classes) -->
           <packagingExcludes>
             WEB-INF/lib/spring-boot-*.jar
@@ -392,7 +392,7 @@
         </dependencies>
         </plugin>
       -->
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -416,7 +416,7 @@
           <outputEncoding>utf-8</outputEncoding>
         </configuration>
       </plugin>
-      
+
       <!-- Surefire -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -484,7 +484,7 @@
           <groupId>org.apache.xerces</groupId>
           <artifactId>serializer</artifactId>
         </exclusion>
-        
+
         <!-- Exclude some slf4j libs -->
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -953,7 +953,7 @@
     </dependency>
 
   </dependencies>
-  
+
   <reporting>
     <plugins>
       <plugin>
@@ -1032,3 +1032,4 @@
     </plugins>
   </reporting>
 </project>
+
