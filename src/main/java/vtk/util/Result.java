@@ -55,6 +55,19 @@ public final class Result<T> {
     public final Optional<T> result;
     
     /**
+     * Gets the value of this result if this is a success,
+     * otherwise throws this failure.
+     * @return the value of the {@link #result} field, if this is a success
+     * @throws the value of the {@link #failure} field if this is a failure
+     */
+    public T get() throws Throwable {
+        if (failure.isPresent()) {
+            throw failure.get();
+        }
+        return result.get();
+    }
+    
+    /**
      * Creates a result representing a successful operation.
      * @param result the result of the operation
      * @return the newly created instance
