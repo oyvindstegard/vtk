@@ -37,22 +37,48 @@ import java.util.function.Supplier;
 
 /**
  * Wrapper class representing the result of some operation,
- * which was either a success or a failure. 
+ * which was either a success or a failure. This is indicated by the fields
+ * {@link #result} and {@link #failure}, of which only one can be present.
  *
  * @param <T> the type of the result
  */
 public final class Result<T> {
+    
+    /**
+     * The failure of this result, if present
+     */
     public final Optional<Throwable> failure;
+    
+    /**
+     * The value of this result, if present
+     */
     public final Optional<T> result;
     
+    /**
+     * Creates a result representing a successful operation.
+     * @param result the result of the operation
+     * @return the newly created instance
+     */
     public static <T> Result<T> success(T result) {
         return new Result<>(Optional.of(result), Optional.empty());
     }
     
+    /**
+     * Creates a result representing a failed operation.
+     * @param error the failure cause
+     * @return the newly created instance
+     */
     public static <T> Result<T> failure(Throwable error) {
         return new Result<>(Optional.empty(), Optional.of(error));
     }
-    
+   
+    /**
+     * Attempts to create a {@link Result} from a {@link Supplier}. If 
+     * the supplier throws an exception this method returns a failure, 
+     * otherwise it returns a successful result.
+     * @param supplier the {@link Supplier} of the value
+     * @return the newly created instance
+     */
     public static <T> Result<T> attempt(Supplier<T> supplier) {
         try {
             return new Result<>(Optional.of(supplier.get()), Optional.empty());
@@ -61,7 +87,15 @@ public final class Result<T> {
             return new Result<>(Optional.empty(), Optional.of(t));
         }
     }
-    
+
+    /**
+     * Takes a function that returns a {@link Result} and applies it to the 
+     * value of this result (if this result is successful). The resulting 
+     * {@link Result} instance is returned. If this result represents a failure,
+     * it will be propagated as the failure of the next result.
+     * @param mapper the function from {@code T} to {@code Result<U>}
+     * @return a success consisting of the mapped value, or this failure
+     */
     public <U> Result<U> flatMap(Function<? super T, ? extends Result<U>> mapper) {
         if (failure.isPresent()) {
             return new Result<>(Optional.empty(), Optional.of(failure.get()));
@@ -74,6 +108,12 @@ public final class Result<T> {
         }
     }
     
+    /**
+     * Applies the given function to the value from this success, 
+     * otherwise returns this failure.
+     * @param mapper the function from {@code T} to {@code U}
+     * @return a success consisting of the mapped value, or this failure
+     */
     public <U> Result<U> map(Function<? super T, ? extends U> mapper) {
         if (failure.isPresent()) {
             return new Result<>(Optional.empty(), Optional.of(failure.get()));
@@ -87,12 +127,23 @@ public final class Result<T> {
         }
     }
     
+    /**
+     * Applies the given consumer function to the value from this success, 
+     * otherwise does nothing.
+     */
     public void forEach(Consumer<? super T> consumer) {
         if (result.isPresent()) {
             consumer.accept(result.get());
         }
     }
     
+    /**
+     * Applies the given function to this failure and returns a new result with 
+     * the mapped value, or returns this if this is a success.
+     * @param recovery the recovery function}
+     * @return this if this is a success, otherwise the a new success result 
+     * with the value as mapped by the recovery function
+     */
     public Result<T> recover(Function<? super Throwable, ? extends T> recovery) {
         if (failure.isPresent()) {
             T t = recovery.apply(failure.get());
@@ -103,6 +154,13 @@ public final class Result<T> {
         }
     }
 
+    /**
+     * Applies the given function to this failure and returns its result, 
+     * or returns this if this is a success
+     * @param recovery the recovery function
+     * @return this if this is a success, otherwise the result returned 
+     * by the recovery function 
+     */
     public Result<T> recoverWith(Function<? super Throwable, ? extends Result<T>> recovery) {
         if (failure.isPresent()) {
             return recovery.apply(failure.get());
