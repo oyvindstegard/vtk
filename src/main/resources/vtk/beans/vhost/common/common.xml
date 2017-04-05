@@ -7,6 +7,18 @@
     <property name="staticMethod" value="vtk.repository.Path.fromString" />    
   </bean>
 
+  <bean id="optional.empty"
+        class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    <property name="targetClass" value="java.util.Optional" />
+    <property name="targetMethod" value="empty" />
+  </bean>  
+
+  <bean id="optional.abstractBean"
+        class="org.springframework.beans.factory.config.MethodInvokingFactoryBean"
+        abstract="true">
+    <property name="targetClass" value="java.util.Optional" />
+    <property name="targetMethod" value="of" />
+  </bean>  
 
   <!-- Common message source. Bean id 'messageSource' is magically picked up by Spring application context
        and provided through various APIs from there.

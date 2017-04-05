@@ -51,6 +51,8 @@ import vtk.security.AuthenticationProcessingException;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 import vtk.security.PrincipalManager;
+import vtk.security.roles.RoleManager;
+import vtk.security.roles.RoleManager.Role;
 import vtk.security.web.AuthenticationChallenge;
 import vtk.security.web.AuthenticationHandler;
 import vtk.security.web.InvalidAuthenticationRequestException;
@@ -62,15 +64,18 @@ public class ClientAddressAuthenticationHandler
     private Supplier<List<Result<ClientAddrAuthSpec>>> provider;
     private PrincipalFactory principalFactory;
     private PrincipalManager principalManager;
+    private Optional<RoleManager> roleManager;
     
     public ClientAddressAuthenticationHandler(String identifier, 
             Supplier<List<Result<ClientAddrAuthSpec>>> provider,
             PrincipalFactory principalFactory,
-            PrincipalManager principalManager) {
+            PrincipalManager principalManager,
+            Optional<RoleManager> roleManager) {
         this.identifier = identifier;
         this.provider = provider;
         this.principalFactory = principalFactory;
         this.principalManager = principalManager;
+        this.roleManager = roleManager;
     }
     
     @Override
@@ -98,6 +103,7 @@ public class ClientAddressAuthenticationHandler
             throws AuthenticationProcessingException, AuthenticationException,
             InvalidAuthenticationRequestException {
         Result<Optional<String>> auth = auth(req);
+
         if (auth.failure.isPresent()) {
             throw new AuthenticationProcessingException(auth.failure.get());
         }
@@ -148,10 +154,10 @@ public class ClientAddressAuthenticationHandler
                 if (auth.result.isPresent()) {
                     Optional<String> uid = auth.result.get();
                     if (uid.isPresent()) {
-                        writer.write("Invalid user: " + uid.get());
+                        writer.write("Invalid principal: " + uid.get());
                     }
                     else {
-                        writer.write("Could not map request to a valid user");
+                        writer.write("Could not map request to a valid principal");
                     }
                 }
                 resp.flushBuffer();
@@ -183,6 +189,11 @@ public class ClientAddressAuthenticationHandler
                 return Result.success(Optional.empty());
             }
             if (!principalManager.validatePrincipal(principal)) {
+                return Result.success(Optional.empty());
+            }
+            Optional<Boolean> roleDenied = roleManager.map(mgr -> 
+                mgr.hasRole(principal, Role.ROOT) || mgr.hasRole(principal, Role.READ_EVERYTHING));
+            if (roleDenied.orElse(false)) {
                 return Result.success(Optional.empty());
             }
             return Result.success(Optional.of(principal));
