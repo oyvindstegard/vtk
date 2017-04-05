@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.LocaleResolver;
+
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 
@@ -53,7 +54,7 @@ public class ServiceDelegatingLocaleResolver implements LocaleResolver {
     private String localeResolverAttribute = "localeResolver";
     private LocaleResolver defaultLocaleResolver;
 
-    private Map<String, Locale> localeTranslationMap = new HashMap<String, Locale>();
+    private Map<String, Locale> localeTranslationMap = new HashMap<>();
     
     @Required public void setDefaultLocaleResolver(LocaleResolver defaultLocaleResolver) {
         this.defaultLocaleResolver = defaultLocaleResolver;
@@ -81,8 +82,10 @@ public class ServiceDelegatingLocaleResolver implements LocaleResolver {
     }
 
     private LocaleResolver mapLocaleResolver() {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Service currentService = requestContext.getService();
+        Service currentService = null;
+        if (RequestContext.exists()) {
+            currentService = RequestContext.getRequestContext().getService();
+        }
         
         while (currentService != null) {
             Object resolver = currentService.getAttribute(this.localeResolverAttribute);

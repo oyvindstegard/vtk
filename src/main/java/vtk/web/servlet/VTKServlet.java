@@ -33,6 +33,7 @@ package vtk.web.servlet;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -660,8 +662,14 @@ public class VTKServlet extends DispatcherServlet {
      */
     @SuppressWarnings("rawtypes")
     private void logError(String message, HttpServletRequest req, Throwable t) {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
+        Optional<RequestContext> requestContext = Optional.empty();
+        if (RequestContext.exists()) {
+            requestContext = Optional.of(RequestContext.getRequestContext());
+        }
+        Optional<SecurityContext> securityContext = Optional.empty();
+        if (SecurityContext.exists()) {
+            securityContext = Optional.of(SecurityContext.getSecurityContext());
+        }
         String httpMethod = req.getMethod();
 
         Map requestParameters = req.getParameterMap();
@@ -693,8 +701,8 @@ public class VTKServlet extends DispatcherServlet {
         if (message != null) sb.append(message).append(" ");
         sb.append("Message: ").append(t.getMessage()).append(" - ");
         sb.append("Full request URL: [").append(requestURL).append("], ");
-        sb.append("Request context: [").append(requestContext).append("], ");
-        sb.append("security context: [").append(securityContext).append("], ");
+        requestContext.ifPresent(ctx -> sb.append("Request context: [").append(ctx).append("], "));
+        securityContext.ifPresent(ctx -> sb.append("security context: [").append(ctx).append("], "));
         sb.append("method: [").append(httpMethod).append("], ");
         sb.append("request parameters: [").append(params).append("], ");
         sb.append("user agent: [").append(req.getHeader("User-Agent")).append("], ");
@@ -702,7 +710,7 @@ public class VTKServlet extends DispatcherServlet {
         sb.append("remote host: [").append(req.getRemoteHost()).append("]");
         this.errorLogger.error(sb.toString(), t);
     }
-
+    
     /**
      * Handles an error that occurred during request processing. An
      * error handler is looked up based on the throwable's class. If
@@ -718,8 +726,7 @@ public class VTKServlet extends DispatcherServlet {
      */
     private void handleError(HttpServletRequest req, HttpServletResponse resp,
                              Throwable t) throws ServletException {
-        if (t instanceof EOFException || 
-                (t.getCause() != null && (t.getCause() instanceof TimeoutException))) { 
+        if (isClientDisconnect(t)) {
             logger.info("Client disconnect: " + req.getRequestURI() 
                 + ": " + t.getMessage());
             return;
@@ -761,7 +768,7 @@ public class VTKServlet extends DispatcherServlet {
         } 
 
         int statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-        Map model = null;
+        Map<String, Object> model = null;
         View view = null;
         try {
             model = handler.getErrorModel(req, resp, t);
@@ -794,7 +801,13 @@ public class VTKServlet extends DispatcherServlet {
         if (statusCode == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) {
             logError(req, t);
         }
-
+        if (resp.isCommitted()) {
+            this.logger.debug(
+                    "Response already committed for request " + req.getRequestURL() 
+                    + ", not invoking error handler ");
+            return;
+        }
+        
         resp.setStatus(statusCode);
         try {
 
@@ -816,6 +829,17 @@ public class VTKServlet extends DispatcherServlet {
         }
     }
     
+    private boolean isClientDisconnect(Throwable t) {
+        if (t instanceof UncheckedIOException) {
+            t = ((UncheckedIOException) t).getCause();
+        }
+        if (t instanceof EOFException || 
+                (t.getCause() != null && (t.getCause() instanceof TimeoutException))) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Resolves an error handler based on the throwable's class and
      * the current service.
@@ -826,11 +850,13 @@ public class VTKServlet extends DispatcherServlet {
      */
     private ErrorHandler resolveErrorHandler(Throwable t) {
         Service currentService = null;
-        RequestContext requestContext = RequestContext.getRequestContext();
-        if (requestContext != null) {
-            currentService = requestContext.getService();
-        }
 
+        if (RequestContext.exists()) {
+            RequestContext requestContext = RequestContext.getRequestContext();
+            if (requestContext != null) {
+                currentService = requestContext.getService();
+            }
+        }
         ErrorHandler selected = null;
 
         for (int i = 0; i < this.errorHandlers.length; i++) {
