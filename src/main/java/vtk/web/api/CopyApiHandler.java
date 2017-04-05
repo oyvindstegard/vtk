@@ -30,7 +30,6 @@
  */
 package vtk.web.api;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -64,12 +63,7 @@ public class CopyApiHandler implements HttpRequestHandler {
                         handlePost(request, response)
                         : unknownMethod(request, response);
 
-        try {
-            builder.writeTo(response);
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        builder.writeTo(response);
     }
     
     private ApiResponseBuilder handleGet(HttpServletRequest request, 

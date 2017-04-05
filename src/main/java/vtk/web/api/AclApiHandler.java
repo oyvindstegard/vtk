@@ -69,7 +69,7 @@ public class AclApiHandler implements HttpRequestHandler {
     }
 
     @Override
-    public void handleRequest(HttpServletRequest request, HttpServletResponse response) {
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         
         RequestContext requestContext = RequestContext.getRequestContext();
         Result<Optional<Resource>> res = retrieve(requestContext, requestContext.getResourceURI());
@@ -95,7 +95,7 @@ public class AclApiHandler implements HttpRequestHandler {
            }
         });
         
-        bldr.recover(ex -> {
+        bldr = bldr.recover(ex -> {
             if (ex instanceof InvalidRequestException) {
                 return new ApiResponseBuilder(HttpServletResponse.SC_BAD_REQUEST)
                         .message(ex.getMessage());
@@ -106,15 +106,13 @@ public class AclApiHandler implements HttpRequestHandler {
             }
             return new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                     .message("An unexpected error occurred: " + ex.getMessage());
-        }).forEach(resp -> {
-            try {
-                resp.writeTo(response);
-            }
-            catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        });
+        
+        bldr.forEach(resp -> {
+            resp.writeTo(response);
         });
     }
+    
     
     private Result<ApiResponseBuilder> getAcl(Resource resource, 
             RequestContext requestContext) {

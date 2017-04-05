@@ -80,13 +80,8 @@ public class PublishApiHandler implements HttpRequestHandler {
             return new ApiResponseBuilder(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
                     .message("An unexpected error occurred: " + ex.getMessage());
         });
-        
-        try {
-            builder.get().writeTo(response);
-        }
-        catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+
+        builder.forEach(resp -> resp.writeTo(response));
     }
     
     

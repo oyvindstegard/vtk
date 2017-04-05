@@ -32,6 +32,7 @@ package vtk.web.api;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,15 +52,20 @@ class ApiResponseBuilder {
     public ApiResponseBuilder header(String name, String value) 
         { this.headers.put(name, value); return this; }
     
-    public void writeTo(HttpServletResponse response) throws IOException {
-        response.setStatus(status);
-        for (String name: headers.keySet()) {
-            response.setHeader(name, headers.get(name));
+    public void writeTo(HttpServletResponse response) throws UncheckedIOException {
+        try {
+            response.setStatus(status);
+            for (String name: headers.keySet()) {
+                response.setHeader(name, headers.get(name));
+            }
+            if (message != null) {
+                PrintWriter writer = response.getWriter();
+                writer.write(message);
+            }
+            response.flushBuffer();
         }
-        if (message != null) {
-            PrintWriter writer = response.getWriter();
-            writer.write(message);
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        response.flushBuffer();
     }
 }
