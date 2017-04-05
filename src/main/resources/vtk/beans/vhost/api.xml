@@ -52,15 +52,28 @@
     </property>
   </bean>
 
+  <bean id="api.lockService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService" />
+    <property name="order" value="-101" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="mode" />
+          <property name="parameterValue" value="lock-api" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler">
+      <bean class="vtk.web.api.LockApiHandler" />
+    </property>
+  </bean>
+
   <bean id="api.adminJsonPutService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-101" />
     <property name="assertions">
       <list>
-        <bean class="vtk.web.service.RequestHeaderRegexpAssertion">
-          <property name="header" value="Content-Type"/>
-          <property name="pattern" value="application/(json|.+\+json)" />
-        </bean>
+        <ref bean="api.jsonContentTypeAssertion" />
         <bean class="vtk.web.service.RequestMethodAssertion">
           <property name="method" value="PUT" />
         </bean>
@@ -124,6 +137,11 @@
   <bean id="api.jsonAcceptAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
     <property name="header" value="Accept"/>
     <property name="pattern" value="^application/json.*" />
+  </bean>
+
+  <bean id="api.jsonContentTypeAssertion" class="vtk.web.service.RequestHeaderRegexpAssertion">
+    <property name="header" value="Content-Type"/>
+    <property name="pattern" value="application/(json|.+\+json)" />
   </bean>
 
 </beans>
