@@ -30,7 +30,6 @@
  */
 package vtk.webdav;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,9 +65,6 @@ import vtk.web.RequestContext;
  * 
  */
 public class LockController extends AbstractWebdavController {
-
-    /* Value (in seconds) of infinite timeout */
-    private static final int INFINITE_TIMEOUT = 410000000;
 
     /*
      * Max length of lock owner info string. If the actual client supplied content exceeds this
@@ -118,7 +114,7 @@ public class LockController extends AbstractWebdavController {
             } else {
                 throw new InvalidRequestException("Invalid depth header: " + depthString);
             }
-            int timeout = parseTimeoutHeader(request.getHeader("TimeOut"));
+            int timeout = HttpUtil.parseTimeoutHeader(request.getHeader("TimeOut"));
            
             boolean exists = repository.exists(token, uri);
 
@@ -315,39 +311,6 @@ public class LockController extends AbstractWebdavController {
         }
 
         return owner;
-    }
-
-    protected int parseTimeoutHeader(String timeoutHeader) {
-
-        /*
-         * FIXME: Handle the 'Extend' format (see section 4.2 of RFC 2068) and multiple TimeTypes
-         * (see section 9.8 of RFC 2518)
-         */
-        int timeout = INFINITE_TIMEOUT;
-
-        if (timeoutHeader == null || timeoutHeader.equals("")) {
-            return timeout;
-        }
-
-        if (timeoutHeader.equals("Infinite")) {
-            return timeout;
-        }
-
-        if (timeoutHeader.startsWith("Extend")) {
-            return timeout;
-        }
-
-        if (timeoutHeader.startsWith("Second-")) {
-            try {
-                String timeoutStr = timeoutHeader.substring("Second-".length(), timeoutHeader
-                        .length());
-                timeout = Integer.parseInt(timeoutStr);
-
-            } catch (NumberFormatException e) {
-                this.logger.warn("Invalid timeout header: " + timeoutHeader);
-            }
-        }
-        return timeout;
     }
 
 }
