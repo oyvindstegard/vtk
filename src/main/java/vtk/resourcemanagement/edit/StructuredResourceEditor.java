@@ -30,7 +30,10 @@
  */
 package vtk.resourcemanagement.edit;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -38,8 +41,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -47,8 +53,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
-import vtk.repository.ContentInputSources;
 
+import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
 import vtk.repository.Repository;
@@ -89,13 +95,29 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
             throws Exception {
         return formBackingObject();
     }
-
+    
     @Override
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, FormSubmitCommand command,
             BindException errors) throws Exception {
         
-        debugPostRequest(request);
+        if (!logger.isDebugEnabled()) {
+            return onSubmitInternal(request, response, command, errors);
+        }
+        else {
+            RequestWrapper requestWrapper = new RequestWrapper(request);
+            try {
+                return onSubmitInternal(requestWrapper, response, command, errors);
+            }
+            finally {
+                debugPostRequest(requestWrapper);
+            }
+        }
+    }    
+
+    private ModelAndView onSubmitInternal(HttpServletRequest request,
+            HttpServletResponse response, FormSubmitCommand command,
+            BindException errors) throws Exception {
         FormSubmitCommand form = formBackingObject();
         FormDataBinder binder = new FormDataBinder(form, "form", form.getResource().getType());
         binder.bind(request);
@@ -104,7 +126,7 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
             unlock();
             return new ModelAndView(getSuccessView());
         }
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("form", form);
         form.sync();
         RequestContext requestContext = RequestContext.getRequestContext();
@@ -369,14 +391,23 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
         return fragment.getStringRepresentation();
     }
     
-    private void debugPostRequest(ServletRequest request) {
-        List<String> parameterNames = new ArrayList<>();
-        Enumeration<?> inputs = request.getParameterNames();
-        while (inputs.hasMoreElements()) 
-            parameterNames.add(inputs.nextElement().toString());
+    private void debugPostRequest(RequestWrapper request) {
         Path uri = RequestContext.getRequestContext().getResourceURI();
-        logger.debug("POST: " + uri + ": " + request.getContentLength() 
-                + " bytes, parameters: " + parameterNames);
+        StringBuilder message = new StringBuilder("POST: " + uri + ": " 
+                + request.getContentLength() + " bytes");
+        Enumeration<String> inputs = request.getParameterNames();
+        message.append(", parameters: {\n");
+        while (inputs.hasMoreElements()) {
+            String name = inputs.nextElement();
+            String value = request.getParameter(name);
+            message.append(name).append("=").append(value);
+            if (inputs.hasMoreElements()) message.append(",");
+            message.append("\n");
+        }
+        message.append("}");
+        byte[] body = request.getBody();
+        message.append(", body=" + new String(body, StandardCharsets.UTF_8));
+        logger.debug(message.toString());
     }
 
     public void unlock() throws Exception {
@@ -418,4 +449,67 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
     public void setDefaultLocale(Locale defaultLocale) {
         this.defaultLocale = defaultLocale;
     }
+    
+    private static class RequestWrapper extends HttpServletRequestWrapper {
+        private CopyInputStream bufferingStream;
+
+        public RequestWrapper(HttpServletRequest request) {
+            super(request);
+        }
+
+        @Override
+        public ServletInputStream getInputStream() throws IOException {
+            if (bufferingStream != null) {
+                throw new IOException("Input stream already opened");
+            }
+            bufferingStream = new CopyInputStream(super.getInputStream());
+            return bufferingStream;
+        }
+
+        public byte[] getBody() {
+            if (bufferingStream != null) {
+                return bufferingStream.getBuffer();
+            }
+            return new byte[0];
+        }
+    }
+
+    private static class CopyInputStream extends ServletInputStream {
+        private final ByteArrayOutputStream buffer;
+        private final ServletInputStream stream;
+
+        public CopyInputStream(ServletInputStream stream) {
+            this.stream = stream;
+            this.buffer = new ByteArrayOutputStream();
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = stream.read();
+            if (b > -1) {
+                buffer.write(b);
+            }
+            return b;
+        }
+
+        public byte[] getBuffer() {
+            return buffer.toByteArray();
+        }
+        
+        @Override
+        public boolean isFinished() {
+            return stream.isFinished();
+        }
+
+        @Override
+        public boolean isReady() {
+            return stream.isReady();
+        }
+
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            stream.setReadListener(readListener);
+        }
+    }
+    
 }
