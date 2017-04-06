@@ -59,7 +59,6 @@ import vtk.security.AuthenticationException;
 import vtk.util.web.HttpUtil;
 import vtk.web.InvalidRequestException;
 import vtk.web.RequestContext;
-import vtk.web.http.HttpHeaderParser;
 
 /**
  * Handler for LOCK requests.
@@ -115,7 +114,7 @@ public class LockController extends AbstractWebdavController {
             } else {
                 throw new InvalidRequestException("Invalid depth header: " + depthString);
             }
-            int timeout = HttpHeaderParser.parseTimeoutHeader(request.getHeader("TimeOut"));
+            int timeout = HttpUtil.parseTimeoutHeader(request.getHeader("TimeOut"));
            
             boolean exists = repository.exists(token, uri);
 

@@ -35,23 +35,25 @@ import vtk.repository.*;
 import vtk.util.Result;
 import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
-import vtk.web.http.HttpHeaderParser;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Objects;
 
 public class LockApiHandler implements HttpRequestHandler {
-    private final int timeoutSeconds;
+    private final Duration refreshTimeout;
+    private final Duration defaultTimeout;
 
     public LockApiHandler() {
-        this(60*30);
+        this(Duration.ofMinutes(10), Duration.ofMinutes(10));
     }
 
-    public LockApiHandler(int timeoutSeconds) {
-        this.timeoutSeconds = timeoutSeconds;
+    public LockApiHandler(Duration refreshTimeout, Duration defaultTimeout) {
+        this.refreshTimeout = refreshTimeout;
+        this.defaultTimeout = defaultTimeout;
     }
 
     @Override
@@ -92,12 +94,7 @@ public class LockApiHandler implements HttpRequestHandler {
                     .message("An unexpected error occurred: " + ex.getMessage());
         });
 
-        try {
-            builder.get().writeTo(response);
-        }
-        catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        builder.forEach(resp -> resp.writeTo(response));
     }
 
     private enum LockAction {
@@ -143,9 +140,10 @@ public class LockApiHandler implements HttpRequestHandler {
                                 requestContext.getResourceURI(),
                                 false
                         );
-                        int timeout = HttpHeaderParser.parseTimeoutHeader(
-                                request.getHeader("TimeOut")
-                        );
+                        String timeoutHeader = request.getHeader("TimeOut");
+                        int timeout = (timeoutHeader == null)
+                                ? (int) this.defaultTimeout.getSeconds()
+                                : HttpUtil.parseTimeoutHeader(timeoutHeader);
 
                         return new LockRequest(action, resource, timeout);
                     }
@@ -215,10 +213,13 @@ public class LockApiHandler implements HttpRequestHandler {
             if (lock != null) {
                 String token = requestContext.getSecurityToken();
                 long nowSeconds = System.currentTimeMillis() / 1000;
-                long currentTimeoutSeconds = lock.getTimeout().getTime() / 1000;
+                long lockReleaseTimeSeconds = lock.getTimeout().getTime() / 1000;
+                long refreshTimeSeconds = nowSeconds + this.refreshTimeout.getSeconds();
 
-                message = String.format("lock valid for %d more seconds", currentTimeoutSeconds);
-                if (currentTimeoutSeconds < nowSeconds + this.timeoutSeconds) {
+                message = String.format(
+                        "%d seconds before you can refresh", lockReleaseTimeSeconds - refreshTimeSeconds
+                );
+                if (lockReleaseTimeSeconds <= refreshTimeSeconds) {
                     // Refresh lock:
                     try {
                         requestContext.getRepository().lock(
@@ -226,7 +227,7 @@ public class LockApiHandler implements HttpRequestHandler {
                                 uri,
                                 lock.getOwnerInfo(),
                                 lock.getDepth(),
-                                this.timeoutSeconds,
+                                request.timeout,
                                 lock.getLockToken()
                         );
                     } catch (Exception ex) {

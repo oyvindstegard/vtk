@@ -41,7 +41,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.time.FastDateFormat;
-import org.joda.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vtk.util.cache.ArrayStackCache;
 import vtk.util.cache.ReusableObjectCache;
 
@@ -52,6 +53,7 @@ import vtk.util.cache.ReusableObjectCache;
  */
 public class HttpUtil {
 
+    private static final Logger LOG = LoggerFactory.getLogger(HttpUtil.class);
     private static FastDateFormat HTTP_DATE_FORMATTER =
         FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss z",
                                    java.util.TimeZone.getTimeZone("GMT"),
@@ -68,6 +70,8 @@ public class HttpUtil {
     };
 
     private static final ReusableObjectCache<DateFormat>[] CACHED_HTTP_DATE_FORMATS;
+
+    private static final int INFINITE_TIMEOUT = 410000000;
 
     /* HTTP status codes defined by WebDAV */
     public static final int SC_PROCESSING = 102;
@@ -251,6 +255,38 @@ public class HttpUtil {
             } 
         }
         return null;
+    }
+
+    public static int parseTimeoutHeader(String timeoutHeader) {
+        /*
+         * FIXME: Handle the 'Extend' format (see section 4.2 of RFC 2068) and multiple TimeTypes
+         * (see section 9.8 of RFC 2518)
+         */
+        int timeout = INFINITE_TIMEOUT;
+
+        if (timeoutHeader == null || timeoutHeader.equals("")) {
+            return timeout;
+        }
+
+        if (timeoutHeader.equals("Infinite")) {
+            return timeout;
+        }
+
+        if (timeoutHeader.startsWith("Extend")) {
+            return timeout;
+        }
+
+        if (timeoutHeader.startsWith("Second-")) {
+            try {
+                String timeoutStr = timeoutHeader.substring("Second-".length(), timeoutHeader
+                        .length());
+                timeout = Integer.parseInt(timeoutStr);
+
+            } catch (NumberFormatException e) {
+                LOG.warn("Invalid timeout header: " + timeoutHeader);
+            }
+        }
+        return timeout;
     }
 
 }
