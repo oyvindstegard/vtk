@@ -53,7 +53,7 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
 
         List<Suggestion> suggestions = new ArrayList<Suggestion>(completions.size());
         for (Principal principal : completions) {
-            Suggestion suggestion = new Suggestion(4);
+            Suggestion suggestion = new Suggestion(5);
 
             // XXX: Only list uio.no and pseudo users
             if (principal.isUser()) {
@@ -62,13 +62,17 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
                     continue;
                 }
             }
+            
+            final List<Object> values = principal.getMetadata().getValues(USER_SCOPED_AFFILIATION_ATTRIBUTE);
+            
             // XXX: Special treatment for webid-groups and users
             if (principal.getQualifiedName().contains("webid.uio.no")) {
                 if (principal.getType() == Type.GROUP || principal.getType() == Type.PSEUDO) {
                     suggestion.setField(this.invert ? 0 : 1, principal.getUnqualifiedName() + "@webid.uio.no");
                     suggestion.setField(this.invert ? 1 : 0, principal.getDescription());
                     suggestion.setField(2, principal.getURL());
-                    suggestion.setField(3, areaCodes(principal));
+                    suggestion.setField(3, areaCodes(values, 0));
+                    suggestion.setField(4, areaCodes(values, 1));
                 } else {
                     continue;
                 }
@@ -76,7 +80,8 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
                 suggestion.setField(this.invert ? 0 : 1, principal.getUnqualifiedName());
                 suggestion.setField(this.invert ? 1 : 0, principal.getDescription());
                 suggestion.setField(2, principal.getURL());
-                suggestion.setField(3, areaCodes(principal));
+                suggestion.setField(3, areaCodes(values, 0));
+                suggestion.setField(4, areaCodes(values, 1));
             }
 
             suggestions.add(suggestion);
@@ -85,12 +90,15 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
         return suggestions;
     }
 
-    private String areaCodes(Principal principal) {
-        final List<Object> values = principal.getMetadata().getValues(USER_SCOPED_AFFILIATION_ATTRIBUTE);
-        if (values != null && values.size() > 0 && values.get(0) instanceof String) {
-            final String s = (String)values.get(0);
+    private String areaCodes(List<Object> values, int occurence) { // Occurrence: 0 = primary, 1 = secondary
+        if (values != null && values.size() > occurence && values.get(occurence) instanceof String) {
+            final String s = (String) values.get(occurence);
             final int delimiterIdx = s.indexOf('@');
-            return s.substring(delimiterIdx + 1);
+            if(delimiterIdx != -1) {
+                return s.substring(delimiterIdx + 1);
+            } else {
+                return null;
+            }
         } else {
             return null;
         }
