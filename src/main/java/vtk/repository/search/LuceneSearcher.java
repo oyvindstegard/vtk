@@ -545,10 +545,12 @@ public class LuceneSearcher implements Searcher, InitializingBean {
                 DocIdSet matched = iterationFilter.getDocIdSet(arc, segment.getLiveDocs());
                 if (matched != null) {
                     DocIdSetIterator disi = matched.iterator();
-                    int segmentDocId;
-                    while ((segmentDocId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                        int globalOrdinal = sdv != null ? sdv.getOrd(arc.docBase + segmentDocId) : -1;
-                        globalDocList.add(new DocOrd(arc.docBase + segmentDocId, globalOrdinal));
+                    if (disi != null) {
+                        int segmentDocId;
+                        while ((segmentDocId = disi.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+                            int globalOrdinal = sdv != null ? sdv.getOrd(arc.docBase + segmentDocId) : -1;
+                            globalDocList.add(new DocOrd(arc.docBase + segmentDocId, globalOrdinal));
+                        }
                     }
                 }
             } else {
