@@ -4,12 +4,16 @@
 
   <!-- This file is NOT loaded by Spring Boot -->
 
-  <bean id="stdReqFilter" class="vtk.web.filter.StandardRequestFilter">
-    <property name="urlReplacements" ref="stdReqFilter.urlReplacements" />
-    <property name="xForwardedFor" value="${request.xForwardedFor}" />
-    <property name="xForwardedProto" value="${request.xForwardedProto}" />
-    <property name="xForwardedPort" value="${request.xForwardedPort}" />
-    <property name="requestForwardFieldHeader" value="${request.forwardFieldHeader}" />
+  <bean id="stdReqFilter" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.filter.StandardRequestFilter">
+        <property name="urlReplacements" ref="stdReqFilter.urlReplacements" />
+        <property name="xForwardedFor" value="${request.xForwardedFor}" />
+        <property name="xForwardedProto" value="${request.xForwardedProto}" />
+        <property name="xForwardedPort" value="${request.xForwardedPort}" />
+        <property name="requestForwardFieldHeader" value="${request.forwardFieldHeader}" />
+      </bean>
+    </constructor-arg>
   </bean>
   
   <bean id="stdReqFilter.urlReplacements"
@@ -20,7 +24,7 @@
     </property>
   </bean>
 
-  <bean parent="defaultRequestFilters.builder">
+  <bean parent="vtk.initializingServletFilters.builder">
     <property name="arguments" ref="stdReqFilter" />
   </bean>
 

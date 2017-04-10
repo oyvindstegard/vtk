@@ -35,6 +35,8 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,8 +54,9 @@ import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
+import vtk.web.servlet.AbstractServletFilter;
 
-public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
+public class ExpiresCacheResponseFilter extends AbstractServletFilter {
 
     private static Logger logger = LoggerFactory.getLogger(ExpiresCacheResponseFilter.class);
     
@@ -63,9 +66,10 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
     private Set<Service> excludedServices;
     private Set<String> excludedResourceTypes;
     
-    public HttpServletResponse filter(HttpServletRequest request,
-            HttpServletResponse response) {
-
+    @Override
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
 
@@ -73,7 +77,8 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
             if (logger.isDebugEnabled()) {
                 logger.debug(uri + ": ignore: not in repository");
             }
-            return response;
+            chain.doFilter(request, response);
+            return;
         }
 
         if (this.rootService != null) {
@@ -82,8 +87,8 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": ignore: service=" + service.getName());
                 }
-
-                return response;
+                chain.doFilter(request, response);
+                return;
             }
         }
         
@@ -94,7 +99,8 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
                     if (logger.isDebugEnabled()) {
                         logger.debug(uri + ": ignore: service=" + service.getName());
                     }
-                    return response;
+                    chain.doFilter(request, response);
+                    return;
                 }
             }
         }
@@ -105,13 +111,15 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": remove: service-attr remove-caching=true");
                 }
-                return new CacheControlResponseWrapper(response, 0);
+                chain.doFilter(request, new CacheControlResponseWrapper(response, 0));
+                return;
             }
             if ("true".equals(service.getAttribute("inhibit-caching"))) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": ignore: service-attr inhibit-caching=true");
                 }
-                return response;
+                chain.doFilter(request, response);
+                return;
             }
             service = service.getParent();
         }
@@ -128,7 +136,8 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
                         if (logger.isDebugEnabled()) {
                             logger.debug(uri + ": ignore: type=" + t);
                         }
-                        return response;
+                        chain.doFilter(request, response);
+                        return;
                     }
                 }
             }
@@ -138,7 +147,8 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": ignore: restricted");
                 }
-                return response;
+                chain.doFilter(request, response);
+                return;
             }
 
             Property expiresProp = resource.getProperty(this.expiresPropDef);
@@ -146,18 +156,26 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": property max-age=" + expiresProp.getLongValue());
                 }
-                return new CacheControlResponseWrapper(response, expiresProp.getLongValue());
+                chain.doFilter(request, new CacheControlResponseWrapper(response, expiresProp.getLongValue()));
+                return;
             }
             if (this.globalMaxAge > 0) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": default max-age=" + this.globalMaxAge);
                 }
-                return new CacheControlResponseWrapper(response, this.globalMaxAge);
+                chain.doFilter(request, new CacheControlResponseWrapper(response, this.globalMaxAge));
+                return;
             }
-        } catch (Throwable t) { 
+        }
+        catch (Throwable t) { 
         }
         logger.debug(uri + ": ignore");
-        return response;
+        chain.doFilter(request, response);
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
     }
 
     public void setExpiresPropDef(PropertyTypeDefinition expiresPropDef) {
@@ -180,7 +198,7 @@ public class ExpiresCacheResponseFilter extends AbstractResponseFilter {
         this.excludedResourceTypes = excludedResourceTypes;
     }
     
-    private static final Set<String> DROPPED_HEADERS = new HashSet<String>();
+    private static final Set<String> DROPPED_HEADERS = new HashSet<>();
     static {
         DROPPED_HEADERS.add("Expires");
         DROPPED_HEADERS.add("Cache-Control");

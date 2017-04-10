@@ -33,51 +33,65 @@ package vtk.web.filter;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 
 import vtk.util.io.BoundedInputStream;
+import vtk.util.io.SizeLimitException;
+import vtk.web.servlet.AbstractServletFilter;
 
 
 /**
  * Filter that pipes the request input stream trough a {@link
  * BoundedInputStream} filter, providing a limit to upload sizes.
  */
-public class UploadLimitInputStreamFilter extends AbstractRequestFilter {
-
+public class UploadLimitInputStreamFilter extends AbstractServletFilter {
     private long uploadLimit = 0;
     
     public UploadLimitInputStreamFilter(long uploadLimit) {
         this.uploadLimit = uploadLimit;
     }
     
-    public HttpServletRequest filterRequest(HttpServletRequest request) {
-        return new UploadLimitRequestWrapper(request, this.uploadLimit);
+    @Override
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        try {
+            chain.doFilter(new UploadLimitRequestWrapper(request, uploadLimit), response);
+        }
+        catch (SizeLimitException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(e.getMessage());
+            response.flushBuffer();
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + uploadLimit + ")";
     }
     
     private static class UploadLimitRequestWrapper extends HttpServletRequestWrapper {
-
         private HttpServletRequest request;
         private long uploadLimit = 0;
 
         public UploadLimitRequestWrapper(HttpServletRequest request,
                                          long uploadLimit) {
-            
             super(request);
             this.request = request;
             this.uploadLimit = uploadLimit;
         }
         
+        @Override
         public ServletInputStream getInputStream() throws IOException {
-
-            InputStream inputStream = this.request.getInputStream();
-
+            InputStream inputStream = request.getInputStream();
             return new vtk.util.io.ServletInputStream(
-                new BoundedInputStream(inputStream, this.uploadLimit));
+                new BoundedInputStream(inputStream, uploadLimit));
         }
     }
-    
-
 
 }

@@ -210,16 +210,21 @@
   <!-- Principal factory and related beans -->
   <bean id="principalFactory" class="vtk.security.PrincipalFactory" />
 
-  <bean id="vrtx.sessionValidationFilter" class="vtk.web.filter.SessionValidationRequestFilter">
-    <property name="order" value="1" />
-    <property name="authorizedAddresses">
-      <bean class="vtk.context.CSVSetFactoryBean">
-        <property name="csvList" value="${sessionValidation.authorizedAddresses}" />
+
+  <bean id="vrtx.sessionValidationFilter" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.filter.SessionValidationRequestFilter">
+        <constructor-arg name="authorizedAddresses">
+          <bean class="vtk.context.CSVSetFactoryBean">
+            <property name="csvList" value="${sessionValidation.authorizedAddresses}" />
+          </bean>
+        </constructor-arg>
       </bean>
-    </property>
+    </constructor-arg>
+    <constructor-arg name="order" value="1" />
   </bean>
 
-  <bean parent="defaultRequestFilters.builder">
+  <bean parent="vtk.initializingServletFilters.builder">
     <property name="arguments" ref="vrtx.sessionValidationFilter" />
   </bean>
 

@@ -44,18 +44,22 @@
     <property name="viewUnauthenticatedParameter" value="x-prevent-decorating"/>
   </bean>
   
-  <bean id="vtk.globalHeaders.provider" class="vtk.web.filter.TemplateHeaderProvider">
-    <constructor-arg name="headers">
-      <map>
-        <entry key="${versionHeader.name}" value="${versionHeader.value}" />
-      </map>
+  <bean id="vtk.globalHeaders.provider" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.filter.TemplateHeaderProvider">
+        <constructor-arg name="headers">
+          <map>
+            <entry key="${versionHeader.name}" value="${versionHeader.value}" />
+          </map>
+        </constructor-arg>
+        <constructor-arg name="referenceDataProviders" ref="vtk.globalHeaders.referenceDataProviders" />
+        <constructor-arg name="addHeaders" value="false" />
+      </bean>
     </constructor-arg>
-    <constructor-arg name="referenceDataProviders" ref="vtk.globalHeaders.referenceDataProviders" />
     <constructor-arg name="order" value="0" />
-    <constructor-arg name="addHeaders" value="false" />
   </bean>
 
-  <bean parent="defaultResponseFilters.builder">
+  <bean parent="vtk.initializingServletFilters.builder">
     <property name="arguments" ref="vtk.globalHeaders.provider" />
   </bean>
 
@@ -161,20 +165,6 @@
   </bean>
   <bean id="spring.sessionRepository.sessionMap" class="java.util.concurrent.ConcurrentHashMap" />
 
-  <bean id="defaultRequestFilters" class="vtk.util.SortedCollection">
-    <constructor-arg>
-      <bean class="org.springframework.core.OrderComparator" />
-    </constructor-arg>
-    <constructor-arg name="unique" value="true" />
-  </bean>
-
-  <bean id="defaultRequestFilters.builder"
-        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
-    <property name="targetObject" ref="defaultRequestFilters" />
-    <property name="targetMethod" value="add" />
-  </bean>
-
-  
   <bean id="vtk.initializingServletFilters" class="vtk.util.SortedCollection">
     <constructor-arg>
       <bean class="org.springframework.core.OrderComparator" />
@@ -231,19 +221,6 @@
     </constructor-arg>
   </bean>
   
-  <bean id="defaultResponseFilters" class="vtk.util.SortedCollection">
-    <constructor-arg>
-      <bean class="org.springframework.core.OrderComparator" />
-    </constructor-arg>
-    <constructor-arg name="unique" value="true" />
-  </bean>
-
-  <bean id="defaultResponseFilters.builder"
-        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
-    <property name="targetObject" ref="defaultResponseFilters" />
-    <property name="targetMethod" value="add" />
-  </bean>
-
   <bean id="repositoryContextInitializer" class="vtk.web.RepositoryContextInitializer" />
 
   <!-- HandlerMapping -->

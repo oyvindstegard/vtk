@@ -30,46 +30,60 @@
  */
 package vtk.web.filter;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import vtk.web.service.Assertion;
+import vtk.web.servlet.AbstractServletFilter;
 
 
 /**
- * Conditional request filter. Performs an {@link Assertion} match on
- * the request before conditionally invoking a target request filter.
+ * Conditional servlet filter. Performs an {@link Assertion} match on
+ * the request before conditionally invoking the target filter.
  *
- * <p>Configurable JavaBean properties:
+ * <p>Constructor arguments:
  * <ul>
  *   <li><code>assertion</code> - the {@link Assertion} to match
- *   <li><code>requestFilter</code> - the target {@link RequestFilter
- *   request filter} which is invoked upon an assertion match
+ *   <li><code>filter</code> - the target {@link Filter
+ *   servlet filter} which is invoked upon an assertion match
  * </ul>
  */
-public class ConditionalRequestFilter extends AbstractRequestFilter {
+public class ConditionalFilter extends AbstractServletFilter {
 
-    private RequestFilter requestFilter;
+    private Filter filter;
     private Assertion assertion;
     
-    public void setRequestFilter(RequestFilter requestFilter) {
-        this.requestFilter = requestFilter;
-    }
-
-    
-    public void setAssertion(Assertion assertion) {
+    public ConditionalFilter(Assertion assertion, Filter filter) {
+        this.filter = filter;
         this.assertion = assertion;
     }
     
-
-    public HttpServletRequest filterRequest(HttpServletRequest request) {
-        if (this.assertion.matches(request, null, null)) {
-            return this.requestFilter.filterRequest(request);
+    @Override
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        if (assertion.matches(request, null, null)) {
+            List<Filter> filters = Collections.singletonList(filter);
+            vtk.web.servlet.FilterChain thisChain = 
+                    new vtk.web.servlet.FilterChain(filters, (req, resp) -> 
+                    chain.doFilter(req, resp));
+            thisChain.doFilter(request, response);
         }
-        return request;
+        else {
+            chain.doFilter(request, response);
+        }
     }
     
+    @Override
     public String toString() {
-        return this.getClass().getName() + "(" + this.assertion 
-            + ", " + this.requestFilter + ")";
+        return this.getClass().getSimpleName() + "(" + assertion 
+            + ", " + filter + ")";
     }
 }

@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.ContentInputSources;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Namespace;
@@ -52,7 +53,6 @@ import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
-import vtk.web.filter.UploadLimitInputStreamFilter;
 
 /**
  * Handler for PUT requests.
@@ -69,22 +69,9 @@ import vtk.web.filter.UploadLimitInputStreamFilter;
  *
  */
 public class PutController extends AbstractWebdavController {
-
-    private long maxUploadSize = -1;
     private String viewName = "PUT";
     private boolean obeyClientCharacterEncoding = true;
     private boolean removeUserSpecifiedCharacterEncoding = false;
-    
-
-    public void setMaxUploadSize(long maxUploadSize) {
-        if (maxUploadSize == 0) {
-            throw new IllegalArgumentException(
-                "Invalid upload size: " + maxUploadSize
-                + " (must be a number != 0)");
-        }
-
-        this.maxUploadSize = maxUploadSize;
-    }
     
 
     public void setViewName(String viewName) {
@@ -104,17 +91,12 @@ public class PutController extends AbstractWebdavController {
     public ModelAndView handleRequest(HttpServletRequest request,
                                       HttpServletResponse response) throws Exception {
          
-        if (this.maxUploadSize > 0) {
-            request = new UploadLimitInputStreamFilter(this.maxUploadSize).
-                filterRequest(request);
-        }
-
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         try {
             /* Get the document or collection: */

@@ -32,52 +32,74 @@ package vtk.web.filter;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 public class StandardRequestFilterTest {
-
+    
     @Test
-    public void testFilterRequest() {
+    public void testFilterRequest() throws IOException, ServletException {
 
         StandardRequestFilter filter = new StandardRequestFilter();
-        Map<String, String> replacements = new HashMap<String, String>();
+        Map<String, String> replacements = new HashMap<>();
         replacements.put("\\+", "%2B");
         filter.setUrlReplacements(replacements);
         
-        HttpServletRequest filtered = filter.filterRequest(new MockHttpServletRequest("GET", "/foo/bar"));
-        assertEquals("/foo/bar", filtered.getRequestURI());
+        TestChain.filter(filter, new MockHttpServletRequest("GET", "/foo/bar"), 
+                filtered -> assertEquals("/foo/bar", filtered.getRequestURI()));
 
-        filtered = filter.filterRequest(new MockHttpServletRequest("GET", "/%20"));
-        assertEquals("/", filtered.getRequestURI());
+        TestChain.filter(filter, new MockHttpServletRequest("GET", "/%20"),
+                filtered -> assertEquals("/", filtered.getRequestURI()));
 
-        filtered = filter.filterRequest(new MockHttpServletRequest("GET", "/foo/bar/file+2.txt"));
-        assertEquals("/foo/bar/file%2B2.txt", filtered.getRequestURI());
+        TestChain.filter(filter, new MockHttpServletRequest("GET", "/foo/bar/file+2.txt"),
+                filtered -> assertEquals("/foo/bar/file%2B2.txt", filtered.getRequestURI()));
         
-        filtered = filter.filterRequest(new MockHttpServletRequest("GET", "/foo/bar/i am a file with spaces.txt"));
-        assertEquals("/foo/bar/i%20am%20a%20file%20with%20spaces.txt", filtered.getRequestURI());
+        TestChain.filter(filter, new MockHttpServletRequest("GET", "/foo/bar/i am a file with spaces.txt"),
+                filtered -> assertEquals("/foo/bar/i%20am%20a%20file%20with%20spaces.txt", filtered.getRequestURI()));
 
-        filtered = filter.filterRequest(new MockHttpServletRequest("GET", "/"));
-        assertEquals("/", filtered.getRequestURI());
+        TestChain.filter(filter, new MockHttpServletRequest("GET", "/"),
+                filtered -> assertEquals("/", filtered.getRequestURI()));
 
-        filtered = filter.filterRequest(new MockHttpServletRequest("GET", ""));
-        assertEquals("/", filtered.getRequestURI());
-        
-//        filtered = filter.filterRequest(new MockHttpServletRequest("OPTIONS", "*"));
-//        assertEquals("/", filtered.getRequestURI());
-//        assertEquals("OPTIONS", filtered.getMethod());
+        TestChain.filter(filter, new MockHttpServletRequest("GET", ""),
+                filtered -> assertEquals("/", filtered.getRequestURI()));
 
         try {
-            filtered = filter.filterRequest(new MockHttpServletRequest("OPTIONS", "%")); // Invalid request
+            TestChain.filter(filter, new MockHttpServletRequest("OPTIONS", "%"), // Invalid request
+                    filtered -> {});
             throw new IllegalStateException("Should not pass");
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             // Expected
         }
     }
 
+    private static class TestChain implements FilterChain {
+        private Consumer<HttpServletRequest> consumer;
+        private TestChain(Consumer<HttpServletRequest> consumer) {
+            this.consumer = consumer;
+        }
+        
+        public static void filter(StandardRequestFilter filter, HttpServletRequest request, 
+                Consumer<HttpServletRequest> consumer) throws IOException, ServletException {
+            TestChain ch = new TestChain(consumer);
+            filter.doFilter(request, null, ch);
+        }
+
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response)
+                throws IOException, ServletException {
+            consumer.accept((HttpServletRequest) request);
+        }
+    }
 }

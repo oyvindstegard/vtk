@@ -38,7 +38,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
@@ -61,20 +64,22 @@ import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.util.codec.Base64;
 import vtk.web.RequestContext;
-import vtk.web.filter.AbstractResponseFilter;
 import vtk.web.service.URL;
+import vtk.web.servlet.AbstractServletFilter;
 
-public class FeedImageInlineFilter extends AbstractResponseFilter {
-    
+public class FeedImageInlineFilter extends AbstractServletFilter {
     private static Logger logger = LoggerFactory.getLogger(FeedImageInlineFilter.class);
 
     @Override
-    public HttpServletResponse filter(HttpServletRequest request,
-            HttpServletResponse response) {
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+                    throws IOException, ServletException {
         if ("true".equals(request.getParameter("inline-thumbnails"))) {
-            return new FilterHttpServletResponse(response);
+            chain.doFilter(request, new FilterHttpServletResponse(response));
         }
-        return response;
+        else {
+            chain.doFilter(request, response);
+        }
     }
 
     
@@ -250,7 +255,7 @@ public class FeedImageInlineFilter extends AbstractResponseFilter {
                     writer.write("data:" + contentType + ";base64,");
                     int n = 0;
                     while ((n = encoderStream.read(buffer)) > 0) {
-                        writer.write(new String(buffer, 0, n, "US-ASCII"));
+                        writer.write(new String(buffer, 0, n, StandardCharsets.US_ASCII));
                     }
                 }
             }
@@ -266,5 +271,4 @@ public class FeedImageInlineFilter extends AbstractResponseFilter {
             throw new UnsupportedOperationException();
         }
     }
-    
 }

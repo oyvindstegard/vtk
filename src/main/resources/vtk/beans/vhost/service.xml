@@ -290,26 +290,33 @@
   <bean id="hasIndexFileAssertion" class="vtk.web.service.IndexFileAssertion" />
 
 
-  <bean parent="defaultResponseFilters.builder">
+  <bean parent="vtk.contextualServletFilters.builder">
     <property name="arguments" ref="expiresCacheResponseFilter" />
   </bean>
 
 
-  <bean id="expiresCacheResponseFilter" class="vtk.web.filter.ExpiresCacheResponseFilter">
-    <property name="expiresPropDef" ref="expiresSecPropDef" />
-    <!--property name="rootService" ref="viewService" /-->
-    <property name="globalMaxAge" value="${webCache.globalMaxAge}" />
-    <property name="excludedResourceTypes">
-      <bean class="vtk.context.CSVSetFactoryBean">
-        <property name="csvList" value="${webCache.excludedResourceTypes}" />
-      </bean>
-    </property>
-    <property name="excludedServices">
-      <list>
-      <ref bean="displayThumbnailNoCacheService" />
-      <ref bean="editor.loadImageService" />
-      </list>
-    </property>
+  <bean id="expiresCacheResponseFilter" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+    <bean class="vtk.web.filter.ExpiresCacheResponseFilter">
+      <property name="expiresPropDef" ref="expiresSecPropDef" />
+      <!--property name="rootService" ref="viewService" /-->
+      <property name="globalMaxAge" value="${webCache.globalMaxAge}" />
+      <property name="excludedResourceTypes">
+        <bean class="vtk.context.CSVSetFactoryBean">
+          <property name="csvList" value="${webCache.excludedResourceTypes}" />
+        </bean>
+      </property>
+      <property name="excludedServices">
+        <list>
+          <ref bean="displayThumbnailNoCacheService" />
+          <ref bean="editor.loadImageService" />
+        </list>
+      </property>
+    </bean>
+    </constructor-arg>
+  </bean>
+  <bean parent="vtk.contextualServletFilters.builder">
+    <property name="arguments" ref="expiresCacheResponseFilter" />
   </bean>
 
 

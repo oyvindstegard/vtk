@@ -30,45 +30,43 @@
  */
 package vtk.web.filter;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import vtk.util.text.Json;
 import vtk.util.text.SimpleTemplate;
 import vtk.web.referencedata.ReferenceDataProvider;
+import vtk.web.servlet.AbstractServletFilter;
 
-public class TemplateHeaderProvider implements ResponseFilter {
+public class TemplateHeaderProvider extends AbstractServletFilter {
     private Map<String, SimpleTemplate> headers = new LinkedHashMap<>();
     private List<ReferenceDataProvider> referenceDataProviders;
-    private int order;
     private boolean addHeaders = true;
     
     public TemplateHeaderProvider(Map<String, String> headers, 
             List<ReferenceDataProvider> referenceDataProviders, 
-            int order, boolean addHeaders) {
+            boolean addHeaders) {
         for (String name: headers.keySet()) {
             String spec = headers.get(name);
             SimpleTemplate template = SimpleTemplate.compile(spec, "%{", "}");
             this.headers.put(name, template);
         }
         this.referenceDataProviders = referenceDataProviders;
-        this.order = order;
         this.addHeaders = addHeaders;
     }
 
     @Override
-    public int getOrder() {
-        return order;
-    }
-
-    @Override
-    public HttpServletResponse filter(HttpServletRequest request,
-            HttpServletResponse response) {
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         
         final Map<String, Object> model = new HashMap<>();
         referenceDataProviders.forEach(provider -> {
@@ -97,7 +95,11 @@ public class TemplateHeaderProvider implements ResponseFilter {
                 response.setHeader(name, header.toString());
             }
         }
-        return response;
+        chain.doFilter(request, response);
     }
-
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + headers + ")";
+    }
 }

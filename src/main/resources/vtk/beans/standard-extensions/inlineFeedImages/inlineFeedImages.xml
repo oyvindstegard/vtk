@@ -2,11 +2,14 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <bean id="feeds.imageInlineFilter" class="vtk.web.display.feed.FeedImageInlineFilter">
-    <property name="order" value="-1000" />
+  <bean id="feeds.imageInlineFilter" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.display.feed.FeedImageInlineFilter" />
+    </constructor-arg>
+    <constructor-arg name="order" value="-1000" />
   </bean>
 
-  <bean parent="defaultResponseFilters.builder">
+  <bean parent="vtk.contextualServletFilters.builder">
     <property name="arguments" ref="feeds.imageInlineFilter" />
   </bean>
 

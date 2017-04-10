@@ -37,12 +37,10 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
@@ -52,7 +50,10 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 
-public class RequestLoadListener implements ApplicationListener<ServletRequestHandledEvent>, Filter {
+import vtk.web.servlet.AbstractServletFilter;
+
+public class RequestLoadListener extends AbstractServletFilter
+    implements ApplicationListener<ServletRequestHandledEvent> {
     private final ExecutorService executorService;
     private final MetricsHandler metricsHandler;
     private Counter activeRequests;
@@ -65,8 +66,9 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
     }
     
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         try {
             activeRequests.inc();
             chain.doFilter(request, response);
@@ -85,10 +87,9 @@ public class RequestLoadListener implements ApplicationListener<ServletRequestHa
     }
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException { }
-
-    @Override
-    public void destroy() { }
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 
     private static class VrtxEvent {
         public final boolean failure;

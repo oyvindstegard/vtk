@@ -30,14 +30,21 @@
  */
 package vtk.web.filter;
 
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import vtk.web.servlet.AbstractServletFilter;
+
 /**
- * A request filter that normalizes the URI of an <code>HttpServletRequest</code>
+ * A servlet filter that normalizes the URI of an <code>HttpServletRequest</code>
  * by removing dot segments ('.' or '..').
  * 
  * <p>Configurable properties:
@@ -53,20 +60,24 @@ import org.slf4j.LoggerFactory;
  * @author oyviste
  *
  */
-public class URISegmentNormalizationRequestFilter extends AbstractRequestFilter {
+public class URISegmentNormalizationRequestFilter extends AbstractServletFilter {
 
     Logger logger = LoggerFactory.getLogger(URISegmentNormalizationRequestFilter.class);
     
     private boolean normalizeSlashes = false;
     
-    public HttpServletRequest filterRequest(HttpServletRequest request) {
-        return new URISegmentNormalizationRequestWrapper(request);
+    @Override
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        chain.doFilter(new URISegmentNormalizationRequestWrapper(request), response);
     }
 
     private class URISegmentNormalizationRequestWrapper extends HttpServletRequestWrapper {
         
         private String normalizedURI;
         
+        @Override
         public String getRequestURI() {
             return this.normalizedURI;
         }

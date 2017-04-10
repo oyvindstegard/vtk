@@ -63,6 +63,11 @@ public final class ServiceFilterInvoker extends AbstractServletFilter {
             serviceChain.doFilter(request, response);
         }
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 
     private List<Filter> getServiceFilters(Service service) {
         List<Filter> servletFilters = new ArrayList<>();

@@ -30,15 +30,22 @@
  */
 package vtk.web.filter;
 
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import vtk.web.servlet.AbstractServletFilter;
 
 /**
  * Provides a minimum of protection against session hijacking.
@@ -55,30 +62,30 @@ import org.slf4j.LoggerFactory;
  * <p>Of course, this filter does not offer any protection against IP spoofing, 
  * nor does it work if both clients are behind the same IP.</p>
  */
-public class SessionValidationRequestFilter extends AbstractRequestFilter 
-    implements RequestFilter {
+public class SessionValidationRequestFilter extends AbstractServletFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionValidationRequestFilter.class);
-
-    private Set<String> authorizedAddresses = new HashSet<String>();
+    private Set<String> authorizedAddresses = new HashSet<>();
     
-    public HttpServletRequest filterRequest(HttpServletRequest request) {
-        String clientAddress = request.getRemoteAddr();
-        if (this.authorizedAddresses.contains(clientAddress)) {
-            return request;
-        }
-        return new RequestWrapper(request);
+    public SessionValidationRequestFilter(Set<String> authorizedAddresses) {
+        this.authorizedAddresses = new HashSet<>(Objects.requireNonNull
+                (authorizedAddresses, "authorizedAddresses cannot be null"));
     }
     
-    public void setAuthorizedAddresses(Set<String> authorizedAddresses) {
-        if (authorizedAddresses == null) {
-            throw new IllegalArgumentException("Argument cannot be NULL");
+    @Override
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        String clientAddress = request.getRemoteAddr();
+        if (this.authorizedAddresses.contains(clientAddress)) {
+            chain.doFilter(request, response);
         }
-        this.authorizedAddresses = authorizedAddresses;
+        else {
+            chain.doFilter(new RequestWrapper(request), response);
+        }
     }
     
     private static class RequestWrapper extends HttpServletRequestWrapper {
-
         private static final String CLIENT_ADDR_SESSION_ATTRIBUTE = 
             RequestWrapper.class.getName() + ".clientAddrAttribute";
 
@@ -142,5 +149,10 @@ public class SessionValidationRequestFilter extends AbstractRequestFilter
             return SessionValidationRequestFilter.class.getSimpleName() + 
                     "." + getClass().getSimpleName() + "(" + request + ")";
         }
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
     }
 }

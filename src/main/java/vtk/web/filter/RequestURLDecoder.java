@@ -30,17 +30,20 @@
  */
 package vtk.web.filter;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
-import vtk.repository.Path;
+
 import vtk.web.service.URL;
+import vtk.web.servlet.AbstractServletFilter;
 
 
 /**
@@ -51,41 +54,35 @@ import vtk.web.service.URL;
  *   <li><code>characterEncoding</code> - the encoding used when URL decoding
  * </ul>
  */
-public class RequestURLDecoder extends AbstractRequestFilter implements InitializingBean {
-
+public class RequestURLDecoder extends AbstractServletFilter {
     private static Logger logger = LoggerFactory.getLogger(RequestURLDecoder.class);
 
-    private String characterEncoding;
+    private Charset characterEncoding;
     
-
-    public void setCharacterEncoding(String characterEncoding) {
-        this.characterEncoding = characterEncoding;
-    }
-
-    public void afterPropertiesSet() throws Exception {
-        if (this.characterEncoding == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'characterEncoding' not specified");
-        }
-        Charset.forName(this.characterEncoding);
+    public RequestURLDecoder(String characterEncoding) {
+        this.characterEncoding = Charset.forName(characterEncoding);
     }
     
-    public HttpServletRequest filterRequest(HttpServletRequest request) {
-        return new URLDecodingRequestWrapper(request, this.characterEncoding);
+    @Override
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        chain.doFilter(new URLDecodingRequestWrapper(request, characterEncoding), response);
+        
     }
     
     private static class URLDecodingRequestWrapper extends HttpServletRequestWrapper {
-
         private String uri;
 
         public URLDecodingRequestWrapper(HttpServletRequest request,
-                String characterEncoding) {
+                Charset characterEncoding) {
             super(request);
             try {
-                URL url = URL.create(request, characterEncoding);
+                URL url = URL.create(request, characterEncoding.toString());
                 if (url.isCollection() && !url.getPath().isRoot()) {
                     this.uri = url.getPath().toString() + "/";
-                } else {
+                }
+                else {
                     this.uri = url.getPath().toString();
                 }
                 if (logger.isDebugEnabled()) {
@@ -93,12 +90,14 @@ public class RequestURLDecoder extends AbstractRequestFilter implements Initiali
                             + request.getRequestURI() 
                             + "' to '" + url.getPath().toString() + "'");
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 logger.warn("Unable to decode request URI", e);
                 this.uri = request.getRequestURI();
             }
         }
 
+        @Override
         public String getRequestURI() {
             return this.uri;
         }

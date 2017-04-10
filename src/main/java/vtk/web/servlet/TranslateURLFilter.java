@@ -152,4 +152,9 @@ public class TranslateURLFilter extends AbstractServletFilter {
             return url.getProtocol().equals("https");
         }
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + replacements + ")";
+    }
 }

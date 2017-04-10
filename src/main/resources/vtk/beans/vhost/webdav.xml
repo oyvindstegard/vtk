@@ -234,6 +234,15 @@
       </list>
     </property>
     <property name="handler" ref="webdavPutHandler" />
+    <property name="servletFilters">
+      <bean class="vtk.web.servlet.DefaultFilterFactory">
+        <constructor-arg name="filter">
+          <bean class="vtk.web.filter.UploadLimitInputStreamFilter">
+            <constructor-arg name="uploadLimit" value="${upload.maxFileSize}" />
+          </bean>
+        </constructor-arg>
+      </bean>
+    </property>
   </bean>
 
   <bean id="webdavMkColService" class="vtk.web.service.ServiceImpl">
@@ -437,7 +446,6 @@
   </bean>
 
   <bean id="webdavPutHandler" class="vtk.webdav.PutController">
-    <property name="maxUploadSize" value="${upload.maxFileSize}" />
     <property name="obeyClientCharacterEncoding" value="false" />
     <property name="deniedFileNames" ref="webdav.deniedFileNamePatterns" />
   </bean>

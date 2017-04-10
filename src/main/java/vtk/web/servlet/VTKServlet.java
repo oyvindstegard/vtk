@@ -35,7 +35,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -77,9 +76,6 @@ import vtk.web.ErrorHandler;
 import vtk.web.RepositoryContextInitializer;
 import vtk.web.RequestContext;
 import vtk.web.RequestContextInitializer;
-import vtk.web.filter.RequestFilter;
-import vtk.web.filter.ResponseFilter;
-import vtk.web.filter.StandardRequestFilter;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -90,12 +86,7 @@ import vtk.web.service.URL;
  * request types than <code>GET</code> and <code>POST</code> (support
  * for WebDAV methods, such as <code>PUT</code>,
  * <code>PROPFIND</code>, etc.).
- *
- * <p>If a {@link RequestFilter} is configured in the bean context
- * under the name <code>requestFilter</code>, it is invoked first on
- * every request. If no such bean is configured, the standard {@link
- * StandardRequestFilter} is invoked.
- *
+ * 
  * <p>The servlet is also responsible for creating and disposing of
  * the request contexts through the {@link SecurityInitializer},
  * {@link RequestContextInitializer} and the optional 
@@ -116,9 +107,14 @@ import vtk.web.service.URL;
  * <p>The repository initializer initializes a request scoped holder 
  * used for caching repository access.
  *
- * <p>After context initialization, the servlet calls
- * <code>super.doService()</code>, in the standard DispatcherServlet
- * fashion. It explicitly catches exceptions of type {@link
+ * Two lists of {@link Filter servlet filters} are looked up under the names
+ * {@value #INITIALIZING_SERVLET_FILTERS_BEAN_NAME} and 
+ * {@value #CONTEXTUAL_SERVLET_FILTERS_BEAN_NAME}, respectively. The first list
+ * is invoked before the security context and request context are set up, the 
+ * second list is invoked before control is handed to 
+ * {@link DispatcherServlet#doService}.
+ *
+ * <p>The servlet explicitly catches exceptions of type {@link
  * AuthenticationException}, triggering an authentication challenge
  * presentation to the client.
  *
@@ -145,8 +141,6 @@ public class VTKServlet extends DispatcherServlet {
     private static final String REPOSITORY_CONTEXT_INITIALIZER_BEAN_NAME = "repositoryContextInitializer";
     private static final String INITIALIZING_SERVLET_FILTERS_BEAN_NAME = "vtk.initializingServletFilters";
     private static final String CONTEXTUAL_SERVLET_FILTERS_BEAN_NAME = "vtk.contextualServletFilters";
-    private static final String REQUEST_FILTERS_BEAN_NAME = "defaultRequestFilters";
-    private static final String RESPONSE_FILTERS_BEAN_NAME = "defaultResponseFilters";
     private static final String GLOBAL_HEADERS_BEAN_NAME = "globalHeaders";
     
     public static final String INDEX_FILE_REQUEST_ATTRIBUTE =
@@ -155,13 +149,10 @@ public class VTKServlet extends DispatcherServlet {
     public static final String SERVLET_NAME_REQUEST_ATTRIBUTE =
         VTKServlet.class.getName() + ".servlet_name";
 
-    
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     private final Logger requestLogger = LoggerFactory.getLogger(this.getClass().getName() + ".Request");
     private final Logger errorLogger = LoggerFactory.getLogger(this.getClass().getName() + ".Error");
 
-    private RequestFilter[] requestFilters = new RequestFilter[0];
-    private ResponseFilter[] responseFilters = new ResponseFilter[0];
     // Servlet filters invoked before any contexts are set up:
     private List<Filter> initializingServletFilters = Collections.emptyList();
     // Servlet filters invoked just before super.doService(), with initialized contexts
@@ -205,8 +196,6 @@ public class VTKServlet extends DispatcherServlet {
         throws ServletException, BeansException {
         super.initFrameworkServlet();
         initServletFilters();
-        initRequestFilters();
-        initResponseFilters();
         initSecurityInitializer();
         initRequestContextInitializer();
         initRepositoryContextInitializer();
@@ -289,42 +278,6 @@ public class VTKServlet extends DispatcherServlet {
         this.logger.info("Using contextual servlet filters: " + contextualServletFilters);
     }
 
-    private void initRequestFilters() {
-        RequestFilter[] filterArray = null;
-        try {
-            filterArray = getWebApplicationContext()
-                .getBean(REQUEST_FILTERS_BEAN_NAME, RequestFilter[].class);
-        }
-        catch (NoSuchBeanDefinitionException e) { }
-        
-        if (filterArray == null || filterArray.length == 0) {
-            this.logger.info("No request filters found under name " 
-                    + REQUEST_FILTERS_BEAN_NAME);
-            return;
-        }
-        
-        this.requestFilters = filterArray;
-        this.logger.info("Using request filters: " + Arrays.asList(filterArray));
-    }
-    
-    private void initResponseFilters() {
-        ResponseFilter[] filterArray = null;
-        try {
-            filterArray = getWebApplicationContext()
-                .getBean(RESPONSE_FILTERS_BEAN_NAME, ResponseFilter[].class);
-        }
-        catch (NoSuchBeanDefinitionException e) { }
-        
-        if (filterArray == null || filterArray.length == 0) {
-            this.logger.info("No response filters found under name " 
-                    + REQUEST_FILTERS_BEAN_NAME);
-            return;
-        }
-        
-        this.responseFilters = filterArray;
-        this.logger.info("Response filters: " + filterArray + " set up successfully");
-    }
-    
     private void initGlobalHeaders() {
         try { 
             Map<?,?> headers = 
@@ -459,8 +412,6 @@ public class VTKServlet extends DispatcherServlet {
            BaseContext.pushContext();
            Thread.currentThread().setName(this.getServletName() + "." + String.valueOf(number));
 
-           request = filterRequest(request);
-
            if (this.repositoryContextInitializer != null) {
                this.repositoryContextInitializer.createContext(request);
            }
@@ -474,7 +425,6 @@ public class VTKServlet extends DispatcherServlet {
            }
 
            this.requestContextInitializer.createContext(request);
-           response = filterResponse(request, response);
            response = new HeaderAwareResponseWrapper(response);
            proceedService = checkLastModified(request, response);
            if (proceedService) {
@@ -553,27 +503,6 @@ public class VTKServlet extends DispatcherServlet {
         throw new ServletException("Fatal processing error while " +
                 "performing authentication", e);
     }
-
-    private HttpServletRequest filterRequest(HttpServletRequest request) {
-        for (RequestFilter filter: this.requestFilters) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Running request filter: " + filter);
-            }
-            request = filter.filterRequest(request);
-        }
-        return request;
-    }
-    
-    private HttpServletResponse filterResponse(HttpServletRequest request, HttpServletResponse response) {
-        for (ResponseFilter filter: this.responseFilters) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Running response filter: " + filter);
-            }
-            response = filter.filter(request, response);
-        }
-        return response;
-    }
-
 
     /**
      * Sets the Last-Modified entity header field, if it has not

@@ -40,18 +40,17 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import vtk.util.web.HttpUtil;
 import vtk.web.service.URL;
+import vtk.web.servlet.AbstractServletFilter;
 
 /**
  * Standard request filter.
@@ -66,7 +65,7 @@ import vtk.web.service.URL;
  *    (TODO: change to support <code>Forwarded</code> header, RFC7239).
  * </ol>
  */
-public class StandardRequestFilter extends AbstractRequestFilter implements javax.servlet.Filter {
+public class StandardRequestFilter extends AbstractServletFilter {
 
     private static Logger logger = LoggerFactory.getLogger(StandardRequestFilter.class);
 
@@ -78,7 +77,7 @@ public class StandardRequestFilter extends AbstractRequestFilter implements java
 
 
     public void setUrlReplacements(Map<String, String> urlReplacements) {
-        this.urlReplacements = new LinkedHashMap<Pattern, String>();
+        this.urlReplacements = new LinkedHashMap<>();
         for (String key : urlReplacements.keySet()) {
             Pattern pattern = Pattern.compile(key);
             String replacement = urlReplacements.get(key);
@@ -109,28 +108,17 @@ public class StandardRequestFilter extends AbstractRequestFilter implements java
     }
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException { }
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
-        if (!(request instanceof HttpServletRequest)) chain.doFilter(request, response);
-        chain.doFilter(new RequestWrapper((HttpServletRequest) request), response);
-    }
-
-    @Override
-    public void destroy() { }
-
-    @Override
-    public HttpServletRequest filterRequest(HttpServletRequest request) {
-        return new RequestWrapper(request);
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        chain.doFilter(new RequestWrapper(request), response);
     }
 
     private class RequestWrapper extends HttpServletRequestWrapper {
         private HttpServletRequest request;
         private URL requestURL;
         private String client = null;
-        private Set<String> absorbedHeaders = new HashSet<String>();
+        private Set<String> absorbedHeaders = new HashSet<>();
         
         public RequestWrapper(HttpServletRequest request) {
             super(request);
@@ -210,8 +198,7 @@ public class StandardRequestFilter extends AbstractRequestFilter implements java
         }
 
         @Override
-        @SuppressWarnings("rawtypes")
-        public Enumeration getHeaders(String name) {
+        public Enumeration<String> getHeaders(String name) {
             if (this.absorbedHeaders.contains(name)) {
                 return null;
             }
@@ -219,12 +206,11 @@ public class StandardRequestFilter extends AbstractRequestFilter implements java
         }
 
         @Override
-        @SuppressWarnings("rawtypes")
-        public Enumeration getHeaderNames() {
-            Enumeration e = super.getHeaderNames();
-            Set<String> set = new HashSet<String>();
+        public Enumeration<String> getHeaderNames() {
+            Enumeration<String> e = super.getHeaderNames();
+            Set<String> set = new HashSet<>();
             while (e.hasMoreElements()) {
-                String h = (String) e.nextElement();
+                String h = e.nextElement();
                 if (!this.absorbedHeaders.contains(h)) {
                     set.add(h);
                 }
@@ -301,5 +287,4 @@ public class StandardRequestFilter extends AbstractRequestFilter implements java
             return requestURL;
         }
     }
-
 }

@@ -38,11 +38,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.DispatcherType;
 import javax.servlet.Servlet;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -58,16 +56,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 
 import vtk.cluster.AkkaClusterManager;
 import vtk.util.Version;
-import vtk.web.filter.StandardRequestFilter;
 import vtk.web.servlet.VTKServlet;
 
 public class Application  {
@@ -79,16 +74,6 @@ public class Application  {
     public Servlet dispatcherServlet() {
         VTKServlet servlet = new VTKServlet();
         return servlet;
-    }
-
-    @Bean(name="vtk.standardRequestFilter")
-    public FilterRegistrationBean standardRequestFilter() {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
-        StandardRequestFilter filter = new StandardRequestFilter();
-        registration.setFilter(filter);
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        registration.setDispatcherTypes(EnumSet.allOf(DispatcherType.class));
-        return registration;
     }
 
     @Bean(name="vtk.servletContainer")
