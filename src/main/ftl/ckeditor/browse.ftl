@@ -1,6 +1,6 @@
 <#ftl strip_whitespace=true output_format="XML" auto_esc=true>
 <?xml version="1.0" encoding="utf-8" ?>
-<Connector command="${command}" resourceType="${resourceType}">
+<Connector command="${command}" resourceType="${resourceType}" domains="${acceptableDomains}">
   <CurrentFolder path="${currentFolder}" url="${currentFolder}" />
   <#if folders?exists>
   <Folders>

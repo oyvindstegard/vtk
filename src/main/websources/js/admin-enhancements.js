@@ -2480,6 +2480,20 @@ if(gup("displaymsg", window.location.href) === "yes") {
   window.onunload = refreshParent;
 }
 
+window.addEventListener('message', function(event) {
+    console.log("Received event: " + event.data.type);
+    if (event.data.type == 'browse-select-resource') {
+        if (event.data.CKEditorFuncNum) {
+            if (window.CKEDITOR) {
+	        window.CKEDITOR.tools.callFunction(event.data.CKEditorFuncNum, event.data.url);
+            }
+        }
+        else {
+            SetUrl(event.data.url);
+        }
+    }
+}, false);
+
 // Callback from the image browser:
 function SetUrl(url) {
   url = decodeURIComponent(url);

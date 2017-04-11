@@ -100,6 +100,8 @@ oConnector.ShowAllTypes		= ( oConnector.ResourceType.length == 0 ) ;
 if ( oConnector.ShowAllTypes )
 	oConnector.ResourceType = 'File' ;
 
+oConnector.Domains             = [ ];
+
 oConnector.SendCommand = function( command, params, callBackFunction )
 {
 	var sUrl = this.ConnectorUrl + 'Command=' + command ;
@@ -177,6 +179,21 @@ oIcons.GetIcon = function( fileName )
 	else
 		return 'default.icon' ;
 }
+
+oConnector.IsAcceptableReceiver = function ( domain )
+{
+        var i = 0;
+        while ( i < this.Domains.length )
+        {
+                if ( this.Domains[i] === domain )
+                          return true ;
+                if ( this.Domains[i] === '*' )
+                          return true ;
+                i++;
+        }
+        return false;
+}
+
 
 function OnUploadCompleted( errorNumber, fileUrl, fileName, customMsg )
 {
