@@ -30,7 +30,7 @@
 		<script type="text/javascript">
 		
 		
-		//var FILEURL;
+		var FILEURL;
 		
 // Automatically detect the correct document.domain (#1919).
 (function()
@@ -71,22 +71,6 @@ function SetCurrentFolder( resourceType, folderPath )
 	FILEURL = folderPath;
 	document.getElementById('button').onclick = OpenFile;
 }
-
-/*
-function IsAcceptableReceiver ( domain )
-{
-        var i = 0;
-        while ( i < oConnector.Domains.length )
-        {
-                if ( oConnector.Domains[i] === domain )
-                {
-                          return true;
-                }
-                i++;
-        }
-        return false;
-}
-*/
 
 function OpenFile()
 {
