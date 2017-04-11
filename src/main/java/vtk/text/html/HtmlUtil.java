@@ -30,6 +30,10 @@
  */
 package vtk.text.html;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +43,16 @@ import vtk.web.service.URL;
 
 public class HtmlUtil {
     private static HtmlPageParser parser = new HtmlPageParser();
+    
+    public static HtmlPage parse(String html) throws Exception {
+        Charset encoding = StandardCharsets.UTF_8;
+        InputStream in = new ByteArrayInputStream(html.getBytes(encoding));
+        return parser.parse(in, encoding.name());
+    }
+    
+    public static HtmlFragment parseFragment(String html) throws Exception {
+        return parser.parseFragment(html);
+    }
 
     public static String flatten(String html) {
         try {
