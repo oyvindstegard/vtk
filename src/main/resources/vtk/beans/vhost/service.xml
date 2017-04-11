@@ -290,11 +290,6 @@
   <bean id="hasIndexFileAssertion" class="vtk.web.service.IndexFileAssertion" />
 
 
-  <bean parent="vtk.contextualServletFilters.builder">
-    <property name="arguments" ref="expiresCacheResponseFilter" />
-  </bean>
-
-
   <bean id="expiresCacheResponseFilter" class="vtk.web.servlet.DefaultFilterFactory">
     <constructor-arg name="filter">
     <bean class="vtk.web.filter.ExpiresCacheResponseFilter">
