@@ -58,7 +58,7 @@ public final class ServiceFilterInvoker extends AbstractServletFilter {
         Service service = requestContext.getService();
         List<Filter> filters = getServiceFilters(service);
         if (filters != null) {
-            FilterChain serviceChain = new FilterChain(filters, (req, resp) -> 
+            FilterChain serviceChain = new FilterChain("ServiceFilterChain", filters, (req, resp) -> 
                 chain.doFilter(req, resp));
             serviceChain.doFilter(request, response);
         }

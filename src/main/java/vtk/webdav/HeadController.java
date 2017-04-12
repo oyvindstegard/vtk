@@ -37,12 +37,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.ResourceLockedException;
 import vtk.repository.ResourceNotFoundException;
-import vtk.repository.ResourceNotModifiedException;
 import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
 
@@ -62,7 +62,7 @@ public class HeadController extends AbstractWebdavController {
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         try {
             Resource resource = repository.retrieve(token, uri, false);
@@ -70,7 +70,9 @@ public class HeadController extends AbstractWebdavController {
                 if (this.logger.isDebugEnabled()) {
                     this.logger.debug("HEAD on collection: setting status 404");
                 }
-                throw new ResourceNotFoundException(uri);
+                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
+                        new Integer(HttpServletResponse.SC_NOT_FOUND));
+              return new ModelAndView("HTTP_STATUS_VIEW", model);
             }
             model.put(WebdavConstants.WEBDAVMODEL_REQUESTED_RESOURCE, resource);
             model.put("resource", resource);
@@ -96,25 +98,6 @@ public class HeadController extends AbstractWebdavController {
             model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
                       new Integer(HttpUtil.SC_LOCKED));
             return new ModelAndView("HTTP_STATUS_VIEW", model);
-
-        } catch (PreconditionFailedException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught PreconditionFailedException for URI " + uri);
-            }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_PRECONDITION_FAILED));
-            return new ModelAndView("HTTP_STATUS_VIEW", model);
-
-        } catch (ResourceNotModifiedException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ResourceNotModifiedException for URI " + uri);
-            }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_NOT_MODIFIED));
-            return new ModelAndView("HTTP_STATUS_VIEW", model);
-            
         }
     }
 }

@@ -30,13 +30,16 @@
  */
 package vtk.web;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 
 public class RepositoryContextInitializer implements ContextInitializer {
 
     @Override
-    public void createContext(HttpServletRequest request) throws Exception {
+    public void createContext(HttpServletRequest request) throws IOException, ServletException {
         RepositoryContext.setRepositoryContext(new RepositoryContext());
     }
 

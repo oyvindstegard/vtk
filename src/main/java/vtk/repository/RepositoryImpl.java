@@ -233,7 +233,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Override
     public Resource retrieve(@OpLogParam(name = "token") String token,
             @OpLogParam Path uri, boolean forProcessing, @OpLogParam Revision revision)
-            throws ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
+            throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
 
         if (uri == null) {
             throw new IllegalArgumentException("URI is NULL");
@@ -388,7 +388,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Override
     public InputStream getAlternativeInputStream(@OpLogParam(name = "token") String token, @OpLogParam Path uri, boolean forProcessing,
             @OpLogParam(name = "contentId") String contentIdentifier) 
-            throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
+            throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
 
         if (contentIdentifier == null) {
             throw new IllegalArgumentException("Content identifier null");
@@ -732,7 +732,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Override
     public void delete(@OpLogParam(name = "token") String token, @OpLogParam Path uri, @OpLogParam boolean restorable) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
-            FailedDependencyException, ReadOnlyException, IOException, CloneNotSupportedException {
+            FailedDependencyException, ReadOnlyException, IOException {
 
         Principal principal = getPrincipal(token);
 
@@ -757,44 +757,51 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
         checkLock(parentCollection, principal);
         checkLock(resourceToDelete, principal);
-
-        final ResourceImpl originalParent = (ResourceImpl) parentCollection.clone();
-        parentCollection.removeChildURI(uri);
-        Content content = getContent(parentCollection);
-        parentCollection = this.resourceHelper.contentModification(parentCollection, principal, content);
-        parentCollection = this.dao.store(parentCollection);
-        this.context.publishEvent(new ContentModificationEvent(this, (Resource) parentCollection.clone(),
-                originalParent));
-
-        TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(resourceToDelete);
-        if (hooks != null) {
-            try {
-                hooks.onDelete(resourceToDelete, restorable);
-            } catch (Exception e) {
-                throw new TypeHandlerHookException("failed in onDelete hook: " + e.getMessage(), e);
-            }
-        }
         
-        if (restorable) {
-            // Check ACL before moving to trash can,
-            // if inherited, take snapshot of current ACL
-            if (resourceToDelete.isInheritedAcl()) {
-                ResourceImpl clone = (ResourceImpl) resourceToDelete.clone();
-                clone.setInheritedAcl(false);
-                this.dao.storeACL(clone);
+        try {
+
+            final ResourceImpl originalParent = (ResourceImpl) parentCollection.clone();
+            parentCollection.removeChildURI(uri);
+            Content content = getContent(parentCollection);
+            parentCollection = this.resourceHelper.contentModification(parentCollection, principal, content);
+            parentCollection = this.dao.store(parentCollection);
+            this.context.publishEvent(new ContentModificationEvent(this, (Resource) parentCollection.clone(),
+                    originalParent));
+
+            TypeHandlerHooks hooks = typeHandlerHooksHelper.getTypeHandlerHooks(resourceToDelete);
+            if (hooks != null) {
+                try {
+                    hooks.onDelete(resourceToDelete, restorable);
+                } catch (Exception e) {
+                    throw new TypeHandlerHookException("failed in onDelete hook: " + e.getMessage(), e);
+                }
             }
 
-            final String trashID = "trash-" + resourceToDelete.getID();
-            this.dao.markDeleted(resourceToDelete, parentCollection, principal, trashID);
-            this.contentStore.moveToTrash(resourceToDelete.getURI(), trashID);
+            if (restorable) {
+                // Check ACL before moving to trash can,
+                // if inherited, take snapshot of current ACL
+                if (resourceToDelete.isInheritedAcl()) {
+                    ResourceImpl clone = (ResourceImpl) resourceToDelete.clone();
+                    clone.setInheritedAcl(false);
+                    this.dao.storeACL(clone);
+                }
 
-        } else {
-            this.dao.delete(resourceToDelete);
-            this.contentStore.deleteResource(resourceToDelete.getURI());
+                final String trashID = "trash-" + resourceToDelete.getID();
+                this.dao.markDeleted(resourceToDelete, parentCollection, principal, trashID);
+                this.contentStore.moveToTrash(resourceToDelete.getURI(), trashID);
+
+            } else {
+                this.dao.delete(resourceToDelete);
+                this.contentStore.deleteResource(resourceToDelete.getURI());
+            }
+
+            ResourceDeletionEvent event = new ResourceDeletionEvent(this, resourceToDelete);
+            this.context.publishEvent(event);
+        
+        } catch (CloneNotSupportedException e) {
+            throw new IOException("Failed to clone object", e);
         }
 
-        ResourceDeletionEvent event = new ResourceDeletionEvent(this, resourceToDelete);
-        this.context.publishEvent(event);
     }
 
     @Transactional(readOnly=true)
@@ -851,7 +858,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @OpLog(write = true)
     @Override
     public void deleteRecoverable(@OpLogParam(name = "token") String token, @OpLogParam Path parentUri, @OpLogParam RecoverableResource recoverableResource)
-            throws Exception {
+            throws IOException {
 
         ResourceImpl parent = this.dao.load(parentUri);
 
@@ -1367,7 +1374,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @Transactional(readOnly=true)
     @Override
     public boolean isAuthorized(Resource resource, RepositoryAction action, Principal principal, boolean considerLocks)
-            throws Exception {
+            throws IOException {
         if (resource == null) {
             throw new IllegalArgumentException("Resource is NULL");
         }
@@ -1479,7 +1486,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @OpLog(write = true)
     @Override
     public Resource deleteACL(@OpLogParam(name = "token") String token, @OpLogParam Path uri) throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, IllegalOperationException, ReadOnlyException, Exception {
+            AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
         if (uri == null) {
             throw new IllegalArgumentException("URI is null");
         }
@@ -1647,7 +1654,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     @OpLog(write = true)
     @Override
     public void deleteRevision(@OpLogParam(name = "token") String token, @OpLogParam Path uri, @OpLogParam Revision revision) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
 
         if (uri == null) {
             throw new IllegalArgumentException("URI is NULL");
@@ -1706,8 +1713,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             }
             this.authorizationManager.authorizeReadProcessed(resource.getURI(), principal);
             List<Comment> comments = this.commentDAO.listCommentsByResource(resource, deep, max);
-            List<Comment> result = new ArrayList<Comment>();
-            Set<Path> authCache = new HashSet<Path>();
+            List<Comment> result = new ArrayList<>();
+            Set<Path> authCache = new HashSet<>();
             // Fetch N comments, authorize on the result set:
             for (Comment c : comments) {
                 try {
@@ -2203,8 +2210,8 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     }
 
     private final Logger periodicLogger = LoggerFactory.getLogger(RepositoryImpl.class.getName() + ".Maintenance");
-    private Set<Integer> revisionGCHours = new HashSet<Integer>(Arrays.asList(new Integer[] { 3 }));
-    private Set<Integer> trashCanPurgeHours = new HashSet<Integer>(Arrays.asList(new Integer[] { 4 }));
+    private Set<Integer> revisionGCHours = new HashSet<>(Arrays.asList(new Integer[] { 3 }));
+    private Set<Integer> trashCanPurgeHours = new HashSet<>(Arrays.asList(new Integer[] { 4 }));
     private int maintenanceIntervalSeconds = 600;
     private PlatformTransactionManager transactionManager;
     private final MaintenanceManager mm = new MaintenanceManager();

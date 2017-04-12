@@ -72,8 +72,8 @@ public class ConditionalFilter extends AbstractServletFilter {
         if (assertion.matches(request, null, null)) {
             List<Filter> filters = Collections.singletonList(filter);
             vtk.web.servlet.FilterChain thisChain = 
-                    new vtk.web.servlet.FilterChain(filters, (req, resp) -> 
-                    chain.doFilter(req, resp));
+                    new vtk.web.servlet.FilterChain("ConditionalFilterChain",
+                    filters, (req, resp) -> chain.doFilter(req, resp));
             thisChain.doFilter(request, response);
         }
         else {

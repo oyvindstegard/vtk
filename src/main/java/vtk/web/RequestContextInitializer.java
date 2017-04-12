@@ -30,6 +30,7 @@
  */
 package vtk.web;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -170,7 +171,7 @@ public class RequestContextInitializer implements ContextInitializer {
     }
 
     @Override
-    public void createContext(HttpServletRequest request) throws Exception {
+    public void createContext(HttpServletRequest request) throws IOException, ServletException {
 
         SecurityContext securityContext = SecurityContext.getSecurityContext();
         
