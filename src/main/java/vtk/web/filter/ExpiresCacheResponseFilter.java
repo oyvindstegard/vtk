@@ -70,6 +70,11 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
     protected void doFilter(HttpServletRequest request,
             HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
+        chain.doFilter(request, filterResponse(request, response));
+    }
+    
+    private HttpServletResponse filterResponse(HttpServletRequest request, 
+            HttpServletResponse response) throws IOException, ServletException {
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
 
@@ -77,8 +82,7 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
             if (logger.isDebugEnabled()) {
                 logger.debug(uri + ": ignore: not in repository");
             }
-            chain.doFilter(request, response);
-            return;
+            return response;
         }
 
         if (this.rootService != null) {
@@ -87,8 +91,7 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": ignore: service=" + service.getName());
                 }
-                chain.doFilter(request, response);
-                return;
+                return response;
             }
         }
         
@@ -99,8 +102,7 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
                     if (logger.isDebugEnabled()) {
                         logger.debug(uri + ": ignore: service=" + service.getName());
                     }
-                    chain.doFilter(request, response);
-                    return;
+                    return response;
                 }
             }
         }
@@ -111,15 +113,13 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": remove: service-attr remove-caching=true");
                 }
-                chain.doFilter(request, new CacheControlResponseWrapper(response, 0));
-                return;
+                return new CacheControlResponseWrapper(response, 0);
             }
             if ("true".equals(service.getAttribute("inhibit-caching"))) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": ignore: service-attr inhibit-caching=true");
                 }
-                chain.doFilter(request, response);
-                return;
+                return response;
             }
             service = service.getParent();
         }
@@ -136,8 +136,7 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
                         if (logger.isDebugEnabled()) {
                             logger.debug(uri + ": ignore: type=" + t);
                         }
-                        chain.doFilter(request, response);
-                        return;
+                        return response;
                     }
                 }
             }
@@ -147,8 +146,7 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": ignore: restricted");
                 }
-                chain.doFilter(request, response);
-                return;
+                return response;
             }
 
             Property expiresProp = resource.getProperty(this.expiresPropDef);
@@ -156,21 +154,20 @@ public class ExpiresCacheResponseFilter extends AbstractServletFilter {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": property max-age=" + expiresProp.getLongValue());
                 }
-                chain.doFilter(request, new CacheControlResponseWrapper(response, expiresProp.getLongValue()));
-                return;
+                return new CacheControlResponseWrapper(response, expiresProp.getLongValue());
             }
             if (this.globalMaxAge > 0) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(uri + ": default max-age=" + this.globalMaxAge);
                 }
-                chain.doFilter(request, new CacheControlResponseWrapper(response, this.globalMaxAge));
-                return;
+                return new CacheControlResponseWrapper(response, this.globalMaxAge);
             }
         }
-        catch (Throwable t) { 
+        catch (Throwable t) {
+
         }
         logger.debug(uri + ": ignore");
-        chain.doFilter(request, response);
+        return response;
     }
     
     @Override
