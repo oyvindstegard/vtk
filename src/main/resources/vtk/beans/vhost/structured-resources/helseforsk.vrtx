@@ -232,7 +232,7 @@ resourcetype helseforsk {
 	        [endif]
               
             <h2>[localized "unit"]</h2>
-            [if unitInstitution == "UIO"]
+            [if unitInstitution = "UIO"]
               [if unitCachedFullName != null]
                 <p><a href="[val unitCachedFullName.url]">[val unitCachedFullName.name]</a></p>
               [else]
