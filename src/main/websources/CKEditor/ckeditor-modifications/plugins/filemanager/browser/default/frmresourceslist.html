@@ -99,24 +99,46 @@ function OpenFolder( folderPath )
 	window.parent.frames['frmFolders'].LoadFolders( folderPath ) ;
 }
 
+function IsAcceptableReceiver ( domain )
+{
+        var i = 0;
+        while ( i < oConnector.Domains.length )
+        {
+                if ( oConnector.Domains[i] === domain )
+                {
+                          return true;
+                }
+                i++;
+        }
+        return false;
+}
+
 function OpenFile( fileUrl )
 {
-	//PATCH: Using CKEditors API we set the file in preview window.	
-	if(window.top.opener.CKEDITOR) {
-	  funcNum = GetUrlParam('CKEditorFuncNum') ;
-	  // Vortex integration - avoid double encoding
-	  // window.top.opener.CKEDITOR.tools.callFunction( funcNum, encodeURI( fileUrl ).replace( '#', '%23' ));
-	  window.top.opener.CKEDITOR.tools.callFunction( funcNum, fileUrl);
-	  window.top.opener.SetUrl( fileUrl ) ;
-    } else {
-      window.top.opener.SetUrl( fileUrl ) ;
-    }
-    
-   var ua = navigator.userAgent.toLowerCase(); 
-   window.top.close() ;
-   if(!(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua))) {
-     window.top.opener.focus() ;
-   }
+        var oMsg =
+        {
+                'type'            : 'browse-select-resource',
+                'url'             : fileUrl,
+                'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
+        };
+
+        var oLocation = window.top.opener.location;
+
+        if ( ! oConnector.IsAcceptableReceiver( oLocation.hostname ) )
+        {
+                return ;
+        }
+        var sDomain = oLocation.protocol + '//' + oLocation.hostname ;
+
+        window.top.opener.postMessage( oMsg, sDomain ) ;
+
+        var ua = navigator.userAgent.toLowerCase() ;
+        window.top.close() ;
+
+        if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
+        {
+                window.top.opener.focus() ;
+        }
 }
 
 function LoadResources( resourceType, folderPath )
@@ -136,6 +158,19 @@ function GetFoldersAndFilesCallBack( fckXml )
 {
 	if ( oConnector.CheckError( fckXml ) != 0 )
 		return ;
+
+        // Get the valid domains
+        var oConnectorNode = fckXml.SelectSingleNode( 'Connector' ) ;
+        if ( oConnectorNode == null )
+        {
+		alert( 'The server didn\'t reply with a proper XML data. Please check your configuration.' ) ;
+		return ;
+        }
+        var sDomains  = oConnectorNode.attributes.getNamedItem('domains').value ;
+        if ( sDomains != null )
+        {
+                oConnector.Domains = sDomains.split(',');
+        }
 
 	// Get the current folder path.
 	var oFolderNode = fckXml.SelectSingleNode( 'Connector/CurrentFolder' ) ;
@@ -187,6 +222,7 @@ window.onload = function()
 {
 	window.top.IsLoadedResourcesList = true ;
 }
+
 	</script>
 </head>
 <body class="FileArea">
