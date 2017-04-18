@@ -65,10 +65,23 @@ resourcetype helseforsk {
     ##
     [resource-props "."]
     [def document structured-document()]
-    [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
+    
+    [def unitInstitution document.properties.unitInstitution]
     [def unitCachedFullName document.properties.unitCachedFullName]
+    
+    [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
     [def participantsCachedFullName document.properties.participantsCachedFullName]
     [def participants document.properties.participants]
+    
+    [def participants document.properties.biobank]
+    
+	[def approvalInternalStatus document.properties.approvalInternalStatus]
+	[def approvalRekStatus document.properties.approvalRekStatus]
+	[def approvalNsdStatus document.properties.approvalNsdStatus]
+	[def approvalDatatilsynetStatus document.properties.approvalDatatilsynetStatus]
+	[def approvalHelsedirStatus document.properties.approvalHelsedirStatus]
+	[def approvalStatLegemiddelverkStatus document.properties.approvalStatLegemiddelverkStatus]
+    
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
@@ -83,7 +96,7 @@ resourcetype helseforsk {
               <div class="vrtx-introduction">[val summary # unescaped]</div>
             [endif]
             
-            [if biobankPlace != null]
+            [if biobank = "YES && biobankPlace != null]
               <h2>Biobank</h2>
               <p>[val biobankPlace][if biobankNumber != null] ([val biobankNumber])[endif]</p>
             [endif]
@@ -109,7 +122,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalInternalStatus = "YES"]
+                [if approvalInternalStatus = "APPLIED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -125,7 +138,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalRekStatus = "YES"]
+                [if approvalRekStatus = "APPLIED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -145,7 +158,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalNsdStatus = "YES"]
+                [if approvalNsdStatus = "APPLIED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -165,7 +178,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalDatatilsynetStatus = "YES"]
+                [if approvalDatatilsynetStatus = "APPLIED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -185,7 +198,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalHelsedirStatus = "YES"]
+                [if approvalHelsedirStatus = "APPLIED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -205,7 +218,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalStatLegemiddelverkStatus = "YES"]
+                [if approvalStatLegemiddelverkStatus = "APPLIED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
