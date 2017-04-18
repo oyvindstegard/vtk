@@ -64,6 +64,7 @@ resourcetype helseforsk {
     [resource-props "."]
     [def document structured-document()]
     [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
+    [def unitCachedFullName document.properties.unitCachedFullName]
     [def participantsCachedFullName document.properties.participantsCachedFullName]
     [def participants document.properties.participants]
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -192,7 +193,11 @@ resourcetype helseforsk {
 	        [endif]
               
             <h2>[localized "unit"]</h2>
-            <p>[val unit]</p>
+            [if unitCachedFullName != null]
+              <p><a href="[val unitCachedFullName.url]">[val unitCachedFullName.name]</a></p>
+            [else]
+              <p>[val unit]</p>
+            [endif]
             
             <h2>[localized "researchers"]</h2>
 	        [if participantsCachedFullName != null || participants != null]
