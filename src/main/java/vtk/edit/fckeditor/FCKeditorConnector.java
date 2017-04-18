@@ -68,6 +68,7 @@ import vtk.web.service.URL;
 public class FCKeditorConnector implements Controller {
     private Service viewService;
     private String browseViewName;
+    private String acceptableDomains = "*";
     private String uploadStatusViewName;
     private int maxUploadSize = 1000000;
     private File tempDir = new File(System.getProperty("java.io.tmpdir"));
@@ -109,6 +110,10 @@ public class FCKeditorConnector implements Controller {
         }
         this.maxUploadSize = maxUploadSize;
     }
+    
+    public void setAcceptableDomains(String acceptableDomains) {
+        this.acceptableDomains = acceptableDomains;
+    }
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -119,10 +124,11 @@ public class FCKeditorConnector implements Controller {
 
         Locale locale = RequestContextUtils.getLocale(request);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("currentFolder", ensureTrailingSlash(command.getCurrentFolder()));
         model.put("command", command.getCommand().name());
         model.put("resourceType", command.getResourceType());
+        model.put("acceptableDomains", this.acceptableDomains);
 
         Filter fileFilter = null;
 
@@ -187,13 +193,13 @@ public class FCKeditorConnector implements Controller {
 
         Resource[] children = repository.listChildren(token, command.getCurrentFolder(), true);
 
-        Map<String, Map<String, Object>> result = new TreeMap<String, Map<String, Object>>(Collator.getInstance(locale));
+        Map<String, Map<String, Object>> result = new TreeMap<>(Collator.getInstance(locale));
 
         for (Resource r : children) {
             if (!filter.isAccepted(r)) {
                 continue;
             }
-            Map<String, Object> entry = new HashMap<String, Object>();
+            Map<String, Object> entry = new HashMap<>();
             URL url = this.viewService.constructURL(r, null);
             entry.put("resource", r);
             entry.put("url", url);
@@ -227,7 +233,7 @@ public class FCKeditorConnector implements Controller {
 
     @SuppressWarnings("unchecked")
     private ModelAndView uploadFile(FCKeditorFileBrowserCommand command, RequestContext requestContext) {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         FileItemFactory factory = new DiskFileItemFactory(maxUploadSize, tempDir);
         ServletFileUpload upload = new ServletFileUpload(factory);

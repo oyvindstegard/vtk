@@ -26,6 +26,7 @@
 		<title>Folder path</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<link href="browser.css" type="text/css" rel="stylesheet">
+		<script type="text/javascript" src="js/common.js"></script>
 		<script type="text/javascript">
 		
 		
@@ -66,31 +67,37 @@
 
 function SetCurrentFolder( resourceType, folderPath )
 {
-	document.getElementById('tdName').innerHTML = "<a id='saker' href='#'>" + folderPath + "</a>" ;
+	document.getElementById('tdName').innerHTML = "<a id='button' href='#'>" + folderPath + "</a>" ;
 	FILEURL = folderPath;
-	document.getElementById('knapp').onclick = OpenFile;
-}
-
-function blabla(){
-	alert('saker');
+	document.getElementById('button').onclick = OpenFile;
 }
 
 function OpenFile()
 {
+        var oMsg =
+        {
+                'type'            : 'browse-select-resource',
+                'url'             : FILEURL,
+                'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
+        };
 
-	//PATCH: Using CKEditors API we set the file in preview window.	
+        var oLocation = window.top.opener.location;
 
-	if(window.top.opener.CKEDITOR) {
-	  funcNum = GetUrlParam('CKEditorFuncNum') ;
-	  window.top.opener.CKEDITOR.tools.callFunction( funcNum, encodeURI( FILEURL ).replace( '#', '%23' ));
-	  window.top.opener.SetUrl( FILEURL ) ;
-       }
-	else {
-          window.top.opener.SetUrl( FILEURL ) ;
+        if ( ! oConnector.IsAcceptableReceiver( oLocation.hostname ) )
+        {
+                return ;
         }
+        var sDomain = oLocation.protocol + '//' + oLocation.hostname ;
 
-   window.top.close() ;
-   window.top.opener.focus() ;
+        window.top.opener.postMessage( oMsg, sDomain ) ;
+
+        var ua = navigator.userAgent.toLowerCase() ;
+        window.top.close() ;
+
+        if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
+        {
+                window.top.opener.focus() ;
+        }
 }
 
 function GetUrlParam( paramName )
@@ -116,7 +123,7 @@ window.onload = function()
 		<table class="fullHeight" cellSpacing="0" cellPadding="0" width="100%" border="0">
 			<tr>
 				<td>
-					<button style="WIDTH: 100%" type="button" id="knapp">
+					<button style="WIDTH: 100%" type="button" id="button">
 						<table cellSpacing="0" cellPadding="0" width="100%" border="0">
 							<tr>
 								<td><img height="32" alt="" src="images/FolderOpened32.gif" width="32"></td>
