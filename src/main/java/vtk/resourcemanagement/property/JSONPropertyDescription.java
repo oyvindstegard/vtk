@@ -38,13 +38,15 @@ public class JSONPropertyDescription extends EditablePropertyDescription {
 
     private List<JSONPropertyAttributeDescription> attributes = new ArrayList<JSONPropertyAttributeDescription>();
 
+    private boolean indexable = false;
+
     /**
      * Whether this JSON property has a defined structure
      */
     public boolean isWildcard() {
         return attributes.size() == 0;
     }
-    
+
     public void addAttribute(JSONPropertyAttributeDescription attribute) {
         this.attributes.add(attribute);
     }
@@ -52,4 +54,13 @@ public class JSONPropertyDescription extends EditablePropertyDescription {
     public List<JSONPropertyAttributeDescription> getAttributes() {
         return Collections.unmodifiableList(this.attributes);
     }
+
+    public boolean getIndexable() {
+        return indexable;
+    }
+
+    public void setIndexable(boolean indexable) {
+        this.indexable = indexable;
+    }
+
 }

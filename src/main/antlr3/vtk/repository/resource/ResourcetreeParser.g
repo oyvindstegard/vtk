@@ -103,7 +103,7 @@ propertytypedef
 	;
 
 derivedpropertytypedef
-	:	NAME COLON derived (overrides)? (MULTIPLE)? (defaultprop)? 
+	:	NAME COLON derived (overrides)? (MULTIPLE)? (defaultprop)?
 		-> ^(NAME derived (overrides)? (MULTIPLE)? (defaultprop)?)
 	|	NAME COLON DERIVED (MULTIPLE)?
 		-> ^(NAME ^(DERIVED (MULTIPLE)?))
@@ -133,8 +133,8 @@ defaultprop
 	:	DEFAULTPROP NAME -> ^(DEFAULTPROP NAME);
 
 jsonpropertytypedef
-	:	NAME COLON JSON (jsonspec)? (MULTIPLE)? (NOEXTRACT)?
-		-> ^(NAME ^(JSON (jsonspec)?) (MULTIPLE)? (NOEXTRACT)?)
+	:	NAME COLON JSON (jsonspec)? (MULTIPLE)? (NOEXTRACT)? (INDEXABLEJSON)?
+		-> ^(NAME ^(JSON (jsonspec)?) (MULTIPLE)? (NOEXTRACT)? (INDEXABLEJSON)?)
 	;
 
 jsonspec:	LP jsonpropspeclist RP -> jsonpropspeclist;

@@ -148,6 +148,9 @@ public class PropertyDescriptionParser {
             case ResourcetreeLexer.NOEXTRACT:
                 p.setNoExtract(true);
                 break;
+            case ResourcetreeLexer.INDEXABLEJSON:
+                p.setIndexable(true);
+                break;
             default:
                 throw new IllegalStateException("Unknown token type for derived property description: "
                         + descEntry.getType());
