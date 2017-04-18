@@ -96,7 +96,7 @@ resourcetype helseforsk {
               <div class="vrtx-introduction">[val summary # unescaped]</div>
             [endif]
             
-            [if biobank = "YES && biobankPlace != null]
+            [if biobank = "YES" && biobankPlace != null]
               <h2>Biobank</h2>
               <p>[val biobankPlace][if biobankNumber != null] ([val biobankNumber])[endif]</p>
             [endif]
