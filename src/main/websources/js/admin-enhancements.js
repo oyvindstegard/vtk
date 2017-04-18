@@ -2480,19 +2480,19 @@ if(gup("displaymsg", window.location.href) === "yes") {
   window.onunload = refreshParent;
 }
 
-window.addEventListener('message', function(event) {
-    console.log("Received event: " + event.data.type);
-    if (event.data.type == 'browse-select-resource') {
-        if (event.data.CKEditorFuncNum) {
+$(window).on('message', function(e) {
+    var data = e.originalEvent.data;
+    if (data.type == 'browse-select-resource') {
+        if (data.CKEditorFuncNum) {
             if (window.CKEDITOR) {
-	        window.CKEDITOR.tools.callFunction(event.data.CKEditorFuncNum, event.data.url);
+	        window.CKEDITOR.tools.callFunction(data.CKEditorFuncNum, data.url);
             }
         }
         else {
-            SetUrl(event.data.url);
+            SetUrl(data.url);
         }
     }
-}, false);
+});
 
 // Callback from the image browser:
 function SetUrl(url) {
