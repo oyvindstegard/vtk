@@ -73,7 +73,7 @@ resourcetype helseforsk {
     [def participantsCachedFullName document.properties.participantsCachedFullName]
     [def participants document.properties.participants]
     
-    [def participants document.properties.biobank]
+    [def biobank document.properties.biobank]
     
 	[def approvalInternalStatus document.properties.approvalInternalStatus]
 	[def approvalRekStatus document.properties.approvalRekStatus]
