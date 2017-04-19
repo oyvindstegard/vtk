@@ -35,14 +35,17 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import vtk.resourcemanagement.view.tl.ComponentInvokerNodeFactory;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageParser;
@@ -51,10 +54,10 @@ import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.Node;
 import vtk.text.tl.NodeList;
 import vtk.text.tl.Parser.Directive;
-import vtk.util.io.InputSource;
 import vtk.text.tl.TemplateContext;
 import vtk.text.tl.TemplateHandler;
 import vtk.text.tl.TemplateParser;
+import vtk.util.io.InputSource;
 
 
 public class DynamicDecoratorTemplate implements Template {
@@ -63,7 +66,7 @@ public class DynamicDecoratorTemplate implements Template {
     private NodeList compiledTemplate;
     private ComponentResolver componentResolver;
     private InputSource templateSource;
-    private long lastModified = -1;
+    private Optional<Instant> lastModified = Optional.empty();
     private List<DirectiveHandler> directiveHandlers;
     private HtmlPageParser htmlParser;
     
@@ -175,12 +178,18 @@ public class DynamicDecoratorTemplate implements Template {
         }
     }
     
+    private boolean needCompile() {
+        Optional<Instant> templateMod = templateSource.getLastModified();
+        if (!templateMod.isPresent() || !lastModified.isPresent()) return true;
+        return templateMod.get().isAfter(lastModified.get());
+    }
+    
     @Override
     public TemplateExecution newTemplateExecution(
             HtmlPageContent html, HttpServletRequest request,
             Map<String, Object> model, Map<String, Object> templateParameters) throws Exception {
 
-        if (this.templateSource.getLastModified() > this.lastModified) {
+        if (needCompile()) {
             compile();
         }
         return new Execution(html, this.compiledTemplate, this.componentResolver, request, templateParameters);
@@ -188,8 +197,7 @@ public class DynamicDecoratorTemplate implements Template {
 
     
     private synchronized void compile() throws Exception {
-       if (this.compiledTemplate != null 
-                && (this.lastModified == this.templateSource.getLastModified())) {
+        if (!needCompile()) {
             return;
         }
         
@@ -238,6 +246,7 @@ public class DynamicDecoratorTemplate implements Template {
         parser.parse();
     }
     
+    @Override
     public String toString() {
         return this.getClass().getName() + ": " + this.templateSource;
     }
@@ -245,6 +254,7 @@ public class DynamicDecoratorTemplate implements Template {
     private NodeList getErrorTemplate(final String message) {
         NodeList nodeList = new NodeList();
         nodeList.add(new Node() {
+            @Override
             public boolean render(Context ctx, Writer out) throws Exception {
                 out.write(message);
                 return true;

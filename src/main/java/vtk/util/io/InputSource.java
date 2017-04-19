@@ -30,18 +30,21 @@
  */
 package vtk.util.io;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.Optional;
 
 public interface InputSource {
     
     public String getID();
 
-    public long getLastModified() throws IOException;
+    public Optional<Instant> getLastModified() throws UncheckedIOException;
 
-    public String getCharacterEncoding() throws IOException;
+    public Charset getCharacterEncoding();
     
-    public InputStream getInputStream() throws IOException;
+    public InputStream getInputStream() throws UncheckedIOException;
     
 }
 

@@ -32,12 +32,16 @@ package vtk.web.decorating;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -79,8 +83,8 @@ public class DynamicComponentParserTest {
 
         InputSource inputSource = new InputSource() {
             @Override
-            public InputStream getInputStream() throws IOException {
-                return new java.io.ByteArrayInputStream(template.getBytes("utf-8"));
+            public InputStream getInputStream() throws UncheckedIOException {
+                return new java.io.ByteArrayInputStream(template.getBytes(StandardCharsets.UTF_8));
             }
             @Override
             public String getID() {
@@ -88,33 +92,33 @@ public class DynamicComponentParserTest {
                 
             }
             @Override
-            public long getLastModified() throws IOException {
-                return -1L;
+            public Optional<Instant> getLastModified() throws UncheckedIOException {
+                return Optional.empty();
             }
             @Override
-            public String getCharacterEncoding() throws IOException {
-                return "utf-8";
+            public Charset getCharacterEncoding() {
+                return StandardCharsets.UTF_8;
             }
         };
         
         DynamicComponentParser parser = new DynamicComponentParser(handlers);
         DecoratorComponent component = parser.compile("ns", "name", inputSource);
 
-        Map<String, Object> params = new HashMap<String, Object>();
+        Map<String, Object> params = new HashMap<>();
         params.put("param1", "foo");
         MockStringDecoratorRequest req = new MockStringDecoratorRequest("<html></html>", params);
         MockDecoratorResponse resp = new MockDecoratorResponse();
         component.render(req, resp);
         assertEquals("foo", resp.getResult());
         
-        params = new HashMap<String, Object>();
+        params = new HashMap<>();
         params.put("param2", "bar");
         req = new MockStringDecoratorRequest("<html></html>", params);
         resp = new MockDecoratorResponse();
         component.render(req, resp);
         assertEquals("bar", resp.getResult());
 
-        params = new HashMap<String, Object>();
+        params = new HashMap<>();
         req = new MockStringDecoratorRequest("<html></html>", params);
         resp = new MockDecoratorResponse();
         component.render(req, resp);

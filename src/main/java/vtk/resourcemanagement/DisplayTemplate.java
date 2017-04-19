@@ -30,27 +30,27 @@
  */
 package vtk.resourcemanagement;
 
-import java.util.Date;
+import java.time.Instant;
 
 public class DisplayTemplate {
     private String content;
-    private Date lastModified = new Date();
+    private Instant lastModified;
     
     public DisplayTemplate(String content) {
         this.content = content;
-        this.lastModified = new Date();
+        this.lastModified = Instant.now();
     }
     
     public void setContent(String content) {
         this.content = content;
-        this.lastModified = new Date();
+        this.lastModified = Instant.now();
     }
     
     public String getTemplate() {
         return this.content;
     }
     
-    public Date getLastModified() {
+    public Instant getLastModified() {
         return this.lastModified;
     }
 

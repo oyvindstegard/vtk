@@ -32,6 +32,10 @@ package vtk.util.repository;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.Optional;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -57,33 +61,45 @@ public class RepositoryInputSource implements InputSource {
     }
     
     @Override
-    public long getLastModified() throws IOException {
+    public Optional<Instant> getLastModified() throws UncheckedIOException {
         try {
             Resource resource = repository.retrieve(
                     token, this.uri, true);
-            return resource.getLastModified().getTime();
-        } catch (Exception e) {
-            throw new IOException(e);
+            return Optional.of(Instant.ofEpochMilli(resource.getLastModified().getTime()));
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        catch (Exception e) {
+            throw new UncheckedIOException(new IOException(e));
         }
     }
 
     @Override
-    public String getCharacterEncoding() throws IOException {
+    public Charset getCharacterEncoding() {
         try {
             Resource resource = repository.retrieve(
                     token, uri, true);
-            return resource.getCharacterEncoding();
-        } catch (Exception e) {
-            throw new IOException(e);
+            return Charset.forName(resource.getCharacterEncoding());
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        catch (Exception e) {
+            throw new UncheckedIOException(new IOException(e));
         }
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
+    public InputStream getInputStream() {
         try {
             return repository.getInputStream(token, uri, true);
-        } catch (Exception e) {
-            throw new IOException(e);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        catch (Exception e) {
+            throw new UncheckedIOException(new IOException(e));
         }
     }
 

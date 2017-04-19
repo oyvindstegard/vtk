@@ -31,8 +31,12 @@
 package vtk.resourcemanagement.view;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Optional;
 
 import vtk.resourcemanagement.DisplayTemplate;
 import vtk.resourcemanagement.StructuredResourceDescription;
@@ -44,6 +48,7 @@ public class DecoratorTemplateManager extends AbstractCachingTemplateManager {
 
     private StructuredResourceManager resourceManager;
     
+    @Override
     protected InputSource resolve(final String name) {
         StructuredResourceDescription description = this.resourceManager.get(name);
         DisplayTemplate displayTemplate = description.getDisplayTemplate();
@@ -57,19 +62,19 @@ public class DecoratorTemplateManager extends AbstractCachingTemplateManager {
         }
         final DisplayTemplate result = displayTemplate;
         return new InputSource() {
-            public String getCharacterEncoding() throws IOException {
-                return "utf-8";
+            public Charset getCharacterEncoding() {
+                return StandardCharsets.UTF_8;
             }
             public String getID() {
                 return name;
             }
 
-            public InputStream getInputStream() throws IOException {
-                return new ByteArrayInputStream(result.getTemplate().getBytes("utf-8"));
+            public InputStream getInputStream() throws UncheckedIOException {
+                return new ByteArrayInputStream(result.getTemplate().getBytes(StandardCharsets.UTF_8));
             }
 
-            public long getLastModified() throws IOException {
-                return result.getLastModified().getTime();
+            public Optional<Instant> getLastModified() throws UncheckedIOException {
+                return Optional.of(result.getLastModified());
             }
         };
     }

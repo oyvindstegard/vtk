@@ -33,7 +33,11 @@ package vtk.util.io;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.Optional;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -57,33 +61,44 @@ public class URLInputSource implements InputSource {
     }
 
     @Override
-    public long getLastModified() throws IOException {
+    public Optional<Instant> getLastModified() throws UncheckedIOException {
         if (this.url.startsWith(LinkTypesPrefixes.FILE + "//")) {
-            URL fileURL = new URL(this.url);
-            File file = new File(fileURL.getFile());
-            return file.lastModified();
+            try {
+                URL fileURL = new URL(this.url);
+                File file = new File(fileURL.getFile());
+                return Optional.of(Instant.ofEpochMilli(file.lastModified()));
+            }
+            catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
-        return -1L;
+        return Optional.empty();
     }
     
     @Override
-    public String getCharacterEncoding() {
+    public Charset getCharacterEncoding() {
         String encoding = (this.characterEncoding != null) ?
                 this.characterEncoding : System.getProperty("file.encoding");
-        return encoding;
+        return Charset.forName(encoding);
     }
     
     @Override
-    public InputStream getInputStream() throws IOException {
+    public InputStream getInputStream() throws UncheckedIOException {
         InputStream is = null;
-        if (this.url.startsWith("classpath://")) {
-            String actualPath = url.substring("classpath://".length());
-            Resource resource = new ClassPathResource(actualPath);
-            is = resource.getInputStream();
-        } else {
-            is = new URL(this.url).openStream();
+        try {
+            if (this.url.startsWith("classpath://")) {
+                String actualPath = url.substring("classpath://".length());
+                Resource resource = new ClassPathResource(actualPath);
+                is = resource.getInputStream();
+            }
+            else {
+                is = new URL(this.url).openStream();
+            }
+            return is;
         }
-        return is;
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
     
     @Override

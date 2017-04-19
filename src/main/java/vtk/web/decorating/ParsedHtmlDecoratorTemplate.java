@@ -30,9 +30,9 @@
  */
 package vtk.web.decorating;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,12 +40,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import vtk.text.html.HtmlAttribute;
 import vtk.text.html.HtmlComment;
 import vtk.text.html.HtmlContent;
@@ -72,7 +74,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
     private InputSource templateSource;
 
     private CompiledTemplate compiledTemplate;
-    private long lastModified = -1;
+    private Optional<Instant> lastModified = Optional.empty();
 
     public ParsedHtmlDecoratorTemplate(HtmlPageParser htmlParser, 
             TextualComponentParser componentParser,
@@ -98,13 +100,19 @@ public class ParsedHtmlDecoratorTemplate implements Template {
 
         compile();
     }
+    
+    private boolean needCompile() {
+        Optional<Instant> templateMod = templateSource.getLastModified();
+        if (!templateMod.isPresent() || !lastModified.isPresent()) return true;
+        return templateMod.get().isAfter(lastModified.get());
+    }
 
 
     @Override
     public TemplateExecution newTemplateExecution(HtmlPageContent html,
             HttpServletRequest request, Map<String, Object> model,
             Map<String, Object> templateParameters) throws Exception {
-        if (this.templateSource.getLastModified() > this.lastModified) {
+        if (needCompile()) {
             compile();
         }
         return new Execution(this.compiledTemplate, this.componentResolver, html, request, model);
@@ -173,21 +181,14 @@ public class ParsedHtmlDecoratorTemplate implements Template {
                 InputSource templateSource) throws InvalidTemplateException {
 
             HtmlPage page = null;
-            InputStream is = null;
-            try {
-                is = templateSource.getInputStream();
+            try (InputStream is = templateSource.getInputStream()) {
                 page = htmlParser.parse(
                         is,
-                        templateSource.getCharacterEncoding());
-            } catch (Exception e) {
+                        templateSource.getCharacterEncoding().name());
+            }
+            catch (Exception e) {
                 throw new InvalidTemplateException(
                         "Error parsing template " + templateSource, e);
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException io) {}
-                }
             }
             this.root = createNode(page.getRootElement(), componentParser);
         }
@@ -219,7 +220,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
                 if (ELEMENT_NAME_REGEX_PATTERN.matcher(e.getName()).matches()) {
                     return new VrtxComponentNode(e);
                 }
-                List<Node> children = new ArrayList<Node>();
+                List<Node> children = new ArrayList<>();
                 for (HtmlContent child: e.getChildNodes()) {
                     children.add(createNode(child, componentParser));
                 }
@@ -315,7 +316,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
             String name = componentRef.substring(separatorIdx + 1);
 
 
-            Map<String, Object> parameters = new HashMap<String, Object>();
+            Map<String, Object> parameters = new HashMap<>();
             for (HtmlAttribute attr: elem.getAttributes()) {
                 parameters.put(attr.getName(), attr.getValue());    
             }
@@ -325,7 +326,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
         @Override
         public List<HtmlContent> generate(HtmlPage userPage, ComponentResolver componentResolver, HttpServletRequest req, 
                 Map<String, Object> model) throws Exception {
-            List<HtmlContent> result = new ArrayList<HtmlContent>();
+            List<HtmlContent> result = new ArrayList<>();
             if (this.error != null) {
                 result.add(userPage.createTextNode(this.error.getMessage()));
             } else {
@@ -378,7 +379,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
             }
             this.children = children;
             this.element = elem;
-            this.attributesMap = new LinkedHashMap<String, ComponentInvocation[]>();
+            this.attributesMap = new LinkedHashMap<>();
             for (HtmlAttribute attr: elem.getAttributes()) {
                 String name = attr.getName();
 
@@ -413,7 +414,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
         @Override
         public List<HtmlContent> generate(HtmlPage userPage, ComponentResolver componentResolver, HttpServletRequest req, 
                 Map<String, Object> model) throws Exception {
-            List<HtmlContent> result = new ArrayList<HtmlContent>();
+            List<HtmlContent> result = new ArrayList<>();
             if (this.error != null) {
                 result.add(userPage.createTextNode(this.error.getMessage()));
             } else {
@@ -423,7 +424,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
                     HtmlElement userElem = userPage.selectSingleElement(this.copyAttributesExpression);
                     if (userElem != null) {
 
-                        List<HtmlAttribute> newAttrs = new ArrayList<HtmlAttribute>();
+                        List<HtmlAttribute> newAttrs = new ArrayList<>();
 
                         if (this.copyAttributesList != null) {
                             String[] names = this.copyAttributesList.split(",");
@@ -441,7 +442,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
                         newElem.setAttributes(newAttrs.toArray(new HtmlAttribute[newAttrs.size()]));
                     }
                 } else {
-                    List<HtmlAttribute> newAttrs = new ArrayList<HtmlAttribute>();
+                    List<HtmlAttribute> newAttrs = new ArrayList<>();
                     for (String name: this.attributesMap.keySet()) {
                         StringBuilder value = new StringBuilder();
                         ComponentInvocation[] invocations = this.attributesMap.get(name);
@@ -475,7 +476,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
                             new HtmlAttribute[newAttrs.size()]));
                 }
 
-                List<HtmlContent> newElementContent = new ArrayList<HtmlContent>();
+                List<HtmlContent> newElementContent = new ArrayList<>();
                 for (Node childNode: this.children) {
                     newElementContent.addAll(childNode.generate(userPage, componentResolver, req, model));
                 }
@@ -504,7 +505,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
         @Override
         public List<HtmlContent> generate(HtmlPage userPage, ComponentResolver componentResolver, HttpServletRequest req, 
                 Map<String, Object> model) throws Exception {
-            List<HtmlContent> result = new ArrayList<HtmlContent>();
+            List<HtmlContent> result = new ArrayList<>();
             if (this.error != null) {
                 result.add(userPage.createTextNode(this.error.getMessage()));
             } else {
@@ -551,7 +552,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
         @Override
         public List<HtmlContent> generate(HtmlPage userPage, ComponentResolver componentResolver, HttpServletRequest req, 
                 Map<String, Object> model) throws Exception {
-            List<HtmlContent> result = new ArrayList<HtmlContent>();
+            List<HtmlContent> result = new ArrayList<>();
             result.add(userPage.createComment(this.comment));
             return result;
         }
@@ -567,15 +568,17 @@ public class ParsedHtmlDecoratorTemplate implements Template {
             this.content = c.getContent();
         }
 
+        @Override
         public List<HtmlContent> generate(HtmlPage userPage, ComponentResolver componentResolver, HttpServletRequest req, 
                 Map<String, Object> model) throws Exception {
-            List<HtmlContent> result = new ArrayList<HtmlContent>();
+            List<HtmlContent> result = new ArrayList<>();
             result.add(userPage.createTextNode(this.content));
             return result;
         }
     }
 
 
+    @Override
     public String toString() {
         return this.getClass().getName() + ": " + this.templateSource;
     }

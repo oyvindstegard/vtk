@@ -31,6 +31,7 @@
 package vtk.web.decorating;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,16 +59,24 @@ public class CollectionComponentManager implements ComponentResolver {
     private static class CompiledComponent {
         private InputSource source;
         private DecoratorComponent component;
-        private long timestamp;
-        public CompiledComponent(InputSource source, DecoratorComponent component, long timestamp) {
+        private Instant timestamp;
+        public CompiledComponent(InputSource source, DecoratorComponent component, Instant timestamp) {
             this.source = source;
             this.component = component;
             this.timestamp = timestamp;
         }
-        public DecoratorComponent component() { return component; }
-        public InputSource source() { return source; }
-        public boolean outdated() throws IOException 
-            { return timestamp < source.getLastModified(); }
+        public DecoratorComponent component() { 
+            return component;
+        }
+        public InputSource source() { 
+            return source;
+        }
+        public boolean outdated() throws IOException {
+            if (!source.getLastModified().isPresent()) {
+                return true;
+            }
+            return timestamp.isBefore(source.getLastModified().get());
+        }
     }
     
     public CollectionComponentManager(Repository repository, String token, 
@@ -85,7 +94,7 @@ public class CollectionComponentManager implements ComponentResolver {
     }
 
     private synchronized void loadSources() {
-        long now = System.currentTimeMillis();
+        Instant now = Instant.now();
         Map<Path, CompiledComponent> newComponents = new HashMap<>();
         for (String coll: collections) {
             try {
@@ -105,7 +114,7 @@ public class CollectionComponentManager implements ComponentResolver {
         components = newComponents;
     }
     
-    private void loadLibrary(Resource lib, long timestamp, 
+    private void loadLibrary(Resource lib, Instant timestamp, 
             Map<Path, CompiledComponent> newComponents) throws Exception {
         
         Resource[] children = repository.listChildren(token, lib.getURI(), false);

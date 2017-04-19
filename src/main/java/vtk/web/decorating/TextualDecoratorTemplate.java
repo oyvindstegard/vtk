@@ -32,13 +32,16 @@ package vtk.web.decorating;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import vtk.text.html.HtmlPage;
 import vtk.util.io.InputSource;
 
@@ -54,7 +57,7 @@ public class TextualDecoratorTemplate implements Template {
     private ComponentInvocation[] fragments;
     private ComponentResolver componentResolver;
     private InputSource templateSource;
-    private long lastModified = -1;
+    private Optional<Instant> lastModified = Optional.empty();
     
 
     public TextualDecoratorTemplate(TextualComponentParser parser,
@@ -169,7 +172,7 @@ public class TextualDecoratorTemplate implements Template {
         if (model == null) {
             throw new IllegalArgumentException("Argument 'model' cannot be NULL");
         }
-        if (this.templateSource.getLastModified() > this.lastModified) {
+        if (needCompile()) {
             compile();
         }
         return new Execution(html, this.fragments, this.componentResolver, request, model);
@@ -191,10 +194,15 @@ public class TextualDecoratorTemplate implements Template {
         return result;
     }
     
+    private boolean needCompile() {
+        Optional<Instant> templateMod = templateSource.getLastModified();
+        if (!templateMod.isPresent() || !lastModified.isPresent()) return true;
+        return templateMod.get().isAfter(lastModified.get());
+    }
+
 
     private synchronized void compile() throws Exception {
-       if (this.fragments != null 
-                && (this.lastModified == this.templateSource.getLastModified())) {
+       if (this.fragments != null && !needCompile()) {
             return;
         }
 
