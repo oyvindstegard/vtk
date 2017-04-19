@@ -35,6 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.util.io.InputSource;
+
 public abstract class AbstractCachingTemplateManager implements TemplateManager {
     private TemplateFactory templateFactory;
     

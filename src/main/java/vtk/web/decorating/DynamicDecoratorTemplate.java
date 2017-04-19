@@ -51,6 +51,7 @@ import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.Node;
 import vtk.text.tl.NodeList;
 import vtk.text.tl.Parser.Directive;
+import vtk.util.io.InputSource;
 import vtk.text.tl.TemplateContext;
 import vtk.text.tl.TemplateHandler;
 import vtk.text.tl.TemplateParser;

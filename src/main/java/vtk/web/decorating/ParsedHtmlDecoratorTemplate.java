@@ -55,6 +55,7 @@ import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageParser;
 import vtk.text.html.HtmlText;
 import vtk.text.html.HtmlUtil;
+import vtk.util.io.InputSource;
 
 
 /**

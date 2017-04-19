@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vtk.text.html.HtmlPage;
+import vtk.util.io.InputSource;
 
 
 public class TextualDecoratorTemplate implements Template {

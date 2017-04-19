@@ -28,67 +28,21 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.decorating;
+package vtk.util.io;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import vtk.util.web.LinkTypesPrefixes;
-
-public class URLInputSource implements InputSource {
-
-    private String url;
-    private String characterEncoding;
-
-    public URLInputSource() {}
+public interface InputSource {
     
-    public URLInputSource(String url, String characterEncoding) {
-        this.url = url;
-        this.characterEncoding = characterEncoding;
-    }
+    public String getID();
 
-    public String getID() {
-        return this.url;
-    }
+    public long getLastModified() throws IOException;
 
-    @Override
-    public long getLastModified() throws IOException {
-        if (this.url.startsWith(LinkTypesPrefixes.FILE + "//")) {
-            URL fileURL = new URL(this.url);
-            File file = new File(fileURL.getFile());
-            return file.lastModified();
-        }
-        return -1L;
-    }
+    public String getCharacterEncoding() throws IOException;
     
-    @Override
-    public String getCharacterEncoding() {
-        String encoding = (this.characterEncoding != null) ?
-                this.characterEncoding : System.getProperty("file.encoding");
-        return encoding;
-    }
+    public InputStream getInputStream() throws IOException;
     
-    @Override
-    public InputStream getInputStream() throws IOException {
-        InputStream is = null;
-        if (this.url.startsWith("classpath://")) {
-            String actualPath = url.substring("classpath://".length());
-            Resource resource = new ClassPathResource(actualPath);
-            is = resource.getInputStream();
-        } else {
-            is = new URL(this.url).openStream();
-        }
-        return is;
-    }
-    
-    @Override
-    public String toString() {
-        return getID();
-    }
-
 }
+
 

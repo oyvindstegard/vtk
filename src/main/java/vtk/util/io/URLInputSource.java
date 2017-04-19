@@ -28,21 +28,68 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.decorating;
+package vtk.util.io;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
-public interface InputSource {
-    
-    public String getID();
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
-    public long getLastModified() throws IOException;
+import vtk.util.web.LinkTypesPrefixes;
 
-    public String getCharacterEncoding() throws IOException;
+public class URLInputSource implements InputSource {
+
+    private String url;
+    private String characterEncoding;
+
+    public URLInputSource() {}
     
-    public InputStream getInputStream() throws IOException;
+    public URLInputSource(String url, String characterEncoding) {
+        this.url = url;
+        this.characterEncoding = characterEncoding;
+    }
+
+    public String getID() {
+        return this.url;
+    }
+
+    @Override
+    public long getLastModified() throws IOException {
+        if (this.url.startsWith(LinkTypesPrefixes.FILE + "//")) {
+            URL fileURL = new URL(this.url);
+            File file = new File(fileURL.getFile());
+            return file.lastModified();
+        }
+        return -1L;
+    }
     
+    @Override
+    public String getCharacterEncoding() {
+        String encoding = (this.characterEncoding != null) ?
+                this.characterEncoding : System.getProperty("file.encoding");
+        return encoding;
+    }
+    
+    @Override
+    public InputStream getInputStream() throws IOException {
+        InputStream is = null;
+        if (this.url.startsWith("classpath://")) {
+            String actualPath = url.substring("classpath://".length());
+            Resource resource = new ClassPathResource(actualPath);
+            is = resource.getInputStream();
+        } else {
+            is = new URL(this.url).openStream();
+        }
+        return is;
+    }
+    
+    @Override
+    public String toString() {
+        return getID();
+    }
+
 }
-
 

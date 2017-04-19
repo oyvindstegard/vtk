@@ -32,6 +32,9 @@ package vtk.web.decorating;
 
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.util.io.InputSource;
+import vtk.util.io.URLInputSource;
+
 public class StaticTemplateManager extends AbstractCachingTemplateManager {
 
     private String uriPrefix;

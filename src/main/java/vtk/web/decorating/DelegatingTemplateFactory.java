@@ -39,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.util.io.InputSource;
+
 
 public class DelegatingTemplateFactory implements TemplateFactory {
     private static Logger logger = LoggerFactory.getLogger(DelegatingTemplateFactory.class);

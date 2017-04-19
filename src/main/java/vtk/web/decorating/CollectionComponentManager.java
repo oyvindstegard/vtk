@@ -42,6 +42,8 @@ import org.slf4j.LoggerFactory;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
+import vtk.util.io.InputSource;
+import vtk.util.repository.RepositoryInputSource;
 
 public class CollectionComponentManager implements ComponentResolver {
     
