@@ -59,6 +59,18 @@ resourcetype helseforsk {
         [endif]
       ##
     }
+    
+    date-format(month, year) {
+      ##
+      [def dt concat("", year)]
+      [def dt concat(dt, "-")]
+      [def dt concat(dt, month)]
+      [def dt concat(dt, "-")]
+      [def dt concat(dt, "01")]
+      [def dt to-date(dt)]
+      [val dt # "full-month-year"]
+      ##
+    }
   }
   
   view {
@@ -282,10 +294,10 @@ resourcetype helseforsk {
             <h2>[localized "timePeriod"]</h2>
             <ul>
               [if startupMonth != null && startupYear != null]
-                <li>[localized "timeStartup"]: [val startupMonth] / [val startupYear]</li>
+                <li>[localized "timeStartup"]: [call "comp:date-format" { "month": startupMonth, "year":  startupYear }]</li>
               [endif]
               [if completedMonth != null && completedYear != null]
-                <li>[localized "timeCompleted"]: [val completedMonth] / [val completedYear]</li>
+                <li>[localized "timeCompleted"]: [call "comp:date-format" { "month": completedMonth, "year":  completedYear }]</li>
               [endif]
             </ul>
           </div>
