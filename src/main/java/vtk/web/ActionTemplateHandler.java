@@ -30,10 +30,9 @@
  */
 package vtk.web;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,15 +40,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.Controller;
+import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
-import vtk.repository.Path;
 import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.IfHandler;
@@ -60,75 +60,101 @@ import vtk.text.tl.TemplateParser;
 import vtk.text.tl.ValHandler;
 import vtk.text.tl.expr.Expression;
 import vtk.util.Result;
+import vtk.util.io.InputSource;
+import vtk.util.io.InputSourceProvider;
 import vtk.web.referencedata.ReferenceDataProvider;
 
-public class ActionTemplateHandler implements Controller {
-    private Path prefix;
+public class ActionTemplateHandler implements HttpRequestHandler {
     private String parameter;
     private List<ReferenceDataProvider> referenceDataProviders;
+    private TemplateProvider templateProvider;
     
-    public ActionTemplateHandler(String prefix, String parameter, 
+    public ActionTemplateHandler(InputSourceProvider provider, String parameter, 
             List<ReferenceDataProvider> referenceDataProviders) {
-        this.prefix = Path.fromString(prefix);
+        
+        this.templateProvider = new TemplateProvider(Objects.requireNonNull(
+                provider, "Constructor argument 'provider' is null"), this::parse);
+        
         this.parameter = Objects.requireNonNull(
                 parameter, "Constructor argument 'parameter' is null");
+        
         this.referenceDataProviders = new ArrayList<>(Objects.requireNonNull(
                 referenceDataProviders, 
                 "Constructor argument 'referenceDataProviders' is null"));
     }
     
+    
     @Override
-    public ModelAndView handleRequest(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
-        Result<Path> templateURI = templateURI(request);
-        Result<NodeList> template = templateURI.flatMap(uri -> 
-            templateReader(request, uri).flatMap(reader -> 
-                parse(reader, uri, RequestContextUtils.getLocale(request))));
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) {
+        Result<String> templateName = templateName(request);
+        Result<NodeList> template = templateName.flatMap(name -> templateProvider.apply(name));
         Result<Boolean> rendered = template.flatMap(nodes -> render(nodes, request, response));
         if (rendered.failure.isPresent()) {
-            Throwable t = rendered.failure.get();
-            if (t instanceof Exception) throw ((Exception) t);
-            throw new RuntimeException(t);
+            throw new RuntimeException(rendered.failure.get());
         }
-        return null;
-    }
-
-    private Result<Reader> templateReader(HttpServletRequest request, Path templateURI) {
-        return Result.attempt(() -> {
-            try {
-                RequestContext requestContext = RequestContext.getRequestContext();
-                return requestContext.getRepository()
-                        .getInputStream(requestContext.getSecurityToken(), templateURI, true);
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        })
-        .flatMap(inputStream -> Result.attempt(() -> new InputStreamReader(inputStream)));
     }
     
-    private Result<Path> templateURI(HttpServletRequest request) {
+    private static class CompiledTemplate {
+        public final Result<NodeList> template;
+        public final Instant timestamp;
+        public CompiledTemplate(Result<NodeList> template, Instant timestamp) {
+            this.template = template;
+            this.timestamp = timestamp;
+        }
+    }
+    
+    private static class TemplateProvider implements Function<String, Result<NodeList>> {
+        private InputSourceProvider sourceProvider;
+        private Map<String, CompiledTemplate> cache = new HashMap<>();
+        BiFunction<Reader, String, Result<NodeList>> parser;
+        
+        public TemplateProvider(InputSourceProvider sourceProvider, 
+                BiFunction<Reader, String, Result<NodeList>> parser) {
+            this.sourceProvider = sourceProvider;
+            this.parser = parser;
+        }
+
+        @Override
+        public Result<NodeList> apply(String name) {
+            Instant now = Instant.now();
+            Result<InputSource> source = sourceProvider.apply(name);
+            CompiledTemplate cached = cache.get(name);
+            
+            if (cached != null && source.result.isPresent()) {
+                Optional<Instant> sourceModified = source.result.get().getLastModified();
+                if (sourceModified.isPresent() && !sourceModified.get().isAfter(cached.timestamp)) {
+                    return cached.template;
+                }
+            }
+            Result<NodeList> template = source.flatMap(inputSource ->
+                  Result.attempt(() -> inputSource.getReader()).flatMap(reader -> 
+                    parser.apply(reader, inputSource.getID())));
+            
+            CompiledTemplate compiledTemplate = new CompiledTemplate(template, now);
+            cache.put(name, compiledTemplate);
+            
+            return compiledTemplate.template;
+        }
+    }
+    
+    
+    private Result<String> templateName(HttpServletRequest request) {
         return Result.attempt(() -> Objects.requireNonNull(
-                request.getParameter(parameter), "Request parameter '" 
+            request.getParameter(parameter), "Request parameter '" 
                         + parameter + "' is required"))
         .flatMap(str -> Result.attempt(()  -> {
             if (str.indexOf('/') != -1) 
                 throw new IllegalArgumentException(
-                        "Invalid value for request parameter '" + parameter 
-                        + "': " + str);
-            else return str;
-        }))
-        .flatMap(str -> Result.attempt(() -> prefix.expand(str + ".tl")));
+                    "Invalid value for request parameter '" + parameter 
+                    + "': " + str);
+            else return str + ".tl";}));
     }
     
     private static class TemplateHolder {
         public NodeList nodes;
     }
     
-    private Result<NodeList> parse(Reader reader, Path uri, final Locale locale) {
+    private Result<NodeList> parse(Reader reader, String identifier) {
         Expression.FunctionResolver functionResolver = new Expression.FunctionResolver();
         List<DirectiveHandler> handlers = Arrays.asList(
                 new IfHandler(functionResolver),
@@ -148,7 +174,7 @@ public class ActionTemplateHandler implements Controller {
                     public boolean render(Context ctx, Writer out) throws Exception {
                         out.write(String.format(
                                 "Template parse error:\n---\n%s\n---\nLine %d in file \"%s\"",
-                                message, line, uri
+                                message, line, identifier
                         ));
                         return true;
                     }

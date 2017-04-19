@@ -2414,8 +2414,17 @@
     <property name="handler" ref="manage.actionService.handler" />
   </bean>
 
+  <bean id="manage.actionService.inputProvider" class="vtk.util.repository.RepositoryInputSourceProvider">
+    <constructor-arg name="repository" ref="repository" />
+    <constructor-arg name="prefix">
+      <bean parent="uri.abstractBean">
+        <property name="arguments" value="${manage.dynamicActionsLocation}" />
+      </bean>
+    </constructor-arg>
+  </bean>
+
   <bean id="manage.actionService.handler" class="vtk.web.ActionTemplateHandler">
-    <constructor-arg name="prefix" value="${manage.dynamicActionsLocation}" />
+    <constructor-arg name="provider" ref="manage.actionService.inputProvider" />
     <constructor-arg name="parameter" value="admin-action" />
     <constructor-arg name="referenceDataProviders">
       <list>

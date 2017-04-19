@@ -49,7 +49,7 @@ public class RepositoryInputSource implements InputSource {
     private String token;
     private Path uri; 
     
-    public RepositoryInputSource(Path uri, Repository repository, String token) throws Exception {
+    public RepositoryInputSource(Path uri, Repository repository, String token) {
         this.repository = repository;
         this.token = token;
         this.uri = uri;
