@@ -2485,7 +2485,7 @@ $(window).on('message', function(e) {
     if (data.type == 'browse-select-resource') {
         if (data.CKEditorFuncNum) {
             if (window.CKEDITOR) {
-	        window.CKEDITOR.tools.callFunction(data.CKEditorFuncNum, data.url);
+                window.CKEDITOR.tools.callFunction(data.CKEditorFuncNum, data.url);
             }
         }
         else {
