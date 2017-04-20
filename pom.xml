@@ -87,18 +87,18 @@
     </site>
     <repository>
       <id>nexus-internal</id>
-      <url>https://repo.usit.uio.no/nexus/content/repositories/internal-release</url>
+      <url>https://repo.usit.uio.no/nexus/repository/internal-release</url>
     </repository>
     <snapshotRepository>
       <id>nexus-internal</id>
-      <url>https://repo.usit.uio.no/nexus/content/repositories/internal-snapshots</url>
+      <url>https://repo.usit.uio.no/nexus/repository/internal-snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 
   <pluginRepositories>
     <pluginRepository>
       <id>nexus-public</id>
-      <url>https://repo.usit.uio.no/nexus/content/groups/public/</url>
+      <url>https://repo.usit.uio.no/nexus/repository/public/</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -111,7 +111,7 @@
   <repositories>
     <repository>
       <id>nexus-public</id>
-      <url>https://repo.usit.uio.no/nexus/content/groups/public/</url>
+      <url>https://repo.usit.uio.no/nexus/repository/public/</url>
       <releases>
         <enabled>true</enabled>
       </releases>
