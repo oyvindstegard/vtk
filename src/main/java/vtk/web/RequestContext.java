@@ -362,7 +362,7 @@ public class RequestContext {
         @Override
         public Resource retrieve(String token, Path uri, boolean forProcessing)
                 throws ResourceNotFoundException, AuthorizationException,
-                AuthenticationException, Exception {
+                AuthenticationException, IOException {
             if (this.uri.equals(uri)) {
                 Revision rev = findRevision(token);
                 if (rev != null) {
@@ -375,7 +375,7 @@ public class RequestContext {
         @Override
         public InputStream getInputStream(String token, Path uri,
                 boolean forProcessing) throws ResourceNotFoundException,
-                AuthorizationException, AuthenticationException, Exception {
+                AuthorizationException, AuthenticationException, IOException {
             
             if (this.uri.equals(uri)) {
                 Revision rev = findRevision(token);
@@ -390,7 +390,7 @@ public class RequestContext {
         public Resource store(String token, Resource resource)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, ResourceLockedException,
-                IllegalOperationException, ReadOnlyException, Exception {
+                IllegalOperationException, ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -399,7 +399,7 @@ public class RequestContext {
                 StoreContext storeContext) throws ResourceNotFoundException,
                 AuthorizationException, AuthenticationException,
                 ResourceLockedException, IllegalOperationException,
-                ReadOnlyException, Exception {
+                ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -407,7 +407,7 @@ public class RequestContext {
         public Resource storeContent(String token, Path uri, ContentInputSource content)
                 throws AuthorizationException, AuthenticationException,
                 ResourceNotFoundException, ResourceLockedException,
-                IllegalOperationException, ReadOnlyException, Exception {
+                IllegalOperationException, ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -416,7 +416,7 @@ public class RequestContext {
                 ContentInputSource content, Revision revision)
                 throws AuthorizationException, AuthenticationException,
                 ResourceNotFoundException, ResourceLockedException,
-                IllegalOperationException, ReadOnlyException, Exception {
+                IllegalOperationException, ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -424,7 +424,7 @@ public class RequestContext {
         public Resource createDocument(String token, Path uri,
                 ContentInputSource content) throws IllegalOperationException,
                 AuthorizationException, AuthenticationException,
-                ResourceLockedException, ReadOnlyException, Exception {
+                ResourceLockedException, ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -432,7 +432,7 @@ public class RequestContext {
         public Resource createCollection(String token, Path uri)
                 throws AuthorizationException, AuthenticationException,
                 IllegalOperationException, ResourceLockedException,
-                ReadOnlyException, Exception {
+                ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -442,7 +442,7 @@ public class RequestContext {
                 throws IllegalOperationException, AuthorizationException,
                 AuthenticationException, FailedDependencyException,
                 ResourceOverwriteException, ResourceLockedException,
-                ResourceNotFoundException, ReadOnlyException, Exception {
+                ResourceNotFoundException, ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -452,7 +452,7 @@ public class RequestContext {
                 AuthorizationException, AuthenticationException,
                 FailedDependencyException, ResourceOverwriteException,
                 ResourceLockedException, ResourceNotFoundException,
-                ReadOnlyException, Exception {
+                ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -461,7 +461,7 @@ public class RequestContext {
                 throws IllegalOperationException, AuthorizationException,
                 AuthenticationException, ResourceNotFoundException,
                 ResourceLockedException, FailedDependencyException,
-                ReadOnlyException, Exception {
+                ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -469,13 +469,13 @@ public class RequestContext {
         public void recover(String token, Path parentUri,
                 RecoverableResource recoverableResource)
                 throws ResourceNotFoundException, AuthorizationException,
-                AuthenticationException, Exception {
+                AuthenticationException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
         @Override
         public void deleteRecoverable(String token, Path parentUri,
-                RecoverableResource recoverableResource) throws Exception {
+                RecoverableResource recoverableResource) throws IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -485,7 +485,7 @@ public class RequestContext {
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, FailedDependencyException,
                 ResourceLockedException, IllegalOperationException,
-                ReadOnlyException, Exception {
+                ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -493,7 +493,7 @@ public class RequestContext {
         public void unlock(String token, Path uri, String lockToken)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, ResourceLockedException,
-                ReadOnlyException, Exception {
+                ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -501,7 +501,7 @@ public class RequestContext {
         public Resource storeACL(String token, Path uri, Acl acl)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, IllegalOperationException,
-                ReadOnlyException, Exception {
+                ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -509,7 +509,7 @@ public class RequestContext {
         public Resource storeACL(String token, Path uri, Acl acl,
                 boolean validateAcl) throws ResourceNotFoundException,
                 AuthorizationException, AuthenticationException,
-                IllegalOperationException, ReadOnlyException, Exception {
+                IllegalOperationException, ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -517,7 +517,7 @@ public class RequestContext {
         public Resource deleteACL(String token, Path uri)
                 throws ResourceNotFoundException, AuthorizationException,
                 AuthenticationException, IllegalOperationException,
-                ReadOnlyException, Exception {
+                ReadOnlyException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -531,7 +531,7 @@ public class RequestContext {
         @Override
         public void deleteRevision(String token, Path uri, Revision revision)
                 throws ResourceNotFoundException, AuthorizationException,
-                AuthenticationException, Exception {
+                AuthenticationException, IOException {
             throw new UnsupportedOperationException("Not supported");
         }
 
@@ -568,7 +568,7 @@ public class RequestContext {
             throw new UnsupportedOperationException("Not supported");
         }
 
-        private Revision findRevision(String token) throws Exception {
+        private Revision findRevision(String token) throws IOException {
             if (cache.containsKey(token)) return cache.get(token);
 
             for (Revision r: getRevisions(token, uri)) {

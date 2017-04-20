@@ -94,14 +94,14 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     @Override
     public void copy(String token, Path srcUri, Path destUri, boolean overwrite, boolean preserveACL)
             throws IllegalOperationException, AuthorizationException, AuthenticationException,
-            FailedDependencyException, ResourceOverwriteException, ResourceLockedException, ResourceNotFoundException,
-            ReadOnlyException, Exception {
+            FailedDependencyException, ResourceOverwriteException, ResourceLockedException, 
+            ResourceNotFoundException, ReadOnlyException, IOException {
 
         // Synchronize on:
         // - Destination parent URI
         // - Destination URI
         // - Any cached descendant of destination URI in case of overwrite.
-        List<Path> lockUris = new ArrayList<Path>(2);
+        List<Path> lockUris = new ArrayList<>(2);
         if (destUri.getParent() != null) {
             lockUris.add(destUri.getParent());
         }
@@ -132,7 +132,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     @Override
     public void move(String token, Path srcUri, Path destUri, boolean overwrite) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, FailedDependencyException, ResourceOverwriteException,
-            ResourceLockedException, ResourceNotFoundException, ReadOnlyException, Exception {
+            ResourceLockedException, ResourceNotFoundException, ReadOnlyException, IOException {
 
         // Synchronize on:
         // - Source URI and any cached descendant of source URI
@@ -140,7 +140,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
         // - Destination parent URI (may be same as source parent URI)
         // - Destination URI
         // - Any cached descendant of destination URI in case of overwrite.
-        List<Path> lockUris = new ArrayList<Path>();
+        List<Path> lockUris = new ArrayList<>();
         Path srcParent = srcUri.getParent();
         Path destParent = destUri.getParent();
 
@@ -189,12 +189,12 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public Resource createCollection(String token, Path uri) throws AuthorizationException, AuthenticationException,
-            IllegalOperationException, ResourceLockedException, ReadOnlyException, Exception {
+            IllegalOperationException, ResourceLockedException, ReadOnlyException, IOException {
 
         // Synchronize on:
         // - Parent URI
         // - URI
-        List<Path> lockUris = new ArrayList<Path>(2);
+        List<Path> lockUris = new ArrayList<>(2);
         if (uri.getParent() != null) {
             lockUris.add(uri.getParent());
         }
@@ -220,7 +220,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public Resource createDocument(final String token, final Path uri, ContentInputSource content) throws IllegalOperationException,
-            AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, Exception {
+            AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
 
         IO.TempFile tempFile = null;
         try {
@@ -277,13 +277,13 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     @Override
     public void delete(String token, Path uri, boolean restorable) throws IllegalOperationException,
             AuthorizationException, AuthenticationException, ResourceNotFoundException, ResourceLockedException,
-            FailedDependencyException, ReadOnlyException, Exception {
+            FailedDependencyException, ReadOnlyException, IOException {
 
         // Synchronize on:
         // - Parent URI
         // - URI
         // - Any cached descendants of URI
-        List<Path> lockUris = new ArrayList<Path>();
+        List<Path> lockUris = new ArrayList<>();
         if (uri.getParent() != null) {
             lockUris.add(uri.getParent());
         }
@@ -310,18 +310,18 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public List<RecoverableResource> getRecoverableResources(String token, Path uri) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
         return this.wrappedRepository.getRecoverableResources(token, uri);
     }
 
     @Override
     public void recover(String token, Path parentUri, RecoverableResource recoverableResource)
-            throws ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
+            throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
 
         // Synchronize on:
         // - Parent URI
         // - URI of recovered resource
-        List<Path> lockUris = new ArrayList<Path>(2);
+        List<Path> lockUris = new ArrayList<>(2);
         lockUris.add(parentUri);
         lockUris.add(parentUri.extend(recoverableResource.getName()));
 
@@ -339,7 +339,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public void deleteRecoverable(String token, Path parentUri, RecoverableResource recoverableResource)
-            throws Exception {
+            throws IOException {
         this.wrappedRepository.deleteRecoverable(token, parentUri, recoverableResource);
     }
 
@@ -369,7 +369,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public boolean exists(String token, Path uri) throws AuthorizationException, AuthenticationException, Exception {
+    public boolean exists(String token, Path uri) throws AuthorizationException, AuthenticationException, IOException {
         // Acquired shared lock
         final List<Path> locked = this.lockManager.lock(uri, false);
         try {
@@ -399,7 +399,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public InputStream getInputStream(String token, Path uri, boolean forProcessing)
-            throws ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception{
+            throws ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException{
         // XXX perhaps not lock at all for getInputStream ..
         //     If a slow writer is uploading to the same resource, getting the input stream will block.
         //     On the other hand, not locking can typically result in a bad half-written input stream.
@@ -415,7 +415,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public InputStream getInputStream(String token, Path uri, boolean forProcessing, Revision revision) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
 
         List<Path> locked = this.lockManager.lock(uri, false);
         try {
@@ -428,7 +428,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public InputStream getAlternativeInputStream(String token, Path uri, boolean forProcessing, String contentIdentifier)
-            throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, Exception {
+            throws NoSuchContentException, ResourceNotFoundException, AuthorizationException, AuthenticationException, IOException {
 
         List<Path> locked = this.lockManager.lock(uri, false);
         try {
@@ -456,7 +456,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public Resource[] listChildren(String token, Path uri, boolean forProcessing) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
 
         // Acquire a shared read-lock on parent path
         final List<Path> locked = this.lockManager.lock(uri, false);
@@ -471,7 +471,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     @Override
     public Resource lock(String token, Path uri, String ownerInfo, Depth depth, int requestedTimoutSeconds,
             String lockToken) throws ResourceNotFoundException, AuthorizationException, AuthenticationException,
-            FailedDependencyException, ResourceLockedException, IllegalOperationException, ReadOnlyException, Exception {
+            FailedDependencyException, ResourceLockedException, IllegalOperationException, ReadOnlyException, IOException {
 
         // Synchronize on:
         // - URI
@@ -488,7 +488,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public void unlock(String token, Path uri, String lockToken) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, Exception {
+            AuthorizationException, AuthenticationException, ResourceLockedException, ReadOnlyException, IOException {
 
         // Synchronize on:
         // - URI
@@ -504,7 +504,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public Resource retrieve(String token, Path uri, boolean forProcessing) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
         // Acquire a shared read-lock on path
         final List<Path> locked = this.lockManager.lock(uri, false);
         try {
@@ -517,7 +517,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public Resource retrieve(String token, Path uri, boolean forProcessing, Revision revision) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
         // Acquire a shared read-lock on path
         final List<Path> locked = this.lockManager.lock(uri, false);
         try {
@@ -529,16 +529,16 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     }
 
     @Override
-    public void setReadOnly(String token, boolean readOnly) throws AuthorizationException, Exception {
+    public void setReadOnly(String token, boolean readOnly) throws AuthorizationException, IOException {
         this.wrappedRepository.setReadOnly(token, readOnly); // Tx
     }
 
     @Override
-    public Resource store(String token, Resource resource, StoreContext storeContext) throws ResourceNotFoundException, AuthorizationException, AuthenticationException, ResourceLockedException, IllegalOperationException, ReadOnlyException, Exception {
+    public Resource store(String token, Resource resource, StoreContext storeContext) throws ResourceNotFoundException, AuthorizationException, AuthenticationException, ResourceLockedException, IllegalOperationException, ReadOnlyException, IOException {
         // Synchronize on:
         // - URI if NOT inheritable properties store
         // - URI and all descendants if inheritable store
-        List<Path> lockUris = new ArrayList<Path>();
+        List<Path> lockUris = new ArrayList<>();
         lockUris.add(resource.getURI());
         if (storeContext instanceof InheritablePropertiesStoreContext) {
             // XXX overkill to lock all descendants ?
@@ -561,7 +561,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public Resource store(String token, Resource resource) throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, ResourceLockedException, IllegalOperationException, ReadOnlyException, Exception {
+            AuthenticationException, ResourceLockedException, IllegalOperationException, ReadOnlyException, IOException {
         // Synchronize on:
         // - URI
 
@@ -579,12 +579,12 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public Resource storeACL(String token, Path uri, Acl acl) throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, IllegalOperationException, ReadOnlyException, Exception {
+            AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
 
         // Synchronize on:
         // - URI
         // - Any cached descendant of URI (due to ACL inheritance)
-        List<Path> lockUris = new ArrayList<Path>();
+        List<Path> lockUris = new ArrayList<>();
         lockUris.add(uri);
         lockUris.addAll(getCachedDescendants(uri));
 
@@ -603,12 +603,12 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public Resource storeACL(String token, Path uri, Acl acl, boolean validateACL) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, IllegalOperationException, ReadOnlyException, Exception {
+            AuthorizationException, AuthenticationException, IllegalOperationException, ReadOnlyException, IOException {
 
         // Synchronize on:
         // - URI
         // - Any cached descendant of URI (due to ACL inheritance)
-        List<Path> lockUris = new ArrayList<Path>();
+        List<Path> lockUris = new ArrayList<>();
         lockUris.add(uri);
         lockUris.addAll(getCachedDescendants(uri));
 
@@ -630,12 +630,12 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     public Resource deleteACL(String token, Path uri)
             throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
 
         // Synchronize on:
         // - URI
         // - Any cached descendant of URI (due to ACL inheritance)
-        List<Path> lockUris = new ArrayList<Path>();
+        List<Path> lockUris = new ArrayList<>();
         lockUris.add(uri);
         lockUris.addAll(getCachedDescendants(uri));
 
@@ -665,7 +665,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     @Override
     public Resource storeContent(String token, Path uri, ContentInputSource content) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
 
         // Synchronize on:
         // - URI
@@ -683,7 +683,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     @Override
     public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision) throws AuthorizationException,
             AuthenticationException, ResourceNotFoundException, ResourceLockedException, IllegalOperationException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
 
         // Synchronize on:
         // - URI
@@ -725,7 +725,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
 
     @Override
     public boolean isAuthorized(Resource resource, RepositoryAction action, Principal principal, boolean considerLocks)
-            throws Exception {
+            throws IOException {
         return this.wrappedRepository.isAuthorized(resource, action, principal, considerLocks);
     }
 
@@ -791,7 +791,7 @@ public class LockingCacheControlRepositoryWrapper implements Repository, Cluster
     @Override
     public void deleteRevision(String token, Path uri, Revision revision)
             throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, Exception {
+            AuthenticationException, IOException {
 
         // Synchronize on:
         // - URI

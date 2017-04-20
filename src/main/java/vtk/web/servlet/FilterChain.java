@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 public class FilterChain implements javax.servlet.FilterChain {
     private static final Logger logger = LoggerFactory.getLogger(FilterChain.class);
+    private String name;
     private List<Filter> filters;
     private RequestHandler terminator;
     private int idx = 0;
@@ -57,7 +58,8 @@ public class FilterChain implements javax.servlet.FilterChain {
                 throws IOException, ServletException;
     }    
     
-    public FilterChain(List<Filter> filters, RequestHandler terminator) {
+    public FilterChain(String name, List<Filter> filters, RequestHandler terminator) {
+        this.name = name;
         this.filters = new ArrayList<>(filters);
         this.terminator = terminator;
     }
@@ -67,7 +69,7 @@ public class FilterChain implements javax.servlet.FilterChain {
             throws IOException, ServletException {
         
         if (terminated) {
-            throw new IllegalStateException("FilterChain has terminated");
+            throw new IllegalStateException(name + " has terminated: " + filters + ", " + idx);
         }
         
         HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -77,18 +79,21 @@ public class FilterChain implements javax.servlet.FilterChain {
         
         if (nextIdx < filters.size()) {
             Filter filter = filters.get(nextIdx);
-            logger.debug("Request: " + request.getMethod() + " " 
-                    + request.getRequestURL() + ": Invoking servlet filter: " 
+            logger.debug(name + ": " + request.getMethod() + " " 
+                    + request.getRequestURL() + ": invoking filters[" + nextIdx + "]: " 
                     + filter + "(" + request + ", " + response + ")");
             filter.doFilter(request, response, this);
         }
         else {
-            terminated = true;
-            logger.debug("Request: " + request.getMethod() + " " 
-                    + request.getRequestURL() + ": Invoking filter chain terminator: " 
+            logger.debug(name + ": " + request.getMethod() + " " 
+                    + request.getRequestURL() + ": invoking terminator: " 
                     + terminator + "(" + request + ", " + response + ")");
-            terminator.accept(request, response);
-
+            try {
+                terminator.accept(request, response);
+            }
+            finally {
+                terminated = true;
+            }
         }
     }
 }

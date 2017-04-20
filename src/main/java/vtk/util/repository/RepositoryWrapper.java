@@ -86,7 +86,7 @@ public class RepositoryWrapper implements Repository {
 
     @Override
     public void setReadOnly(String token, boolean readOnly)
-            throws AuthorizationException, Exception {
+            throws AuthorizationException, IOException {
         repository.setReadOnly(token, readOnly);
         
     }
@@ -94,7 +94,7 @@ public class RepositoryWrapper implements Repository {
     @Override
     public Resource retrieve(String token, Path uri, boolean forProcessing)
             throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, Exception {
+            AuthenticationException, IOException {
         return repository.retrieve(token, uri, forProcessing);
         
     }
@@ -102,7 +102,7 @@ public class RepositoryWrapper implements Repository {
     @Override
     public Resource retrieve(String token, Path uri, boolean forProcessing,
             Revision revision) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
         return repository.retrieve(token, uri, forProcessing, revision);
         
     }
@@ -120,7 +120,7 @@ public class RepositoryWrapper implements Repository {
     @Override
     public Resource[] listChildren(String token, Path uri,
             boolean forProcessing) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
         return repository.listChildren(token, uri, forProcessing);
     }
 
@@ -128,7 +128,7 @@ public class RepositoryWrapper implements Repository {
     public Resource store(String token, Resource resource)
             throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, ResourceLockedException,
-            IllegalOperationException, ReadOnlyException, Exception {
+            IllegalOperationException, ReadOnlyException, IOException {
         return repository.store(token, resource);
     }
 
@@ -137,7 +137,7 @@ public class RepositoryWrapper implements Repository {
             StoreContext storeContext) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException,
             ResourceLockedException, IllegalOperationException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
         return repository.store(token, resource);
     }
 
@@ -145,7 +145,7 @@ public class RepositoryWrapper implements Repository {
     public Resource storeContent(String token, Path uri, ContentInputSource content)
             throws AuthorizationException, AuthenticationException,
             ResourceNotFoundException, ResourceLockedException,
-            IllegalOperationException, ReadOnlyException, Exception {
+            IllegalOperationException, ReadOnlyException, IOException {
         return repository.storeContent(token, uri, content);
     }
 
@@ -153,14 +153,14 @@ public class RepositoryWrapper implements Repository {
     public Resource storeContent(String token, Path uri, ContentInputSource content, Revision revision)
             throws AuthorizationException, AuthenticationException,
             ResourceNotFoundException, ResourceLockedException,
-            IllegalOperationException, ReadOnlyException, Exception {
+            IllegalOperationException, ReadOnlyException, IOException {
         return repository.storeContent(token, uri, content, revision);
     }
 
     @Override
     public InputStream getInputStream(String token, Path uri,
             boolean forProcessing) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
         return repository.getInputStream(token, uri, forProcessing);
     }
 
@@ -168,7 +168,7 @@ public class RepositoryWrapper implements Repository {
     public InputStream getInputStream(String token, Path uri,
             boolean forProcessing, Revision revision)
             throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, Exception {
+            AuthenticationException, IOException {
         return repository.getInputStream(token, uri, forProcessing, revision);
     }
 
@@ -176,7 +176,7 @@ public class RepositoryWrapper implements Repository {
     public InputStream getAlternativeInputStream(String token,
             Path uri, boolean forProcessing, String contentIdentifier)
             throws NoSuchContentException, ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
         return repository.getAlternativeInputStream(token, uri, forProcessing, contentIdentifier);
     }
 
@@ -184,7 +184,7 @@ public class RepositoryWrapper implements Repository {
     public Resource createDocument(String token, Path uri, ContentInputSource content)
             throws IllegalOperationException,
             AuthorizationException, AuthenticationException,
-            ResourceLockedException, ReadOnlyException, Exception {
+            ResourceLockedException, ReadOnlyException, IOException {
         return repository.createDocument(token, uri, content);
     }
 
@@ -192,7 +192,7 @@ public class RepositoryWrapper implements Repository {
     public Resource createCollection(String token, Path uri)
             throws AuthorizationException, AuthenticationException,
             IllegalOperationException, ResourceLockedException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
         return repository.createCollection(token, uri);
     }
 
@@ -202,7 +202,7 @@ public class RepositoryWrapper implements Repository {
             throws IllegalOperationException, AuthorizationException,
             AuthenticationException, FailedDependencyException,
             ResourceOverwriteException, ResourceLockedException,
-            ResourceNotFoundException, ReadOnlyException, Exception {
+            ResourceNotFoundException, ReadOnlyException, IOException {
         repository.copy(token, srcUri, destUri, overwrite, preserveACL);
     }
 
@@ -212,7 +212,7 @@ public class RepositoryWrapper implements Repository {
             AuthorizationException, AuthenticationException,
             FailedDependencyException, ResourceOverwriteException,
             ResourceLockedException, ResourceNotFoundException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
         repository.move(token, srcUri, destUri, overwrite);
     }
 
@@ -221,14 +221,14 @@ public class RepositoryWrapper implements Repository {
             throws IllegalOperationException, AuthorizationException,
             AuthenticationException, ResourceNotFoundException,
             ResourceLockedException, FailedDependencyException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
         repository.delete(token, uri, restoreable);
     }
 
     @Override
     public List<RecoverableResource> getRecoverableResources(String token,
             Path uri) throws ResourceNotFoundException,
-            AuthorizationException, AuthenticationException, Exception {
+            AuthorizationException, AuthenticationException, IOException {
         return repository.getRecoverableResources(token, uri);
     }
 
@@ -236,13 +236,13 @@ public class RepositoryWrapper implements Repository {
     public void recover(String token, Path parentUri,
             RecoverableResource recoverableResource)
             throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, Exception {
+            AuthenticationException, IOException {
         repository.recover(token, parentUri, recoverableResource);
     }
 
     @Override
     public void deleteRecoverable(String token, Path parentUri,
-            RecoverableResource recoverableResource) throws Exception {
+            RecoverableResource recoverableResource) throws IOException {
         repository.deleteRecoverable(token, parentUri, recoverableResource);
         
     }
@@ -250,7 +250,7 @@ public class RepositoryWrapper implements Repository {
     @Override
     public boolean exists(String token, Path uri)
             throws AuthorizationException, AuthenticationException,
-            Exception {
+            IOException {
         return repository.exists(token, uri);
     }
 
@@ -260,7 +260,7 @@ public class RepositoryWrapper implements Repository {
             throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, FailedDependencyException,
             ResourceLockedException, IllegalOperationException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
         return repository.lock(token, uri, ownerInfo, depth, requestedTimoutSeconds, lockToken);
     }
 
@@ -268,7 +268,7 @@ public class RepositoryWrapper implements Repository {
     public void unlock(String token, Path uri, String lockToken)
             throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, ResourceLockedException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
         repository.unlock(token, uri, lockToken);
     }
 
@@ -276,7 +276,7 @@ public class RepositoryWrapper implements Repository {
     public Resource storeACL(String token, Path uri, Acl acl)
             throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
         return repository.storeACL(token, uri, acl);
     }
 
@@ -284,7 +284,7 @@ public class RepositoryWrapper implements Repository {
     public Resource storeACL(String token, Path uri, Acl acl,
             boolean validateAcl) throws ResourceNotFoundException,
             AuthorizationException, AuthenticationException,
-            IllegalOperationException, ReadOnlyException, Exception {
+            IllegalOperationException, ReadOnlyException, IOException {
         return repository.storeACL(token, uri, acl, validateAcl);
     }
 
@@ -292,7 +292,7 @@ public class RepositoryWrapper implements Repository {
     public Resource deleteACL(String token, Path uri)
             throws ResourceNotFoundException, AuthorizationException,
             AuthenticationException, IllegalOperationException,
-            ReadOnlyException, Exception {
+            ReadOnlyException, IOException {
         return repository.deleteACL(token, uri);
     }
 
@@ -314,7 +314,7 @@ public class RepositoryWrapper implements Repository {
 
     @Override
     public boolean isAuthorized(Resource resource, RepositoryAction action,
-            Principal principal, boolean considerLocks) throws Exception {
+            Principal principal, boolean considerLocks) throws IOException {
         return repository.isAuthorized(resource, action, principal, considerLocks);
         
     }
@@ -336,7 +336,7 @@ public class RepositoryWrapper implements Repository {
     @Override
     public void deleteRevision(String token, Path uri, Revision revision)
             throws ResourceNotFoundException, AuthorizationException,
-            AuthenticationException, Exception {
+            AuthenticationException, IOException {
         repository.deleteRevision(token, uri, revision);
     }
 

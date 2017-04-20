@@ -31,18 +31,12 @@
 package vtk.web.servlet;
 
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.Filter;
@@ -56,23 +50,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
 import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.util.WebUtils;
 
 import vtk.context.ApplicationInitializedEvent;
 import vtk.context.BaseContext;
 import vtk.security.AuthenticationException;
-import vtk.security.AuthenticationProcessingException;
 import vtk.security.Principal;
 import vtk.security.SecurityContext;
-import vtk.security.web.InvalidAuthenticationRequestException;
 import vtk.security.web.SecurityInitializer;
 import vtk.util.Version;
-import vtk.web.ErrorHandler;
 import vtk.web.RepositoryContextInitializer;
 import vtk.web.RequestContext;
 import vtk.web.RequestContextInitializer;
@@ -124,18 +112,6 @@ public class VTKServlet extends DispatcherServlet {
 
     private static final long serialVersionUID = 3256718498477715769L;
 
-    /**	Method name for GET request */
-    private static final String METHOD_GET = "GET";
-
-    /**	Method name for HEAD request */
-    private static final String METHOD_HEAD = "HEAD";
-    
-    /** Header parameter asking for service if modified since the given date */
-    private static final String HEADER_IFMODSINCE = "If-Modified-Since";    
-    
-    /** Response header attribute telling when the data was last modified */
-    private static final String HEADER_LASTMOD = "Last-Modified";
-    
     private static final String SECURITY_INITIALIZER_BEAN_NAME = "securityInitializer";
     private static final String REQUEST_CONTEXT_INITIALIZER_BEAN_NAME = "requestContextInitializer";
     private static final String REPOSITORY_CONTEXT_INITIALIZER_BEAN_NAME = "repositoryContextInitializer";
@@ -151,7 +127,6 @@ public class VTKServlet extends DispatcherServlet {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     private final Logger requestLogger = LoggerFactory.getLogger(this.getClass().getName() + ".Request");
-    private final Logger errorLogger = LoggerFactory.getLogger(this.getClass().getName() + ".Error");
 
     // Servlet filters invoked before any contexts are set up:
     private List<Filter> initializingServletFilters = Collections.emptyList();
@@ -160,7 +135,6 @@ public class VTKServlet extends DispatcherServlet {
     private SecurityInitializer securityInitializer;
     private RepositoryContextInitializer repositoryContextInitializer;
     private RequestContextInitializer requestContextInitializer;
-    private ErrorHandler[] errorHandlers = new ErrorHandler[0];
     private Map<String,String> globalHeaders = null;
     private final AtomicLong requests = new AtomicLong(0);
 
@@ -199,7 +173,6 @@ public class VTKServlet extends DispatcherServlet {
         initSecurityInitializer();
         initRequestContextInitializer();
         initRepositoryContextInitializer();
-        initErrorHandlers();
         initGlobalHeaders();
         getWebApplicationContext()
             .publishEvent(new ApplicationInitializedEvent(this));
@@ -297,108 +270,42 @@ public class VTKServlet extends DispatcherServlet {
         }
         catch (NoSuchBeanDefinitionException e) { }
     }
-
-    @SuppressWarnings("rawtypes")
-    private void initErrorHandlers() {
-        Map handlers = getWebApplicationContext().getBeansOfType(
-            ErrorHandler.class, false, false);
-
-        if (handlers.size() > 0) {
-            this.errorHandlers = new ErrorHandler[handlers.size()];
-            int j = 0;
-            for (Iterator i = handlers.entrySet().iterator(); i.hasNext();) {
-                Map.Entry entry = (Map.Entry) i.next();
-                this.errorHandlers[j] = (ErrorHandler) entry.getValue();
-                this.logger.info("Registered error handler " + this.errorHandlers[j]);
-                j++;
-            }
-        }
-    }
-    
-    /**
-     * This method duplicates the HTTP last modified checking done in
-     * the servlet specs implementation of service() in
-     * HttpServlet. We are overriding service(), so we need to supply
-     * this functionality ourselves.
-     * 
-     * FIXME: Don't check lastModified if HEADER_IFMODSINCE isn't set
-     *
-     * @return <code>true</code> if the request should continue, or
-     * <code>false</code> if a "304 Not Modified" status has been sent
-     * to the client and the request processing should stop.
-     */
-    private boolean checkLastModified(HttpServletRequest request,
-                                      HttpServletResponse response) {
-        
-        // Last modified checking:
-        String method = request.getMethod();
-
-        if (method.equals(METHOD_GET)) {
-            long lastModified = getLastModified(request);
-            if (lastModified != -1) {
-                long ifModifiedSince = -1;
-                try {
-                    ifModifiedSince = request.getDateHeader(HEADER_IFMODSINCE);
-                }
-                catch (IllegalArgumentException e) {
-                    // The client is sending an illegal header format, so we ignore it.
-                    ifModifiedSince = -1;
-                }
-                
-                if (ifModifiedSince < (lastModified / 1000 * 1000)) {
-                    // If the servlet mod time is later, call doGet()
-                    // Round down to the nearest second for a proper compare
-                    // A ifModifiedSince of -1 will always be less
-                    maybeSetLastModified(response, lastModified);
-                }
-                else {
-                    response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                    if (this.logger.isDebugEnabled()) {
-                        this.logger.debug("Skipping service of "
-                        + request.getRequestURI()
-                        + " because content didn't change since last request");
-                    }
-                    return false;
-                }
-            }
-        }
-        else if (method.equals(METHOD_HEAD)) {
-            long lastModified = getLastModified(request);
-            maybeSetLastModified(response, lastModified);
-        }
-
-        return true;
-    }
-    
     
    @Override
    protected void service(HttpServletRequest request, HttpServletResponse response) 
            throws ServletException, IOException {
-       FilterChain chain = new FilterChain(initializingServletFilters, (req, resp) -> {
+       FilterChain chain = new FilterChain("InitializingFilterChain", 
+               initializingServletFilters, (req, resp) -> {
            try {
                serviceInternal(req, resp);   
            }
+           catch (AuthenticationException e) {
+               throw e;
+           }
+           catch (DispatchException e) {
+               throw e;
+           }
            catch (Exception e) {
-               throw new NestedException(e);
+               throw new DispatchException(e);
            }
        });
        try {
            chain.doFilter(request,  response);
        }
-       catch (NestedException e) {
-           handleError(request, response, e.getCause());
+       catch (DispatchException e) {
+           logger.warn("Unhandled error", e);
        }
    }
 
 
-   protected void serviceInternal(HttpServletRequest request, HttpServletResponse response) throws Exception {
+   protected void serviceInternal(HttpServletRequest request, HttpServletResponse response) 
+           throws IOException, ServletException {
        long startTime = System.currentTimeMillis();
        Throwable failureCause = null;
        
        String threadName = Thread.currentThread().getName();
        long number = this.requests.incrementAndGet();
 
-       boolean proceedService = true;
        response = new HeaderAwareResponseWrapper(response);
 
        try {
@@ -426,48 +333,28 @@ public class VTKServlet extends DispatcherServlet {
 
            this.requestContextInitializer.createContext(request);
            response = new HeaderAwareResponseWrapper(response);
-           proceedService = checkLastModified(request, response);
-           if (proceedService) {
-               FilterChain chain = new FilterChain(contextualServletFilters, (req, resp) -> {
-                   try {
-                       super.doService(req, resp);
-                   }
-                   catch (Exception e) {
-                       throw new NestedException(e);
-                   }
-               });
-               try {
-                   chain.doFilter(request,  response);
-               }
-               catch (NestedException e) {
-                   throw e.getCause();
-               }
-           }
+           FilterChain chain = new FilterChain("ContextualFilterChain", 
+                   contextualServletFilters, (req, resp) -> {
+                       try {
+                           super.doService(req, resp);
+                       }
+                       catch (AuthenticationException e) {
+                           throw e;
+                       }
+                       catch (Exception e) {
+                           throw new DispatchException(e);
+                       }
+                   });
+           chain.doFilter(request,  response);
        }
        catch (AuthenticationException ex) {
            this.securityInitializer.challenge(request, response, ex);
-
-       }
-       catch (AuthenticationProcessingException e) {
-           handleAuthenticationProcessingError(request, response, e);
-
-       }
-       catch (InvalidAuthenticationRequestException e) {
-           response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-           logError(request, e);
-       }
-       catch (Throwable t) {
-           if (HttpServletResponse.SC_OK == response.getStatus()) {
-               response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-           }
-           failureCause = t;
-           handleError(request, response, t);
        }
        finally {
            long processingTime = System.currentTimeMillis() - startTime;
 
            if (request.getAttribute(INDEX_FILE_REQUEST_ATTRIBUTE) == null) {
-               logRequest(request, response, processingTime, !proceedService);
+               logRequest(request, response, processingTime);
                getWebApplicationContext().publishEvent(
                        new ServletRequestHandledEvent(this, request
                                .getRequestURI(), request.getRemoteAddr(),
@@ -485,45 +372,8 @@ public class VTKServlet extends DispatcherServlet {
        }
    }
    
-   private static class NestedException extends RuntimeException {
-       private static final long serialVersionUID = -4848728377305849143L;
-       public NestedException(Exception cause) {
-           super(cause);
-       }
-   }
-   
-    private void handleAuthenticationProcessingError(HttpServletRequest request, 
-            HttpServletResponse response, AuthenticationProcessingException e) throws ServletException {
-
-        if (HttpServletResponse.SC_OK == response.getStatus()) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-
-        logError(request, e);
-        throw new ServletException("Fatal processing error while " +
-                "performing authentication", e);
-    }
-
-    /**
-     * Sets the Last-Modified entity header field, if it has not
-     * already been set and if the value is meaningful. Called before
-     * doGet, to ensure that headers are set before response data is
-     * written. A subclass might have set this header already, so we
-     * check.
-     * 
-     * @param resp Response on which we can set the last modification date
-     * @param lastModified The date at which the data has been last changed
-     */
-    private void maybeSetLastModified(HttpServletResponse resp,
-				      long lastModified) {
-        if (resp.containsHeader(HEADER_LASTMOD))
-            return;
-        if (lastModified >= 0)
-            resp.setDateHeader(HEADER_LASTMOD, lastModified);
-    }
-   
     private void logRequest(HttpServletRequest req, HttpServletResponse resp,
-                            long processingTime, boolean wasCacheRequest) {
+                            long processingTime) {
         if (!this.requestLogger.isInfoEnabled()) {
             return;
         }
@@ -563,269 +413,10 @@ public class VTKServlet extends DispatcherServlet {
         msg.append(" - session: ").append(sessionID);
         msg.append(" - service: ").append(service);
         msg.append(" - user-agent: ").append(userAgent);
-        msg.append(" - lastmod: ").append(wasCacheRequest);
         msg.append(" - referrer: ").append(req.getHeader("Referer"));
         msg.append(" - bytes: ").append(resp.getHeader("Content-Length"));
         msg.append(" - time: ").append(processingTime);
         this.requestLogger.info(msg.toString());
     }
     
-
-    /**
-     * Logs an error to the error log with no message.
-     *
-     * @param req the servlet request
-     * @param t the error to log
-     */
-    private void logError(HttpServletRequest req, Throwable t) {
-        logError(null, req, t);
-    }
-    
-
-    /**
-     * Logs an error to the error log with a given error message.
-     *
-     * @param message the message to output
-     * @param req the servlet request
-     * @param t the error to log
-     */
-    @SuppressWarnings("rawtypes")
-    private void logError(String message, HttpServletRequest req, Throwable t) {
-        Optional<RequestContext> requestContext = Optional.empty();
-        if (RequestContext.exists()) {
-            requestContext = Optional.of(RequestContext.getRequestContext());
-        }
-        Optional<SecurityContext> securityContext = Optional.empty();
-        if (SecurityContext.exists()) {
-            securityContext = Optional.of(SecurityContext.getSecurityContext());
-        }
-        String httpMethod = req.getMethod();
-
-        Map requestParameters = req.getParameterMap();
-        StringBuilder params = new StringBuilder("{");
-        for (Iterator iter = requestParameters.keySet().iterator(); iter.hasNext();) {
-            String name = (String) iter.next();
-            params.append(name).append("=[");
-            String[] values = req.getParameterValues(name);
-            for (int i = 0; i < values.length; i++) {
-                params.append(values[i]);
-                if (i < values.length - 1) {
-                    params.append(",");
-                }
-            }
-            params.append("]");
-            if (iter.hasNext()) {
-                params.append(",");
-            }
-        }
-        params.append("}");
-
-        StringBuffer requestURL = req.getRequestURL();
-        String queryString = req.getQueryString();
-        if (queryString != null) {
-            requestURL.append("?").append(queryString);
-        }
-
-        StringBuilder sb = new StringBuilder();
-        if (message != null) sb.append(message).append(" ");
-        sb.append("Message: ").append(t.getMessage()).append(" - ");
-        sb.append("Full request URL: [").append(requestURL).append("], ");
-        requestContext.ifPresent(ctx -> sb.append("Request context: [").append(ctx).append("], "));
-        securityContext.ifPresent(ctx -> sb.append("security context: [").append(ctx).append("], "));
-        sb.append("method: [").append(httpMethod).append("], ");
-        sb.append("request parameters: [").append(params).append("], ");
-        sb.append("user agent: [").append(req.getHeader("User-Agent")).append("], ");
-        sb.append("host: [").append(req.getServerName()).append("], ");
-        sb.append("remote host: [").append(req.getRemoteHost()).append("]");
-        this.errorLogger.error(sb.toString(), t);
-    }
-    
-    /**
-     * Handles an error that occurred during request processing. An
-     * error handler is looked up based on the throwable's class. If
-     * the error handler sets the response status to <code>500</code>
-     * (Internal Server Error), the incident is logged to the error
-     * log.
-     *
-     * @param req the servlet request
-     * @param resp the servlet response
-     * @param t the error to handle
-     * @exception ServletException if an error occurs during error
-     * handling
-     */
-    private void handleError(HttpServletRequest req, HttpServletResponse resp,
-                             Throwable t) throws ServletException {
-        if (isClientDisconnect(t)) {
-            logger.info("Client disconnect: " + req.getRequestURI() 
-                + ": " + t.getMessage());
-            return;
-        }
-    
-        WebApplicationContext springContext = null;
-        try {
-            springContext = RequestContextUtils.findWebApplicationContext(req);
-        }
-        catch (Throwable x) { }
-
-        if (springContext == null) {
-            // When no Spring WebApplicationContext is found, we
-            // cannot trust our regular error handling mechanism to
-            // work. In most cases this is caused by the request
-            // context initialization failing due to the content
-            // repository being unavailable for some reason (i.e. JDBC
-            // errors, etc.). The safest thing to do here is to log
-            // the error and throw a ServletException and let the
-            // container handle it.
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught unexpected throwable " + t.getClass()
-                             + " with no Spring context available, "
-                             + "logging as internal server error");
-            }
-            logError(req, t);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            throw new ServletException(t);
-        }
-
-        if (this.logger.isDebugEnabled()) {
-            this.logger.debug("Caught unexpected throwable " + t.getClass()
-                         + ", resolving error handler");
-        }
-        ErrorHandler handler = resolveErrorHandler(t);
-        if (handler == null) {
-            logError("No error handler configured for " + t.getClass().getName(), req, t);
-            throw new ServletException(t);
-        } 
-
-        int statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-        Map<String, Object> model = null;
-        View view = null;
-        try {
-            model = handler.getErrorModel(req, resp, t);
-
-            Object obj = handler.getErrorView(req, resp, t);
-            if (obj instanceof View) {
-                view = (View) obj;
-            }
-            else {
-                Locale locale = RequestContextUtils.getLocale(req);
-                view = this.resolveViewName((String) obj, model, locale, req);
-            }
-
-            statusCode = handler.getHttpStatusCode(req, resp, t);
-
-        }
-        catch (Throwable errorHandlerException) {
-            //errorHandlerException.initCause(t);
-            logError("Caught exception while performing error handling: " 
-                    + errorHandlerException, req, t);
-            throw new ServletException(errorHandlerException);
-        }
-
-        if (view == null) {
-            throw new ServletException("Unable to resolve error view for handler "
-                                       + handler, t);
-        }
-        
-        // Logger '500 internal server error' incidents to the error log:
-        if (statusCode == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) {
-            logError(req, t);
-        }
-        if (resp.isCommitted()) {
-            this.logger.debug(
-                    "Response already committed for request " + req.getRequestURL() 
-                    + ", not invoking error handler ");
-            return;
-        }
-        
-        resp.setStatus(statusCode);
-        try {
-
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug(
-                    "Performed error handling using handler " + handler + ". "
-                    + "Status code is " + statusCode + "." + " Will render "
-                    + "error model using view " + view);
-            }
-            view.render(model, req, resp);
-            
-        }
-        catch (Exception e) {
-            try {
-                e.initCause(t);
-            }
-            catch (Throwable unhandled) { }
-            throw new ServletException("Error while rendering error view", e);
-        }
-    }
-    
-    private boolean isClientDisconnect(Throwable t) {
-        if (t instanceof UncheckedIOException) {
-            t = ((UncheckedIOException) t).getCause();
-        }
-        if (t instanceof EOFException || 
-                (t.getCause() != null && (t.getCause() instanceof TimeoutException))) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Resolves an error handler based on the throwable's class and
-     * the current service.
-     * 
-     * @param t the error to resolve an error handler for
-     * @return an error handler, or <code>null</code> if no error
-     * handler could be resolved.
-     */
-    private ErrorHandler resolveErrorHandler(Throwable t) {
-        Service currentService = null;
-
-        if (RequestContext.exists()) {
-            RequestContext requestContext = RequestContext.getRequestContext();
-            if (requestContext != null) {
-                currentService = requestContext.getService();
-            }
-        }
-        ErrorHandler selected = null;
-
-        for (int i = 0; i < this.errorHandlers.length; i++) {
-            ErrorHandler candidate = this.errorHandlers[i];
-
-            if (!candidate.getErrorType().isAssignableFrom(t.getClass())) {
-                continue;
-            }            
-            if ((candidate.getService() != null && currentService == null)
-                || (candidate.getService() != null && currentService != null
-                    && !(currentService == candidate.getService() ||
-                         currentService.isDescendantOf(candidate.getService())))) {
-                continue;
-            }
-            if (selected == null) {
-                
-                selected = candidate;
-
-            }
-            else if (!selected.getErrorType().equals(candidate.getErrorType())
-                       && selected.getErrorType().isAssignableFrom(
-                           candidate.getErrorType())) {                
-                selected = candidate;
-            }
-            else if (candidate.getService() != null && selected.getService() == null) {                
-                selected = candidate;
-            }
-            else if (candidate.getService() != null && selected.getService() != null
-                       && candidate.getService().isDescendantOf(selected.getService())) {
-                selected = candidate;
-            }
-
-            if (selected != null && selected == candidate) {
-                if (this.logger.isDebugEnabled()) {
-                    this.logger.debug("Setting new currently matched error handler: "
-                                 + candidate);
-                }
-            }
-        }
-
-        return selected;
-    }
 }

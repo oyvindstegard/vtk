@@ -208,6 +208,10 @@
   </bean>
 
   <bean parent="vtk.contextualServletFilters.builder">
+    <property name="arguments" ref="vtk.errorHandlerFilter" />
+  </bean>
+
+  <bean parent="vtk.contextualServletFilters.builder">
     <property name="arguments" ref="metrics.requestListener" />
   </bean>
 
