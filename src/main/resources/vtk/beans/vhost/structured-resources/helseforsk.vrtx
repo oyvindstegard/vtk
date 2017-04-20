@@ -9,9 +9,9 @@ resourcetype helseforsk {
 	unitOther: string,
 	unitInstitution : string,
 	unitCachedFullName : json(unit:string, name:string, url:string),
-	participantsUsernames : string multiple,
-	participantsCachedFullName : json(username:string, name:string, url:string) multiple,
-	participants : json (name:string, affiliation:string) multiple,
+	researchersUsernames : string multiple,
+	researchersCachedFullName : json(username:string, name:string, url:string) multiple,
+	researchers : json (name:string, affiliation:string) multiple,
     startupMonth : string,
     startupYear : string,
     completedMonth : string,
@@ -86,8 +86,8 @@ resourcetype helseforsk {
     [def unitCachedFullName document.properties.unitCachedFullName]
     
     [def projectLeaderCachedFullName document.properties.projectLeaderCachedFullName]
-    [def participantsCachedFullName document.properties.participantsCachedFullName]
-    [def participants document.properties.participants]
+    [def researchersCachedFullName document.properties.researchersCachedFullName]
+    [def researchers document.properties.researchers]
     
     [def biobank document.properties.biobank]
     
@@ -274,10 +274,10 @@ resourcetype helseforsk {
             [endif]
             
             <h2>[localized "researchers"]</h2>
-	        [if participantsCachedFullName != null || participants != null]
+	        [if researchersCachedFullName != null || researchers != null]
 	          <ul>
-	            [if participantsCachedFullName != null]
-	              [list participantsCachedFullName user]
+	            [if researchersCachedFullName != null]
+	              [list researchersCachedFullName user]
 	                <li>
 	                  [if user.url != null]
 	                    <a href="[val user.url]">[val user.name]</a>
@@ -287,8 +287,8 @@ resourcetype helseforsk {
 	                </li>
 	              [endlist]
 	            [endif]
-	            [if participants != null]
-	              [list participants user]
+	            [if researchers != null]
+	              [list researchers user]
 	                <li>[val user.name][if user.affiliation != null] ([val user.affiliation])[endif]</li>
 	              [endlist]
 	            [endif]
