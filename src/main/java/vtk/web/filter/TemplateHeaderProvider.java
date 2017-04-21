@@ -78,16 +78,12 @@ public class TemplateHeaderProvider extends AbstractServletFilter {
             SimpleTemplate template = headers.get(name);
         
             final StringBuilder header = new StringBuilder();
-            template.apply(new SimpleTemplate.Handler() {
-                @Override
-                public String resolve(String variable) {
-                    Object o = Json.select(model, variable);
-                    return o != null ? o.toString() : "null";
-                }
-                @Override
-                public void write(String text) {
-                    header.append(text);
-                }});
+
+            template.apply(v -> {
+                Object o = Json.select(model, v);
+                return o != null ? o.toString() : "null";
+            }, s -> header.append(s));
+
             if (addHeaders) {
                 response.addHeader(name, header.toString());
             }

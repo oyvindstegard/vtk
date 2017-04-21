@@ -169,25 +169,17 @@ public class TitleResolverImpl implements ApplicationListener<ContextRefreshedEv
      
     private String renderTemplate(SimpleTemplate template, final Resource resource) {
         final StringBuilder result = new StringBuilder();
-        template.apply(new SimpleTemplate.Handler() {
-            @Override
-            public void write(String text) {
-                result.append(text);
+        template.apply(v -> {
+            if ("hostname".equals(v)) {
+                return repository.getId();
             }
+            Property prop = getPropertyByReference(resource, v);
+            if (prop == null) {
+                return "";
+            }
+            return prop.getFormattedValue();
+        }, s -> result.append(s));
 
-            @Override
-            public String resolve(String var) {
-                if ("hostname".equals(var)) {
-                    return repository.getId();
-                }
-                
-                Property prop = getPropertyByReference(resource, var);
-                if (prop == null) {
-                    return "";
-                }
-                return prop.getFormattedValue();
-            }
-        });
         return result.toString();
     }
 

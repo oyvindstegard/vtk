@@ -99,7 +99,7 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
         String name;
         SimpleTemplate template;
     }
-    
+
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
         
@@ -116,53 +116,46 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
         final Principal principal = requestContext.getPrincipal();
         final Service service = requestContext.getService();
         
-        List<Link> links = new ArrayList<Link>();
+        List<Link> links = new ArrayList<>();
         for (TemplateLink tl : this.templateLinks) {
-            String name = tl.name;
             SimpleTemplate template = tl.template;
 
             if (template != null) {
                 final StringBuilder url = new StringBuilder();
-                template.apply(new SimpleTemplate.Handler() {
-                    @Override
-                    public void write(String text) {
-                        url.append(text);
-                    }
-                    @Override
-                    public String resolve(String variable) {
-                        if ("url".equals(variable)) {
-                            String s = service.constructLink(resource, principal);
-                            try {
-                                return URLEncoder.encode(s, URL_ENCODING_CHARSET);
-                            } catch (UnsupportedEncodingException e) {
-                                return "";
-                            }
+                template.apply(variable -> {
+                    if ("url".equals(variable)) {
+                        String s = service.constructLink(resource, principal);
+                        try {
+                            return URLEncoder.encode(s, URL_ENCODING_CHARSET);
+                        } catch (UnsupportedEncodingException e) {
+                            return "";
+                        }
+                    } else {
+                        // Assume it's a reference to a resource property
+                        String prefix = null;
+                        String name = null;
+                        int idx = variable.indexOf(":");
+                        if (idx != -1) {
+                            prefix = variable.substring(0, idx);
+                            name = variable.substring(idx + 1);
                         } else {
-                            // Assume it's a reference to a resource property
-                            String prefix = null;
-                            String name = null;
-                            int idx = variable.indexOf(":");
-                            if (idx != -1) {
-                                prefix = variable.substring(0, idx);
-                                name = variable.substring(idx + 1);
-                            } else {
-                                name = variable;
-                            }
-                            String retVal = propValue(resource, prefix, name);
-                            if (retVal.length() > truncateLimit) {
-                                retVal = retVal.substring(0, truncateLimit);
-                                retVal = retVal + truncation;
-                            }
-                            try {
-                                return URLEncoder.encode(retVal, URL_ENCODING_CHARSET);
-                            } catch (UnsupportedEncodingException e) {
-                                return "";
-                            }
+                            name = variable;
+                        }
+                        String retVal = propValue(resource, prefix, name);
+                        if (retVal.length() > truncateLimit) {
+                            retVal = retVal.substring(0, truncateLimit);
+                            retVal = retVal + truncation;
+                        }
+                        try {
+                            return URLEncoder.encode(retVal, URL_ENCODING_CHARSET);
+                        } catch (UnsupportedEncodingException e) {
+                            return "";
                         }
                     }
-                });
+                }, s -> url.append(s));
+
                 Link link = new Link();
-                link.name = name;
+                link.name = tl.name;
                 link.url = url.toString();
                 links.add(link);
             }

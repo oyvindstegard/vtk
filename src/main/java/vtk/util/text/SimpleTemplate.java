@@ -32,6 +32,8 @@ package vtk.util.text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Simple string template with variable substitution. 
@@ -44,22 +46,19 @@ import java.util.List;
  * <li><code>...</code>
  * </ul> 
  * </p>
- * <p>Variable substitution and output writing is controlled via a {@link Handler} 
- * implementation supplied by the caller.</p>
+ * <p>Variable substitution and output writing is controlled via an implementation supplied by the caller.</p>
  * 
  * <p>Sample usage:
  * <pre>
  *   SimpleTemplate t = SimpleTemplate.compile("My template with a ${variable}.");
- *   t.apply(new SimpleTemplate.Handler() {
- *       public String resolve(String variable) {
- *           return "piece of text";
- *       }
- *       public void write(String text) {
- *           System.out.print(text);
- *       }
- *   });
+ *   t.apply(v -&gt; "value of v", s -&gt; System.out.print(s));
  * </pre>
- * 
+ * will invoke:
+ * <ol><li>Second argument <code>Consumer</code> with value <code>"My template with a "</code>
+ * <li>First argument <code>Funtion</code> with value <code>"variable"</code>, returning <code>"piece of text"</code>
+ * <li>Second argument <code>Consumer</code> with value <code>"piece of text"</code>
+ * </ol>
+ *
  * <p>By default, no escape mechanism is enabled. By using parsing flags, escape
  * handling can be enabled. A backslash in template will then prevent
  * interpretation of the next character in input. This can be used to include
@@ -117,33 +116,18 @@ public class SimpleTemplate {
     public static final int ESC_KEEP_INVALID = 4;
 
     /**
-     * Handler for template variable substitution and output writing.
+     * Applies a compiled template using a supplied variabler resolver and writer.
+     * @param resolver resolve a variable expression to a string value, return <code>null</code> for no value present
+     * @param writer accept string values which when combined in sequence gives the template transformation result.
      */
-    public static interface Handler {
-    
-        /**
-         * Called to resolve a template variable.
-         */
-        public String resolve(String variable);
-
-        /**
-         * Requests a piece of text be written to output.
-         */
-        public void write(String text);
-    }
-
-    /**
-     * Applies a compiled template using a supplied {@link Handler}
-     * @param handler
-     */
-    public void apply(Handler handler) {
+    public void apply(Function<String,String> resolver, Consumer<String> writer) {
         for (Node node: nodes) {
             String s = node.text;
             if (node.var) {
-                s = handler.resolve(s);
+                s = resolver.apply(s);
             }
             if (s != null) {
-                handler.write(s);
+                writer.accept(s);
             }
         }
     }

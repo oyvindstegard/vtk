@@ -46,28 +46,17 @@ public class QueryStringPreProcessorImpl implements QueryStringPreProcessor {
     }
     
 
+    @Override
     public String process(String queryString) throws QueryException {
         SimpleTemplate template = SimpleTemplate.
                 compile(queryString, expressionStart, expressionEnd);
         final StringBuilder result = new StringBuilder();
-        
-        template.apply(new SimpleTemplate.Handler() {
-            
-            @Override
-            public void write(String text) {
-                result.append(text);
-            }
-            
-            @Override
-            public String resolve(String token) {
-                ExpressionEvaluator evaluator =
-                        resolveExpressionEvaluator(token);
-                if (evaluator != null) {
-                    return evaluator.evaluate(token);
-                }
-                return expressionStart + token + expressionEnd;
-            }
-        });
+
+        template.apply(token -> {
+            ExpressionEvaluator e = resolveExpressionEvaluator(token);
+            return e != null ? e.evaluate(token) : expressionStart + token + expressionEnd;
+        }, s -> result.append(s));
+
         return result.toString();
     }
     

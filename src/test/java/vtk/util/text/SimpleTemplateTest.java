@@ -161,19 +161,9 @@ public class SimpleTemplateTest {
                           String delimPrefix, String delimSuffix, int flags) {
         final StringBuilder result = new StringBuilder();
         SimpleTemplate t = SimpleTemplate.compile(template, delimPrefix, delimSuffix, flags);
-        t.apply(new SimpleTemplate.Handler() {
-            @Override
-            public void write(String text) {
-                result.append(text);
-            }
-            @Override
-            public String resolve(String variable) {
-                if (vars.containsKey(variable)) {
-                    return vars.get(variable);
-                }
-                return "";
-            }
-        });
+
+        t.apply(v -> vars.getOrDefault(v, ""), s -> result.append(s));
+
         return result.toString();
     }
     
