@@ -971,8 +971,6 @@ public class URL implements Serializable {
         return url;
     }
 
-    private static final Pattern AMP_PATTERN = Pattern.compile("&");
-    
     /**
      * Splits a query string into a map of (String, String[]). NOTE: neither
      * keys nor values are URL-decoded.
@@ -983,7 +981,7 @@ public class URL implements Serializable {
             if (queryString.startsWith("?")) {
                 queryString = queryString.substring(1);
             }
-            String[] params = AMP_PATTERN.split(queryString);
+            String[] params = queryString.split("&");
             for (String param : params) {
                 if (param.length() == 0) {
                     continue;
