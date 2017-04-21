@@ -51,11 +51,11 @@ import java.util.function.Function;
  * <p>Sample usage:
  * <pre>
  *   SimpleTemplate t = SimpleTemplate.compile("My template with a ${variable}.");
- *   t.apply(v -&gt; "value of v", s -&gt; System.out.print(s));
+ *   t.apply(v -&gt; "value of variable", s -&gt; System.out.print(s));
  * </pre>
  * will invoke:
  * <ol><li>Second argument <code>Consumer</code> with value <code>"My template with a "</code>
- * <li>First argument <code>Funtion</code> with value <code>"variable"</code>, returning <code>"piece of text"</code>
+ * <li>First argument <code>Funtion</code> with value <code>"variable"</code>, returning <code>"value of variable"</code>
  * <li>Second argument <code>Consumer</code> with value <code>"piece of text"</code>
  * </ol>
  *
