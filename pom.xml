@@ -8,9 +8,6 @@
   <name>The VTK Web Framework</name>
   <url>http://www.uio.no/tjenester/it/web/vortex/</url>
   <modelVersion>4.0.0</modelVersion>
-  <prerequisites>
-    <maven>3.3.1</maven>
-  </prerequisites>
   <description>
     The VTK Web Framework is an open source web publishing solution. It
     consists of two principal parts, a file repository for storing files and
@@ -437,6 +434,29 @@
           </excludes>
         </configuration>
       </plugin>
+
+      <!-- Require Maven v3.3+ -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.4.1</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.3</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
@@ -1031,4 +1051,3 @@
     </plugins>
   </reporting>
 </project>
-
