@@ -58,6 +58,7 @@ EVAL	:	'eval';
 DEFAULTPROP
 	:	'default';
 MULTIPLE:	'multiple';
+INDEXABLEJSON:	'indexablejson';
 SHOWHIDE:	'show-hide';
 MULTIPLEINPUTFIELDS
 	:	'multipleinputfields';

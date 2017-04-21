@@ -360,7 +360,9 @@ public class StructuredResourceManager {
         } else if (propertyDescription instanceof JSONPropertyDescription) {
             def.setType(Type.JSON);
             // No need to blindly index all JSON fields:
-            //def.addMetadata(PropertyTypeDefinition.METADATA_INDEXABLE_JSON, true);
+            if (((JSONPropertyDescription) propertyDescription).getIndexable()) {
+                def.addMetadata(PropertyTypeDefinition.METADATA_INDEXABLE_JSON, true);
+            }
         } else {
             def.setType(mapType(propertyDescription));
         }
