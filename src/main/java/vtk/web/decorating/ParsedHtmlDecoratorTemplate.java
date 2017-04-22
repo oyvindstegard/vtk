@@ -331,7 +331,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
                 result.add(userPage.createTextNode(this.error.getMessage()));
             } else {
                 Locale locale = 
-                    new org.springframework.web.servlet.support.RequestContext(req).getLocale();
+                    new org.springframework.web.servlet.support.RequestContext(req, req.getServletContext()).getLocale();
                 DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
                         userPage, req, model, this.elementComponent.getParameters(), userPage.getDoctype(), locale);
 
@@ -447,7 +447,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
                         StringBuilder value = new StringBuilder();
                         ComponentInvocation[] invocations = this.attributesMap.get(name);
                         Locale locale = 
-                            new org.springframework.web.servlet.support.RequestContext(req).getLocale();
+                            new org.springframework.web.servlet.support.RequestContext(req, req.getServletContext()).getLocale();
                         for (ComponentInvocation inv: invocations) {
 
                             if (inv instanceof StaticTextFragment) {
@@ -516,7 +516,7 @@ public class ParsedHtmlDecoratorTemplate implements Template {
                     } else {
 
                         Locale locale = 
-                            new org.springframework.web.servlet.support.RequestContext(req).getLocale();
+                            new org.springframework.web.servlet.support.RequestContext(req, req.getServletContext()).getLocale();
                         DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
                                 userPage, req, model, inv.getParameters(), userPage.getDoctype(), locale);
 

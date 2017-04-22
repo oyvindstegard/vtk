@@ -33,7 +33,6 @@ package vtk.web.servlet;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -66,7 +65,8 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
     private ViewResolver viewResolver;
     
     public ErrorHandlerFilter(List<ErrorHandler> errorHandlers, ViewResolver viewResolver) {
-        this.errorHandlers = new ArrayList<>(errorHandlers);
+        //this.errorHandlers = new ArrayList<>(errorHandlers);
+        this.errorHandlers = errorHandlers;
         this.viewResolver = viewResolver;
     }
 
@@ -151,11 +151,15 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
             model = handler.getErrorModel(req, resp, t);
 
             Object obj = handler.getErrorView(req, resp, t);
+            System.out.println("-__obj: " + obj);
             if (obj instanceof View) {
                 view = (View) obj;
             }
             else {
-                Locale locale = RequestContextUtils.getLocale(req);
+                //Locale locale = RequestContextUtils.getLocale(req);
+                Locale locale = new org.springframework.web.servlet.support.RequestContext(
+                        req, req.getServletContext()).getLocale();
+
                 view = viewResolver.resolveViewName((String) obj, locale);
             }
 

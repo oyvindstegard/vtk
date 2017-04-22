@@ -38,6 +38,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -88,7 +89,7 @@ public class SwitchLocaleProvider implements ReferenceDataProvider {
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
-        Map<String, Object> localeMap = new HashMap<String, Object>();
+        Map<String, Object> localeMap = new HashMap<>();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
@@ -97,12 +98,12 @@ public class SwitchLocaleProvider implements ReferenceDataProvider {
         Resource resource = repository.retrieve(token, requestContext.getResourceURI(), false);
 
         org.springframework.web.servlet.support.RequestContext springContext = new org.springframework.web.servlet.support.RequestContext(
-                request);
+                request, request.getServletContext());
         String currentLocale = springContext.getLocale().toString();
 
-        Map<String, URL> localeServiceURLs = new HashMap<String, URL>();
-        Map<String, String> localeServiceActive = new HashMap<String, String>();
-        List<String> localeServiceNames = new ArrayList<String>();
+        Map<String, URL> localeServiceURLs = new HashMap<>();
+        Map<String, String> localeServiceActive = new HashMap<>();
+        List<String> localeServiceNames = new ArrayList<>();
 
         for (String key : this.locales.keySet()) {
             Service service = this.locales.get(key);

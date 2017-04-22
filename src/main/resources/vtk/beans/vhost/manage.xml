@@ -2187,6 +2187,7 @@
   </bean>
 
   <!-- MANAGE error handlers -->
+  
   <bean id="abstractReferencedataProvidingErrorHandler" class="vtk.web.DefaultErrorHandler" abstract="true">
     <property name="referenceDataProviders" ref="manageErrorHandler.referenceDataProviders" />
   </bean>
@@ -2223,6 +2224,7 @@
   <bean id="defaultManageErrorHandler" class="vtk.web.DefaultErrorHandler">
     <property name="service" ref="manageService" />
     <property name="errorViewName" value="defaultManageError" />
+    <property name="viewResolver" ref="manageErrorViewResolver" />
     <property name="referenceDataProviders" ref="manageErrorHandler.referenceDataProviders" />
     <property name="statusCodeMappings">
       <map>
@@ -2230,6 +2232,9 @@
         <entry key="vtk.repository.AuthorizationException" value="403" />
       </map>
     </property>
+  </bean>
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="defaultManageErrorHandler" />
   </bean>
 
   <bean id="manageErrorViewResolver" class="vtk.web.decorating.MappingViewResolver">

@@ -35,6 +35,7 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -78,7 +79,7 @@ public class PropertyAccessor {
         String token = requestContext.getSecurityToken();
         HttpServletRequest request = requestContext.getServletRequest();
         Locale locale = 
-            new org.springframework.web.servlet.support.RequestContext(request).getLocale();
+            new org.springframework.web.servlet.support.RequestContext(request, request.getServletContext()).getLocale();
         Repository repository = requestContext.getRepository();
         try {
             Resource resource = repository.retrieve(token, path, true);

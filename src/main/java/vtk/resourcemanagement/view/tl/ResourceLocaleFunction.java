@@ -30,9 +30,10 @@
  */
 package vtk.resourcemanagement.view.tl;
 
+import java.util.Locale;
+
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.web.servlet.support.RequestContextUtils;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
@@ -49,7 +50,8 @@ public class ResourceLocaleFunction extends Function {
 //        RequestContext requestContext = RequestContext.getRequestContext();
 //        HttpServletRequest request = requestContext.getServletRequest();
         HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
-        return RequestContextUtils.getLocale(request).toString();
+        Locale locale = new org.springframework.web.servlet.support.RequestContext(request, request.getServletContext()).getLocale();
+        return locale.toString();
     }
 
 

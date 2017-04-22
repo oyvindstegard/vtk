@@ -5,19 +5,22 @@
   <bean id="vtk.errorHandlerFilter" class="vtk.web.servlet.DefaultFilterFactory">
     <constructor-arg name="filter">
       <bean class="vtk.web.servlet.ErrorHandlerFilter">
-        <constructor-arg name="errorHandlers">
-          <list>
-            <ref bean="resourceNotFoundErrorHandler" />
-            <ref bean="badRequestErrorHandler" />
-            <ref bean="notAuthorizedErrorHandler" />
-            <ref bean="defaultErrorHandler" />
-          </list>
-        </constructor-arg>
+        <constructor-arg name="errorHandlers" ref="vtk.errorHandlers" />
         <constructor-arg name="viewResolver" ref="errorViewResolver" />
       </bean>
     </constructor-arg>
     <constructor-arg name="order" value="-1" />
   </bean>
+
+  <bean id="vtk.errorHandlers" class="java.util.ArrayList" />
+
+  <bean id="vtk.errorHandlers.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="vtk.errorHandlers" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+
 
   <!-- Error handlers -->
 
@@ -27,6 +30,11 @@
     <constructor-arg name="redirectAssertion" ref="resourceNotFoundErrorHandler.redirectAssertion" />
     <constructor-arg name="securityToken" ref="resourceNotFoundErrorHandler.searchToken" />
   </bean>
+
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="resourceNotFoundErrorHandler" />
+  </bean>
+
 
   <bean id="resourceNotFoundErrorHandler.searchToken"
         class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
@@ -68,6 +76,10 @@
     </property>
   </bean>
 
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="badRequestErrorHandler" />
+  </bean>
+
   <bean id="notAuthorizedErrorHandler" class="vtk.web.DefaultErrorHandler">
     <property name="errorViewName" value="notAuthorizedError" />
     <property name="errorType">
@@ -88,6 +100,9 @@
     </property>
   </bean>
 
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="notAuthorizedErrorHandler" />
+  </bean>
   
   <bean id="defaultErrorHandler" class="vtk.web.DefaultErrorHandler">
     <property name="errorViewName" value="defaultError" />
@@ -104,6 +119,9 @@
     </property>
   </bean>
 
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="defaultErrorHandler" />
+  </bean>
 
   <!-- Error views-->
 
@@ -118,6 +136,12 @@
         <entry key="defaultError" value-ref="defaultErrorView" />
       </map>
     </property>
+  </bean>
+
+  <bean id="vtk.errorHandlers.viewBuilder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="vtk.errorHandlers.errorViews" />
+    <property name="targetMethod" value="put" />
   </bean>
 
   <bean id="badRequestErrorView" parent="freemarkerView">

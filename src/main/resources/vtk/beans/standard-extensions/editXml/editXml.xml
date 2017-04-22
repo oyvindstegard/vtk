@@ -176,6 +176,10 @@
       </bean>
     </property>
     <property name="errorViewName" value="xmlEditError" />
+    <property name="viewResolver" ref="xmlEditErrorViewResolver" />
+  </bean>
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="xmlEditErrorHandler" />
   </bean>
 
   <bean id="xmlEditErrorViewResolver" parent="manageErrorViewResolver">

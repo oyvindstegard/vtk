@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.LocaleResolver;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -81,7 +82,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
     private PropertyTypeDefinition parseableContentPropDef;
     private Repository repository; 
     private boolean supportMultipleTemplates = false;
-    private Map<String, RegexpCacheItem> regexpCache = new HashMap<String, RegexpCacheItem>();
+    private Map<String, RegexpCacheItem> regexpCache = new HashMap<>();
     private LocaleResolver localeResolver = null;
     private long maxDocumentSize = -1;
 
@@ -207,8 +208,10 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         }
         
         if (paramString != null) {
-        	Locale locale = 
-                new org.springframework.web.servlet.support.RequestContext(request).getLocale();
+            Locale locale = Locale.getDefault();
+        
+            locale = new org.springframework.web.servlet.support.RequestContext(
+                    request, request.getServletContext()).getLocale();
             populateDescriptor(descriptor, locale, paramString);
         }
         
@@ -269,7 +272,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         if (this.config == null) {
             return null;
         }
-        List<Path> list = new ArrayList<Path>(uri.getPaths());
+        List<Path> list = new ArrayList<>(uri.getPaths());
         Collections.reverse(list);
 
         // TODO: Algorithm: sort entries into "score groups".
@@ -278,7 +281,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         // Otherwise, just pick first one in top group.
         for (Path path: list) {
             List<ConfigEntry> entries = this.config.get(path);
-            Map<ConfigEntry, Integer> score = new HashMap<ConfigEntry, Integer>();
+            Map<ConfigEntry, Integer> score = new HashMap<>();
             
             if (entries != null) {
                 for (ConfigEntry entry: entries) {
@@ -400,7 +403,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                 descriptor.parse = false;
             } else {
                 String name = directive;
-                Map<String, Object> parameters = new HashMap<String, Object>();
+                Map<String, Object> parameters = new HashMap<>();
                 int queryIndex = name.indexOf('?');
                 if (queryIndex > 0) {
                     String query = name.substring(queryIndex);
@@ -424,7 +427,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
 
     private Map<String, Object> splitParameters(String paramString) {
         Map<String, String[]> params = URL.splitQueryString(paramString);
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         for (String name: params.keySet()) {
             String[] values = params.get(name);
@@ -433,7 +436,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                 result.put(name, null);
 
             } else if (values.length > 1) {
-                List<Object> list = new ArrayList<Object>();
+                List<Object> list = new ArrayList<>();
                 for (int i = 0; i < values.length; i++) {
                     list.add(values[i]);
                 }
@@ -449,8 +452,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
     private static class InternalDescriptor implements DecorationDescriptor {
         private boolean tidy = false;
         private boolean parse = true;
-        private List<Template> templates = new ArrayList<Template>();
-        private Map<Template, Map<String, Object>> templateParameters = new HashMap<Template, Map<String, Object>>();
+        private List<Template> templates = new ArrayList<>();
+        private Map<Template, Map<String, Object>> templateParameters = new HashMap<>();
         
         public boolean decorate() {
             return !this.templates.isEmpty() || this.tidy || this.parse;
@@ -472,6 +475,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
             return Collections.unmodifiableMap(this.templateParameters.get(t));
         }
         
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(this.getClass().getName());
             sb.append(" [templates=").append(this.templates.toString());
@@ -511,7 +515,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         String country = locale.getCountry();
         String variant = locale.getVariant();
         
-        List<String> references = new ArrayList<String>();
+        List<String> references = new ArrayList<>();
         if (!"".equals(country) && !"".equals(variant)) {
             references.add(base + "_" + language + "_" + country + "_" + variant + extension);
         }

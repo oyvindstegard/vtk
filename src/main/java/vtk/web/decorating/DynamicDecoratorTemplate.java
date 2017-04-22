@@ -155,7 +155,8 @@ public class DynamicDecoratorTemplate implements Template {
             HtmlPage html = this.content.getHtmlContent();
 
             Locale locale = 
-                new org.springframework.web.servlet.support.RequestContext(this.request).getLocale();
+                new org.springframework.web.servlet.support.RequestContext(
+                        this.request, this.request.getServletContext()).getLocale();
 
             Context context = new Context(locale);
             for (String name : this.templateParameters.keySet()) {

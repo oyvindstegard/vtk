@@ -361,6 +361,10 @@
       </bean>
     </property>
     <property name="errorViewName" value="manageXmlBuildError" />
+    <property name="viewResolver" ref="transformXmlManageErrorViewResolver" />
+  </bean>
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="manageXmlBuildErrorHandler" />
   </bean>
 
 
@@ -370,6 +374,10 @@
         <constructor-arg value="vtk.xml.StylesheetCompilationException" />
       </bean>
     </property>
+    <property name="viewResolver" ref="transformXmlManageErrorViewResolver" />
+  </bean>
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="manageStylesheetCompilationExceptionErrorHandler" />
   </bean>
 
 
@@ -380,6 +388,9 @@
       </bean>
     </property>
   </bean>
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="manageTransformerConfigurationExceptionErrorHandler" />
+  </bean>
 
 
   <bean id="manageTransformerExceptionErrorHandler" parent="abstractManageXsltErrorHandler">
@@ -388,6 +399,9 @@
         <constructor-arg value="javax.xml.transform.TransformerException" />
       </bean>
     </property>
+  </bean>
+  <bean parent="vtk.errorHandlers.builder">
+    <property name="arguments" ref="manageTransformerExceptionErrorHandler" />
   </bean>
 
 

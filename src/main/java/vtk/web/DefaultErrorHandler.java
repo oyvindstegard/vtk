@@ -31,6 +31,7 @@
 package vtk.web;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +43,8 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
+
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 
@@ -93,10 +96,11 @@ public class DefaultErrorHandler
     private String beanName = null;
     private View errorView = null;
     private String errorViewName = null;
+    private ViewResolver viewResolver = null;
     private Class<Throwable> errorType = Throwable.class;
     private Service service = null;
     private ReferenceDataProvider[] providers = new ReferenceDataProvider[0];
-    private Map<String, Integer> statusCodeMappings = new HashMap<String, Integer>();
+    private Map<String, Integer> statusCodeMappings = new HashMap<>();
     private boolean logExceptions = false;
 
     public void setBeanName(String beanName) {
@@ -109,6 +113,10 @@ public class DefaultErrorHandler
 
     public void setErrorViewName(String errorViewName) {
         this.errorViewName = errorViewName;
+    }
+    
+    public void setViewResolver(ViewResolver viewResolver) {
+        this.viewResolver = viewResolver;
     }
 
     public void setErrorType(Class<Throwable> errorType) {
@@ -164,7 +172,7 @@ public class DefaultErrorHandler
         if (this.logExceptions) {
             logger.warn("Error in request " + request, error);
         }
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         if (this.providers != null) {
             try {
                 for (int i = 0; i < this.providers.length; i++) {
@@ -192,7 +200,7 @@ public class DefaultErrorHandler
                 : ctx.getMessage(DEFAULT_ERROR_CODE, DEFAULT_ERROR_DESCRIPTION);
         }
 
-        Map<Object, Object> errorModel = new HashMap<Object, Object>();
+        Map<Object, Object> errorModel = new HashMap<>();
         errorModel.put(ERROR_MODEL_EXCEPTION_KEY, error);
         errorModel.put(ERROR_MODEL_ERROR_DESCRIPTION_KEY, errorMessage);
         model.put(ERROR_MODEL_KEY, errorModel);
@@ -208,6 +216,12 @@ public class DefaultErrorHandler
         if (this.errorView != null) {
             return this.errorView;
         }
+        if (this.viewResolver != null) {
+            Locale locale = new org.springframework.web.servlet.support.RequestContext(
+                    request, request.getServletContext()).getLocale();
+            return this.viewResolver.resolveViewName(this.errorViewName, locale);
+        }
+        
         return this.errorViewName;
     }
     

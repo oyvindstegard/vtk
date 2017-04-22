@@ -71,7 +71,7 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
     private ComponentResolver componentResolver;
 
     private Map<String, DecoratorComponent> ssiDirectiveComponentMap;
-    private Set<String> availableComponentNamespaces = new HashSet<String>();
+    private Set<String> availableComponentNamespaces = new HashSet<>();
     private TextualComponentParser contentComponentParser;
     private boolean parseAttributes = false;
 
@@ -208,7 +208,7 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
         Matcher paramMatcher = SSI_PARAMETERS_REGEXP.matcher(
                 content.substring(directiveMatcher.end()));
 
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
 
         while (paramMatcher.find()) {
             String name = paramMatcher.group(1);
@@ -260,7 +260,8 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
                 RequestContext.getRequestContext().getServletRequest();
 
         org.springframework.web.servlet.support.RequestContext ctx =
-            new org.springframework.web.servlet.support.RequestContext(servletRequest);
+            new org.springframework.web.servlet.support.RequestContext(
+                    servletRequest, servletRequest.getServletContext());
         Locale locale = ctx.getLocale();
 
         final String doctype = "";

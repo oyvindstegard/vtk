@@ -74,7 +74,7 @@ public class SubFolderMenuProvider implements InitializingBean {
         String token = requestContext.getSecurityToken();
         ResultSet rs = listCollections(collection.getURI(), requestContext);
 
-        Locale locale = new org.springframework.web.servlet.support.RequestContext(request).getLocale();
+        Locale locale = new org.springframework.web.servlet.support.RequestContext(request, request.getServletContext()).getLocale();
 
         int resultSets = 1;
         if (rs.getSize() > 15) {
@@ -96,7 +96,7 @@ public class SubFolderMenuProvider implements InitializingBean {
         String token = requestContext.getSecurityToken();
         ResultSet rs = listCollections(collection.getURI(), requestContext);
 
-        Locale locale = new org.springframework.web.servlet.support.RequestContext(request).getLocale();
+        Locale locale = new org.springframework.web.servlet.support.RequestContext(request, request.getServletContext()).getLocale();
 
         PropertyTypeDefinition sortProperty = getSearchSorting(collection);
 
@@ -109,7 +109,7 @@ public class SubFolderMenuProvider implements InitializingBean {
         String token = requestContext.getSecurityToken();
         ResultSet rs = listCollections(collection.getURI(), requestContext);
 
-        Locale locale = new org.springframework.web.servlet.support.RequestContext(request).getLocale();
+        Locale locale = new org.springframework.web.servlet.support.RequestContext(request, request.getServletContext()).getLocale();
 
         PropertyTypeDefinition sortProperty = getSearchSorting(collection);
 
@@ -127,7 +127,7 @@ public class SubFolderMenuProvider implements InitializingBean {
         int displayFromLevel = -1;
         int maxNumberOfChildren = Integer.MAX_VALUE;
         String display = "";
-        ArrayList<Path> includeURIs = new ArrayList<Path>();
+        ArrayList<Path> includeURIs = new ArrayList<>();
         int searchLimit = Integer.MAX_VALUE;
 
         if (sortProperty != null && "name".equals(sortProperty.getName())) {
