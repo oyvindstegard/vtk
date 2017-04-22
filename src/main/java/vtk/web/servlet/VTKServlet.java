@@ -293,7 +293,7 @@ public class VTKServlet extends DispatcherServlet {
            chain.doFilter(request,  response);
        }
        catch (DispatchException e) {
-           logger.warn("Unhandled error", e);
+           throw new ServletException(e.getCause());
        }
    }
 
