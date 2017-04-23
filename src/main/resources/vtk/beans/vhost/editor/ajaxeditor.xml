@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
   <bean id="ajaxeditor.service" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="-9800" />
     <property name="assertions">
       <list>
+        <ref bean="ajaxeditor.editorExistsAssertion" />
         <ref bean="fileAssertion" />
         <ref bean="requiresWritePermissionAssertion" />
         <bean class="vtk.web.service.RequestMethodAssertion">
@@ -27,6 +29,10 @@
     <property name="handler" ref="ajaxeditor.handler" />
   </bean>
 
+  <bean id="ajaxeditor.editorExistsAssertion" 
+        factory-bean="ajaxeditor.handler" factory-method="editAssertion" />
+
+
   <bean id="ajaxeditor.handler" class="vtk.web.AjaxEditorController">
     <constructor-arg ref="ajaxeditor.editView"/>
     <constructor-arg ref="manage.staticResourceResolver" />
@@ -37,6 +43,38 @@
 
   <bean id="ajaxeditor.editView" parent="freemarkerView">
     <property name="url" value="editor/ajaxeditor.ftl" />
+  </bean>
+
+  <bean id="ajaxeditor.adminEditService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="structuredResources.editService" />
+    <property name="order" value="-9800" />
+    <property name="assertions">
+      <list>
+        <ref bean="ajaxeditor.editorExistsAssertion" />
+      </list>
+    </property>
+    <property name="handler" ref="ajaxeditor.iframeEditHandler" />
+  </bean>
+
+  <bean id="ajaxeditor.iframeEditHandler" class="vtk.web.display.url.ResourceServiceURLController">
+    <property name="webProtocol" value="${webProtocol}" />
+    <property name="webProtocolRestricted" value="${webProtocolRestricted}" />
+    <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
+    <property name="service" ref="ajaxeditor.service" />
+    <property name="viewName" value="ajaxeditor.iframeView" />
+    <property name="displayWorkingRevision" value="true" />
+  </bean>
+
+  <bean id="ajaxeditor.plainViewResolver" parent="system.decoratingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="ajaxeditor.iframeView" value-ref="ajaxeditor.iframeView" />
+      </map>
+    </property>
+  </bean>
+
+  <bean id="ajaxeditor.iframeView" parent="freemarkerView">
+    <property name="url" value="editor/ajaxeditor-iframe.ftl" />
   </bean>
 
 </beans>

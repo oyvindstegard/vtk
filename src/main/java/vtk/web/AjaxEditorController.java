@@ -30,19 +30,26 @@
  */
 package vtk.web;
 
-import org.json.simple.JSONObject;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.mvc.Controller;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UncheckedIOException;
+import java.io.Writer;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.*;
-
+import org.json.simple.JSONObject;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import vtk.repository.Path;
@@ -50,9 +57,18 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.resourcemanagement.StaticResourceResolver;
 import vtk.security.Principal;
-import vtk.text.tl.*;
+import vtk.text.tl.Context;
+import vtk.text.tl.DirectiveHandler;
+import vtk.text.tl.IfHandler;
+import vtk.text.tl.Node;
+import vtk.text.tl.NodeList;
+import vtk.text.tl.TemplateHandler;
+import vtk.text.tl.TemplateParser;
+import vtk.text.tl.ValHandler;
 import vtk.text.tl.expr.Expression;
 import vtk.util.io.IO;
+import vtk.web.service.Assertion;
+import vtk.web.service.URL;
 
 public class AjaxEditorController implements Controller {
 
@@ -74,6 +90,42 @@ public class AjaxEditorController implements Controller {
         this.appResourceURL = appResourceURL;
         this.appPath = appPath;
         this.staticResourcesURL = staticResourcesURL;
+    }
+    
+    public Assertion editAssertion() {        
+        return new EditorExistsAssertion(type -> templateExists(type, "editor.tl"));
+    }
+    
+    private static class EditorExistsAssertion implements Assertion {
+        private Function<String, Boolean> existsFunction;
+        
+        public EditorExistsAssertion(Function<String, Boolean> existsFunction) {
+            this.existsFunction = existsFunction;
+        }
+    
+        @Override
+        public boolean matches(HttpServletRequest request, Resource resource,
+                Principal principal) {
+            if (resource == null) return false;
+            String type = resource.getResourceType();
+            return existsFunction.apply(type);
+        }
+
+        @Override
+        public boolean processURL(URL url, Resource resource,
+                Principal principal, boolean match) {
+            return true;
+        }
+
+        @Override
+        public void processURL(URL url) {
+        }
+
+        @Override
+        public boolean conflicts(Assertion assertion) {
+            return false;
+        }
+
     }
 
     @Override
@@ -138,6 +190,29 @@ public class AjaxEditorController implements Controller {
         }
         return path;
     }
+    
+    
+    private boolean templateExists(String type, String filename) {
+        RequestContext rc = RequestContext.getRequestContext();
+        Path repositoryPath = Path.fromString(this.appPath + "/" + type + "/" + filename);
+        org.springframework.core.io.Resource systemPath = this.staticResourceResolver.resolve(
+                Path.fromString(this.staticResourcesURL + "/" + type + "/" + filename)
+        );
+
+        try {
+            if (rc.getRepository().exists(rc.getSecurityToken(), repositoryPath)) {
+                return true;
+            } else if (systemPath != null && systemPath.exists()) {
+                return true;
+            }
+            return false;
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    
 
     private Optional<ReaderWithPath> getTemplateReader(
             String type, String filename
@@ -209,6 +284,7 @@ public class AjaxEditorController implements Controller {
                 Context ctx = new Context(locale);
                 NodeList nodeList = new NodeList();
                 nodeList.add(new Node() {
+                    @Override
                     public boolean render(Context ctx, Writer out) throws Exception {
                         out.write(String.format(
                                 "Template parse error:\n---\n%s\n---\nLine %d in file \"%s\"",
