@@ -30,6 +30,7 @@
  */
 package vtk.web.view;
 
+import vtk.repository.Resource;
 import vtk.web.service.URL;
 
 
@@ -38,7 +39,9 @@ import vtk.web.service.URL;
  *
  */
 public interface LinkConstructor {
+    
+    public URL constructWithResource(Resource resource, String parametersCSV, String serviceName);
 
-	public URL construct(String resourceURI, String parametersCSV, String serviceName);
+    public URL construct(String resourceURI, String parametersCSV, String serviceName);
 	
 }

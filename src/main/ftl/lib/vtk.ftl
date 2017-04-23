@@ -277,6 +277,18 @@
 </#function>
 
 
+<#function adminActionURL resource action>
+  <#if VRTX_LINK_CONSTRUCTOR.constructWithResource(resource, null, 'manage.actionService.withWritePermission')?exists>
+    <#return VRTX_LINK_CONSTRUCTOR.constructWithResource(resource, 'admin-action=' + action, 'manage.actionService.withWritePermission')  />
+  </#if>
+</#function>
+
+<#function adminManageActionURL resource action>
+  <#if VRTX_LINK_CONSTRUCTOR.construct(resource, null, 'manage.actionService.withAdminPermission')?exists>
+    <#return VRTX_LINK_CONSTRUCTOR.construct(resource, 'admin-action=' + action, 'manage.actionService.withAdminPermission') />
+  </#if>
+</#function>
+
 <#--
  * invokeComponentRefs
  *

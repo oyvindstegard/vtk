@@ -31,12 +31,19 @@
 package vtk.web.view;
 
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import vtk.repository.Path;
+import vtk.repository.Resource;
+import vtk.security.Principal;
 import vtk.web.RequestContext;
+import vtk.web.service.ServiceUnlinkableException;
 import vtk.web.service.ServiceUrlProvider;
 import vtk.web.service.URL;
 
@@ -48,6 +55,21 @@ public class LinkConstructorImpl implements LinkConstructor {
 
     public LinkConstructorImpl(ServiceUrlProvider serviceUrlProvider) {
         this.serviceUrlProvider = serviceUrlProvider;
+    }
+    
+    public URL constructWithResource(Resource resource, String parametersCSV, String serviceName) {
+        Principal principal = RequestContext.getRequestContext().getPrincipal();
+        ServiceUrlProvider.ServiceUrlBuilder builder = serviceUrlProvider.builder(serviceName);
+        try {
+            return builder
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .withParameters(getParametersMap(parametersCSV))
+                    .build();
+        }
+        catch (ServiceUnlinkableException e) {
+            return null;
+        }
     }
 
     public URL construct(String resourceUri, String parametersCSV, String serviceName) {
@@ -73,7 +95,10 @@ public class LinkConstructorImpl implements LinkConstructor {
             } else {
                 urlBuilder = serviceUrlProvider.builder(RequestContext.getRequestContext().getService());
             }
-            return urlBuilder.withPath(uri).withParameters(getParametersMap(parametersCSV)).build();
+            Principal principal = RequestContext.getRequestContext().getPrincipal();
+            return urlBuilder.withPrincipal(principal)
+                    .withPath(uri).withParameters(getParametersMap(parametersCSV))
+                    .build();
 
 		} catch (Exception e) {
             logger.info("Caught exception on link construction", e);

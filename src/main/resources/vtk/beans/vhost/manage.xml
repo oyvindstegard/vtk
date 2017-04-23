@@ -2442,4 +2442,16 @@
     </constructor-arg>
   </bean>
 
+  <!-- Override to be able to construct links based on admin permission: -->
+  <bean id="manage.actionService.withAdminPermission" parent="manage.actionService">
+    <property name="parent" ref="manage.actionService" />
+    <property name="assertions" ref="adminPermissionAssertion"/>
+  </bean>
+
+  <!-- Override to be able to construct links based on admin permission: -->
+  <bean id="manage.actionService.withWritePermission" parent="manage.actionService">
+    <property name="parent" ref="manage.actionService" />
+    <property name="assertions" ref="writePermissionAssertion"/>
+  </bean>
+
 </beans>
