@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -44,7 +45,6 @@ import vtk.util.io.InputSource;
 
 
 public class RepositoryInputSource implements InputSource {
-
     private Repository repository;
     private String token;
     private Path uri; 
@@ -80,7 +80,9 @@ public class RepositoryInputSource implements InputSource {
         try {
             Resource resource = repository.retrieve(
                     token, uri, true);
-            return Charset.forName(resource.getCharacterEncoding());
+            String encoding = resource.getCharacterEncoding();
+            if (encoding == null) return StandardCharsets.UTF_8;
+            return Charset.forName(encoding);
         }
         catch (IOException e) {
             throw new UncheckedIOException(e);
