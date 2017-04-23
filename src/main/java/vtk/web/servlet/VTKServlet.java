@@ -293,7 +293,8 @@ public class VTKServlet extends DispatcherServlet {
            chain.doFilter(request,  response);
        }
        catch (DispatchException e) {
-           throw new ServletException(e.getCause());
+           Throwable cause = (e.getCause() != null) ? e.getCause() : e; 
+           throw new ServletException(cause);
        }
    }
 
