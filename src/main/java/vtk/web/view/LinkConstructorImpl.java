@@ -56,55 +56,74 @@ public class LinkConstructorImpl implements LinkConstructor {
     public LinkConstructorImpl(ServiceUrlProvider serviceUrlProvider) {
         this.serviceUrlProvider = serviceUrlProvider;
     }
-    
-    public URL constructWithResource(Resource resource, String parametersCSV, String serviceName) {
-        Principal principal = RequestContext.getRequestContext().getPrincipal();
-        ServiceUrlProvider.ServiceUrlBuilder builder = serviceUrlProvider.builder(serviceName);
-        try {
-            return builder
-                    .withResource(resource)
-                    .withPrincipal(principal)
-                    .withParameters(getParametersMap(parametersCSV))
-                    .build();
-        }
-        catch (ServiceUnlinkableException e) {
-            return null;
-        }
-    }
 
-    public URL construct(String resourceUri, String parametersCSV, String serviceName) {
+    public URL construct(Object arg, String parametersCSV, String serviceName) {
+        if (arg == null) return null;
         try {
-            if (resourceUri != null && resourceUri.contains("://")) {
-                return getUrlFromUrl(resourceUri);
+            Path uri = null;
+            Resource resource = null;
+            String strUri = null;
+            
+            if (arg instanceof Resource) {
+                resource = (Resource) arg;
+                uri = resource.getURI();
             }
-
-            Path uri = RequestContext.getRequestContext().getResourceURI();
-            if (isSet(resourceUri)) {
-                uri = RequestContext.getRequestContext().getCurrentCollection();
-
-                if (resourceUri.startsWith("/")) {
-                    uri = Path.ROOT.expand(resourceUri.substring(1));
-                } else {
-                    uri = uri.expand(resourceUri);
+            else if (arg instanceof Path) {
+                uri = (Path) arg;
+            }
+            else if (arg instanceof String) {
+                strUri = (String) arg;
+                if (strUri.contains("://")) {
+                    return getUrlFromUrl(strUri);
                 }
+                uri = RequestContext.getRequestContext().getResourceURI();
+                
+                if (isSet(strUri)) {
+                    uri = RequestContext.getRequestContext().getCurrentCollection();
+
+                    if (strUri.startsWith("/")) {
+                        uri = Path.ROOT.expand(strUri.substring(1));
+                    }
+                    else {
+                        uri = uri.expand(strUri);
+                    }
+                }
+            }
+            else {
+                throw new IllegalArgumentException("Unsupported argument type: " + arg);
             }
 
             ServiceUrlProvider.ServiceUrlBuilder urlBuilder;
             if (isSet(serviceName)) {
                 urlBuilder = serviceUrlProvider.builder(serviceName);
-            } else {
+            }
+            else {
                 urlBuilder = serviceUrlProvider.builder(RequestContext.getRequestContext().getService());
             }
             Principal principal = RequestContext.getRequestContext().getPrincipal();
-            return urlBuilder.withPrincipal(principal)
-                    .withPath(uri).withParameters(getParametersMap(parametersCSV))
+            if (resource != null) {
+                return urlBuilder
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .withParameters(getParametersMap(parametersCSV))
+                        .build();
+                
+            }
+            return urlBuilder
+                    .withPath(uri)
+                    .withPrincipal(principal)
+                    .withParameters(getParametersMap(parametersCSV))
                     .build();
 
-		} catch (Exception e) {
+        }
+        catch (ServiceUnlinkableException e) {
+            return null;
+        }
+        catch (Exception e) {
             logger.info("Caught exception on link construction", e);
             return null;
-		}
-	}
+        }
+    }
 
     private URL getUrlFromUrl(String url)
             throws UnsupportedEncodingException {

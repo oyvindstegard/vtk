@@ -449,8 +449,12 @@ public class ServiceImpl implements Service, BeanNameAware {
         // urlObject.setQuery(parameters);
 
         for (Assertion assertion: assertions) {
-            boolean match = assertion.processURL(urlObject, resource,
+            boolean match = false;
+            try { 
+                match = assertion.processURL(urlObject, resource,
                     principal, matchAssertions);
+            }
+            catch (Exception e) {}
             
             if (match == false) {
                 throw new ServiceUnlinkableException("Service "

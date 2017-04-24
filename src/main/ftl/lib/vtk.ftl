@@ -268,18 +268,17 @@
 </#function>
 
 
-<#function linkConstructor resourceUri serviceName >
-  <#if VRTX_LINK_CONSTRUCTOR?exists && resourceUri?exists && serviceName?exists >
-    <#if VRTX_LINK_CONSTRUCTOR.construct(resourceUri,null,serviceName)?exists>
-      <#return VRTX_LINK_CONSTRUCTOR.construct(resourceUri,null,serviceName) />
+<#function linkConstructor resource serviceName >
+  <#if VRTX_LINK_CONSTRUCTOR?exists && resource?exists && serviceName?exists >
+    <#if VRTX_LINK_CONSTRUCTOR.construct(resource,null,serviceName)?exists>
+      <#return VRTX_LINK_CONSTRUCTOR.construct(resource,null,serviceName) />
     </#if>
   </#if>
 </#function>
 
-
 <#function adminActionURL resource action>
-  <#if VRTX_LINK_CONSTRUCTOR.constructWithResource(resource, null, 'manage.actionService.withWritePermission')?exists>
-    <#return VRTX_LINK_CONSTRUCTOR.constructWithResource(resource, 'admin-action=' + action, 'manage.actionService.withWritePermission')  />
+  <#if VRTX_LINK_CONSTRUCTOR.construct(resource, null, 'manage.actionService.withWritePermission')?exists>
+    <#return VRTX_LINK_CONSTRUCTOR.construct(resource, 'admin-action=' + action, 'manage.actionService.withWritePermission')  />
   </#if>
 </#function>
 
