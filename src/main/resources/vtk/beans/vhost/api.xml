@@ -79,9 +79,6 @@
         </bean>
       </list>
     </property>
-    <property name="servletFilters">
-      <ref bean="system.csrfPreventionHandler" />
-    </property>
     <property name="handler" ref="api.putHandler"/>
   </bean>
 
