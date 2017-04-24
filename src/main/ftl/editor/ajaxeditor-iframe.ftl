@@ -16,6 +16,7 @@
     <iframe title="${vrtx.getMsg("iframe.title.edit")}" class="edit" name="editIframe" id="editIframe" src="${resourceReference?no_esc}" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0" style="overflow:visible; width:100%; ">
       ${vrtx.getMsg("iframe.not-supported")} ${vrtx.getMsg("iframe.not-supported.title-prefix")} "${vrtx.getMsg("iframe.title.preview")}". <@vrtx.msg code="iframe.not-supported.link" args=[resourceReference] />
     </iframe>
+    
     <script><!--
       $(function () {
         setIframeHeight(); // Default
