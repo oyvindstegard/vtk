@@ -33,7 +33,6 @@ package vtk.web.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -260,44 +259,49 @@ public class AclApiHandler implements HttpRequestHandler {
             }
         });
     }
-    
-    private Function<Json.MapContainer, Result<Acl>> aclMapper = (map) -> {
-        Acl result = Arrays.stream(Privilege.values()).reduce(Acl.EMPTY_ACL, (acc, action) -> {
-            Acl acl = acc;
-            if (map.containsKey(action.getName())) {
-                MapContainer entry = map.objectValue(action.getName());
-                
-                if (entry.containsKey("users")) {
-                    ListContainer list = entry.arrayValue("users");
-                    for (Object user: list) {
-                        Principal.Type type = user.toString().startsWith("pseudo:") 
-                                ? Principal.Type.PSEUDO : Principal.Type.USER;
 
-                        acl = acl.addEntry(action, 
-                                principalFactory.getPrincipal(
-                                        user.toString(), type));
-                        
+    private Function<Json.MapContainer, Result<Acl>> aclMapper = map -> {
+        Result<Acl> result = Result.attempt(() -> {
+            Acl acl = Acl.EMPTY_ACL;
+            
+            for (Privilege action: Privilege.values()) {
+                if (map.containsKey(action.getName())) {
+                    MapContainer entry = map.objectValue(action.getName());
+                    
+                    if (entry.containsKey("users")) {
+                        ListContainer list = entry.arrayValue("users");
+                        for (Object user: list) {
+                            acl = acl.addEntry(action, 
+                                    principalFactory.getPrincipal(
+                                            user.toString(), Principal.Type.USER));
+                        }
                     }
-                }
-                if (entry.containsKey("group")) {
-                    ListContainer list = entry.arrayValue("group");
-                    for (Object group: list) {
-                        Principal.Type type = group.toString().startsWith("pseudo:") 
-                                ? Principal.Type.PSEUDO : Principal.Type.GROUP;
-
-                        acl = acl.addEntry(action, 
-                                principalFactory.getPrincipal(
-                                        group.toString(), type));
+                    if (entry.containsKey("groups")) {
+                        ListContainer list = entry.arrayValue("groups");
+                        for (Object group: list) {
+                            acl = acl.addEntry(action, 
+                                    principalFactory.getPrincipal(
+                                            group.toString(), Principal.Type.GROUP));
+                        }
+                    }
+                    if (entry.containsKey("pseudo")) {
+                        ListContainer list = entry.arrayValue("pseudo");
+                        for (Object pseudo: list) {
+                            acl = acl.addEntry(action, 
+                                    principalFactory.getPrincipal(
+                                            pseudo.toString(), Principal.Type.PSEUDO));
+                        }
                     }
                 }
             }
+            if (acl.isEmpty()) {
+                throw new IllegalStateException("Resulting ACL has no entries");
+            }
             return acl;
-        }, (a1, a2) -> a1);
-        if (result.isEmpty()) {
-            return Result.failure(new Throwable("Resulting ACL has no entries"));
-        }
-        return Result.success(result);
+        });
+        return result;
     };
+    
     
     
     private Json.MapContainer aclToJson(Acl acl) {
@@ -307,9 +311,18 @@ public class AclApiHandler implements HttpRequestHandler {
         actions.forEach(action -> {
             List<Principal> users = new ArrayList<>();
             List<Principal> groups = new ArrayList<>();
+            List<Principal> pseudo = new ArrayList<>();
             
             acl.getPrincipalSet(action).forEach(p -> {
-                if (p.isUser()) users.add(p); else groups.add(p);
+                if (p.getType() == Principal.Type.USER) {
+                    users.add(p);
+                }
+                else if (p.getType() == Principal.Type.GROUP) {
+                    groups.add(p);
+                }
+                else {
+                    pseudo.add(p);
+                }
             });
             
             Json.MapContainer entry = new Json.MapContainer();
@@ -323,6 +336,12 @@ public class AclApiHandler implements HttpRequestHandler {
                 Json.ListContainer list = new Json.ListContainer();
                 groups.forEach(g -> list.add(g.getQualifiedName()));
                 entry.put("groups", list);
+            }
+            
+            if (!pseudo.isEmpty()) {
+                Json.ListContainer list = new Json.ListContainer();
+                pseudo.forEach(p -> list.add(p.getQualifiedName()));
+                entry.put("pseudo", list);
             }
             json.put(action.getName(), entry);
         });
