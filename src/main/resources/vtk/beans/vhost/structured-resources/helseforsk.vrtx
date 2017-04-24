@@ -130,7 +130,7 @@ resourcetype helseforsk {
             
             [if approvalInternalStatus != null &&
                 approvalInternalStatus != "NOT_APPLIED"]
-              <h3 class="accordion">[localized "approvalInternal"] - [if approvalInternalStatus = "APPLIED"][localized "approvalApplied"][else][localized "approvalNoNeed"][endif][if approvalInternal != null]<span class="accordion-subtitle">[val approvalInternal.length()] [if approvalInternal.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
+              <h3 class="accordion">[localized "approvalInternal"] - [localized approvalInternalStatus][if approvalInternal != null]<span class="accordion-subtitle">[val approvalInternal.length()] [if approvalInternal.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
               [if approvalInternal != null]
                 <ul>
                   [list approvalInternal doc]
@@ -138,7 +138,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalInternalStatus = "APPLIED"]
+                [if approvalInternalStatus = "APPROVED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -146,7 +146,7 @@ resourcetype helseforsk {
             
             [if approvalRekStatus != null &&
                 approvalRekStatus != "NOT_APPLIED"]
-              <h3 class="accordion">[localized "approvalRek"] - [if approvalRekStatus = "APPLIED"][localized "approvalApplied"][else][localized "approvalNoNeed"][endif][if approvalRek != null]<span class="accordion-subtitle">[val approvalRek.length()] [if approvalRek.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
+              <h3 class="accordion">[localized "approvalRek"] - [localized approvalRekStatus][if approvalRek != null]<span class="accordion-subtitle">[val approvalRek.length()] [if approvalRek.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
               [if approvalRek != null]
                 <ul>
                   [list approvalRek doc]
@@ -154,7 +154,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalRekStatus = "APPLIED"]
+                [if approvalRekStatus = "APPROVED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -166,7 +166,7 @@ resourcetype helseforsk {
             
             [if approvalNsdStatus != null &&
                 approvalNsdStatus != "NOT_APPLIED"]
-              <h3 class="accordion">[localized "approvalNsd"] - [if approvalNsdStatus = "APPLIED"][localized "approvalApplied"][else][localized "approvalNoNeed"][endif][if approvalNsd != null]<span class="accordion-subtitle">[val approvalNsd.length()] [if approvalNsd.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
+              <h3 class="accordion">[localized "approvalNsd"] - [localized approvalNsdStatus][if approvalNsd != null]<span class="accordion-subtitle">[val approvalNsd.length()] [if approvalNsd.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
               [if approvalNsd != null]
                 <ul>
                   [list approvalNsd doc]
@@ -174,7 +174,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalNsdStatus = "APPLIED"]
+                [if approvalNsdStatus = "APPROVED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -186,7 +186,7 @@ resourcetype helseforsk {
             
             [if approvalDatatilsynetStatus != null &&
                 approvalDatatilsynetStatus != "NOT_APPLIED"]
-              <h3 class="accordion">[localized "approvalDatatilsynet"] - [if approvalDatatilsynetStatus = "APPLIED"][localized "approvalApplied"][else][localized "approvalNoNeed"][endif][if approvalDatatilsynet != null]<span class="accordion-subtitle">[val approvalDatatilsynet.length()] [if approvalDatatilsynet.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
+              <h3 class="accordion">[localized "approvalDatatilsynet"] - [localized approvalDatatilsynetStatus][if approvalDatatilsynet != null]<span class="accordion-subtitle">[val approvalDatatilsynet.length()] [if approvalDatatilsynet.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
               [if approvalDatatilsynet != null]
                 <ul>
                   [list approvalDatatilsynet doc]
@@ -194,7 +194,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalDatatilsynetStatus = "APPLIED"]
+                [if approvalDatatilsynetStatus = "APPROVED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -206,7 +206,7 @@ resourcetype helseforsk {
             
             [if approvalHelsedirStatus != null &&
                 approvalHelsedirStatus != "NOT_APPLIED"]
-              <h3 class="accordion">[localized "approvalHelsedir"] - [if approvalHelsedirStatus = "APPLIED"][localized "approvalApplied"][else][localized "approvalNoNeed"][endif][if approvalHelsedir != null]<span class="accordion-subtitle">[val approvalHelsedir.length()] [if approvalHelsedir.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
+              <h3 class="accordion">[localized "approvalHelsedir"] - [localized approvalHelsedirStatus][if approvalHelsedir != null]<span class="accordion-subtitle">[val approvalHelsedir.length()] [if approvalHelsedir.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
               [if approvalHelsedir != null]
                 <ul>
                   [list approvalHelsedir doc]
@@ -214,7 +214,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalHelsedirStatus = "APPLIED"]
+                [if approvalHelsedirStatus = "APPROVED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -226,7 +226,7 @@ resourcetype helseforsk {
             
             [if approvalStatLegemiddelverkStatus != null &&
                 approvalStatLegemiddelverkStatus != "NOT_APPLIED"]
-              <h3 class="accordion">[localized "approvalStatLegemiddelverk"] - [if approvalStatLegemiddelverkStatus = "APPLIED"][localized "approvalApplied"][else][localized "approvalNoNeed"][endif][if approvalStatLegemiddelverk != null]<span class="accordion-subtitle">[val approvalStatLegemiddelverk.length()] [if approvalStatLegemiddelverk.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
+              <h3 class="accordion">[localized "approvalStatLegemiddelverk"] - [localized approvalStatLegemiddelverkStatus][if approvalStatLegemiddelverk != null]<span class="accordion-subtitle">[val approvalStatLegemiddelverk.length()] [if approvalStatLegemiddelverk.length() > 1][localized "files"][else][localized "file"][endif]</span>[endif]</h3>
               [if approvalStatLegemiddelverk != null]
                 <ul>
                   [list approvalStatLegemiddelverk doc]
@@ -234,7 +234,7 @@ resourcetype helseforsk {
                   [endlist]
                 </ul>
               [else]
-                [if approvalStatLegemiddelverkStatus = "APPLIED"]
+                [if approvalStatLegemiddelverkStatus = "APPROVED"]
                   <p>[localized "documentsNotUploaded"]</p>
                 [endif]
               [endif]
@@ -329,9 +329,10 @@ resourcetype helseforsk {
     approvalStatLegemiddelverk : (en : "Statens legemiddelverk", no : "Statens legemiddelverk", nn : "Statens legemiddelverk"),
     approvalOthers : (en : "Others approval", no : "Andre godkjenninger", nn : "Andre godkjenningar"),
     documentsNotUploaded : (en : "Document not uploaded", no : "Dokument ikke lastet opp", nn : "Dokument ikkje lasta opp"),
-    approvalApplied : (en : "Yes", no : "Ja", nn : "Ja"),
-    approvalNoNeed : (en : "No need", no : "Ikke behov", nn : "Ikkje behov"),
     file : (en : "file", no : "fil", nn : "fil"),
-    files : (en : "files", no : "filer", nn : "filar")
+    files : (en : "files", no : "filer", nn : "filar"),
+    APPLIED : (en : "Yes, application sent to processing", no : "Ja, søknad til behandling", nn : "Ja, søknad til behandling"),
+    APPROVED : (en : "Yes, application approved", no : "Ja, søknad godkjent", nn : "Ja, søknad godkjent"),
+    NO_NEED : (en : "No need", no : "Ikke behov", nn : "Ikke behov")
   }
 }
