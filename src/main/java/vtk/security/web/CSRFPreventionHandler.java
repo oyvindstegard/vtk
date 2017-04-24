@@ -117,7 +117,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
     private static final String TOKEN_HEADER = "X-CSRF-Token";
     private static final String SECRET_SESSION_ATTRIBUTE = "csrf-prevention-secret";
     private static Logger logger = LoggerFactory.getLogger(CSRFPreventionHandler.class);
-    private static final String ALGORITHM = "HmacSHA1";
+    private static final String ALGORITHM = "HmacSHA256";
 
     /**
      * Utility method that can be called, e.g. from views
@@ -147,7 +147,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
     protected void doFilter(HttpServletRequest request,
             HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-
+        
         if ("GET".equals(request.getMethod()) || "POST".equals(request.getMethod())) {
             HtmlParsingResponseWrapper responseWrapper = new HtmlParsingResponseWrapper(response, 
                     () -> request.getAttribute("csrf-html-filtered") == null,
@@ -170,15 +170,14 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
             chain.doFilter(request, response);
             return;
         case "PUT":
-        case "PATCH":
         case "DELETE":
             verifyApiRequest(request, response, chain);
             return;
         case "POST":
             String contentType = request.getContentType();
             if (contentType == null) {
-                verifyApiRequest(request, response, chain);
-                return;
+                throw new AuthorizationException(
+                        "Content-Type is required for POST requests");
             }
             if (contentType.startsWith("multipart/form-data")) {
                 verifyMultipartPost(request, response, chain);
@@ -188,9 +187,13 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
                 verifyFormPost(request, response, chain);
                 return;
             }
-            else {
+            else if (contentType.startsWith("application/json")) {
                 verifyApiRequest(request, response, chain);
                 return;
+            }
+            else {
+                throw new AuthorizationException(
+                        "Invalid Content-Type: " + contentType + " for POST requests");
             }
         }
         chain.doFilter(request, response);
