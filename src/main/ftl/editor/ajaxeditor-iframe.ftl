@@ -28,13 +28,14 @@
      
       $(window).on('message', function(e) {
         if (e.originalEvent) e = e.originalEvent;
+        
         var data = e.data;
         var origin = e.origin;
         var regex = new RegExp("^" + location.protocol + "//" + location.host);
         
         if (regex.test(origin) && data.type == 'set-editor-height') {
           if(data.height && !isNaN(data.height)) {
-            $("#editIframe").attr("height", height);
+            $("#editIframe").attr("height", data.height);
           }
         }
       });
