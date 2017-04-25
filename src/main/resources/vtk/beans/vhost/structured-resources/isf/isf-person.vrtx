@@ -8,7 +8,6 @@ resourcetype isf-person {
     degree : string,
     phone : string multiple,
     mobile : string multiple,
-    email : string multiple,
     title : derived (firstName, surname) eval (firstName + " " + surname)
       overrides title default username,
     picture : image_ref,
@@ -20,7 +19,6 @@ resourcetype isf-person {
     selectedPublications : html noextract,
     getRelatedProjects : boolean,
     projects : json (projectName:string, projectUrl:string) multiple,
-    tags : string multiple overrides tags
   }
 
   edit-rules {
@@ -37,7 +35,7 @@ resourcetype isf-person {
   }
 
   view-components {
-  
+
     title {
       ##
       [def titleValue resource-prop(".", "title")]
@@ -51,7 +49,7 @@ resourcetype isf-person {
       ##
       [resource-props "."]
       <div class="vrtx-person-contactinfo">
-          
+
           [call "resource:person-language-link"]
 
           [if position != null]
@@ -146,7 +144,7 @@ resourcetype isf-person {
       [endif]
       ##
     }
-    
+
     vrtx-date-info {
       ##
       [resource-props "."]
@@ -160,7 +158,7 @@ resourcetype isf-person {
       [endif]
       ##
     }
-    
+
     hcard {
       ##
       [resource-props "."]
@@ -183,7 +181,7 @@ resourcetype isf-person {
       [endif]
       ##
     }
-    
+
     contact-extras {
       ##
       [resource-props "."]
@@ -236,7 +234,7 @@ resourcetype isf-person {
     </html>
     ##
   }
-  
+
   vocabulary {
      getExternalScientificInformation {
        en : ("true" = "Yes", "false" = "No"),
