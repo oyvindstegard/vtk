@@ -36,3 +36,6 @@ include structured-resources/studies/course-schedule.vrtx
 include structured-resources/studies/free-capacity.vrtx
 
 include structured-resources/publications/unit-publications.vrtx
+
+include structured-resources/isf/isf-person.vrtx
+include structured-resources/isf/isf-project.vrtx
