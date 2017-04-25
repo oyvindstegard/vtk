@@ -18,6 +18,7 @@ var jasmineBrowser = require('gulp-jasmine-browser');
 var config = {
     target: "../../../target/classes/web",
     testTarget: "../../../target/test-classes/web",
+    ckeditor_version: "4.6.0",
     production: !!util.env.production
 };
 
@@ -96,8 +97,13 @@ gulp.task('js-copy-resources', function () {
         .pipe(gulp.dest(TARGET + "/js"));
 });
 
-gulp.task('ckeditor-copy', function () {
-    return gulp.src('CKEditor/ckeditor-build/**')
+gulp.task('ckeditor-org', function () {
+    return gulp.src('CKEditor/ckeditor-org/ckeditor-' + config.ckeditor_version + '/**')
+        .pipe(gulp.dest(TARGET + '/ckeditor-build'));
+});
+
+gulp.task('ckeditor-copy', ['ckeditor-org'],  function () {
+    return gulp.src('CKEditor/ckeditor-modifications/**')
         .pipe(gulp.dest(TARGET + '/ckeditor-build'));
 });
 
@@ -107,6 +113,7 @@ gulp.task('watch', function () {
     gulp.watch('themes/**/*.css', ['theme-copy-css'])
     gulp.watch('js/**/*.js', ['js-copy']);
     gulp.watch('jquery/**/*.js', ['jquery-plugins-copy', 'jquery-copy']);
+    gulp.watch('CKEditor/ckeditor-modifications/**', ['ckeditor-copy'])
 });
 
 gulp.task('clean', function () {
