@@ -115,30 +115,35 @@ function IsAcceptableReceiver ( domain )
 
 function OpenFile( fileUrl )
 {
-        var oMsg =
-        {
-                'type'            : 'browse-select-resource',
-                'url'             : fileUrl,
-                'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
-        };
+    var oMsg =
+    {
+        'type'            : 'browse-select-resource',
+        'url'             : fileUrl,
+        'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
+    };
 
-        var oLocation = window.top.opener.location;
+    var parts = document.referrer.split('/');
+    if (parts.length < 3)
+    {
+        return;
+    }
+    var protocol = parts[0];
+    var hostname = parts[2];
 
-        if ( ! oConnector.IsAcceptableReceiver( oLocation.hostname ) )
-        {
-                return ;
-        }
-        var sDomain = oLocation.protocol + '//' + oLocation.hostname ;
+    if ( ! oConnector.IsAcceptableReceiver( hostname ) )
+    {
+        return ;
+    }
+    var sDomain = protocol + '//' + hostname ;
 
-        window.top.opener.postMessage( oMsg, sDomain ) ;
+    window.top.opener.postMessage( oMsg, sDomain ) ;
+    var ua = navigator.userAgent.toLowerCase() ;
+    window.top.close() ;
 
-        var ua = navigator.userAgent.toLowerCase() ;
-        window.top.close() ;
-
-        if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
-        {
-                window.top.opener.focus() ;
-        }
+    if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
+    {
+        window.top.opener.focus() ;
+    }
 }
 
 function LoadResources( resourceType, folderPath )
