@@ -54,6 +54,7 @@ FCKXml.prototype.LoadUrl = function( urlToCall, asyncFunctionPointer )
 	var oXmlHttp = this.GetHttpRequest() ;
 
 	oXmlHttp.open( "GET", urlToCall, bAsync ) ;
+	oXmlHttp.responseType = 'msxml-document';
 
 	if ( bAsync )
 	{
@@ -109,7 +110,7 @@ FCKXml.prototype.LoadUrl = function( urlToCall, asyncFunctionPointer )
 
 FCKXml.prototype.SelectNodes = function( xpath )
 {
-	if ( navigator.userAgent.indexOf('MSIE') >= 0 )		// IE
+	if ( typeof(this.DOMDocument.selectNodes) !== 'undefined' )		// IE
 		return this.DOMDocument.selectNodes( xpath ) ;
 	else					// Gecko
 	{
@@ -132,7 +133,7 @@ FCKXml.prototype.SelectNodes = function( xpath )
 
 FCKXml.prototype.SelectSingleNode = function( xpath )
 {
-	if ( navigator.userAgent.indexOf('MSIE') >= 0 )		// IE
+	if ( typeof(this.DOMDocument.selectSingleNode) !== 'undefined' )		// IE
 		return this.DOMDocument.selectSingleNode( xpath ) ;
 	else					// Gecko
 	{

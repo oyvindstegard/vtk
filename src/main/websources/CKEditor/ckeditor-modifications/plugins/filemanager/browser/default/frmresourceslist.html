@@ -115,22 +115,42 @@ function IsAcceptableReceiver ( domain )
 
 function OpenFile( fileUrl )
 {
-	//PATCH: Using CKEditors API we set the file in preview window.
-	if(window.top.opener.CKEDITOR) {
-	  funcNum = GetUrlParam('CKEditorFuncNum') ;
-	  // Vortex integration - avoid double encoding
-	  // window.top.opener.CKEDITOR.tools.callFunction( funcNum, encodeURI( fileUrl ).replace( '#', '%23' ));
-	  window.top.opener.CKEDITOR.tools.callFunction( funcNum, fileUrl);
-	  window.top.opener.SetUrl( fileUrl ) ;
-    } else {
-      window.top.opener.SetUrl( fileUrl ) ;
+    var oMsg =
+    {
+        'type'            : 'browse-select-resource',
+        'url'             : fileUrl,
+        'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
+    };
+
+    var protocol;
+    var host;
+    try {
+        protocol = window.top.opener.location.protocol;
+        host = window.top.opener.location.host;
+    } catch (e) {
+        var parts = window.top.document.referrer.split('/');
+        if (parts.length < 3)
+        {
+            return;
+        }
+        protocol = parts[0];
+        host = parts[2];
     }
 
-   var ua = navigator.userAgent.toLowerCase();
-   window.top.close() ;
-   if(!(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua))) {
-     window.top.opener.focus() ;
-   }
+    if ( ! oConnector.IsAcceptableReceiver( host ) )
+    {
+        return ;
+    }
+    var sDomain = protocol + '//' + host ;
+
+    window.top.opener.postMessage( oMsg, sDomain ) ;
+    var ua = navigator.userAgent.toLowerCase() ;
+    window.top.close() ;
+
+    if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
+    {
+        window.top.opener.focus() ;
+    }
 }
 
 function LoadResources( resourceType, folderPath )
