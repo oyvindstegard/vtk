@@ -255,6 +255,8 @@ resourcetype helseforsk {
             
           </div>
           <div id="vrtx-additional-content">
+            <a class="vrtx-button" href="./?vrtx=admin&mode=ajaxeditor&action=edit">[localized "edit-project"]</a>
+          
             <h2>[localized "projectLeader"]</h2>
 	        [if projectLeaderCachedFullName != null]
 	          <p><a href="[val projectLeaderCachedFullName.url]">[val projectLeaderCachedFullName.name]</p>
@@ -333,6 +335,7 @@ resourcetype helseforsk {
     files : (en : "files", no : "filer", nn : "filar"),
     APPLIED : (en : "Yes, application sent to processing", no : "Ja, søknad til behandling", nn : "Ja, søknad til behandling"),
     APPROVED : (en : "Yes, application approved", no : "Ja, søknad godkjent", nn : "Ja, søknad godkjent"),
-    NO_NEED : (en : "No need", no : "Ikke behov", nn : "Ikke behov")
+    NO_NEED : (en : "No need", no : "Ikke behov", nn : "Ikke behov"),
+    edit-project : (en : "Edit project", no : "Rediger prosjekt", nn : "Rediger prosjekt")
   }
 }
