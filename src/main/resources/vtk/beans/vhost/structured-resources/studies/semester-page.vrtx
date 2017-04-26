@@ -204,7 +204,9 @@ resourcetype semester-page {
   view {
     ##
     [def course-code resource-prop-obj-val(".", "courseContext.fs-course-code")]
-    [def semester resource-prop-obj-val(".", "semesterContext.semesterTitle")]
+    [def semesterYear resource-prop-obj-val(".", "semesterContext.semesterYear")]
+    [def semesterTerm "term-" + resource-prop-obj-val(".", "semesterContext.semesterTerm")]
+    [def semesterTermNumber resource-prop-obj-val(".", "semesterContext.semesterTermNumber")]
     [def locale resource-locale()]
     [def document structured-document()]
     [def messages-placement document.properties.messages-placement]
@@ -317,7 +319,7 @@ resourcetype semester-page {
         <div id="vrtx-content">
           <div id="vrtx-main-content">
             <div class="vrtx-frontpage-box white-box">
-              <h1>[localized 'semesterpage-for'] [if course-code != null && course-code != ""][val course-code][endif][if course-code != null && course-code != "" && semester != null && semester != ""] - [endif][if semester != null && semester != ""][val semester][endif]</h1>
+              <h1>[localized 'semesterpage-for'] [if course-code != null && course-code != ""][val course-code][endif][if course-code != null && course-code != "" && semesterYear != null && semesterYear != ""] - [endif][if semesterTerm != null && semesterTerm != ""][localized semesterTerm][endif] [if semesterYear != null && semesterYear != ""][val semesterYear][endif][if semesterTermNumber != null && semesterTermNumber != ""] - [localized 'termin'] [val semesterTermNumber][endif]</h1>
               [call "comp:show-static-links-if-published"]
             </div>
             [if cloned-course != null && cloned-course && cloned-course-code != null && cloned-course-code != ""]
@@ -452,6 +454,10 @@ resourcetype semester-page {
     header : (en : "Edit semester page", no : "Rediger semesterside", nn : "Rediger semesterside"),
     localized-group : (en : "group", no : "gruppe", nn : "gruppe"),
     semesterpage-for : (en : "Semester page for", no : "Semesterside for", nn : "Semesterside for"),
+    term-v : (en : "Spring", no : "Vår", nn : "Vår"),
+    term-h : (en : "Autumn", no : "Høst", nn : "Høst"),
+    term-s : (en : "Summer", no : "Sommer", nn : "Sommer"),
+    termin : (en : "Term", no : "Termin", nn : "Termin"),
     schedule : (en : "Schedule", no : "Timeplan", nn : "Timeplan"),
     exam : (en : "Examination: Time and place", no : "Eksamen: Tid og sted", nn : "Eksamen: Tid og stad"),
     syllabus : (en : "Syllabus/achievement requirements", no : "Pensum/læringskrav", nn : "Pensum/læringskrav"),
