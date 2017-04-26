@@ -255,7 +255,7 @@ resourcetype helseforsk {
             
           </div>
           <div id="vrtx-additional-content">
-            <a class="vrtx-button" href="./?vrtx=admin&mode=ajaxeditor&action=edit">[localized "edit-project"]</a>
+            <a class="vrtx-button" href="./index.html?vrtx=admin&mode=ajaxeditor&action=edit">[localized "edit-project"]</a>
           
             <h2>[localized "projectLeader"]</h2>
 	        [if projectLeaderCachedFullName != null]
