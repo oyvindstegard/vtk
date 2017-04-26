@@ -74,30 +74,20 @@ function SetCurrentFolder( resourceType, folderPath )
 
 function OpenFile()
 {
-        var oMsg =
-        {
-                'type'            : 'browse-select-resource',
-                'url'             : FILEURL,
-                'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
-        };
 
-        var oLocation = window.top.opener.location;
+	//PATCH: Using CKEditors API we set the file in preview window.
 
-        if ( ! oConnector.IsAcceptableReceiver( oLocation.hostname ) )
-        {
-                return ;
+	if(window.top.opener.CKEDITOR) {
+	  funcNum = GetUrlParam('CKEditorFuncNum') ;
+	  window.top.opener.CKEDITOR.tools.callFunction( funcNum, encodeURI( FILEURL ).replace( '#', '%23' ));
+	  window.top.opener.SetUrl( FILEURL ) ;
+       }
+	else {
+          window.top.opener.SetUrl( FILEURL ) ;
         }
-        var sDomain = oLocation.protocol + '//' + oLocation.hostname ;
 
-        window.top.opener.postMessage( oMsg, sDomain ) ;
-
-        var ua = navigator.userAgent.toLowerCase() ;
-        window.top.close() ;
-
-        if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
-        {
-                window.top.opener.focus() ;
-        }
+   window.top.close() ;
+   window.top.opener.focus() ;
 }
 
 function GetUrlParam( paramName )
