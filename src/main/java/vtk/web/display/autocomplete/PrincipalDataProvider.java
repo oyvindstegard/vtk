@@ -64,13 +64,15 @@ public class PrincipalDataProvider implements VocabularyDataProvider<Principal> 
         Set<Principal> result = new HashSet<Principal>(0);
 
         try {
+            SearchType searchType = null;
             if (Type.USER.equals(type)) {
                 Principal singleUser = this.principalFactory.getPrincipal(input, type);
                 if (this.principalManager.validatePrincipal(singleUser)) {
                     result.add(singleUser);
                 }
+                searchType = SearchType.FULL_USER_SEARCH;
             }
-            List<Principal> searchResult = principalFactory.search(input, type, SearchType.FULL_USER_SEARCH);
+            List<Principal> searchResult = principalFactory.search(input, type, searchType);
             if (searchResult != null && searchResult.size() > 0) {
                 result.addAll(searchResult);
             }
