@@ -47,13 +47,19 @@ import vtk.util.codec.MD5;
 import vtk.util.repository.LocaleHelper;
 
 /**
- * 
+ * Implementation of {@link Resource} with the following characteristics:
+ * <ul>
+ * <li>Complete with all metadata available at the time of loading.
+ * <li>Mutable, so must be cloned if cached.
+ * <li>DTO with no runtime ties to inner workings.
+ * </ul>
+ *
+ * <p>
  * XXX: Handling of child URI list should be improved/done differently.
  * Currently fragile and ugly (there are too many hidden assumptions).
  */
 public class ResourceImpl extends PropertySetImpl implements Resource {
 
-    private Acl acl;
     private Lock lock = null;
     
     // The value of childURIs should be either an immutable list or null.
@@ -88,17 +94,13 @@ public class ResourceImpl extends PropertySetImpl implements Resource {
     }
 
     @Override
-    public Acl getAcl() {
-        return this.acl;
-    }
-
-    public void setAcl(Acl acl) {
-        this.acl = acl;
+    public Lock getLock() {
+        return this.lock;
     }
 
     @Override
-    public Lock getLock() {
-        return this.lock;
+    public Acl getAcl() {
+        return super.acl;
     }
 
     public void setLock(Lock lock) {
@@ -218,8 +220,8 @@ public class ResourceImpl extends PropertySetImpl implements Resource {
 
     @Override
     public boolean isReadRestricted() {
-        return !this.acl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL)
-                && !this.acl.hasPrivilege(Privilege.READ_PROCESSED, PrincipalFactory.ALL);
+        return !super.acl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL)
+                && !super.acl.hasPrivilege(Privilege.READ_PROCESSED, PrincipalFactory.ALL);
     }
 
     @Override

@@ -53,7 +53,6 @@ import vtk.repository.search.Parser;
 import vtk.repository.search.PropertySortField;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
-import vtk.repository.search.Searcher.MatchingResult;
 import vtk.repository.search.SortField;
 import vtk.repository.search.Sorting;
 import vtk.repository.search.ResourceSortField;
@@ -321,9 +320,7 @@ public class BrokenLinksReport extends DocumentReporter {
             }
 
             @Override
-            public boolean matching(MatchingResult result) throws Exception {
-                PropertySet propertySet = result.propertySet();
-                
+            public boolean matching(PropertySet propertySet) throws Exception {
                 Property prop = propertySet.getProperty(brokenLinksCountPropDef);
                 if (prop == null) {
                     //logger.info("Broken links count: " + propertySet.getURI() + ": null");
@@ -457,8 +454,7 @@ public class BrokenLinksReport extends DocumentReporter {
         }
 
         @Override
-        public boolean matching(MatchingResult result) throws Exception {
-            PropertySet propertySet = result.propertySet();
+        public boolean matching(PropertySet propertySet) throws Exception {
             Property prop = propertySet.getProperty(brokenLinksCountPropDef);
             if (prop == null) {
                 return true;

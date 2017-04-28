@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import vtk.repository.Acl;
 
 import vtk.repository.PropertySet;
 
@@ -118,16 +117,6 @@ public class ResultSetImpl implements ResultSet {
         return sb.toString();
     }
 
-    @Override
-    public Acl getAcl(int index) {
-        return null; // ACLs not available through this simple impl
-    }
-
-    @Override
-    public boolean isInheritedAcl(int index) {
-        return false; // ACLs not available through this simple impl
-    }
-
     public void setRecency(Instant timestamp) {
         this.recency = timestamp;
     }
@@ -136,5 +125,5 @@ public class ResultSetImpl implements ResultSet {
     public Optional<Instant> recency() {
         return Optional.ofNullable(recency);
     }
-    
+
 }

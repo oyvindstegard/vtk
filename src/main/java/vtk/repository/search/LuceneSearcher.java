@@ -64,12 +64,9 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 
-import vtk.repository.Acl;
-import vtk.repository.PropertySet;
 import vtk.repository.index.IndexManager;
 import vtk.repository.index.mapping.DocumentMapper;
 import vtk.repository.index.mapping.LazyMappedPropertySet;
-import vtk.repository.index.mapping.ResultSetWithAcls;
 import vtk.repository.search.query.DumpQueryTreeVisitor;
 import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.Query;
@@ -182,10 +179,10 @@ public class LuceneSearcher implements Searcher, InitializingBean {
 
             ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 
-            ResultSetWithAcls rs;
+            ResultSetImpl rs;
             if (clientCursor < scoreDocs.length) {
                 int end = Math.min(need, scoreDocs.length);
-                rs = new ResultSetWithAcls(end - clientCursor);
+                rs = new ResultSetImpl(end - clientCursor);
 
                 startTime = System.currentTimeMillis();
                 for (int i = clientCursor; i < end; i++) {
@@ -204,7 +201,7 @@ public class LuceneSearcher implements Searcher, InitializingBean {
                     logger.debug("Document mapping took " + (endTime - startTime) + "ms");
                 }
             } else {
-                rs = new ResultSetWithAcls(0);
+                rs = new ResultSetImpl(0);
             }
             rs.setTotalHits(topDocs.totalHits);
 
@@ -391,7 +388,7 @@ public class LuceneSearcher implements Searcher, InitializingBean {
                             DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
                             segment.document(docId, visitor);
                             LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-                            boolean continueIteration = callback.matching(new MatchingResultImpl(ps, ps.getAcl()));
+                            boolean continueIteration = callback.matching(ps);
                             if (++callbackCounter == limit || !continueIteration) {
                                 return;
                             }
@@ -409,7 +406,7 @@ public class LuceneSearcher implements Searcher, InitializingBean {
                     DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
                     segment.document(i, visitor);
                     LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-                    boolean continueIteration = callback.matching(new MatchingResultImpl(ps, ps.getAcl()));
+                    boolean continueIteration = callback.matching(ps);
                     if (++callbackCounter == limit || !continueIteration) {
                         return;
                     }
@@ -495,7 +492,7 @@ public class LuceneSearcher implements Searcher, InitializingBean {
             DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
             reader.document(doc.docId, visitor);
             LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-            boolean continueIteration = callback.matching(new MatchingResultImpl(ps, ps.getAcl()));
+            boolean continueIteration = callback.matching(ps);
             if (++callbackCounter == limit || !continueIteration) {
                 return;
             }
@@ -582,7 +579,7 @@ public class LuceneSearcher implements Searcher, InitializingBean {
             DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
             reader.document(orderedDoc.docId, visitor);
             LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-            boolean continueIteration = callback.matching(new MatchingResultImpl(ps, ps.getAcl()));
+            boolean continueIteration = callback.matching(ps);
             if (++callbackCounter == limit || !continueIteration) {
                 return;
             }
@@ -632,7 +629,7 @@ public class LuceneSearcher implements Searcher, InitializingBean {
                 DocumentStoredFieldVisitor visitor = documentMapper.newStoredFieldVisitor(propertySelect);
                 reader.document(docId, visitor);
                 LazyMappedPropertySet ps = documentMapper.getPropertySet(visitor.getDocument());
-                boolean continueIteration = callback.matching(new MatchingResultImpl(ps, ps.getAcl()));
+                boolean continueIteration = callback.matching(ps);
                 if (++callbackCounter == limit || !continueIteration) {
                     return;
                 }
@@ -665,27 +662,6 @@ public class LuceneSearcher implements Searcher, InitializingBean {
         }
 
         return fbs;
-    }
-
-    private static final class MatchingResultImpl implements MatchingResult {
-
-        private final PropertySet ps;
-        private final Acl acl;
-
-        MatchingResultImpl(PropertySet ps, Acl acl) {
-            this.ps = ps;
-            this.acl = acl;
-        }
-
-        @Override
-        public PropertySet propertySet() {
-            return ps;
-        }
-
-        @Override
-        public Acl acl() {
-            return acl;
-        }
     }
 
     @Required
