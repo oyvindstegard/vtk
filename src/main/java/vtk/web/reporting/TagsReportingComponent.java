@@ -30,26 +30,24 @@
  */
 package vtk.web.reporting;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
 
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
 import vtk.repository.Property;
-import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -107,42 +105,6 @@ public class TagsReportingComponent {
         }
     }
 
-    // Tag frequency collector
-    private class TagFrequencyCollector implements Searcher.MatchCallback {
-
-        private final Map<String, TagFrequency> tagFreqMap = new HashMap<String, TagFrequency>();
-
-        @Override
-        public boolean matching(PropertySet propertySet) throws Exception {
-            Property tags = propertySet.getProperty(tagsPropDef);
-            if (tags != null) {
-                if (tagsPropDef.isMultiple()) {
-                    for (Value value : tags.getValues()) {
-                        incrementTag(value.getStringValue());
-                    }
-                } else {
-                    Value value = tags.getValue();
-                    incrementTag(value.getStringValue());
-                }
-            }
-            return true;
-        }
-
-        private void incrementTag(final String tagValue) {
-            TagFrequency tf = this.tagFreqMap.get(tagValue);
-            if (tf == null) {
-                tf = new TagFrequency(tagValue, 1);
-                this.tagFreqMap.put(tagValue, tf);
-            } else {
-                tf.increment();
-            }
-        }
-
-        List<TagFrequency> getTagFreqList() {
-            return new ArrayList<TagFrequency>(this.tagFreqMap.values());
-        }
-    }
-
     /**
      * Get list of TagFrequency instances for the given report criteria. The
      * list will always be sorted by frequency in descending order.
@@ -157,16 +119,18 @@ public class TagsReportingComponent {
      */
     @SuppressWarnings("unchecked")
     public List<TagFrequency> getTags(Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
-            int tagOccurenceMin, String token) throws Exception {
+            int tagOccurenceMin, String token) throws IOException  {
 
         Set<String> rtNames = resourceTypeNames(resourceTypeDefs);
-        final CacheKey cacheKey = new CacheKey(scopeUri, rtNames, limit, tagOccurenceMin, token);
-        if (cache != null) {
-            Element elem = cache.get(cacheKey);
-            if (elem != null) {
-                return (List<TagFrequency>) elem.getValue();
-            }
-        }
+
+        // TODO: fix caching, disabled likely due to inadequate cache key:
+//        final CacheKey cacheKey = new CacheKey(scopeUri, rtNames, limit, tagOccurenceMin, token);
+//        if (cache != null) {
+//            Element elem = cache.get(cacheKey);
+//            if (elem != null) {
+//                return (List<TagFrequency>) elem.getValue();
+//            }
+//        }
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repo = requestContext.getRepository();
@@ -234,45 +198,29 @@ public class TagsReportingComponent {
         propSelect.addPropertyDefinition(tagsPropDef);
         search.setPropertySelect(propSelect);
 
-        TagFrequencyCollector tfc = new TagFrequencyCollector();
+        final Map<String, TagFrequency> tagFreqMap = new HashMap<>();
         // Execute index iteration and collect/aggregate tag frequencies
-        searcher.iterateMatching(token, search, tfc);
-        List<TagFrequency> tagFreqs = tfc.getTagFreqList();
-
-        // Case insensitive value consolidation
-        if (caseInsensitive) {
-            tagFreqs = consolidateCaseVariations(tagFreqs);
-        }
-
-        // Minimum frequency criterium
-        if (tagOccurenceMin > -1) {
-            tagFreqs = filterBelowMinFreq(tagFreqs, tagOccurenceMin);
-        }
-
-        // Sort by highest frequency descending
-        Collections.sort(tagFreqs, new Comparator<TagFrequency>() {
-            @Override
-            public int compare(TagFrequency o1, TagFrequency o2) {
-                return o1.frequency < o2.frequency ? 1 : (o1.frequency == o2.frequency ? 0 : -1);
+        searcher.iterateMatching(token, search, p -> {
+            Property tags = p.getProperty(tagsPropDef);
+            if (tags != null) {
+                if (tagsPropDef.isMultiple()) {
+                    for (Value value : tags.getValues()) {
+                        tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
+                    }
+                } else {
+                    Value value = tags.getValue();
+                    tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
+                }
             }
+            return true;
         });
 
-        // Apply any limit
-        if (limit > -1) {
-            limit = Math.min(limit, tagFreqs.size());
-            tagFreqs = tagFreqs.subList(0, limit);
-        }
-
-        tagFreqs = Collections.unmodifiableList(tagFreqs);
-
-        // Populate cache
-        if (cache != null) {
-            // XXX why is the below statement commented out without any explanation ? The search
-            // to generate tags is rather on the heavy side..
-            // cache.put(new Element(cacheKey, tagFreqs));
-        }
-
-        return tagFreqs;
+        return (caseInsensitive ?
+                consolidateCaseVariations(tagFreqMap.values().stream()) : tagFreqMap.values().stream())
+                .filter(tf -> tf.frequency >= tagOccurenceMin)
+                .sorted((tf1,tf2) -> -1*Integer.compare(tf1.frequency, tf2.frequency))
+                .limit(limit > -1 ? limit : Long.MAX_VALUE)
+                .collect(Collectors.toList());
     }
 
     private Query getTypeScopeQuery(String rtName, Resource scopeResource, HttpServletRequest servletRequest) {
@@ -292,7 +240,7 @@ public class TagsReportingComponent {
     private Set<String> resourceTypeNames(List<ResourceTypeDefinition> defs) {
         if (defs == null)
             return null;
-        Set<String> defNames = new HashSet<String>();
+        Set<String> defNames = new HashSet<>();
         for (ResourceTypeDefinition def : defs) {
             defNames.add(def.getName());
         }
@@ -300,33 +248,21 @@ public class TagsReportingComponent {
         return defNames;
     }
 
-    private List<TagFrequency> consolidateCaseVariations(List<TagFrequency> tagFreqs) {
-        Map<String, List<TagFrequency>> m = new HashMap<String, List<TagFrequency>>(tagFreqs.size() + 50);
-        for (TagFrequency tf : tagFreqs) {
-            final String key = tf.tag.toLowerCase();
-            List<TagFrequency> variations = m.get(key);
-            if (variations == null) {
-                variations = new ArrayList<TagFrequency>();
-                m.put(key, variations);
-            }
-            variations.add(tf);
-        }
-
-        List<TagFrequency> retVal = new ArrayList<TagFrequency>();
-        for (List<TagFrequency> variations : m.values()) {
-            int sum = 0;
-            int maxFreq = -1;
-            String mostCommonVariant = null;
-            for (TagFrequency variant : variations) {
-                sum += variant.frequency;
-                if (variant.frequency > maxFreq) {
-                    maxFreq = variant.frequency;
-                    mostCommonVariant = variant.tag;
-                }
-            }
-            retVal.add(new TagFrequency(mostCommonVariant, sum));
-        }
-        return retVal;
+    private Stream<TagFrequency> consolidateCaseVariations(Stream<TagFrequency> tagFreqs) {
+        return tagFreqs.collect(
+                Collectors.groupingBy(tf -> tf.tag.toLowerCase(), Collectors.toList()))
+                .values().stream().map(variants -> {
+                    int sum = 0, max = 0;
+                    String mostCommon = "";
+                    for (TagFrequency v : variants) {
+                        sum += v.frequency;
+                        if (v.frequency > max) {
+                            mostCommon = v.tag;
+                            max = v.frequency;
+                        }
+                    }
+                    return new TagFrequency(mostCommon, sum);
+                });
     }
 
     private List<TagFrequency> filterBelowMinFreq(List<TagFrequency> tagFreqs, int minFreq) {
