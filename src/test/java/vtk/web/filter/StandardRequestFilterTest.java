@@ -42,9 +42,11 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 public class StandardRequestFilterTest {
     
@@ -56,32 +58,35 @@ public class StandardRequestFilterTest {
         replacements.put("\\+", "%2B");
         filter.setUrlReplacements(replacements);
         
-        TestChain.filter(filter, new MockHttpServletRequest("GET", "/foo/bar"), 
+        TestChain.filter(filter, new MockHttpServletRequest("GET", "/foo/bar"),
+                new MockHttpServletResponse(),
                 filtered -> assertEquals("/foo/bar", filtered.getRequestURI()));
 
         TestChain.filter(filter, new MockHttpServletRequest("GET", "/%20"),
+                new MockHttpServletResponse(),
                 filtered -> assertEquals("/", filtered.getRequestURI()));
 
         TestChain.filter(filter, new MockHttpServletRequest("GET", "/foo/bar/file+2.txt"),
+                new MockHttpServletResponse(),
                 filtered -> assertEquals("/foo/bar/file%2B2.txt", filtered.getRequestURI()));
         
         TestChain.filter(filter, new MockHttpServletRequest("GET", "/foo/bar/i am a file with spaces.txt"),
+                new MockHttpServletResponse(),
                 filtered -> assertEquals("/foo/bar/i%20am%20a%20file%20with%20spaces.txt", filtered.getRequestURI()));
 
         TestChain.filter(filter, new MockHttpServletRequest("GET", "/"),
+                new MockHttpServletResponse(),
                 filtered -> assertEquals("/", filtered.getRequestURI()));
 
         TestChain.filter(filter, new MockHttpServletRequest("GET", ""),
+                new MockHttpServletResponse(),
                 filtered -> assertEquals("/", filtered.getRequestURI()));
 
-        try {
-            TestChain.filter(filter, new MockHttpServletRequest("OPTIONS", "%"), // Invalid request
-                    filtered -> {});
-            throw new IllegalStateException("Should not pass");
-        }
-        catch (IllegalArgumentException e) {
-            // Expected
-        }
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        TestChain.filter(filter, new MockHttpServletRequest("OPTIONS", "%"), // Invalid request
+                response, filtered -> {});
+        assertEquals(response.getStatus(), HttpServletResponse.SC_BAD_REQUEST);
+
     }
 
     private static class TestChain implements FilterChain {
@@ -90,10 +95,11 @@ public class StandardRequestFilterTest {
             this.consumer = consumer;
         }
         
-        public static void filter(StandardRequestFilter filter, HttpServletRequest request, 
-                Consumer<HttpServletRequest> consumer) throws IOException, ServletException {
+        public static void filter(StandardRequestFilter filter, HttpServletRequest request,
+                HttpServletResponse response, Consumer<HttpServletRequest> consumer) 
+                        throws IOException, ServletException {
             TestChain ch = new TestChain(consumer);
-            filter.doFilter(request, null, ch);
+            filter.doFilter(request, response, ch);
         }
 
         @Override
