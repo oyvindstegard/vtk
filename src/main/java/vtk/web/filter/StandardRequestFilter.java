@@ -31,6 +31,7 @@
 package vtk.web.filter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -111,7 +112,32 @@ public class StandardRequestFilter extends AbstractServletFilter {
     protected void doFilter(HttpServletRequest request,
             HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        chain.doFilter(new RequestWrapper(request), response);
+        String urlString = request.getRequestURL().toString();
+        try {
+            URL requestURL = URL.parse(translate(urlString));
+            logger.debug("Translated requestURL: from '" + urlString 
+                    + "' to '" + requestURL + "'");
+            chain.doFilter(new RequestWrapper(request, requestURL), response);
+        }
+        catch (IllegalArgumentException e) {
+            logger.warn("Bad request: failed to parse request URL: " + urlString);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("text/plain;charset=utf-8");
+            PrintWriter writer = response.getWriter();
+            writer.write("Invalid request URL: " + urlString);
+            writer.flush();
+            writer.close();
+        }
+    }
+
+    private String translate(String requestURL) {
+        if (urlReplacements != null) {
+            for (Pattern pattern : urlReplacements.keySet()) {
+                String replacement = urlReplacements.get(pattern);
+                requestURL = pattern.matcher(requestURL).replaceAll(replacement);
+            }
+        }
+        return requestURL;
     }
 
     private class RequestWrapper extends HttpServletRequestWrapper {
@@ -120,14 +146,10 @@ public class StandardRequestFilter extends AbstractServletFilter {
         private String client = null;
         private Set<String> absorbedHeaders = new HashSet<>();
         
-        public RequestWrapper(HttpServletRequest request) {
+        public RequestWrapper(HttpServletRequest request, URL requestURL) {
             super(request);
             this.request = request;
-            String requestURL = request.getRequestURL().toString();
-            this.requestURL = URL.parse(translate(requestURL));
-            if (logger.isDebugEnabled()) {
-                logger.debug("Translated requestURL: from '" + requestURL + "' to '" + this.requestURL + "'");
-            }
+            this.requestURL = requestURL;
             if (xForwardedFor != null && xForwardedFor.matcher(request.getRequestURL()).matches()) {
                 String xForwardHeader = request.getHeader("X-Forwarded-For");
                 if (xForwardHeader != null) {
@@ -277,14 +299,5 @@ public class StandardRequestFilter extends AbstractServletFilter {
             return this.getClass().getName() + "[" + this.request + "]";
         }
 
-        private String translate(String requestURL) {
-            if (urlReplacements != null) {
-                for (Pattern pattern : urlReplacements.keySet()) {
-                    String replacement = urlReplacements.get(pattern);
-                    requestURL = pattern.matcher(requestURL).replaceAll(replacement);
-                }
-            }
-            return requestURL;
-        }
     }
 }
