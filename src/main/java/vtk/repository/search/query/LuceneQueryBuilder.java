@@ -55,7 +55,6 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.resourcetype.HierarchicalVocabulary;
 import vtk.repository.Path;
 import vtk.repository.PropertySetImpl;
-import vtk.repository.ResourceTypeTree;
 import vtk.repository.Vocabulary;
 import vtk.repository.index.mapping.DocumentMapper;
 import vtk.repository.index.mapping.PropertyFields;
@@ -479,6 +478,5 @@ public class LuceneQueryBuilder implements InitializingBean {
     public void setDocumentMapper(DocumentMapper documentMapper) {
         this.documentMapper = documentMapper;
     }
-
 
 }

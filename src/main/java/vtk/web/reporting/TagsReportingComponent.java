@@ -32,11 +32,13 @@ package vtk.web.reporting;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -121,16 +123,8 @@ public class TagsReportingComponent {
     public List<TagFrequency> getTags(Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
             int tagOccurenceMin, String token) throws IOException  {
 
-        Set<String> rtNames = resourceTypeNames(resourceTypeDefs);
-
-        // TODO: fix caching, disabled likely due to inadequate cache key:
-//        final CacheKey cacheKey = new CacheKey(scopeUri, rtNames, limit, tagOccurenceMin, token);
-//        if (cache != null) {
-//            Element elem = cache.get(cacheKey);
-//            if (elem != null) {
-//                return (List<TagFrequency>) elem.getValue();
-//            }
-//        }
+        Set<String> rtNames = resourceTypeDefs == null ? Collections.emptySet()
+                : resourceTypeDefs.stream().map(d -> d.getName()).collect(Collectors.toSet());
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repo = requestContext.getRepository();
@@ -194,9 +188,7 @@ public class TagsReportingComponent {
         search.setQuery(masterScopeQuery);
         search.setSorting(null);
         search.setLimit(Integer.MAX_VALUE);
-        ConfigurablePropertySelect propSelect = new ConfigurablePropertySelect();
-        propSelect.addPropertyDefinition(tagsPropDef);
-        search.setPropertySelect(propSelect);
+        search.setPropertySelect(new ConfigurablePropertySelect(tagsPropDef));
 
         final Map<String, TagFrequency> tagFreqMap = new HashMap<>();
         // Execute index iteration and collect/aggregate tag frequencies
@@ -237,17 +229,6 @@ public class TagsReportingComponent {
         return typeScopeQuery;
     }
 
-    private Set<String> resourceTypeNames(List<ResourceTypeDefinition> defs) {
-        if (defs == null)
-            return null;
-        Set<String> defNames = new HashSet<>();
-        for (ResourceTypeDefinition def : defs) {
-            defNames.add(def.getName());
-        }
-
-        return defNames;
-    }
-
     private Stream<TagFrequency> consolidateCaseVariations(Stream<TagFrequency> tagFreqs) {
         return tagFreqs.collect(
                 Collectors.groupingBy(tf -> tf.tag.toLowerCase(), Collectors.toList()))
@@ -265,35 +246,34 @@ public class TagsReportingComponent {
                 });
     }
 
-    private List<TagFrequency> filterBelowMinFreq(List<TagFrequency> tagFreqs, int minFreq) {
-        for (Iterator<TagFrequency> it = tagFreqs.iterator(); it.hasNext();) {
-            TagFrequency tf = it.next();
-            if (tf.frequency < minFreq) {
-                it.remove();
-            }
-        }
-        return tagFreqs;
-    }
-
-    private static final class CacheKey implements Serializable {
-
-        private static final long serialVersionUID = -8898229960525592912L;
-        private final Path scopeUri;
-        private final Set<String> resourceTypes;
+    private static final class CacheKey {
         private final int limit;
         private final int minFreq;
         private final String token;
+        private final Query q;
 
-        CacheKey(Path scopeUri, Set<String> resourceTypes, int limit, int minFreq, String token) {
-            this.scopeUri = scopeUri;
-            this.resourceTypes = resourceTypes;
-            this.limit = limit;
-            this.minFreq = minFreq;
+        CacheKey(String token, Query q, int limit, int minFreq) {
             this.token = token;
+            this.q = q;
+            this.minFreq = minFreq;
+            this.limit = limit;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 89 * hash + this.limit;
+            hash = 89 * hash + this.minFreq;
+            hash = 89 * hash + Objects.hashCode(this.token);
+            hash = 89 * hash + Objects.hashCode(this.q);
+            return hash;
         }
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             if (obj == null) {
                 return false;
             }
@@ -301,34 +281,19 @@ public class TagsReportingComponent {
                 return false;
             }
             final CacheKey other = (CacheKey) obj;
-            if ((this.token == null) ? (other.token != null) : !this.token.equals(other.token)) {
-                return false;
-            }
-            if (this.scopeUri != other.scopeUri && (this.scopeUri == null || !this.scopeUri.equals(other.scopeUri))) {
-                return false;
-            }
-            if (this.resourceTypes != other.resourceTypes
-                    && (this.resourceTypes == null || !this.resourceTypes.equals(other.resourceTypes))) {
-                return false;
-            }
             if (this.limit != other.limit) {
                 return false;
             }
             if (this.minFreq != other.minFreq) {
                 return false;
             }
+            if (!Objects.equals(this.token, other.token)) {
+                return false;
+            }
+            if (!Objects.equals(this.q, other.q)) {
+                return false;
+            }
             return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 29 * hash + (this.scopeUri != null ? this.scopeUri.hashCode() : 0);
-            hash = 29 * hash + (this.resourceTypes != null ? this.resourceTypes.hashCode() : 0);
-            hash = 29 * hash + this.limit;
-            hash = 29 * hash + this.minFreq;
-            hash = 29 * hash + (this.token != null ? this.token.hashCode() : 0);
-            return hash;
         }
     }
 

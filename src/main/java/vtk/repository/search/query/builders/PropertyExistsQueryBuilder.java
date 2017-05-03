@@ -64,5 +64,6 @@ public class PropertyExistsQueryBuilder implements QueryBuilder {
         }
         
         return new ConstantScoreQuery(new FieldValueFilter(fieldName, query.isInverted()));
+
     }
 }

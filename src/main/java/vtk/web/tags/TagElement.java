@@ -34,9 +34,9 @@ import vtk.web.service.URL;
 
 public class TagElement extends Tag implements Comparable<TagElement> {
 
-    private int magnitude;
-    private URL linkUrl;
-    private int occurences;
+    private final int magnitude;
+    private final URL linkUrl;
+    private final int occurences;
 
     public TagElement(int magnitude, URL linkUrl, String text, int occurences) {
         super(text);
