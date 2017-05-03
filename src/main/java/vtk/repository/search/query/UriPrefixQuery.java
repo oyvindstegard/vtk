@@ -30,7 +30,11 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 
+/**
+ * Prefix query on resource URI.
+ */
 public class UriPrefixQuery implements UriQuery {
 
     private String uri;
@@ -86,7 +90,19 @@ public class UriPrefixQuery implements UriQuery {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 47 * hash + Objects.hashCode(this.uri);
+        hash = 47 * hash + (this.inverted ? 1 : 0);
+        hash = 47 * hash + (this.includeSelf ? 1 : 0);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -94,25 +110,17 @@ public class UriPrefixQuery implements UriQuery {
             return false;
         }
         final UriPrefixQuery other = (UriPrefixQuery) obj;
-        if ((this.uri == null) ? (other.uri != null) : !this.uri.equals(other.uri)) {
-            return false;
-        }
         if (this.inverted != other.inverted) {
             return false;
         }
         if (this.includeSelf != other.includeSelf) {
             return false;
         }
+        if (!Objects.equals(this.uri, other.uri)) {
+            return false;
+        }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.uri != null ? this.uri.hashCode() : 0);
-        hash = 97 * hash + (this.inverted ? 1 : 0);
-        hash = 97 * hash + (this.includeSelf ? 1 : 0);
-        return hash;
-    }
 
 }

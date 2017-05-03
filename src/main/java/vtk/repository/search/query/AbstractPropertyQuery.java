@@ -34,7 +34,7 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 
 public abstract class AbstractPropertyQuery implements PropertyQuery {
 
-    private PropertyTypeDefinition propDef;
+    private final PropertyTypeDefinition propDef;
     private String complexValueAttributeSpecifier;
 
     public AbstractPropertyQuery(PropertyTypeDefinition propDef) {

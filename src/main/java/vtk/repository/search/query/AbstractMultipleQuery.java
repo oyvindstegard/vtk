@@ -32,11 +32,12 @@ package vtk.repository.search.query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 public abstract class AbstractMultipleQuery implements Query {
 
-    private List<Query> queries = new ArrayList<Query>();
+    private final List<Query> queries = new ArrayList<>();
 
     /**
      * Adds a sub-query to this query
@@ -69,7 +70,17 @@ public abstract class AbstractMultipleQuery implements Query {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 17 * hash + Objects.hashCode(this.queries);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -77,17 +88,8 @@ public abstract class AbstractMultipleQuery implements Query {
             return false;
         }
         final AbstractMultipleQuery other = (AbstractMultipleQuery) obj;
-        if (this.queries != other.queries && (this.queries == null || !this.queries.equals(other.queries))) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.queries, other.queries);
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + (this.queries != null ? this.queries.hashCode() : 0);
-        return hash;
-    }
 
 }

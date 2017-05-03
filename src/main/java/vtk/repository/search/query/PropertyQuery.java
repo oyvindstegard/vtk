@@ -36,6 +36,7 @@ public interface PropertyQuery extends Query {
 
     /**
      * Get the definition of the property on which to perform the query.
+     * @return
      */
     public PropertyTypeDefinition getPropertyDefinition();
     

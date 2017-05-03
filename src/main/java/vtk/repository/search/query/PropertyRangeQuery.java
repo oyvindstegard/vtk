@@ -32,6 +32,9 @@ package vtk.repository.search.query;
 
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * Range matching on property values.
+ */
 public class PropertyRangeQuery extends AbstractPropertyQuery {
 
     private final String fromTerm;

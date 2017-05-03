@@ -33,10 +33,13 @@ package vtk.repository.search.query;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * Exact match on property values.
+ */
 public class PropertyTermQuery extends AbstractPropertyQuery {
 
-    private String term;
-    private TermOperator operator;
+    private final String term;
+    private final TermOperator operator;
 
     public PropertyTermQuery(PropertyTypeDefinition propertyDefinition, String term, TermOperator operator) {
         super(propertyDefinition);
@@ -48,16 +51,8 @@ public class PropertyTermQuery extends AbstractPropertyQuery {
         return this.operator;
     }
 
-    public void setOperator(TermOperator operator) {
-        this.operator = operator;
-    }
-
     public String getTerm() {
         return this.term;
-    }
-
-    public void setTerm(String term) {
-        this.term = term;
     }
 
     @Override
@@ -104,6 +99,5 @@ public class PropertyTermQuery extends AbstractPropertyQuery {
         hash = 59 * hash + (this.operator != null ? this.operator.hashCode() : 0);
         return hash;
     }
-    
     
 }

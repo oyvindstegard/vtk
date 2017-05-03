@@ -30,12 +30,16 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * Wildcard match on property values.
+ */
 public class PropertyWildcardQuery extends AbstractPropertyQuery {
 
-    private String term;
-    private TermOperator op;
+    private final String term;
+    private final TermOperator op;
     
     public PropertyWildcardQuery(PropertyTypeDefinition propertyDefinition, String term, TermOperator op) {
         super(propertyDefinition);
@@ -65,9 +69,20 @@ public class PropertyWildcardQuery extends AbstractPropertyQuery {
     }
 
     @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash = 37 * hash + Objects.hashCode(this.term);
+        hash = 37 * hash + Objects.hashCode(this.op);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (!super.equals(obj)) return false;
-        
+
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -75,7 +90,7 @@ public class PropertyWildcardQuery extends AbstractPropertyQuery {
             return false;
         }
         final PropertyWildcardQuery other = (PropertyWildcardQuery) obj;
-        if ((this.term == null) ? (other.term != null) : !this.term.equals(other.term)) {
+        if (!Objects.equals(this.term, other.term)) {
             return false;
         }
         if (this.op != other.op) {
@@ -84,12 +99,5 @@ public class PropertyWildcardQuery extends AbstractPropertyQuery {
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = super.hashCode();
-        hash = 73 * hash + (this.term != null ? this.term.hashCode() : 0);
-        hash = 73 * hash + (this.op != null ? this.op.hashCode() : 0);
-        return hash;
-    }
 
 }

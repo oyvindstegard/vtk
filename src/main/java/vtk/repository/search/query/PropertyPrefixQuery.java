@@ -32,6 +32,9 @@ package vtk.repository.search.query;
 
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * Prefix match on property values.
+ */
 public class PropertyPrefixQuery extends AbstractPropertyQuery {
 
     private final String term;

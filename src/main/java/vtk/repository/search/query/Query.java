@@ -34,6 +34,10 @@ package vtk.repository.search.query;
  * Generic query node interface which mandates that concrete implementations
  * provide an accept-method for {@link QueryTreeVisitor} implementations.
  *
+ * <p>In addition to this contract, all implementations must provide implementations
+ * of {@link Object#equals(java.lang.Object) } and {@link Object#hashCode() } which
+ * at least take into account all parameters that can affect search matching.
+ *
  */
 public interface Query {
 

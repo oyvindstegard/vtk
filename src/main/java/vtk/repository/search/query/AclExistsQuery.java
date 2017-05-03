@@ -32,7 +32,6 @@ package vtk.repository.search.query;
 
 /**
  * TODO rename class to "AclNotInheritedQuery" (more precise)
- * @author oyvind
  */
 public class AclExistsQuery extends AbstractAclQuery {
 

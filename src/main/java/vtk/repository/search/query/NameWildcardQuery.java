@@ -30,11 +30,16 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 
+
+/**
+ * Wildcard on resource name (last component of URI).
+ */
 public class NameWildcardQuery implements NameQuery {
 
-    private String term;
-    private boolean inverted;
+    private final String term;
+    private final boolean inverted;
 
     public NameWildcardQuery(String term, boolean inverted) {
         this.term = term;
@@ -55,7 +60,18 @@ public class NameWildcardQuery implements NameQuery {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.term);
+        hash = 79 * hash + (this.inverted ? 1 : 0);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -63,20 +79,14 @@ public class NameWildcardQuery implements NameQuery {
             return false;
         }
         final NameWildcardQuery other = (NameWildcardQuery) obj;
-        if ((this.term == null) ? (other.term != null) : !this.term.equals(other.term)) {
+        if (this.inverted != other.inverted) {
             return false;
         }
-        if (this.inverted != other.inverted) {
+        if (!Objects.equals(this.term, other.term)) {
             return false;
         }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 37 * hash + (this.term != null ? this.term.hashCode() : 0);
-        hash = 37 * hash + (this.inverted ? 1 : 0);
-        return hash;
-    }
+
 }

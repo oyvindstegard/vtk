@@ -33,8 +33,9 @@ package vtk.repository.search.query;
 
 public class AndQuery extends AbstractMultipleQuery {
 
+    @Override
     public Object accept(QueryTreeVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
-    
+
 }

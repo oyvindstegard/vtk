@@ -32,9 +32,12 @@ package vtk.repository.search.query;
 
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * Match resources where property exists.
+ */
 public class PropertyExistsQuery extends AbstractPropertyQuery {
 
-    private boolean inverted;
+    private final boolean inverted;
     
     public PropertyExistsQuery(PropertyTypeDefinition propertyDefinition, boolean inverted) {
         super(propertyDefinition);

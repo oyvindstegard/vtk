@@ -30,7 +30,11 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 
+/**
+ * Exact match on resource type or sub types.
+ */
 public class TypeTermQuery implements Query {
 
     private String term;
@@ -71,7 +75,18 @@ public class TypeTermQuery implements Query {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + Objects.hashCode(this.term);
+        hash = 97 * hash + Objects.hashCode(this.operator);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -79,7 +94,7 @@ public class TypeTermQuery implements Query {
             return false;
         }
         final TypeTermQuery other = (TypeTermQuery) obj;
-        if ((this.term == null) ? (other.term != null) : !this.term.equals(other.term)) {
+        if (!Objects.equals(this.term, other.term)) {
             return false;
         }
         if (this.operator != other.operator) {
@@ -88,12 +103,4 @@ public class TypeTermQuery implements Query {
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + (this.term != null ? this.term.hashCode() : 0);
-        hash = 23 * hash + (this.operator != null ? this.operator.hashCode() : 0);
-        return hash;
-    }
-    
 }

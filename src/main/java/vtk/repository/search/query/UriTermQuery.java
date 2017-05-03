@@ -30,6 +30,11 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
+
+/**
+ * Term query (exact match) on resource URI.
+ */
 public class UriTermQuery implements UriQuery {
 
     private final String uri;
@@ -62,7 +67,18 @@ public class UriTermQuery implements UriQuery {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 61 * hash + Objects.hashCode(this.uri);
+        hash = 61 * hash + Objects.hashCode(this.operator);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -70,7 +86,7 @@ public class UriTermQuery implements UriQuery {
             return false;
         }
         final UriTermQuery other = (UriTermQuery) obj;
-        if ((this.uri == null) ? (other.uri != null) : !this.uri.equals(other.uri)) {
+        if (!Objects.equals(this.uri, other.uri)) {
             return false;
         }
         if (this.operator != other.operator) {
@@ -79,12 +95,5 @@ public class UriTermQuery implements UriQuery {
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 31 * hash + (this.uri != null ? this.uri.hashCode() : 0);
-        hash = 31 * hash + (this.operator != null ? this.operator.hashCode() : 0);
-        return hash;
-    }
-    
+
 }

@@ -31,6 +31,7 @@
 package vtk.repository.search.query;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -49,7 +50,7 @@ public class UriSetQuery implements UriQuery {
     }
     
     public UriSetQuery(Set<String> uris, TermOperator operator) {
-        this.uris = uris;
+        this.uris = new HashSet<>(uris);
         this.operator = operator;
     }
     
@@ -76,7 +77,18 @@ public class UriSetQuery implements UriQuery {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 79 * hash + Objects.hashCode(this.uris);
+        hash = 79 * hash + Objects.hashCode(this.operator);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -84,7 +96,7 @@ public class UriSetQuery implements UriQuery {
             return false;
         }
         final UriSetQuery other = (UriSetQuery) obj;
-        if (this.uris != other.uris && (this.uris == null || !this.uris.equals(other.uris))) {
+        if (!Objects.equals(this.uris, other.uris)) {
             return false;
         }
         if (this.operator != other.operator) {
@@ -92,19 +104,5 @@ public class UriSetQuery implements UriQuery {
         }
         return true;
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + (this.uris != null ? this.uris.hashCode() : 0);
-        hash = 53 * hash + (this.operator != null ? this.operator.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public Object clone() {
-        return new UriSetQuery(new HashSet<String>(this.uris), this.operator);
-    }
-    
 
 }

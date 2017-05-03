@@ -32,7 +32,7 @@
 package vtk.repository.search.query;
 
 /**
- *
+ * Match any resource which has a "read for all" or non read-restricted ACL.
  */
 public class AclReadForAllQuery extends AbstractAclQuery {
 
