@@ -33,6 +33,7 @@ package vtk.repository;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
@@ -104,13 +105,21 @@ public interface Resource extends PropertySet, Cloneable {
 
 
     /**
-     * Retrieves the Access Control List (ACL) for a resource. The ACL may or may not be inherited.
+     * Retrieves the Access Control List (ACL) for a resource.
+     *
+     * <p>All resources have an ACL, but it may or may not be inherited.
+     * @return an ACL object, never {@code null}.
      */
     public Acl getAcl();
 
+    @Override
+    public default Optional<Acl> acl() {
+        return Optional.of(getAcl());
+    }
 
     /**
      * Determines whether this resource has an inherited ACL.
+     * @return {@code true} if the ACL is inherited from an ancestor resource.
      */
     public boolean isInheritedAcl();
 

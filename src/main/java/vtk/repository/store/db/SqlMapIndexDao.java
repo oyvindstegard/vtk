@@ -166,8 +166,7 @@ public class SqlMapIndexDao extends AbstractSqlMapDataAccessor implements IndexD
     }
     
     /**
-     * Load full ACL for a property set from database. Returned ACL may be <code>null</code>
-     * if it no longer exists.
+     * Load full ACL for a property set from database.
      * 
      * @param resourceId the ID of the resource having the (non-inherited) ACL.
      * @return an <code>Acl</code> instance, possibly {@link Acl#EMPTY_ACL} if the

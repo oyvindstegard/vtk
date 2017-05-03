@@ -134,26 +134,6 @@ public interface ResultSet extends Iterable<PropertySet> {
     public int getTotalHits();
     
     /**
-     * Get ACL object of a single result. 
-     * 
-     * @param index index of search result
-     * @return an {@link Acl ACL object}, or <code>null</code> if ACL has not been selected
-     * for loading or is otherwise unavailable for the result.
-     * 
-     * @see Resource#getAcl() 
-     */
-    public Acl getAcl(int index);
-    
-    /**
-     * Check if ACL for a search result is inherited by some ancestor resource.
-     * 
-     * @see Resource#isInheritedAcl() 
-     * @param index index of search result
-     * @return 
-     */
-    public boolean isInheritedAcl(int index);
-    
-    /**
      * A timestamp approximating the point in time at which the search results
      * reflect the repository resource state.
      *

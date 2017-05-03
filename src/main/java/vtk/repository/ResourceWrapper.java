@@ -46,7 +46,7 @@ public class ResourceWrapper implements Resource {
 
     private Resource resource;
 
-    public ResourceWrapper(ResourceWrapperManager resourceManager) {
+        public ResourceWrapper(ResourceWrapperManager resourceManager) {
         this.resourceManager = resourceManager;
     }
 

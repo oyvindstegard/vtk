@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -57,6 +58,7 @@ public class PropertySetImpl implements PropertySet, Cloneable {
     protected Path uri;
     protected String resourceType;
     protected Map<Namespace, Map<String, Property>> propertyMap = new HashMap<>();
+    protected Acl acl = null;
     
     // Numeric ID used by database 
     protected int id = NULL_RESOURCE_ID;
@@ -68,6 +70,15 @@ public class PropertySetImpl implements PropertySet, Cloneable {
                                
     // Note: needs uri set explicitly
     public PropertySetImpl() {
+    }
+
+    @Override
+    public Optional<Acl> acl() {
+        return Optional.ofNullable(acl);
+    }
+
+    public void setAcl(Acl acl) {
+        this.acl = acl;
     }
 
     @Override
@@ -117,12 +128,11 @@ public class PropertySetImpl implements PropertySet, Cloneable {
     public int getAclInheritedFrom() {
         return this.aclInheritedFrom;
     }
-    
 
+    @Override
     public boolean isInheritedAcl() {
         return this.aclInherited;
     }
-
 
     public void addProperty(Property property) {
         PropertyTypeDefinition propDef = property.getDefinition();

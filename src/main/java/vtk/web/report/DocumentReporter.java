@@ -113,16 +113,18 @@ public abstract class DocumentReporter extends AbstractReporter {
         List<PropertySet> allResults = rs.getAllResults();
         for (int i = 0; i < allResults.size(); i++) {
             PropertySet propSet = allResults.get(i);
-            Acl acl = rs.getAcl(i);
+            Acl acl = propSet.acl().orElseThrow(() ->
+                    new IllegalStateException("Search result unexpectedly missing ACL"));
+
             isReadRestricted[i] = !acl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL)
                     && !acl.hasPrivilege(Privilege.READ_PROCESSED, PrincipalFactory.ALL);
-            isInheritedAcl[i] = rs.isInheritedAcl(i);
+            isInheritedAcl[i] = propSet.isInheritedAcl();
             if (manageService != null) {
                 viewURLs[i] = manageService.constructURL(propSet.getURI()).setProtocol("http");
             }
             if (aclTooltipHelper != null) {
                 permissionTooltips[i] = aclTooltipHelper.generateTitle(
-                        propSet, acl, rs.isInheritedAcl(i), request);
+                        propSet, acl, propSet.isInheritedAcl(), request);
             }
             handleResult(propSet, result);
             list.add(propSet);

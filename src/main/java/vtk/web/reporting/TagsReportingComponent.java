@@ -59,7 +59,6 @@ import vtk.repository.search.ConfigurablePropertySelect;
 import vtk.repository.search.QueryException;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
-import vtk.repository.search.Searcher.MatchingResult;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
 import vtk.repository.search.query.Query;
@@ -114,8 +113,7 @@ public class TagsReportingComponent {
         private final Map<String, TagFrequency> tagFreqMap = new HashMap<String, TagFrequency>();
 
         @Override
-        public boolean matching(MatchingResult result) throws Exception {
-            PropertySet propertySet = result.propertySet();
+        public boolean matching(PropertySet propertySet) throws Exception {
             Property tags = propertySet.getProperty(tagsPropDef);
             if (tags != null) {
                 if (tagsPropDef.isMultiple()) {

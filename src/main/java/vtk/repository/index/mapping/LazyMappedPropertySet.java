@@ -33,6 +33,7 @@ package vtk.repository.index.mapping;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
@@ -237,20 +238,22 @@ public final class LazyMappedPropertySet implements PropertySet {
      * 
      * @see PropertySelect#isIncludeAcl() 
      * 
-     * @return an <code>Acl</code> instance.
+     * @return an optional <code>Acl</code> instance.
      */
-    public Acl getAcl() {
+    @Override
+    public Optional<Acl> acl() {
         if (aclFields == null) {
-            return null;
+            return Optional.empty();
         }
         
-        return mapper.getAclFields().fromFields(aclFields);
+        return Optional.of(mapper.getAclFields().fromFields(aclFields));
     }
 
     /**
      * @return <code>true</code> if the ACL present for this property set is
      * inherited from some ancestor property set.
      */
+    @Override
     public boolean isInheritedAcl() {
         return getAclInheritedFrom() != PropertySetImpl.NULL_RESOURCE_ID;
     }
@@ -258,7 +261,7 @@ public final class LazyMappedPropertySet implements PropertySet {
     /**
      * @return Returns id of resource that this property set inherits its ACL from.
      */
-    public int getAclInheritedFrom() {
+    private int getAclInheritedFrom() {
         if (aclFields == null) {
             return PropertySetImpl.NULL_RESOURCE_ID;
         }

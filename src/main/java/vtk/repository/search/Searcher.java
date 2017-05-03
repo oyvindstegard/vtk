@@ -30,7 +30,6 @@
  */
 package vtk.repository.search;
 
-import vtk.repository.Acl;
 import vtk.repository.PropertySet;
 
 
@@ -44,41 +43,22 @@ public interface Searcher {
      * Callback interface that should be implemented by client code for match iteration
      * API.
      */
+    @FunctionalInterface
     public interface MatchCallback {
         /**
          * Called once for each matching <code>PropertySet</code>.
          * 
-         * @param result an instance of {@link MatchingResult} which encapsulates
-         * all properties for the match.
+         * @param result an instance of {@link PropertySet}
          * 
          * @return Return <code>false</code> to stop matching iteration, <code>true</code> to continue.
          * @throws java.lang.Exception any thrown exception from client code will stop the iteration.
          */
-        boolean matching(MatchingResult result) throws Exception;
+        boolean matching(PropertySet result) throws Exception;
+
     }
     
     /**
-     * This interface is used by {@link MatchCallback} interface
-     * for providing access to data for a single matching result.
-     */
-    public interface MatchingResult {
-        
-        /**
-         * Get the {@link PropertySet} of the matching result.
-         * @return the {@link PropertySet} of the matching result.
-         */
-        PropertySet propertySet();
-        
-        /**
-         * Get the {@link Acl} of the matching result.
-         * @return the {@link Acl} of the matching result, or <code>null</code>
-         * if ACLs have not been selected for loading or are otherwise unavailable.
-         */
-        Acl acl();
-    }
-    
-    /**
-     * Execute a regular search returning a <code>ResultSet</code>.
+     * Execute a regular search returning a fixed size <code>ResultSet</code>.
      * 
      * @param token
      * @param search
@@ -127,6 +107,6 @@ public interface Searcher {
      * @param callback a provided <code>MatchCallback</code> that will be
      *        used to process matching results.
      */
-    public void iterateMatching(String token, Search search, MatchCallback callback) throws QueryException;
+    public void iterateMatching(String token, Search search, MatchCallback callback)throws QueryException;
     
 }
