@@ -67,6 +67,7 @@ import vtk.text.tl.TemplateParser;
 import vtk.text.tl.ValHandler;
 import vtk.text.tl.expr.Expression;
 import vtk.util.io.IO;
+import vtk.util.repository.LocaleHelper;
 import vtk.web.service.Assertion;
 import vtk.web.service.URL;
 
@@ -146,9 +147,9 @@ public class AjaxEditorController implements Controller {
                 null
         );
         String type = resource.getResourceType();
+        Locale locale = RequestContextUtils.getLocale(httpServletRequest);
 
         Map<String, Object> model = new HashMap<>();
-        model.put("url", rc.getRequestURL());
         model.put("editorJsURI", getStaticResourcePath(type, "editor.js"));
         model.put("editorCssURI", getStaticResourcePath(type, "editor.css"));
         model.put("contentType", JSONObject.escape(resource.getContentType()));
@@ -157,10 +158,11 @@ public class AjaxEditorController implements Controller {
         model.put("resourceContent", IO.readString(
                 repository.getInputStream(token, rc.getResourceURI(), false)
         ).perform());
-        
-        model.put("username", p.getName());
-        model.put("name", p.getDescription());
-        model.put("url", p.getURL());
+        model.put("resourceURI", resource.getURI());
+        model.put("userName", p.getName());
+        model.put("userDescription", p.getDescription());
+        model.put("userUrl", p.getURL());
+        model.put("locale", LocaleHelper.getPreferredLang(locale));
         
         Optional<ReaderWithPath> template = getTemplateReader(type, "editor.tl");
         if (template.isPresent()) {
