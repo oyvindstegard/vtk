@@ -42,9 +42,18 @@
         window.editor.resource = {
           content: content,
           contentType: contentType,
-          contentLanguage: "${contentLanguage}"
+          contentLanguage: "${contentLanguage}",
+          uri: "${resourceURI}"
         };
         window.editor.csrfToken = getCookie("csrfToken");
+        window.editor.locale = "${locale}"
+        window.editor.user = {
+          username: "${userName}",
+          name: "${userDescription}"
+        }
+        <#if userUrl?has_content>
+        window.editor.user.url = "${userUrl}";
+        </#if>
       })();
       //]]>
     </script>
