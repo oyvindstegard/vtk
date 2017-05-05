@@ -57,7 +57,7 @@ public class SimpleCacheImpl<K, V> implements SimpleCache<K, V>, BeanNameAware,
     
     private final Logger logger = LoggerFactory.getLogger(SimpleCacheImpl.class);
     
-    private final Map<K, Item> cache = new ConcurrentHashMap<K, Item>();
+    private final Map<K, Item> cache = new ConcurrentHashMap<>();
     private int timeoutSeconds = 0;
     private boolean refreshTimestampOnGet = true;
 
@@ -199,15 +199,13 @@ public class SimpleCacheImpl<K, V> implements SimpleCache<K, V>, BeanNameAware,
         }
     }
 
-
-
-
     private class CleanupThread extends Thread {
 
         private final long sleepSeconds;
         private boolean alive = true;
     
         public CleanupThread(long sleepSeconds) {
+            super("simplecache-cleaner-" + name);
             this.sleepSeconds = sleepSeconds;
             super.setDaemon(true);
         }
