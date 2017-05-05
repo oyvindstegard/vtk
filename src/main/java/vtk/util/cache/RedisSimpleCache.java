@@ -40,6 +40,15 @@ import java.util.Set;
 import redis.clients.jedis.Jedis;
 import redis.clients.util.Pool;
 
+/**
+ * Implementation of {@link SimpleCache} using Redis.
+ *
+ * <p>XXX This implementation only supports keys of type {@code String} reliably
+ * (uses {@code toString } on key objects before encoding to Redis binary key).
+ *
+ * @param <K> type of key, only keys with sensible {@code toString} representations are supported reliably.
+ * @param <V> type of value, must be serializable
+ */
 public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     
     private Pool<Jedis> pool;
