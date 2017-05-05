@@ -76,6 +76,8 @@ public class TagsReportingComponent {
     private AggregationResolver aggregationResolver;
     private boolean caseInsensitive = true;
     private Optional<SimpleCache<String, List<TagFrequency>>> cache = Optional.empty();
+    private String staticToken = null;
+    private boolean useStaticToken = false;
     private Map<String, List<SearchComponentQueryBuilder>> resourceTypeQueries;
 
     public static final class TagFrequency implements Serializable {
@@ -115,13 +117,15 @@ public class TagsReportingComponent {
      * @param resourceTypeDefs
      * @param limit
      * @param tagOccurenceMin
-     * @param token
+     * @param requestSecurityToken 
      * @return a list of {@link TagFrequency} objects.
      * @throws QueryException
      */
     @SuppressWarnings("unchecked")
     public List<TagFrequency> getTags(Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
-            int tagOccurenceMin, String token) throws IOException  {
+            int tagOccurenceMin, String requestSecurityToken) throws IOException  {
+
+        final String token = useStaticToken ? this.staticToken : requestSecurityToken;
 
         Set<String> rtNames = resourceTypeDefs == null ? Collections.emptySet()
                 : resourceTypeDefs.stream().map(d -> d.getName()).collect(Collectors.toSet());
@@ -294,6 +298,40 @@ public class TagsReportingComponent {
         this.cache = Optional.of(cache);
     }
 
+    /**
+     * Optionally set value of static security token.
+     *
+     * <p>Default value is {@code null}.
+     *
+     * <p>Note that for the configured static token to actually be used, one
+     * must enable the setting by calling {@link #setUseStaticToken(boolean) }.
+     *
+     * @param token the token, which may also be {@code null}.
+     */
+    public void setStaticToken(String token) {
+        this.staticToken = token;
+    }
+
+    /**
+     * Set whether configured static security token should be preferred for all
+     * repository queries, instead of per-request tokens reflecting individual users.
+     *
+     * <p>The advantage of using a static token is that the same set of tags
+     * will be visible to all users, regardless of repository permissions,
+     * and the caching mechanism, if configured, will be more effective.
+     *
+     * <p>A possible disadvantage is that any user may see tag values set on resources
+     * which they may not have permission to read, depending on which principal
+     * the static security token maps to.
+     *
+     * <p>Default value is {@code false}.
+     *
+     * @param use {@code true} to enable use of static security token
+     */
+    public void setUseStaticToken(boolean use) {
+        this.useStaticToken = use;
+    }
+
     public void setCaseInsensitive(boolean caseInsensitive) {
         this.caseInsensitive = caseInsensitive;
     }
@@ -301,6 +339,5 @@ public class TagsReportingComponent {
     public void setResourceTypeQueries(Map<String, List<SearchComponentQueryBuilder>> resourceTypeQueries) {
         this.resourceTypeQueries = resourceTypeQueries;
     }
-
 
 }
