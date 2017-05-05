@@ -34,11 +34,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,6 +64,7 @@ import vtk.repository.search.query.Query;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.TypeTermQuery;
 import vtk.repository.search.query.UriPrefixQuery;
+import vtk.util.cache.SimpleCache;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.search.SearchComponentQueryBuilder;
@@ -75,7 +75,7 @@ public class TagsReportingComponent {
     private PropertyTypeDefinition tagsPropDef = null;
     private AggregationResolver aggregationResolver;
     private boolean caseInsensitive = true;
-    private Ehcache cache;
+    private Optional<SimpleCache<String, List<TagFrequency>>> cache = Optional.empty();
     private Map<String, List<SearchComponentQueryBuilder>> resourceTypeQueries;
 
     public static final class TagFrequency implements Serializable {
@@ -180,6 +180,12 @@ public class TagsReportingComponent {
             }
         }
 
+        final String cacheKey = makeCacheKey(token, masterScopeQuery, limit, tagOccurenceMin);
+        List<TagFrequency> result = lookupCached(cacheKey);
+        if (result != null) {
+            return result;
+        }
+
         // Set up index search
         Search search = new Search();
         if (RequestContext.getRequestContext().isPreviewUnpublished()) {
@@ -207,12 +213,14 @@ public class TagsReportingComponent {
             return true;
         });
 
-        return (caseInsensitive ?
+        result = (caseInsensitive ?
                 consolidateCaseVariations(tagFreqMap.values().stream()) : tagFreqMap.values().stream())
                 .filter(tf -> tf.frequency >= tagOccurenceMin)
                 .sorted((tf1,tf2) -> -1*Integer.compare(tf1.frequency, tf2.frequency))
                 .limit(limit > -1 ? limit : Long.MAX_VALUE)
                 .collect(Collectors.toList());
+
+        return cacheResult(cacheKey, result);
     }
 
     private Query getTypeScopeQuery(String rtName, Resource scopeResource, HttpServletRequest servletRequest) {
@@ -245,56 +253,23 @@ public class TagsReportingComponent {
                     return new TagFrequency(mostCommon, sum);
                 });
     }
-
-    private static final class CacheKey {
-        private final int limit;
-        private final int minFreq;
-        private final String token;
-        private final Query q;
-
-        CacheKey(String token, Query q, int limit, int minFreq) {
-            this.token = token;
-            this.q = q;
-            this.minFreq = minFreq;
-            this.limit = limit;
+    
+    private List<TagFrequency> cacheResult(String cacheKey, List<TagFrequency> result) {
+        if (cache.isPresent()) {
+            cache.get().put(cacheKey, result);
         }
+        return result;
+    }
 
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 89 * hash + this.limit;
-            hash = 89 * hash + this.minFreq;
-            hash = 89 * hash + Objects.hashCode(this.token);
-            hash = 89 * hash + Objects.hashCode(this.q);
-            return hash;
+    private List<TagFrequency> lookupCached(String cacheKey) {
+        if (!cache.isPresent()) {
+            return null;
         }
+        return cache.get().get(cacheKey);
+    }
 
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final CacheKey other = (CacheKey) obj;
-            if (this.limit != other.limit) {
-                return false;
-            }
-            if (this.minFreq != other.minFreq) {
-                return false;
-            }
-            if (!Objects.equals(this.token, other.token)) {
-                return false;
-            }
-            if (!Objects.equals(this.q, other.q)) {
-                return false;
-            }
-            return true;
-        }
+    private String makeCacheKey(String token, Query q, int limit, int minFreq) {
+        return "TagsReportingCacheKey{" + "limit=" + limit + ", minFreq=" + minFreq + ", token=" + token + ", q=" + q + '}';
     }
 
     @Required
@@ -311,8 +286,12 @@ public class TagsReportingComponent {
         this.aggregationResolver = aggregationResolver;
     }
 
-    public void setCache(Ehcache cache) {
-        this.cache = cache;
+    /**
+     * Set an optional cache instance for tags reporting to use.
+     * @param cache 
+     */
+    public void setCache(SimpleCache<String,List<TagFrequency>> cache) {
+        this.cache = Optional.of(cache);
     }
 
     public void setCaseInsensitive(boolean caseInsensitive) {
@@ -322,5 +301,6 @@ public class TagsReportingComponent {
     public void setResourceTypeQueries(Map<String, List<SearchComponentQueryBuilder>> resourceTypeQueries) {
         this.resourceTypeQueries = resourceTypeQueries;
     }
+
 
 }
