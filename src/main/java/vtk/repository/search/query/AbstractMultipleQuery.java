@@ -32,12 +32,13 @@ package vtk.repository.search.query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 public abstract class AbstractMultipleQuery implements Query {
 
-    private final List<Query> queries = new ArrayList<>();
+    private static final long serialVersionUID = -6874259524588061783L;
+
+    protected final List<Query> queries = new ArrayList<>();
 
     /**
      * Adds a sub-query to this query
@@ -52,44 +53,5 @@ public abstract class AbstractMultipleQuery implements Query {
     public List<Query> getQueries() {
         return this.queries;
     }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        if (this.queries != null) {
-            sb.append(": [");
-            String separator = "";
-            for (Query qry: this.queries) {
-                sb.append(separator);
-                sb.append(qry);
-                separator = ", ";
-            }
-            sb.append("]");
-        }
-        return sb.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 17 * hash + Objects.hashCode(this.queries);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AbstractMultipleQuery other = (AbstractMultipleQuery) obj;
-        return Objects.equals(this.queries, other.queries);
-    }
-
 
 }

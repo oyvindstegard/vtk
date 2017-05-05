@@ -30,12 +30,46 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
+
 
 public class OrQuery extends AbstractMultipleQuery {
 
+    private static final long serialVersionUID = 9022683719449230305L;
+
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
-    
+
+    @Override
+    public String toString() {
+        return new ToStringVisitor().visit(this, null).toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 79 * hash + Objects.hashCode(this.queries);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final OrQuery other = (OrQuery) obj;
+        if (!Objects.equals(this.queries, other.queries)) {
+            return false;
+        }
+        return true;
+    }
+
 }

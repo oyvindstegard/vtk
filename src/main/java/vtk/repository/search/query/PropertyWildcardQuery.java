@@ -31,6 +31,8 @@
 package vtk.repository.search.query;
 
 import java.util.Objects;
+import vtk.repository.Namespace;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
 /**
@@ -41,8 +43,26 @@ public class PropertyWildcardQuery extends AbstractPropertyQuery {
     private final String term;
     private final TermOperator op;
     
-    public PropertyWildcardQuery(PropertyTypeDefinition propertyDefinition, String term, TermOperator op) {
-        super(propertyDefinition);
+    public PropertyWildcardQuery(PropertyTypeDefinition def, String term, TermOperator op) {
+        super(def);
+        this.term = term;
+        this.op = op;
+    }
+    
+    public PropertyWildcardQuery(PropertyTypeDefinition def, String complexValueAttribute, String term, TermOperator op) {
+        super(def, complexValueAttribute);
+        this.term = term;
+        this.op = op;
+    }
+
+    public PropertyWildcardQuery(String propertyName, Namespace ns, PropertyType.Type type, String term, TermOperator op) {
+        super(propertyName, ns, type);
+        this.term = term;
+        this.op = op;
+    }
+
+    public PropertyWildcardQuery(String propertyName, Namespace ns, PropertyType.Type type, String complexValueAttribute, String term, TermOperator op) {
+        super(propertyName, ns, type, complexValueAttribute);
         this.term = term;
         this.op = op;
     }
@@ -56,16 +76,13 @@ public class PropertyWildcardQuery extends AbstractPropertyQuery {
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
-    
+
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder(getClass().getName()).append(':');
-        buf.append(" propdef = ").append(getPropertyDefinition());
-        buf.append("; term ").append(this.op).append(" '").append(this.term).append("'");
-        return buf.toString();
+        return "PropertyWildcardQuery{" + "term=" + term + ", op=" + op + ", " + super.fieldsToString() + '}';
     }
 
     @Override

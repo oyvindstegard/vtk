@@ -31,6 +31,7 @@
 package vtk.repository.search;
 
 import java.util.Locale;
+import java.util.Objects;
 import static vtk.repository.PropertySet.NAME_IDENTIFIER;
 import static vtk.repository.PropertySet.TYPE_IDENTIFIER;
 import static vtk.repository.PropertySet.URI_IDENTIFIER;
@@ -40,6 +41,8 @@ import vtk.repository.search.SortField.Direction;
  * Sort on aspects of <code>Resource</code> which are not properties.
  */
 public class ResourceSortField extends SortField {
+
+    private static final long serialVersionUID = -6578826489822379082L;
 
     private final String identifier;
     
@@ -77,11 +80,25 @@ public class ResourceSortField extends SortField {
 
     @Override
     public String toString() {
-        return this.identifier + " " + getDirection().toString();
+        return "ResourceSortField{identifier=" + identifier + ", direction=" + super.getDirection()
+                + ", locale=" + super.getLocale() + "}";
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash = 97 * hash + Objects.hashCode(this.identifier);
+        return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -89,25 +106,12 @@ public class ResourceSortField extends SortField {
             return false;
         }
         final ResourceSortField other = (ResourceSortField) obj;
-        if ((this.identifier == null) ? (other.identifier != null) : !this.identifier.equals(other.identifier)) {
+        if (!Objects.equals(this.identifier, other.identifier)) {
             return false;
         }
-        if (getDirection() != other.getDirection()) {
-            return false;
-        }
-        if (getLocale() != other.getLocale()) {
-            return false;
-        }
-
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = super.hashCode() * 7;
-        hash = 59 * hash + (this.identifier != null ? this.identifier.hashCode() : 0);
-        return hash;
-    }
-    
+
     
 }

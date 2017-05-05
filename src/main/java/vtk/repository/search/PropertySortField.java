@@ -31,12 +31,17 @@
 package vtk.repository.search;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * XXX this class is not yet serializable
+ * XXX instances of this class are not immutable
+ */
 public class PropertySortField extends SortField {
 
-    private PropertyTypeDefinition definition;
+    private transient PropertyTypeDefinition definition;
     private String complexValueAttributeSpecifier;
 
     public PropertySortField(PropertyTypeDefinition def) {
@@ -50,7 +55,7 @@ public class PropertySortField extends SortField {
         }
         this.definition = def;
     }
-    
+
     public PropertySortField(PropertyTypeDefinition def, SortField.Direction direction, Locale locale) {
         super(direction, locale);
         if (def == null) {
@@ -63,17 +68,6 @@ public class PropertySortField extends SortField {
         return this.definition;
     }
 
-    @Override
-    public String toString() {
-        if (this.complexValueAttributeSpecifier != null){
-            return this.definition.getName() + "@"
-                    + this.complexValueAttributeSpecifier
-                    + " " + getDirection().toString();
-        } else {
-            return this.definition.getName() + " " + getDirection().toString();
-        }
-    }
-
     public String getComplexValueAttributeSpecifier() {
         return complexValueAttributeSpecifier;
     }
@@ -83,7 +77,28 @@ public class PropertySortField extends SortField {
     }
 
     @Override
+    public String toString() {
+        return "PropertySortField{" + "name=" + definition.getName() + ", namespace=" + definition.getNamespace() + ", type=" + definition.getType()
+                + ", complexValueAttributeSpecifier=" + complexValueAttributeSpecifier + ", direction="
+                + super.getDirection() + ", locale=" + super.getLocale() + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash = 97 * hash + Objects.hashCode(this.definition);
+        hash = 97 * hash + Objects.hashCode(this.complexValueAttributeSpecifier);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -91,28 +106,14 @@ public class PropertySortField extends SortField {
             return false;
         }
         final PropertySortField other = (PropertySortField) obj;
-        if (this.definition != other.definition && (this.definition == null || !this.definition.equals(other.definition))) {
+        if (!Objects.equals(this.complexValueAttributeSpecifier, other.complexValueAttributeSpecifier)) {
             return false;
         }
-        if ((this.complexValueAttributeSpecifier == null) ? (other.complexValueAttributeSpecifier != null) : !this.complexValueAttributeSpecifier.equals(other.complexValueAttributeSpecifier)) {
+        if (!Objects.equals(this.definition, other.definition)) {
             return false;
         }
-        if (getDirection() != other.getDirection()) {
-            return false;
-        }
-        if (getLocale() != other.getLocale()) {
-            return false;
-        }
-
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = super.hashCode() * 7;
-        hash = 79 * hash + (this.definition != null ? this.definition.hashCode() : 0);
-        hash = 79 * hash + (this.complexValueAttributeSpecifier != null ? this.complexValueAttributeSpecifier.hashCode() : 0);
-        return hash;
-    }
-    
+
 }

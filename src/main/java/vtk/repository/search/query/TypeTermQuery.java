@@ -37,48 +37,39 @@ import java.util.Objects;
  */
 public class TypeTermQuery implements Query {
 
-    private String term;
-    private TermOperator operator;
+    private static final long serialVersionUID = -8822768931762971758L;
+
+    private final String term;
+    private final TermOperator op;
     
     public TypeTermQuery(String term, TermOperator operator) {
         this.term = term;
-        this.operator = operator;
+        this.op = operator;
     }
 
     public TermOperator getOperator() {
-        return this.operator;
-    }
-
-    public void setOperator(TermOperator operator) {
-        this.operator = operator;
+        return this.op;
     }
 
     public String getTerm() {
         return this.term;
     }
 
-    public void setTerm(String term) {
-        this.term = term;
-    }
-
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
-    
+
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        sb.append(";term=").append(this.term);
-        sb.append(";operator=").append(this.operator);
-        return sb.toString();
+        return "TypeTermQuery{" + "term=" + term + ", op=" + op + '}';
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 5;
         hash = 97 * hash + Objects.hashCode(this.term);
-        hash = 97 * hash + Objects.hashCode(this.operator);
+        hash = 97 * hash + Objects.hashCode(this.op);
         return hash;
     }
 
@@ -97,7 +88,7 @@ public class TypeTermQuery implements Query {
         if (!Objects.equals(this.term, other.term)) {
             return false;
         }
-        if (this.operator != other.operator) {
+        if (this.op != other.op) {
             return false;
         }
         return true;

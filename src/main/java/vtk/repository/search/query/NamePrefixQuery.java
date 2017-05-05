@@ -37,6 +37,8 @@ import java.util.Objects;
  */
 public class NamePrefixQuery implements NameQuery {
 
+    private static final long serialVersionUID = -861663856942200482L;
+
     private final String term;
     private final boolean inverted;
 
@@ -54,7 +56,7 @@ public class NamePrefixQuery implements NameQuery {
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
@@ -87,5 +89,9 @@ public class NamePrefixQuery implements NameQuery {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "NamePrefixQuery{" + "term=" + term + ", inverted=" + inverted + '}';
+    }
 
 }

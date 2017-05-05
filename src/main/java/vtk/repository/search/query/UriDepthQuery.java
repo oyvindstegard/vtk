@@ -36,6 +36,8 @@ package vtk.repository.search.query;
  */
 public class UriDepthQuery implements UriQuery {
 
+    private static final long serialVersionUID = 6017693254620277196L;
+
     private final int depth;
     
     public UriDepthQuery(int depth) {
@@ -47,15 +49,13 @@ public class UriDepthQuery implements UriQuery {
     }
     
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        sb.append(";depth=").append(this.depth);
-        return sb.toString();
+        return "UriDepthQuery{" + "depth=" + depth + '}';
     }
 
     @Override

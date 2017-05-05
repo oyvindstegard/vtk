@@ -30,6 +30,9 @@
  */
 package vtk.repository;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
 /**
  * Represents a namespace with a prefix and URI.
  *
@@ -37,7 +40,9 @@ package vtk.repository;
  *
  * <p>Equality between instances is solely based on URI.
  */
-public class Namespace {
+public class Namespace implements Serializable {
+
+    private static final long serialVersionUID = -2423981423471888580L;
 
     public static final Namespace DEFAULT_NAMESPACE = new Namespace(null, null);
 
@@ -49,7 +54,6 @@ public class Namespace {
 
     public static final Namespace STRUCTURED_RESOURCE_NAMESPACE = new Namespace("resource",
             "http://www.uio.no/vrtx/__vrtx/ns/structured-resources");
-
     private final String prefix;
     private final String uri;
 
@@ -127,6 +131,20 @@ public class Namespace {
             sb.append(this.uri);
         }
         return sb.toString();
+    }
+
+    // Java de-serialization hook which maps to well known in-memory static instances
+    private Object readResolve() throws ObjectStreamException {
+        if (getUri() == null) {
+            return DEFAULT_NAMESPACE;
+        }
+        if (getUri().equals(STRUCTURED_RESOURCE_NAMESPACE.getUri())) {
+            return STRUCTURED_RESOURCE_NAMESPACE;
+        }
+        if (getUri().equals(CUSTOM_NAMESPACE.getUri())) {
+            return CUSTOM_NAMESPACE;
+        }
+        return this;
     }
 
 }

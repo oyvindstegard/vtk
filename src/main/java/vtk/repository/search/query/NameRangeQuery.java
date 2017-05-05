@@ -37,6 +37,8 @@ import java.util.Objects;
  */
 public class NameRangeQuery implements NameQuery {
 
+    private static final long serialVersionUID = 6508406107294143926L;
+
     private final String fromTerm;
     private final String toTerm;
     private final boolean inclusive;
@@ -60,7 +62,7 @@ public class NameRangeQuery implements NameQuery {
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
@@ -97,5 +99,9 @@ public class NameRangeQuery implements NameQuery {
         return true;
     }
 
-    
+    @Override
+    public String toString() {
+        return "NameRangeQuery{" + "fromTerm=" + fromTerm + ", toTerm=" + toTerm + ", inclusive=" + inclusive + '}';
+    }
+
 }

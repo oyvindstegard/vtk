@@ -55,7 +55,7 @@ import org.junit.Test;
 
 public class QueryParserTest {
 
-    private QueryParser queryParser;
+    private final QueryParser queryParser;
 
     public QueryParserTest() {
         this.queryParser = new QueryParserImpl(new MockResourceTypeTree());
@@ -69,8 +69,8 @@ public class QueryParserTest {
 
         PropertyTermQuery ptq = (PropertyTermQuery) q;
 
-        assertEquals(Namespace.DEFAULT_NAMESPACE, ptq.getPropertyDefinition().getNamespace());
-        assertEquals("a", ptq.getPropertyDefinition().getName());
+        assertEquals(Namespace.DEFAULT_NAMESPACE, ptq.namespace());
+        assertEquals("a", ptq.name());
         assertEquals("b", ptq.getTerm());
     }
 
@@ -80,66 +80,66 @@ public class QueryParserTest {
 
         assertTrue(q instanceof PropertyTermQuery);
         PropertyTermQuery ptq = (PropertyTermQuery) q;
-        assertEquals(Namespace.DEFAULT_NAMESPACE, ptq.getPropertyDefinition().getNamespace());
-        assertEquals("a", ptq.getPropertyDefinition().getName());
-        assertEquals("foo.bar", ptq.getComplexValueAttributeSpecifier());
+        assertEquals(Namespace.DEFAULT_NAMESPACE, ptq.namespace());
+        assertEquals("a", ptq.name());
+        assertEquals("foo.bar", ptq.complexValueAttributeSpecifier().get());
         assertEquals("v@lue", ptq.getTerm());
 
         q = queryParser.parse("prefix:propname@jsonblob.field =:v@lue:");
 
         assertTrue(q instanceof PropertyTermQuery);
         ptq = (PropertyTermQuery) q;
-        assertEquals("prefix", ptq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("propname", ptq.getPropertyDefinition().getName());
-        assertEquals("jsonblob.field", ptq.getComplexValueAttributeSpecifier());
+        assertEquals("prefix", ptq.namespace().getPrefix());
+        assertEquals("propname", ptq.name());
+        assertEquals("jsonblob.field", ptq.complexValueAttributeSpecifier().get());
         assertEquals(":v@lue:", ptq.getTerm());
 
         q = queryParser.parse("prefix:propname@foo=*bar*");
         assertTrue(q instanceof PropertyWildcardQuery);
         PropertyWildcardQuery pwq = (PropertyWildcardQuery) q;
-        assertEquals("prefix", pwq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("propname", pwq.getPropertyDefinition().getName());
-        assertEquals("foo", pwq.getComplexValueAttributeSpecifier());
+        assertEquals("prefix", pwq.namespace().getPrefix());
+        assertEquals("propname", pwq.name());
+        assertEquals("foo", pwq.complexValueAttributeSpecifier().get());
         assertEquals("*bar*", pwq.getTerm());
 
         q = queryParser.parse("prefix:propname@foo=pre*");
         assertTrue(q instanceof PropertyPrefixQuery);
         PropertyPrefixQuery ppq = (PropertyPrefixQuery) q;
-        assertEquals("prefix", ppq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("propname", ppq.getPropertyDefinition().getName());
-        assertEquals("foo", ppq.getComplexValueAttributeSpecifier());
+        assertEquals("prefix", ppq.namespace().getPrefix());
+        assertEquals("propname", ppq.name());
+        assertEquals("foo", ppq.complexValueAttributeSpecifier().get());
         assertEquals("pre", ppq.getTerm());
 
         q = queryParser.parse("prefix:propname@foo exists");
         assertTrue(q instanceof PropertyExistsQuery);
         PropertyExistsQuery peq = (PropertyExistsQuery) q;
-        assertEquals("prefix", peq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("propname", peq.getPropertyDefinition().getName());
-        assertEquals("foo", peq.getComplexValueAttributeSpecifier());
+        assertEquals("prefix", peq.namespace().getPrefix());
+        assertEquals("propname", peq.name());
+        assertEquals("foo", peq.complexValueAttributeSpecifier().get());
         assertFalse(peq.isInverted());
 
         q = queryParser.parse("prefix:propname@foo   not exists");
         assertTrue(q instanceof PropertyExistsQuery);
         peq = (PropertyExistsQuery) q;
-        assertEquals("prefix", peq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("propname", peq.getPropertyDefinition().getName());
-        assertEquals("foo", peq.getComplexValueAttributeSpecifier());
+        assertEquals("prefix", peq.namespace().getPrefix());
+        assertEquals("propname", peq.name());
+        assertEquals("foo", peq.complexValueAttributeSpecifier().get());
         assertTrue(peq.isInverted());
 
         q = queryParser.parse("propname@foo   !exists");
         assertTrue(q instanceof PropertyExistsQuery);
         peq = (PropertyExistsQuery) q;
-        assertNull(peq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("propname", peq.getPropertyDefinition().getName());
-        assertEquals("foo", peq.getComplexValueAttributeSpecifier());
+        assertNull(peq.namespace().getPrefix());
+        assertEquals("propname", peq.name());
+        assertEquals("foo", peq.complexValueAttributeSpecifier().get());
         assertTrue(peq.isInverted());
 
         q = queryParser.parse("propname@.!exists");
         assertTrue(q instanceof PropertyExistsQuery);
         peq = (PropertyExistsQuery) q;
-        assertNull(peq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("propname", peq.getPropertyDefinition().getName());
-        assertEquals(".", peq.getComplexValueAttributeSpecifier());
+        assertNull(peq.namespace().getPrefix());
+        assertEquals("propname", peq.name());
+        assertEquals(".", peq.complexValueAttributeSpecifier().get());
         assertTrue(peq.isInverted());
     }
 
@@ -150,8 +150,8 @@ public class QueryParserTest {
         assertTrue(q instanceof PropertyExistsQuery);
 
         PropertyExistsQuery peq = (PropertyExistsQuery) q;
-        assertEquals("r", peq.getPropertyDefinition().getName());
-        assertEquals("p", peq.getPropertyDefinition().getNamespace().getPrefix());
+        assertEquals("r", peq.name());
+        assertEquals("p", peq.namespace().getPrefix());
         assertFalse(peq.isInverted());
 
 
@@ -160,8 +160,8 @@ public class QueryParserTest {
         assertTrue(q instanceof PropertyExistsQuery);
 
         peq = (PropertyExistsQuery) q;
-        assertEquals("r", peq.getPropertyDefinition().getName());
-        assertEquals("p", peq.getPropertyDefinition().getNamespace().getPrefix());
+        assertEquals("r", peq.name());
+        assertEquals("p", peq.namespace().getPrefix());
         assertTrue(peq.isInverted());
 
 
@@ -170,8 +170,8 @@ public class QueryParserTest {
         assertTrue(q instanceof PropertyExistsQuery);
 
         peq = (PropertyExistsQuery) q;
-        assertEquals("r", peq.getPropertyDefinition().getName());
-        assertEquals("p", peq.getPropertyDefinition().getNamespace().getPrefix());
+        assertEquals("r", peq.name());
+        assertEquals("p", peq.namespace().getPrefix());
         assertFalse(peq.isInverted());
         
 
@@ -180,8 +180,8 @@ public class QueryParserTest {
         assertTrue(q instanceof PropertyExistsQuery);
 
         peq = (PropertyExistsQuery) q;
-        assertEquals("r", peq.getPropertyDefinition().getName());
-        assertEquals("p", peq.getPropertyDefinition().getNamespace().getPrefix());
+        assertEquals("r", peq.name());
+        assertEquals("p", peq.namespace().getPrefix());
         assertTrue(peq.isInverted());
 
         q = queryParser.parse("r !EXISTS");
@@ -189,8 +189,8 @@ public class QueryParserTest {
         assertTrue(q instanceof PropertyExistsQuery);
 
         peq = (PropertyExistsQuery) q;
-        assertEquals("r", peq.getPropertyDefinition().getName());
-        assertEquals(Namespace.DEFAULT_NAMESPACE, peq.getPropertyDefinition().getNamespace());
+        assertEquals("r", peq.name());
+        assertEquals(Namespace.DEFAULT_NAMESPACE, peq.namespace());
         assertTrue(peq.isInverted());
     }
     
@@ -293,10 +293,10 @@ public class QueryParserTest {
 
         assertTrue(aqTop.getQueries().get(3) instanceof PropertyTermQuery);
         PropertyTermQuery ptq = (PropertyTermQuery) aqTop.getQueries().get(3);
-        assertNull(ptq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("foo", ptq.getPropertyDefinition().getName());
+        assertNull(ptq.namespace().getPrefix());
+        assertEquals("foo", ptq.name());
         assertEquals("baz", ptq.getTerm());
-        assertEquals("bar.bing.bong", ptq.getComplexValueAttributeSpecifier());
+        assertEquals("bar.bing.bong", ptq.complexValueAttributeSpecifier().get());
         assertEquals(TermOperator.GE, ptq.getOperator());
 
         assertTrue(aqTop.getQueries().get(4) instanceof AclReadForAllQuery);
@@ -313,25 +313,25 @@ public class QueryParserTest {
         assertTrue(sub1.getQueries().get(1) instanceof PropertyExistsQuery);
         PropertyExistsQuery peq = (PropertyExistsQuery) sub1.getQueries().get(1);
         assertFalse(peq.isInverted());
-        assertEquals("emne", peq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("emnekode", peq.getPropertyDefinition().getName());
+        assertEquals("emne", peq.namespace().getPrefix());
+        assertEquals("emnekode", peq.name());
 
         assertTrue(sub1.getQueries().get(2) instanceof PropertyExistsQuery);
         peq = (PropertyExistsQuery) sub1.getQueries().get(2);
         assertFalse(peq.isInverted());
-        assertEquals("emne", peq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("emnenavn", peq.getPropertyDefinition().getName());
+        assertEquals("emne", peq.namespace().getPrefix());
+        assertEquals("emnenavn", peq.name());
 
         assertTrue(sub1.getQueries().get(3) instanceof PropertyExistsQuery);
         peq = (PropertyExistsQuery) sub1.getQueries().get(3);
         assertTrue(peq.isInverted());
-        assertEquals("foo", peq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("bar", peq.getPropertyDefinition().getName());
+        assertEquals("foo", peq.namespace().getPrefix());
+        assertEquals("bar", peq.name());
 
         assertTrue(sub1.getQueries().get(4) instanceof PropertyTermQuery);
         ptq = (PropertyTermQuery) sub1.getQueries().get(4);
-        assertEquals("emne", ptq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("status", ptq.getPropertyDefinition().getName());
+        assertEquals("emne", ptq.namespace().getPrefix());
+        assertEquals("status", ptq.name());
         assertEquals(TermOperator.EQ, ptq.getOperator());
 
         assertTrue(sub1.getQueries().get(5) instanceof UriDepthQuery);
@@ -353,66 +353,66 @@ public class QueryParserTest {
 
         assertTrue(subs.get(0) instanceof PropertyWildcardQuery);
         PropertyWildcardQuery pwq = (PropertyWildcardQuery) subs.get(0);
-        assertEquals("foo", pwq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("bar", pwq.getPropertyDefinition().getName());
+        assertEquals("foo", pwq.namespace().getPrefix());
+        assertEquals("bar", pwq.name());
         assertEquals("*suffix", pwq.getTerm());
         assertEquals(TermOperator.EQ, pwq.getOperator());
-        assertNull(pwq.getComplexValueAttributeSpecifier());
+        assertFalse(pwq.complexValueAttributeSpecifier().isPresent());
 
         assertTrue(subs.get(1) instanceof PropertyPrefixQuery);
         PropertyPrefixQuery ppq = (PropertyPrefixQuery) subs.get(1);
-        assertEquals("foo", ppq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("bar", ppq.getPropertyDefinition().getName());
+        assertEquals("foo", ppq.namespace().getPrefix());
+        assertEquals("bar", ppq.name());
         assertEquals("PrE fIx", ppq.getTerm());
         assertEquals(TermOperator.EQ_IGNORECASE, ppq.getOperator());
-        assertNull(ppq.getComplexValueAttributeSpecifier());
+        assertFalse(ppq.complexValueAttributeSpecifier().isPresent());
 
         assertTrue(subs.get(2) instanceof PropertyPrefixQuery);
         ppq = (PropertyPrefixQuery) subs.get(2);
-        assertEquals("foo", ppq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("bar", ppq.getPropertyDefinition().getName());
+        assertEquals("foo", ppq.namespace().getPrefix());
+        assertEquals("bar", ppq.name());
         assertEquals("(prefix)", ppq.getTerm());
         assertEquals(TermOperator.EQ, ppq.getOperator());
-        assertNull(ppq.getComplexValueAttributeSpecifier());
+        assertFalse(ppq.complexValueAttributeSpecifier().isPresent());
 
         assertTrue(subs.get(3) instanceof PropertyPrefixQuery);
         ppq = (PropertyPrefixQuery) subs.get(3);
-        assertEquals(null, ppq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("a", ppq.getPropertyDefinition().getName());
+        assertEquals(null, ppq.namespace().getPrefix());
+        assertEquals("a", ppq.name());
         assertEquals("x", ppq.getTerm());
         assertEquals(TermOperator.NE, ppq.getOperator());
-        assertNull(ppq.getComplexValueAttributeSpecifier());
+        assertFalse(ppq.complexValueAttributeSpecifier().isPresent());
 
         assertTrue(subs.get(4) instanceof PropertyWildcardQuery);
         pwq = (PropertyWildcardQuery) subs.get(4);
-        assertEquals(null, pwq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("a", pwq.getPropertyDefinition().getName());
+        assertEquals(null, pwq.namespace().getPrefix());
+        assertEquals("a", pwq.name());
         assertEquals("*x", pwq.getTerm());
         assertEquals(TermOperator.EQ, pwq.getOperator());
-        assertNull(pwq.getComplexValueAttributeSpecifier());
+        assertFalse(pwq.complexValueAttributeSpecifier().isPresent());
 
         assertTrue(subs.get(5) instanceof PropertyWildcardQuery);
         pwq = (PropertyWildcardQuery) subs.get(5);
-        assertEquals(null, pwq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("a", pwq.getPropertyDefinition().getName());
+        assertEquals(null, pwq.namespace().getPrefix());
+        assertEquals("a", pwq.name());
         assertEquals("?x", pwq.getTerm());
         assertEquals(TermOperator.EQ, pwq.getOperator());
-        assertNull(pwq.getComplexValueAttributeSpecifier());
+        assertFalse(pwq.complexValueAttributeSpecifier().isPresent());
 
         assertTrue(subs.get(6) instanceof PropertyWildcardQuery);
         pwq = (PropertyWildcardQuery) subs.get(6);
-        assertEquals(null, pwq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("a", pwq.getPropertyDefinition().getName());
+        assertEquals(null, pwq.namespace().getPrefix());
+        assertEquals("a", pwq.name());
         assertEquals("*fo??o*", pwq.getTerm());
         assertEquals(TermOperator.NE_IGNORECASE, pwq.getOperator());
-        assertNull(pwq.getComplexValueAttributeSpecifier());
+        assertFalse(pwq.complexValueAttributeSpecifier().isPresent());
 
         assertTrue(subs.get(7) instanceof PropertyWildcardQuery);
         pwq = (PropertyWildcardQuery) subs.get(7);
-        assertEquals("foo", pwq.getPropertyDefinition().getNamespace().getPrefix());
-        assertEquals("bar", pwq.getPropertyDefinition().getName());
+        assertEquals("foo", pwq.namespace().getPrefix());
+        assertEquals("bar", pwq.name());
         assertEquals("*TEXAS HOLD*", pwq.getTerm());
         assertEquals(TermOperator.EQ_IGNORECASE, pwq.getOperator());
-        assertNull(pwq.getComplexValueAttributeSpecifier());
+        assertFalse(pwq.complexValueAttributeSpecifier().isPresent());
     }
 }

@@ -57,8 +57,7 @@ public class LastModifiedReporter extends DocumentReporter {
         AndQuery query = new AndQuery();
 
         /* In current resource but not in /vrtx. */
-        UriPrefixQuery upq = new UriPrefixQuery(resource.getURI().toString(), false);
-        upq.setIncludeSelf(false);
+        UriPrefixQuery upq = new UriPrefixQuery(resource.getURI().toString(), false, false);
         query.add(upq);
         query.add(new UriPrefixQuery("/vrtx", true));
 

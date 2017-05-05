@@ -37,12 +37,14 @@ import java.util.Objects;
  */
 public class UriTermQuery implements UriQuery {
 
+    private static final long serialVersionUID = 2960145039692424376L;
+
     private final String uri;
-    private final TermOperator operator;
+    private final TermOperator op;
 
     public UriTermQuery(String uri, TermOperator operator) {
         this.uri = uri;
-        this.operator = operator;
+        this.op = operator;
     }
 
     public String getUri() {
@@ -50,27 +52,24 @@ public class UriTermQuery implements UriQuery {
     }
 
     public TermOperator getOperator() {
-        return this.operator;
+        return this.op;
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
-        sb.append(";uri=").append(this.uri);
-        sb.append(", operator=").append(this.operator);
-        return sb.toString();
+        return "UriTermQuery{" + "uri=" + uri + ", op=" + op + '}';
     }
 
     @Override
     public int hashCode() {
         int hash = 5;
         hash = 61 * hash + Objects.hashCode(this.uri);
-        hash = 61 * hash + Objects.hashCode(this.operator);
+        hash = 61 * hash + Objects.hashCode(this.op);
         return hash;
     }
 
@@ -89,7 +88,7 @@ public class UriTermQuery implements UriQuery {
         if (!Objects.equals(this.uri, other.uri)) {
             return false;
         }
-        if (this.operator != other.operator) {
+        if (this.op != other.op) {
             return false;
         }
         return true;

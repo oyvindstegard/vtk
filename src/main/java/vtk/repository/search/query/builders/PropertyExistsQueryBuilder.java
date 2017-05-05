@@ -47,20 +47,20 @@ import vtk.repository.search.query.QueryBuilderException;
  */
 public class PropertyExistsQueryBuilder implements QueryBuilder {
 
-    private PropertyExistsQuery query;
+    private final PropertyExistsQuery query;
+    private final PropertyTypeDefinition def;
 
-    public PropertyExistsQueryBuilder(PropertyExistsQuery query) {
+    public PropertyExistsQueryBuilder(PropertyExistsQuery query, PropertyTypeDefinition def) {
         this.query = query;
+        this.def = def;
     }
 
     @Override
     public org.apache.lucene.search.Query buildQuery() throws QueryBuilderException {
         
-        PropertyTypeDefinition def = this.query.getPropertyDefinition();
-
         String fieldName = PropertyFields.propertyFieldName(def, false);
-        if (def.getType() == Type.JSON && query.getComplexValueAttributeSpecifier() != null) {
-            fieldName = PropertyFields.jsonFieldName(def, query.getComplexValueAttributeSpecifier(), false);
+        if (def.getType() == Type.JSON && query.complexValueAttributeSpecifier().isPresent()) {
+            fieldName = PropertyFields.jsonFieldName(def, query.complexValueAttributeSpecifier().get(), false);
         }
         
         return new ConstantScoreQuery(new FieldValueFilter(fieldName, query.isInverted()));

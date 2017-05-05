@@ -67,7 +67,7 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.index.IndexManager;
 import vtk.repository.index.mapping.DocumentMapper;
 import vtk.repository.index.mapping.LazyMappedPropertySet;
-import vtk.repository.search.query.DumpQueryTreeVisitor;
+import vtk.repository.search.query.ToStringVisitor;
 import vtk.repository.search.query.LuceneQueryBuilder;
 import vtk.repository.search.query.Query;
 
@@ -136,8 +136,8 @@ public class LuceneSearcher implements Searcher, InitializingBean {
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Built Lucene query '" + luceneQuery
-                        + "' from query '"
-                        + query.accept(new DumpQueryTreeVisitor(), null) + "'");
+                        + "' from query:\n"
+                        + query.accept(new ToStringVisitor(true), null) + "\n");
 
                 logger.debug("Built Lucene sorting '" + luceneSort
                         + "' from sorting '" + sorting + "'");
@@ -290,6 +290,16 @@ public class LuceneSearcher implements Searcher, InitializingBean {
             // Build Lucene sorting (may be null)
             org.apache.lucene.search.Sort luceneSort
                     = this.queryBuilder.buildSort(search.getSorting());
+
+            if (logger.isDebugEnabled()) {
+                final Query q = search.getQuery();
+                logger.debug("Built Lucene iteration filter '" + iterationFilter
+                        + "' from query:\n"
+                        + (q != null ? q.accept(new ToStringVisitor(true), null) : "null") + "\n");
+
+                logger.debug("Built Lucene sorting '" + luceneSort
+                        + "' from sorting '" + search.getSorting() + "'");
+            }
 
             if (luceneSort != null) {
                 org.apache.lucene.search.SortField[] sf = luceneSort.getSort();

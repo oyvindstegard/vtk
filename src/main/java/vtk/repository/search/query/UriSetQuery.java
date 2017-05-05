@@ -33,6 +33,7 @@ package vtk.repository.search.query;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This query matches a set of URIs. It is an optimized form
@@ -41,6 +42,8 @@ import java.util.Set;
  * 
  */
 public class UriSetQuery implements UriQuery {
+
+    private static final long serialVersionUID = 7048216956240839865L;
 
     private final Set<String> uris;
     private final TermOperator operator;
@@ -63,19 +66,16 @@ public class UriSetQuery implements UriQuery {
     }
     
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
-    
+
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append(getClass().getName()).append(", ");
-        buf.append("URI set = ").append(this.uris).append(", ");
-        buf.append("operator = ").append(this.operator);
-        return buf.toString();
+        return "UriSetQuery{" + "uris=" + uris.stream().sorted().collect(Collectors.toList())
+                + ", operator=" + operator + '}';
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 3;

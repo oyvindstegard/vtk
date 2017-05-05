@@ -65,8 +65,7 @@ public class WebpageReporter extends DocumentReporter {
         mainQuery.add(orPart);
 
         /* In current resource but not in /vrtx. */
-        UriPrefixQuery upq = new UriPrefixQuery(currentResource.getURI().toString(), false);
-        upq.setIncludeSelf(false);
+        UriPrefixQuery upq = new UriPrefixQuery(currentResource.getURI().toString(), false, false);
         mainQuery.add(upq);
         mainQuery.add(new UriPrefixQuery("/vrtx", true));
 

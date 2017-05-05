@@ -154,16 +154,14 @@ public class ChangedUriReferencesPathSelector
             
             // Root-relative and full URLs:
             String term = "*" + uri.toString().replaceAll(" ", "\\ ") + "*";
-            PropertyWildcardQuery hrefQuery = new PropertyWildcardQuery(hrefsPropDef, term, TermOperator.EQ);
-            hrefQuery.setComplexValueAttributeSpecifier("links.url");
+            PropertyWildcardQuery hrefQuery = new PropertyWildcardQuery(hrefsPropDef, "links.url", term, TermOperator.EQ);
             query.add(hrefQuery);
 
             if (!uri.isRoot()) {
                 // Relative references:
                 term = "*" + uri.getName().replaceAll(" ", "\\ ") + "*";
                 AndQuery andQuery = new AndQuery();
-                hrefQuery = new PropertyWildcardQuery(hrefsPropDef, term, TermOperator.EQ);
-                hrefQuery.setComplexValueAttributeSpecifier("links.url");
+                hrefQuery = new PropertyWildcardQuery(hrefsPropDef, "links.url", term, TermOperator.EQ);
                 andQuery.add(hrefQuery);
                 andQuery.add(new UriPrefixQuery(uri.getParent().toString().replaceAll(" ", "\\ ")));
                 andQuery.add(new UriDepthQuery(uri.getDepth()));
@@ -176,8 +174,7 @@ public class ChangedUriReferencesPathSelector
                     Namespace.DEFAULT_NAMESPACE, 
                     PropertyType.EXTERNAL_ID_PROP_NAME);
             PropertyTermQuery idRefQuery = new PropertyTermQuery(
-                    hrefsPropDef, idProp.getStringValue(), TermOperator.EQ);
-            idRefQuery.setComplexValueAttributeSpecifier("links.vrtxid");
+                    hrefsPropDef, "links.vrtxid", idProp.getStringValue(), TermOperator.EQ);
             query.add(idRefQuery);
         }
 

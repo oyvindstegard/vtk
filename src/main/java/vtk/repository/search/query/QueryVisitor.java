@@ -32,9 +32,8 @@ package vtk.repository.search.query;
 
 /**
  * Simple generic visitor interface for concrete query node implementations. 
- *
  */
-public interface QueryTreeVisitor {
+public interface QueryVisitor {
 
     public Object visit(AndQuery andQuery, Object data);
     

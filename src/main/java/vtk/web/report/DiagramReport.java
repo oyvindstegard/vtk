@@ -196,8 +196,7 @@ public class DiagramReport extends AbstractReporter {
         AndQuery mainQuery = new AndQuery();
 
         /* In current resource but not in /vrtx. */
-        UriPrefixQuery upq = new UriPrefixQuery(resource.getURI().toString(), false);
-        upq.setIncludeSelf(false);
+        UriPrefixQuery upq = new UriPrefixQuery(resource.getURI().toString(), false, false);
 
         mainQuery.add(new TypeTermQuery(type, t));
         mainQuery.add(upq);

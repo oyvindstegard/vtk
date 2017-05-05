@@ -38,6 +38,8 @@ import vtk.repository.Path;
  */
 public class AclInheritedFromQuery extends AbstractAclQuery {
 
+    private static final long serialVersionUID = 3771508239044335553L;
+
     private final Path uri;
 
     /**
@@ -70,21 +72,15 @@ public class AclInheritedFromQuery extends AbstractAclQuery {
     }
     
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
-    
+
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
-        if (super.inverted) {
-            sb.append(";uri!=").append(this.uri);
-        } else {
-            sb.append(";uri=").append(this.uri);
-        }
-        return sb.toString();
+        return "AclInheritedFromQuery{" + "uri=" + uri + ", inverted=" + super.isInverted() +'}';
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 3;
