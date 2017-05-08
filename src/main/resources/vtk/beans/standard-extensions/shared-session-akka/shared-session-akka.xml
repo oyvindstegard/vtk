@@ -2,7 +2,12 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <!-- Akka versions of shared caches and session store -->
+  <description>
+    Akka versions of shared caches and session store.
+
+    Depends on:
+      - vtk/beans/standard-extensions/cluster-akka.xml
+  </description>
 
   <!-- Override -->
   <bean id="saml.ieCookieStore.cache"  class="vtk.util.cache.AkkaReplicatedCache">
