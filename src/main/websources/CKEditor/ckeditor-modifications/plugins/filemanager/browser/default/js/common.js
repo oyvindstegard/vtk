@@ -86,3 +86,43 @@ StringBuilder.prototype.ToString = function()
 {
     return this._Strings.join( '' ) ;
 }
+
+function ajaxSubmit (oFormElement, successHandler, errorHandler)
+{
+  if (!oFormElement.action) { return; }
+  var xhr = new XMLHttpRequest();
+
+  function _handler() {
+    if (xhr.readyState === 4) {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        if (typeof(successHandler) !== "undefined") {
+          successHandler(xhr);
+        }
+      } else {
+        if (typeof(errorHandler) !== "undefined") {
+          errorHandler(xhr);
+        }
+      }
+    }
+  }
+
+  xhr.onreadystatechange = _handler;
+  if (oFormElement.method.toLowerCase() === "post") {
+    xhr.open("post", oFormElement.action);
+    xhr.send(new FormData(oFormElement));
+  } else {
+    var oField, sFieldType, nFile, sSearch = "";
+    for (var nItem = 0; nItem < oFormElement.elements.length; nItem++) {
+      oField = oFormElement.elements[nItem];
+      if (!oField.hasAttribute("name")) { continue; }
+      sFieldType = oField.nodeName.toUpperCase() === "INPUT" ? oField.getAttribute("type").toUpperCase() : "TEXT";
+      if (sFieldType === "FILE") {
+        for (nFile = 0; nFile < oField.files.length; sSearch += "&" + escape(oField.name) + "=" + escape(oField.files[nFile++].name));
+      } else if ((sFieldType !== "RADIO" && sFieldType !== "CHECKBOX") || oField.checked) {
+        sSearch += "&" + escape(oField.name) + "=" + escape(oField.value);
+      }
+    }
+    xhr.open("get", oFormElement.action.replace(/(?:\?.*)?$/, sSearch.replace(/^&/, "?")), true);
+    xhr.send(null);
+  }
+}

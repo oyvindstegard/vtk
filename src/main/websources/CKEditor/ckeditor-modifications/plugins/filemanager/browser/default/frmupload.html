@@ -50,14 +50,27 @@ function OnSubmit()
 	document.getElementById('eUploadMessage').innerHTML = 'Upload a new file in this folder (Upload in progress, please wait...)' ;
 	document.getElementById('btnUpload').disabled = true ;
 
-	return true ;
+	ajaxSubmit(document.getElementById('frmUpload'),
+	  function (xhr) {
+	    var uploadResponse = document.getElementById('frmUploadResponse');
+	    uploadResponse.innerHTML = xhr.response;
+	    var scripts = uploadResponse.getElementsByTagName('script');
+	    if (scripts.length === 1) {
+	      eval(scripts[0].innerText);
+	    } else {
+	      alert("Expects one and only one script tag in the upload response");
+	    }
+	  },
+	  function (xhr) {
+	    alert("Error:\nStatus=" + xhr.status + "\n Response="  + xhr.responseText);
+		formReset();
+	  }
+	)
+
+	return false;
 }
 
-function OnUploadCompleted( errorNumber, data )
-{
-	// Reset the Upload Worker Frame.
-	window.parent.frames['frmUploadWorker'].location = 'javascript:void(0)' ;
-
+function formReset() {
 	// Reset the upload form (On IE we must do a little trick to avoid problems).
 	if ( document.all )
 		document.getElementById('NewFile').outerHTML = '<input id="NewFile" name="NewFile" style="WIDTH: 100%" type="file">' ;
@@ -67,6 +80,11 @@ function OnUploadCompleted( errorNumber, data )
 	// Reset the interface elements.
 	document.getElementById('eUploadMessage').innerHTML = 'Upload a new file in this folder' ;
 	document.getElementById('btnUpload').disabled = false ;
+}
+
+function OnUploadCompleted( errorNumber, data )
+{
+	formReset();
 
 	switch ( errorNumber )
 	{
@@ -96,7 +114,7 @@ window.onload = function()
 		</script>
 	</head>
 	<body>
-		<form id="frmUpload" action="" target="frmUploadWorker" method="post" enctype="multipart/form-data" onsubmit="return OnSubmit();">
+		<form id="frmUpload" action="" method="post" enctype="multipart/form-data" onsubmit="return OnSubmit();">
 			<table class="fullHeight" cellspacing="0" cellpadding="0" width="100%" border="0">
 				<tr>
 					<td nowrap="nowrap">
@@ -111,5 +129,6 @@ window.onload = function()
 				</tr>
 			</table>
 		</form>
+	    <div id="frmUploadResponse"></div>
 	</body>
 </html>

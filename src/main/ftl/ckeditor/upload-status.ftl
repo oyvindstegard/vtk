@@ -17,16 +17,14 @@
   -
   -->
 <script type="text/javascript">
-  <!--
-    var uploadCompletedFunction;
-    if (window.parent.frames['frmUpload'].OnUploadCompleted) {
-       uploadCompletedFunction = window.parent.frames['frmUpload'].OnUploadCompleted;
-    } else {
-       uploadCompletedFunction = window.parent.OnUploadCompleted;
-    }
-    uploadCompletedFunction(
-      ${error}, '${(newFileName)?default("")}', 
-      '${(fileName)?default("")}', '${(customMessage)?default("")}'
-      );
-  //-->
+  var uploadCompletedFunction;
+  if (window.parent.frames['frmUpload'].OnUploadCompleted) {
+     uploadCompletedFunction = window.parent.frames['frmUpload'].OnUploadCompleted;
+  } else {
+     uploadCompletedFunction = window.parent.OnUploadCompleted;
+  }
+  uploadCompletedFunction(
+    ${error}, '${(newFileName)?default("")}',
+    '${(fileName)?default("")}', '${(customMessage)?default("")}'
+  );
 </script>

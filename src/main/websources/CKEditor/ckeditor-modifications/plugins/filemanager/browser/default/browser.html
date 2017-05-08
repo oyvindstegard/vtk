@@ -203,24 +203,25 @@ function OnUploadCompleted( errorNumber, fileUrl, fileName, customMsg )
 		window.frames['frmUpload'].OnUploadCompleted( errorNumber, fileName ) ;
 }
 
-		</script>
-	</head>
-        <script type="text/javascript">
-          document.write('<frameset cols="150,*" class="Frame" framespacing="3" bordercolor="#f1f1e3" frameborder="1">');
-          document.write('   <frameset rows="50,*" framespacing="0">');
-          document.write('      <frame src="frmresourcetype.html" scrolling="no" frameborder="0">');
-          document.write('      <frame name="frmFolders" src="frmfolders.html?BaseFolder=' + BaseFolder + '" scrolling="auto" frameborder="1">');
-          document.write('   </frameset>');
-          document.write('   <frameset rows="50,*,50" framespacing="0">');
-          document.write('      <frame name="frmActualFolder" src="frmactualfolder.html" scrolling="no" frameborder="0">');
-          document.write('      <frame name="frmResourcesList" src="frmresourceslist.html" scrolling="auto" frameborder="1">');
-          document.write('      <frameset cols="150,*,0" framespacing="0" frameborder="0">');
-          document.write('         <frame name="frmCreateFolder" src="frmcreatefolder.html" scrolling="no" frameborder="0">');
-          document.write('         <frame name="frmUpload" src="frmupload.html" scrolling="no" frameborder="0">');
-          document.write('         <frame name="frmUploadWorker" src="javascript:void(0)" scrolling="no" frameborder="0">');
-          document.write('      </frameset>');
-          document.write('   </frameset>');
-          document.write('</frameset>');
-        </script>
+// Set the folder to open dynamically
+window.addEventListener("load", function (event) {
+	document.getElementById('frmFolders').src="frmfolders.html?BaseFolder=" + BaseFolder;
+}, false);
 
+	</script>
+	</head>
+	<frameset cols="150,*" class="Frame" framespacing="3" bordercolor="#f1f1e3" frameborder="1">
+		<frameset rows="50,*" framespacing="0">
+			<frame src="frmresourcetype.html" scrolling="no" frameborder="0">
+			<frame id="frmFolders" name="frmFolders" scrolling="auto" frameborder="1">
+		</frameset>
+		<frameset rows="50,*,50" framespacing="0">
+			<frame name="frmActualFolder" src="frmactualfolder.html" scrolling="no" frameborder="0">
+			<frame name="frmResourcesList" src="frmresourceslist.html" scrolling="auto" frameborder="1">
+			<frameset cols="150,*,0" framespacing="0" frameborder="0">
+				<frame name="frmCreateFolder" src="frmcreatefolder.html" scrolling="no" frameborder="0">
+				<frame name="frmUpload" src="frmupload.html" scrolling="no" frameborder="0">
+			</frameset>
+		</frameset>
+	</frameset>
 </html>
