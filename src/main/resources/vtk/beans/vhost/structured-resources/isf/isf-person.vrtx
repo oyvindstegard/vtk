@@ -192,6 +192,9 @@ resourcetype isf-person {
         [if surname != null || firstName != null]
           <a id="vrtx-person-vcard" href="?vrtx=vcf">[localized "vCard"]</a>
         [endif]
+        [if fullCV != null]
+          <a id="vrtx-person-full-cv" href="[val fullCV]">[localized "fullCVText"]</a>
+        [endif]
       </div>
       ##
     }
