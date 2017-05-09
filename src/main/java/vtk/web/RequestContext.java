@@ -38,8 +38,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 import vtk.context.BaseContext;
 import vtk.repository.Acl;
@@ -68,6 +71,7 @@ import vtk.security.SecurityContext;
 import vtk.util.repository.RepositoryTraversal;
 import vtk.util.repository.RepositoryWrapper;
 import vtk.web.service.Service;
+import vtk.web.service.ServiceResolver;
 import vtk.web.service.URL;
 
 /**
@@ -93,6 +97,7 @@ public class RequestContext {
     private final boolean inRepository;
     private final Repository repository;
     private final Service service;
+    private final ServiceResolver serviceResolver;
     private final Path resourceURI;
     private final Acl resourceAcl;
     private final Path currentCollection;
@@ -101,7 +106,7 @@ public class RequestContext {
     private final boolean viewUnauthenticated;
     private List<Message> infoMessages = new ArrayList<>(0);
     private List<Message> errorMessages = new ArrayList<>(0);
-
+    
     // Set on first invocation (otherwise JUnit tests fail):
     private RevisionWrapper revisionWrapper = null;
     
@@ -123,12 +128,14 @@ public class RequestContext {
      *            (<code>null</code> if no index file exists)
      */
     public RequestContext(HttpServletRequest servletRequest, SecurityContext securityContext, Service service,
-            Resource resource, Path uri, Path indexFileURI, boolean isIndexFile, boolean viewUnauthenticated,
+            ServiceResolver serviceResolver, Resource resource, Path uri, Path indexFileURI, 
+            boolean isIndexFile, boolean viewUnauthenticated,
             boolean inRepository, Repository repository, PrincipalMetadataDAO principalLookup) {
         this.servletRequest = servletRequest;
         this.securityContext = securityContext;
         this.indexFileURI = indexFileURI;
         this.service = service;
+        this.serviceResolver = serviceResolver;
         this.isIndexFile = isIndexFile;
         this.viewUnauthenticated = viewUnauthenticated;
         this.repository = repository;
@@ -200,6 +207,14 @@ public class RequestContext {
     public Service getService() {
         return this.service;
     }
+    
+    /**
+     * Looks up a service by name
+     */
+    public Optional<Service> service(String name) {
+        return serviceResolver.service(name);
+    }
+
 
     /**
      * Gets the {@link vtk.repository.Resource#getURI URI} that the
@@ -318,6 +333,13 @@ public class RequestContext {
 
         cachedPrincipalMetadata = principalLookup.getMetadata(principal, locale);
         return cachedPrincipalMetadata;
+    }
+
+    /**
+     * Gets the request locale, as resolved by the {@link LocaleResolver}
+     */
+    public Locale getLocale() {
+        return RequestContextUtils.getLocale(getServletRequest());
     }
 
     public RepositoryTraversal rootTraversal(String token, Path uri) {

@@ -37,6 +37,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -60,6 +62,7 @@ import vtk.security.SecurityContext;
 import vtk.security.token.TokenManager;
 import vtk.web.service.Assertion;
 import vtk.web.service.Service;
+import vtk.web.service.ServiceResolver;
 import vtk.web.service.URL;
 
 /**
@@ -82,8 +85,10 @@ import vtk.web.service.URL;
  * </ul>
  *
  */
-public class RequestContextInitializer implements ContextInitializer {
-
+public class RequestContextInitializer implements ContextInitializer, ServiceResolver {
+    // For service lookup:
+    private Map<String, Service> services = new HashMap<>();
+    
     // Map containing parent -> children mapping, effectively representing top-down graph of the service trees.
     private Map<Service, List<Service>> childServices = new HashMap<>();
     
@@ -113,6 +118,8 @@ public class RequestContextInitializer implements ContextInitializer {
         }
         
         for (Service service : services) {
+            this.services.put(service.getName(), service);
+            
             Service parent = service.getParent();
             if (parent == null) {
                 rootServices.add(service);
@@ -168,6 +175,11 @@ public class RequestContextInitializer implements ContextInitializer {
         if (nonRepositoryRoots != null) {
             this.nonRepositoryRoots = nonRepositoryRoots;
         }
+    }
+    
+    @Override
+    public Optional<Service> service(String name) {
+        return Optional.ofNullable(services.get(Objects.requireNonNull(name)));
     }
 
     @Override
@@ -234,7 +246,7 @@ public class RequestContextInitializer implements ContextInitializer {
             // Set an initial request context (with the resource, but
             // without the matched service)
             RequestContext.setRequestContext(
-                new RequestContext(request, securityContext, service, resource, 
+                new RequestContext(request, securityContext, service, this, resource, 
                         uri, indexFileUri, isIndexFile, viewUnauthenticated,
                         inRepository, repository, principalMetadataDAO));
             
@@ -300,7 +312,7 @@ public class RequestContextInitializer implements ContextInitializer {
             }
         } catch (AuthenticationException e) {
             RequestContext.setRequestContext(
-                new RequestContext(request, securityContext, service, resource,
+                new RequestContext(request, securityContext, service, this, resource,
                                    requestContext.getResourceURI(),
                                    requestContext.getIndexFileURI(), 
                                    requestContext.isIndexFile(),
@@ -329,7 +341,7 @@ public class RequestContextInitializer implements ContextInitializer {
         }
 
         RequestContext.setRequestContext(
-            new RequestContext(request, securityContext, service, resource,
+            new RequestContext(request, securityContext, service, this, resource,
                                requestContext.getResourceURI(),
                                requestContext.getIndexFileURI(), 
                                requestContext.isIndexFile(),
