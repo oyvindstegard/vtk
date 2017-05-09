@@ -60,6 +60,7 @@ import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
+import vtk.repository.search.query.PropertyExistsQuery;
 import vtk.repository.search.query.Query;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.TypeTermQuery;
@@ -172,19 +173,23 @@ public class TagsReportingComponent {
 
         }
 
-        Query masterScopeQuery = pathScopeQuery;
-        if (typeScopeQuery != null) {
-            if (masterScopeQuery != null) {
-                AndQuery andQuery = new AndQuery();
-                andQuery.add(masterScopeQuery);
-                andQuery.add(typeScopeQuery);
-                masterScopeQuery = andQuery;
-            } else {
-                masterScopeQuery = typeScopeQuery;
+        // Build complete query tree
+        final Query topLevel;
+        if (typeScopeQuery != null || pathScopeQuery != null) {
+            AndQuery and = new AndQuery();
+            and.add(new PropertyExistsQuery(tagsPropDef, false));
+            if (pathScopeQuery != null) {
+                and.add(pathScopeQuery);
             }
+            if (typeScopeQuery != null) {
+                and.add(typeScopeQuery);
+            }
+            topLevel = and;
+        } else {
+            topLevel = new PropertyExistsQuery(tagsPropDef, false);
         }
 
-        final String cacheKey = makeCacheKey(token, masterScopeQuery, limit, tagOccurenceMin);
+        final String cacheKey = makeCacheKey(token, topLevel, limit, tagOccurenceMin);
         List<TagFrequency> result = lookupCached(cacheKey);
         if (result != null) {
             return result;
@@ -195,7 +200,7 @@ public class TagsReportingComponent {
         if (RequestContext.getRequestContext().isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
         }
-        search.setQuery(masterScopeQuery);
+        search.setQuery(topLevel);
         search.setSorting(null);
         search.setLimit(Integer.MAX_VALUE);
         search.setPropertySelect(new ConfigurablePropertySelect(tagsPropDef));
