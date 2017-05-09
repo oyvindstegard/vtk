@@ -8,16 +8,9 @@ resourcetype isf-person {
     degree : string,
     phone : string multiple,
     mobile : string multiple,
-    fax : string multiple,
     email : string multiple,
-    postalAddress : string multiple,
-    visitingAddress : string multiple,
-    alternativeVisitingAddress : string multiple,
-    alternativeCellPhone : string,
     title : derived (firstName, surname) eval (firstName + " " + surname)
       overrides title default username,
-    room : string,
-    availableHours : string,
     picture : image_ref,
     pressPhoto : image_ref,
     fullCV : resource_ref,
@@ -27,29 +20,19 @@ resourcetype isf-person {
     selectedPublications : html noextract,
     getRelatedProjects : boolean,
     projects : json (projectName:string, projectUrl:string) multiple,
-    getRelatedGroups : boolean,
-    groups : json (groupName:string, groupUrl:string) multiple,
-    rssFeeds : json (rssTitle:string, rssUrl:string) multiple,
-    tags : string multiple overrides tags,
-    related-content : html noextract
+    tags : string multiple overrides tags
   }
 
   edit-rules {
-    group contactInformation (firstName, surname, position, degree, phone, mobile, fax, email, postalAddress, visitingAddress) (after username),
-    group additionalContactInformation (alternativeVisitingAddress, building, room, availableHours, alternativeCellPhone) (after contactInformation),
-    group images (picture, pressPhoto) (after additionalContactInformation) horizontal,
+    group contactInformation (firstName, surname, position, degree, phone, mobile, email) (after username),
+    group images (picture, pressPhoto) (after contactInformation) horizontal,
     group combinedPublications (getExternalScientificInformation, numberOfPublications, selectedPublications) (after tags),
     projects (class[vrtx-multiple-immovable]),
-    groups (class[vrtx-multiple-immovable]),
     group combinedProjects (getRelatedProjects, projects) (after combinedPublications),
-    group combinedGroups (getRelatedGroups, groups) (after combinedProjects),
     fullCV (after images),
     content (after fullCV),
     tags tooltip (en : "(Tag1, Tag2, ...)", no : "(Emneord1, Emneord2, ...)", nn : "(Emneord1, Emneord2, ...)"),
     tags (class[vrtx-autocomplete-tag]),
-    postalAddress tooltip (en : "(postbox / street address, post number place)", no : "(postboks / gateadresse, postnummer sted)", nn : "(postboks / gateadresse, postnummer sted)"),
-    alternativeVisitingAddress tooltip (en : "(street address, building, post number place)", no : "(gateadresse, bygning, postnummer sted)", nn : "(gateadresse, bygning, postnummer sted)"),
-    rssFeeds (after combinedGroups),
     numberOfPublications (dropdown)
   }
 
@@ -96,7 +79,7 @@ resourcetype isf-person {
               [endlist]
             </div>
           [endif]
-          [if (mobile != null && mobile != "") || (alternativeCellPhone != null && alternativeCellPhone != "")]
+          [if (mobile != null && mobile != "")]
             <div class="vrtx-person-contact-info-line vrtx-mobile">
               <span class="vrtx-label">[localized "mobile"]</span>
               [if mobile != null && mobile != ""]
@@ -104,29 +87,6 @@ resourcetype isf-person {
                   <span class="vrtx-value">[val mobileLine]</span>
                 [endlist]
               [endif]
-              [if alternativeCellPhone != null && alternativeCellPhone != ""]
-                <span class="vrtx-value">[val alternativeCellPhone]</span>
-              [endif]
-            </div>
-          [endif]
-          [if fax != null && fax != ""]
-            <div class="vrtx-person-contact-info-line vrtx-fax">
-              <span class="vrtx-label">[localized "fax"]</span>
-              [list fax faxLine]
-                <span class="vrtx-value">[val faxLine]</span>
-              [endlist]
-            </div>
-          [endif]
-          [if room != null && room != ""]
-            <div class="vrtx-person-contact-info-line vrtx-room">
-              <span class="vrtx-label">[localized "room"]</span>
-              <span class="vrtx-value">[val room]</span>
-            </div>
-          [endif]
-          [if availableHours != null && availableHours != ""]
-            <div class="vrtx-person-contact-info-line vrtx-available-hours">
-              <span class="vrtx-label">[localized "availableHours"]</span>
-              <span class="vrtx-value">[val availableHours]</span>
             </div>
           [endif]
           [if username != null && username != ""]
@@ -140,68 +100,11 @@ resourcetype isf-person {
               [endif]
             </div>
           [endif]
-          [if alternativeVisitingAddress != null && alternativeVisitingAddress != ""]
-            <div class="vrtx-person-visiting-address"><span class="vrtx-label">[localized "userVisitingAddress"]</span>
-              [list alternativeVisitingAddress alternativeVisitingAddressLine]
-                <span class="vrtx-address-line">[if alternativeVisitingAddressLine != null][val alternativeVisitingAddressLine][endif]</span>
-              [endlist]
-            </div>
-          [else]
-            [if visitingAddress != null && visitingAddress != ""]
-              <div class="vrtx-person-visiting-address"><span class="vrtx-label">[localized "userVisitingAddress"]</span>
-                [list visitingAddress visitingAddressLine]
-                  <span class="vrtx-address-line">[if visitingAddressLine != null][val visitingAddressLine][endif]</span>
-                [endlist]
-              </div>
-            [endif]
-          [endif]
-          [if postalAddress != null && postalAddress != ""]
-            <div class="vrtx-person-postal-address"><span class="vrtx-label"> [localized "postalAddress"]</span>
-              [list postalAddress postalAddressLine]
-                <span class="vrtx-address-line">[if postalAddressLine != null][val postalAddressLine][endif]</span>
-              [endlist]
-            </div>
-          [endif]
           [call "person:affiliation" {"primaryunit":false, "hidestudentaff": false}]
       </div>
       ##
     }
 
-    related-content-in-additional-column {
-      ##
-      [def document structured-document()]
-      [def theRelated-content document.properties.related-content]
-      [if theRelated-content != null]
-        <div id="vrtx-related-content">
-          [val theRelated-content # unescaped]
-        </div>
-      [endif]
-      ##
-    }
-    
-    feeds {
-      ##
-      [resource-props "."]
-      [if rssFeeds != null]
-        [def document structured-document()]
-        [def feeds document.properties.rssFeeds]
-        [if feeds != null]
-          [list feeds feed]
-            [def thetitle feed.rssTitle]
-            [def theurl feed.rssUrl]
-            [if theurl != null && theurl != ""]
-              [if thetitle != null && thetitle != ""]
-                [call "include:feed" {"url":theurl, "override-feed-title":thetitle, "feed-title":true, "max-messages":3, "include-if-empty":false}]
-              [else]
-                [call "include:feed" {"url":theurl, "feed-title":true, "max-messages":3, "include-if-empty":false}]
-              [endif]
-            [endif]
-          [endlist]
-        [endif]
-      [endif]
-      ##
-    }
-    
     person-image {
       ##
       [def img-uri resource-prop(".", "picture")]
@@ -276,9 +179,6 @@ resourcetype isf-person {
           [if mobile != null]
             <span class="tel"><span class="type">cell</span>[val mobile]</span>
           [endif]
-          [if fax != null]
-            <span class="tel"><span class="type">fax</span>[val fax]</span>
-          [endif]
         </div>
       [endif]
       ##
@@ -330,10 +230,7 @@ resourcetype isf-person {
           </div>
         </div>
         <div id="vrtx-additional-content">
-          [call "comp:feeds"]
           [call "resource:project-list" {"split-completed":true}]
-          [call "resource:resarch-group-list"]
-          [call "comp:related-content-in-additional-column"]
         </div>
       </body>
     </html>
@@ -355,11 +252,6 @@ resourcetype isf-person {
        en : ("true" = "Yes", "false" = "No"),
        no : ("true" = "Ja", "false" = "Nei"),
        nn : ("true" = "Ja", "false" = "Nei")
-     },
-     getRelatedGroups {
-       en : ("true" = "Yes", "false" = "No"),
-       no : ("true" = "Ja", "false" = "Nei"),
-       nn : ("true" = "Ja", "false" = "Nei")
      }
   }
 
@@ -367,18 +259,12 @@ resourcetype isf-person {
     username : (en : "Username", no : "Brukernavn", nn : "Brukarnamn"),
     firstName : (en : "First name", no : "Fornavn", nn : "Fornamn"),
     surname : (en : "Surname", no : "Etternavn", nn : "Etternamn"),
-    postalAddress : (en : "Postal address", no : "Postadresse", nn : "Postadresse"),
-    visitingAddress : (en : "Unit visiting address", no : "Enhetens besøksadresse", nn : "Besøksadressa til eininga"),
-    alternativeVisitingAddress: (en : "Visiting address", no : "Besøksadresse", nn : "Besøksadresse"),
-    alternativeCellPhone : (en : "Cell phone (personal)", no : "Mobiltelefon (privat)", nn : "Mobiltelefon (privat)"),
     email : (en : "Email", no : "E-post", nn : "E-post"),
     position : (en : "Position", no : "Stillingstittel", nn : "Stillingstittel"),
     degree : (en : "Degree", no : "Grad", nn : "Grad"),
     webPage : (en : "Web page", no : "Webside", nn : "Webside"),
     phone : (en : "Phone", no : "Telefon", nn : "Telefon"),
     mobile : (en : "Mobile phone", no : "Mobiltelefon", nn : "Mobiltelefon"),
-    fax : (en : "Fax", no : "Faks", nn : "Faks"),
-    availableHours : (en : "Available hours", no : "Treffetider", nn : "Treffetider"),
     picture : (en : "Webpage image", no : "Nettsidebilde", nn : "Nettsidebilete"),
     picture-alt : (en : "Image", no : "Bilde", nn : "Bilete"),
     picture-alt-found : (en : "Image of", no : "Bilde av", nn : "Bilete av"),
@@ -395,41 +281,23 @@ resourcetype isf-person {
     getRelatedProjects : (en : "Show projects where your username is registered as participant",
                           no :"Vis prosjekter hvor ditt brukernavn er registrert som deltager",
                           nn:"Vis prosjekt der brukarnamnet ditt er registrert som deltakar"),
-    getRelatedGroups : (en : "Show groups where your username is registered as participant",
-                           no :"Vis grupper hvor ditt brukernavn er registrert som deltager",
-                           nn:"Vis gruppe der brukarnamnet ditt er registrert som deltakar"),
     projects : (en : "Other projects",no : "Andre prosjekter", nn :"Andre prosjekt"),
-    groups : (en : "Other research groups",no : "Andre forskergrupper", nn :"Andre forskargruppe"),
     projectName : (en : "Project name", no : "Prosjektnavn", nn :"Prosjektnamn"),
     groupName : (en : "Group name", no : "Gruppenavn", nn :"Gruppenamn"),
     projectUrl : (en : "Web address", no : "Webadresse", nn :"Webadresse"),
     groupUrl : (en : "Web address", no : "Webadresse", nn :"Webadresse"),
-    related-content : (en : "Related content (right column)",
-                       no : "Relatert innhold (vises i høyre kolonne)",
-                       nn : "Relatert innhald (visast i høgre kolonne)"),
-    rssFeeds : (en : "Show content from RSS-streams (from blog or alike)",
-                no : "Vis innhold fra RSS-strømmer (fra blogg)",
-                nn :"Vis innhald frå RSS-straumar (frå blogg)"),
-    rssTitle : (en : "Title",no : "Tittel", nn : "Tittel"),
-    rssUrl : (en : "Web address", no : "Webadresse", nn :"Webadresse"),
     pressPhoto : (en : "Press photo", no : "Pressebilde", nn : "Pressebilete"),
     vCard : (en : "Download business card", no : "Last ned visittkort", nn : "Last ned visittkort"),
     fullCV : (en : "Link to full CV", no : "Lenke til full CV", nn : "Lenke til full CV"),
     fullCVText : (en : "Download full CV", no : "Last ned full CV", nn : "Last ned full CV"),
-    room : (en : "Room", no : "Rom", nn : "Rom"),
     images : (en : "Images", no : "Bilder", nn : "Bilete"),
     contactInformation : (en : "Primary contact information",
                           no : "Primære kontaktopplysninger",
                           nn : "Primære kontaktopplysingar"),
-    additionalContactInformation : (en : "Other contact information",
-                                    no : "Andre kontaktopplysninger",
-                                    nn : "Andre kontaktopplysingar"),
     combinedPublications : (en : "Publications", no : "Publikasjoner", nn : "Publikasjonar"),
     combinedProjects : (en : "Projects", no : "Prosjekter", nn : "Prosjekt"),
-    combinedGroups : (en : "Research groups", no : "Forskergrupper", nn : "Forskargruppe"),
     userVisitingAddress : (en : "Visiting address", no : "Besøksadresse", nn : "Besøksadresse"),
     header : (en : "Edit person", no : "Rediger person", nn : "Rediger person"),
-    fax : (en : "Fax", no : "Faks", nn : "Faks"),
     publishedDate : (en : "Published", no :"Publisert", nn:"Publisert"),
     lastModifiedDate : (en : "Last modified", no : "Sist endret", nn : "Sist endra"),
     no-external-user-metadata : (en : "Could not get user data from external service",
