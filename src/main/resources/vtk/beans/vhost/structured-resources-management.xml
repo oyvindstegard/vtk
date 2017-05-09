@@ -18,13 +18,10 @@
 
   <bean id="evaluatorResolver" class="vtk.resourcemanagement.property.EvaluatorResolver">
     <property name="serviceInvoker" ref="externalServiceInvoker" />
-    <property name="htmlDigester" ref="htmlDigester" />
     <property name="defaultLocale" value="${view.defaultLocale}" />
     <property name="sharedTextResolver" ref="sharedTextResolver" />
   </bean>
 
   <bean id="externalServiceInvoker" class="vtk.resourcemanagement.service.ExternalServiceInvoker" />
-
-  <bean id="htmlDigester" class="vtk.text.html.HtmlDigester" />
 
 </beans>

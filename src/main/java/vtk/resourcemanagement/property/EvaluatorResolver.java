@@ -62,11 +62,11 @@ import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 
 public class EvaluatorResolver {
-    private static Logger logger = LoggerFactory.getLogger(EvaluatorResolver.class);
+    private static final Logger logger = LoggerFactory.getLogger(EvaluatorResolver.class);
 
     // XXX Reconsider this whole setup. No good implementation.
     private ExternalServiceInvoker serviceInvoker;
-    private HtmlDigester htmlDigester;
+    private final HtmlDigester htmlDigester = new HtmlDigester();
     private Locale defaultLocale;
     private SharedTextResolver sharedTextResolver;
 
@@ -516,11 +516,6 @@ public class EvaluatorResolver {
     @Required
     public void setServiceInvoker(ExternalServiceInvoker serviceInvoker) {
         this.serviceInvoker = serviceInvoker;
-    }
-
-    @Required
-    public void setHtmlDigester(HtmlDigester htmlDigester) {
-        this.htmlDigester = htmlDigester;
     }
 
     @Required
