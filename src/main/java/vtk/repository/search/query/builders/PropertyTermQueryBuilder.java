@@ -35,7 +35,6 @@ import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import vtk.repository.index.mapping.PropertyFields;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -62,29 +61,30 @@ public class PropertyTermQueryBuilder implements QueryBuilder {
 
     private final PropertyTermQuery ptq;
     private PropertyFields pf;
+    private PropertyTypeDefinition def;
     
-    public PropertyTermQueryBuilder(PropertyTermQuery ptq, PropertyFields fvm) {
+    public PropertyTermQueryBuilder(PropertyTermQuery ptq, PropertyTypeDefinition def, PropertyFields fvm) {
         this.ptq = ptq;
         this.pf = fvm;
+        this.def = def;
     }
 
     @Override
     public Query buildQuery() throws QueryBuilderException {
 
-        final PropertyTypeDefinition propDef = ptq.getPropertyDefinition();
         final TermOperator op = ptq.getOperator();
         final boolean lowercase = (op == TermOperator.EQ_IGNORECASE || op == TermOperator.NE_IGNORECASE);
-        final String cva = ptq.getComplexValueAttributeSpecifier();
+        final String cva = ptq.complexValueAttributeSpecifier().orElse(null);
         final String fieldValue = ptq.getTerm();
         
         final PropertyType.Type valueType;
         final String fieldName;
         if (cva != null) {
-            valueType = PropertyFields.jsonFieldDataType(propDef, cva);
-            fieldName = PropertyFields.jsonFieldName(propDef, cva, lowercase);
+            valueType = PropertyFields.jsonFieldDataType(def, cva);
+            fieldName = PropertyFields.jsonFieldName(def, cva, lowercase);
         } else {
-            valueType = propDef.getType();
-            fieldName = PropertyFields.propertyFieldName(propDef, lowercase);
+            valueType = def.getType();
+            fieldName = PropertyFields.propertyFieldName(def, lowercase);
         }
 
         Term term = pf.queryTerm(fieldName, fieldValue, valueType, lowercase);

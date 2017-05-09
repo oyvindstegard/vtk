@@ -30,33 +30,83 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
+import java.util.Optional;
+import vtk.repository.Namespace;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
 public abstract class AbstractPropertyQuery implements PropertyQuery {
 
-    private PropertyTypeDefinition propDef;
-    private String complexValueAttributeSpecifier;
+    private static final long serialVersionUID = 1421068352049823236L;
+
+    private final String name;
+    private final Namespace namespace;
+    private final PropertyType.Type type;
+    private final Optional<String> cva;
 
     public AbstractPropertyQuery(PropertyTypeDefinition propDef) {
-        this.propDef = propDef;
+        this(propDef.getName(), propDef.getNamespace(), propDef.getType());
     }
-    
-    @Override
-    public PropertyTypeDefinition getPropertyDefinition() {
-        return this.propDef;
+    public AbstractPropertyQuery(PropertyTypeDefinition propDef, String complexValueAttributeSpecifier) {
+        this(propDef.getName(), propDef.getNamespace(), propDef.getType(), complexValueAttributeSpecifier);
+    }
+    public AbstractPropertyQuery(String name, Namespace ns, PropertyType.Type type) {
+        this(name, ns, type, null);
+    }
+    public AbstractPropertyQuery(String name, Namespace ns, PropertyType.Type type, String complexValueAttributeSpecifier) {
+        this.name = Objects.requireNonNull(name);
+        this.namespace = Objects.requireNonNull(ns);
+        this.type = Objects.requireNonNull(type);
+        this.cva = Optional.ofNullable(complexValueAttributeSpecifier);
     }
 
     @Override
-    public String getComplexValueAttributeSpecifier() {
-        return this.complexValueAttributeSpecifier;
+    public String name() {
+        return name;
     }
 
-    public void setComplexValueAttributeSpecifier(String specifier) {
-        this.complexValueAttributeSpecifier = specifier;
+    @Override
+    public Namespace namespace() {
+        return namespace;
+    }
+
+    @Override
+    public PropertyType.Type type() {
+        return type;
+    }
+
+    @Override
+    public Optional<String> complexValueAttributeSpecifier() {
+        return this.cva;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 79 * hash + Objects.hashCode(this.name);
+        hash = 79 * hash + Objects.hashCode(this.namespace);
+        hash = 79 * hash + Objects.hashCode(this.type);
+        hash = 79 * hash + Objects.hashCode(this.cva);
+        return hash;
+    }
+
+    protected String fieldsToString() {
+        StringBuilder b = new StringBuilder();
+        b.append("name=").append(name);
+        b.append(", namespace=").append(namespace);
+        b.append(", type=").append(type);
+        if (cva.isPresent()) {
+            b.append(", complexValueAttributeSpecifier=").append(cva.get());
+        }
+        return b.toString();
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -64,21 +114,21 @@ public abstract class AbstractPropertyQuery implements PropertyQuery {
             return false;
         }
         final AbstractPropertyQuery other = (AbstractPropertyQuery) obj;
-        if (this.propDef != other.propDef && (this.propDef == null || !this.propDef.equals(other.propDef))) {
+        if (!Objects.equals(this.name, other.name)) {
             return false;
         }
-        if ((this.complexValueAttributeSpecifier == null) ? (other.complexValueAttributeSpecifier != null) : !this.complexValueAttributeSpecifier.equals(other.complexValueAttributeSpecifier)) {
+        if (!Objects.equals(this.namespace, other.namespace)) {
+            return false;
+        }
+        if (this.type != other.type) {
+            return false;
+        }
+        if (!Objects.equals(this.cva, other.cva)) {
             return false;
         }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + (this.propDef != null ? this.propDef.hashCode() : 0);
-        hash = 79 * hash + (this.complexValueAttributeSpecifier != null ? this.complexValueAttributeSpecifier.hashCode() : 0);
-        return hash;
-    }
-    
+
+
 }

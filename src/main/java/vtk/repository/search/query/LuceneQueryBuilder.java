@@ -52,6 +52,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+import vtk.repository.Namespace;
 import vtk.repository.resourcetype.HierarchicalVocabulary;
 import vtk.repository.Path;
 import vtk.repository.PropertySetImpl;
@@ -102,6 +103,7 @@ public class LuceneQueryBuilder implements InitializingBean {
     private PropertyTypeDefinition publishedPropDef;
     private PropertyTypeDefinition unpublishedCollectionPropDef;
     private PropertyTypeDefinition hiddenPropDef;
+    private ResourceTypeTree resourceTypeTree;
     private Filter publishedFilter;
     private Filter unpublishedCollectionFilter;
     private Filter hiddenFilter;
@@ -216,9 +218,10 @@ public class LuceneQueryBuilder implements InitializingBean {
 
     private QueryBuilder getAbstractPropertyQueryBuilder(Query query) throws QueryBuilderException {
 
-        AbstractPropertyQuery apq = (AbstractPropertyQuery) query;
-        String cva = apq.getComplexValueAttributeSpecifier();
-        PropertyType.Type type = apq.getPropertyDefinition().getType();
+        final AbstractPropertyQuery apq = (AbstractPropertyQuery) query;
+        final String cva = apq.complexValueAttributeSpecifier().orElse(null);
+        final PropertyType.Type type = apq.type();
+        final PropertyTypeDefinition propDef = resourceTypeTree.getPropertyTypeDefinition(apq.namespace(), apq.name());
         if (!(cva == null ^ type == PropertyType.Type.JSON)) {
             throw new QueryBuilderException(
                     "Attribute specifier (..@attr) is required for JSON-property queries and forbidden for other types.");
@@ -226,7 +229,6 @@ public class LuceneQueryBuilder implements InitializingBean {
 
         if (query instanceof PropertyTermQuery) {
             PropertyTermQuery ptq = (PropertyTermQuery) query;
-            PropertyTypeDefinition propDef = ptq.getPropertyDefinition();
             TermOperator op = ptq.getOperator();
 
             if (op == TermOperator.IN || op == TermOperator.NI) {
@@ -253,45 +255,44 @@ public class LuceneQueryBuilder implements InitializingBean {
                         ptq.getOperator(), documentMapper.getPropertyFields());
             } else if (op == TermOperator.GE || op == TermOperator.GT) {
                 // Convert to PropertyRangeQuery
-                PropertyRangeQuery prq = new PropertyRangeQuery(ptq.getPropertyDefinition(), 
+                PropertyRangeQuery prq = new PropertyRangeQuery(ptq. name(), ptq.namespace(), ptq.type(), ptq.complexValueAttributeSpecifier().orElse(null),
                         ptq.getTerm(), null, op == TermOperator.GE);
-                prq.setComplexValueAttributeSpecifier(ptq.getComplexValueAttributeSpecifier());
-                
-                return new PropertyRangeQueryBuilder(prq, documentMapper.getPropertyFields());
+
+                return new PropertyRangeQueryBuilder(prq, propDef, documentMapper.getPropertyFields());
             } else if (op == TermOperator.LE || op == TermOperator.LT) {
                 // Convert to PropertyRangeQuery
-                PropertyRangeQuery prq = new PropertyRangeQuery(ptq.getPropertyDefinition(), 
+                PropertyRangeQuery prq = new PropertyRangeQuery(ptq.name(), ptq.namespace(), ptq.type(), ptq.complexValueAttributeSpecifier().orElse(null), 
                         null, ptq.getTerm(), op == TermOperator.LE);
-                prq.setComplexValueAttributeSpecifier(ptq.getComplexValueAttributeSpecifier());
-                return new PropertyRangeQueryBuilder(prq, documentMapper.getPropertyFields());
+
+                return new PropertyRangeQueryBuilder(prq, propDef, documentMapper.getPropertyFields());
                 
             } else {
-                return new PropertyTermQueryBuilder(ptq, documentMapper.getPropertyFields());
+                return new PropertyTermQueryBuilder(ptq, propDef, documentMapper.getPropertyFields());
             }
         }
 
         if (query instanceof PropertyPrefixQuery) {
-            return new PropertyPrefixQueryBuilder((PropertyPrefixQuery) query);
+            return new PropertyPrefixQueryBuilder((PropertyPrefixQuery) query, propDef);
         }
 
         if (query instanceof PropertyRangeQuery) {
-            return new PropertyRangeQueryBuilder((PropertyRangeQuery) query, documentMapper.getPropertyFields());
+            return new PropertyRangeQueryBuilder((PropertyRangeQuery) query, propDef, documentMapper.getPropertyFields());
         }
 
         if (query instanceof PropertyWildcardQuery) {
-            return new PropertyWildcardQueryBuilder((PropertyWildcardQuery) query);
+            return new PropertyWildcardQueryBuilder((PropertyWildcardQuery) query, propDef);
         }
 
         if (query instanceof PropertyExistsQuery) {
             PropertyExistsQuery peq = (PropertyExistsQuery)query;
-            if (peq.getPropertyDefinition().equals(hiddenPropDef)
-                    && peq.getComplexValueAttributeSpecifier() == null
+            if (propDef.equals(hiddenPropDef)
+                    && !peq.complexValueAttributeSpecifier().isPresent()
                     && peq.isInverted()) {
                 // Use common cached filter for "navigation:hidden NOT EXISTS" clause
                 return () -> new ConstantScoreQuery(hiddenFilter);
             }
             
-            return new PropertyExistsQueryBuilder(peq);
+            return new PropertyExistsQueryBuilder(peq, propDef);
         }
 
         throw new QueryBuilderException("Unsupported property query type: " + query.getClass().getName());
@@ -480,5 +481,8 @@ public class LuceneQueryBuilder implements InitializingBean {
         this.documentMapper = documentMapper;
     }
 
-
+    @Required
+    public void setResourceTypeTree(ResourceTypeTree resourceTypeTree) {
+        this.resourceTypeTree = resourceTypeTree;
+    }
 }

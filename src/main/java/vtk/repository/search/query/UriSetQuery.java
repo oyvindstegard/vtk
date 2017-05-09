@@ -31,7 +31,9 @@
 package vtk.repository.search.query;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This query matches a set of URIs. It is an optimized form
@@ -41,6 +43,8 @@ import java.util.Set;
  */
 public class UriSetQuery implements UriQuery {
 
+    private static final long serialVersionUID = 7048216956240839865L;
+
     private final Set<String> uris;
     private final TermOperator operator;
     
@@ -49,7 +53,7 @@ public class UriSetQuery implements UriQuery {
     }
     
     public UriSetQuery(Set<String> uris, TermOperator operator) {
-        this.uris = uris;
+        this.uris = new HashSet<>(uris);
         this.operator = operator;
     }
     
@@ -62,21 +66,29 @@ public class UriSetQuery implements UriQuery {
     }
     
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
+    }
+
+    @Override
+    public String toString() {
+        return "UriSetQuery{" + "uris=" + uris.stream().sorted().collect(Collectors.toList())
+                + ", operator=" + operator + '}';
     }
     
     @Override
-    public String toString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append(getClass().getName()).append(", ");
-        buf.append("URI set = ").append(this.uris).append(", ");
-        buf.append("operator = ").append(this.operator);
-        return buf.toString();
+    public int hashCode() {
+        int hash = 3;
+        hash = 79 * hash + Objects.hashCode(this.uris);
+        hash = 79 * hash + Objects.hashCode(this.operator);
+        return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -84,7 +96,7 @@ public class UriSetQuery implements UriQuery {
             return false;
         }
         final UriSetQuery other = (UriSetQuery) obj;
-        if (this.uris != other.uris && (this.uris == null || !this.uris.equals(other.uris))) {
+        if (!Objects.equals(this.uris, other.uris)) {
             return false;
         }
         if (this.operator != other.operator) {
@@ -92,19 +104,5 @@ public class UriSetQuery implements UriQuery {
         }
         return true;
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + (this.uris != null ? this.uris.hashCode() : 0);
-        hash = 53 * hash + (this.operator != null ? this.operator.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public Object clone() {
-        return new UriSetQuery(new HashSet<String>(this.uris), this.operator);
-    }
-    
 
 }

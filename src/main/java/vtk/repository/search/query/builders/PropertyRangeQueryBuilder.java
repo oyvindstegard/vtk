@@ -46,12 +46,14 @@ import vtk.repository.search.query.QueryBuilderException;
  */
 public class PropertyRangeQueryBuilder implements QueryBuilder {
 
-    private PropertyRangeQuery prq;
-    private PropertyFields fvm;
+    private final PropertyRangeQuery prq;
+    private final PropertyFields fvm;
+    private final PropertyTypeDefinition def;
     
-    public PropertyRangeQueryBuilder(PropertyRangeQuery prq, PropertyFields fvm) {
+    public PropertyRangeQueryBuilder(PropertyRangeQuery prq, PropertyTypeDefinition def, PropertyFields fvm) {
         this.prq = prq;
         this.fvm = fvm;
+        this.def = def;
     }
 
     @Override
@@ -62,18 +64,17 @@ public class PropertyRangeQueryBuilder implements QueryBuilder {
         if (fromValue == null && toValue == null) {
             throw new QueryBuilderException("At least one value has to be set for either upper or lower bound");
         }
-        final PropertyTypeDefinition propDef = prq.getPropertyDefinition();
-        final String cva = prq.getComplexValueAttributeSpecifier();
+        final String cva = prq.complexValueAttributeSpecifier().orElse(null);
         final boolean inclusive = prq.isInclusive();
         
         final String fieldName;
         final PropertyType.Type valueType;
         if (cva != null) {
-            valueType = PropertyFields.jsonFieldDataType(propDef, cva);
-            fieldName = PropertyFields.jsonFieldName(propDef, cva, false);
+            valueType = PropertyFields.jsonFieldDataType(def, cva);
+            fieldName = PropertyFields.jsonFieldName(def, cva, false);
         } else {
-            valueType = propDef.getType();
-            fieldName = PropertyFields.propertyFieldName(propDef, false);
+            valueType = def.getType();
+            fieldName = PropertyFields.propertyFieldName(def, false);
         }
         
         switch (valueType) {

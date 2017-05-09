@@ -30,42 +30,51 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 
 
+/**
+ * Basic term query on resource name.
+ */
 public class NameTermQuery implements NameQuery {
 
-    private String term;
-    private TermOperator operator;
+    private static final long serialVersionUID = 6486887342015937592L;
+
+    private final String term;
+    private final TermOperator op;
     
     public NameTermQuery(String term, TermOperator operator) {
         this.term = term;
-        this.operator = operator;
+        this.op = operator;
         
     }
 
     public TermOperator getOperator() {
-        return this.operator;
-    }
-
-    public void setOperator(TermOperator operator) {
-        this.operator = operator;
+        return this.op;
     }
 
     public String getTerm() {
         return this.term;
     }
 
-    public void setTerm(String term) {
-        this.term = term;
-    }
-
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
     @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.term);
+        hash = 53 * hash + Objects.hashCode(this.op);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -73,21 +82,18 @@ public class NameTermQuery implements NameQuery {
             return false;
         }
         final NameTermQuery other = (NameTermQuery) obj;
-        if ((this.term == null) ? (other.term != null) : !this.term.equals(other.term)) {
+        if (!Objects.equals(this.term, other.term)) {
             return false;
         }
-        if (this.operator != other.operator) {
+        if (this.op != other.op) {
             return false;
         }
         return true;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 67 * hash + (this.term != null ? this.term.hashCode() : 0);
-        hash = 67 * hash + (this.operator != null ? this.operator.hashCode() : 0);
-        return hash;
+    public String toString() {
+        return "NameTermQuery{" + "term=" + term + ", op=" + op + '}';
     }
-    
+
 }

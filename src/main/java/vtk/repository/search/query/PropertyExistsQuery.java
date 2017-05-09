@@ -30,14 +30,32 @@
  */
 package vtk.repository.search.query;
 
+import vtk.repository.Namespace;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * Match resources where property exists.
+ */
 public class PropertyExistsQuery extends AbstractPropertyQuery {
 
-    private boolean inverted;
+    private final boolean inverted;
     
     public PropertyExistsQuery(PropertyTypeDefinition propertyDefinition, boolean inverted) {
         super(propertyDefinition);
+        this.inverted = inverted;
+    }
+    public PropertyExistsQuery(PropertyTypeDefinition propertyDefinition, String complexValueAttributeSpecifier, boolean inverted) {
+        super(propertyDefinition, complexValueAttributeSpecifier);
+        this.inverted = inverted;
+    }
+
+    public PropertyExistsQuery(String name, Namespace ns, PropertyType.Type type, boolean inverted) {
+        super(name, ns, type);
+        this.inverted = inverted;
+    }
+    public PropertyExistsQuery(String name, Namespace ns, PropertyType.Type type, String complexValueAttributeSpecifier, boolean inverted) {
+        super(name, ns, type, complexValueAttributeSpecifier);
         this.inverted = inverted;
     }
 
@@ -46,15 +64,15 @@ public class PropertyExistsQuery extends AbstractPropertyQuery {
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
-    
+
     @Override
     public String toString() {
-        return getPropertyDefinition() + (inverted ? " !exists" : " exists");
+        return "PropertyExistsQuery{" + super.fieldsToString() + ", inverted=" + inverted + '}';
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (!super.equals(obj)) return false;

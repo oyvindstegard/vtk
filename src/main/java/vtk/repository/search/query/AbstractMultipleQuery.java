@@ -36,7 +36,9 @@ import java.util.List;
 
 public abstract class AbstractMultipleQuery implements Query {
 
-    private List<Query> queries = new ArrayList<Query>();
+    private static final long serialVersionUID = -6874259524588061783L;
+
+    protected final List<Query> queries = new ArrayList<>();
 
     /**
      * Adds a sub-query to this query
@@ -50,44 +52,6 @@ public abstract class AbstractMultipleQuery implements Query {
     
     public List<Query> getQueries() {
         return this.queries;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        if (this.queries != null) {
-            sb.append(": [");
-            String separator = "";
-            for (Query qry: this.queries) {
-                sb.append(separator);
-                sb.append(qry);
-                separator = ", ";
-            }
-            sb.append("]");
-        }
-        return sb.toString();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AbstractMultipleQuery other = (AbstractMultipleQuery) obj;
-        if (this.queries != other.queries && (this.queries == null || !this.queries.equals(other.queries))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + (this.queries != null ? this.queries.hashCode() : 0);
-        return hash;
     }
 
 }

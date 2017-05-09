@@ -122,6 +122,7 @@
     <property name="publishedPropDef" ref="publishedPropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
     <property name="hiddenPropDef" ref="hiddenPropDef" />
+    <property name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
 
   <!-- Searcher implementation (wrapped in dispatcher) -->

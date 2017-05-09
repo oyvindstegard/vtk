@@ -36,8 +36,10 @@ package vtk.repository.search.query;
  */
 public class MatchAllQuery implements Query {
 
+    private static final long serialVersionUID = -6512591608766198246L;
+
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
@@ -50,6 +52,11 @@ public class MatchAllQuery implements Query {
     @Override
     public int hashCode() {
         return 7;
+    }
+
+    @Override
+    public String toString() {
+        return "MatchAllQuery{}";
     }
     
 }

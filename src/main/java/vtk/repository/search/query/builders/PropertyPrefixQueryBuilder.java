@@ -51,16 +51,16 @@ import vtk.repository.search.query.filter.FilterFactory;
  */
 public class PropertyPrefixQueryBuilder implements QueryBuilder {
 
-    private PropertyPrefixQuery ppq;
+    private final PropertyPrefixQuery ppq;
+    private final PropertyTypeDefinition def;
 
-    public PropertyPrefixQueryBuilder(PropertyPrefixQuery ppq) {
+    public PropertyPrefixQueryBuilder(PropertyPrefixQuery ppq, PropertyTypeDefinition def) {
         this.ppq = ppq;
+        this.def = def;
     }
 
     @Override
     public Query buildQuery() throws QueryBuilderException {
-        
-        PropertyTypeDefinition def = this.ppq.getPropertyDefinition();
         String term = this.ppq.getTerm();
         
         if (!(def.getType() == Type.PRINCIPAL ||
@@ -82,9 +82,9 @@ public class PropertyPrefixQueryBuilder implements QueryBuilder {
         }
 
         String fieldName = PropertyFields.propertyFieldName(def, ignorecase);
-        if (def.getType() == Type.JSON && this.ppq.getComplexValueAttributeSpecifier() != null) {
+        if (def.getType() == Type.JSON && this.ppq.complexValueAttributeSpecifier().isPresent()) {
             fieldName = PropertyFields.jsonFieldName(
-                    def, ppq.getComplexValueAttributeSpecifier(), ignorecase);
+                    def, ppq.complexValueAttributeSpecifier().get(), ignorecase);
         }
 
         Filter filter = new PrefixFilter(new Term(fieldName, term));

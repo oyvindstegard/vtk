@@ -30,15 +30,29 @@
  */
 package vtk.repository.search.query;
 
-import vtk.repository.resourcetype.PropertyTypeDefinition;
+import java.util.Optional;
+import vtk.repository.Namespace;
+import vtk.repository.resourcetype.PropertyType;
 
 public interface PropertyQuery extends Query {
 
     /**
-     * Get the definition of the property on which to perform the query.
+     * 
+     * @return name of the property for which this query clause applies, never <code>null</code>
      */
-    public PropertyTypeDefinition getPropertyDefinition();
-    
+    public String name();
+
+    /**
+     * @return the name space for the property for which this query clause applies, never <code>null</code>
+     */
+    public Namespace namespace();
+
+    /**
+     * Get data type of property.
+     * @return data type of the property for which this query clause applies, never <code>null</code>
+     */
+    public PropertyType.Type type();
+
     /**
      * Specifies a query on an attribute/part of a complex property value (e.g. part of JSON structure), and
      * not the complete value as a whole.
@@ -47,9 +61,8 @@ public interface PropertyQuery extends Query {
      * for JSON values. This only makes sense for property types that can have complex values, and
      * support for this is up to query implementation.
      *
-     * @return A <code>String</code>, which is a value/type specific attribute/part selector or
-     *         <code>null</code> if no specific value-attribute should be queried.
+     * @return An optional <code>String</code>, which is a value/type specific attribute/part selector.
      */
-    public String getComplexValueAttributeSpecifier();
+    public Optional<String> complexValueAttributeSpecifier();
     
 }

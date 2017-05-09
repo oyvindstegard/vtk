@@ -30,11 +30,17 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 
+/**
+ * Prefix query on resource name.
+ */
 public class NamePrefixQuery implements NameQuery {
 
+    private static final long serialVersionUID = -861663856942200482L;
+
     private final String term;
-    private boolean inverted;
+    private final boolean inverted;
 
     public NamePrefixQuery(String term, boolean inverted) {
         this.term = term;
@@ -50,12 +56,23 @@ public class NamePrefixQuery implements NameQuery {
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
     @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + Objects.hashCode(this.term);
+        hash = 67 * hash + (this.inverted ? 1 : 0);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -63,21 +80,18 @@ public class NamePrefixQuery implements NameQuery {
             return false;
         }
         final NamePrefixQuery other = (NamePrefixQuery) obj;
-        if ((this.term == null) ? (other.term != null) : !this.term.equals(other.term)) {
+        if (this.inverted != other.inverted) {
             return false;
         }
-        if (this.inverted != other.inverted) {
+        if (!Objects.equals(this.term, other.term)) {
             return false;
         }
         return true;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.term != null ? this.term.hashCode() : 0);
-        hash = 97 * hash + (this.inverted ? 1 : 0);
-        return hash;
+    public String toString() {
+        return "NamePrefixQuery{" + "term=" + term + ", inverted=" + inverted + '}';
     }
-    
+
 }

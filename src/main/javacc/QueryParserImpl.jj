@@ -85,21 +85,16 @@ public class QueryParserImpl implements QueryParser {
         if (def == null)
             throw new RuntimeException("Unknown property " + spec.qualifier + ":" + spec.name);
 
-        PropertyExistsQuery peq = new PropertyExistsQuery(def, inverted);
-        peq.setComplexValueAttributeSpecifier(spec.cva);
-        return peq;
+        return new PropertyExistsQuery(def, spec.cva, inverted);
     }
 
-    private Query getPropTermQuery(PropSpec spec, String value,
-                                   TermOperator operator) {
+    private Query getPropTermQuery(PropSpec spec, String value, TermOperator operator) {
         PropertyTypeDefinition def = 
             resourceTypeTree.getPropertyDefinitionByPrefix(spec.qualifier, spec.name);
         if (def == null)
             throw new RuntimeException("Unknown property " + spec.qualifier + ":" + spec.name);
 
-        PropertyTermQuery ptq = new PropertyTermQuery(def, value, operator);
-        ptq.setComplexValueAttributeSpecifier(spec.cva);
-        return ptq;
+        return new PropertyTermQuery(def, spec.cva, value, operator);
     }
     
     private Query getPropPrefixQuery(PropSpec spec, String value, TermOperator op) {
@@ -108,9 +103,7 @@ public class QueryParserImpl implements QueryParser {
         if (def == null)
             throw new RuntimeException("Unknown property " + spec.qualifier + ":" + spec.name);
 
-        PropertyPrefixQuery ppq = new PropertyPrefixQuery(def, value, op);
-        ppq.setComplexValueAttributeSpecifier(spec.cva);
-        return ppq;
+        return new PropertyPrefixQuery(def, spec.cva, value, op);
     }
 
     private Query getPropWildcardQuery(PropSpec spec, String value, TermOperator op) {
@@ -119,9 +112,7 @@ public class QueryParserImpl implements QueryParser {
         if (def == null)
             throw new RuntimeException("Unknown property " + spec.qualifier + ":" + spec.name);
 
-        PropertyWildcardQuery pwq = new PropertyWildcardQuery(def, value, op);
-        pwq.setComplexValueAttributeSpecifier(spec.cva);
-        return pwq;
+        return new PropertyWildcardQuery(def, spec.cva, value, op);
     }
     
     private Query getUriSetQuery(String urisCsv, TermOperator op) {

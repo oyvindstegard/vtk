@@ -30,8 +30,14 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 
+/**
+ * String range on resource name.
+ */
 public class NameRangeQuery implements NameQuery {
+
+    private static final long serialVersionUID = 6508406107294143926L;
 
     private final String fromTerm;
     private final String toTerm;
@@ -56,12 +62,24 @@ public class NameRangeQuery implements NameQuery {
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
     @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + Objects.hashCode(this.fromTerm);
+        hash = 43 * hash + Objects.hashCode(this.toTerm);
+        hash = 43 * hash + (this.inclusive ? 1 : 0);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -69,25 +87,21 @@ public class NameRangeQuery implements NameQuery {
             return false;
         }
         final NameRangeQuery other = (NameRangeQuery) obj;
-        if ((this.fromTerm == null) ? (other.fromTerm != null) : !this.fromTerm.equals(other.fromTerm)) {
-            return false;
-        }
-        if ((this.toTerm == null) ? (other.toTerm != null) : !this.toTerm.equals(other.toTerm)) {
-            return false;
-        }
         if (this.inclusive != other.inclusive) {
+            return false;
+        }
+        if (!Objects.equals(this.fromTerm, other.fromTerm)) {
+            return false;
+        }
+        if (!Objects.equals(this.toTerm, other.toTerm)) {
             return false;
         }
         return true;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 67 * hash + (this.fromTerm != null ? this.fromTerm.hashCode() : 0);
-        hash = 67 * hash + (this.toTerm != null ? this.toTerm.hashCode() : 0);
-        hash = 67 * hash + (this.inclusive ? 1 : 0);
-        return hash;
+    public String toString() {
+        return "NameRangeQuery{" + "fromTerm=" + fromTerm + ", toTerm=" + toTerm + ", inclusive=" + inclusive + '}';
     }
-    
+
 }

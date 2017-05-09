@@ -39,6 +39,8 @@ import vtk.security.Principal;
  * Query resource ACL privileges and associated principals.
  */
 public class AclPrivilegeQuery extends AbstractAclQuery {
+
+    private static final long serialVersionUID = 1051775063317822426L;
     
     private final String qualifiedName;
     private final Privilege privilege;
@@ -143,6 +145,12 @@ public class AclPrivilegeQuery extends AbstractAclQuery {
     }
 
     @Override
+    public String toString() {
+        return "AclPrivilegeQuery{" + "qualifiedName=" + qualifiedName + ", privilege="
+                + privilege + ", includeSuperPrivileges=" + includeSuperPrivileges +", inverted=" + super.inverted + '}';
+    }
+
+    @Override
     public int hashCode() {
         int hash = 7;
         hash = 89 * hash + (this.qualifiedName != null ? this.qualifiedName.hashCode() : 0);
@@ -167,17 +175,17 @@ public class AclPrivilegeQuery extends AbstractAclQuery {
         if (this.privilege != other.privilege) {
             return false;
         }
-        if (super.inverted != other.inverted) {
+        if (this.includeSuperPrivileges != other.includeSuperPrivileges) {
             return false;
         }
-        if (this.includeSuperPrivileges != other.includeSuperPrivileges) {
+        if (super.inverted != other.inverted) {
             return false;
         }
         return true;
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 }

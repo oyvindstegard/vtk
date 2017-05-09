@@ -144,8 +144,8 @@ public class PreviousLocationsResolver {
 
     private List<RelocatedResource> searchPreviousLocations(Path uri) {
         PropertyTermQuery termQuery = new PropertyTermQuery(
-                locationHistoryPropDef, uri.toString(), TermOperator.EQ);
-        termQuery.setComplexValueAttributeSpecifier("locations.from_uri");
+                locationHistoryPropDef, "locations.from_uri", uri.toString(), TermOperator.EQ);
+
         Search search = new Search();
         search.setQuery(termQuery);
         search.setSorting(null);

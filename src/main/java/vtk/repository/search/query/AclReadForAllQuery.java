@@ -32,9 +32,11 @@
 package vtk.repository.search.query;
 
 /**
- *
+ * Match any resource which has a "read for all" or non read-restricted ACL.
  */
 public class AclReadForAllQuery extends AbstractAclQuery {
+
+    private static final long serialVersionUID = 4651567272938230861L;
 
     public AclReadForAllQuery() {
         super(false);
@@ -45,15 +47,13 @@ public class AclReadForAllQuery extends AbstractAclQuery {
     }
     
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        sb.append(";inverted=").append(super.inverted);
-        return sb.toString();
+        return "AclReadForAllQuery{inverted=" + super.inverted + '}';
     }
 
     @Override

@@ -30,18 +30,42 @@
  */
 package vtk.repository.search.query;
 
+import vtk.repository.Namespace;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * Prefix match on property values.
+ */
 public class PropertyPrefixQuery extends AbstractPropertyQuery {
 
     private final String term;
     private final TermOperator op;
 
-    public PropertyPrefixQuery(PropertyTypeDefinition propertyDefinition, String term, TermOperator op) {
-        super(propertyDefinition);
+    public PropertyPrefixQuery(PropertyTypeDefinition def, String term, TermOperator op) {
+        super(def);
         this.term = term;
         this.op = op;
     }
+
+    public PropertyPrefixQuery(PropertyTypeDefinition propDef, String complexValueAttributeSpecifier, String term, TermOperator op) {
+        super(propDef, complexValueAttributeSpecifier);
+        this.term = term;
+        this.op = op;
+    }
+
+    public PropertyPrefixQuery(String name, Namespace ns, PropertyType.Type type, String term, TermOperator op) {
+        super(name, ns, type);
+        this.term = term;
+        this.op = op;
+    }
+
+    public PropertyPrefixQuery(String name, Namespace ns, PropertyType.Type type, String complexValueAttribute, String term, TermOperator op) {
+        super(name, ns, type, complexValueAttribute);
+        this.term = term;
+        this.op = op;
+    }
+
 
     public String getTerm() {
         return this.term;
@@ -52,17 +76,13 @@ public class PropertyPrefixQuery extends AbstractPropertyQuery {
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
-    
+
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder(getClass().getName()).append(": ");
-        buf.append("propdef = ").append(getPropertyDefinition());
-        buf.append("; prefix ").append(this.op).append(" '").append(this.term).append("'");
-        
-        return buf.toString();
+        return "PropertyPrefixQuery{" + "term=" + term + ", op=" + op + ", " + super.fieldsToString() + '}';
     }
 
     @Override

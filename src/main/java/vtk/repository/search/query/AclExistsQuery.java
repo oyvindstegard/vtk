@@ -32,9 +32,10 @@ package vtk.repository.search.query;
 
 /**
  * TODO rename class to "AclNotInheritedQuery" (more precise)
- * @author oyvind
  */
 public class AclExistsQuery extends AbstractAclQuery {
+
+    private static final long serialVersionUID = -6998581525554533738L;
 
     public AclExistsQuery() {
         super(false);
@@ -45,16 +46,15 @@ public class AclExistsQuery extends AbstractAclQuery {
     }
     
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
-        sb.append(";inverted=").append(super.inverted);
-        return sb.toString();
+        return "AclExistsQuery{inverted=" + super.inverted + '}';
     }
+
     
     @Override
     public boolean equals(Object obj) {

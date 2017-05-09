@@ -30,14 +30,19 @@
  */
 package vtk.repository.search;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * Represents a query result sorting specification, with one or more sorting fields.
+ *
+ * XXX should be immutable with builder
  */
-public class Sorting {
+public class Sorting implements Serializable {
+
+    private static final long serialVersionUID = 6883505878350038199L;
 
     private final List<SortField> sortFields;
     
@@ -56,16 +61,24 @@ public class Sorting {
     public List<SortField> getSortFields() {
         return this.sortFields;
     }
-    
+
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
-        sb.append(": ").append(this.sortFields);
-        return sb.toString();
+        return "Sorting{" + "sortFields=" + sortFields + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + Objects.hashCode(this.sortFields);
+        return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -73,18 +86,11 @@ public class Sorting {
             return false;
         }
         final Sorting other = (Sorting) obj;
-        if (this.sortFields != other.sortFields && 
-                (this.sortFields == null || !this.sortFields.equals(other.sortFields))) {
+        if (!Objects.equals(this.sortFields, other.sortFields)) {
             return false;
         }
         return true;
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 79 * hash + (this.sortFields != null ? this.sortFields.hashCode() : 0);
-        return hash;
-    }
+    
 
 }

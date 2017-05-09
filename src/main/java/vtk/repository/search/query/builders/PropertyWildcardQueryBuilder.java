@@ -51,15 +51,16 @@ import vtk.repository.search.query.filter.FilterFactory;
 public class PropertyWildcardQueryBuilder implements QueryBuilder {
 
     private PropertyWildcardQuery query;
+    private PropertyTypeDefinition def;
     
-    public PropertyWildcardQueryBuilder(PropertyWildcardQuery query) {
+    public PropertyWildcardQueryBuilder(PropertyWildcardQuery query, PropertyTypeDefinition def) {
         this.query = query;
+        this.def = def;
     }
 
     @Override
     public Query buildQuery() throws QueryBuilderException {
         
-        PropertyTypeDefinition def = this.query.getPropertyDefinition();
         String wildcard = this.query.getTerm();
 
         if (! (def.getType() == Type.PRINCIPAL ||
@@ -77,9 +78,9 @@ public class PropertyWildcardQueryBuilder implements QueryBuilder {
         boolean invert = (op == TermOperator.NE || op == TermOperator.NE_IGNORECASE);
         
         String fieldName = PropertyFields.propertyFieldName(def, ignorecase);
-        if (def.getType() == Type.JSON && query.getComplexValueAttributeSpecifier() != null) {
+        if (def.getType() == Type.JSON && query.complexValueAttributeSpecifier().isPresent()) {
             fieldName = PropertyFields.jsonFieldName(def,
-                    query.getComplexValueAttributeSpecifier(), ignorecase);
+                    query.complexValueAttributeSpecifier().get(), ignorecase);
         }
 
         Term wTerm = new Term(fieldName, (ignorecase ? wildcard.toLowerCase() : wildcard));

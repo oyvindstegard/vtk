@@ -32,6 +32,8 @@
 package vtk.repository.search.query;
 
 public abstract class AbstractAclQuery implements Query {
+
+    private static final long serialVersionUID = -6245889441070807566L;
     
     protected final boolean inverted;
     
@@ -55,6 +57,6 @@ public abstract class AbstractAclQuery implements Query {
     }
 
     @Override
-    public abstract Object accept(QueryTreeVisitor visitor, Object data);
+    public abstract Object accept(QueryVisitor visitor, Object data);
     
 }

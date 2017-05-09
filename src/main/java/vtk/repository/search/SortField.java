@@ -30,13 +30,17 @@
  */
 package vtk.repository.search;
 
+import java.io.Serializable;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * A sort field of some kind, with a direction and a locale. Specific sub-class
  * implementations apply for further details.
  */
-public abstract class SortField {
+public abstract class SortField implements Serializable {
+
+    private static final long serialVersionUID = -3917331022176884264L;
 
     public enum Direction {
         ASC("asc"), DESC("desc");
@@ -52,19 +56,21 @@ public abstract class SortField {
         }
     }
 
-    private Direction direction = Direction.ASC;
+    private final Direction direction;
+    private final Locale locale;
 
-    private Locale locale = Locale.getDefault();
-
-    public SortField() {}
-
-    public SortField(Direction direction) {
-        this.direction = direction;
+    protected SortField() {
+        this(Direction.ASC, Locale.getDefault());
     }
-
-    public SortField(Direction direction, Locale locale) {
-        this.direction = direction;
-        this.locale = locale;
+    protected SortField(Locale locale) {
+        this(Direction.ASC, locale);
+    }
+    protected SortField(Direction direction) {
+        this(direction, Locale.getDefault());
+    }
+    protected SortField(Direction direction, Locale locale) {
+        this.direction = Objects.requireNonNull(direction);
+        this.locale = Objects.requireNonNull(locale);
     }
     
     public Direction getDirection() {

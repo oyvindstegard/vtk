@@ -30,19 +30,44 @@
  */
 package vtk.repository.search.query;
 
+import vtk.repository.Namespace;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * Range matching on property values.
+ */
 public class PropertyRangeQuery extends AbstractPropertyQuery {
 
     private final String fromTerm;
     private final String toTerm;
     private final boolean inclusive;
 
-    public PropertyRangeQuery(PropertyTypeDefinition propertyDefinition, 
-            String fromTerm, String toTerm, boolean inclusive) {
+    public PropertyRangeQuery(PropertyTypeDefinition propertyDefinition, String from, String to, boolean inclusive) {
         super(propertyDefinition);
-        this.fromTerm = fromTerm;
-        this.toTerm = toTerm;
+        this.fromTerm = from;
+        this.toTerm = to;
+        this.inclusive = inclusive;
+    }
+
+    public PropertyRangeQuery(PropertyTypeDefinition propDef, String complexValueAttribute, String from, String to, boolean inclusive) {
+        super(propDef, complexValueAttribute);
+        this.fromTerm = from;
+        this.toTerm = to;
+        this.inclusive = inclusive;
+    }
+
+    public PropertyRangeQuery(String name, Namespace ns, PropertyType.Type type, String from, String to, boolean inclusive) {
+        super(name, ns, type);
+        this.fromTerm = from;
+        this.toTerm = to;
+        this.inclusive = inclusive;
+    }
+
+    public PropertyRangeQuery(String name, Namespace ns, PropertyType.Type type, String complexValueAttribute, String from, String to, boolean inclusive) {
+        super(name, ns, type, complexValueAttribute);
+        this.fromTerm = from;
+        this.toTerm = to;
         this.inclusive = inclusive;
     }
 
@@ -59,7 +84,13 @@ public class PropertyRangeQuery extends AbstractPropertyQuery {
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public String toString() {
+        return "PropertyRangeQuery{" + "fromTerm=" + fromTerm + ", toTerm=" + toTerm
+                + ", inclusive=" + inclusive + ", " + super.fieldsToString() + '}';
+    }
+
+    @Override
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
     

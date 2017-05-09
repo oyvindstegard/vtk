@@ -30,48 +30,54 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 
+/**
+ * Exact match on resource type or sub types.
+ */
 public class TypeTermQuery implements Query {
 
-    private String term;
-    private TermOperator operator;
+    private static final long serialVersionUID = -8822768931762971758L;
+
+    private final String term;
+    private final TermOperator op;
     
     public TypeTermQuery(String term, TermOperator operator) {
         this.term = term;
-        this.operator = operator;
+        this.op = operator;
     }
 
     public TermOperator getOperator() {
-        return this.operator;
-    }
-
-    public void setOperator(TermOperator operator) {
-        this.operator = operator;
+        return this.op;
     }
 
     public String getTerm() {
         return this.term;
     }
 
-    public void setTerm(String term) {
-        this.term = term;
+    @Override
+    public Object accept(QueryVisitor visitor, Object data) {
+        return visitor.visit(this, data);
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
-        return visitor.visit(this, data);
+    public String toString() {
+        return "TypeTermQuery{" + "term=" + term + ", op=" + op + '}';
     }
     
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        sb.append(";term=").append(this.term);
-        sb.append(";operator=").append(this.operator);
-        return sb.toString();
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + Objects.hashCode(this.term);
+        hash = 97 * hash + Objects.hashCode(this.op);
+        return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -79,21 +85,13 @@ public class TypeTermQuery implements Query {
             return false;
         }
         final TypeTermQuery other = (TypeTermQuery) obj;
-        if ((this.term == null) ? (other.term != null) : !this.term.equals(other.term)) {
+        if (!Objects.equals(this.term, other.term)) {
             return false;
         }
-        if (this.operator != other.operator) {
+        if (this.op != other.op) {
             return false;
         }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + (this.term != null ? this.term.hashCode() : 0);
-        hash = 23 * hash + (this.operator != null ? this.operator.hashCode() : 0);
-        return hash;
-    }
-    
 }

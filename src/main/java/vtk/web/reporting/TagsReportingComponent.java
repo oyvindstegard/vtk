@@ -30,26 +30,25 @@
  */
 package vtk.web.reporting;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
 
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
 import vtk.repository.Property;
-import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -61,10 +60,12 @@ import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
+import vtk.repository.search.query.PropertyExistsQuery;
 import vtk.repository.search.query.Query;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.TypeTermQuery;
 import vtk.repository.search.query.UriPrefixQuery;
+import vtk.util.cache.SimpleCache;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.search.SearchComponentQueryBuilder;
@@ -75,7 +76,9 @@ public class TagsReportingComponent {
     private PropertyTypeDefinition tagsPropDef = null;
     private AggregationResolver aggregationResolver;
     private boolean caseInsensitive = true;
-    private Ehcache cache;
+    private Optional<SimpleCache<String, List<TagFrequency>>> cache = Optional.empty();
+    private String staticToken = null;
+    private boolean useStaticToken = false;
     private Map<String, List<SearchComponentQueryBuilder>> resourceTypeQueries;
 
     public static final class TagFrequency implements Serializable {
@@ -107,42 +110,6 @@ public class TagsReportingComponent {
         }
     }
 
-    // Tag frequency collector
-    private class TagFrequencyCollector implements Searcher.MatchCallback {
-
-        private final Map<String, TagFrequency> tagFreqMap = new HashMap<String, TagFrequency>();
-
-        @Override
-        public boolean matching(PropertySet propertySet) throws Exception {
-            Property tags = propertySet.getProperty(tagsPropDef);
-            if (tags != null) {
-                if (tagsPropDef.isMultiple()) {
-                    for (Value value : tags.getValues()) {
-                        incrementTag(value.getStringValue());
-                    }
-                } else {
-                    Value value = tags.getValue();
-                    incrementTag(value.getStringValue());
-                }
-            }
-            return true;
-        }
-
-        private void incrementTag(final String tagValue) {
-            TagFrequency tf = this.tagFreqMap.get(tagValue);
-            if (tf == null) {
-                tf = new TagFrequency(tagValue, 1);
-                this.tagFreqMap.put(tagValue, tf);
-            } else {
-                tf.increment();
-            }
-        }
-
-        List<TagFrequency> getTagFreqList() {
-            return new ArrayList<TagFrequency>(this.tagFreqMap.values());
-        }
-    }
-
     /**
      * Get list of TagFrequency instances for the given report criteria. The
      * list will always be sorted by frequency in descending order.
@@ -151,22 +118,18 @@ public class TagsReportingComponent {
      * @param resourceTypeDefs
      * @param limit
      * @param tagOccurenceMin
-     * @param token
+     * @param requestSecurityToken 
      * @return a list of {@link TagFrequency} objects.
      * @throws QueryException
      */
     @SuppressWarnings("unchecked")
     public List<TagFrequency> getTags(Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
-            int tagOccurenceMin, String token) throws Exception {
+            int tagOccurenceMin, String requestSecurityToken) throws IOException  {
 
-        Set<String> rtNames = resourceTypeNames(resourceTypeDefs);
-        final CacheKey cacheKey = new CacheKey(scopeUri, rtNames, limit, tagOccurenceMin, token);
-        if (cache != null) {
-            Element elem = cache.get(cacheKey);
-            if (elem != null) {
-                return (List<TagFrequency>) elem.getValue();
-            }
-        }
+        final String token = useStaticToken ? this.staticToken : requestSecurityToken;
+
+        Set<String> rtNames = resourceTypeDefs == null ? Collections.emptySet()
+                : resourceTypeDefs.stream().map(d -> d.getName()).collect(Collectors.toSet());
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repo = requestContext.getRepository();
@@ -210,16 +173,26 @@ public class TagsReportingComponent {
 
         }
 
-        Query masterScopeQuery = pathScopeQuery;
-        if (typeScopeQuery != null) {
-            if (masterScopeQuery != null) {
-                AndQuery andQuery = new AndQuery();
-                andQuery.add(masterScopeQuery);
-                andQuery.add(typeScopeQuery);
-                masterScopeQuery = andQuery;
-            } else {
-                masterScopeQuery = typeScopeQuery;
+        // Build complete query tree
+        final Query topLevel;
+        if (typeScopeQuery != null || pathScopeQuery != null) {
+            AndQuery and = new AndQuery();
+            and.add(new PropertyExistsQuery(tagsPropDef, false));
+            if (pathScopeQuery != null) {
+                and.add(pathScopeQuery);
             }
+            if (typeScopeQuery != null) {
+                and.add(typeScopeQuery);
+            }
+            topLevel = and;
+        } else {
+            topLevel = new PropertyExistsQuery(tagsPropDef, false);
+        }
+
+        final String cacheKey = makeCacheKey(token, topLevel, limit, tagOccurenceMin);
+        List<TagFrequency> result = lookupCached(cacheKey);
+        if (result != null) {
+            return result;
         }
 
         // Set up index search
@@ -227,52 +200,36 @@ public class TagsReportingComponent {
         if (RequestContext.getRequestContext().isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
         }
-        search.setQuery(masterScopeQuery);
+        search.setQuery(topLevel);
         search.setSorting(null);
         search.setLimit(Integer.MAX_VALUE);
-        ConfigurablePropertySelect propSelect = new ConfigurablePropertySelect();
-        propSelect.addPropertyDefinition(tagsPropDef);
-        search.setPropertySelect(propSelect);
+        search.setPropertySelect(new ConfigurablePropertySelect(tagsPropDef));
 
-        TagFrequencyCollector tfc = new TagFrequencyCollector();
+        final Map<String, TagFrequency> tagFreqMap = new HashMap<>();
         // Execute index iteration and collect/aggregate tag frequencies
-        searcher.iterateMatching(token, search, tfc);
-        List<TagFrequency> tagFreqs = tfc.getTagFreqList();
-
-        // Case insensitive value consolidation
-        if (caseInsensitive) {
-            tagFreqs = consolidateCaseVariations(tagFreqs);
-        }
-
-        // Minimum frequency criterium
-        if (tagOccurenceMin > -1) {
-            tagFreqs = filterBelowMinFreq(tagFreqs, tagOccurenceMin);
-        }
-
-        // Sort by highest frequency descending
-        Collections.sort(tagFreqs, new Comparator<TagFrequency>() {
-            @Override
-            public int compare(TagFrequency o1, TagFrequency o2) {
-                return o1.frequency < o2.frequency ? 1 : (o1.frequency == o2.frequency ? 0 : -1);
+        searcher.iterateMatching(token, search, p -> {
+            Property tags = p.getProperty(tagsPropDef);
+            if (tags != null) {
+                if (tagsPropDef.isMultiple()) {
+                    for (Value value : tags.getValues()) {
+                        tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
+                    }
+                } else {
+                    Value value = tags.getValue();
+                    tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
+                }
             }
+            return true;
         });
 
-        // Apply any limit
-        if (limit > -1) {
-            limit = Math.min(limit, tagFreqs.size());
-            tagFreqs = tagFreqs.subList(0, limit);
-        }
+        result = (caseInsensitive ?
+                consolidateCaseVariations(tagFreqMap.values().stream()) : tagFreqMap.values().stream())
+                .filter(tf -> tf.frequency >= tagOccurenceMin)
+                .sorted((tf1,tf2) -> -1*Integer.compare(tf1.frequency, tf2.frequency))
+                .limit(limit > -1 ? limit : Long.MAX_VALUE)
+                .collect(Collectors.toList());
 
-        tagFreqs = Collections.unmodifiableList(tagFreqs);
-
-        // Populate cache
-        if (cache != null) {
-            // XXX why is the below statement commented out without any explanation ? The search
-            // to generate tags is rather on the heavy side..
-            // cache.put(new Element(cacheKey, tagFreqs));
-        }
-
-        return tagFreqs;
+        return cacheResult(cacheKey, result);
     }
 
     private Query getTypeScopeQuery(String rtName, Resource scopeResource, HttpServletRequest servletRequest) {
@@ -289,111 +246,39 @@ public class TagsReportingComponent {
         return typeScopeQuery;
     }
 
-    private Set<String> resourceTypeNames(List<ResourceTypeDefinition> defs) {
-        if (defs == null)
+    private Stream<TagFrequency> consolidateCaseVariations(Stream<TagFrequency> tagFreqs) {
+        return tagFreqs.collect(
+                Collectors.groupingBy(tf -> tf.tag.toLowerCase(), Collectors.toList()))
+                .values().stream().map(variants -> {
+                    int sum = 0, max = 0;
+                    String mostCommon = "";
+                    for (TagFrequency v : variants) {
+                        sum += v.frequency;
+                        if (v.frequency > max) {
+                            mostCommon = v.tag;
+                            max = v.frequency;
+                        }
+                    }
+                    return new TagFrequency(mostCommon, sum);
+                });
+    }
+    
+    private List<TagFrequency> cacheResult(String cacheKey, List<TagFrequency> result) {
+        if (cache.isPresent()) {
+            cache.get().put(cacheKey, result);
+        }
+        return result;
+    }
+
+    private List<TagFrequency> lookupCached(String cacheKey) {
+        if (!cache.isPresent()) {
             return null;
-        Set<String> defNames = new HashSet<String>();
-        for (ResourceTypeDefinition def : defs) {
-            defNames.add(def.getName());
         }
-
-        return defNames;
+        return cache.get().get(cacheKey);
     }
 
-    private List<TagFrequency> consolidateCaseVariations(List<TagFrequency> tagFreqs) {
-        Map<String, List<TagFrequency>> m = new HashMap<String, List<TagFrequency>>(tagFreqs.size() + 50);
-        for (TagFrequency tf : tagFreqs) {
-            final String key = tf.tag.toLowerCase();
-            List<TagFrequency> variations = m.get(key);
-            if (variations == null) {
-                variations = new ArrayList<TagFrequency>();
-                m.put(key, variations);
-            }
-            variations.add(tf);
-        }
-
-        List<TagFrequency> retVal = new ArrayList<TagFrequency>();
-        for (List<TagFrequency> variations : m.values()) {
-            int sum = 0;
-            int maxFreq = -1;
-            String mostCommonVariant = null;
-            for (TagFrequency variant : variations) {
-                sum += variant.frequency;
-                if (variant.frequency > maxFreq) {
-                    maxFreq = variant.frequency;
-                    mostCommonVariant = variant.tag;
-                }
-            }
-            retVal.add(new TagFrequency(mostCommonVariant, sum));
-        }
-        return retVal;
-    }
-
-    private List<TagFrequency> filterBelowMinFreq(List<TagFrequency> tagFreqs, int minFreq) {
-        for (Iterator<TagFrequency> it = tagFreqs.iterator(); it.hasNext();) {
-            TagFrequency tf = it.next();
-            if (tf.frequency < minFreq) {
-                it.remove();
-            }
-        }
-        return tagFreqs;
-    }
-
-    private static final class CacheKey implements Serializable {
-
-        private static final long serialVersionUID = -8898229960525592912L;
-        private final Path scopeUri;
-        private final Set<String> resourceTypes;
-        private final int limit;
-        private final int minFreq;
-        private final String token;
-
-        CacheKey(Path scopeUri, Set<String> resourceTypes, int limit, int minFreq, String token) {
-            this.scopeUri = scopeUri;
-            this.resourceTypes = resourceTypes;
-            this.limit = limit;
-            this.minFreq = minFreq;
-            this.token = token;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final CacheKey other = (CacheKey) obj;
-            if ((this.token == null) ? (other.token != null) : !this.token.equals(other.token)) {
-                return false;
-            }
-            if (this.scopeUri != other.scopeUri && (this.scopeUri == null || !this.scopeUri.equals(other.scopeUri))) {
-                return false;
-            }
-            if (this.resourceTypes != other.resourceTypes
-                    && (this.resourceTypes == null || !this.resourceTypes.equals(other.resourceTypes))) {
-                return false;
-            }
-            if (this.limit != other.limit) {
-                return false;
-            }
-            if (this.minFreq != other.minFreq) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 29 * hash + (this.scopeUri != null ? this.scopeUri.hashCode() : 0);
-            hash = 29 * hash + (this.resourceTypes != null ? this.resourceTypes.hashCode() : 0);
-            hash = 29 * hash + this.limit;
-            hash = 29 * hash + this.minFreq;
-            hash = 29 * hash + (this.token != null ? this.token.hashCode() : 0);
-            return hash;
-        }
+    private String makeCacheKey(String token, Query q, int limit, int minFreq) {
+        return "TagsReportingCacheKey{" + "limit=" + limit + ", minFreq=" + minFreq + ", token=" + token + ", q=" + q + '}';
     }
 
     @Required
@@ -410,8 +295,46 @@ public class TagsReportingComponent {
         this.aggregationResolver = aggregationResolver;
     }
 
-    public void setCache(Ehcache cache) {
-        this.cache = cache;
+    /**
+     * Set an optional cache instance for tags reporting to use.
+     * @param cache 
+     */
+    public void setCache(SimpleCache<String,List<TagFrequency>> cache) {
+        this.cache = Optional.of(cache);
+    }
+
+    /**
+     * Optionally set value of static security token.
+     *
+     * <p>Default value is {@code null}.
+     *
+     * <p>Note that for the configured static token to actually be used, one
+     * must enable the setting by calling {@link #setUseStaticToken(boolean) }.
+     *
+     * @param token the token, which may also be {@code null}.
+     */
+    public void setStaticToken(String token) {
+        this.staticToken = token;
+    }
+
+    /**
+     * Set whether configured static security token should be preferred for all
+     * repository queries, instead of per-request tokens reflecting individual users.
+     *
+     * <p>The advantage of using a static token is that the same set of tags
+     * will be visible to all users, regardless of repository permissions,
+     * and the caching mechanism, if configured, will be more effective.
+     *
+     * <p>A possible disadvantage is that any user may see tag values set on resources
+     * which they may not have permission to read, depending on which principal
+     * the static security token maps to.
+     *
+     * <p>Default value is {@code false}.
+     *
+     * @param use {@code true} to enable use of static security token
+     */
+    public void setUseStaticToken(boolean use) {
+        this.useStaticToken = use;
     }
 
     public void setCaseInsensitive(boolean caseInsensitive) {

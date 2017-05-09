@@ -68,18 +68,6 @@
     <property name="tagsPropDef" ref="tagsPropDef" />
     <property name="searcher" ref="systemIndexSearcher" />
     <property name="aggregationResolver" ref="aggregationResolver" />
-    <property name="cache">
-      <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-        <property name="cacheManager" ref="ehCacheManager" />
-        <property name="cacheName" value="vtk.TAGS_REPORTER_CACHE" />
-        <property name="maxElementsInMemory" value="50" />
-        <property name="maxElementsOnDisk" value="2000" />
-        <property name="eternal" value="false" />
-        <property name="overflowToDisk" value="true" />
-        <property name="timeToIdle" value="0" />
-        <property name="timeToLive" value="45" />
-      </bean>
-    </property>
     <property name="resourceTypeQueries">
       <map>
         <entry key="structured-event">
@@ -94,6 +82,12 @@
         </entry>
       </map>
     </property>
+    <property name="cache" ref="tagsReporter.cache"/>
+  </bean>
+  <!-- Overridable default in-memory cache for tags reporter -->
+  <bean id="tagsReporter.cache" class="vtk.util.cache.SimpleCacheImpl">
+    <property name="timeoutSeconds" value="600" />
+    <property name="refreshTimestampOnGet" value="false"/>
   </bean>
 
   <bean id="tags.feedHandler" parent="tags.handler">

@@ -30,17 +30,44 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 
+/**
+ * Prefix query on resource URI. Only matches on complete URIs and descendants, not prefix
+ * on URI names (last segment of an URI).
+ *
+ * <p>Instances of this class are immutable.
+ */
 public class UriPrefixQuery implements UriQuery {
 
-    private String uri;
-    private boolean inverted = false;
-    private boolean includeSelf = true;
-    
+    private static final long serialVersionUID = -2798356085088768567L;
+
+    private final String uri;
+    private final boolean inverted;
+    private final boolean includeSelf;
+
+    /**
+     * Construct default URI prefix query which includes matching of self and all descendants.
+     *
+     * <p>For compatibility reasons, match does not include self if URI ends with a trailing slash or is the root URI.
+     * Otherwise include self is default.
+     *
+     * @param uri
+     */
     public UriPrefixQuery(String uri) {
         this(uri, false);
     }
 
+    /**
+     * Construct URI prefix query with possible negation of matching.
+     *
+     * <p>For compatibility reasons, it does not include self if uri ends with a trailing slash,
+     * and is not the root URI, otherwise
+     *
+     * <p>For better control over whether self shall be included or not, use {@link #UriPrefixQuery(java.lang.String, boolean, boolean) }.
+     * @param uri
+     * @param inverted
+     */
     public UriPrefixQuery(String uri, boolean inverted) {
         // Be backwards compatible with older behaviour on significance of trailing slash.
         // XXX: Note that the root URI '/' is a special case, it will not be included
@@ -51,10 +78,28 @@ public class UriPrefixQuery implements UriQuery {
         } else if (uri.endsWith("/")) {
             this.includeSelf = false;
             uri = uri.substring(0, uri.length()-1);
+        } else {
+            this.includeSelf = true;
         }
 
         this.uri = uri;
         this.inverted = inverted;
+    }
+
+    /**
+     * Construct URI prefix query with possible negation of matching and control
+     * over whether the URI itself shall be included, or just its descendants.
+     * @param uri
+     * @param inverted
+     * @param includeSelf
+     */
+    public UriPrefixQuery(String uri, boolean inverted, boolean includeSelf) {
+        if (!"/".equals(uri) && uri.endsWith("/")) {
+            uri = uri.substring(0, uri.length()-1);
+        }
+        this.uri = uri;
+        this.inverted = inverted;
+        this.includeSelf = includeSelf;
     }
     
     public String getUri() {
@@ -64,29 +109,39 @@ public class UriPrefixQuery implements UriQuery {
     public boolean isInverted() {
         return inverted;
     }
-    
+
+    /**
+     * @return boolean telling whether the URI itself should be matched,
+     * in addition to all its descendants, or not.
+     */
     public boolean isIncludeSelf() {
         return this.includeSelf;
     }
     
-    public void setIncludeSelf(boolean includeSelf) {
-        this.includeSelf = includeSelf;
-    }
-    
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
-    
+
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        sb.append(";uriPrefix = ").append(this.uri);
-        return sb.toString();
+        return "UriPrefixQuery{" + "uri=" + uri + ", inverted=" + inverted + ", includeSelf=" + includeSelf + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 47 * hash + Objects.hashCode(this.uri);
+        hash = 47 * hash + (this.inverted ? 1 : 0);
+        hash = 47 * hash + (this.includeSelf ? 1 : 0);
+        return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -94,25 +149,17 @@ public class UriPrefixQuery implements UriQuery {
             return false;
         }
         final UriPrefixQuery other = (UriPrefixQuery) obj;
-        if ((this.uri == null) ? (other.uri != null) : !this.uri.equals(other.uri)) {
-            return false;
-        }
         if (this.inverted != other.inverted) {
             return false;
         }
         if (this.includeSelf != other.includeSelf) {
             return false;
         }
+        if (!Objects.equals(this.uri, other.uri)) {
+            return false;
+        }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.uri != null ? this.uri.hashCode() : 0);
-        hash = 97 * hash + (this.inverted ? 1 : 0);
-        hash = 97 * hash + (this.includeSelf ? 1 : 0);
-        return hash;
-    }
 
 }

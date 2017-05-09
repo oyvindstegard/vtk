@@ -30,9 +30,15 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
 import vtk.repository.Path;
 
+/**
+ * Match all resources inheriting their ACL from resource at provided URI.
+ */
 public class AclInheritedFromQuery extends AbstractAclQuery {
+
+    private static final long serialVersionUID = 3771508239044335553L;
 
     private final Path uri;
 
@@ -52,6 +58,8 @@ public class AclInheritedFromQuery extends AbstractAclQuery {
 
     /**
      * See constructor {@link AclInheritedFromQuery(vtk.repository.Path) }.
+     * @param uri
+     * @param inverted
      * @see AbstractAclQuery#isInverted() 
      */
     public AclInheritedFromQuery(Path uri, boolean inverted) {
@@ -64,23 +72,28 @@ public class AclInheritedFromQuery extends AbstractAclQuery {
     }
     
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
+    }
+
+    @Override
+    public String toString() {
+        return "AclInheritedFromQuery{" + "uri=" + uri + ", inverted=" + super.isInverted() +'}';
     }
     
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
-        if (super.inverted) {
-            sb.append(";uri!=").append(this.uri);
-        } else {
-            sb.append(";uri=").append(this.uri);
-        }
-        return sb.toString();
+    public int hashCode() {
+        int hash = 3;
+        hash = 67 * hash + Objects.hashCode(this.uri);
+        hash += super.isInverted() ? 1 : 0;
+        return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -88,21 +101,15 @@ public class AclInheritedFromQuery extends AbstractAclQuery {
             return false;
         }
         final AclInheritedFromQuery other = (AclInheritedFromQuery) obj;
-        if (this.uri != other.uri && (this.uri == null || !this.uri.equals(other.uri))) {
+        if (!Objects.equals(this.uri, other.uri)) {
             return false;
         }
         if (super.inverted != other.inverted) {
             return false;
         }
+
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 47 * hash + (this.uri != null ? this.uri.hashCode() : 0);
-        hash = 47 * hash + (super.inverted ? 1 : 0);
-        return hash;
-    }
 
 }

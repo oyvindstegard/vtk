@@ -35,17 +35,27 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.util.Pool;
 
+/**
+ * Implementation of {@link SimpleCache} using Redis.
+ *
+ * <p>XXX This implementation only supports keys of type {@code String} reliably
+ * (uses {@code toString } on key objects before encoding to Redis binary key).
+ *
+ * @param <K> type of key, only keys with sensible {@code toString} representations are supported reliably.
+ * @param <V> type of value, must be serializable
+ */
 public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     
-    private Pool<Jedis> pool;
-    private String prefix;
-    private int timeoutSeconds;
-    private boolean updateTimeouts;
+    private final Pool<Jedis> pool;
+    private final String prefix;
+    private final int timeoutSeconds;
+    private final boolean updateTimeouts;
     
     public RedisSimpleCache(Pool<Jedis> jedisPool, String prefix, 
             int timeoutSeconds, boolean updateTimeouts) {
@@ -59,7 +69,7 @@ public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     public void put(K key, V value) {
         if (key == null) return;
         try (Jedis jedis = pool.getResource()) {
-            byte[] bkey = (prefix + key.toString()).getBytes("utf-8");
+            byte[] bkey = (prefix + key.toString()).getBytes(StandardCharsets.UTF_8);
             ByteArrayOutputStream valueStream = new ByteArrayOutputStream();
             ObjectOutputStream oout = new ObjectOutputStream(valueStream);
             oout.writeObject(value);
@@ -80,11 +90,11 @@ public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     public V get(K key) {
         if (key == null) return null;
         try (Jedis jedis = pool.getResource()) {
-            byte[] bkey = (prefix + key.toString()).getBytes("utf-8");
+            byte[] bkey = (prefix + key.toString()).getBytes(StandardCharsets.UTF_8);
             byte[] bs = jedis.get(bkey);
             
             if (bs == null) return null;
-            
+
             if (updateTimeouts) {
                 jedis.expire(bkey, timeoutSeconds);
             }            
@@ -102,7 +112,7 @@ public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     public V remove(K key) {
         if (key == null) return null;
         try (Jedis jedis = pool.getResource()) {
-            byte[] bkey = key.toString().getBytes("utf-8");
+            byte[] bkey = key.toString().getBytes(StandardCharsets.UTF_8);
             byte[] bs = jedis.get(bkey);
             
             if (bs == null) return null;

@@ -30,51 +30,56 @@
  */
 package vtk.repository.search.query;
 
-import vtk.repository.resourcetype.PropertyType.Type;
+import vtk.repository.Namespace;
+import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
+/**
+ * Exact match on property values.
+ */
 public class PropertyTermQuery extends AbstractPropertyQuery {
 
-    private String term;
-    private TermOperator operator;
+    private final String term;
+    private final TermOperator operator;
 
     public PropertyTermQuery(PropertyTypeDefinition propertyDefinition, String term, TermOperator operator) {
         super(propertyDefinition);
         this.term = term;
         this.operator = operator;
     }
+    public PropertyTermQuery(PropertyTypeDefinition propDef, String complexValueAttribute, String term, TermOperator operator) {
+        super(propDef, complexValueAttribute);
+        this.term = term;
+        this.operator = operator;
+    }
+    public PropertyTermQuery(String propertyName, Namespace ns, PropertyType.Type type, String term, TermOperator operator) {
+        super(propertyName, ns, type);
+        this.term = term;
+        this.operator = operator;
+    }
+    public PropertyTermQuery(String propertyName, Namespace ns, PropertyType.Type type, String complexValueAttribute, String term, TermOperator operator) {
+        super(propertyName, ns, type, complexValueAttribute);
+        this.term = term;
+        this.operator = operator;
+    }
+
 
     public TermOperator getOperator() {
         return this.operator;
-    }
-
-    public void setOperator(TermOperator operator) {
-        this.operator = operator;
     }
 
     public String getTerm() {
         return this.term;
     }
 
-    public void setTerm(String term) {
-        this.term = term;
-    }
-
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-        sb.append(";propdef=").append(getPropertyDefinition());
-        if (getPropertyDefinition().getType() == Type.JSON && getComplexValueAttributeSpecifier() != null) {
-            sb.append("@").append(getComplexValueAttributeSpecifier());
-        }
-        sb.append(";term=").append(this.term);
-        sb.append(";operator=").append(this.operator);
-        return sb.toString();
+        return "PropertyTermQuery{" + "term=" + term + ", op=" + operator + ", " + super.fieldsToString() + '}';
     }
 
     @Override
@@ -104,6 +109,5 @@ public class PropertyTermQuery extends AbstractPropertyQuery {
         hash = 59 * hash + (this.operator != null ? this.operator.hashCode() : 0);
         return hash;
     }
-    
     
 }

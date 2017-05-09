@@ -30,14 +30,21 @@
  */
 package vtk.repository.search.query;
 
+import java.util.Objects;
+
+/**
+ * Term query (exact match) on resource URI.
+ */
 public class UriTermQuery implements UriQuery {
 
+    private static final long serialVersionUID = 2960145039692424376L;
+
     private final String uri;
-    private final TermOperator operator;
+    private final TermOperator op;
 
     public UriTermQuery(String uri, TermOperator operator) {
         this.uri = uri;
-        this.operator = operator;
+        this.op = operator;
     }
 
     public String getUri() {
@@ -45,24 +52,32 @@ public class UriTermQuery implements UriQuery {
     }
 
     public TermOperator getOperator() {
-        return this.operator;
+        return this.op;
     }
 
     @Override
-    public Object accept(QueryTreeVisitor visitor, Object data) {
+    public Object accept(QueryVisitor visitor, Object data) {
         return visitor.visit(this, data);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(this.getClass().getName());
-        sb.append(";uri=").append(this.uri);
-        sb.append(", operator=").append(this.operator);
-        return sb.toString();
+        return "UriTermQuery{" + "uri=" + uri + ", op=" + op + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 61 * hash + Objects.hashCode(this.uri);
+        hash = 61 * hash + Objects.hashCode(this.op);
+        return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -70,21 +85,14 @@ public class UriTermQuery implements UriQuery {
             return false;
         }
         final UriTermQuery other = (UriTermQuery) obj;
-        if ((this.uri == null) ? (other.uri != null) : !this.uri.equals(other.uri)) {
+        if (!Objects.equals(this.uri, other.uri)) {
             return false;
         }
-        if (this.operator != other.operator) {
+        if (this.op != other.op) {
             return false;
         }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 31 * hash + (this.uri != null ? this.uri.hashCode() : 0);
-        hash = 31 * hash + (this.operator != null ? this.operator.hashCode() : 0);
-        return hash;
-    }
-    
+
 }
