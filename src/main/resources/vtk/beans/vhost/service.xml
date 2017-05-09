@@ -595,4 +595,29 @@
   <!-- Building URLs to a service -->
   <bean id="serviceUrlProvider" class="vtk.web.service.ServiceUrlProvider" />
 
+  <bean id="propertySearch.queryService" class="vtk.web.service.ServiceImpl">
+    <property name="order" value="-999" />
+    <property name="assertions">
+      <list>
+        <ref bean="request.isGetOrHead" />
+        <ref bean="resourceInCollection" />
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="service" />
+          <property name="parameterValue" value="property-query" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="propertySearch.queryHandler" />
+  </bean>
+
+  <bean id="propertySearch.queryHandler" class="vtk.web.search.QueryHandler">
+    <constructor-arg name="searcher" ref="propertySearch.searcher" />
+  </bean>
+
+  <bean id="propertySearch.searcher" class="vtk.web.search.SimpleSearcher">
+    <constructor-arg name="parser" ref="searchParser" />
+    <constructor-arg name="searcher" ref="systemIndexSearcher" />
+    <constructor-arg name="resourceTypeTree" ref="resourceTypeTree" />
+  </bean>
+
 </beans>
