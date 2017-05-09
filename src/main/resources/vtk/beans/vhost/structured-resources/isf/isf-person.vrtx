@@ -20,6 +20,7 @@ resourcetype isf-person {
     availableHours : string,
     picture : image_ref,
     pressPhoto : image_ref,
+    fullCV : resource_ref,
     content : html noextract,
     getExternalScientificInformation : boolean,
     numberOfPublications: string,
@@ -42,7 +43,8 @@ resourcetype isf-person {
     groups (class[vrtx-multiple-immovable]),
     group combinedProjects (getRelatedProjects, projects) (after combinedPublications),
     group combinedGroups (getRelatedGroups, groups) (after combinedProjects),
-    content (after images),
+    fullCV (after images),
+    content (after fullCV),
     tags tooltip (en : "(Tag1, Tag2, ...)", no : "(Emneord1, Emneord2, ...)", nn : "(Emneord1, Emneord2, ...)"),
     tags (class[vrtx-autocomplete-tag]),
     postalAddress tooltip (en : "(postbox / street address, post number place)", no : "(postboks / gateadresse, postnummer sted)", nn : "(postboks / gateadresse, postnummer sted)"),
@@ -292,6 +294,9 @@ resourcetype isf-person {
         [if surname != null || firstName != null]
           <a id="vrtx-person-vcard" href="?vrtx=vcf">[localized "vCard"]</a>
         [endif]
+        [if fullCV != null]
+          <a id="vrtx-person-full-cv" href="[val fullCV]">[localized "fullCVText"]</a>
+        [endif]
       </div>
       ##
     }
@@ -409,6 +414,8 @@ resourcetype isf-person {
     rssUrl : (en : "Web address", no : "Webadresse", nn :"Webadresse"),
     pressPhoto : (en : "Press photo", no : "Pressebilde", nn : "Pressebilete"),
     vCard : (en : "Download business card", no : "Last ned visittkort", nn : "Last ned visittkort"),
+    fullCV : (en : "Link to full CV", no : "Lenke til full CV", nn : "Lenke til full CV"),
+    fullCVText : (en : "Download full CV", no : "Last ned full CV", nn : "Last ned full CV"),
     room : (en : "Room", no : "Rom", nn : "Rom"),
     images : (en : "Images", no : "Bilder", nn : "Bilete"),
     contactInformation : (en : "Primary contact information",
