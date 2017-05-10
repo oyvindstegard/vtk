@@ -30,6 +30,8 @@
  */
 package vtk.web.search;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -164,7 +166,7 @@ public final class SimpleSearcher {
         private int limit = 100;
         private int offset = 0;
         private Sorting sorting;
-        private PropertySelect select = PropertySelect.ALL_PROPERTIES;
+        private PropertySelect select = PropertySelect.NONE;
         private boolean unpublished;
         
         private Parser parser;
@@ -223,32 +225,38 @@ public final class SimpleSearcher {
                     unpublished);
         }
         
-        private PropertySelect parseFields(String fields) {
-            if (fields == null || "".equals(fields.trim())) {
-                return PropertySelect.ALL_PROPERTIES;
-            }
-            ConfigurablePropertySelect selected = new ConfigurablePropertySelect();
 
-            for (String qualifiedName: fields.split(",")) {
-                if ("".equals(qualifiedName.trim())) {
+        private PropertySelect parseFields(String fields) {
+            if (fields == null || fields.trim().equals("")) {
+                return PropertySelect.NONE;
+            }
+            List<String> propList = Arrays.asList(fields.split(","));
+            if (propList.contains("*")) {
+                return PropertySelect.ALL;
+            }
+            ConfigurablePropertySelect propertySelect = 
+                    new ConfigurablePropertySelect();
+            
+            for (String propName: propList) {
+                if ("acl".equals(propName)) {
+                    propertySelect.setIncludeAcl(true);
                     continue;
                 }
+                String p = propName;
                 String prefix = null;
-                String name = qualifiedName.trim();
 
-                int separator = name.indexOf(":");
-                if (separator != -1) {
-                    prefix = name.substring(0, separator).trim();
-                    name = name.substring(separator + 1).trim();
+                if (p.contains(":")) {
+                    prefix = p.substring(0, p.indexOf(":"));
+                    p = p.substring(prefix.length() + 1);
                 }
-
-                PropertyTypeDefinition def = resourceTypeTree.getPropertyDefinitionByPrefix(prefix, name);
+                PropertyTypeDefinition def = resourceTypeTree
+                        .getPropertyDefinitionByPrefix(prefix, p);
                 if (def == null) {
-                    throw new IllegalArgumentException("Field '" + qualifiedName + "' not found");
+                    continue;
                 }
-                selected.addPropertyDefinition(def);
+                propertySelect.addPropertyDefinition(def);
             }
-            return selected;
+            return propertySelect;
         }
     }
     
