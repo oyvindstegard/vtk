@@ -151,7 +151,9 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
             model = handler.getErrorModel(req, resp, t);
 
             Object obj = handler.getErrorView(req, resp, t);
-            System.out.println("-__obj: " + obj);
+            if (logger.isDebugEnabled()) {
+                logger.debug("-__obj: " + obj);
+            }
             if (obj instanceof View) {
                 view = (View) obj;
             }
