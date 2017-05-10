@@ -123,11 +123,11 @@
     <checkstyle.config.location>src/main/checkstyle/checkstyle.xml</checkstyle.config.location>
     <java.version>1.8</java.version>
     <spring.version>4.3.8.RELEASE</spring.version>
-    <spring.boot.version>1.5.2.RELEASE</spring.boot.version>
+    <spring.boot.version>1.5.3.RELEASE</spring.boot.version>
     <lucene.version>4.10.4</lucene.version>
-    <akka.version>2.4.17</akka.version>
-    <jetty.version>9.4.3.v20170317</jetty.version>
-    <flexmark.version>0.19.0</flexmark.version>
+    <akka.version>2.4.18</akka.version>
+    <jetty.version>9.4.5.v20170502</jetty.version>
+    <flexmark.version>0.19.4</flexmark.version>
     <frontend.build.args>default --production</frontend.build.args>
   </properties>
 
@@ -607,7 +607,7 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.6.2</version>
+      <version>3.7.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -653,7 +653,7 @@
     <dependency>
       <groupId>org.springframework.session</groupId>
       <artifactId>spring-session-data-redis</artifactId>
-      <version>1.3.0.RELEASE</version>
+      <version>1.3.1.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
