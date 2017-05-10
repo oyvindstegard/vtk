@@ -585,7 +585,7 @@
           <property name="modelName" value="fckeditorBase" />
         </bean>
         <bean class="vtk.web.referencedata.provider.StaticURIServiceURLProvider">
-          <property name="service" ref="editor.browseService" />
+          <property name="service" ref="filebrowser.fckconnector" />
           <property name="path" value="${editor.fck.browseURL}" />
           <property name="modelName" value="fckBrowse" />
         </bean>
@@ -612,7 +612,7 @@
           <property name="modelName" value="fckeditorBase" />
         </bean>
         <bean class="vtk.web.referencedata.provider.StaticURIServiceURLProvider">
-          <property name="service" ref="editor.browseService" />
+          <property name="service" ref="filebrowser.fckconnector" />
           <property name="path" value="${editor.fck.browseURL}" />
           <property name="modelName" value="fckBrowse" />
         </bean>

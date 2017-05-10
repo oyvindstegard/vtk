@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <bean id="filebrowser.fckconnector" class="vtk.web.service.ServiceImpl">
+    <property name="order" value="-999" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestURIRegexpAssertion">
+          <property name="pattern" value="${editor.fck.browseURL}" />
+        </bean>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="action" />
+          <property name="parameterValue" value="browse" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler">
+      <bean class="vtk.edit.fckeditor.FCKeditorConnector">
+        <property name="viewService" ref="viewService" />
+        <property name="browseViewName" value="filebrowser.fckconnector.browseView" />
+        <property name="acceptableDomains" value="${editor.fck.browser.acceptableDomains}" />
+        <property name="tempDir" value="${editor.tempDir}" />
+        <property name="uploadStatusViewName" value="filebrowser.fckconnector.uploadStatusView" />
+        <property name="downcaseNames" value="true" />
+        <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="filebrowser.fckconnector.browseView" parent="freemarkerView">
+    <property name="url" value="ckeditor/browse.ftl" />
+    <property name="contentType" value="text/xml;charset=utf-8" />
+    <property name="referenceDataProviders">
+      <list>
+      </list>
+    </property>
+  </bean>
+
+  <bean id="filebrowser.fckconnector.uploadStatusView" parent="freemarkerView">
+    <property name="url" value="ckeditor/upload-status.ftl" />
+    <property name="contentType" value="text/html;charset=utf-8" />
+    <property name="referenceDataProviders">
+      <list>
+      </list>
+    </property>
+  </bean>
+
+  <bean id="editor.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <property name="views">
+      <map>
+        <entry key="filebrowser.fckconnector.browseView"
+               value-ref="filebrowser.fckconnector.browseView" />
+        <entry key="filebrowser.fckconnector.uploadStatusView"
+               value-ref="filebrowser.fckconnector.uploadStatusView" />
+      </map>
+    </property>
+  </bean>
+
+</beans>

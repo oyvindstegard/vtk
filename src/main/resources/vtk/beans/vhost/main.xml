@@ -41,6 +41,8 @@
   <import resource="decorating/decorator-components.xml" />
   <import resource="decorating/dynamic-decorating.xml" />
 
+  <import resource="filebrowser.xml" />
+
   <!-- Default editor -->
   <import resource="editor/editor.xml" />
   <import resource="editor/ajaxeditor.xml" />
