@@ -79,8 +79,16 @@ public class ArrayStackCacheTest {
 
     @Test
     public void noDefaultFactory() {
-        ReusableObjectCache<SimpleDateFormat> c = new ArrayStackCache<>();
+        ReusableObjectCache<Object> c = new ArrayStackCache<>();
         assertNull(c.getInstance());
+
+        Object o = new Object();
+        assertTrue(c.putInstance(o));
+        assertEquals(1, c.size());
+
+        Object fromCache = c.getInstance();
+        assertEquals(0, c.size());
+        assertTrue(o == fromCache);
     }
 
     @Test
