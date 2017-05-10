@@ -69,60 +69,10 @@ function SetCurrentFolder( resourceType, folderPath )
 {
 	document.getElementById('tdName').innerHTML = "<a id='button' href='#'>" + folderPath + "</a>" ;
 	FILEURL = folderPath;
-	document.getElementById('button').onclick = OpenFile;
+	document.getElementById('button').onclick = function () {
+		OpenFile( FILEURL );
+	};
 }
-
-function OpenFile()
-{
-    var oMsg =
-    {
-        'type'            : 'browse-select-resource',
-        'url'             : FILEURL,
-        'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
-    };
-
-    var protocol;
-    var host;
-    try {
-        protocol = window.top.opener.location.protocol;
-        host = window.top.opener.location.host;
-    } catch (e) {
-        var parts = window.top.document.referrer.split('/');
-        if (parts.length < 3)
-        {
-            return;
-        }
-        protocol = parts[0];
-        host = parts[2];
-    }
-
-    if ( ! oConnector.IsAcceptableReceiver( host ) )
-    {
-        return ;
-    }
-    var sDomain = protocol + '//' + host ;
-
-    window.top.opener.postMessage( oMsg, sDomain ) ;
-    var ua = navigator.userAgent.toLowerCase() ;
-    window.top.close() ;
-
-    if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
-    {
-        window.top.opener.focus() ;
-    }
-}
-
-function GetUrlParam( paramName )
-{
-	var oRegex = new RegExp( '[\?&]' + paramName + '=([^&]+)', 'i' ) ;
-	var oMatch = oRegex.exec( window.top.location.search ) ;
-
-	if ( oMatch && oMatch.length > 1 )
-		return decodeURIComponent( oMatch[1] ) ;
-	else
-		return '' ;
-}
-
 
 window.onload = function()
 {

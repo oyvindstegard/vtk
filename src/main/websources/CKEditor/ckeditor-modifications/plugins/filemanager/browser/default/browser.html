@@ -28,6 +28,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<link href="browser.css" type="text/css" rel="stylesheet">
+		<script type="text/javascript" src="js/common.js"></script>
 		<script type="text/javascript" src="js/fckxml.js"></script>
 		<script type="text/javascript">
 // Automatically detect the correct document.domain (#1919).
@@ -62,17 +63,6 @@
 		}
 	}
 })() ;
-
-function GetUrlParam( paramName )
-{
-	var oRegex = new RegExp( '[\?&]' + paramName + '=([^&]+)', 'i' ) ;
-	var oMatch = oRegex.exec( window.top.location.search ) ;
-
-	if ( oMatch && oMatch.length > 1 )
-		return decodeURIComponent( oMatch[1] ) ;
-	else
-		return '' ;
-}
 
 var oConnector = new Object() ;
 var BaseFolder = GetUrlParam( 'BaseFolder' );

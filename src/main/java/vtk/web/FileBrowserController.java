@@ -35,6 +35,7 @@ import org.springframework.web.HttpRequestHandler;
 import vtk.repository.Path;
 import vtk.security.AuthenticationException;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 
 import javax.servlet.ServletException;
@@ -43,7 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class FileBrowserController implements HttpRequestHandler {
-    private static final String FCK_URI_TEMPLATE = "%s/plugins/filemanager/browser/default/browser.html?BaseFolder=%s%s&Connector=%s";
+    private static final String FCK_URI_TEMPLATE = "%s/plugins/filemanager/browser/default/browser.html?basefolder=%s&connector=%s";
     private final String connectorURL;
     private final String editorBase;
 
@@ -52,8 +53,8 @@ public class FileBrowserController implements HttpRequestHandler {
             String fckConnectorBase,
             String editorBase
     ) {
-        this.connectorURL = fckConnector.constructURL(
-                Path.fromString(fckConnectorBase)).getPathRepresentation();
+        this.connectorURL = URL.encode(fckConnector.constructURL(
+                Path.fromString(fckConnectorBase)).getPathRepresentation());
         this.editorBase = editorBase;
     }
 
@@ -65,13 +66,19 @@ public class FileBrowserController implements HttpRequestHandler {
         if (rc.getPrincipal() == null) {
             throw new AuthenticationException();
         }
-        String typeParam = "";
+        String redirectURL = String.format(
+                FCK_URI_TEMPLATE, editorBase, rc.getResourceURI(), connectorURL
+        );
+
         String type = request.getParameter("type");
         if (type != null && !type.isEmpty()) {
-            typeParam = "&Type=" + type;
+            redirectURL += "&type=" + type;
         }
-        response.sendRedirect(
-                String.format(FCK_URI_TEMPLATE, editorBase, rc.getResourceURI(), typeParam, connectorURL)
-        );
+        String opener = request.getParameter("opener");
+        if (opener != null && !opener.isEmpty()) {
+            redirectURL += "&opener=" + opener;
+        }
+
+        response.sendRedirect(redirectURL);
     }
 }
