@@ -48,7 +48,11 @@ class RepositoryInputSourceProvider implements InputSourceProvider {
     
     @Override
     public Result<InputSource> apply(String identifier) {
-        Path uri = prefix.extend(identifier);
+        String rel = identifier.startsWith("/") ? 
+            identifier.substring(1) : identifier;
+
+        Path uri = prefix.extend(rel);
+        
         Result<Resource> resource = Result.attempt(() -> {
             try {
                 return repository.retrieve(null, uri, true);
