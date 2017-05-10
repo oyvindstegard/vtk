@@ -12,42 +12,50 @@ resourcetype isf-project {
     content : html noextract,
     tags : string multiple overrides tags,
     contactInfo : html noextract,
-    projectStart : string,
-    projectEnd : string,
-    projectEmployer : string,
-    projectNr : string,
-    projectLeaders : string multiple,
+    projectStartYear : string,
+    projectStartMonth : string,
+    projectEndYear : string,
+    projectEndMonth : string,
+    projectEmployer : json (projectEmployerName : string, projectEmployerUrl : string),
+    projectNr : string trim,
+    projectLeaders : json (projectLeaderName : string, projectLeaderUrl : string) multiple,
     participantsUsernames : string multiple,
     participantsCachedFullNames : json,
     participants : json (participantName:string, participantUrl:string) multiple,
     numberOfParticipantsToDisplay : string defaultvalue("50"),
-    relatedGroups : resource_ref multiple,
-    rssFeeds : json (rssTitle:string, rssUrl:string) multiple,
     getExternalScientificInformation : boolean defaultvalue("false"),
-    projectNr : string trim,
+    projectCristinNr : string trim,
     numberOfPublications : string,
     selectedPublications : html noextract,
-    related-content : html noextract,
     link-other-language: resource_ref
   }
 
   edit-rules {
     caption (size[small]),
-    projectStart (dropdown),
-    projectEnd (dropdown),
-    numberOfParticipantsToDisplay (dropdown),
     group introImageAndCaption (picture, caption, hidePicture, pictureAlt) (after introduction),
+    group projectStart (projectStartYear, projectStartMonth) (after introImageAndCaption) horizontal,
+    projectStartYear (dropdown),
+    projectStartMonth (dropdown),
+    group projectEnd (projectEndYear, projectEndMonth) (after projectStart) horizontal,
+    projectEndYear (dropdown),
+    projectEndMonth (dropdown),
+    projectEmployer (after projectEnd),
+    projectNr (after projectEmployer),
+    projectLeaders (after projectNr),
+    participantsUsernames (after projectLeaders),
+    participants (after participantsUsernames),
+    numberOfParticipantsToDisplay (after participants),
+    numberOfParticipantsToDisplay (dropdown),
     tags tooltip (en : "(Tag1, Tag2, ...)", no : "(Emneord1, Emneord2, ...)", nn : "(Emneord1, Emneord2, ...)"),
     tags (class[vrtx-autocomplete-tag]),
     participantsCachedFullNames (noedit),
-    group combinedPublications (getExternalScientificInformation, projectNr, numberOfPublications, selectedPublications) (after rssFeeds),
+    group combinedPublications (getExternalScientificInformation, projectCristinNr, numberOfPublications, selectedPublications) (after contactInfo),
     numberOfPublications (dropdown)
   }
 
   scripts {
     projectLeaders multipleinputfields,
-    participantsUsernames multipleinputfields,
-    relatedGroups multipleinputfields
+    participantsUsernames multipleinputfields
   }
 
   view-components {
@@ -65,9 +73,9 @@ resourcetype isf-project {
       ##
       [resource-props "."]
       <div class="vrtx-project-meta">
-        [if projectStart != null && projectEnd != null]
+        [if projectStartYear != null && projectEndYear != null]
           <div class="vrtx-project-meta-line vrtx-project-period">
-            <span class="vrtx-label">[localized "projectPeriod"]</span> <span class="vrtx-value">[val projectStart] - [val projectEnd]</span>
+            <span class="vrtx-label">[localized "projectPeriod"]</span> <span class="vrtx-value">[val projectStartYear] - [val projectEndYear]</span>
           </div>
         [endif]
         [if projectEmployer != null]
@@ -112,8 +120,8 @@ resourcetype isf-project {
       ##
 	  [def document structured-document()]
 	  [def getExternalPublications document.properties.getExternalScientificInformation]
-	  [def projectNr document.properties.projectNr]
-	  [if getExternalPublications = "true" && projectNr != null]
+	  [def projectCristinNr document.properties.projectCristinNr]
+	  [if getExternalPublications = "true" && projectCristinNr != null]
 	    [call "include:publications"]
 	  [else]
 	    [def selectedPublications document.properties.selectedPublications]
@@ -123,18 +131,6 @@ resourcetype isf-project {
 	    [endif]
 	  [endif]
 	  ##
-    }
-
-    related-content-in-additional-column {
-      ##
-      [def document structured-document()]
-      [def theRelated-content document.properties.related-content]
-      [if theRelated-content != null]
-        <div id="vrtx-related-content">
-          [val theRelated-content # unescaped]
-        </div>
-      [endif]
-      ##
     }
 
     introduction-image {
@@ -207,34 +203,6 @@ resourcetype isf-project {
       ##
     }
 
-    feeds {
-      ##
-      [resource-props "."]
-      [if rssFeeds != null]
-        [def document structured-document()]
-        [def feeds document.properties.rssFeeds]
-        [if feeds != null]
-          <div class="vrtx-frontpage-box">
-            <div class="vrtx-box-content">
-              [list feeds feed]
-                [def thetitle feed.rssTitle]
-                [def theurl feed.rssUrl]
-
-                [if theurl != null && theurl != ""]
-                  [if thetitle != null && thetitle != ""]
-                    [call "include:feed" { "url": theurl, "override-feed-title": thetitle, "feed-title": true, "max-messages": 3, "include-if-empty": false}]
-                  [else]
-                    [call "include:feed" { "url": theurl, "feed-title": true, "max-messages": 3, "include-if-empty": false}]
-                  [endif]
-                [endif]
-              [endlist]
-            </div>
-          </div>
-        [endif]
-      [endif]
-      ##
-    }
-
     vrtx-date-info {
       ##
       [resource-props "."]
@@ -286,9 +254,6 @@ resourcetype isf-project {
           <div id="vrtx-additional-content">
             [call "comp:contact-info"]
             [call "resource:person-list"]
-            [call "resource:groups-related-to-project"]
-            [call "comp:feeds"]
-            [call "comp:related-content-in-additional-column"]
           </div>
         </div>
       </body>
@@ -302,15 +267,25 @@ resourcetype isf-project {
       no : ("true" = "Pågående", "false" = "Avsluttet"),
       nn : ("true" = "Pågående", "false" = "Avslutta")
     },
-    projectStart {
+    projectStartYear {
       en : ("2017" = "2017", "2018" = "2018", "2019" = "2019", "2020" = "2020"),
       no : ("2017" = "2017", "2018" = "2018", "2019" = "2019", "2020" = "2020"),
       nn : ("2017" = "2017", "2018" = "2018", "2019" = "2019", "2020" = "2020")
     },
-    projectEnd {
+    projectStartMonth {
+      en : ("not-set" = "Not set", "january" = "January", "february" = "February", "march" = "March", "april" = "April", "may" = "May", "june" = "June", "july" = "July", "august" = "August", "september" = "September", "october" = "October", "november" = "November", "december" = "December"),
+      no : ("not-set" = "Ikke satt", "january" = "Januar", "february" = "Februar", "march" = "Mars", "april" = "April", "may" = "Mai", "june" = "Juni", "july" = "Juli", "august" = "August", "september" = "September", "october" = "Oktober", "november" = "November", "december" = "Desember"),
+      nn : ("not-set" = "Ikkje satt", "january" = "Januar", "february" = "Februar", "march" = "Mars", "april" = "April", "may" = "Mai", "june" = "Juni", "july" = "Juli", "august" = "August", "september" = "September", "october" = "Oktober", "november" = "November", "december" = "Desember")
+    },
+    projectEndYear {
       en : ("2017" = "2017", "2018" = "2018", "2019" = "2019", "2020" = "2020"),
       no : ("2017" = "2017", "2018" = "2018", "2019" = "2019", "2020" = "2020"),
       nn : ("2017" = "2017", "2018" = "2018", "2019" = "2019", "2020" = "2020")
+    },
+    projectEndMonth {
+      en : ("not-set" = "Not set", "january" = "January", "february" = "February", "march" = "March", "april" = "April", "may" = "May", "june" = "June", "july" = "July", "august" = "August", "september" = "September", "october" = "October", "november" = "November", "december" = "December"),
+      no : ("not-set" = "Ikke satt", "january" = "Januar", "february" = "Februar", "march" = "Mars", "april" = "April", "may" = "Mai", "june" = "Juni", "july" = "Juli", "august" = "August", "september" = "September", "october" = "Oktober", "november" = "November", "december" = "Desember"),
+      nn : ("not-set" = "Ikkje satt", "january" = "Januar", "february" = "Februar", "march" = "Mars", "april" = "April", "may" = "Mai", "june" = "Juni", "july" = "Juli", "august" = "August", "september" = "September", "october" = "Oktober", "november" = "November", "december" = "Desember")
     },
     numberOfParticipantsToDisplay {
       en : (range = "0..25,30,35,40,45,50"),
@@ -344,27 +319,18 @@ resourcetype isf-project {
     caption : (en : "Image caption", no : "Bildetekst", nn : "Bilettekst"),
     photo-prefix : (en : "Photo", no : "Foto", nn : "Foto"),
     hidePicture : (en : "Hide image in project", no : "Skjul bilde i prosjekt", nn : "Skjul bilete i prosjekt"),
-    related-content : (en : "Related content (right column)",
-                       no : "Relatert innhold (vises i høyre kolonne)",
-                       nn : "Relatert innhald (visast i høgre kolonne)"),
     participantsHeader : (en : "Participants", no : "Deltakere", nn : "Deltakarar"),
     participantsUsernames : (en : "Participants (enter the participant username)",
                              no : "Deltakere (fyll inn deltakerens brukernavn)",
                              nn : "Deltakarar (fyll inn deltakarens brukernavn)"),
-    participants : (en : "Other participants", no : "Andre deltakere", nn : "Andre deltakarar"),
+    participants : (en : "External participants", no : "Eksterne deltakere", nn : "Eksterne deltakarar"),
     participantName : (en : "Name",no : "Navn", nn :"Namn"),
     participantUrl : (en : "Webaddress",no : "Webadresse", nn :"Webadresse"),
-    relatedGroups : (en : "Involved research groups",
-                     no : "Involverte forskergrupper",
-                     nn : "Involverte forskargrupper"),
-    rssFeeds : (en : "Subscribe to RSS-feeds",no : "Abonner på RSS-strømmer", nn :"Abonner på RSS-strømmar"),
-    rssTitle : (en : "Title",no : "Tittel", nn : "Tittel"),
-    rssUrl : (en : "Webaddress",no : "Webadresse", nn :"Webadresse"),
     combinedPublications : (en : "Publications", no : "Publikasjoner", nn : "Publikasjonar"),
     getExternalScientificInformation : (en : "Show publications registered in Cristin",
                                         no : "Vis publikasjoner rapportert i Cristin",
                                         nn : "Vis publikasjonar rapporterte i Cristin"),
-    projectNr : (en : "The project's Cristin ID", no : "Prosjektets Cristin-ID", nn : "Prosjektets Cristin-ID"),
+    projectCristinNr : (en : "The project's Cristin ID", no : "Prosjektets Cristin-ID", nn : "Prosjektets Cristin-ID"),
     numberOfPublications : (en : "Maximum number of publications from Cristin",
                             no : "Maks antall publikasjoner fra Cristin",
                             nn : "Maks antall publikasjonar frå Cristin"),
@@ -389,4 +355,5 @@ resourcetype isf-project {
       nn: (en : "Lenke til norsk versjon", no : "Lenke til engelsk versjon", nn : "Lenke til engelsk versjon")
     }
   }
+
 }
