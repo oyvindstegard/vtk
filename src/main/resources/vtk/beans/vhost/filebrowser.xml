@@ -2,6 +2,27 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
+  <bean id="filebrowser" class="vtk.web.service.ServiceImpl">
+    <property name="order" value="-2" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="vrtx" />
+          <property name="parameterValue" value="filebrowser" />
+        </bean>
+        <bean class="vtk.web.service.ResourceIsCollectionAssertion" />
+      </list>
+    </property>
+    <property name="authenticationChallenge" ref="${webAuthenticationChallenge}" />
+    <property name="handler">
+      <bean class="vtk.web.FileBrowserController">
+        <constructor-arg ref="filebrowser.fckconnector" />
+        <constructor-arg value="${editor.fck.browseURL}"/>
+        <constructor-arg value="${editor.fck.resourcesURL}" />
+      </bean>
+    </property>
+  </bean>
+
   <bean id="filebrowser.fckconnector" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-999" />
     <property name="assertions">
