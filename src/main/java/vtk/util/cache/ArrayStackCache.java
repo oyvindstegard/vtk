@@ -31,6 +31,7 @@
 package vtk.util.cache;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 
@@ -49,10 +50,10 @@ public class ArrayStackCache<T> implements ReusableObjectCache<T> {
     
     private int top = -1;
     private final T[] stack;
-    private final Supplier<? extends T> factory;
+    private final Optional<Supplier<? extends T>> defaultFactory;
 
     /**
-     * Construct an instance with a default maximum capacity and no default
+     * Construct an instance with a {@link #DEFAULT_CAPACITY default maximum capacity } and no default
      * factory.
      *
      * <p>When constructed with this method, calls to {@link #getInstance() } may
@@ -93,7 +94,7 @@ public class ArrayStackCache<T> implements ReusableObjectCache<T> {
      * @param capacity maxiumum number of objects the cache can hold for reuse, number &gt; 0
      */
     public ArrayStackCache(Supplier<? extends T> factory, int capacity) {
-        this.factory = factory;
+        this.defaultFactory = Optional.ofNullable(factory);
         this.stack =  (T[]) new Object[capacity > 0 ? capacity : DEFAULT_CAPACITY];
     }
 
@@ -104,8 +105,14 @@ public class ArrayStackCache<T> implements ReusableObjectCache<T> {
      */
     @Override
     public T getInstance() {
-        if (factory == null) return null;
-        return getInstance(factory);
+        T instance = pop();
+        if (instance != null) {
+            return instance;
+        }
+        if (defaultFactory.isPresent()) {
+            return defaultFactory.get().get();
+        }
+        return null;
     }
 
     /**
@@ -129,6 +136,10 @@ public class ArrayStackCache<T> implements ReusableObjectCache<T> {
     }
     
     /**
+     * Return an instance to the cache for possible reuse later.
+     *
+     * <p>If the cache is full, the instance is simply discarded.
+     *
      * @param instance the instance to return to the cache
      * @see vtk.util.cache.ReusableObjectCache#putInstance(java.lang.Object)
      */
