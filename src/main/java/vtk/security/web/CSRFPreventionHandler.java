@@ -628,17 +628,22 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
             }
             
             HtmlPageParser parser = new HtmlPageParser();
+            HtmlPage page;
+            
             try {
-                HtmlPage page = parser.parse(new ByteArrayInputStream(bufferStream.toByteArray()), 
+                page = parser.parse(new ByteArrayInputStream(bufferStream.toByteArray()), 
                         super.getCharacterEncoding());
-                page.filter(filter.get());
-                byte[] buffer = page.getStringRepresentation().getBytes(super.getCharacterEncoding());
-                super.setContentLength(buffer.length);
-                getResponse().getOutputStream().write(buffer);
+            }
+            catch (IOException e) {
+                throw e;
             }
             catch (Exception e) {
-                throw new IOException(e);
+                throw new RuntimeException(e);
             }
+            page.filter(filter.get());
+            byte[] buffer = page.getStringRepresentation().getBytes(super.getCharacterEncoding());
+            super.setContentLength(buffer.length);
+            getResponse().getOutputStream().write(buffer);
         }
     }
     
