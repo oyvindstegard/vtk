@@ -34,10 +34,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,8 +53,10 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.springframework.web.HttpRequestHandler;
 
+import vtk.repository.Acl;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
+import vtk.repository.Privilege;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
@@ -59,26 +66,69 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.query.QueryBuilderException;
+import vtk.security.Principal;
 import vtk.util.Result;
 import vtk.util.text.JsonStreamer;
 import vtk.web.RequestContext;
 
+/**
+ * A search handler that accepts queries as request parameters and returns 
+ * results in a number of formats.
+ * 
+ * <p>Description of query parameters
+ * <ul>
+ * <li>{@code q} - the query string, which is parsed using 
+ *      {@link vtk.repository.search.Parser}
+ * <li>{@code properties} or {@code fields} - a comma-separated list of property 
+ *      names to include in the result set. If the string {@code *} appears in the list, 
+ *      all properties and ACL is included. In addition, the special 
+ *      name {@code acl} also causes ACLs to be included.
+ * <li>{@code sort} - a comma-separated list of property names, each potentially
+ *     suffixed by either {@code asc} or {@code desc}, specifying the sorting
+ *     of the result set
+ * <li>{@code limit} - maximum number of resources to include in the result set
+ * <li>{@code offset} - where to start in the global result set
+ * <li>{@code t} - if specified, this parameter refers to a pre-configured 
+ *     <em>template</em>. Templates are strings that may contain the special
+ *     token <code>{q}</code>, which is substituted by the query parameter ({@code q})
+ *     at search-time. This can be useful for certain types of queries where a single input
+ *     string is repeated a number of times, in order to reduce the length of the query string. 
+ *     For example, the query <code>?q=field1=xxx OR field2=xxx OR field3=xxx ...</code> 
+ *     can be shortened to <code>?q=xxx&t=my-template</code>, given that the template 
+ *     {@code my-template} is defined as <code>field1={q} OR field2={q} OR field3={q}...</code> 
+ * <li>{@code format} - refers to one of a number of pre-configured formats. The default formats
+ *     are {@code json}, {@code json-compact} and {@code xml}.
+ * </ul>
+ * @see SimpleSearcher
+ */
 public final class QueryHandler implements HttpRequestHandler {
     private Map<String, ResponseHandler> formats;
+    private Map<String, String> templates;
     private SimpleSearcher searcher;
 
-    public QueryHandler(SimpleSearcher searcher, Map<String, ResponseHandler> formats) {
+    public QueryHandler(SimpleSearcher searcher, Map<String, ResponseHandler> formats, 
+            Map<String, String> templates) {
         this.searcher = Objects.requireNonNull(searcher);
-        this.formats = new HashMap<>(Objects.requireNonNull(formats));
+        Map<String, ResponseHandler> fmts = defaultFormats();
+        for (String key: Objects.requireNonNull(formats).keySet()) {
+            fmts.put(key, formats.get(key));
+        }
+        this.formats = Collections.unmodifiableMap(fmts);
+        this.templates = Objects.requireNonNull(templates);
     }
 
     public QueryHandler(SimpleSearcher searcher) {
         this.searcher = Objects.requireNonNull(searcher);
+        this.formats = Collections.unmodifiableMap(defaultFormats());
+        this.templates = new HashMap<>();
+    }
+    
+    public static Map<String, ResponseHandler> defaultFormats() {
         Map<String, ResponseHandler> defaultFormats = new HashMap<>();
         defaultFormats.put("json-compact", compactJsonResponseHandler);
         defaultFormats.put("json", completeJsonResponseHandler);
         defaultFormats.put("xml", completeXmlResponseHandler);
-        this.formats = defaultFormats;
+        return defaultFormats;
     }
 
     @FunctionalInterface
@@ -126,14 +176,20 @@ public final class QueryHandler implements HttpRequestHandler {
     }
 
     
-
     private Result<SimpleSearcher.Query> buildQuery(HttpServletRequest request) {
 
         Result<SimpleSearcher.QueryBuilder> qry = Result.success(searcher.builder());
 
         qry = qry.flatMap(builder -> Result.attempt(() -> {
-            return builder.query(Objects.requireNonNull(request.getParameter("q"), 
-                    "Request parameter 'q' is required"));
+            String q = Objects.requireNonNull(request.getParameter("q"),
+                    "Request parameter 'q' is required");
+            if (request.getParameter("t") != null) {
+                String name = request.getParameter("t");
+                String template = Objects.requireNonNull(
+                        templates.get(name), "No such template: ' " + name + "'");
+                q = template.replaceAll("\\{q\\}", q);
+            }
+            return builder.query(q);
         }));
 
         qry = qry.flatMap(builder -> Result.attempt(() -> {
@@ -181,6 +237,7 @@ public final class QueryHandler implements HttpRequestHandler {
     private static ResponseHandler badRequest(Throwable t) {
         return (query, result, requestContext, response) -> {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("text/plain;charset=utf-8");
             PrintWriter writer = response.getWriter();
             writer.write(t.getMessage());
             writer.close();
@@ -196,6 +253,7 @@ public final class QueryHandler implements HttpRequestHandler {
         return (query, result, requestContext, response) -> {
             if (query.failure.isPresent()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setContentType("text/plain;charset=utf-8");
                 PrintWriter writer = response.getWriter();
                 writer.write(query.failure.get().getMessage());
                 writer.close();
@@ -212,6 +270,7 @@ public final class QueryHandler implements HttpRequestHandler {
                 else {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 }
+                response.setContentType("text/plain;charset=utf-8");
                 PrintWriter writer = response.getWriter();
                 writer.write(result.failure.get().getMessage());
                 writer.close();
@@ -229,19 +288,6 @@ public final class QueryHandler implements HttpRequestHandler {
     }
 
 
-    private static Object jsonFormatValue(PropertyTypeDefinition def, Value v, Locale locale) {
-        if (def.getType() == Type.DATE) {
-            return def.getValueFormatter().valueToString(v, "iso-8601-short", locale);
-        }
-        else if (def.getType() == Type.TIMESTAMP) {
-            return def.getValueFormatter().valueToString(v, "iso-8601", locale);
-        }
-        else if (def.getType() == Type.JSON) {
-            return v.getJSONValue();
-        }
-        return def.getValueFormatter().valueToString(v, null, locale);
-    }
-
     public static ResponseHandler compactJsonResponseHandler =
         (query, result, requestContext, response) -> {
 
@@ -258,46 +304,54 @@ public final class QueryHandler implements HttpRequestHandler {
                     .member("total", rs.getTotalHits())
                     .key("results")
                     .beginArray();
-
+            
             for (PropertySet propset: rs) {
                 streamer.beginObject()
                 .member("uri", propset.getURI())
-                .member("type", propset.getResourceType())
-                .key("properties")
-                .beginObject();
+                .member("type", propset.getResourceType());
+                
+                if (!propset.getProperties().isEmpty()) {
+                    streamer.key("properties").beginObject();
 
-                for (Property p: propset) {
-                    PropertyTypeDefinition def = p.getDefinition();
-                        
-                    String name = def.getName();
-                    if (def.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
-                        name = def.getNamespace().getPrefix() + ":" + name;
-                    }
-                    streamer.key(name);
-                    if (def.getType() == PropertyType.Type.BINARY) {
-                        streamer.value("<binary>");
-                    }
-                    else if (def.isMultiple()) {
-                        streamer.beginArray();
-                        for (Value v: p.getValues()) {
-                            streamer.value(jsonFormatValue(
-                                    def, v, requestContext.getLocale()));
+                    for (Property p: propset) {
+                        PropertyTypeDefinition def = p.getDefinition();
+
+                        String name = def.getName();
+                        if (def.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
+                            name = def.getNamespace().getPrefix() + ":" + name;
                         }
-                        streamer.endArray();
+                        streamer.key(name);
+                        if (def.getType() == PropertyType.Type.BINARY) {
+                            streamer.value("<binary>");
+                        }
+                        else if (def.isMultiple()) {
+                            streamer.beginArray();
+                            for (Value v: p.getValues()) {
+                                streamer.value(jsonFormatValue(
+                                        def, v, requestContext.getLocale()));
+                            }
+                            streamer.endArray();
+                        }
+                        else {
+                            streamer.value(jsonFormatValue(
+                                    def, p.getValue(), requestContext.getLocale()));
+                        }
                     }
-                    else {
-                        streamer.value(jsonFormatValue(
-                                def, p.getValue(), requestContext.getLocale()));
-                    }
+                    streamer.endObject();
                 }
-                streamer.endObject().endObject();
+                if (q.select.isIncludeAcl() && propset.acl().isPresent()) {
+                    Acl acl = propset.acl().get();
+                    streamer.key("acl").beginObject();
+                    formatAcl(acl, jsonAclWriter(streamer));
+                    streamer.endObject();
+                }
+                streamer.endObject();
             }
             streamer.endArray().endJson();
         };
         errorHandler(successHandler)
             .accept(query, result, requestContext, response);
     };
-
 
     public static ResponseHandler completeJsonResponseHandler = (query, result, requestContext, response) -> {
         SuccessfulResponseHandler successHandler = (q, rs) -> {
@@ -317,41 +371,51 @@ public final class QueryHandler implements HttpRequestHandler {
             for (PropertySet propset: rs) {
                 streamer.beginObject()
                     .member("uri", propset.getURI())
-                    .member("type", propset.getResourceType())
-                    .key("properties")
-                    .beginArray();
-                for (Property p: propset) {
-                    PropertyTypeDefinition def = p.getDefinition();
-                            
-                    String name = def.getName();
-                    if (def.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
-                        name = def.getNamespace().getPrefix() + ":" + name;
-                    }
-                    streamer.beginObject()
+                    .member("type", propset.getResourceType());
+                
+                if (!propset.getProperties().isEmpty()) {
+                    streamer.key("properties").beginArray();
+
+                    for (Property p: propset) {
+                        PropertyTypeDefinition def = p.getDefinition();
+
+                        String name = def.getName();
+                        if (def.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
+                            name = def.getNamespace().getPrefix() + ":" + name;
+                        }
+                        streamer.beginObject()
                         .member("ns", def.getNamespace().getUri())
                         .member("name", name)
                         .member("type", def.getType());
 
-                    if (def.isMultiple()) {
-                        streamer.key("values").beginArray();
-                        if (def.getType() == PropertyType.Type.BINARY) {
-                            streamer.value("<binary>");
+                        if (def.isMultiple()) {
+                            streamer.key("values").beginArray();
+                            if (def.getType() == PropertyType.Type.BINARY) {
+                                streamer.value("<binary>");
+                            }
+                            else {
+                                for (Value v: p.getValues()) {
+                                    streamer.value(jsonFormatValue(
+                                            def, v, requestContext.getLocale()));
+                                }
+                            }
+                            streamer.endArray();
                         }
                         else {
-                            for (Value v: p.getValues()) {
-                                streamer.value(jsonFormatValue(
-                                        def, v, requestContext.getLocale()));
-                            }
+                            streamer.member("value", jsonFormatValue(
+                                    def, p.getValue(), requestContext.getLocale()));
                         }
-                        streamer.endArray();
+                        streamer.endObject();
                     }
-                    else {
-                        streamer.member("value", jsonFormatValue(
-                                def, p.getValue(), requestContext.getLocale()));
-                    }
+                    streamer.endArray();
+                }
+                if (q.select.isIncludeAcl() && propset.acl().isPresent()) {
+                    Acl acl = propset.acl().get();
+                    streamer.key("acl").beginObject();
+                    formatAcl(acl, jsonAclWriter(streamer));
                     streamer.endObject();
                 }
-                streamer.endArray().endObject();
+                streamer.endObject();
             }
             streamer.endArray().endJson();
         };
@@ -360,7 +424,105 @@ public final class QueryHandler implements HttpRequestHandler {
     };
 
     
-    private static String xmlFormatValue(PropertyTypeDefinition def, Value v, Locale locale) {
+    private static void formatAcl(Acl acl, BiConsumer<Privilege, Map<String, List<Principal>>> writer) {
+        Set<Privilege> actions = acl.getActions();
+        
+        actions.forEach(action -> {
+            List<Principal> users = new ArrayList<>();
+            List<Principal> groups = new ArrayList<>();
+            List<Principal> pseudo = new ArrayList<>();
+
+            acl.getPrincipalSet(action).forEach(p -> {
+                if (p.getType() == Principal.Type.USER) {
+                    users.add(p);
+                }
+                else if (p.getType() == Principal.Type.GROUP) {
+                    groups.add(p);
+                }
+                else {
+                    pseudo.add(p);
+                }
+            });
+            
+            Map<String, List<Principal>> entry = new HashMap<>();
+            if (!users.isEmpty()) {
+                entry.put("users", users);
+            }
+            if (!groups.isEmpty()) {
+                entry.put("groups", users);
+            }
+            if (!pseudo.isEmpty()) {
+                entry.put("pseudo", users);
+            }
+            if (!entry.isEmpty()) {
+                writer.accept(action, entry);
+            }
+        });
+    }
+    
+    private static BiConsumer<Privilege, Map<String, List<Principal>>> jsonAclWriter(JsonStreamer streamer) {
+        return (privilege, entry) -> {
+            try {
+                streamer.key(privilege.getName()).beginObject();
+                for (String type: entry.keySet()) {
+                    streamer.key(type).beginArray();
+                    for (Principal p: entry.get(type)) {
+                        streamer.value(p.getQualifiedName());
+                    }
+                    streamer.endArray();
+                }
+                streamer.endObject();
+            }
+            catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        };        
+    }
+
+    private static BiConsumer<Privilege, Map<String, List<Principal>>> xmlAclWriter(XMLStreamWriter xml) {
+        return (privilege, entry) -> {
+            try {
+                xml.writeStartElement(privilege.getName());
+                for (String type: entry.keySet()) {
+                    xml.writeStartElement(type);
+                    for (Principal p: entry.get(type)) {
+                        xml.writeStartElement("principal");
+                        xml.writeCharacters(p.getQualifiedName());
+                        xml.writeEndElement();
+                    }
+                    xml.writeEndElement();
+                }
+                xml.writeEndElement();
+            }
+            catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
+        };        
+    }
+
+    private static Object jsonFormatValue(PropertyTypeDefinition def, Value v, Locale locale) {
+        if (def.getType() == Type.DATE) {
+            return def.getValueFormatter().valueToString(v, "iso-8601-short", locale);
+        }
+        else if (def.getType() == Type.TIMESTAMP) {
+            return def.getValueFormatter().valueToString(v, "iso-8601", locale);
+        }
+        else if (def.getType() == Type.JSON) {
+            return v.getJSONValue();
+        }
+        else if (def.getType() == Type.INT) {
+            return v.getIntValue();
+        }
+        else if (def.getType() == Type.LONG) {
+            return v.getLongValue();
+        }
+        else if (def.getType() == Type.BOOLEAN) {
+            return v.getBooleanValue();
+        }
+        return def.getValueFormatter().valueToString(v, null, locale);
+    }
+
+    private static String defaultFormatValue(PropertyTypeDefinition def, Value v, Locale locale) {
         if (def.getType() == Type.DATE) {
             return def.getValueFormatter().valueToString(v, "iso-8601-short", locale);
         }
@@ -424,7 +586,7 @@ public final class QueryHandler implements HttpRequestHandler {
                                 for (Value v: p.getValues()) {
                                     xml.writeStartElement("value");
                                     xml.writeCharacters(
-                                            xmlFormatValue(def, v, requestContext.getLocale()));
+                                            defaultFormatValue(def, v, requestContext.getLocale()));
                                     xml.writeEndElement();
                                 }
                             }
@@ -433,9 +595,15 @@ public final class QueryHandler implements HttpRequestHandler {
                         else {
                             xml.writeStartElement("value");
                             xml.writeCharacters(
-                                    xmlFormatValue(def, p.getValue(), requestContext.getLocale()));
+                                    defaultFormatValue(def, p.getValue(), requestContext.getLocale()));
                             xml.writeEndElement();
                         }
+                        xml.writeEndElement();
+                    }
+                    if (q.select.isIncludeAcl() && propset.acl().isPresent()) {
+                        Acl acl = propset.acl().get();
+                        xml.writeStartElement("acl");
+                        formatAcl(acl, xmlAclWriter(xml));
                         xml.writeEndElement();
                     }
                     xml.writeEndElement();
