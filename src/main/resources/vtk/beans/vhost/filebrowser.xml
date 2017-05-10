@@ -67,7 +67,7 @@
     </property>
   </bean>
 
-  <bean id="editor.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
+  <bean id="filebrowser.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
     <property name="views">
       <map>
         <entry key="filebrowser.fckconnector.browseView"

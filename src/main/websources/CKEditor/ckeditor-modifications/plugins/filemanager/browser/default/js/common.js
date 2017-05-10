@@ -67,8 +67,8 @@ function AddSelectOption( selectElement, optionText, optionValue )
 	return oOption ;
 }
 
-var oConnector	= window.parent.oConnector ;
-var oIcons		= window.parent.oIcons ;
+var oConnector	= window.top.oConnector ;
+var oIcons		= window.top.oIcons ;
 
 
 function StringBuilder( value )
