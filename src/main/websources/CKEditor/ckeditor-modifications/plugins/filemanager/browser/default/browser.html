@@ -197,10 +197,7 @@ oConnector.IsAcceptableReceiver = function ( domain )
 
 function OnUploadCompleted( errorNumber, fileUrl, fileName, customMsg )
 {
-	if (errorNumber == "1")
-		window.frames['frmUpload'].OnUploadCompleted( errorNumber, customMsg ) ;
-	else
-		window.frames['frmUpload'].OnUploadCompleted( errorNumber, fileName ) ;
+	window.frames['frmUpload'].OnUploadCompleted( errorNumber, fileUrl, fileName, customMsg ) ;
 }
 
 // Set the folder to open dynamically

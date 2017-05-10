@@ -24,7 +24,6 @@
      uploadCompletedFunction = window.parent.OnUploadCompleted;
   }
   uploadCompletedFunction(
-    ${error}, '${(newFileName)?default("")}',
-    '${(fileName)?default("")}', '${(customMessage)?default("")}'
+    ${error}, '${(fileURL)?default("")}', '${(fileName)?default("")}', '${(customMessage)?default("")}'
   );
 </script>

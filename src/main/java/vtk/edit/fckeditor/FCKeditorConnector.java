@@ -60,6 +60,7 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PropertyType;
+import vtk.security.AuthenticationException;
 import vtk.util.repository.MimeHelper;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
@@ -281,14 +282,13 @@ public class FCKeditorConnector implements Controller {
 
             URL fileURL = this.viewService.constructURL(uri);
 
-            model.put("existed", existed);
-            model.put("fileName", name);
-            model.put("newFileName", fileURL.getPath().getName());
             model.put("error", existed ? 201 : 0);
+            model.put("fileURL", fileURL);
+            model.put("fileName",  fileURL.getPath().getName());
 
-        } catch (AuthorizationException e) {
+        } catch (AuthorizationException | AuthenticationException e) {
             model.put("error", 203);
-
+            model.put("customMessage", "You do not have permission to upload files to this folder");
         } catch (Exception e) {
             model.put("error", 1);
             model.put("customMessage", e.getMessage());
