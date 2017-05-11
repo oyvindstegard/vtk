@@ -62,7 +62,7 @@ public class EventAsICalHelperTest {
         SecurityContext securityContext = new SecurityContext(null, null);
         SecurityContext.setSecurityContext(securityContext);
         RequestContext requestContext = new RequestContext(null, securityContext,
-                null, null, Path.ROOT, null, false,
+                null, null, null, Path.ROOT, null, false,
                 false, true, repository, new DefaultPrincipalMetadataDAO());
         RequestContext.setRequestContext(requestContext);
     }

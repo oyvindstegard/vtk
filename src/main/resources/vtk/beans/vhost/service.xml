@@ -595,4 +595,37 @@
   <!-- Building URLs to a service -->
   <bean id="serviceUrlProvider" class="vtk.web.service.ServiceUrlProvider" />
 
+  <bean id="propertySearch.queryService" class="vtk.web.service.ServiceImpl">
+    <property name="order" value="-999" />
+    <property name="assertions">
+      <list>
+        <ref bean="request.isGetOrHead" />
+        <bean class="vtk.web.service.RequestURIRegexpAssertion">
+          <property name="pattern" value="${appServices.baseURL}/property-query.*" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler" ref="propertySearch.queryHandler" />
+  </bean>
+
+  <bean id="propertySearch.queryHandler" class="vtk.web.search.QueryHandler">
+    <constructor-arg name="searcher" ref="propertySearch.searcher" />
+    <constructor-arg name="formats" ref="propertySearch.queryHandler.formats" />
+    <constructor-arg name="templates" ref="propertySearch.queryHandler.templates" />
+  </bean>
+
+  <bean id="propertySearch.queryHandler.formats" 
+        class="vtk.web.search.QueryHandler" factory-method="defaultFormats" />
+
+  <bean id="propertySearch.queryHandler.templates" class="vtk.context.JSONFactoryBean">
+    <constructor-arg value="${propertySearch.searchTemplates}" />
+  </bean>
+
+
+  <bean id="propertySearch.searcher" class="vtk.web.search.SimpleSearcher">
+    <constructor-arg name="parser" ref="searchParser" />
+    <constructor-arg name="searcher" ref="systemIndexSearcher" />
+    <constructor-arg name="resourceTypeTree" ref="resourceTypeTree" />
+  </bean>
+
 </beans>

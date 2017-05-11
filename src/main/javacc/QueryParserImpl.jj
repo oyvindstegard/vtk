@@ -61,9 +61,9 @@ public class QueryParserImpl implements QueryParser {
         try {
             return Query();
         } catch (TokenMgrError tme) {
-            throw new RuntimeException(tme.getMessage());
+            throw new RuntimeException("Failed to parse query \"" + query + "\": " + tme.getMessage());
         } catch (ParseException e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new RuntimeException("Failed to parse query \"" + query + "\": " + e.getMessage(), e);
         }
     }
     

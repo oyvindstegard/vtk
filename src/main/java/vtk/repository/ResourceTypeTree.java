@@ -30,9 +30,9 @@
  */
 package vtk.repository;
 
-import vtk.repository.resourcetype.HierarchicalVocabulary;
 import java.util.List;
 
+import vtk.repository.resourcetype.HierarchicalVocabulary;
 import vtk.repository.resourcetype.MixinResourceTypeDefinition;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -128,6 +128,14 @@ public interface ResourceTypeTree extends HierarchicalVocabulary<String> {
      * @return Return flat list of all registered property type definitions.
      */
     public List<PropertyTypeDefinition> getPropertyTypeDefinitions();
+
+    /**
+     * Decides whether a property definition is part of some resource type definition,
+     * or whether it represents a "dead" property
+     */
+    boolean isManagedProperty(PropertyTypeDefinition definition);
+
+
 
     /**
      * Return a <code>List</code> of the immediate children of the given resource type.

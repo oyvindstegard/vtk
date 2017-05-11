@@ -31,13 +31,13 @@
 
 package vtk.testing.mocktypes;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+
 import vtk.repository.Namespace;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.MixinResourceTypeDefinition;
@@ -174,6 +174,11 @@ public class MockResourceTypeTree implements ResourceTypeTree {
     @Override
     public Collection<String> flattenedAncestors(String entry) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isManagedProperty(PropertyTypeDefinition definition) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 

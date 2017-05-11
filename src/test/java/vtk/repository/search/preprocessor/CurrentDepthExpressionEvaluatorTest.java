@@ -88,7 +88,7 @@ public class CurrentDepthExpressionEvaluatorTest {
         BaseContext.pushContext();
 
         RequestContext.setRequestContext(
-                new RequestContext(request, null, service, null, Path.fromString(uri),
+                new RequestContext(request, null, service, null, null, Path.fromString(uri),
                         null, false, false, true, null, new DefaultPrincipalMetadataDAO()));
         String s = evaluator.evaluate(token);
 

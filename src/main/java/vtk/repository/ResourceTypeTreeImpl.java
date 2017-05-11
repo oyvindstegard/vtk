@@ -30,9 +30,6 @@
  */
 package vtk.repository;
 
-import vtk.repository.resourcetype.event.DynamicTypeRegistrationComplete;
-import vtk.repository.resourcetype.event.StaticTypesInitializedEvent;
-import vtk.repository.resourcetype.event.DynamicTypeRegisteredEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -70,6 +66,9 @@ import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.TypeLocalizationProvider;
 import vtk.repository.resourcetype.ValueFactory;
 import vtk.repository.resourcetype.ValueFormatterRegistry;
+import vtk.repository.resourcetype.event.DynamicTypeRegisteredEvent;
+import vtk.repository.resourcetype.event.DynamicTypeRegistrationComplete;
+import vtk.repository.resourcetype.event.StaticTypesInitializedEvent;
 
 
 /**
@@ -192,6 +191,16 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         nameDescendantsCache.clear();
         nameAncestorsCache.clear();
         propDefsIncludingAncestorsCache.clear();
+    }
+    
+    @Override
+    public boolean isManagedProperty(PropertyTypeDefinition definition) {
+        Map<String, PropertyTypeDefinition> map = 
+                propertyTypeDefinitions.get(definition.getNamespace());
+        if (map == null) {
+            return false;
+        }
+        return map.get(definition.getName()) != null;
     }
 
     @Override
@@ -345,13 +354,13 @@ public class ResourceTypeTreeImpl implements ResourceTypeTree, InitializingBean,
         }
         List<String> children = new ArrayList<>();
         if (def instanceof MixinResourceTypeDefinition) {
-            Set<PrimaryResourceTypeDefinition> primaryTypesForMixin = mixinTypePrimaryTypesMap.get((MixinResourceTypeDefinition)def);
+            Set<PrimaryResourceTypeDefinition> primaryTypesForMixin = mixinTypePrimaryTypesMap.get(def);
             if (primaryTypesForMixin != null) {
                 children.addAll(primaryTypesForMixin.stream().map(p -> p.getName()).collect(Collectors.toList()));
             }
             return Collections.unmodifiableList(children);
         } else {
-            List<PrimaryResourceTypeDefinition> childDefs = parentChildMap.get((PrimaryResourceTypeDefinition)def);
+            List<PrimaryResourceTypeDefinition> childDefs = parentChildMap.get(def);
             if (childDefs != null) {
                 children.addAll(childDefs.stream().map(d -> d.getName()).collect(Collectors.toList()));
             }
