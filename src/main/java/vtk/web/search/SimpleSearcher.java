@@ -230,16 +230,21 @@ public final class SimpleSearcher {
             if (fields == null || fields.trim().equals("")) {
                 return PropertySelect.NONE;
             }
+            
+            boolean allProps = false;
+            boolean acl = false;
+
             List<String> propList = Arrays.asList(fields.split(","));
-            if (propList.contains("*")) {
-                return PropertySelect.ALL;
-            }
             ConfigurablePropertySelect propertySelect = 
                     new ConfigurablePropertySelect();
             
             for (String propName: propList) {
                 if ("acl".equals(propName)) {
-                    propertySelect.setIncludeAcl(true);
+                    acl = true;
+                    continue;
+                }
+                if ("*".equals(propName)) {
+                    allProps = true;
                     continue;
                 }
                 String p = propName;
@@ -257,6 +262,13 @@ public final class SimpleSearcher {
                 }
                 propertySelect.addPropertyDefinition(def);
             }
+            if (allProps && acl) {
+                return PropertySelect.ALL;
+            }
+            else if (allProps) {
+                return PropertySelect.ALL_PROPERTIES;
+            }
+            propertySelect.setIncludeAcl(acl);
             return propertySelect;
         }
     }

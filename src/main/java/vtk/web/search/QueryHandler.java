@@ -79,8 +79,8 @@ import vtk.web.RequestContext;
  *      {@link vtk.repository.search.Parser}
  * <li>{@code properties} or {@code fields} - a comma-separated list of property 
  *      names to include in the result set. If the string {@code *} appears in the list, 
- *      all properties and ACL is included. In addition, the special 
- *      name {@code acl} also causes ACLs to be included.
+ *      all properties are included. In addition, the special 
+ *      name {@code acl} causes ACLs to be included.
  * <li>{@code sort} - a comma-separated list of property names, each potentially
  *     suffixed by either {@code asc} or {@code desc}, specifying the sorting
  *     of the result set
