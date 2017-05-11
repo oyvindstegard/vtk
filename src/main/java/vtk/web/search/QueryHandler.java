@@ -95,7 +95,8 @@ import vtk.web.RequestContext;
  *     can be shortened to <code>?q=xxx&t=my-template</code>, given that the template 
  *     {@code my-template} is defined as <code>field1={q} OR field2={q} OR field3={q}...</code> 
  * <li>{@code format} - refers to one of a number of pre-configured formats. The default formats
- *     are {@code json}, {@code json-compact} and {@code xml}.
+ *     are {@code json}, {@code json-compact}, {@code xml}, {@code comma-separated} 
+ *     and {@code semicolon-separated}.
  * </ul>
  * @see SimpleSearcher
  */
@@ -126,6 +127,8 @@ public final class QueryHandler implements HttpRequestHandler {
         defaultFormats.put("json-compact", compactJsonResponseHandler);
         defaultFormats.put("json", completeJsonResponseHandler);
         defaultFormats.put("xml", completeXmlResponseHandler);
+        defaultFormats.put("comma-separated", fieldSeparatedResponseHandler(','));
+        defaultFormats.put("semicolon-separated", fieldSeparatedResponseHandler(';'));
         return defaultFormats;
     }
 
@@ -626,10 +629,19 @@ public final class QueryHandler implements HttpRequestHandler {
     };
     
     
-    public static ResponseHandler configurableFieldsResponseHandler(List<String> fields, Character separator) {
-            return (query, result, requestContext, response) -> {
-                
+    
+    public static ResponseHandler fieldSeparatedResponseHandler(Character separator) {
+        if (separator == '\\') throw new IllegalArgumentException(
+                "Character '\\' not a valid separator");
+        
+        return (query, result, requestContext, response) -> {
+
             SuccessfulResponseHandler successHandler = (q, rs) -> {
+
+                if (q.fields.contains("*")) {
+                    throw new IllegalArgumentException(
+                            "This output format does not support wildcard fields (*)");
+                }
 
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.setContentType("text/plain;charset=utf-8");
@@ -639,8 +651,11 @@ public final class QueryHandler implements HttpRequestHandler {
                 for (PropertySet propset: rs) {
 
                     boolean first = true;
-                    for (String field: fields) {
-                        if (!first) writer.write(separator);
+                    StringBuilder line = new StringBuilder();
+                    boolean blank = true;
+                    
+                    for (String field: q.fields) {
+                        if (!first) line.append(separator);
                         else first = false;
                         
                         String prefix = null;
@@ -654,26 +669,40 @@ public final class QueryHandler implements HttpRequestHandler {
                             PropertyTypeDefinition def = p.getDefinition();
 
                             if (def.getType() == PropertyType.Type.BINARY) {
-                                writer.write(escape("<binary>", separator, '\\'));
+                                line.append(escape("<binary>", separator, '\\'));
+                                blank = false;
                             }
                             else if (def.isMultiple()) {
                                 boolean firstVal = true;
                                 for (Value v: p.getValues()) {
                                     if (!firstVal) {
-                                        writer.write(escape(",", separator, '\\'));
+                                        line.append(escape(",", separator, '\\'));
                                         firstVal = false;
                                     }
-                                    writer.write(escape(defaultFormatValue(def, v, 
+                                    line.append(escape(defaultFormatValue(def, v, 
                                             requestContext.getLocale()), separator, '\\'));
+                                    blank = false;
                                 }
                             }
                             else {
-                                writer.write(escape(defaultFormatValue(def, p.getValue(), 
+                                line.append(escape(defaultFormatValue(def, p.getValue(), 
                                         requestContext.getLocale()), separator, '\\'));
+                                blank = false;
                             }
                         }
+                        else if ("uri".equals(field)) {
+                            line.append(escape(propset.getURI().toString(), separator, '\\'));
+                            blank = false;
+                        }
+                        else if ("type".equals(field)) {
+                            line.append(escape(propset.getResourceType(), separator, '\\'));
+                            blank = false;
+                        }
                     }
-                    writer.write("\n");
+                    if (!blank) {
+                        line.append('\n');
+                        writer.write(line.toString());
+                    }
                 }
                 writer.flush();
                 writer.close();
@@ -689,7 +718,10 @@ public final class QueryHandler implements HttpRequestHandler {
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
             if (c == separator || c == escape) {
-                escapedValue.append(escape);
+                escapedValue.append(escape).append(c);
+            }
+            else if (c == '\n') {
+                escapedValue.append('\\').append('n');
             }
             else {
                 escapedValue.append(c);
