@@ -31,9 +31,12 @@
 package vtk.web.search;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -71,6 +74,15 @@ public final class SimpleSearcher {
     private Parser parser;
     private Searcher searcher;
     private ResourceTypeTree resourceTypeTree;
+    
+    public static final Set<String> SPECIAL_FIELDS;
+    static {
+        Set<String> fields = new HashSet<>();
+        fields.add("uri");
+        fields.add("type");
+        fields.add("acl");
+        SPECIAL_FIELDS = Collections.unmodifiableSet(fields);
+    }
     
     public SimpleSearcher(Parser parser, Searcher searcher, ResourceTypeTree resourceTypeTree) {
         this.parser = Objects.requireNonNull(parser);
@@ -146,16 +158,18 @@ public final class SimpleSearcher {
         public final int limit;
         public final int offset;
         public final Optional<Sorting> sorting;
+        public final List<String> fields;
         public final PropertySelect select;
         public final boolean unpublished;
         
         private Query(vtk.repository.search.query.Query query, int limit, int offset, 
-                Optional<Sorting> sorting, PropertySelect select,
+                Optional<Sorting> sorting, List<String> fields, PropertySelect select,
                 boolean unpublished) {
             this.query = query;
             this.limit = limit;
             this.offset = offset;
             this.sorting = sorting;
+            this.fields = Collections.unmodifiableList(fields);
             this.select = select;
             this.unpublished = unpublished;
         }
@@ -166,6 +180,7 @@ public final class SimpleSearcher {
         private int limit = 100;
         private int offset = 0;
         private Sorting sorting;
+        private List<String> fields;
         private PropertySelect select = PropertySelect.NONE;
         private boolean unpublished;
         
@@ -207,7 +222,8 @@ public final class SimpleSearcher {
         
         public QueryBuilder select(String select) {
             Objects.requireNonNull(select);
-            this.select = parseFields(select);
+            this.fields = splitFields(select);
+            this.select = parseSelect(fields);
             return this;
         }
         
@@ -221,30 +237,38 @@ public final class SimpleSearcher {
             Objects.requireNonNull(query, "Field 'select' is NULL");
             
             return new Query(query, limit, offset, 
-                    Optional.ofNullable(sorting), select,
+                    Optional.ofNullable(sorting), fields, select,
                     unpublished);
         }
         
-
-        private PropertySelect parseFields(String fields) {
+        private List<String> splitFields(String fields) {
             if (fields == null || fields.trim().equals("")) {
+                return Collections.emptyList();
+            }
+            return Arrays.asList(fields.split(","));
+        }
+
+        private PropertySelect parseSelect(List<String> fields) {
+            if (fields.isEmpty()) {
                 return PropertySelect.NONE;
             }
             
             boolean allProps = false;
             boolean acl = false;
 
-            List<String> propList = Arrays.asList(fields.split(","));
             ConfigurablePropertySelect propertySelect = 
                     new ConfigurablePropertySelect();
             
-            for (String propName: propList) {
+            for (String propName: fields) {
                 if ("acl".equals(propName)) {
                     acl = true;
                     continue;
                 }
                 if ("*".equals(propName)) {
                     allProps = true;
+                    continue;
+                }
+                if (SPECIAL_FIELDS.contains(propName)) {
                     continue;
                 }
                 String p = propName;
