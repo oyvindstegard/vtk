@@ -16,12 +16,13 @@ resourcetype isf-project {
     projectStartMonth : string,
     projectEndYear : string,
     projectEndMonth : string,
-    projectEmployer : json (projectEmployerName : string, projectEmployerUrl : string),
+    projectEmployerName : string,
+    projectEmployerUrl : string,
     projectNr : string trim,
     projectLeaders : json (projectLeaderName : string, projectLeaderUrl : string) multiple,
     participantsUsernames : string multiple,
     participantsCachedFullNames : json,
-    participants : json (participantName:string, participantUrl:string) multiple,
+    participants : json (participantName : string, participantUrl : string) multiple,
     numberOfParticipantsToDisplay : string defaultvalue("50"),
     getExternalScientificInformation : boolean defaultvalue("false"),
     projectCristinNr : string trim,
@@ -39,7 +40,7 @@ resourcetype isf-project {
     group projectEnd (projectEndYear, projectEndMonth) (after projectStart) horizontal,
     projectEndYear (dropdown),
     projectEndMonth (dropdown),
-    projectEmployer (after projectEnd),
+    group projectEmployer (projectEmployerName, projectEmployerUrl) (after projectEnd) horizontal,
     projectNr (after projectEmployer),
     projectLeaders (after projectNr),
     participantsUsernames (after projectLeaders),
@@ -78,9 +79,9 @@ resourcetype isf-project {
             <span class="vrtx-label">[localized "projectPeriod"]</span> <span class="vrtx-value">[val projectStartYear] - [val projectEndYear]</span>
           </div>
         [endif]
-        [if projectEmployer != null]
+        [if projectEmployerName != null && projectEmployerUrl != null]
           <div class="vrtx-project-meta-line vrtx-project-employer">
-            <span class="vrtx-label">[localized "projectEmployer"]</span> <span class="vrtx-value">[val projectEmployer]</span>
+            <span class="vrtx-label">[localized "projectEmployer"]</span> <span class="vrtx-value"><a href="[val projectEmployerUrl]" class="vrtx-project-employer">[val projectEmployerName]</a></span>
           </div>
         [endif]
         [if projectNr != null]
@@ -88,16 +89,20 @@ resourcetype isf-project {
             <span class="vrtx-label">[localized "projectNr"]</span> <span class="vrtx-value">[val projectNr]</span>
           </div>
         [endif]
-        [if projectLeaders != null]
+        [def document structured-document()]
+        [def projectLeadersJson document.properties.projectLeaders]
+        [if projectLeadersJson != null]
           <div class="vrtx-project-meta-line vrtx-project-leaders">
-            [list projectLeaders projectLeader]
+            [list projectLeadersJson projectLeader]
+              [def projectLeaderName projectLeader.projectLeaderName]
+              [def projectLeaderUrl projectLeader.projectLeaderUrl]
               [if _size > 1 && _index = 0]
                 <span class="vrtx-label">[localized "projectLeaders"]</span>
               [elseif _size = 1]
                 <span class="vrtx-label">[localized "projectLeader"]</span>
               [endif]
               [if projectLeader != null]
-                <span class="vrtx-value">[val projectLeader]</span>[if _size != _index + 1],[endif]
+                <span class="vrtx-value"><a href="[val projectLeaderUrl]" class="vrtx-project-leader">[val projectLeaderName]</a></span>[if _size != _index + 1],[endif]
               [endif]
             [endlist]
           </div>
@@ -319,13 +324,26 @@ resourcetype isf-project {
     caption : (en : "Image caption", no : "Bildetekst", nn : "Bilettekst"),
     photo-prefix : (en : "Photo", no : "Foto", nn : "Foto"),
     hidePicture : (en : "Hide image in project", no : "Skjul bilde i prosjekt", nn : "Skjul bilete i prosjekt"),
+    projectStart : (en : "Project start", no : "Prosjekt start", nn : "Prosjekt start"),
+    projectStartYear : (en : "Year", no : "År", nn : "År"),
+    projectStartMonth : (en : "Month (optional)", no : "Måned (valgfri)", nn : "Måned (valfri)"),
+    projectEnd : (en : "Project end", no : "Prosjekt slutt", nn : "Prosjekt slutt"),
+    projectEndYear : (en : "Year", no : "År", nn : "År"),
+    projectEndMonth : (en : "Month (optional)", no : "Måned (valgfri)", nn : "Måned (valfri)"),
+    projectEmployer : (en : "Project employer", no : "Oppdragsgiver", nn : "Oppdragsgiver"),
+    projectEmployerName : (en : "Name", no : "Navn", nn : "Navn"),
+    projectEmployerUrl : (en : "Webaddress", no : "Webadresse", nn : "Webadresse"),
+    projectNr : (en : "Project number", no : "Prosjektnummer", nn : "Prosjektnummer"),
+    projectLeaders : (en : "Project leader(s)", no : "Prosjektleder(e)", nn : "Prosjektledar(e)"),
+    projectLeaderName : (en : "Name", no : "Navn", nn : "Navn"),
+    projectLeaderUrl : (en : "Webaddress", no : "Webadresse", nn : "Webadresse"),
     participantsHeader : (en : "Participants", no : "Deltakere", nn : "Deltakarar"),
     participantsUsernames : (en : "Participants (enter the participant username)",
                              no : "Deltakere (fyll inn deltakerens brukernavn)",
                              nn : "Deltakarar (fyll inn deltakarens brukernavn)"),
     participants : (en : "External participants", no : "Eksterne deltakere", nn : "Eksterne deltakarar"),
     participantName : (en : "Name",no : "Navn", nn :"Namn"),
-    participantUrl : (en : "Webaddress",no : "Webadresse", nn :"Webadresse"),
+    participantUrl : (en : "Webaddress", no : "Webadresse", nn :"Webadresse"),
     combinedPublications : (en : "Publications", no : "Publikasjoner", nn : "Publikasjonar"),
     getExternalScientificInformation : (en : "Show publications registered in Cristin",
                                         no : "Vis publikasjoner rapportert i Cristin",
