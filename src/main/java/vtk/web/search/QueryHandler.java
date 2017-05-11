@@ -96,7 +96,7 @@ import vtk.web.RequestContext;
  *     can be shortened to <code>?q=xxx&t=my-template</code>, given that the template 
  *     {@code my-template} is defined as <code>field1={q} OR field2={q} OR field3={q}...</code> 
  * <li>{@code format} - refers to one of a number of pre-configured formats. The default formats
- *     are {@code json}, {@code json-compact}, {@code xml}, {@code comma-separated} 
+ *     are {@code json}, {@code json-compact}, {@code xml}, {@code tab-separated}, {@code comma-separated} 
  *     and {@code semicolon-separated}.
  * </ul>
  * @see SimpleSearcher
