@@ -37,6 +37,7 @@ import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -635,21 +636,32 @@ public final class QueryHandler implements HttpRequestHandler {
                 "Character '\\' not a valid separator");
         
         return (query, result, requestContext, response) -> {
-
-            SuccessfulResponseHandler successHandler = (q, rs) -> {
-
+            
+            query = query.flatMap(q -> Result.attempt(() -> {
                 if (q.fields.contains("*")) {
                     throw new IllegalArgumentException(
                             "This output format does not support wildcard fields (*)");
                 }
+                else if (q.fields.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "This output format requires at least one field to be specified");
+                }
+                return q;
+            }));
+
+            SuccessfulResponseHandler successHandler = (q, rs) -> {
 
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.setContentType("text/plain;charset=utf-8");
                 
                 PrintWriter writer = response.getWriter();
+                // Handy uniqueness filter:
+                boolean unique = "true".equals(requestContext
+                        .getServletRequest().getParameter("unique-filter"));
+                Set<String> seen = null;
+                if (unique) seen = new HashSet<>();
 
                 for (PropertySet propset: rs) {
-
                     boolean first = true;
                     StringBuilder line = new StringBuilder();
                     boolean blank = true;
@@ -674,15 +686,17 @@ public final class QueryHandler implements HttpRequestHandler {
                             }
                             else if (def.isMultiple()) {
                                 boolean firstVal = true;
+                                StringBuilder multi = new StringBuilder();
                                 for (Value v: p.getValues()) {
                                     if (!firstVal) {
-                                        line.append(escape(",", separator, '\\'));
-                                        firstVal = false;
+                                        multi.append(",");
                                     }
-                                    line.append(escape(defaultFormatValue(def, v, 
+                                    firstVal = false;
+                                    multi.append(escape(defaultFormatValue(def, v, 
                                             requestContext.getLocale()), separator, '\\'));
                                     blank = false;
                                 }
+                                line.append(escape(multi.toString(), separator, '\\'));
                             }
                             else {
                                 line.append(escape(defaultFormatValue(def, p.getValue(), 
@@ -700,8 +714,16 @@ public final class QueryHandler implements HttpRequestHandler {
                         }
                     }
                     if (!blank) {
-                        line.append('\n');
-                        writer.write(line.toString());
+                        String output = line.append('\n').toString();
+                        if (unique) {
+                            if (!seen.contains(output)) {
+                                seen.add(output);
+                                writer.write(output);
+                            }
+                        }
+                        else {
+                            writer.write(output);
+                        }
                     }
                 }
                 writer.flush();
