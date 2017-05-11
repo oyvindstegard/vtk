@@ -349,6 +349,8 @@ public final class QueryHandler implements HttpRequestHandler {
                 streamer.endObject();
             }
             streamer.endArray().endJson();
+            writer.flush();
+            writer.close();
         };
         errorHandler(successHandler)
             .accept(query, result, requestContext, response);
@@ -419,6 +421,8 @@ public final class QueryHandler implements HttpRequestHandler {
                 streamer.endObject();
             }
             streamer.endArray().endJson();
+            writer.flush();
+            writer.close();
         };
         errorHandler(successHandler)
         .accept(query, result, requestContext, response);
@@ -620,4 +624,79 @@ public final class QueryHandler implements HttpRequestHandler {
         };
         errorHandler(successHandler).accept(query, result, requestContext, response);
     };
+    
+    
+    public static ResponseHandler configurableFieldsResponseHandler(List<String> fields, Character separator) {
+            return (query, result, requestContext, response) -> {
+                
+            SuccessfulResponseHandler successHandler = (q, rs) -> {
+
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.setContentType("text/plain;charset=utf-8");
+                
+                PrintWriter writer = response.getWriter();
+
+                for (PropertySet propset: rs) {
+
+                    boolean first = true;
+                    for (String field: fields) {
+                        if (!first) writer.write(separator);
+                        else first = false;
+                        
+                        String prefix = null;
+                        String name = field;
+                        if (field.contains(":")) {
+                            prefix = field.substring(0, field.indexOf(":"));
+                            name = field.substring(prefix.length() + 1);
+                        }
+                        Property p = propset.getPropertyByPrefix(prefix, name);
+                        if (p != null) {
+                            PropertyTypeDefinition def = p.getDefinition();
+
+                            if (def.getType() == PropertyType.Type.BINARY) {
+                                writer.write(escape("<binary>", separator, '\\'));
+                            }
+                            else if (def.isMultiple()) {
+                                boolean firstVal = true;
+                                for (Value v: p.getValues()) {
+                                    if (!firstVal) {
+                                        writer.write(escape(",", separator, '\\'));
+                                        firstVal = false;
+                                    }
+                                    writer.write(escape(defaultFormatValue(def, v, 
+                                            requestContext.getLocale()), separator, '\\'));
+                                }
+                            }
+                            else {
+                                writer.write(escape(defaultFormatValue(def, p.getValue(), 
+                                        requestContext.getLocale()), separator, '\\'));
+                            }
+                        }
+                    }
+                    writer.write("\n");
+                }
+                writer.flush();
+                writer.close();
+            };
+            errorHandler(successHandler)
+                .accept(query, result, requestContext, response);
+        };
+    }
+    
+    private static String escape(String value, char separator, char escape) {
+        StringBuilder escapedValue = new StringBuilder(value.length());
+        
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == separator || c == escape) {
+                escapedValue.append(escape);
+            }
+            else {
+                escapedValue.append(c);
+            }
+        }
+
+        return escapedValue.toString();
+    }
+    
 }
