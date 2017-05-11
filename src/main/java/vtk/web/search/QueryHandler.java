@@ -128,6 +128,7 @@ public final class QueryHandler implements HttpRequestHandler {
         defaultFormats.put("json-compact", compactJsonResponseHandler);
         defaultFormats.put("json", completeJsonResponseHandler);
         defaultFormats.put("xml", completeXmlResponseHandler);
+        defaultFormats.put("tab-separated", fieldSeparatedResponseHandler('\t'));
         defaultFormats.put("comma-separated", fieldSeparatedResponseHandler(','));
         defaultFormats.put("semicolon-separated", fieldSeparatedResponseHandler(';'));
         return defaultFormats;
