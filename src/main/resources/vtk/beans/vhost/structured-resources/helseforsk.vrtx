@@ -255,8 +255,6 @@ resourcetype helseforsk {
             
           </div>
           <div id="vrtx-additional-content">
-            <a class="button" href="./index.html?vrtx=admin&mode=ajaxeditor&action=edit">[localized "edit-project"]</a>
-          
             <h2>[localized "projectLeader"]</h2>
 	        [if projectLeaderCachedFullName != null]
 	          <p><a href="[val projectLeaderCachedFullName.url]">[val projectLeaderCachedFullName.name]</p>
@@ -275,8 +273,8 @@ resourcetype helseforsk {
               [endif]
             [endif]
             
-            <h2>[localized "researchers"]</h2>
 	        [if researchersCachedFullName != null || researchers != null]
+              <h2>[localized "researchers"]</h2>
 	          <ul>
 	            [if researchersCachedFullName != null]
 	              [list researchersCachedFullName user]
@@ -297,15 +295,19 @@ resourcetype helseforsk {
               </ul>
             [endif]
               
-            <h2>[localized "timePeriod"]</h2>
-            <ul>
-              [if startupYear != null]
-                <li>[localized "timeStartup"]: [call "comp:date-format" { "month": startupMonth, "year":  startupYear }]</li>
-              [endif]
-              [if completedYear != null]
-                <li>[localized "timeCompleted"]: [call "comp:date-format" { "month": completedMonth, "year":  completedYear }]</li>
-              [endif]
-            </ul>
+            [if startupYear != null || completedYear != null]
+              <h2>[localized "timePeriod"]</h2>
+              <ul>
+                [if startupYear != null]
+                  <li>[localized "timeStartup"]: [call "comp:date-format" { "month": startupMonth, "year":  startupYear }]</li>
+                [endif]
+                [if completedYear != null]
+                  <li>[localized "timeCompleted"]: [call "comp:date-format" { "month": completedMonth, "year":  completedYear }]</li>
+                [endif]
+              </ul>
+            [endif]
+
+            <a class="button" href="./index.html?vrtx=admin&mode=ajaxeditor&action=edit">[localized "edit-project"]</a>
           </div>
         </div>
       </body>
