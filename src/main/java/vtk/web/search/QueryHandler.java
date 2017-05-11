@@ -55,11 +55,9 @@ import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.Acl;
 import vtk.repository.Namespace;
-import vtk.repository.Path;
 import vtk.repository.Privilege;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
-import vtk.repository.Repository;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyType.Type;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -143,9 +141,6 @@ public final class QueryHandler implements HttpRequestHandler {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
-        Path uri = requestContext.getResourceURI();
-        Repository repository = requestContext.getRepository();
-        repository.retrieve(token, uri, true);
 
         Result<ResponseHandler> format = outputFormat(request);
         Result<SimpleSearcher.Query> query = format.flatMap(f -> buildQuery(request));
@@ -240,9 +235,13 @@ public final class QueryHandler implements HttpRequestHandler {
             response.setContentType("text/plain;charset=utf-8");
             PrintWriter writer = response.getWriter();
             writer.write(t.getMessage());
+            writer.write("\n" + usage + "\n");
             writer.close();
         };
     }
+    
+    private static String usage = "Usage: ?q=<query>&format=<format>"
+            + "[&sort=<sorting>][&fields=<fields>][&limit=<limit>][&offset=<offset>][&t=<template>]";
 
     @FunctionalInterface
     private static interface SuccessfulResponseHandler {
@@ -256,6 +255,7 @@ public final class QueryHandler implements HttpRequestHandler {
                 response.setContentType("text/plain;charset=utf-8");
                 PrintWriter writer = response.getWriter();
                 writer.write(query.failure.get().getMessage());
+                writer.write("\n" + usage + "\n");
                 writer.close();
                 return;
             }
@@ -273,6 +273,7 @@ public final class QueryHandler implements HttpRequestHandler {
                 response.setContentType("text/plain;charset=utf-8");
                 PrintWriter writer = response.getWriter();
                 writer.write(result.failure.get().getMessage());
+                writer.write("\n" + usage + "\n");
                 writer.close();
                 return;
             }
@@ -288,7 +289,7 @@ public final class QueryHandler implements HttpRequestHandler {
     }
 
 
-    public static ResponseHandler compactJsonResponseHandler =
+    public static ResponseHandler compactJsonResponseHandler = 
         (query, result, requestContext, response) -> {
 
         SuccessfulResponseHandler successHandler = (q, rs) -> {

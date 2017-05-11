@@ -249,10 +249,11 @@ public final class SimpleSearcher {
                     prefix = p.substring(0, p.indexOf(":"));
                     p = p.substring(prefix.length() + 1);
                 }
+
                 PropertyTypeDefinition def = resourceTypeTree
                         .getPropertyDefinitionByPrefix(prefix, p);
-                if (def == null) {
-                    continue;
+                if (!resourceTypeTree.isManagedProperty(def)) {
+                    throw new IllegalArgumentException("Unknown field '" + propName + "'");
                 }
                 propertySelect.addPropertyDefinition(def);
             }

@@ -600,10 +600,8 @@
     <property name="assertions">
       <list>
         <ref bean="request.isGetOrHead" />
-        <ref bean="resourceInCollection" />
-        <bean class="vtk.web.service.RequestParameterAssertion">
-          <property name="parameterName" value="service" />
-          <property name="parameterValue" value="property-query" />
+        <bean class="vtk.web.service.RequestURIRegexpAssertion">
+          <property name="pattern" value="${appServices.baseURL}/property-query.*" />
         </bean>
       </list>
     </property>
