@@ -58,9 +58,9 @@ void execute(context, args, out) {
             }
             printProp(property, field, out);
         }
-        acl = r.getAcl();
-        if (acl != null) {
-            printAcl(acl, rs.isInheritedAcl(i), out);
+        acl = r.acl();
+        if (acl.isPresent()) {
+            printAcl(acl.get(), rs.isInheritedAcl(i), out);
         }
     }
     out.println();
