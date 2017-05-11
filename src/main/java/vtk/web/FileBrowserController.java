@@ -42,6 +42,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
 
 public class FileBrowserController implements HttpRequestHandler {
     private static final String FCK_URI_TEMPLATE = "%s/plugins/filemanager/browser/default/browser.html?basefolder=%s&connector=%s";
@@ -70,13 +71,18 @@ public class FileBrowserController implements HttpRequestHandler {
                 FCK_URI_TEMPLATE, editorBase, rc.getResourceURI(), connectorURL
         );
 
-        String type = request.getParameter("type");
-        if (type != null && !type.isEmpty()) {
-            redirectURL += "&type=" + type;
+        Enumeration<String> keys = request.getParameterNames();
+        StringBuilder queryString = new StringBuilder();
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            if ("vrtx".equals(key)) continue;
+            queryString.append('&');
+            queryString.append(key);
+            queryString.append('=');
+            queryString.append(request.getParameter(key));
         }
-        String opener = request.getParameter("opener");
-        if (opener != null && !opener.isEmpty()) {
-            redirectURL += "&opener=" + opener;
+        if (queryString.length() > 1) {
+            redirectURL += queryString.toString();
         }
 
         response.sendRedirect(redirectURL);
