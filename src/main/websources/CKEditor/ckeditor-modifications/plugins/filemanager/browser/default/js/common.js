@@ -67,8 +67,8 @@ function AddSelectOption( selectElement, optionText, optionValue )
 	return oOption ;
 }
 
-var oConnector	= window.parent.oConnector ;
-var oIcons		= window.parent.oIcons ;
+var oConnector	= window.top.oConnector ;
+var oIcons		= window.top.oIcons ;
 
 
 function StringBuilder( value )
@@ -85,6 +85,58 @@ StringBuilder.prototype.Append = function( value )
 StringBuilder.prototype.ToString = function()
 {
     return this._Strings.join( '' ) ;
+}
+
+function GetUrlParam( paramName )
+{
+	var oRegex = new RegExp( '[\?&]' + paramName + '=([^&]+)', 'i' ) ;
+	var oMatch = oRegex.exec( window.top.location.search ) ;
+
+	if ( oMatch && oMatch.length > 1 )
+		return decodeURIComponent( oMatch[1] ) ;
+	else
+		return '' ;
+}
+
+function OpenFile( fileUrl )
+{
+    var oMsg =
+    {
+        'type'            : 'browse-select-resource',
+        'url'             : fileUrl,
+        'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
+    };
+
+    var protocol;
+    var host;
+    try {
+        protocol = window.top.opener.location.protocol;
+        host = window.top.opener.location.host;
+    } catch (e) {
+        var openerParam = GetUrlParam( 'opener' );
+        var parts = openerParam.split('/');
+        if (parts.length < 3)
+        {
+            return;
+        }
+        protocol = parts[0];
+        host = parts[2];
+    }
+
+    if ( ! oConnector.IsAcceptableReceiver( host ) )
+    {
+        return ;
+    }
+    var sDomain = protocol + '//' + host ;
+
+    window.top.opener.postMessage( oMsg, sDomain ) ;
+    var ua = navigator.userAgent.toLowerCase() ;
+    window.top.close() ;
+
+    if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
+    {
+        window.top.opener.focus() ;
+    }
 }
 
 function ajaxSubmit (oFormElement, successHandler, errorHandler)

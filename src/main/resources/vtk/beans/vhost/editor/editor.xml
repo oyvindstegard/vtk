@@ -248,27 +248,6 @@
     <property name="arguments" ref="editor.eventListingEditService" />
   </bean>
 
-  <bean id="editor.browseService" class="vtk.web.service.ServiceImpl">
-    <property name="order" value="-999" />
-    <property name="assertions">
-      <list>
-        <ref bean="editor.browseUriAssertion" />
-        <ref bean="editor.parameterEqualsBrowse" />
-      </list>
-    </property>
-    <property name="handler">
-      <bean class="vtk.edit.fckeditor.FCKeditorConnector">
-        <property name="viewService" ref="viewService" />
-        <property name="browseViewName" value="editor.browseView" />
-        <property name="acceptableDomains" value="${editor.fck.browser.acceptableDomains}" />
-        <property name="tempDir" value="${editor.tempDir}" />
-        <property name="uploadStatusViewName" value="editor.uploadStatusView" />
-        <property name="downcaseNames" value="true" />
-        <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
-      </bean>
-    </property>
-  </bean>
-
   <bean id="editor.browseUriAssertion" class="vtk.web.service.RequestURIRegexpAssertion">
     <property name="pattern" value="${editor.fck.browseURL}" />
   </bean>
@@ -283,26 +262,12 @@
     <property name="parameterValue" value="edit" />
   </bean>
 
-  <bean id="editor.parameterEqualsBrowse" class="vtk.web.service.RequestParameterAssertion">
-    <property name="parameterName" value="action" />
-    <property name="parameterValue" value="browse" />
-  </bean>
-
   <bean id="editor.wrappingViewResolver" parent="adminViewResolver">
     <property name="views">
       <map>
         <entry key="editor.editView" value-ref="editor.editView" />
         <entry key="editor.collectionEditView" value-ref="editor.collectionEditView" />
         <entry key="editor.ooXmlEditView" value-ref="editor.ooXmlEditView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="editor.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="editor.browseView" value-ref="editor.browseView" />
-        <entry key="editor.uploadStatusView" value-ref="editor.uploadStatusView" />
       </map>
     </property>
   </bean>
@@ -354,7 +319,7 @@
           <property name="service" ref="editor.collection.manuallyApproveResourcesService" />
         </bean>
         <bean class="vtk.web.referencedata.provider.StaticURIServiceURLProvider">
-          <property name="service" ref="editor.browseService" />
+          <property name="service" ref="filebrowser.fckconnector" />
           <property name="path" value="${editor.fck.browseURL}" />
           <property name="modelName" value="fckBrowse" />
         </bean>
@@ -396,24 +361,6 @@
   </bean>
 
   <bean id="editor.collectionEditView" parent="editor.editView" />
-
-  <bean id="editor.browseView" parent="freemarkerView">
-    <property name="url" value="ckeditor/browse.ftl" />
-    <property name="contentType" value="text/xml;charset=utf-8" />
-    <property name="referenceDataProviders">
-      <list>
-      </list>
-    </property>
-  </bean>
-
-  <bean id="editor.uploadStatusView" parent="freemarkerView">
-    <property name="url" value="ckeditor/upload-status.ftl" />
-    <property name="contentType" value="text/html;charset=utf-8" />
-    <property name="referenceDataProviders">
-      <list>
-      </list>
-    </property>
-  </bean>
 
   <bean class="vtk.web.AdminMedia">
     <constructor-arg ref="manage.cssRegistry" />

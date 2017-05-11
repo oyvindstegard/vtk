@@ -82,7 +82,7 @@ function formReset() {
 	document.getElementById('btnUpload').disabled = false ;
 }
 
-function OnUploadCompleted( errorNumber, data )
+function OnUploadCompleted( errorNumber, fileUrl, fileName, customMsg )
 {
 	formReset();
 
@@ -92,14 +92,17 @@ function OnUploadCompleted( errorNumber, data )
 			window.parent.frames['frmResourcesList'].Refresh() ;
 			break ;
 		case 1 :	// Custom error.
-			alert( data ) ;
+			alert( customMsg ) ;
 			break ;
 		case 201 :
 			window.parent.frames['frmResourcesList'].Refresh() ;
-			alert( 'A file with the same name is already available. The uploaded file has been renamed to "' + data + '"' ) ;
+			alert( 'A file with the same name is already available. The uploaded file has been renamed to "' + fileName + '"' ) ;
 			break ;
 		case 202 :
 			alert( 'Invalid file' ) ;
+			break ;
+		case 203 :
+			alert( customMsg ) ;
 			break ;
 		default :
 			alert( 'Error on file upload. Error number: ' + errorNumber ) ;

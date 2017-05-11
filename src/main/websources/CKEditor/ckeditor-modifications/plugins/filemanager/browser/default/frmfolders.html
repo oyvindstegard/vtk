@@ -30,7 +30,7 @@
 		<script type="text/javascript" src="js/common.js"></script>
 		<script type="text/javascript">
 
-var sActiveFolder = window.top.GetUrlParam( 'BaseFolder' );
+var sActiveFolder = GetUrlParam( 'BaseFolder' );
 
 var bIsLoaded = false ;
 var iIntervalId ;
@@ -182,7 +182,7 @@ function SetResourceType( type )
 
 window.onload = function()
 {
-        var BaseFolder = window.top.GetUrlParam( 'BaseFolder' );
+    var BaseFolder = GetUrlParam( 'BaseFolder' );
 	oListManager.Init() ;
 	LoadFolders( BaseFolder ) ;
 }
