@@ -180,7 +180,7 @@ public final class SimpleSearcher {
         private int limit = 100;
         private int offset = 0;
         private Sorting sorting;
-        private List<String> fields;
+        private List<String> fields = Collections.emptyList();
         private PropertySelect select = PropertySelect.NONE;
         private boolean unpublished;
         
