@@ -3,6 +3,7 @@ resourcetype unit-publications {
   properties {
     title : string overrides title,
     introduction : simple_html,
+    content : html noextract,
     areacode : string trim,
     selectedPublications : html noextract,
     showAdditionalContent : boolean defaultvalue("true"),
@@ -13,7 +14,7 @@ resourcetype unit-publications {
 
   edit-rules {
     areacode (size[8]),
-    group publications (areacode, numberOfPublications, selectedPublications) (after introduction),
+    group publications (areacode, numberOfPublications, selectedPublications) (after content),
     group related-content-group (showAdditionalContent, related-content) (after selectedPublications)
     numberOfPublications (dropdown)
   }
@@ -28,7 +29,7 @@ resourcetype unit-publications {
       [endif]
       ##
     }
-    
+
     link-other-language {
       ##
       [def link resource-prop(".", "link-other-language")]
@@ -61,7 +62,7 @@ resourcetype unit-publications {
       [endif]
       ##
     }
-    
+
     related-content-in-additional-column {
       ##
       [def document structured-document()]
@@ -78,7 +79,7 @@ resourcetype unit-publications {
       [endif]
       ##
     }
-    
+
     related-content-in-main-column {
       ##
       [def document structured-document()]
@@ -115,6 +116,7 @@ resourcetype unit-publications {
             [call "comp:link-other-language"]
             <h1>[call "comp:title"]</h1>
             [call "comp:introduction"]
+            [call "json:field" {"select":"content"}]
             [call "comp:publications"]
             [call "comp:related-content-in-main-column"]
           </div>
@@ -141,6 +143,7 @@ resourcetype unit-publications {
   localization {
     title : (en : "Title", no : "Tittel", nn : "Tittel"),
     introduction : (en : "Introduction", no : "Innledning", nn : "Innleiing"),
+    content : (en : "Content", no : "Innhold", nn : "Innhald"),
     areacode : (en : "Org. Unit ID", no : "Stedkode", nn : "Stadkode"),
     publications : (en : "Publications", no : "Publikasjoner", nn : "Publikasjonar"),
     selectedPublications : (en : "Selected publications", no : "Utvalgte publikasjoner", nn : "Utvalde publikasjonar"),
