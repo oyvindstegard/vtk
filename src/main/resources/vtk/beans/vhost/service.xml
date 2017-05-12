@@ -612,6 +612,10 @@
     <constructor-arg name="searcher" ref="propertySearch.searcher" />
     <constructor-arg name="formats" ref="propertySearch.queryHandler.formats" />
     <constructor-arg name="templates" ref="propertySearch.queryHandler.templates" />
+    <constructor-arg name="defaultParameters">
+      <map>
+      </map>
+    </constructor-arg>
   </bean>
 
   <bean id="propertySearch.queryHandler.formats" 
@@ -620,7 +624,6 @@
   <bean id="propertySearch.queryHandler.templates" class="vtk.context.JSONFactoryBean">
     <constructor-arg value="${propertySearch.searchTemplates}" />
   </bean>
-
 
   <bean id="propertySearch.searcher" class="vtk.web.search.SimpleSearcher">
     <constructor-arg name="parser" ref="searchParser" />

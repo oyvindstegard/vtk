@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
@@ -102,27 +103,30 @@ import vtk.web.RequestContext;
  * @see SimpleSearcher
  */
 public final class QueryHandler implements HttpRequestHandler {
+    private SimpleSearcher searcher;
     private Map<String, ResponseHandler> formats;
     private Map<String, String> templates;
-    private SimpleSearcher searcher;
+    private Map<String, String> defaultParameters;
 
+    public QueryHandler(SimpleSearcher searcher) {
+        this.searcher = Objects.requireNonNull(searcher);
+        this.formats = Collections.unmodifiableMap(defaultFormats());
+        this.templates = new HashMap<>();
+        this.defaultParameters = new HashMap<>();
+    }
+    
     public QueryHandler(SimpleSearcher searcher, Map<String, ResponseHandler> formats, 
-            Map<String, String> templates) {
+            Map<String, String> templates, Map<String, String> defaultParameters) {
         this.searcher = Objects.requireNonNull(searcher);
         Map<String, ResponseHandler> fmts = defaultFormats();
         for (String key: Objects.requireNonNull(formats).keySet()) {
             fmts.put(key, formats.get(key));
         }
         this.formats = Collections.unmodifiableMap(fmts);
-        this.templates = Objects.requireNonNull(templates);
+        this.templates = new HashMap<>(Objects.requireNonNull(templates));
+        this.defaultParameters = new HashMap<>(Objects.requireNonNull(defaultParameters));
     }
 
-    public QueryHandler(SimpleSearcher searcher) {
-        this.searcher = Objects.requireNonNull(searcher);
-        this.formats = Collections.unmodifiableMap(defaultFormats());
-        this.templates = new HashMap<>();
-    }
-    
     public static Map<String, ResponseHandler> defaultFormats() {
         Map<String, ResponseHandler> defaultFormats = new HashMap<>();
         defaultFormats.put("json-compact", compactJsonResponseHandler);
@@ -137,23 +141,25 @@ public final class QueryHandler implements HttpRequestHandler {
     @FunctionalInterface
     public static interface ResponseHandler {
         public void accept(Result<SimpleSearcher.Query> query, Result<ResultSet> result, 
-                RequestContext requestContext, HttpServletResponse response) throws IOException; 
+                RequestContext requestContext, HttpServletRequest request, 
+                HttpServletResponse response) throws IOException; 
     }
 
     @Override
     public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-
+        HttpServletRequest wrappedRequest 
+            = new ParameterRequestWrapper(request, defaultParameters);
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
 
-        Result<ResponseHandler> format = outputFormat(request);
-        Result<SimpleSearcher.Query> query = format.flatMap(f -> buildQuery(request));
+        Result<ResponseHandler> format = outputFormat(wrappedRequest);
+        Result<SimpleSearcher.Query> query = format.flatMap(f -> buildQuery(wrappedRequest));
         Result<ResultSet> resultSet = query.flatMap(q -> Result.attempt(() -> searcher.search(token, q)));
 
         format.forEach(handler -> {
             try {
-                handler.accept(query, resultSet, requestContext, response);
+                handler.accept(query, resultSet, requestContext, wrappedRequest, response);
             }
             catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -161,12 +167,13 @@ public final class QueryHandler implements HttpRequestHandler {
         });
     }
 
+    
     private Result<ResponseHandler> outputFormat(HttpServletRequest request) {
         Result<ResponseHandler> format = Result.attempt(() -> {
-            String f = Objects.requireNonNull(
-                    request.getParameter("format"), 
-                    "Missing parameter 'format'. Must be one of " 
-                            + formats.keySet());
+            String f = Objects
+                    .requireNonNull(request.getParameter("format"), 
+                            "Missing parameter 'format'. Must be one of " 
+                                    + formats.keySet());
             ResponseHandler handler = formats.get(f);
             return Objects.requireNonNull(handler, "Unknown format '" + f 
                     + "'. Must be one of " + formats.keySet());
@@ -235,7 +242,7 @@ public final class QueryHandler implements HttpRequestHandler {
     }
 
     private static ResponseHandler badRequest(Throwable t) {
-        return (query, result, requestContext, response) -> {
+        return (query, result, requestContext, request, response) -> {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("text/plain;charset=utf-8");
             PrintWriter writer = response.getWriter();
@@ -254,7 +261,7 @@ public final class QueryHandler implements HttpRequestHandler {
     }
 
     private static ResponseHandler errorHandler(SuccessfulResponseHandler successHandler) {
-        return (query, result, requestContext, response) -> {
+        return (query, result, requestContext, request, response) -> {
             if (query.failure.isPresent()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.setContentType("text/plain;charset=utf-8");
@@ -295,7 +302,7 @@ public final class QueryHandler implements HttpRequestHandler {
 
 
     public static ResponseHandler compactJsonResponseHandler = 
-        (query, result, requestContext, response) -> {
+        (query, result, requestContext, request, response) -> {
 
         SuccessfulResponseHandler successHandler = (q, rs) -> {
             PrintWriter writer = response.getWriter();
@@ -358,10 +365,11 @@ public final class QueryHandler implements HttpRequestHandler {
             writer.close();
         };
         errorHandler(successHandler)
-            .accept(query, result, requestContext, response);
+            .accept(query, result, requestContext, request, response);
     };
 
-    public static ResponseHandler completeJsonResponseHandler = (query, result, requestContext, response) -> {
+    public static ResponseHandler completeJsonResponseHandler = 
+        (query, result, requestContext, request, response) -> {
         SuccessfulResponseHandler successHandler = (q, rs) -> {
             PrintWriter writer = response.getWriter();
 
@@ -430,7 +438,7 @@ public final class QueryHandler implements HttpRequestHandler {
             writer.close();
         };
         errorHandler(successHandler)
-        .accept(query, result, requestContext, response);
+        .accept(query, result, requestContext, request, response);
     };
 
     
@@ -544,7 +552,7 @@ public final class QueryHandler implements HttpRequestHandler {
 
 
     public static ResponseHandler completeXmlResponseHandler = 
-        (query, result, requestContext, response) -> {
+        (query, result, requestContext, request, response) -> {
 
         SuccessfulResponseHandler successHandler = (q, rs) -> {
             try {
@@ -627,7 +635,7 @@ public final class QueryHandler implements HttpRequestHandler {
                 throw new RuntimeException(e);
             }
         };
-        errorHandler(successHandler).accept(query, result, requestContext, response);
+        errorHandler(successHandler).accept(query, result, requestContext, request, response);
     };
     
     
@@ -636,7 +644,7 @@ public final class QueryHandler implements HttpRequestHandler {
         if (separator == '\\') throw new IllegalArgumentException(
                 "Character '\\' not a valid separator");
         
-        return (query, result, requestContext, response) -> {
+        return (query, result, requestContext, request, response) -> {
             
             query = query.flatMap(q -> Result.attempt(() -> {
                 if (q.fields.contains("*")) {
@@ -657,8 +665,7 @@ public final class QueryHandler implements HttpRequestHandler {
                 
                 PrintWriter writer = response.getWriter();
                 // Handy uniqueness filter:
-                boolean unique = "true".equals(requestContext
-                        .getServletRequest().getParameter("unique-filter"));
+                boolean unique = "true".equals(request.getParameter("filter-unique"));
                 Set<String> seen = null;
                 if (unique) seen = new HashSet<>();
 
@@ -731,7 +738,7 @@ public final class QueryHandler implements HttpRequestHandler {
                 writer.close();
             };
             errorHandler(successHandler)
-                .accept(query, result, requestContext, response);
+                .accept(query, result, requestContext, request, response);
         };
     }
     
@@ -754,4 +761,21 @@ public final class QueryHandler implements HttpRequestHandler {
         return escapedValue.toString();
     }
     
+    private static class ParameterRequestWrapper extends HttpServletRequestWrapper {
+        private Map<String, String> defaultParameters;
+        
+        public ParameterRequestWrapper(HttpServletRequest request, Map<String, String> defaultParameters) {
+            super(request);
+            this.defaultParameters = defaultParameters;
+        }
+        
+        @Override
+        public String getParameter(String name) {
+            String param = super.getParameter(name);
+            if (param != null) {
+                return param;
+            }
+            return defaultParameters.get(name);
+        }
+    }
 }
