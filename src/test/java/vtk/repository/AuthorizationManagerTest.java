@@ -543,7 +543,7 @@ public class AuthorizationManagerTest {
         }
 
         @Override
-        public void deleteRecoverable(List<RecoverableResource> recoverableResources)
+        public void deleteRecoverable(RecoverableResource recoverableResource)
                 throws DataAccessException {
             throw new UnsupportedOperationException();
         }
@@ -604,11 +604,6 @@ public class AuthorizationManagerTest {
             throw new UnsupportedOperationException();
         }
         
-        @Override
-        public boolean validate() throws DataAccessException {
-            throw new UnsupportedOperationException();
-        }
-
     }
 
     private static void requireFields(JSONObject obj, String...fields) {

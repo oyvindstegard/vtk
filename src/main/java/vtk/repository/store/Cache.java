@@ -131,11 +131,6 @@ public class Cache implements DataAccessor, InitializingBean {
 
     private float loadChildrenSelectivelyThreshold = 0.05f;
 
-    @Override
-    public boolean validate() throws DataAccessException {
-        return this.wrappedAccessor.validate();
-    }
-
     public void setMaxItems(int maxItems) {
         if (maxItems <= 0) {
             throw new IllegalArgumentException("Cache size must be a positive number");
@@ -507,7 +502,7 @@ public class Cache implements DataAccessor, InitializingBean {
     }
 
     @Override
-    public void deleteRecoverable(List<RecoverableResource> recoverableResources) throws DataAccessException {
+    public void deleteRecoverable(RecoverableResource recoverableResources) throws DataAccessException {
         this.wrappedAccessor.deleteRecoverable(recoverableResources);
     }
 

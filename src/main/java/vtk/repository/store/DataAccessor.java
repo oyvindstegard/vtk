@@ -46,19 +46,14 @@ import vtk.security.Principal;
 public interface DataAccessor {
 
     /**
-     * "Sanity check" method, called after initialization. Implementations
-     * should return false if the data accessor is unable to operate properly
-     * (i.e. tables missing, etc.)
-     */
-    public boolean validate() throws DataAccessException;
-
-    /**
      * Loads a single resource by uri
+     * @param uri
      */
     public ResourceImpl load(Path uri) throws DataAccessException;
 
     /**
      * Loads the children of a given resource
+     * @param parent
      */
     public ResourceImpl[] loadChildren(ResourceImpl parent) throws DataAccessException;
 
@@ -133,19 +128,19 @@ public interface DataAccessor {
     public ResourceImpl recover(Path parentUri, RecoverableResource recoverableResource) throws DataAccessException;
 
     /**
-     * Permanently deletes a list of recoverable resources
+     * Permanently deletes a recoverable resource.
      * 
      * @param recoverableResources
      *            The list of recoverable resources to delete
      * @throws DataAccessException
      */
-    public void deleteRecoverable(List<RecoverableResource> recoverableResources) throws DataAccessException;
+    public void deleteRecoverable(RecoverableResource recoverableResources) throws DataAccessException;
 
     /**
      * Retrieves resources in the trash can that are overdue for permanent
      * removal (called periodically)
      * 
-     * @param overDueLimit
+     * @param overdueLimit
      *            number of days that have to pass from deletion time before a
      *            recoverable resource is to be permanently deleted
      * @return a list or recoverable resources that are overdue for deletion

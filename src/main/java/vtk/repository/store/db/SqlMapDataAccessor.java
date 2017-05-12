@@ -98,11 +98,6 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     private String repositoryId;
     
     @Override
-    public boolean validate() {
-        throw new DataAccessException("Not implemented");
-    }
-
-    @Override
     public ResourceImpl load(Path uri) {
         return load(uri, getSqlSession());
     }
@@ -159,8 +154,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     @Override
     public void deleteExpiredLocks(Date d) {
-        String sqlMap = getSqlMap("deleteExpiredLocks");
-        getSqlSession().update(sqlMap, d);
+        getSqlSession().update(getSqlMap("deleteExpiredLocks"), d);
     }
 
     @Override
@@ -295,7 +289,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
             Map<String, Object> map = getSqlSession().selectOne(sqlMap,
                     r.getURI().toString());
             Integer id = (Integer) map.get("resourceId");
-            r.setID(id.intValue());
+            r.setID(id);
         }
 
         //storeLock(r);
@@ -350,12 +344,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
 
     @Override
     public List<RecoverableResource> getRecoverableResources(final int parentResourceId) throws DataAccessException {
-        String sqlMap = getSqlMap("getRecoverableResources");
-        SqlSession sqlSession = getSqlSession();
-        
-        List<RecoverableResource> recoverableResources = sqlSession.selectList(sqlMap,
-                parentResourceId);
-        return recoverableResources;
+        return getSqlSession().selectList(getSqlMap("getRecoverableResources"), parentResourceId);
     }
 
     @Override
@@ -373,7 +362,7 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         sqlMap = getSqlMap("deleteFromTrashCan");
         sqlSession.delete(sqlMap, deletedResource.getId());
 
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         String trashID = deletedResource.getTrashID();
         parameters.put("trashIDWildcard", SqlDaoUtils.getStringSqlWildcard(trashID, SQL_ESCAPE_CHAR));
         int uriTrimLength = trashID.length() + 1;
@@ -408,27 +397,18 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
     }
 
     @Override
-    public void deleteRecoverable(List<RecoverableResource> recoverableResources) throws DataAccessException {
+    public void deleteRecoverable(RecoverableResource recoverable) throws DataAccessException {
         // XXX Lazy delete, #missing parent#
-        String sqlMap = getSqlMap("deletePermanentlyMarkDeleted");
-        
-        int n = 0;
-        Map<String, Object> parameters = new HashMap<>(3, 1f);
         SqlSession session = getSqlSession();
-        for (RecoverableResource recoverable: recoverableResources) {
-            logger.info("Permanently deleting recoverable: " + recoverable);
-            
-            String trashUri = recoverable.getTrashUri();
-            parameters.put("trashCanURI", trashUri);
-            parameters.put("trashCanURIWildCard", SqlDaoUtils.getStringSqlWildcard(trashUri, SQL_ESCAPE_CHAR));
-            session.delete(sqlMap, parameters);
-            sqlMap = getSqlMap("deleteFromTrashCan");
-            session.delete(sqlMap, recoverable.getId());
-            if (++n % UPDATE_BATCH_SIZE_LIMIT == 0) {
-                session.flushStatements();
-            }
-        }
-        session.flushStatements();
+
+        logger.info("Permanently deleting recoverable: " + recoverable);
+
+        String trashUri = recoverable.getTrashUri();
+        Map<String, Object> parameters = new HashMap<>(3, 1f);
+        parameters.put("trashCanURI", trashUri);
+        parameters.put("trashCanURIWildCard", SqlDaoUtils.getStringSqlWildcard(trashUri, SQL_ESCAPE_CHAR));
+        session.delete(getSqlMap("deletePermanentlyMarkDeleted"), parameters);
+        session.delete(getSqlMap("deleteFromTrashCan"), recoverable.getId());
     }
 
     @Override
@@ -437,17 +417,12 @@ public class SqlMapDataAccessor extends AbstractSqlMapDataAccessor implements Da
         // Add negative limit -> substract
         cal.add(Calendar.DATE, -overDueLimit);
         Date overDueDate = cal.getTime();
-        String sqlMap = getSqlMap("getOverdue");
-        List<RecoverableResource> recoverableResources = this.getSqlSession().selectList(sqlMap,
-                overDueDate);
-        return recoverableResources;
+        return getSqlSession().selectList(getSqlMap("getOverdue"), overDueDate);
     }
 
     @Override
     public List<RecoverableResource> getTrashCanOrphans() throws DataAccessException {
-        String sqlMap = getSqlMap("getOrphans");
-        List<RecoverableResource> recoverableResources = this.getSqlSession().selectList(sqlMap);
-        return recoverableResources;
+        return getSqlSession().selectList(getSqlMap("getOrphans"));
     }
 
     @Override

@@ -77,6 +77,7 @@ public abstract class AbstractSqlMapDataAccessor extends DaoSupport {
     protected final SqlSession getSqlSession() {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             String name = TransactionSynchronizationManager.getCurrentTransactionName();
+            if (name == null) name = "unnamed";
             if (TransactionSynchronizationManager.isCurrentTransactionReadOnly()) {
                 if (logger.isTraceEnabled()) {
                     logger.trace("Transaction " + name + ": read-only=true");
@@ -89,7 +90,7 @@ public abstract class AbstractSqlMapDataAccessor extends DaoSupport {
             return batchSqlSession;
         }
         if (logger.isTraceEnabled()) {
-            logger.trace("Unknown transaction, assume read-only=false");
+            logger.trace("No active transaction synchronization (unknown transaction), assume read-only=false");
         }
         return batchSqlSession;
     }

@@ -48,7 +48,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -59,9 +58,10 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import vtk.cluster.ClusterAware;
@@ -500,7 +500,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
 
             // Create on new collection resource
             ResourceImpl newResource = new ResourceImpl(uri);
-            newResource.setChildURIs(new ArrayList<Path>());
+            newResource.setChildURIs(new ArrayList<>());
             content = getContent(newResource);
             newResource.setAcl(parent.getAcl());
             newResource.setInheritedAcl(true);
@@ -866,7 +866,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             throw new ResourceNotFoundException(parentUri);
         }
 
-        this.dao.deleteRecoverable(Collections.singletonList(recoverableResource));
+        this.dao.deleteRecoverable(recoverableResource);
         this.contentStore.deleteRecoverable(recoverableResource);
     }
 
@@ -2236,7 +2236,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
     private final class MaintenanceManager implements Runnable {
 
         private ScheduledExecutorService executor;
-        private TransactionTemplate transactionTemplate;
+        private TransactionOperations transactionOperations;
         private final DeleteExpiredLocksJob deleteExpiredLocksJob = new DeleteExpiredLocksJob();
         private final PurgeTrashJob purgeTrashJob = new PurgeTrashJob();
         private final RevisionStoreGcJob revisionStoreGcJob = new RevisionStoreGcJob();
@@ -2247,19 +2247,27 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
                 throw new IllegalStateException("init() should only be called once at start of bean life cycle");
             }
 
+            // Support optionally configured transaction manager
             if (transactionManager != null) {
-                this.transactionTemplate = new TransactionTemplate(transactionManager);
+                TransactionTemplate tt = new TransactionTemplate(transactionManager);
+                tt.setReadOnly(false);
+                this.transactionOperations = tt;
+            } else {
+                // Dummy
+                this.transactionOperations = new TransactionOperations() {
+                    @Override
+                    public <T> T execute(TransactionCallback<T> tc) throws TransactionException {
+                        return tc.doInTransaction(null);
+                    }
+                };
             }
 
-            this.executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, getId() + ".repository.maintenance");
-                }
-            });
+            this.executor = Executors.newSingleThreadScheduledExecutor((Runnable r) ->
+                    new Thread(r, getId() + ".repository.maintenance"));
 
-            periodicLogger.info("Init repository maintenance manager.");
             this.executor.scheduleAtFixedRate(this, 10, maintenanceIntervalSeconds, TimeUnit.SECONDS);
+
+            periodicLogger.info("Initialized repository maintenance manager");
         }
 
         // Shutdown background jobs
@@ -2285,11 +2293,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             // Delete expired locks at every period
             try {
                 periodicLogger.debug("Deleting expired locks");
-                if (this.transactionTemplate != null) {
-                    this.transactionTemplate.execute(deleteExpiredLocksJob);
-                } else {
-                    deleteExpiredLocksJob.execute();
-                }
+                deleteExpiredLocksJob.execute(transactionOperations);
             } catch (Throwable t) {
                 periodicLogger.error("Error while deleting expired locks", t);
             }
@@ -2298,11 +2302,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             try {
                 if (shouldRun(purgeTrashJob.lastRun(), trashCanPurgeHours)) {
                     periodicLogger.info("Executing trash purge");
-                    if (this.transactionTemplate != null) {
-                        this.transactionTemplate.execute(purgeTrashJob);
-                    } else {
-                        purgeTrashJob.execute();
-                    }
+                    purgeTrashJob.execute(transactionOperations);
                 }
             } catch (Throwable t) {
                 periodicLogger.error("Error while purging trash", t);
@@ -2312,11 +2312,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             try {
                 if (shouldRun(revisionStoreGcJob.lastRun(), revisionGCHours)) {
                     periodicLogger.info("Executing revision store garbage collection.");
-                    if (this.transactionTemplate != null) {
-                        this.transactionTemplate.execute(revisionStoreGcJob);
-                    } else {
-                        revisionStoreGcJob.execute();
-                    }
+                    revisionStoreGcJob.execute(transactionOperations);
                 }
             } catch (Throwable t) {
                 periodicLogger.error("Error while running content revision garbage collection", t);
@@ -2324,8 +2320,7 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
         }
 
         // Determine if periodic job should be executed, when it is supposed to
-        // be run
-        // once within certain hours of the day.
+        // be run once within certain hours of the day.
         private boolean shouldRun(Date lastRun, Set<Integer> runAtHours) {
             Calendar nowCal = Calendar.getInstance();
 
@@ -2348,16 +2343,11 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             return false;
         }
 
-        private final class DeleteExpiredLocksJob extends TransactionCallbackWithoutResult {
+        private final class DeleteExpiredLocksJob {
             Date lastRun;
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                execute();
-            }
-
-            void execute() {
-                dao.deleteExpiredLocks(new Date());
+            void execute(TransactionOperations txWrapper) {
+                txWrapper.execute(ts -> { dao.deleteExpiredLocks(new Date()); return null;});
                 lastRun = new Date();
             }
 
@@ -2366,20 +2356,20 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
             }
         }
 
-        private final class RevisionStoreGcJob extends TransactionCallbackWithoutResult {
-            private Date lastRun;
+        private final class RevisionStoreGcJob {
+            Date lastRun;
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                try {
-                    execute();
-                } catch (IOException io) {
-                    throw new RuntimeException(io);
-                }
-            }
+            void execute(TransactionOperations txWrapper) throws IOException {
+                txWrapper.execute(ts -> {
 
-            void execute() throws IOException {
-                revisionStore.gc();
+                    try {
+                        revisionStore.gc();
+                    } catch (IOException ex) {
+                        throw new DataAccessException(ex);
+                    }
+                    return null;
+                });
+
                 lastRun = new Date();
             }
 
@@ -2394,45 +2384,41 @@ public class RepositoryImpl implements Repository, ApplicationContextAware,
          * given configurable period of time. An orphan resource is a resource
          * that no longer has a parent (parent has been permanently deleted).
          */
-        private final class PurgeTrashJob extends TransactionCallbackWithoutResult {
+        private final class PurgeTrashJob {
             private Date lastRun;
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                execute();
+            void deleteRecoverable(RecoverableResource rr) {
+                trashLogger.info("Permanently deleting recoverable resource: " + rr);
+                dao.deleteRecoverable(rr);
+                contentStore.deleteRecoverable(rr);
             }
 
-            void execute() {
-                List<RecoverableResource> overdue = dao.getTrashCanOverdue(permanentDeleteOverdueLimitInDays);
-                if (overdue != null && overdue.size() > 0) {
+            void execute(TransactionOperations txWrapper) {
+                List<RecoverableResource> overdue = txWrapper.execute(ts -> dao.getTrashCanOverdue(permanentDeleteOverdueLimitInDays));
+                if (! overdue.isEmpty()) {
                     trashLogger.info("Found " + overdue.size()
                             + " recoverable resources that are overdue for permanent deletion.");
-                    try {
-                        dao.deleteRecoverable(overdue);
-                        for (RecoverableResource rr : overdue) {
-                            trashLogger.info("Permanently deleting recoverable filesystem resource: " + rr);
-                            contentStore.deleteRecoverable(rr);
+                    for (final RecoverableResource rr : overdue) {
+                        try {
+                            txWrapper.execute(ts -> { deleteRecoverable(rr); return null; });
+                        } catch (Exception e) {
+                            trashLogger.warn("Failed to permanently delete recoverable resource " + rr, e);
                         }
                     }
-                    catch (Throwable t) {
-                        trashLogger.warn("Failed to permanently delete recoverable resource(s)", t);
-                    }
                 }
-                List<RecoverableResource> orphans = dao.getTrashCanOrphans();
-                if (orphans != null && orphans.size() > 0) {
+                
+                List<RecoverableResource> orphans = txWrapper.execute(ts -> dao.getTrashCanOrphans());
+                if (! orphans.isEmpty()) {
                     trashLogger.info("Found " + orphans.size() + " recoverable resources that are orphans.");
-
-                    try {
-                        dao.deleteRecoverable(orphans);
-                        for (RecoverableResource rr : orphans) {
-                            trashLogger.info("Permanently deleting recoverable filesystem resource: " + rr);
-                            contentStore.deleteRecoverable(rr);
+                    for (final RecoverableResource orphan : orphans) {
+                        try {
+                            txWrapper.execute(ts -> { deleteRecoverable(orphan); return null; });
+                        } catch (Exception e) {
+                            trashLogger.warn("Failed to permanently delete recoverable orphan " + orphan, e);
                         }
                     }
-                    catch (Throwable t) {
-                        trashLogger.warn("Failed to permanently delete recoverable resource(s)", t);
-                    }
                 }
+
                 lastRun = new Date();
             }
 

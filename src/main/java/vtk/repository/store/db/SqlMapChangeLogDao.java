@@ -39,9 +39,14 @@ import org.apache.ibatis.session.SqlSession;
 import org.springframework.transaction.annotation.Transactional;
 
 import vtk.repository.ChangeLogEntry;
+import vtk.repository.RepositoryImpl;
 import vtk.repository.store.DataAccessException;
 import vtk.repository.store.ChangeLogDao;
 
+/**
+ * This DAO has {@code @Transactional} methods since they can be called outside the
+ * context of transactional methods in {@link RepositoryImpl}.
+ */
 public class SqlMapChangeLogDao extends AbstractSqlMapDataAccessor implements ChangeLogDao {
 	
     @Override

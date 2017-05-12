@@ -5,38 +5,24 @@
                       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
                       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
 
-  <!-- Transaction setup -->
+  <!-- Transaction manager for database access -->
   <bean id="repository.transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
     <property name="dataSource" ref="repository.dataSource" />
   </bean>
 
-  <!-- AOP transaction advice setup -->
-  <tx:advice id="repository.txAdvice" transaction-manager="repository.transactionManager">
-    <tx:attributes>
-      <!-- Avoid rollback for exceptions which originate purely from business logic, and before any DAO layers have been 
-        touched. Typically this will be validation exceptions, authentication exceptions, etc. This is likely not 100% bulletproof, 
-        though. Consider an exception from property evaluation during a move where some DAO operations already have been performed.. 
-        The database-parts might not be rolled back, yuck.. -->
-      <tx:method name="*"
-        no-rollback-for="vtk.repository.RepositoryException,vtk.security.AuthenticationException" />
-    </tx:attributes>
-  </tx:advice>
+  <!-- Spring annotation-driven transaction management magic using CGLIB. -->
+  <tx:annotation-driven transaction-manager="repository.transactionManager"
+                        proxy-target-class="true" order="1000" />
 
-
-  <!-- Define AOP pointcut for the transactional methods as well: -->
+  <!-- AOP pointcut for all transactional methods. This is referenced by
+       various interceptor throughout, which need to hook on to these methods. -->
   <aop:config proxy-target-class="true">
     <aop:pointcut id="transactionalAnnotationPointcut"
                   expression="@annotation(org.springframework.transaction.annotation.Transactional)"/>
-
-    <!-- Apply transactions to all @Transactional methods -->
-    <aop:advisor advice-ref="repository.txAdvice" pointcut-ref="transactionalAnnotationPointcut"
-                 order="1000" />
   </aop:config>
 
-
   <!-- Main repository instance. -->
-  <bean id="repository.internal" class="vtk.repository.RepositoryImpl"
-        destroy-method="destroy">
+  <bean id="repository.internal" class="vtk.repository.RepositoryImpl" destroy-method="destroy">
     <property name="id" value="${repositoryID}" />
     <property name="tokenManager" ref="tokenManager" />
     <property name="authorizationManager" ref="authorizationManager" />
