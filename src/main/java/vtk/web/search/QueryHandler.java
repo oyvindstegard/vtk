@@ -190,10 +190,14 @@ public final class QueryHandler implements HttpRequestHandler {
         qry = qry.flatMap(builder -> Result.attempt(() -> {
             String q = Objects.requireNonNull(request.getParameter("q"),
                     "Request parameter 'q' is required");
+            if ("".equals(q.trim())) {
+                throw new IllegalArgumentException("Parameter 'q' cannot be empty");
+            }
             if (request.getParameter("t") != null) {
                 String name = request.getParameter("t");
                 String template = Objects.requireNonNull(
                         templates.get(name), "No such template: ' " + name + "'");
+                q = escape(escape(q, ' ', '\\'), ' ', '\\');
                 q = template.replaceAll("\\{q\\}", q);
             }
             return builder.query(q);
