@@ -67,6 +67,7 @@ public class CollectionListingController extends BaseCollectionListingController
     private ResourceAwareLocaleResolver localeResolver;
     private boolean displayEditLinks;
     private boolean resolvePrincipalLink;
+    private String customDisplay;
 
     @Override
     public void runSearch(HttpServletRequest request, Resource collection, Map<String, Object> model, int pageLimit)
@@ -150,6 +151,10 @@ public class CollectionListingController extends BaseCollectionListingController
         if (results.size() > 0 && results.get(0) != null) {
             model.put("numberOfRecords", getNumberOfRecords(page, pageLimit, results.get(0).size()));
         }
+
+        if (customDisplay != null) {
+            model.put("customDisplay", customDisplay);
+        }
     }
 
     protected Map<String, Integer> getNumberOfRecords(int page, int pageLimit, int resultSize) {
@@ -196,6 +201,10 @@ public class CollectionListingController extends BaseCollectionListingController
 
     public void setResolvePrincipalLink(boolean resolvePrincipalLink) {
         this.resolvePrincipalLink = resolvePrincipalLink;
+    }
+
+    public void setCustomDisplay(String customDisplay) {
+        this.customDisplay = customDisplay;
     }
 
 }

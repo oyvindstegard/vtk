@@ -165,7 +165,10 @@
       <@articles.displayArticles page=page collectionListings=searchComponents listingView=listingView hideNumberOfComments=hideNumberOfComments displayMoreURLs=true />
     <#else>
       <#list searchComponents as searchComponent>
-        <#if collection.resourceType = 'person-listing'>
+        <#if customDisplay??>
+          <#import customDisplay as customDisplayImport />
+          <@customDisplayImport.display searchComponent title />
+        <#elseif collection.resourceType = 'person-listing'>
           <@persons.displayPersons searchComponent title />
         <#elseif collection.resourceType = 'project-listing'>
           <#assign listingType = vrtx.propValue(collection, 'display-type', '', 'prl')!'' />
