@@ -173,6 +173,15 @@ public final class SimpleSearcher {
             this.select = select;
             this.unpublished = unpublished;
         }
+        
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "("
+                    + query + ", " + limit + ", " + offset + ", "
+                    + sorting + "," + fields + ", " + select + ","
+                    + unpublished + ")";
+        }
+        
     }
     
     public static final class QueryBuilder {

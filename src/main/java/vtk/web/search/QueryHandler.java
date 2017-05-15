@@ -53,6 +53,8 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.Acl;
@@ -103,6 +105,7 @@ import vtk.web.RequestContext;
  * @see SimpleSearcher
  */
 public final class QueryHandler implements HttpRequestHandler {
+    private static Logger logger = LoggerFactory.getLogger(QueryHandler.class);
     private SimpleSearcher searcher;
     private Map<String, ResponseHandler> formats;
     private Map<String, String> templates;
@@ -157,6 +160,8 @@ public final class QueryHandler implements HttpRequestHandler {
         Result<SimpleSearcher.Query> query = format.flatMap(f -> buildQuery(wrappedRequest));
         Result<ResultSet> resultSet = query.flatMap(q -> Result.attempt(() -> searcher.search(token, q)));
 
+        logger.debug("Request: query=" + query + ", result=" + resultSet + ", handler=" + format);
+        
         format.forEach(handler -> {
             try {
                 handler.accept(query, resultSet, requestContext, wrappedRequest, response);
