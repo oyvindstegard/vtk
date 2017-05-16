@@ -36,7 +36,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,7 +43,6 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.ehcache.Ehcache;
 
 import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Path;
@@ -120,11 +118,31 @@ public class TagsReportingComponent {
      * @param tagOccurenceMin
      * @param requestSecurityToken 
      * @return a list of {@link TagFrequency} objects.
+     * @throws java.io.IOException
+     * @throws QueryException
+     */
+    public List<TagFrequency> getTags(Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
+            int tagOccurenceMin, String requestSecurityToken) throws IOException  {
+        return getTags(scopeUri, resourceTypeDefs, limit, tagOccurenceMin, requestSecurityToken, null);
+    }
+
+    /**
+     * Get list of TagFrequency instances for the given report criteria. The
+     * list will always be sorted by frequency in descending order.
+     * 
+     * @param scopeUri
+     * @param resourceTypeDefs
+     * @param limit
+     * @param tagOccurenceMin
+     * @param requestSecurityToken 
+     * @param whiteList 
+     * @return a list of {@link TagFrequency} objects.
+     * @throws java.io.IOException
      * @throws QueryException
      */
     @SuppressWarnings("unchecked")
     public List<TagFrequency> getTags(Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
-            int tagOccurenceMin, String requestSecurityToken) throws IOException  {
+            int tagOccurenceMin, String requestSecurityToken, Set<String> whiteList) throws IOException  {
 
         final String token = useStaticToken ? this.staticToken : requestSecurityToken;
 
@@ -189,7 +207,7 @@ public class TagsReportingComponent {
             topLevel = new PropertyExistsQuery(tagsPropDef, false);
         }
 
-        final String cacheKey = makeCacheKey(token, topLevel, limit, tagOccurenceMin);
+        final String cacheKey = makeCacheKey(token, topLevel, limit, tagOccurenceMin, whiteList);
         List<TagFrequency> result = lookupCached(cacheKey);
         if (result != null) {
             return result;
@@ -212,11 +230,15 @@ public class TagsReportingComponent {
             if (tags != null) {
                 if (tagsPropDef.isMultiple()) {
                     for (Value value : tags.getValues()) {
-                        tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
+                        if (whiteList == null || whiteList.contains(value.getStringValue())) {
+                            tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
+                        }
                     }
                 } else {
                     Value value = tags.getValue();
-                    tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
+                    if (whiteList == null || whiteList.contains(value.getStringValue())) {
+                        tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
+                    }
                 }
             }
             return true;
@@ -277,8 +299,9 @@ public class TagsReportingComponent {
         return cache.get().get(cacheKey);
     }
 
-    private String makeCacheKey(String token, Query q, int limit, int minFreq) {
-        return "TagsReportingCacheKey{" + "limit=" + limit + ", minFreq=" + minFreq + ", token=" + token + ", q=" + q + '}';
+    private String makeCacheKey(String token, Query q, int limit, int minFreq, Set<String> whiteList) {
+        return "TagsReportingCacheKey{" + "limit=" + limit + ", minFreq=" + minFreq + ", token=" + token + ", q=" + q
+                + (whiteList != null ? ", whitelist=" + whiteList.toString() : "") + "}";
     }
 
     @Required

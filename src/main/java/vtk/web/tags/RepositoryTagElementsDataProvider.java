@@ -33,6 +33,7 @@ package vtk.web.tags;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
@@ -77,10 +78,17 @@ public class RepositoryTagElementsDataProvider {
     public List<TagElement> getTagElements(Path scopeUri, String token, int magnitudeMin, int magnitudeMax, int limit,
             int tagOccurenceMin, List<ResourceTypeDefinition> resourceTypeDefs, List<String> urlSortingParams,
             String overrideResourceTypeTitle, boolean displayScope) throws Exception {
+        return getTagElements(scopeUri, token, magnitudeMin, magnitudeMax, limit, tagOccurenceMin, resourceTypeDefs,
+                urlSortingParams, overrideResourceTypeTitle, displayScope, null);
+    }
+
+    public List<TagElement> getTagElements(Path scopeUri, String token, int magnitudeMin, int magnitudeMax, int limit,
+            int tagOccurenceMin, List<ResourceTypeDefinition> resourceTypeDefs, List<String> urlSortingParams,
+            String overrideResourceTypeTitle, boolean displayScope, Set<String> whiteList) throws Exception {
 
         // Do data report query
         List<TagFrequency> result = this.tagsReporter
-                .getTags(scopeUri, resourceTypeDefs, limit, tagOccurenceMin, token);
+                .getTags(scopeUri, resourceTypeDefs, limit, tagOccurenceMin, token, whiteList);
 
         // Generate list of tag elements
         List<TagElement> tagElements = generateTagElementList(scopeUri, resourceTypeDefs, urlSortingParams,
