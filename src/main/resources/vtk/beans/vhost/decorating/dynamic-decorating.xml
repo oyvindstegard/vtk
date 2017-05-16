@@ -100,8 +100,10 @@
         <ref bean="templateLanguage.lengthFunction" />
         <ref bean="templateLanguage.getFunction" />
         <ref bean="decorating.requestContextFunction" />
+        <ref bean="decorating.componentAvailableFunction" />
         <ref bean="decorating.retrieveFunction" />
         <ref bean="decorating.serviceURLFunction" />
+        <ref bean="decorating.queryFunction" />
       </set>
     </property>
   </bean>
@@ -134,6 +136,16 @@
     </constructor-arg>
   </bean>
 
+  <bean id="decorating.componentAvailableFunction" 
+        class="vtk.web.decorating.tl.ComponentAvailableFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="component-available" />
+      </bean>
+    </constructor-arg>
+    <constructor-arg ref="decorating.defaultComponentResolver" />
+  </bean>
+
   <bean id="decorating.searchFunction" class="vtk.resourcemanagement.view.tl.SearchResultValueProvider">
     <constructor-arg>
       <bean class="vtk.text.tl.Symbol">
@@ -145,6 +157,14 @@
     <property name="titlePropDef" ref="titlePropDef" />
   </bean>
 
+  <bean id="decorating.queryFunction" class="vtk.resourcemanagement.view.tl.QueryFunction">
+    <constructor-arg>
+      <bean class="vtk.text.tl.Symbol">
+        <constructor-arg value="query" />
+      </bean>
+    </constructor-arg>
+    <constructor-arg ref="propertySearch.searcher" />
+  </bean>
 
   <bean id="decorating.userDefinedComponentResolver" class="vtk.web.decorating.CollectionComponentManager">
     <constructor-arg ref="repository" />
