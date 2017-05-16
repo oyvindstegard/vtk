@@ -31,9 +31,12 @@
 package vtk.web.decorating.components;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
@@ -95,6 +98,9 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
     private static final String PARAMETER_OVERRIDE_RESOURCE_TYPE_TITLE = TagsHelper.OVERRIDE_RESOURCE_TYPE_TITLE_PARAMETER;
     private static final String PARAMETER_OVERRIDE_RESOURCE_TYPE_TITLE_DESC = "User provided resource type title to use in page title when "
             + "linking to a single tag.";
+
+    private static final String PARAMETER_WHITELIST = "whitelist";
+    private static final String PARAMETER_WHITELIST_DESC = "Comma separated whitelist of tags. Whitelist is optional Example: whitelist=[tag1,tag2]";
 
     private RepositoryTagElementsDataProvider tagElementsProvider;
     private ResourceTypeTree resourceTypeTree;
@@ -191,10 +197,16 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
             overrideResTypeTitle = overrideResTypeTitleParam.toString();
         }
 
+        Set<String> whiteList = null;
+        String whiteListParam = request.getStringParameter(PARAMETER_WHITELIST);
+        if (whiteListParam != null) {
+            whiteList = new HashSet<>(Arrays.asList(whiteListParam.split(",")));
+        }
+
         // Legacy exception handling, should be refactored.
         try {
             List<TagElement> tagElements = tagElementsProvider.getTagElements(scopeUri, token, 1, 1, limit, 1,
-                    resourceTypeDefs, urlSortingParmas, overrideResTypeTitle, displayScope);
+                    resourceTypeDefs, urlSortingParmas, overrideResTypeTitle, displayScope, whiteList);
 
             // Populate model
             int numberOfTagsInEachColumn;
