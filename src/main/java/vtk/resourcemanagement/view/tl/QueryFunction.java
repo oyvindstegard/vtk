@@ -87,6 +87,11 @@ public class QueryFunction extends Function {
         
         Query query = builder.build();
         
+        boolean flattenNamespaces = Optional.ofNullable(input.get("flatten-namespaces"))
+                .map(String::valueOf)
+                .map(Boolean::valueOf)
+                .orElse(false);
+        
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         requestContext.getLocale();
@@ -94,7 +99,7 @@ public class QueryFunction extends Function {
         MapContainer result = searcher.search(token, query, rs -> {
             Json.MapContainer resultMap = new Json.MapContainer();
             List<Json.MapContainer> list = rs.getAllResults()
-                    .stream().map(mapper(requestContext.getLocale()))
+                    .stream().map(mapper(flattenNamespaces, requestContext.getLocale()))
                     .collect(Collectors.toList());
             resultMap.put("size", rs.getSize());
             resultMap.put("offset", query.offset);
@@ -107,7 +112,8 @@ public class QueryFunction extends Function {
     }
 
     // Should be factored out to a general {@code ResourceMapper} utility:
-    private static java.util.function.Function<PropertySet, Json.MapContainer>  mapper(Locale locale) {
+    private static java.util.function.Function<PropertySet, Json.MapContainer>  
+        mapper(boolean flattenNamespaces, Locale locale) {
         BiFunction<PropertyTypeDefinition, Value, Object> valueFormatter = jsonValueFormatter(locale);
         
         return propset -> {
@@ -120,7 +126,7 @@ public class QueryFunction extends Function {
                     PropertyTypeDefinition def = p.getDefinition();
 
                     String name = def.getName();
-                    if (def.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
+                    if (!flattenNamespaces && def.getNamespace() != Namespace.DEFAULT_NAMESPACE) {
                         name = def.getNamespace().getPrefix() + ":" + name;
                     }
                     if (def.getType() == PropertyType.Type.BINARY) {
