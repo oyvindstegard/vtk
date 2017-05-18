@@ -78,8 +78,8 @@ public class QueryFunction extends Function {
         
         Optional.ofNullable(input.get("select"))
             .ifPresent(sel -> builder.select(String.valueOf(sel)));
-        Optional.ofNullable(input.get("sorting"))
-            .ifPresent(sort -> builder.sorting(String.valueOf(toString())));
+        Optional.ofNullable(input.get("sort"))
+            .ifPresent(sort -> builder.sorting(String.valueOf(sort)));
         Optional.ofNullable(input.get("offset"))
             .ifPresent(offset -> builder.sorting(String.valueOf(offset)));
         Optional.ofNullable(input.get("limit"))
