@@ -484,7 +484,7 @@ public class ExpressionTest {
                 new Symbol("c"),
                 new Symbol(")"),
                 new Symbol(")"));
-        System.out.println("_____res: " + result);
+        assertEquals(result, Arrays.asList("a", "b", "c", "a", "b", "c"));
 
         result = eval(ctx,
                 new Symbol("emptyfunc"),
