@@ -76,7 +76,7 @@ public class ExpressionTest {
                 if (args == null || args.length % 2 != 0) {
                     throw new IllegalArgumentException(getSymbol() + " takes an even number of arguments");
                 }
-                Map<Object, Object> result = new HashMap<Object, Object>();
+                Map<Object, Object> result = new HashMap<>();
                 for (int i = 0; i < args.length; i+=2) {
                     result.put(args[i], args[i+1]);
                 }
@@ -462,6 +462,29 @@ public class ExpressionTest {
                 new Symbol(")")
         );
         assertEquals("abca", result);
+        
+        result = eval(ctx,
+                new Symbol("concat"),
+                new Symbol("("),
+                new Symbol("#"),
+                new Symbol("("),
+                new Symbol("a"),
+                new Symbol(","),
+                new Symbol("b"),
+                new Symbol(","),
+                new Symbol("c"),
+                new Symbol(")"),
+                new Symbol(","),
+                new Symbol("#"),
+                new Symbol("("),
+                new Symbol("a"),
+                new Symbol(","),
+                new Symbol("b"),
+                new Symbol(","),
+                new Symbol("c"),
+                new Symbol(")"),
+                new Symbol(")"));
+        System.out.println("_____res: " + result);
 
         result = eval(ctx,
                 new Symbol("emptyfunc"),
@@ -789,7 +812,7 @@ public class ExpressionTest {
         assertEquals("bd", m.get("a"));
 
         Context ctx = new Context(Locale.getDefault());
-        Map<Object, Object> a = new HashMap<Object, Object>();
+        Map<Object, Object> a = new HashMap<>();
         a.put("b", "c");
         ctx.define("a", a, true);
         result = eval(ctx,
@@ -805,9 +828,9 @@ public class ExpressionTest {
         );
         assertEquals(Boolean.TRUE, result);
 
-        Map<Object, Object> b = new HashMap<Object, Object>();
-        b.put("c", new HashMap<Object, Object>());
-        a = new HashMap<Object, Object>();
+        Map<Object, Object> b = new HashMap<>();
+        b.put("c", new HashMap<>());
+        a = new HashMap<>();
         a.put("b", b);
         ctx.define("a", a, true);
         result = eval(ctx,
@@ -841,7 +864,7 @@ public class ExpressionTest {
         assertEquals(Boolean.FALSE, result);
         
         ctx = new Context(Locale.getDefault());
-        a = new HashMap<Object, Object>();
+        a = new HashMap<>();
         a.put("b", "c");
         ctx.define("a", a, true);
 
@@ -939,8 +962,8 @@ public class ExpressionTest {
         assertEquals("c", result);
         
         Context ctx = new Context(Locale.getDefault());
-        Map<Object, Object> m1 = new HashMap<Object, Object>();
-        Map<Object, Object> m2 = new HashMap<Object, Object>();
+        Map<Object, Object> m1 = new HashMap<>();
+        Map<Object, Object> m2 = new HashMap<>();
         m1.put("b", m2);
         m2.put("c", new Object[]{"d", 2});
         ctx.define("a", m1, true);
@@ -1008,7 +1031,7 @@ public class ExpressionTest {
                 new Symbol("("),
                 new Symbol(")")
         );
-        assertEquals("", result);
+        assertEquals(null, result);
         
         result = eval(
                 new Symbol("concat"),

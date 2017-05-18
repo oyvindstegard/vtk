@@ -30,6 +30,10 @@
  */
 package vtk.text.tl.expr;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 
@@ -41,6 +45,23 @@ public class Concat extends Function {
 
     @Override
     public Object eval(Context ctx, Object... args) {
+        if (args.length == 0) {
+            return null;
+        }
+        if (args[0] instanceof Collection<?>) {
+            // Produce a list:
+            List<Object> result = new ArrayList<>();
+            for (Object arg: args) {
+                if (arg instanceof Collection<?>) {
+                    result.addAll((Collection<?>) arg);
+                }
+                else {
+                    result.add(arg);
+                }
+            }
+            return result;
+        }
+        // Default to string concatenation
         StringBuilder sb = new StringBuilder();
         for (Object o : args) {
             if (o == null) {
