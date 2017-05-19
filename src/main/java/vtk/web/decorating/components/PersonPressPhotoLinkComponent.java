@@ -45,6 +45,7 @@ import vtk.web.service.Service;
 public class PersonPressPhotoLinkComponent extends ViewRenderingDecoratorComponent {
 
     private static final String PRESS_PHOTO_PROROPERTY_NAME = "pressPhoto";
+    private String personResourceType = "person";
 
     private Service viewAsWebpage;
 
@@ -56,7 +57,7 @@ public class PersonPressPhotoLinkComponent extends ViewRenderingDecoratorCompone
         Repository repository = requestContext.getRepository();
         Resource currentDocument = repository.retrieve(token, requestContext.getResourceURI(), true);
 
-        if (!currentDocument.getResourceType().equals("person")) {
+        if (!currentDocument.getResourceType().equals(personResourceType)) {
             return;
         }
 
@@ -96,4 +97,9 @@ public class PersonPressPhotoLinkComponent extends ViewRenderingDecoratorCompone
     public Service getViewAsWebpage() {
         return viewAsWebpage;
     }
+
+    public void setPersonResourceType(String personResourceType) {
+        this.personResourceType = personResourceType;
+    }
+
 }
