@@ -934,9 +934,14 @@
     <property name="formView" value="manageCollectionListing" />
     <property name="successView" value="redirectToManage" />
     <property name="commandName" value="uploadForm" />
-    <property name="downcaseNames" value="true" />
-    <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
-    <property name="tempDir" value="${upload.tempDir}" />
+    <property name="fileUpload" ref="fileUpload.store" />
+  </bean>
+
+  <bean id="fileUpload.store" class="vtk.repository.FileUpload">
+    <constructor-arg ref="repository" />
+    <constructor-arg value="${upload.tempDir}" />
+    <constructor-arg ref="createResource.nameReplacementMap" />
+    <constructor-arg value="true" />
   </bean>
 
   <bean id="manage.unlockResourceHandler" class="vtk.web.actions.lock.UnlockResourceController">
