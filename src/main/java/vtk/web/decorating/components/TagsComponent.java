@@ -200,6 +200,7 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
         Set<String> whiteList = null;
         String whiteListParam = request.getStringParameter(PARAMETER_WHITELIST);
         if (whiteListParam != null) {
+            whiteListParam = whiteListParam.toLowerCase();
             whiteList = new HashSet<>(Arrays.asList(whiteListParam.split(",")));
         }
 

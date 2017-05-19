@@ -230,13 +230,13 @@ public class TagsReportingComponent {
             if (tags != null) {
                 if (tagsPropDef.isMultiple()) {
                     for (Value value : tags.getValues()) {
-                        if (whiteList == null || whiteList.contains(value.getStringValue())) {
+                        if (whiteList == null || whiteList.contains(value.getStringValue().toLowerCase())) {
                             tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
                         }
                     }
                 } else {
                     Value value = tags.getValue();
-                    if (whiteList == null || whiteList.contains(value.getStringValue())) {
+                    if (whiteList == null || whiteList.contains(value.getStringValue().toLowerCase())) {
                         tagFreqMap.computeIfAbsent(value.getStringValue(), t -> new TagFrequency(t, 0)).increment();
                     }
                 }
