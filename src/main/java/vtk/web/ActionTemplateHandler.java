@@ -50,6 +50,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import vtk.security.Principal;
 import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
 import vtk.text.tl.IfHandler;
@@ -62,6 +63,7 @@ import vtk.text.tl.expr.Expression;
 import vtk.util.Result;
 import vtk.util.io.InputSource;
 import vtk.util.io.InputSourceProvider;
+import vtk.util.repository.LocaleHelper;
 import vtk.web.referencedata.ReferenceDataProvider;
 
 public class ActionTemplateHandler implements HttpRequestHandler {
@@ -201,6 +203,15 @@ public class ActionTemplateHandler implements HttpRequestHandler {
               for (String key: model.keySet()) {
                   ctx.define(key, model.get(key), true);
               }
+              // VTK-5092 - tmp fix
+              RequestContext rc = RequestContext.getRequestContext();
+              Principal p = rc.getPrincipal();
+              ctx.define("userName", p.getName(), true);
+              ctx.define("userDescription", p.getDescription(), true);
+              ctx.define("userUrl", p.getURL(), true);
+              ctx.define("locale", LocaleHelper.getPreferredLang(locale), true);
+              // --------
+              
               boolean renderResult = nodeList.render(ctx, response.getWriter());
               response.flushBuffer();
               return renderResult;
