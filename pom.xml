@@ -402,6 +402,7 @@
           <source>${java.version}</source>
           <target>${java.version}</target>
           <encoding>${project.build.sourceEncoding}</encoding>
+          <useIncrementalCompilation>yes</useIncrementalCompilation>
         </configuration>
       </plugin>
       <plugin>
