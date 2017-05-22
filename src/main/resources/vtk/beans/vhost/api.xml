@@ -127,7 +127,7 @@
   </bean>
 
   <bean id="api.getHandler" class="vtk.web.display.file.DisplayResourceController">
-    <property name="viewName" value="webdavDisplayResource" />
+    <property name="viewName" value="webdavDisplayResourceView" />
     <property name="ignoreLastModified" value="true" />
   </bean>
 

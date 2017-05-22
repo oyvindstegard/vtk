@@ -71,7 +71,7 @@ import vtk.web.RequestContext;
  *       want to provide the resource as resourceString model data
  *       instead of resourceStream if the content type is text based 
  *   <li><code>viewName</code> - name of the returned view. The
- *       default value is <code>displayResource</code>
+ *       default value is <code>displayResourceView</code>
  *   <li><code>view</code> - the actual {@link View} object (overrides
  *   <code>viewName</code>.
  *   <li><code>unsupportedResourceView</code> - name of returned view
@@ -107,7 +107,7 @@ import vtk.web.RequestContext;
 public class DisplayResourceController 
     implements Controller, LastModified, InitializingBean {
 
-    public static final String DEFAULT_VIEW_NAME = "displayResource";
+    public static final String DEFAULT_VIEW_NAME = "displayResourceView";
     private static final String defaultCharacterEncoding = "utf-8";
     private static final long streamToStringLimit = 2000000L;
     
@@ -166,7 +166,7 @@ public class DisplayResourceController
     @Override
     public void afterPropertiesSet() throws Exception {
         if (this.unsupportedResourceTypes == null) {
-            this.unsupportedResourceTypes = new HashSet<String>();
+            this.unsupportedResourceTypes = new HashSet<>();
         }
         if (this.viewName == null && this.view == null) {
             throw new BeanInitializationException(
@@ -189,7 +189,7 @@ public class DisplayResourceController
             uri = uri.extend(this.childName);
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         Resource resource = repository.retrieve(token, uri, this.displayProcessed);
         if (this.unsupportedResourceTypes.contains(resource.getContentType())) {
             return new ModelAndView(this.unsupportedResourceView);

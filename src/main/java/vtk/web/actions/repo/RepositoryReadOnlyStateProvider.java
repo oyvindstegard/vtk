@@ -47,7 +47,7 @@ public class RepositoryReadOnlyStateProvider implements ReferenceDataProvider {
     private AuthorizationManager authorizationManager;
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         model.put("globalReadOnly", this.authorizationManager.isReadOnly());
         model.put("globalReadOnlyMode", this.authorizationManager.isReadOnly() ? "ro": "rw");
         model.put("readOnlyRoots", this.authorizationManager.getReadOnlyRoots());

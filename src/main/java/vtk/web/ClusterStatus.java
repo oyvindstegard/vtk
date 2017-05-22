@@ -102,7 +102,7 @@ public class ClusterStatus implements Controller, ReferenceDataProvider, Cluster
 
     @Override
     public void referenceData(Map<String, Object> model,
-            HttpServletRequest request) throws Exception {
+            HttpServletRequest request) {
         
         model.put("clusterRole", 
                 role.map(r -> r.name().toLowerCase()).orElse("unset"));

@@ -30,8 +30,14 @@
  */
 package vtk.web.decorating;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.UncheckedIOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
@@ -44,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import vtk.text.html.HtmlPage;
 import vtk.util.io.InputSource;
+import vtk.web.RequestContext;
 
 
 public class TextualDecoratorTemplate implements Template {
@@ -82,102 +89,62 @@ public class TextualDecoratorTemplate implements Template {
                     + templateSource, e);
         }
     }
+    
+    
 
-    public class Execution implements TemplateExecution {
-        private HtmlPageContent content;
-        private ComponentInvocation[] fragments;
-        private ComponentResolver componentResolver;
-        private HttpServletRequest request;
-        private Map<String, Object> model;
+    @Override
+    public void render(HtmlPage page, OutputStream out, Charset encoding, 
+            HttpServletRequest request, Map<String, Object> model,
+            Map<String, Object> templateParameters) {
 
-        Execution(HtmlPageContent content, ComponentInvocation[] fragments, 
-                ComponentResolver componentResolver, HttpServletRequest request,
-                Map<String, Object> model) {
-            this.content = content;
-            this.componentResolver = componentResolver;
-            this.fragments = fragments;
-            this.request = request;
-            this.model = model;
+        if (needCompile()) {
+            compile();
         }
-        
-        public void setComponentResolver(ComponentResolver componentResolver) {
-            this.componentResolver = componentResolver;
-        }
-        
-        @Override
-        public ComponentResolver getComponentResolver() {
-            return this.componentResolver;
-        }
+        try (Writer writer = new OutputStreamWriter(out)){
 
-        @Override
-        public PageContent render() throws Exception {
-            HtmlPage html = this.content.getHtmlContent();
-
-            StringBuilder sb = new StringBuilder();
-            for (ComponentInvocation fragment: this.fragments) {
+            for (ComponentInvocation fragment: fragments) {
                 try {
-                    String doctype = html.getDoctype();
+                    String doctype = page.getDoctype();
                     if (doctype == null) {
                         doctype = DEFAULT_DOCTYPE;
                     }
-                    
+
                     if (fragment instanceof StaticTextFragment) {
                         StaticTextFragment f = (StaticTextFragment) fragment;
-                        sb.append(f.buffer.toString());
+                        writer.write(f.buffer.toString());
                         continue;
                     }
-
-                    Locale locale = 
-                        new org.springframework.web.servlet.support.RequestContext(this.request, this.request.getServletContext()).getLocale();
+                    Locale locale = RequestContext.getRequestContext().getLocale();
                     DecoratorRequest decoratorRequest = new DecoratorRequestImpl(
-                            html, this.request, this.model, fragment.getParameters(), doctype, locale);
-                    
-                    DecoratorComponent component = this.componentResolver.resolveComponent(
+                            page, request, model, fragment.getParameters(), doctype, locale);
+
+                    DecoratorComponent component = componentResolver.resolveComponent(
                             fragment.getNamespace(), fragment.getName());
-                    
+
                     String chunk = renderComponent(component, decoratorRequest);
                     if (logger.isDebugEnabled()) {
                         logger.debug("Included component: " + fragment
-                                     + " with result [" + chunk + "]");
+                                + " with result [" + chunk + "]");
                     }
-                    sb.append(chunk);
+                    writer.write(chunk);
 
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
                     logger.warn("Error including component: " + fragment, t);
                     String msg = t.getMessage();
                     if (msg == null) {
                         msg = t.getClass().getName();
                     }
-                    sb.append(fragment.getNamespace());
-                    sb.append(":").append(fragment.getName());
-                    sb.append(": ").append(msg);
+                    writer.write(fragment.getNamespace() + ":" + fragment.getName() + ": ");
+                    writer.write(msg);
                 }
             }
-            return new ContentImpl(sb.toString(), 
-                    content.getOriginalCharacterEncoding());
+            writer.flush();
         }
-        
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
-    
-    @Override
-    public TemplateExecution newTemplateExecution(HtmlPageContent html,
-            HttpServletRequest request, Map<String, Object> model,
-            Map<String, Object> templateParameters) throws Exception {
-        if (html == null) {
-            throw new IllegalArgumentException("Argument 'html' cannot be NULL");
-        }
-        if (request == null) {
-            throw new IllegalArgumentException("Argument 'request' cannot be NULL");
-        }
-        if (model == null) {
-            throw new IllegalArgumentException("Argument 'model' cannot be NULL");
-        }
-        if (needCompile()) {
-            compile();
-        }
-        return new Execution(html, this.fragments, this.componentResolver, request, model);
-    }
-
     
     private String renderComponent(DecoratorComponent c, DecoratorRequest request)
         throws Exception {
@@ -201,27 +168,34 @@ public class TextualDecoratorTemplate implements Template {
     }
 
 
-    private synchronized void compile() throws Exception {
-       if (this.fragments != null && !needCompile()) {
+    private synchronized void compile() {
+        if (this.fragments != null && !needCompile()) {
             return;
         }
-
-        Reader reader = new InputStreamReader(
-                this.templateSource.getInputStream(), 
-                this.templateSource.getCharacterEncoding());
-
         try {
-            this.fragments = this.parser.parse(reader);
-        } finally {
-            reader.close();
-        }
+            Reader reader = new InputStreamReader(
+                    this.templateSource.getInputStream(), 
+                    this.templateSource.getCharacterEncoding());
+            try {
+                this.fragments = this.parser.parse(reader);
+            } finally {
+                reader.close();
+            }
 
-        this.lastModified = templateSource.getLastModified();
+            this.lastModified = templateSource.getLastModified();
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        catch (Exception e) {
+           throw new RuntimeException(e);
+       }
     }
     
     @Override
     public String toString() {
         return this.getClass().getName() + ": " + this.templateSource;
     }
+
 
 }

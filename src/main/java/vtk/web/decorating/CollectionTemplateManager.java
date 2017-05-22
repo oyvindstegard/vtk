@@ -30,15 +30,18 @@
  */
 package vtk.web.decorating;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -52,7 +55,7 @@ import vtk.util.repository.RepositoryInputSource;
  * A template manager that loads templates from a specified collection
  * in a {@link Repository content repository}.
  *
- * <p>Configurable JavaBean properties:
+ * <p>Constructor arguments:
  * <ul>
  *   <li><code>repository</code> - the {@link Repository content repository}
  *   <li><code>collectionName</code> - the complete path to the
@@ -61,133 +64,95 @@ import vtk.util.repository.RepositoryInputSource;
  *   ResourceTypeDefinition resource type} identifying templates (all
  *   candidate templates must be of this resource type).
  * </ul>
- *
  */
-public class CollectionTemplateManager implements TemplateManager, InitializingBean {
+public class CollectionTemplateManager implements TemplateManager {
 
     private static Logger logger = LoggerFactory.getLogger(CollectionTemplateManager.class);
-
     private Repository repository;
     private String collectionName;
     private TemplateFactory templateFactory;
     private ResourceTypeDefinition templateResourceType;
     private Map<String, Template> templatesMap;
     
-
-    public void setRepository(Repository repository) {
-        this.repository = repository;
-    }
-
-
-    public void setCollectionName(String collectionName) {
-        this.collectionName = collectionName;
-    }
-
-
-    public void setTemplateFactory(TemplateFactory templateFactory) {
-        this.templateFactory = templateFactory;
+    public CollectionTemplateManager(Repository repository, String collectionName, 
+            TemplateFactory templateFactory, ResourceTypeDefinition templateResourceType) {
+        this.repository = Objects.requireNonNull(repository, 
+                "Repository cannot be null");
+        this.collectionName = Objects.requireNonNull(collectionName, 
+                "Collection name cannot be null");
+        this.templateFactory = Objects.requireNonNull(templateFactory, 
+                "Template factory cannot be null");
+        this.templateResourceType = Objects.requireNonNull(templateResourceType, 
+                "Template resource type cannot be null");
     }
     
-
-    public void setTemplateResourceType(ResourceTypeDefinition templateResourceType) {
-        this.templateResourceType = templateResourceType;
-    }
-    
-
-    public void afterPropertiesSet() {
-        if (this.repository == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'repository' not specified");
-        }
-        if (this.collectionName == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'collectionName' not specified");
-        }
-        if (this.templateFactory == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'templateFactory' not specified");
-        }
-        if (this.templateResourceType == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'templateResourceType' not specified");
-        }
-    }
-    
-
-    public Template getTemplate(String name) throws Exception {
-        if (this.templatesMap == null) {
+    public Optional<Template> getTemplate(String name) {
+        if (templatesMap == null) {
             load();
         }
-        if (this.templatesMap == null) {
-            return null;
+        if (templatesMap == null) {
+            return Optional.empty();
         }
-
-        Template template = this.templatesMap.get(name);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Resolved name '" + name + "' to template '"
-                         + template + "'");
-        }
-        return template;
+        Template template = templatesMap.get(name);
+        logger.debug("Resolved name '" + name + "' to template '"
+                + template + "'");
+        return Optional.ofNullable(template);
     }
 
 
-    private void loadRecursively(Resource r, Set<Resource> result) throws Exception {
-        TypeInfo type = this.repository.getTypeInfo(r);
-        if (type.isOfType(this.templateResourceType)) {
+    private void loadRecursively(Resource r, Set<Resource> result) {
+        TypeInfo type = repository.getTypeInfo(r);
+        if (type.isOfType(templateResourceType)) {
             result.add(r);
         }
         if (r.isCollection()) {
             try {
                 Resource[] children =
-                    this.repository.listChildren(null, r.getURI(), true);
+                    repository.listChildren(null, r.getURI(), true);
                 for (Resource child : children) {
                     loadRecursively(child, result);
                 }
-            } catch (Throwable t) { }
-        }
-    }
-    
-    public synchronized void load() throws Exception {
-
-        Map<String, Template> map = new HashMap<String, Template>();
-
-        Path uri = Path.fromString(this.collectionName);
-        Resource base = this.repository.retrieve(null, uri, true);
-        Set<Resource> templatesResources = new HashSet<Resource>();
-        loadRecursively(base, templatesResources);
-
-        int numTemplates = 0;
-
-        for (Resource resource: templatesResources) {
-
-            InputSource templateSource =
-                new RepositoryInputSource(resource.getURI(), this.repository, null);
-
-            try {
-                String identifier = resource.getURI().toString().substring(this.collectionName.length() + 1);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Attempt to load template '" + identifier + "'");
-                }
-                Template template = this.templateFactory.newTemplate(templateSource);
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Loaded template '" + identifier + "'");
-                }
-                map.put(identifier, template);
-                numTemplates++;
-            } catch (Throwable t) {
-                logger.info("Unable to compile template from resource " + resource, t);
             }
+            catch (Throwable t) { }
         }
-        if (logger.isInfoEnabled()) {
-            logger.info("Loaded " + numTemplates + " template(s) from collection '"
-                        + this.collectionName + "'");
-        }
-
-        this.templatesMap = map;
     }
     
+    public synchronized void load() {
+        Map<String, Template> map = new HashMap<>();
+        Path uri = Path.fromString(collectionName);
+        try {
+            Resource base = repository.retrieve(null, uri, true);
+            Set<Resource> templatesResources = new HashSet<>();
+            loadRecursively(base, templatesResources);
+
+            int numTemplates = 0;
+            for (Resource resource: templatesResources) {
+
+                InputSource templateSource =
+                        new RepositoryInputSource(resource.getURI(), repository, null);
+                try {
+                    String identifier = resource.getURI().toString()
+                            .substring(collectionName.length() + 1);
+                    logger.debug("Attempt to load template '" + identifier + "'");
+                    Template template = templateFactory.newTemplate(templateSource);
+
+                    logger.debug("Loaded template '" + identifier + "'");
+                    map.put(identifier, template);
+                    numTemplates++;
+                }
+                catch (Throwable t) {
+                    logger.info("Unable to compile template from resource " + resource, t);
+                }
+            }
+            logger.info("Loaded " + numTemplates + " template(s) from collection '"
+                    + collectionName + "'");
+
+            this.templatesMap = map;
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
 }
 

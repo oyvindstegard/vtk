@@ -31,16 +31,11 @@
 package vtk.web.decorating;
 
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
-import vtk.text.html.HtmlContent;
-import vtk.text.html.HtmlText;
-
-public class StaticTextComponent implements HtmlDecoratorComponent {
+public class StaticTextComponent implements DecoratorComponent {
     
     private StringBuilder content;
 
@@ -57,17 +52,6 @@ public class StaticTextComponent implements HtmlDecoratorComponent {
         out.close();
     }
 
-    @Override
-    public List<HtmlContent> render(DecoratorRequest request) throws Exception {
-        List<HtmlContent> result = new ArrayList<HtmlContent>();
-        result.add(new HtmlText() {
-            public String getContent() {
-                return content.toString();
-            }
-        });
-        return result;
-    }
-    
     @Override
     public String getNamespace() {
         return null;

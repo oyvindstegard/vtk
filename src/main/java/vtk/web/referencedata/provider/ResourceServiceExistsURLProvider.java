@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -73,8 +74,7 @@ public class ResourceServiceExistsURLProvider implements ReferenceDataProvider, 
     private BeanFactory beanFactory;
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-        throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         
         if (!beanFactory.containsBean(serviceName)) { 
           return;

@@ -53,12 +53,12 @@
   </bean>
 
   <bean id="publish.globalConfirmPublishHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="admin" />
+    <property name="viewName" value="aboutView" />
     <property name="publishService" ref="publish.globalPublishResourceConfirmedService" />
   </bean>
 
   <bean id="publish.globalConfirmUnpublishHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="admin" />
+    <property name="viewName" value="aboutView" />
     <property name="publishService" ref="publish.globalUnpublishResourceConfirmedService" />
   </bean>
 
@@ -104,21 +104,13 @@
   </bean>
 
   <bean id="confirmPublishResourceHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="publish.confirm" />
+    <property name="viewName" value="publish.confirmView" />
     <property name="publishService" ref="publish.publishResourceConfirmedService" />
   </bean>
 
   <bean id="confirmUnpublishResourceHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="publish.confirm" />
+    <property name="viewName" value="publish.confirmView" />
     <property name="publishService" ref="publish.unpublishResourceConfirmedService" />
-  </bean>
-
-  <bean id="publish.viewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="publish.confirm" value-ref="publish.confirmView" />
-      </map>
-    </property>
   </bean>
 
   <bean id="publish.confirmView" parent="freemarkerView">
@@ -201,7 +193,7 @@
   </bean>
 
   <bean id="globalPublishResourceHandler" class="vtk.web.actions.publish.PublishResourceController">
-    <property name="successView" value="redirectToManage" />
+    <property name="successView" value="redirectToManageView" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>
@@ -251,7 +243,7 @@
   </bean>
 
   <bean id="publishResourcesHandler" class="vtk.web.actions.publish.PublishResourcesController">
-    <property name="viewName" value="manageCollectionListing" />
+    <property name="viewName" value="manageCollectionListingView" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>
@@ -317,14 +309,6 @@
 
   <bean id="displayUnpublishedPageHandler" class="vtk.web.display.file.DisplayResourceController">
     <property name="viewName" value="displayUnpublishedMessage.view" />
-  </bean>
-
-  <bean id="displayUnpublishedMessage.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="displayUnpublishedMessage.view" value-ref="displayUnpublishedMessage.view" />
-      </map>
-    </property>
   </bean>
 
   <bean id="displayUnpublishedMessage.view" parent="freemarkerView">

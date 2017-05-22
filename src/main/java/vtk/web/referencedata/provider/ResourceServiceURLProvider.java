@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.NoSuchMessageException;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -134,8 +135,7 @@ public class ResourceServiceURLProvider implements ReferenceDataProvider {
     }
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-        throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
@@ -157,7 +157,7 @@ public class ResourceServiceURLProvider implements ReferenceDataProvider {
         @SuppressWarnings("unchecked")
         Map<String, Object> urlMap = (Map<String, Object>) model.get(this.modelName);
         if (urlMap == null) {
-            urlMap = new HashMap<String, Object>();
+            urlMap = new HashMap<>();
         }
 
         URL url = null;

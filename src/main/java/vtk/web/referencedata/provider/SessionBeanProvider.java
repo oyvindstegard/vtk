@@ -43,7 +43,7 @@ public class SessionBeanProvider implements ReferenceDataProvider {
     private String modelName;
     
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         HttpSession session = request.getSession(true);
         if (session == null) return;
         Object o = session.getAttribute(this.attributeName);

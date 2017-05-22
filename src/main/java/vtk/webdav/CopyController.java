@@ -30,13 +30,11 @@
  */
 package vtk.webdav;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
@@ -64,14 +62,10 @@ public class CopyController extends AbstractWebdavController {
      * header is set and has value <code>T</code>, access control
      * lists (ACLs) of the source resource will be preserved during
      * copying.
-     *
-     * @param request the HTTP request object
-     * @param response the <code>HttpServletResponse</code> response object
-     * @return
      */
     @Override
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
@@ -79,7 +73,6 @@ public class CopyController extends AbstractWebdavController {
         Repository repository = requestContext.getRepository();
 
         String destHeader = request.getHeader("Destination");
-        Map<String, Object> model = new HashMap<String, Object>();
 
         try {
             Resource resource = repository.retrieve(token, uri, false);
@@ -121,72 +114,56 @@ public class CopyController extends AbstractWebdavController {
                         + ", existed = " + existed);
             }
             repository.copy(token, uri, destURI, overwrite, preserveACL);
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Copying " + uri + " to " + destURI + " succeeded");
-            }
             
-            if (existed) {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_NO_CONTENT);
-            } else {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_CREATED);
-            }
+            int status = existed ? HttpServletResponse.SC_NO_CONTENT : 
+                HttpServletResponse.SC_CREATED;
+            
+            responseBuilder(status)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Copy: " + uri + " to " + destURI + " succeeded")
+                .writeTo(response);
 
-            return new ModelAndView("COPY", model);
+        }
+        catch (InvalidRequestException e) {
+            responseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (IllegalOperationException e) {
+            responseBuilder(HttpServletResponse.SC_FORBIDDEN)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
 
-        } catch (InvalidRequestException e) {
-            this.logger.info("Caught InvalidRequestException for URI "
-                         + uri);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_BAD_REQUEST));
+        }
+        catch (ResourceOverwriteException | FailedDependencyException e) {
+            responseBuilder(HttpServletResponse.SC_PRECONDITION_FAILED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (ResourceLockedException e) {
+            responseBuilder(HttpUtil.SC_LOCKED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
 
-        } catch (IllegalOperationException e) {
-            this.logger.info("Caught IllegalOperationException for URI "
-                         + uri);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_FORBIDDEN));
-
-        } catch (ResourceOverwriteException e) {
-            this.logger.info("Caught ResourceOverwriteException for URI "
-                         + uri);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_PRECONDITION_FAILED));
-
-        } catch (FailedDependencyException e) {
-            this.logger.info("Caught FailedDependencyException for URI "
-                         + uri);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_PRECONDITION_FAILED));
-
-        } catch (ResourceLockedException e) {
-            this.logger.info("Caught ResourceLockedException for URI "
-                         + uri);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpUtil.SC_LOCKED));
-
-        } catch (ResourceNotFoundException e) {
-            this.logger.info("Caught ResourceNotFoundException for URI "
-                         + uri);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_NOT_FOUND));
-
-        } catch (ReadOnlyException e) {
-            this.logger.info("Caught ReadOnlyException for URI "
-                         + uri);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_FORBIDDEN));
+        }
+        catch (ResourceNotFoundException e) {
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (ReadOnlyException e) {
+            responseBuilder(HttpServletResponse.SC_FORBIDDEN)
+            .header("Content-Type", "text/plain;charset=utf-8")
+            .message(e.getMessage())
+            .writeTo(response);
 
         } 
-        return new ModelAndView("COPY", model);
     }
-   
-   
 }
 
 

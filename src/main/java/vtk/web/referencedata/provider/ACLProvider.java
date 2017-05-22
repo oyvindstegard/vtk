@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.LocaleResolver;
+
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -103,140 +106,145 @@ public class ACLProvider implements ReferenceDataProvider {
     private PrincipalFactory principalFactory;
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
-        Map<String, Object> aclModel = new HashMap<String, Object>();
+        Map<String, Object> aclModel = new HashMap<>();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
 
-        Resource resource = repository.retrieve(token, uri, false);
-        Acl acl = resource.getAcl();
-        Map<String, String> editURLs = new HashMap<String, String>();
-
-        final Locale preferredLocale = this.localeResolver.resolveLocale(request);
-        
-        if (!resource.isInheritedAcl()) {
-            for (Privilege action : this.aclEditServices.keySet()) {
-                String privilegeName = action.getName();
-                Service editService = this.aclEditServices.get(action);
-                try {
-                    String url = editService.constructLink(resource, requestContext.getPrincipal());
-                    editURLs.put(privilegeName, url);
-                } catch (Exception e) {
-                }
-            }
-        }
-
         try {
-            if (this.aclInheritanceService != null) {
-                String url = this.aclInheritanceService.constructLink(resource, requestContext.getPrincipal());
-                editURLs.put("inheritance", url);
-            }
-        } catch (Exception e) {
-        }
+            Resource resource = repository.retrieve(token, uri, false);
+            Acl acl = resource.getAcl();
+            Map<String, String> editURLs = new HashMap<>();
 
-        Map<String, Privilege> privileges = new HashMap<String, Privilege>();
-        Map<String, Principal[]> privilegedUsers = new HashMap<String, Principal[]>();
-        Map<String, Principal[]> privilegedGroups = new HashMap<String, Principal[]>();
-        Map<String, List<Principal>> privilegedPseudoPrincipals = new HashMap<String, List<Principal>>();
-        Map<String, String> viewShortcuts = new HashMap<String, String>();
+            final Locale preferredLocale = this.localeResolver.resolveLocale(request);
 
-        // Check if exact match with a shortcut
-        // TODO: refactor with some of code in ACLEditController ->
-        // extractAndCheckShortcuts()
-        for (Privilege action : Privilege.values()) {
-            String actionName = action.getName();
-
-            // Load group principals with metadata
-            Principal[] groupPrincipals = Arrays.stream(acl.listPrivilegedGroups(action))
-                    .map(p -> principalFactory.getPrincipal(p.getQualifiedName(), Principal.Type.GROUP, true, preferredLocale))
-                    .toArray(Principal[]::new);
-            Principal[] userPrincipals = acl.listPrivilegedUsers(action);
-            Principal[] pseudoUserPrincipals = acl.listPrivilegedPseudoPrincipals(action);
-
-            int totalACEs = groupPrincipals.length + userPrincipals.length + pseudoUserPrincipals.length;
-
-            List<String> shortcuts = permissionShortcuts.get(action);
-            String shortcutMatch = "";
-
-            if (shortcuts != null) {
-                for (String shortcut : shortcuts) {
-                    List<String> shortcutACEs = permissionShortcutsConfig.get(shortcut);
-                    int numberOfShortcutACEs = shortcutACEs.size();
-                    int matchedACEs = 0;
-
-                    for (String aceWithPrefix : shortcutACEs) {
-                        if (aceWithPrefix.startsWith(GROUP_PREFIX)) {
-                            for (Principal group : groupPrincipals) {
-                                if ((GROUP_PREFIX + group.getName()).equals(aceWithPrefix)) {
-                                    matchedACEs++;
-                                    break;
-                                }
-                            }
-                        } else if (aceWithPrefix.startsWith(USER_PREFIX)) {
-                            for (Principal user : userPrincipals) {
-                                if ((USER_PREFIX + user.getName()).equals(aceWithPrefix)) {
-                                    matchedACEs++;
-                                    break;
-                                }
-                            }
-                            for (Principal pseudoUser : pseudoUserPrincipals) {
-                                if ((USER_PREFIX + pseudoUser.getName()).equals(aceWithPrefix)) {
-                                    matchedACEs++;
-                                    break;
-                                }
-                            }
-                        }
-
-                    }
-                    if (matchedACEs == totalACEs && matchedACEs == numberOfShortcutACEs) {
-                        shortcutMatch = shortcut;
-                        break;
+            if (!resource.isInheritedAcl()) {
+                for (Privilege action : this.aclEditServices.keySet()) {
+                    String privilegeName = action.getName();
+                    Service editService = this.aclEditServices.get(action);
+                    try {
+                        String url = editService.constructLink(resource, requestContext.getPrincipal());
+                        editURLs.put(privilegeName, url);
+                    } catch (Exception e) {
                     }
                 }
             }
 
-            privilegedGroups.put(actionName, groupPrincipals);
+            try {
+                if (this.aclInheritanceService != null) {
+                    String url = this.aclInheritanceService.constructLink(resource, requestContext.getPrincipal());
+                    editURLs.put("inheritance", url);
+                }
+            }
+            catch (Exception e) { }
+            Map<String, Privilege> privileges = new HashMap<>();
+            Map<String, Principal[]> privilegedUsers = new HashMap<>();
+            Map<String, Principal[]> privilegedGroups = new HashMap<>();
+            Map<String, List<Principal>> privilegedPseudoPrincipals = new HashMap<>();
+            Map<String, String> viewShortcuts = new HashMap<>();
 
-            // Add document urls to principals where available
-            if (this.documentPrincipalMetadataRetriever.isDocumentSearchConfigured()) {
-                Set<Principal> principalDocuments = this.documentPrincipalMetadataRetriever.getPrincipalDocuments(
-                        Arrays.asList(userPrincipals), preferredLocale);
-                if (principalDocuments != null) {
-                    for (Principal p : userPrincipals) {
-                        for (Principal pd : principalDocuments) {
-                            if (pd.equals(p)) {
-                                ((PrincipalImpl) p).setURL(pd.getURL());
+            // Check if exact match with a shortcut
+            // TODO: refactor with some of code in ACLEditController ->
+            // extractAndCheckShortcuts()
+            for (Privilege action : Privilege.values()) {
+                String actionName = action.getName();
+
+                // Load group principals with metadata
+                Principal[] groupPrincipals = Arrays.stream(acl.listPrivilegedGroups(action))
+                        .map(p -> principalFactory.getPrincipal(p.getQualifiedName(), Principal.Type.GROUP, true, preferredLocale))
+                        .toArray(Principal[]::new);
+                Principal[] userPrincipals = acl.listPrivilegedUsers(action);
+                Principal[] pseudoUserPrincipals = acl.listPrivilegedPseudoPrincipals(action);
+
+                int totalACEs = groupPrincipals.length + userPrincipals.length + pseudoUserPrincipals.length;
+
+                List<String> shortcuts = permissionShortcuts.get(action);
+                String shortcutMatch = "";
+
+                if (shortcuts != null) {
+                    for (String shortcut : shortcuts) {
+                        List<String> shortcutACEs = permissionShortcutsConfig.get(shortcut);
+                        int numberOfShortcutACEs = shortcutACEs.size();
+                        int matchedACEs = 0;
+
+                        for (String aceWithPrefix : shortcutACEs) {
+                            if (aceWithPrefix.startsWith(GROUP_PREFIX)) {
+                                for (Principal group : groupPrincipals) {
+                                    if ((GROUP_PREFIX + group.getName()).equals(aceWithPrefix)) {
+                                        matchedACEs++;
+                                        break;
+                                    }
+                                }
+                            } else if (aceWithPrefix.startsWith(USER_PREFIX)) {
+                                for (Principal user : userPrincipals) {
+                                    if ((USER_PREFIX + user.getName()).equals(aceWithPrefix)) {
+                                        matchedACEs++;
+                                        break;
+                                    }
+                                }
+                                for (Principal pseudoUser : pseudoUserPrincipals) {
+                                    if ((USER_PREFIX + pseudoUser.getName()).equals(aceWithPrefix)) {
+                                        matchedACEs++;
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+                        if (matchedACEs == totalACEs && matchedACEs == numberOfShortcutACEs) {
+                            shortcutMatch = shortcut;
+                            break;
+                        }
+                    }
+                }
+
+                privilegedGroups.put(actionName, groupPrincipals);
+
+                // Add document urls to principals where available
+                if (this.documentPrincipalMetadataRetriever.isDocumentSearchConfigured()) {
+                    Set<Principal> principalDocuments = this.documentPrincipalMetadataRetriever.getPrincipalDocuments(
+                            Arrays.asList(userPrincipals), preferredLocale);
+                    if (principalDocuments != null) {
+                        for (Principal p : userPrincipals) {
+                            for (Principal pd : principalDocuments) {
+                                if (pd.equals(p)) {
+                                    ((PrincipalImpl) p).setURL(pd.getURL());
+                                }
                             }
                         }
                     }
                 }
+
+                List<Principal> principals = Arrays.asList(userPrincipals);
+                Collections.sort(principals, Principal.PRINCIPAL_NAME_COMPARATOR);
+
+                Principal[] userPrincipalsWithDocs = new Principal[principals.size()];
+                privilegedUsers.put(actionName, principals.toArray(userPrincipalsWithDocs));
+
+                privilegedPseudoPrincipals.put(actionName, new ArrayList<>(Arrays.asList(pseudoUserPrincipals)));
+                viewShortcuts.put(actionName, shortcutMatch);
+
+                privileges.put(actionName, action);
             }
 
-            List<Principal> principals = Arrays.asList(userPrincipals);
-            Collections.sort(principals, Principal.PRINCIPAL_NAME_COMPARATOR);
+            aclModel.put("aclEditURLs", editURLs);
+            aclModel.put("privileges", privileges);
+            aclModel.put("inherited", resource.isInheritedAcl());
+            aclModel.put("privilegedGroups", privilegedGroups);
+            aclModel.put("privilegedUsers", privilegedUsers);
+            aclModel.put("privilegedPseudoPrincipals", privilegedPseudoPrincipals);
+            aclModel.put("shortcuts", viewShortcuts);
 
-            Principal[] userPrincipalsWithDocs = new Principal[principals.size()];
-            privilegedUsers.put(actionName, principals.toArray(userPrincipalsWithDocs));
-
-            privilegedPseudoPrincipals.put(actionName, new ArrayList<Principal>(Arrays.asList(pseudoUserPrincipals)));
-            viewShortcuts.put(actionName, shortcutMatch);
-
-            privileges.put(actionName, action);
+            model.put(MODEL_NAME, aclModel);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
 
-        aclModel.put("aclEditURLs", editURLs);
-        aclModel.put("privileges", privileges);
-        aclModel.put("inherited", resource.isInheritedAcl());
-        aclModel.put("privilegedGroups", privilegedGroups);
-        aclModel.put("privilegedUsers", privilegedUsers);
-        aclModel.put("privilegedPseudoPrincipals", privilegedPseudoPrincipals);
-        aclModel.put("shortcuts", viewShortcuts);
-
-        model.put(MODEL_NAME, aclModel);
     }
 
     @Required
@@ -274,5 +282,5 @@ public class ACLProvider implements ReferenceDataProvider {
     public void setPrincipalFactory(PrincipalFactory principalFactory) {
         this.principalFactory = principalFactory;
     }
-    
+
 }

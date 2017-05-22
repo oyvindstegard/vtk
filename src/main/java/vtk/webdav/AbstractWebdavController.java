@@ -40,12 +40,16 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.jdom.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jdom.Namespace;
-import org.springframework.web.servlet.mvc.Controller;
+import org.springframework.web.HttpRequestHandler;
+
 import vtk.repository.Path;
 import vtk.repository.resourcetype.PropertyType;
+import vtk.web.api.ApiResponseBuilder;
 import vtk.web.service.URL;
 
 
@@ -53,16 +57,16 @@ import vtk.web.service.URL;
  * The superclass of all the WebDAV method controllers.
  *
  */
-public abstract class AbstractWebdavController implements Controller {
+public abstract class AbstractWebdavController implements HttpRequestHandler {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
-    private List<Pattern> deniedFileNamePatterns = new ArrayList<Pattern>();
+    private List<Pattern> deniedFileNamePatterns = new ArrayList<>();
 
     public void setDeniedFileNames(List<String> deniedFileNames) {
         if (deniedFileNames == null) {
             throw new IllegalArgumentException("Argument cannot be NULL");
         }
-        this.deniedFileNamePatterns = new ArrayList<Pattern>();
+        this.deniedFileNamePatterns = new ArrayList<>();
         for (String patternStr: deniedFileNames) {
             Pattern p = Pattern.compile(patternStr);
             this.deniedFileNamePatterns.add(p);
@@ -86,14 +90,14 @@ public abstract class AbstractWebdavController implements Controller {
     public static final Set<String> DAV_PROPERTIES;
 
     static {
-        MAPPED_DAV_PROPERTIES = new HashMap<String, String>();
+        MAPPED_DAV_PROPERTIES = new HashMap<>();
         MAPPED_DAV_PROPERTIES.put("creationdate", PropertyType.CREATIONTIME_PROP_NAME);
         MAPPED_DAV_PROPERTIES.put("getcontentlanguage", PropertyType.CONTENTLOCALE_PROP_NAME);
         MAPPED_DAV_PROPERTIES.put("getcontentlength", PropertyType.CONTENTLENGTH_PROP_NAME);
         MAPPED_DAV_PROPERTIES.put("getcontenttype", PropertyType.CONTENTTYPE_PROP_NAME);
         MAPPED_DAV_PROPERTIES.put("getlastmodified", PropertyType.LASTMODIFIED_PROP_NAME);
 
-        SPECIAL_DAV_PROPERTIES = new HashSet<String>();
+        SPECIAL_DAV_PROPERTIES = new HashSet<>();
         SPECIAL_DAV_PROPERTIES.add("getetag");
         SPECIAL_DAV_PROPERTIES.add("lockdiscovery");
         SPECIAL_DAV_PROPERTIES.add("resourcetype");
@@ -101,7 +105,7 @@ public abstract class AbstractWebdavController implements Controller {
         SPECIAL_DAV_PROPERTIES.add("source");
         SPECIAL_DAV_PROPERTIES.add("supportedlock");
 
-        DAV_PROPERTIES = new HashSet<String>();
+        DAV_PROPERTIES = new HashSet<>();
         DAV_PROPERTIES.addAll(MAPPED_DAV_PROPERTIES.keySet());
         DAV_PROPERTIES.addAll(SPECIAL_DAV_PROPERTIES);
     }
@@ -146,6 +150,16 @@ public abstract class AbstractWebdavController implements Controller {
         return true;
     }
     
+    protected ApiResponseBuilder responseBuilder(int status) {
+        return new ApiResponseBuilder(status);
+    }
+    
+    protected void sendError(int status, String message, HttpServletResponse response) {
+        new ApiResponseBuilder(status)
+            .header("Content-Type", "text/plain;charset=utf-8")
+            .message(message)
+            .writeTo(response);
+    }
 
 }
 

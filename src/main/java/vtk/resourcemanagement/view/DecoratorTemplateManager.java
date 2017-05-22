@@ -36,6 +36,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 
 import vtk.resourcemanagement.DisplayTemplate;
@@ -43,13 +44,19 @@ import vtk.resourcemanagement.StructuredResourceDescription;
 import vtk.resourcemanagement.StructuredResourceManager;
 import vtk.util.io.InputSource;
 import vtk.web.decorating.AbstractCachingTemplateManager;
+import vtk.web.decorating.TemplateFactory;
 
 public class DecoratorTemplateManager extends AbstractCachingTemplateManager {
-
     private StructuredResourceManager resourceManager;
+
+    public DecoratorTemplateManager(TemplateFactory templateFactory, StructuredResourceManager resourceManager) {
+        super(Objects.requireNonNull(templateFactory));
+        this.resourceManager = Objects.requireNonNull(resourceManager);
+    }
+
     
     @Override
-    protected InputSource resolve(final String name) {
+    protected Optional<InputSource> resolve(final String name) {
         StructuredResourceDescription description = this.resourceManager.get(name);
         DisplayTemplate displayTemplate = description.getDisplayTemplate();
         while (displayTemplate == null) {
@@ -61,7 +68,8 @@ public class DecoratorTemplateManager extends AbstractCachingTemplateManager {
             displayTemplate = description.getDisplayTemplate();
         }
         final DisplayTemplate result = displayTemplate;
-        return new InputSource() {
+        
+        InputSource is = new InputSource() {
             public Charset getCharacterEncoding() {
                 return StandardCharsets.UTF_8;
             }
@@ -77,9 +85,7 @@ public class DecoratorTemplateManager extends AbstractCachingTemplateManager {
                 return Optional.of(result.getLastModified());
             }
         };
+        return Optional.of(is);
     }
 
-    public void setResourceManager(StructuredResourceManager resourceManager) {
-        this.resourceManager = resourceManager;
-    }
 }

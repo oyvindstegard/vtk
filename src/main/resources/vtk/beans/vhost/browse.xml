@@ -37,15 +37,6 @@
     <property name="viewName" value="browse" />
   </bean>
 
-
-  <bean id="browseViewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="browse" value-ref="browseView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="browseView" parent="freemarkerView">
     <property name="url" value="pages/browse.ftl" />
     <property name="referenceDataProviders">

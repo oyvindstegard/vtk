@@ -161,6 +161,7 @@
         </bean>
       </list>
     </property>
+    <property name="servletFilters" ref="decorating.servletFilter" />
     <property name="attributes">
       <map>
         <entry key="localeResolver" value-ref="viewServiceResourceAwareLocaleResolver" />
@@ -436,11 +437,16 @@
       </list>
     </property>
     <property name="handler" ref="previewViewIframeHandler" />
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
 
   <bean id="previewViewIframeHandler" parent="abstractPreviewIframe">
-    <property name="viewName" value="previewViewIframe" />
+    <property name="viewName" value="previewViewIframeView" />
     <property name="service" ref="viewService" />
     <property name="displayWorkingRevision" value="true" />
   </bean>
@@ -466,7 +472,7 @@
   </bean>
 
   <bean id="previewPopupHandler" parent="abstractPreviewIframe">
-    <property name="viewName" value="previewPopup" />
+    <property name="viewName" value="previewPopupView" />
     <property name="service" ref="viewService" />
     <property name="displayWorkingRevision" value="true" />
   </bean>

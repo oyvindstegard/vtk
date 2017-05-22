@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -129,8 +130,7 @@ public class FixedResourceServiceURLProvider
     
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-        throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
@@ -143,7 +143,7 @@ public class FixedResourceServiceURLProvider
         @SuppressWarnings("unchecked")
         Map<String, String> urlMap = (Map<String, String>) model.get(this.modelName);
         if (urlMap == null) {
-            urlMap = new HashMap<String, String>();
+            urlMap = new HashMap<>();
         }
 
         String url = null;
@@ -178,6 +178,7 @@ public class FixedResourceServiceURLProvider
     }
     
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer(this.getClass().getName());
         sb.append(" [ ");

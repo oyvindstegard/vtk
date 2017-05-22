@@ -30,6 +30,7 @@
  */
 package vtk.webdav;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +44,7 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.ContentInputSources;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
@@ -77,16 +78,17 @@ public class LockController extends AbstractWebdavController {
      * @param request
      * @param response
      * @return
+     * @throws IOException 
      * @throws Exception 
      */
     @Override
-    public ModelAndView handleRequest(HttpServletRequest request, 
-            HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request, 
+            HttpServletResponse response) throws IOException {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         Resource resource;
         
         if (requestContext.getPrincipal() == null) {
@@ -107,12 +109,19 @@ public class LockController extends AbstractWebdavController {
             if ("infinity".equals(depthString)) {
                 // XXX:
                 depth = Depth.ZERO;
-            } else if ("0".equals(depthString)) {
+            }
+            else if ("0".equals(depthString)) {
                 depth = Depth.ZERO;
-            } else if ("1".equals(depthString)) {
+            }
+            else if ("1".equals(depthString)) {
                 depth = Depth.ZERO;
-            } else {
-                throw new InvalidRequestException("Invalid depth header: " + depthString);
+            }
+            else {
+                responseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                    .header("Content-Type", "text/plain;charset=utf-8")
+                    .message("Invalid depth header: " + depthString)
+                    .writeTo(response);
+                return;
             }
             int timeout = HttpUtil.parseTimeoutHeader(request.getHeader("TimeOut"));
            
@@ -126,7 +135,8 @@ public class LockController extends AbstractWebdavController {
                     if (lock != null) {
                         lockToken = lock.getLockToken();
                     }
-                } else {
+                }
+                else {
                     Document requestBody = parseRequestBody(request);
                     validateRequest(requestBody);
                     String suppliedOwnerInfo = getLockOwner(requestBody);
@@ -134,7 +144,8 @@ public class LockController extends AbstractWebdavController {
                         ownerInfo = suppliedOwnerInfo;
                     }
                 }
-            } else {
+            }
+            else {
                 if (!allowedResourceName(uri)) {
                     throw new IllegalOperationException("Rejecting resource creation: '"
                                                         + uri + "'");
@@ -169,18 +180,9 @@ public class LockController extends AbstractWebdavController {
                 this.logger.debug("Locking " + uri + " succeeded");
             }
 
-            //Resource lockedResource = repository.retrieve(token, uri, false);
-
-            model.put(WebdavConstants.WEBDAVMODEL_REQUESTED_RESOURCE, resource);
-
-            return new ModelAndView("LOCK", model);
-
-        } catch (InvalidRequestException e) {
-            this.logger.info("Got InvalidRequestException for URI " + uri, e);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_BAD_REQUEST);
-
-        } catch (ResourceNotFoundException e) {
+            writeResponse(request, response, resource);
+        }
+        catch (ResourceNotFoundException e) {
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Got ResourceNotFoundException for URI " + uri);
             }
@@ -188,7 +190,8 @@ public class LockController extends AbstractWebdavController {
             model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
                     HttpServletResponse.SC_NOT_FOUND));
 
-        } catch (FailedDependencyException e) {
+        }
+        catch (FailedDependencyException e) {
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Got FailedDependencyException for URI " + uri, e);
             }
@@ -196,7 +199,8 @@ public class LockController extends AbstractWebdavController {
             model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
                     HttpServletResponse.SC_PRECONDITION_FAILED));
 
-        } catch (ResourceLockedException e) {
+        }
+        catch (ResourceLockedException e) {
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Got ResourceLockedException for URI " + uri, e);
             }
@@ -205,7 +209,8 @@ public class LockController extends AbstractWebdavController {
                     .put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
                             HttpUtil.SC_LOCKED));
 
-        } catch (IllegalOperationException e) {
+        }
+        catch (IllegalOperationException e) {
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Got IllegalOperationException for URI " + uri, e);
             }
@@ -213,7 +218,8 @@ public class LockController extends AbstractWebdavController {
             model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, new Integer(
                     HttpServletResponse.SC_FORBIDDEN));
 
-        } catch (ReadOnlyException e) {
+        }
+        catch (ReadOnlyException e) {
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Got ReadOnlyException for URI " + uri, e);
             }
@@ -222,9 +228,8 @@ public class LockController extends AbstractWebdavController {
                     HttpServletResponse.SC_FORBIDDEN));
 
         }
-        return new ModelAndView("HTTP_STATUS_VIEW", model);
-    }
-
+    }    
+    
 
     /**
      * Builds a JDom tree of the LOCK request body.
@@ -312,5 +317,106 @@ public class LockController extends AbstractWebdavController {
 
         return owner;
     }
+    
+    private void writeResponse(HttpServletRequest request, HttpServletResponse response, 
+            Resource resource) throws IOException {
+        Lock lock = resource.getLock();
+        Element lockDiscovery = buildLockDiscovery(lock);
+        Document doc = new Document(lockDiscovery);
+        Format format = Format.getPrettyFormat();
+        format.setEncoding("utf-8");
+        XMLOutputter outputter = new XMLOutputter(format);
+        String xml = outputter.outputString(doc);
+        
+        //byte[] buffer = xml.getBytes(StandardCharsets.UTF_8);
+        
+        responseBuilder(HttpServletResponse.SC_OK)
+            .header("Content-Type", "text/xml;charset=utf-8")
+            .header("Lock-Token", lock.getLockToken())
+            //.header("Content-Length", String.valueOf(buffer.length))
+            .message(xml)
+            .writeTo(response);
+    }
 
+    public static Element buildLockDiscovery(Lock lockInfo) throws IOException {
+
+        String type = "write";
+        String scope = "exclusive";
+
+        Element lockDiscovery = new Element("lockdiscovery", WebdavConstants.DAV_NAMESPACE);
+        Element activeLock = new Element("activelock", WebdavConstants.DAV_NAMESPACE);
+
+        activeLock.addContent(
+            new Element("locktype", WebdavConstants.DAV_NAMESPACE).addContent(
+                new Element(type, WebdavConstants.DAV_NAMESPACE)));
+
+        activeLock.addContent(
+            new Element("lockscope", WebdavConstants.DAV_NAMESPACE).addContent(
+                new Element(scope, WebdavConstants.DAV_NAMESPACE)));
+
+        activeLock.addContent(
+            new Element("depth", WebdavConstants.DAV_NAMESPACE).addContent(
+                lockInfo.getDepth().toString()));
+
+        activeLock.addContent(            
+            buildLockOwnerElement(lockInfo.getOwnerInfo()));
+
+        String timeoutStr = "Second-0";
+        long timeout = lockInfo.getTimeout().getTime() -
+            System.currentTimeMillis();
+        if (timeout > 0) {
+
+            timeoutStr = "Second-" + (timeout / 1000);
+        }
+
+//         String timeoutStr = "Second-410000000";
+        
+        activeLock.addContent(
+            new Element("timeout", WebdavConstants.DAV_NAMESPACE).addContent(
+                /*"Infinite"*/            // MS fails
+                /*"Second-4100000000"*/   // Cadaver fails
+                /*"Second-410000000"*/    // Works..
+                timeoutStr
+            ));
+
+        activeLock.addContent(
+            new Element("locktoken", WebdavConstants.DAV_NAMESPACE).addContent(
+                new Element("href", WebdavConstants.DAV_NAMESPACE).addContent(
+                    lockInfo.getLockToken())));
+
+        lockDiscovery.addContent(activeLock);
+        Element propElement = new Element("prop", WebdavConstants.DAV_NAMESPACE);
+        propElement.addContent(lockDiscovery);
+        return propElement;
+    }
+
+
+    // FIXME: quick and dirty method for allowing lock-owner info to
+    // be stored both as arbitraty XML content and plain text strings.
+    public static Element buildLockOwnerElement(String content) throws IOException {
+        Element ownerElement = new Element("owner", WebdavConstants.DAV_NAMESPACE);
+        
+            if (!content.startsWith("<")) {
+                // Simple content:
+                ownerElement.addContent(content);
+            }
+            else {
+                // XML content:
+                StringBuffer xmlContent = new StringBuffer("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+                xmlContent.append(content);
+                
+                SAXBuilder builder = new SAXBuilder();
+                try {
+                    org.jdom.Document doc = builder.build(
+                            new ByteArrayInputStream(xmlContent.toString().getBytes()));
+                    Element rootElement = (Element) doc.getRootElement().detach();
+
+                    ownerElement.addContent(rootElement);
+                }
+                catch (JDOMException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        return ownerElement;
+    }
 }

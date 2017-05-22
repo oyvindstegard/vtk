@@ -30,14 +30,18 @@
  */
 package vtk.web.decorating;
 
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-public interface Template {
+import vtk.text.html.HtmlPage;
 
-    public TemplateExecution newTemplateExecution(
-            HtmlPageContent html, HttpServletRequest request,
-            Map<String, Object> model, 
-            Map<String, Object> templateParameters) throws Exception;
+public interface Template {
+    
+    public void render(HtmlPage page, OutputStream out, Charset encoding, 
+            HttpServletRequest request, Map<String, Object> model, 
+            Map<String, Object> templateParameters);
+    
 }

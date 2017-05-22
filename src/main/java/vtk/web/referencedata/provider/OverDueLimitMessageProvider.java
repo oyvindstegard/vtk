@@ -35,14 +35,16 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.web.referencedata.ReferenceDataProvider;
 
+// XXX: rename
 public class OverDueLimitMessageProvider implements ReferenceDataProvider {
 
     private int permanentDeleteOverdueLimitInDays;
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         org.springframework.web.servlet.support.RequestContext springContext = new org.springframework.web.servlet.support.RequestContext(
                 request);

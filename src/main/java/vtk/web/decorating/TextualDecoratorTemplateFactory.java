@@ -30,7 +30,7 @@
  */
 package vtk.web.decorating;
 
-import org.springframework.beans.factory.annotation.Required;
+import java.util.Objects;
 
 import vtk.util.io.InputSource;
 
@@ -39,16 +39,14 @@ public class TextualDecoratorTemplateFactory implements TemplateFactory {
     private TextualComponentParser parser;
     private ComponentResolver componentResolver;
 
+    public TextualDecoratorTemplateFactory(TextualComponentParser parser, 
+            ComponentResolver componentResolver) {
+        this.parser = Objects.requireNonNull(parser);
+        this.componentResolver = Objects.requireNonNull(componentResolver);
+    }
+
 
     public Template newTemplate(InputSource templateSource) throws InvalidTemplateException {
         return new TextualDecoratorTemplate(this.parser, templateSource, this.componentResolver);
-    }
-
-    @Required public void setParser(TextualComponentParser parser) {
-        this.parser = parser;
-    }
-
-    @Required public void setComponentResolver(ComponentResolver componentResolver) {
-        this.componentResolver = componentResolver;
     }
 }

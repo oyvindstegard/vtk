@@ -30,6 +30,8 @@
  */
 package vtk.web.commenting;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Comment;
 import vtk.repository.Lock;
 import vtk.repository.Path;
@@ -56,16 +59,16 @@ import vtk.web.service.URL;
  * Provide resource comments and commenting related service URLs in model data.
  */
 public class CommentsProvider implements ReferenceDataProvider {
-    
+
     private Service postCommentService;
     private Service deleteCommentService;
     private Service deleteAllCommentsService;
     private Service loginService;
     private Service resourceCommentsFeedService;
     private String formSessionAttributeName;
-    
+
     @Override
-    public void referenceData(final Map<String, Object> model, HttpServletRequest servletRequest) throws Exception {
+    public void referenceData(final Map<String, Object> model, HttpServletRequest servletRequest) {
 
         // See vtk.web.commenting.PostCommentCommand, which populates this session attribute in case of
         // comment validation errors
@@ -96,75 +99,81 @@ public class CommentsProvider implements ReferenceDataProvider {
 
         model.put("principal", principal);
 
-        Resource resource = repository.retrieve(token, uri, true);
-        List<Comment> comments = repository.getComments(token, resource);
-        model.put("comments", comments);
-
-        boolean commentsAllowed =
-            repository.isAuthorized(resource, RepositoryAction.ADD_COMMENT, principal, false);
-        model.put("commentsAllowed", commentsAllowed);
-        
-        Lock lock = resource.getLock();
-        boolean locked = lock != null && (principal == null || !principal.equals(lock.getPrincipal()));
-        model.put("commentsLocked", commentsAllowed && locked);
-        
-        model.put("commentsEnabled", false);
-        Property commentsEnabled = resource.getPropertyByPrefix(null, "commentsEnabled");
-        if (commentsEnabled != null) {
-            model.put("commentsEnabled", commentsEnabled.getBooleanValue());
-        }
-        
-        model.put("repositoryReadOnly", repository.isReadOnly(uri, false));
-
-        Map<String, URL> deleteCommentURLs = new HashMap<>();
-
-        URL baseDeleteURL = null;
         try {
-            baseDeleteURL = deleteCommentService.constructURL(resource, principal);
-        } catch (Exception e) { }
 
-        for (Comment c: comments) {
-            if (baseDeleteURL != null) {
-                URL clone = new URL(baseDeleteURL);
-                clone.addParameter("comment-id", String.valueOf(c.getID()));
-                deleteCommentURLs.put(String.valueOf(c.getID()), clone);
+            Resource resource = repository.retrieve(token, uri, true);
+            List<Comment> comments = repository.getComments(token, resource);
+            model.put("comments", comments);
+
+            boolean commentsAllowed =
+                    repository.isAuthorized(resource, RepositoryAction.ADD_COMMENT, principal, false);
+            model.put("commentsAllowed", commentsAllowed);
+
+            Lock lock = resource.getLock();
+            boolean locked = lock != null && (principal == null || !principal.equals(lock.getPrincipal()));
+            model.put("commentsLocked", commentsAllowed && locked);
+
+            model.put("commentsEnabled", false);
+            Property commentsEnabled = resource.getPropertyByPrefix(null, "commentsEnabled");
+            if (commentsEnabled != null) {
+                model.put("commentsEnabled", commentsEnabled.getBooleanValue());
             }
-        }
-        model.put("deleteCommentURLs", deleteCommentURLs);
 
-        try {
-            URL deleteAllCommentsURL = deleteAllCommentsService.constructURL(resource, principal);
-            model.put("deleteAllCommentsURL", deleteAllCommentsURL);
-        } catch (Exception e) { }
-        
+            model.put("repositoryReadOnly", repository.isReadOnly(uri, false));
 
-        URL baseCommentURL = null;
-        try {
-            baseCommentURL = currentService.constructURL(resource, principal);
-        } catch (Exception e) { }
-        model.put("baseCommentURL", baseCommentURL);
+            Map<String, URL> deleteCommentURLs = new HashMap<>();
 
-        try {
-            URL postCommentURL = postCommentService.constructURL(resource, principal);
-            model.put("postCommentURL", postCommentURL);
-        } catch (Exception e) { }
-
-        if (this.loginService != null && principal == null) {
+            URL baseDeleteURL = null;
             try {
-                URL loginURL = loginService.constructURL(resource, principal);
-                model.put("loginURL", loginURL);
+                baseDeleteURL = deleteCommentService.constructURL(resource, principal);
             } catch (Exception e) { }
-        }
 
-        if (resourceCommentsFeedService != null) {
-            
-            // Only provide feed subscription link if resource is READ for ALL.
-            if (repository.isAuthorized(resource, RepositoryAction.READ, PrincipalFactory.ALL, false)) {
+            for (Comment c: comments) {
+                if (baseDeleteURL != null) {
+                    URL clone = new URL(baseDeleteURL);
+                    clone.addParameter("comment-id", String.valueOf(c.getID()));
+                    deleteCommentURLs.put(String.valueOf(c.getID()), clone);
+                }
+            }
+            model.put("deleteCommentURLs", deleteCommentURLs);
+
+            try {
+                URL deleteAllCommentsURL = deleteAllCommentsService.constructURL(resource, principal);
+                model.put("deleteAllCommentsURL", deleteAllCommentsURL);
+            } catch (Exception e) { }
+
+
+            URL baseCommentURL = null;
+            try {
+                baseCommentURL = currentService.constructURL(resource, principal);
+            } catch (Exception e) { }
+            model.put("baseCommentURL", baseCommentURL);
+
+            try {
+                URL postCommentURL = postCommentService.constructURL(resource, principal);
+                model.put("postCommentURL", postCommentURL);
+            } catch (Exception e) { }
+
+            if (this.loginService != null && principal == null) {
                 try {
-                    URL feedURL = resourceCommentsFeedService.constructURL(resource, principal);
-                    model.put("feedURL", feedURL);
+                    URL loginURL = loginService.constructURL(resource, principal);
+                    model.put("loginURL", loginURL);
                 } catch (Exception e) { }
             }
+
+            if (resourceCommentsFeedService != null) {
+
+                // Only provide feed subscription link if resource is READ for ALL.
+                if (repository.isAuthorized(resource, RepositoryAction.READ, PrincipalFactory.ALL, false)) {
+                    try {
+                        URL feedURL = resourceCommentsFeedService.constructURL(resource, principal);
+                        model.put("feedURL", feedURL);
+                    } catch (Exception e) { }
+                }
+            }
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -176,27 +185,27 @@ public class CommentsProvider implements ReferenceDataProvider {
     public void setPostCommentService(Service postCommentService) {
         this.postCommentService = postCommentService;
     }
-    
+
     @Required
     public void setDeleteCommentService(Service deleteCommentService) {
         this.deleteCommentService = deleteCommentService;
     }
-    
+
     @Required
     public void setDeleteAllCommentsService(Service deleteAllCommentsService) {
         this.deleteAllCommentsService = deleteAllCommentsService;
     }
-    
+
     public void setResourceCommentsFeedService(Service resourceCommentsFeedService) {
         this.resourceCommentsFeedService = resourceCommentsFeedService;
     }
-    
+
     public void setLoginService(Service loginService) {
         this.loginService = loginService;
     }
-    
+
     public void setFormSessionAttributeName(String formSessionAttributeName) {
         this.formSessionAttributeName = formSessionAttributeName;
     }
-    
+
 }

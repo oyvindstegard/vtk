@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -37,7 +39,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -94,73 +98,78 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
             return name;
         }
     }
-    
+
     private static final class TemplateLink {
         String name;
         SimpleTemplate template;
     }
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
-        
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
+
         if (this.templateLinks == null) return;
-        
+
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
 
-        final Resource resource = repository.retrieve(token, requestContext.getResourceURI(), true);
-        
-        if(resource.isReadRestricted() && onlyReadAll) return;
-        
-        final Principal principal = requestContext.getPrincipal();
-        final Service service = requestContext.getService();
-        
-        List<Link> links = new ArrayList<>();
-        for (TemplateLink tl : this.templateLinks) {
-            SimpleTemplate template = tl.template;
+        try {
+            final Resource resource = repository.retrieve(token, requestContext.getResourceURI(), true);
 
-            if (template != null) {
-                final StringBuilder url = new StringBuilder();
-                template.apply(variable -> {
-                    if ("url".equals(variable)) {
-                        String s = service.constructLink(resource, principal);
-                        try {
-                            return URLEncoder.encode(s, URL_ENCODING_CHARSET);
-                        } catch (UnsupportedEncodingException e) {
-                            return "";
-                        }
-                    } else {
-                        // Assume it's a reference to a resource property
-                        String prefix = null;
-                        String name = null;
-                        int idx = variable.indexOf(":");
-                        if (idx != -1) {
-                            prefix = variable.substring(0, idx);
-                            name = variable.substring(idx + 1);
+            if(resource.isReadRestricted() && onlyReadAll) return;
+
+            final Principal principal = requestContext.getPrincipal();
+            final Service service = requestContext.getService();
+
+            List<Link> links = new ArrayList<>();
+            for (TemplateLink tl : this.templateLinks) {
+                SimpleTemplate template = tl.template;
+
+                if (template != null) {
+                    final StringBuilder url = new StringBuilder();
+                    template.apply(variable -> {
+                        if ("url".equals(variable)) {
+                            String s = service.constructLink(resource, principal);
+                            try {
+                                return URLEncoder.encode(s, URL_ENCODING_CHARSET);
+                            } catch (UnsupportedEncodingException e) {
+                                return "";
+                            }
                         } else {
-                            name = variable;
+                            // Assume it's a reference to a resource property
+                            String prefix = null;
+                            String name = null;
+                            int idx = variable.indexOf(":");
+                            if (idx != -1) {
+                                prefix = variable.substring(0, idx);
+                                name = variable.substring(idx + 1);
+                            } else {
+                                name = variable;
+                            }
+                            String retVal = propValue(resource, prefix, name);
+                            if (retVal.length() > truncateLimit) {
+                                retVal = retVal.substring(0, truncateLimit);
+                                retVal = retVal + truncation;
+                            }
+                            try {
+                                return URLEncoder.encode(retVal, URL_ENCODING_CHARSET);
+                            } catch (UnsupportedEncodingException e) {
+                                return "";
+                            }
                         }
-                        String retVal = propValue(resource, prefix, name);
-                        if (retVal.length() > truncateLimit) {
-                            retVal = retVal.substring(0, truncateLimit);
-                            retVal = retVal + truncation;
-                        }
-                        try {
-                            return URLEncoder.encode(retVal, URL_ENCODING_CHARSET);
-                        } catch (UnsupportedEncodingException e) {
-                            return "";
-                        }
-                    }
-                }, s -> url.append(s));
+                    }, s -> url.append(s));
 
-                Link link = new Link();
-                link.name = tl.name;
-                link.url = url.toString();
-                links.add(link);
+                    Link link = new Link();
+                    link.name = tl.name;
+                    link.url = url.toString();
+                    links.add(link);
+                }
             }
+            model.put(this.modelKey, links);
         }
-        model.put(this.modelKey, links);
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private String propValue(Resource resource, String prefix, String name) {
@@ -190,7 +199,7 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
                 }
             }
         }
-        
+
         return retVal;
     }
 
@@ -200,7 +209,7 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
      */
     @Required
     public void setTemplates(Map<String, String> templates) {
-        this.templateLinks = new ArrayList<TemplateLink>();
+        this.templateLinks = new ArrayList<>();
         for (Map.Entry<String,String> entry: templates.entrySet()) {
             String key = entry.getKey();
             String templateValue = entry.getValue();
@@ -210,7 +219,7 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
             this.templateLinks.add(tl);
         }
     }
-    
+
     /**
      * Set if links should only be displayed if resource can be read by all
      */
@@ -229,7 +238,7 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
     public void setViewService(Service viewService) {
         this.viewService = viewService;
     }
-    
+
     public void setModelKey(String key) {
         this.modelKey = key;
     }

@@ -72,14 +72,6 @@
     </property>
   </bean>
 
-  <bean id="imageWithInfoViewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="imageWithInfoView" value-ref="imageWithInfoView" />
-      </map>
-    </property>
-  </bean>
-
   <bean name="imageWithInfoView" parent="freemarkerView">
     <property name="url" value="pages/image-as-html.ftl" />
     <property name="referenceDataProviders">

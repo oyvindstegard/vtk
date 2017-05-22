@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.web.referencedata.ReferenceDataProvider;
 
 /**
@@ -101,8 +102,7 @@ public class StaticURLProvider implements ReferenceDataProvider, InitializingBea
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void referenceData(Map model, HttpServletRequest request)
-        throws Exception {
+    public void referenceData(Map model, HttpServletRequest request) {
 
 
         org.springframework.web.servlet.support.RequestContext springContext =

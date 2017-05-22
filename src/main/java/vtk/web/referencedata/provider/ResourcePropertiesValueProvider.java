@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Namespace;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -111,10 +114,10 @@ import vtk.web.referencedata.ReferenceDataProvider;
  *
  */
 public class ResourcePropertiesValueProvider 
-  implements ReferenceDataProvider, InitializingBean {
+implements ReferenceDataProvider, InitializingBean {
 
     private static Logger logger =
-        LoggerFactory.getLogger(ResourcePropertiesValueProvider.class);
+            LoggerFactory.getLogger(ResourcePropertiesValueProvider.class);
 
     private String[] properties = null;
 
@@ -127,23 +130,23 @@ public class ResourcePropertiesValueProvider
     public void setModelNames(Map<String, String> modelNames) {
         this.modelNames = modelNames;
     }
-    
+
     public void setProperties(String[] properties) {
         this.properties = properties;
     }
-    
+
     public void setLocalizationKeys(Map<String, String> localizationKeys) {
         this.localizationKeys = localizationKeys;
     }
-    
+
     public void afterPropertiesSet() {
         if (this.modelNames == null) {
             throw new BeanInitializationException(
-                "Bean property 'modelNames' must be set");
+                    "Bean property 'modelNames' must be set");
         }
         if (this.properties == null) {
             throw new BeanInitializationException(
-                "Bean property 'properties' must be set");
+                    "Bean property 'properties' must be set");
         }
 
         splitProperties();
@@ -151,7 +154,7 @@ public class ResourcePropertiesValueProvider
         for (int i = 0; i < this.namespaces.length; i++) {
 
             boolean exists;
-            
+
             if (this.namespaces[i] == null) {
                 exists = this.modelNames.containsKey(null) || this.modelNames.containsKey("");
             } else {
@@ -160,77 +163,83 @@ public class ResourcePropertiesValueProvider
 
             if (!exists) {
                 throw new BeanInitializationException(
-                    "The 'modelNames' bean property does not contain "
-                    + "an entry for resource property namespace '"
-                    + this.namespaces[i] + "'");
+                        "The 'modelNames' bean property does not contain "
+                                + "an entry for resource property namespace '"
+                                + this.namespaces[i] + "'");
             }
         }
     }
-    
+
 
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-            throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        Resource resource = repository.retrieve(token,
-                                                requestContext.getResourceURI(),
-                                                true);
+        try {
+            Resource resource = repository.retrieve(token,
+                    requestContext.getResourceURI(),
+                    true);
 
-        for (int i = 0; i < this.properties.length; i++) {
+            for (int i = 0; i < this.properties.length; i++) {
 
-            String subModelKey = this.modelNames.get(this.namespaces[i]);
-            if (subModelKey == null && this.namespaces[i] == null) {
-                subModelKey = this.modelNames.get("");
-            }
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> subModel = (Map<String, Object>) model.get(subModelKey);
-            if (subModel == null) {
-                subModel = new HashMap<String, Object>();
-                model.put(subModelKey, subModel);
-            }
-
-            if (this.namespaces[i] != null && "*".equals(this.names[i])) {
-
-                Namespace ns = Namespace.getNamespace(this.namespaces[i]);
-                for (Property prop: resource.getProperties(ns)) {
-                    PropertyTypeDefinition propDef = prop.getDefinition();
-                    subModel.put(propDef.getName(),
-                                 maybeLocalizeValue(propDef.getNamespace().getUri(),
-                                                    propDef.getName(),
-                                                    prop.getStringValue(),
-                                                    request));
+                String subModelKey = this.modelNames.get(this.namespaces[i]);
+                if (subModelKey == null && this.namespaces[i] == null) {
+                    subModelKey = this.modelNames.get("");
                 }
 
-            } else {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> subModel = (Map<String, Object>) model.get(subModelKey);
+                if (subModel == null) {
+                    subModel = new HashMap<>();
+                    model.put(subModelKey, subModel);
+                }
 
-                Object value = null;
-                if (this.namespaces[i] == null) {
-                    value = getStandardPropertyValue(resource, this.names[i]);
-                } else {
+                if (this.namespaces[i] != null && "*".equals(this.names[i])) {
+
                     Namespace ns = Namespace.getNamespace(this.namespaces[i]);
-                    Property property = resource.getProperty(ns, this.names[i]);
-                    if (property != null) {
-                        value = property.getValue();
+                    for (Property prop: resource.getProperties(ns)) {
+                        PropertyTypeDefinition propDef = prop.getDefinition();
+                        subModel.put(propDef.getName(),
+                                maybeLocalizeValue(propDef.getNamespace().getUri(),
+                                        propDef.getName(),
+                                        prop.getStringValue(),
+                                        request));
                     }
+
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Got resource property: '" + this.namespaces[i]
-                                 + ":" + this.names[i] + "' = " + value);
+                else {
+
+                    Object value = null;
+                    if (this.namespaces[i] == null) {
+                        value = getStandardPropertyValue(resource, this.names[i]);
+                    }
+                    else {
+                        Namespace ns = Namespace.getNamespace(this.namespaces[i]);
+                        Property property = resource.getProperty(ns, this.names[i]);
+                        if (property != null) {
+                            value = property.getValue();
+                        }
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Got resource property: '" + this.namespaces[i]
+                                + ":" + this.names[i] + "' = " + value);
+                    }
+                    value = maybeLocalizeValue(this.namespaces[i], this.names[i],
+                            value, request);
+                    subModel.put(this.names[i], value);
                 }
-                value = maybeLocalizeValue(this.namespaces[i], this.names[i],
-                                           value, request);
-                subModel.put(this.names[i], value);
             }
         }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
-    
+
 
     private Object maybeLocalizeValue(String namespace, String name,
-                                      Object value, HttpServletRequest request) {
+            Object value, HttpServletRequest request) {
         if (this.localizationKeys == null) {
             return value;
         }
@@ -251,24 +260,24 @@ public class ResourcePropertiesValueProvider
         }
 
         org.springframework.web.servlet.support.RequestContext springContext =
-            new org.springframework.web.servlet.support.RequestContext(request);
-                
+                new org.springframework.web.servlet.support.RequestContext(request);
+
         value = springContext.getMessage(key, new Object[] {value},
-                                         value.toString());
-        
+                value.toString());
+
         return value;
     }
-    
+
 
     private Object getStandardPropertyValue(Resource resource,
-                                            String propertyName) {
+            String propertyName) {
 
         if ("characterEncoding".equals(propertyName)) {
             return resource.getCharacterEncoding();
-            
+
         } else if ("contentLocale".equals(propertyName)) {
             return resource.getContentLanguage();
-            
+
         } else if ("contentLastModified".equals(propertyName)) {
             return resource.getContentLastModified();
 
@@ -277,28 +286,28 @@ public class ResourcePropertiesValueProvider
 
         } else if ("contentModifiedBy".equals(propertyName)) {
             return resource.getContentModifiedBy();
-            
+
         } else if ("contentType".equals(propertyName)) {
             return resource.getContentType();
-            
+
         } else if ("creationTime".equals(propertyName)) {
             return resource.getCreationTime();
-            
+
         } else if ("lastModified".equals(propertyName)) {
             return resource.getLastModified();
-            
+
         } else if ("name".equals(propertyName)) {
             return resource.getName();
-            
+
         } else if ("propertiesLastModified".equals(propertyName)) {
             return resource.getPropertiesLastModified();
-            
+
         } else if ("propertiesModifiedBy".equals(propertyName)) {
             return resource.getPropertiesModifiedBy();
-            
+
         } else if ("uri".equals(propertyName)) {
             return resource.getURI();
-            
+
         } else if ("isCollection".equals(propertyName)) {
             return resource.isCollection();
 
@@ -306,14 +315,14 @@ public class ResourcePropertiesValueProvider
             return null;
         }
     }
-    
+
 
     private void splitProperties() {
 
         this.namespaces = new String[this.properties.length];
         this.names = new String[this.properties.length];
 
-        
+
         for (int i = 0; i < this.properties.length; i++) {
 
             String namespace = null;
@@ -322,10 +331,10 @@ public class ResourcePropertiesValueProvider
             if (this.properties[i].indexOf(":") != -1) {
 
                 namespace = this.properties[i].substring(
-                    0, this.properties[i].lastIndexOf(":"));
+                        0, this.properties[i].lastIndexOf(":"));
 
                 name = this.properties[i].substring(
-                    this.properties[i].lastIndexOf(":") + 1);
+                        this.properties[i].lastIndexOf(":") + 1);
             }
 
             this.namespaces[i] = namespace;

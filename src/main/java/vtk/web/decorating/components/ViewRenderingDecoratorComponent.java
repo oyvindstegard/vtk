@@ -41,16 +41,15 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.View;
+
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
-import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 import vtk.web.servlet.BufferedResponse;
 
 public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent {
 
     private View view;
-    private Set<String> exposedParameters = new HashSet<String>();
+    private Set<String> exposedParameters = new HashSet<>();
     private boolean exposeMvcModel = false;
 
     @Required
@@ -68,7 +67,7 @@ public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent 
 
     @Override
     public final void render(DecoratorRequest request, DecoratorResponse response) throws Exception {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         if (this.exposeMvcModel) {
             model.putAll(request.getMvcModel());
         }
@@ -80,8 +79,6 @@ public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent 
      * Process the model prior to view rendering. The default implementation
      * performs the following steps:
      * <ol>
-     * <li>Gather all reference data providers (using
-     * <code>getReferenceDataProviders()</code>) and invoke them in order</li>
      * <li>If <code>exposeComponentParameters</code> is set, add an entry in the
      * model under the name determined by
      * <code>exposedParametersModelName</code>, containing either the full set
@@ -105,15 +102,6 @@ public class ViewRenderingDecoratorComponent extends AbstractDecoratorComponent 
                 }
                 Object value = request.getRawParameter(name);
                 model.put(name, value);
-            }
-        }
-
-        if (this.view instanceof ReferenceDataProviding) {
-            ReferenceDataProvider[] providers = ((ReferenceDataProviding) this.view).getReferenceDataProviders();
-            if (providers != null) {
-                for (ReferenceDataProvider provider : providers) {
-                    provider.referenceData(model, request.getServletRequest());
-                }
             }
         }
     }

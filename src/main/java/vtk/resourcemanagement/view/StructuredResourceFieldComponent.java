@@ -31,23 +31,19 @@
 package vtk.resourcemanagement.view;
 
 import java.io.Writer;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.resourcemanagement.StructuredResource;
-import vtk.text.html.HtmlContent;
-import vtk.text.html.HtmlText;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
-import vtk.web.decorating.HtmlDecoratorComponent;
 import vtk.web.decorating.components.AbstractDecoratorComponent;
 import vtk.web.decorating.components.DecoratorComponentException;
 
 public class StructuredResourceFieldComponent extends
-        AbstractDecoratorComponent implements HtmlDecoratorComponent {
+        AbstractDecoratorComponent {
 
     private static final String DESCRIPTION
         = "Outputs the contents of the element(s) identified by select";
@@ -65,13 +61,15 @@ public class StructuredResourceFieldComponent extends
 
     @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(PARAMETER_SELECT, PARAMETER_SELECT_DESC);
         return map;
     }
 
     @Override
-    public List<HtmlContent> render(DecoratorRequest request) throws Exception {
+    public void render(DecoratorRequest request, DecoratorResponse response)
+            throws Exception {
+        
         String select = request.getStringParameter(PARAMETER_SELECT);
         if (select == null || "".equals(select.trim())) {
             throw new DecoratorComponentException("Required parameter '" 
@@ -81,36 +79,18 @@ public class StructuredResourceFieldComponent extends
         Map<String, Object> mvcModel = request.getMvcModel();
         Object o = mvcModel.get(this.resourceModelKey);
         if (o == null) {
-            return null;
+            return;
         }
         if (!(o instanceof StructuredResource)) {
-            return null;
+            return;
         }
         StructuredResource r = (StructuredResource) o;
         final Object prop = r.getProperty(select);
         if (prop == null) {
-            return null;
-        }
-        HtmlContent c = new HtmlText() {
-            @Override
-            public String getContent() {
-                return prop.toString();
-            }
-        };
-        return Collections.singletonList(c);
-    }
-
-    @Override
-    public void render(DecoratorRequest request, DecoratorResponse response)
-            throws Exception {
-        List<HtmlContent> l = render(request);
-        if (l == null) {
             return;
         }
         Writer writer = response.getWriter();
-        for (HtmlContent c : l) {
-            writer.write(c.getContent());
-        }
+        writer.write(prop.toString());
         writer.flush();
         writer.close();
     }

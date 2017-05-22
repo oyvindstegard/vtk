@@ -16,7 +16,7 @@
 
   <bean id="editor.employeeEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.employeeResourceManager" />
-    <property name="successView" value="redirectToPreviewCollection" />
+    <property name="successView" value="redirectToPreviewCollectionView" />
   </bean>
 
   <bean id="editor.employeeResourceManager" class="vtk.edit.editor.ResourceWrapperManager">

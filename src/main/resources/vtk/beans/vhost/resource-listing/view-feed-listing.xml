@@ -59,7 +59,6 @@
     </property>
   </bean>
   
-  <!-- ## Parent RSS 2.0 feed generator ## -->
   <bean id="rssFeedGenerator" class="vtk.web.display.feed.RSSFeedGenerator" abstract="true">
     <property name="viewService" ref="viewService" />
     <property name="feedLogoPath" value="${rss.feed.logo.path}" />
@@ -68,15 +67,6 @@
     <property name="lastModifiedPropDef" ref="lastModifiedPropDef" />
     <property name="introductionPropDef" ref="introductionPropDef" />
     <property name="viewName" value="rss.feedView" />
-  </bean>
-
-  <!-- ## RSS feed view resolver and template ## -->
-  <bean id="rss.viewResolver" parent="viewResolver">
-    <property name="views">
-      <map>
-        <entry key="rss.feedView" value-ref="rss.feedView" />
-      </map>
-    </property>
   </bean>
 
   <bean id="rss.feedView" parent="freemarkerView">

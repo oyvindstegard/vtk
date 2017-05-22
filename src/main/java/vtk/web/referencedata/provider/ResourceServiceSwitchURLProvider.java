@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 
@@ -46,34 +48,41 @@ import vtk.web.service.Service;
 public class ResourceServiceSwitchURLProvider implements ReferenceDataProvider {
 
     private Service service;
-    
+
     private String linkToServiceName;
     private String linkToResourceName;
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path resourceURI = requestContext.getResourceURI();
 
-        Resource resource = repository.retrieve(token, resourceURI, true);
+        try {
+            Resource resource = repository.retrieve(token, resourceURI, true);
 
-        String link = getService().constructLink(resource.getURI());
-        boolean displayResource = true;
-        List<Assertion> serviceAssertions = getService().getAssertions();
-        for (Assertion assertion : serviceAssertions) {
+            String link = getService().constructLink(resource.getURI());
+            boolean displayResource = true;
+            List<Assertion> serviceAssertions = getService().getAssertions();
+            for (Assertion assertion : serviceAssertions) {
 
-            if (!assertion.matches(request, resource, requestContext.getPrincipal())) {
-                displayResource = false;
-                break;
+                if (!assertion.matches(request, resource, requestContext.getPrincipal())) {
+                    displayResource = false;
+                    break;
+                }
+            }
+            if (displayResource) {
+                model.put(linkToResourceName, resource.getURI().toString());
+            }
+            else {
+                model.put(linkToServiceName, link);
             }
         }
-        if (displayResource) {
-            model.put(linkToResourceName, resource.getURI().toString());
-        } else {
-            model.put(linkToServiceName, link);
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
+
     }
 
     public void setService(Service service) {

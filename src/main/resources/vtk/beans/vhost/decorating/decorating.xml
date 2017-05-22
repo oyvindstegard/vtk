@@ -2,31 +2,17 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <bean id="decoratingViewWrapper"
-        class="vtk.web.decorating.DecoratingViewWrapper">
-    <property name="decorators">
-      <list>
-        <ref bean="decorating.templateDecorator" />
-      </list>
-    </property>
-    <property name="maxDocumentSize" value="${decorating.maxDocumentSize}" />
-  </bean>
-
-  <bean id="decorating.templateDecorator"
-        class="vtk.web.decorating.TemplateDecorator">
-    <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="decorationResolver" ref="decorating.decorationResolver" />
-    <property name="initialFilters" ref="decorating.initialFilters" />
-    <property name="userFilters" ref="decorating.userFilters" />
-    <property name="tidyXhtml" value="${decorating.tidyXhtml}" />
-    <property name="preventDecoratingParameter" value="x-prevent-decorating" />
-    <!--
-    <property name="postFilters">
-      <list>
-        <ref bean="system.csrfPreventionHandler" />
-      </list>
-    </property>
-    -->
+  <bean id="decorating.servletFilter" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.decorating.DecoratingServletFilter">
+        <constructor-arg name="htmlParser" ref="decorating.htmlParser" />
+        <constructor-arg name="filters" ref="decorating.initialFilters" />
+        <constructor-arg name="resolver" ref="decorating.decorationResolver" />
+        <constructor-arg name="componentResolver" ref="decorating.defaultComponentResolver" />
+        <constructor-arg name="preventDecoratingParameter" value="x-prevent-decorating" />
+        <constructor-arg name="staticHeaders"><null /></constructor-arg>
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="decorating.initialFilters"
@@ -34,6 +20,7 @@
     <property name="sourceList">
       <list>
         <ref bean="linkCheck.htmlFilter" />
+        <ref bean="decorating.ssiNodeFilter" />
       </list>
     </property>
   </bean>
@@ -103,10 +90,10 @@
   </bean>
 
   <bean id="decorating.templateManager" class="vtk.web.decorating.CollectionTemplateManager">
-    <property name="repository" ref="repository" />
-    <property name="collectionName" value="${decorating.templatesCollection}" />
-    <property name="templateFactory" ref="decorating.defaultTemplateFactory" />
-    <property name="templateResourceType" ref="htmlResourceTypeDefinition" />
+    <constructor-arg name="repository" ref="repository" />
+    <constructor-arg name="collectionName" value="${decorating.templatesCollection}" />
+    <constructor-arg name="templateFactory" ref="decorating.defaultTemplateFactory" />
+    <constructor-arg name="templateResourceType" ref="htmlResourceTypeDefinition" />
   </bean>
 
   <bean id="decorating.templateCollectionRefreshTrigger"
@@ -123,27 +110,20 @@
 
   <bean id="decorating.defaultTemplateFactory"
             class="vtk.web.decorating.DelegatingTemplateFactory">
-    <property name="templateFactoryMap">
+    <constructor-arg name="templateFactoryMap">
       <map>
-	<entry key="\.template$" value-ref="decorating.htmlParserTemplateFactory" />
+	<entry key="\.template$" value-ref="decorating.dollarSyntaxTemplateFactory" />
 	<entry key="\.html$" value-ref="decorating.dollarSyntaxTemplateFactory" />
 	<entry key="\.tmp$" value-ref="decorating.dynamicTemplateFactory" />
 	<entry key="\.tpl$" value-ref="decorating.dynamicTemplateFactory" />
       </map>
-    </property>
+    </constructor-arg>
   </bean>
 
-  <bean id="decorating.htmlParserTemplateFactory"
-            class="vtk.web.decorating.ParsedHtmlDecoratorTemplateFactory">
-    <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
-    <property name="componentParser" ref="decorating.dollarSyntaxTemplateParser" />
-  </bean>
-  
   <bean id="decorating.dollarSyntaxTemplateFactory"
             class="vtk.web.decorating.TextualDecoratorTemplateFactory">
-    <property name="parser" ref="decorating.dollarSyntaxTemplateParser" />
-    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
+    <constructor-arg name="parser" ref="decorating.dollarSyntaxTemplateParser" />
+    <constructor-arg name="componentResolver" ref="decorating.defaultComponentResolver" />
   </bean>
 
   <bean id="decorating.dollarSyntaxTemplateParser" class="vtk.web.decorating.DollarSyntaxComponentParser">
@@ -363,27 +343,16 @@
     <property name="targetObject" ref="decorating.defaultComponentResolver" />
     <property name="targetMethod" value="listComponents" />
     <property name="modelName" value="componentList" />
-    <property name="viewName" value="listDecoratorComponents" />
+    <property name="viewName" value="listDecoratorComponentsView" />
   </bean>
 
   <bean name="listDocumentComponentsHandler" class="vtk.web.display.MethodInvokingController">
     <property name="targetObject" ref="decorating.documentComponentResolver" />
     <property name="targetMethod" value="listComponents" />
     <property name="modelName" value="componentList" />
-    <property name="viewName" value="listDocumentDecoratorComponents" />
+    <property name="viewName" value="listDocumentDecoratorComponentsView" />
   </bean>
   
-
-  <bean id="listDecoratorComponentsViewResolver"
-        class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="listDecoratorComponents" value-ref="listDecoratorComponentsView" />
-        <entry key="listDocumentDecoratorComponents" value-ref="listDocumentDecoratorComponentsView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="listDecoratorComponentsView" parent="freemarkerView">
     <property name="url" value="pages/list-decorator-components.ftl" />
   </bean>

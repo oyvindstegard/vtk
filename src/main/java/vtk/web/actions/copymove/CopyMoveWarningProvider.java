@@ -30,6 +30,8 @@
  */
 package vtk.web.actions.copymove;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -47,9 +50,9 @@ import vtk.repository.search.PropertySelect;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
+import vtk.repository.search.query.AbstractAclQuery;
 import vtk.repository.search.query.AclExistsQuery;
 import vtk.repository.search.query.AclInheritedFromQuery;
-import vtk.repository.search.query.AbstractAclQuery;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
 import vtk.repository.search.query.UriPrefixQuery;
@@ -65,7 +68,7 @@ public class CopyMoveWarningProvider implements ReferenceDataProvider {
     private Searcher searcher;
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
@@ -98,18 +101,23 @@ public class CopyMoveWarningProvider implements ReferenceDataProvider {
                     Privilege.READ_PROCESSED, PrincipalFactory.ALL))) {
                 return;
             }
-            // XXX index search can be optimized to avoid iterating resourceset
-            ResultSet rs = indexAclSearch(sessionBean, token, new AclExistsQuery(), false);
-            if (rs.getSize() > 0) {
-                for (PropertySet ps : rs.getAllResults()) {
-                    Resource resource = repository.retrieve(token, ps.getURI(), false);
-                    Acl acl = resource.getAcl();
-                    if (!(acl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL) || acl.hasPrivilege(
-                            Privilege.READ_PROCESSED, PrincipalFactory.ALL))) {
-                        addWarning(model, confirmURL, sessionBean);
-                        break;
+            try {
+                // XXX index search can be optimized to avoid iterating resourceset
+                ResultSet rs = indexAclSearch(sessionBean, token, new AclExistsQuery(), false);
+                if (rs.getSize() > 0) {
+                    for (PropertySet ps : rs.getAllResults()) {
+                        Resource resource = repository.retrieve(token, ps.getURI(), false);
+                        Acl acl = resource.getAcl();
+                        if (!(acl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL) || acl.hasPrivilege(
+                                Privilege.READ_PROCESSED, PrincipalFactory.ALL))) {
+                            addWarning(model, confirmURL, sessionBean);
+                            break;
+                        }
                     }
                 }
+            }
+            catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
         }
 
@@ -167,14 +175,19 @@ public class CopyMoveWarningProvider implements ReferenceDataProvider {
         return this.searcher.execute(token, search);
     }
 
-    private Resource findNearestAcl(RequestContext requestContext, Path uri) throws Exception {
+    private Resource findNearestAcl(RequestContext requestContext, Path uri) {
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        Resource resource = repository.retrieve(token, uri, false);
-        if (resource.isInheritedAcl()) {
-            return findNearestAcl(requestContext, uri.getParent());
+        try {
+            Resource resource = repository.retrieve(token, uri, false);
+            if (resource.isInheritedAcl()) {
+                return findNearestAcl(requestContext, uri.getParent());
+            }
+            return resource;
         }
-        return resource;
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private Path findSourceParentUri(CopyMoveSessionBean sessionBean) {

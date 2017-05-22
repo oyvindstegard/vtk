@@ -30,27 +30,26 @@
  */
 package vtk.web.decorating;
 
-import org.springframework.beans.factory.annotation.Required;
+import java.util.Objects;
+import java.util.Optional;
 
 import vtk.util.io.InputSource;
 import vtk.util.io.URLInputSource;
 
 public class StaticTemplateManager extends AbstractCachingTemplateManager {
-
     private String uriPrefix;
     private String characterEncoding = "utf-8";
     
-    @Required public void setUriPrefix(String uriPrefix) {
-        this.uriPrefix = uriPrefix;
-    }
-
-    public void setCharacterEncoding(String characterEncoding) {
+    public StaticTemplateManager(TemplateFactory templateFactory, String uriPrefix, 
+            String characterEncoding) {
+        super(Objects.requireNonNull(templateFactory));
+        this.uriPrefix = Objects.requireNonNull(uriPrefix);
         this.characterEncoding = characterEncoding;
     }
 
-    protected InputSource resolve(String name) {
+    @Override
+    protected Optional<InputSource> resolve(String name) {
         String uri = this.uriPrefix + "/" + name;
-        return new URLInputSource(uri, this.characterEncoding);
+        return Optional.of(new URLInputSource(uri, this.characterEncoding));
     }
-
 }

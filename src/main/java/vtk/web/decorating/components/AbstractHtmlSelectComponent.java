@@ -38,13 +38,13 @@ import vtk.text.html.EnclosingHtmlContent;
 import vtk.text.html.HtmlContent;
 import vtk.text.html.HtmlElement;
 import vtk.text.html.HtmlPage;
+import vtk.web.decorating.DecoratorComponent;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
-import vtk.web.decorating.HtmlDecoratorComponent;
 
 
 public abstract class AbstractHtmlSelectComponent 
-    extends AbstractDecoratorComponent implements HtmlDecoratorComponent {
+    extends AbstractDecoratorComponent implements DecoratorComponent {
 
     protected static final String PARAMETER_SELECT = "select";
     protected String elementPath;
@@ -99,7 +99,7 @@ public abstract class AbstractHtmlSelectComponent
      * @return the filtered HTML content list
      */
     protected List<HtmlContent> filterElements(List<HtmlElement> elements, DecoratorRequest request) {
-        List<HtmlContent> result = new ArrayList<HtmlContent>();
+        List<HtmlContent> result = new ArrayList<>();
         result.addAll(elements);
         return result;
     }

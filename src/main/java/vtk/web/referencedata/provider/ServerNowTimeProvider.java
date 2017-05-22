@@ -10,7 +10,7 @@ import vtk.web.referencedata.ReferenceDataProvider;
 public class ServerNowTimeProvider implements ReferenceDataProvider {
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         model.put("nowTime", new Date());
     }
 }

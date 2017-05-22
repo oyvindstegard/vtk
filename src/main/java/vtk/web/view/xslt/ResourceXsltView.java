@@ -44,11 +44,11 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.jdom.transform.JDOMSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.view.AbstractView;
@@ -57,7 +57,6 @@ import vtk.repository.Resource;
 import vtk.util.repository.LocaleHelper;
 import vtk.web.InvalidModelException;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 import vtk.xml.AbstractPathBasedURIResolver;
 import vtk.xml.TransformerManager;
 
@@ -104,8 +103,7 @@ import vtk.xml.TransformerManager;
  * </ul>
  * 
  */
-public class ResourceXsltView extends AbstractView
-  implements ReferenceDataProviding, InitializingBean {
+public class ResourceXsltView extends AbstractView implements InitializingBean {
 
     private static Logger logger = LoggerFactory.getLogger(ResourceXsltView.class);
 
@@ -119,11 +117,6 @@ public class ResourceXsltView extends AbstractView
     
     private boolean includeContentLanguageHeader = false;
     
-
-    public ReferenceDataProvider[] getReferenceDataProviders() {
-        return this.referenceDataProviders;
-    }
-
     public void setReferenceDataProviders(
         ReferenceDataProvider[] referenceDataProviders) {
         this.referenceDataProviders = referenceDataProviders;
@@ -156,6 +149,12 @@ public class ResourceXsltView extends AbstractView
     protected void renderMergedOutputModel(Map model, HttpServletRequest request,
                                            HttpServletResponse response)
         throws Exception {
+        
+        if (referenceDataProviders != null) {
+            for (ReferenceDataProvider provider: referenceDataProviders) {
+                provider.referenceData(model, request);
+            }
+        }
 
         Resource resource = (Resource) model.get("resource");
         if (resource == null) {

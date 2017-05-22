@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -99,8 +101,8 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
     private Map<String, Service> serviceMap = null;
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
-        Map<String, Object> resourceDetailModel = new HashMap<String, Object>();
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
+        Map<String, Object> resourceDetailModel = new HashMap<>();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
@@ -109,46 +111,54 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
         Resource resource = null;
         try {
             resource = repository.retrieve(requestContext.getSecurityToken(), requestContext.getResourceURI(), false);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
         }
 
-        // Detect workingcopy
-        boolean hasWorkingCopy = false;
-        for (Revision rev : repository.getRevisions(token, requestContext.getResourceURI())) {
-            if (rev.getType() == Revision.Type.WORKING_COPY) {
-                hasWorkingCopy = true;
-                break;
-            }
-        }
-        resourceDetailModel.put("hasWorkingCopy", hasWorkingCopy);
 
-        // Resolve service links
-        for (Map.Entry<String, Service> entry : this.serviceMap.entrySet()) {
-            String key = entry.getKey();
-            Service service = entry.getValue();
-
-            String url = null;
-            try {
-                if (resource != null) {
-                    url = service.constructLink(resource, requestContext.getPrincipal());
+        try {
+            // Detect workingcopy
+            boolean hasWorkingCopy = false;
+            for (Revision rev : repository.getRevisions(token, requestContext.getResourceURI())) {
+                if (rev.getType() == Revision.Type.WORKING_COPY) {
+                    hasWorkingCopy = true;
+                    break;
                 }
-            } catch (ServiceUnlinkableException e) {
-                // Ignore
             }
-            resourceDetailModel.put(key, url);
+            resourceDetailModel.put("hasWorkingCopy", hasWorkingCopy);
+
+            // Resolve service links
+            for (Map.Entry<String, Service> entry : this.serviceMap.entrySet()) {
+                String key = entry.getKey();
+                Service service = entry.getValue();
+
+                String url = null;
+                try {
+                    if (resource != null) {
+                        url = service.constructLink(resource, requestContext.getPrincipal());
+                    }
+                } catch (ServiceUnlinkableException e) {
+                    // Ignore
+                }
+                resourceDetailModel.put(key, url);
+            }
+
+            // Resolve inheritable props inheritance
+            if (resource != null) {
+                Map<String,Path> inheritanceMap = resolvePropertyInheritance(resource);
+                resourceDetailModel.put("propertyInheritanceMap", inheritanceMap);
+            }
+            else {
+                resourceDetailModel.put("propertyInheritanceMap", Collections.EMPTY_MAP);
+            }
+
+            model.put("resourceDetail", resourceDetailModel);
         }
-        
-        // Resolve inheritable props inheritance
-        if (resource != null) {
-            Map<String,Path> inheritanceMap = resolvePropertyInheritance(resource);
-            resourceDetailModel.put("propertyInheritanceMap", inheritanceMap);
-        } else {
-            resourceDetailModel.put("propertyInheritanceMap", Collections.EMPTY_MAP);
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        
-        model.put("resourceDetail", resourceDetailModel);
     }
-    
+
     /**
      * Resolve from <em>where</em> each inherited property is inherited for resource.
      * 
@@ -163,8 +173,8 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
             // which we don't provide as "source" here.
             return Collections.emptyMap();
         }
-        
-        final List<PropertyTypeDefinition> inheritedPropDefs = new ArrayList<PropertyTypeDefinition>();
+
+        final List<PropertyTypeDefinition> inheritedPropDefs = new ArrayList<>();
         for (Property prop: resource) {
             if (prop.isInherited()) {
                 inheritedPropDefs.add(prop.getDefinition());
@@ -173,7 +183,7 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
-        final Map<String, Path> propInheritanceMap = new HashMap<String, Path>();
+        final Map<String, Path> propInheritanceMap = new HashMap<>();
         RepositoryTraversal traversal = requestContext.rootTraversal(token, resource.getURI().getParent());
         traversal.traverse(new TraversalCallback() {
             @Override
@@ -187,11 +197,11 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
                         } else {
                             propInheritanceMap.put(def.getNamespace().getPrefix() + ":" + def.getName(), resource.getURI());
                         }
-                        
+
                         it.remove();
                     }
                 }
-                
+
                 return !inheritedPropDefs.isEmpty();
             }
             @Override

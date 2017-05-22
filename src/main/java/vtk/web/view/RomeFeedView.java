@@ -44,12 +44,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.View;
-import vtk.repository.Resource;
-import vtk.security.Principal;
-import vtk.web.RequestContext;
-import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
-import vtk.web.service.Service;
 
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndEntryImpl;
@@ -57,6 +51,12 @@ import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.feed.synd.SyndFeedImpl;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedOutput;
+
+import vtk.repository.Resource;
+import vtk.security.Principal;
+import vtk.web.RequestContext;
+import vtk.web.referencedata.ReferenceDataProvider;
+import vtk.web.service.Service;
 
 /**
  * This view renders a feed based on a object in the model of type {@link java.util.Map} with key
@@ -102,7 +102,7 @@ import com.sun.syndication.io.SyndFeedOutput;
  * </ul>
  * 
  */
-public class RomeFeedView implements View, ReferenceDataProviding {
+public class RomeFeedView implements View {
 
     private static final int RSS_ENTRY_TITLE_MAX_LENGTH = 99;
     
@@ -127,6 +127,12 @@ public class RomeFeedView implements View, ReferenceDataProviding {
     @SuppressWarnings("rawtypes")
     public void render(Map model, HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        
+        if (referenceDataProviders != null) {
+            for (ReferenceDataProvider provider: referenceDataProviders) {
+                provider.referenceData(model, request);
+            }
+        }
 
         Map feedModel = (Map) model.get("feedModel");
         
@@ -150,7 +156,7 @@ public class RomeFeedView implements View, ReferenceDataProviding {
         // Created and add list of entries
         // (Each entry is set with a title, link, published date and a description)
         // ( -> Description can be plain text or HTML)
-        List<SyndEntry> feedEntries = new ArrayList<SyndEntry>();
+        List<SyndEntry> feedEntries = new ArrayList<>();
         Principal principal = RequestContext.getRequestContext().getPrincipal();
 
         for (int i = 0; i < resources.length; i++) {
