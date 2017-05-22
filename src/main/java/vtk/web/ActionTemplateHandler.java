@@ -203,14 +203,12 @@ public class ActionTemplateHandler implements HttpRequestHandler {
               for (String key: model.keySet()) {
                   ctx.define(key, model.get(key), true);
               }
-              // VTK-5092 - tmp fix
               RequestContext rc = RequestContext.getRequestContext();
               Principal p = rc.getPrincipal();
               ctx.define("userName", p.getName(), true);
               ctx.define("userDescription", p.getDescription(), true);
               ctx.define("userUrl", p.getURL(), true);
               ctx.define("locale", LocaleHelper.getPreferredLang(locale), true);
-              // --------
               
               boolean renderResult = nodeList.render(ctx, response.getWriter());
               response.flushBuffer();
