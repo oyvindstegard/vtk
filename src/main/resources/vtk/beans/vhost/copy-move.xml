@@ -205,7 +205,7 @@
 
   <bean id="moveResourceHandler" 
     class="vtk.web.actions.copymove.CopyMoveController">
-    <property name="viewName" value="manageCollectionListing" />
+    <property name="viewName" value="manageCollectionListingView" />
   </bean>
 
   <bean id="copyMove.warningHandler" 
@@ -215,7 +215,7 @@
 
   <bean id="copyHandler" 
     class="vtk.web.actions.copymove.CopyMoveController">
-    <property name="viewName" value="manageCollectionListing" />
+    <property name="viewName" value="manageCollectionListingView" />
   </bean>
   
   <bean id="copyBackupHandler" 
@@ -225,11 +225,11 @@
   
   <bean id="moveHandler" 
     class="vtk.web.actions.copymove.CopyMoveController">
-    <property name="viewName" value="manageCollectionListing" />
+    <property name="viewName" value="manageCollectionListingView" />
   </bean>
 
   <bean id="copyToSelectedFolderHandler" class="vtk.web.actions.copymove.CopyMoveToSelectedFolderController">
-    <property name="viewName" value="manageCollectionListing" />
+    <property name="viewName" value="manageCollectionListingView" />
     <property name="copyHelper" ref="copyHelperThenUnpublish" />
   </bean>
   
@@ -254,16 +254,8 @@
   <bean id="copyHelper" class="vtk.web.actions.copymove.CopyHelper" />
 
   <bean id="moveToSelectedFolderHandler" class="vtk.web.actions.copymove.CopyMoveToSelectedFolderController">
-    <property name="viewName" value="manageCollectionListing" />
+    <property name="viewName" value="manageCollectionListingView" />
   </bean>
-
-  <bean id="copyMove.viewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="copyMove.warningView" value-ref="copyMove.warningView" />
-     </map>
-    </property>
-  </bean> 
 
   <bean id="copyMove.warningView" parent="freemarkerView">
     <property name="url" value="pages/copy-move-warning.ftl" />

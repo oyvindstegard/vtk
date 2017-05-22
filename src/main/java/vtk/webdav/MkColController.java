@@ -30,18 +30,15 @@
  */
 package vtk.webdav;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
 import vtk.repository.ReadOnlyException;
 import vtk.repository.Repository;
-import vtk.repository.Resource;
 import vtk.repository.ResourceLockedException;
 import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
@@ -55,76 +52,66 @@ public class MkColController extends AbstractWebdavController {
 
     /**
      * Performs the WebDAV 'MKCOL' method.
-     *
+     * @throws IOException 
      */
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    @Override
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
          
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
 
-        Map<String, Object> model = new HashMap<String, Object>();
-
         try {
             String contentLength = request.getHeader("Content-Length");
             if (contentLength != null && !contentLength.equals("0")) {
-                model.put(WebdavConstants.WEBDAVMODEL_ERROR,
-                          new WebdavUnsupportedMediaException());
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE));
-                return new ModelAndView("MKCOL", model);
+                responseBuilder(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE)
+                    .header("Content-Type", "text/plain;charset=utf-8")
+                    .message("Header 'Content-Length' other than 0 not supported")
+                    .writeTo(response);
+                return;
             }
 
             if (repository.exists(token, uri)) {
-                model.put(WebdavConstants.WEBDAVMODEL_ERROR,
-                          new WebdavMethodNotAllowedException());
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                          new Integer(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
-                return new ModelAndView("MKCOL", model);
+                responseBuilder(HttpServletResponse.SC_METHOD_NOT_ALLOWED)
+                    .header("Content-Type", "text/plain;charset=utf-8")
+                    .message("Resource " + uri + " already exists")
+                    .writeTo(response);
             }
          
             if (!allowedResourceName(uri)) {
-                throw new IllegalOperationException("Rejecting resource creation: '"
-                                                    + uri + "'");
+                responseBuilder(HttpServletResponse.SC_METHOD_NOT_ALLOWED)
+                    .header("Content-Type", "text/plain;charset=utf-8")
+                    .message("Rejected: " + uri)
+                    .writeTo(response);
             }
             repository.createCollection(token, uri);
-
-            Resource resource = repository.retrieve(token, uri, false);
-            model.put(WebdavConstants.WEBDAVMODEL_CREATED_RESOURCE, resource);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_CREATED));
-            model.put(WebdavConstants.WEBDAVMODEL_ETAG, resource.getEtag());
-
-        } catch (IllegalOperationException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught IllegalOperationException for URI "
-                             + uri + ": " + e.getMessage());
-            }            
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_BAD_REQUEST));
-
-        } catch (ReadOnlyException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ReadOnlyException for URI " + uri);
-            }            
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_FORBIDDEN));
-
-        } catch (ResourceLockedException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ResourceLockedException for URI " + uri);
-            }            
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpUtil.SC_LOCKED));
+            
+            responseBuilder(HttpServletResponse.SC_CREATED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Created: " + uri)
+                .writeTo(response);
 
         }
-        return new ModelAndView("MKCOL", model);
+        catch (IllegalOperationException e) {
+            responseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Illegal operation: " + uri)
+                .writeTo(response);
+        }
+        catch (ReadOnlyException e) {
+            responseBuilder(HttpServletResponse.SC_FORBIDDEN)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Read-only: " + uri)
+                .writeTo(response);
 
+        }
+        catch (ResourceLockedException e) {
+            responseBuilder(HttpUtil.SC_LOCKED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Locked: " + uri)
+                .writeTo(response);
+        }
     }
    
    

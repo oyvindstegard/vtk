@@ -31,15 +31,7 @@
 
   <bean id="markdown.previewHandler" parent="abstractPreviewIframe">
     <property name="service" ref="displayResourceService" />
-    <property name="viewName" value="previewAdminIframe" />
-  </bean>
-
-  <bean id="markdown.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="markdown.view" value-ref="markdown.view" />
-      </map>
-    </property>
+    <property name="viewName" value="previewAdminIframeView" />
   </bean>
 
   <bean id="markdown.view" class="vtk.web.display.DisplayMarkdownView" />

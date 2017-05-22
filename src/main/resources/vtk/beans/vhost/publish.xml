@@ -38,7 +38,7 @@
         </bean>
       </list>
     </property>
-    <property name="handler" ref="publish.globalConfirmUnpublishHandler" />
+    <property name="handler" ref="publish.globalConfirmPublishHandler" />
     <property name="attributes">
       <map>
         <entry key="resourceMenuRightOrder">
@@ -53,15 +53,14 @@
   </bean>
 
   <bean id="publish.globalConfirmPublishHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="admin" />
-    <property name="publishService" ref="publish.globalPublishResourceConfirmedService" />
+    <constructor-arg name="viewName" value="aboutView" />
+    <constructor-arg name="publishService" ref="publish.globalPublishResourceConfirmedService" />
+    <constructor-arg name="unpublishService" ref="publish.globalUnpublishResourceConfirmedService" />
   </bean>
 
-  <bean id="publish.globalConfirmUnpublishHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="admin" />
-    <property name="publishService" ref="publish.globalUnpublishResourceConfirmedService" />
+  <bean parent="resourceMenuRight.referenceDataProvidersBuilder">
+    <property name="arguments" ref="publish.globalConfirmPublishHandler" />
   </bean>
-
 
   <bean id="publish.publishResourceService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
@@ -95,7 +94,7 @@
         </bean>
       </list>
     </property>
-    <property name="handler" ref="confirmUnpublishResourceHandler" />
+    <property name="handler" ref="confirmPublishResourceHandler" />
     <property name="attributes">
       <map>
         <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
@@ -104,21 +103,9 @@
   </bean>
 
   <bean id="confirmPublishResourceHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="publish.confirm" />
-    <property name="publishService" ref="publish.publishResourceConfirmedService" />
-  </bean>
-
-  <bean id="confirmUnpublishResourceHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="publish.confirm" />
-    <property name="publishService" ref="publish.unpublishResourceConfirmedService" />
-  </bean>
-
-  <bean id="publish.viewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="publish.confirm" value-ref="publish.confirmView" />
-      </map>
-    </property>
+    <constructor-arg name="viewName" value="publish.confirmView" />
+    <constructor-arg name="publishService" ref="publish.publishResourceConfirmedService" />
+    <constructor-arg name="unpublishService" ref="publish.unpublishResourceConfirmedService" />
   </bean>
 
   <bean id="publish.confirmView" parent="freemarkerView">
@@ -201,7 +188,7 @@
   </bean>
 
   <bean id="globalPublishResourceHandler" class="vtk.web.actions.publish.PublishResourceController">
-    <property name="successView" value="redirectToManage" />
+    <property name="successView" value="redirectToManageView" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>
@@ -251,7 +238,7 @@
   </bean>
 
   <bean id="publishResourcesHandler" class="vtk.web.actions.publish.PublishResourcesController">
-    <property name="viewName" value="manageCollectionListing" />
+    <property name="viewName" value="manageCollectionListingView" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>
@@ -317,14 +304,6 @@
 
   <bean id="displayUnpublishedPageHandler" class="vtk.web.display.file.DisplayResourceController">
     <property name="viewName" value="displayUnpublishedMessage.view" />
-  </bean>
-
-  <bean id="displayUnpublishedMessage.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="displayUnpublishedMessage.view" value-ref="displayUnpublishedMessage.view" />
-      </map>
-    </property>
   </bean>
 
   <bean id="displayUnpublishedMessage.view" parent="freemarkerView">

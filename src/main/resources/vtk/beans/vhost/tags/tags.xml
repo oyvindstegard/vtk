@@ -45,7 +45,7 @@
   </bean>
 
   <bean id="tags.handler" class="vtk.web.display.tags.TagsController">
-    <property name="viewName" value="tags.tags" />
+    <property name="viewName" value="tags.tagsView" />
     <property name="defaultPageLimit" value="${collectionListing.defaultPageLimit}" />
     <property name="searchComponent" ref="tags.searchComponent" />
     <property name="tagElementsProvider" ref="tags.tagElementsProvider" />
@@ -148,22 +148,6 @@
     <property name="sortOrderMapping">
       <map>
         <entry key="title" value-ref="SORT_ORDER.ASC" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="tags.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="tags.feedView" value-ref="tags.feedView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="tags.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="tags.tags" value-ref="tags.tagsView" />
       </map>
     </property>
   </bean>

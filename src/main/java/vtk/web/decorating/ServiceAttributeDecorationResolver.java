@@ -33,27 +33,26 @@ package vtk.web.decorating;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Required;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 
 public class ServiceAttributeDecorationResolver implements DecorationResolver {
-
     private String attributeName;
     private TemplateManager templateManager;
-
-    @Required public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
-    }
-
-    @Required public void setTemplateManager(TemplateManager templateManager) {
-        this.templateManager = templateManager;
-    }
     
+    public ServiceAttributeDecorationResolver(String attributeName, TemplateManager templateManager) {
+        this.attributeName = Objects.
+                requireNonNull(attributeName, "Attribute name cannot be null");
+        this.templateManager = Objects.
+                requireNonNull(templateManager, "Template manager cannot be null");
+    }
+
     public DecorationDescriptor resolve(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
         RequestContext requestContext = RequestContext.getRequestContext();
@@ -72,14 +71,14 @@ public class ServiceAttributeDecorationResolver implements DecorationResolver {
             return null;
         }
         
-        final Template t = this.templateManager.getTemplate(templateName);
+        final Optional<Template> t = this.templateManager.getTemplate(templateName);
         return new DecorationDescriptor() {
             public boolean decorate() {
-                return t != null;
+                return t.isPresent();
             }
 
             public List<Template> getTemplates() {
-                return Collections.singletonList(t);
+                return Collections.singletonList(t.get());
             }
 
             public boolean parse() {
@@ -94,10 +93,10 @@ public class ServiceAttributeDecorationResolver implements DecorationResolver {
                 return Collections.emptyMap();
             }
             
+            @Override
             public String toString() {
                 return this.getClass().getName() + ": [template: " + t + "]";
             }
-
         };
     }
 }

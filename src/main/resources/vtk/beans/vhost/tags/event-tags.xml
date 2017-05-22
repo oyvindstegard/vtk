@@ -31,7 +31,7 @@
 
   <bean id="tags.eventListing.handler" class="vtk.web.display.collection.event.TagsEventListingController"
     parent="eventListing.handler">
-    <property name="viewName" value="tags.tags" />
+    <property name="viewName" value="tags.tagsView" />
     <property name="tagsHelper" ref="tagsHelper" />
     <property name="searcher" ref="tags.eventListing.eventListingSearcher" />
     <property name="alternativeRepresentations">
@@ -94,14 +94,6 @@
   <bean id="tags.eventListing.feedHandler" parent="eventListing.feedHandler">
     <property name="searcher" ref="tags.eventListing.eventListingSearcher" />
     <property name="viewName" value="tags.eventListing.feedView" />
-  </bean>
-
-  <bean id="tags.eventListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="tags.eventListing.feedView" value-ref="tags.eventListing.feedView" />
-      </map>
-    </property>
   </bean>
 
   <bean id="tags.eventListing.feedView" parent="eventListing.feedView">

@@ -34,17 +34,9 @@
 
 
   <bean id="versioning.displayDiffHandler" class="vtk.web.display.diff.DisplayRevisionsDifferenceController">
-    <property name="viewName" value="versioning.displayDiff" />
+    <property name="viewName" value="versioning.displayDiffView" />
     <property name="principalFactory" ref="principalFactory" />
     <property name="viewService" ref="decorating.viewUnpublishedService" />
-  </bean>
-
-  <bean id="versioning.displayDiffViewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="versioning.displayDiff" value-ref="versioning.displayDiffView" />
-      </map>
-    </property>
   </bean>
 
   <bean id="versioning.displayDiffView" parent="freemarkerView">
@@ -116,7 +108,7 @@
   </bean>
 
   <bean id="versioning.displayRevisionsHandler" class="vtk.web.actions.versioning.DisplayRevisionsController">
-    <property name="viewName" value="versioning.displayRevisions" />
+    <property name="viewName" value="versioning.displayRevisionsView" />
     <property name="viewService" ref="decorating.viewUnpublishedService" />
     <property name="viewDiffService" ref="versioning.displayDiffService" />
     <property name="deleteService" ref="versioning.deleteRevisionService" />
@@ -217,15 +209,6 @@
   <bean id="versioning.restoreRevisionHandler" class="vtk.web.actions.versioning.RestoreRevisionController">
     <property name="redirectService" ref="versioning.displayRevisionsService" />
     <property name="deleteWorkingCopy" value="true" />
-  </bean>
-
-
-  <bean id="versioning.viewResolver" parent="adminViewResolver">
-    <property name="views">
-      <map>
-        <entry key="versioning.displayRevisions" value-ref="versioning.displayRevisionsView" />
-      </map>
-    </property>
   </bean>
 
   <bean id="versioning.displayActionParameter" class="vtk.web.service.RequestParameterAssertion">

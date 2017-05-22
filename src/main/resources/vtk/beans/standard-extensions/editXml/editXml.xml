@@ -80,28 +80,6 @@
   </bean>
 
 
-  <bean id="xmledit.ViewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="edit" value-ref="editView" />
-      </map>
-    </property>
-    <!--property name="viewWrapper" ref="editViewWrapper" /-->
-  </bean>
-
-  <!-- Add the raw query URL provider to the reference data providers
-       for editView (used for debugging XML searches): -->
-<!--   <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean"> -->
-<!--     <property name="targetObject" ref="editView" /> -->
-<!--     <property name="targetMethod" value="addReferenceDataProvider" /> -->
-<!--     <property name="arguments"> -->
-<!--       <list> -->
-<!--         <ref bean="rawXmlQueryURLProvider" /> -->
-<!--       </list> -->
-<!--     </property> -->
-<!--   </bean> -->
-
-
   <!-- XML edit view -->
 
   <bean id="editView" class="vtk.web.view.xslt.ResourceXsltView">

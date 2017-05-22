@@ -60,15 +60,6 @@
     </property>
   </bean>
 
-  <bean id="actionsListing.viewResolver" parent="manage.plainViewResolver">
-    <property name="views">
-      <map>
-        <entry key="actionsListing.listingView" value-ref="actionsListing.listingView" />
-      </map>
-    </property>
-  </bean>
-
-
   <bean id="actionsListing.listingView" parent="freemarkerView">
     <property name="url" value="pages/actions-listing.ftl" />
     <property name="referenceDataProviders">

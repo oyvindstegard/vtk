@@ -46,6 +46,6 @@ public interface ReferenceDataProvider {
      * renderer.
      * @param model the model Map to populate with reference data.
      */
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception;
+    public void referenceData(Map<String, Object> model, HttpServletRequest request);
     
 }

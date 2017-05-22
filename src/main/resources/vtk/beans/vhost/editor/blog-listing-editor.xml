@@ -17,7 +17,7 @@
 
   <bean id="editor.blogListingEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.blogListingResourceManager" />
-    <property name="successView" value="redirectToManage" />
+    <property name="successView" value="redirectToManageView" />
   </bean>
 
   <bean id="editor.blogListingResourceManager" class="vtk.edit.editor.ResourceWrapperManager">

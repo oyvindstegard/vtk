@@ -262,16 +262,6 @@
     <property name="parameterValue" value="edit" />
   </bean>
 
-  <bean id="editor.wrappingViewResolver" parent="adminViewResolver">
-    <property name="views">
-      <map>
-        <entry key="editor.editView" value-ref="editor.editView" />
-        <entry key="editor.collectionEditView" value-ref="editor.collectionEditView" />
-        <entry key="editor.ooXmlEditView" value-ref="editor.ooXmlEditView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="editor.editView" parent="freemarkerView">
     <property name="url" value="editor/editor.ftl" />
     <property name="attributesMap">
@@ -385,7 +375,7 @@
   <bean id="editor.unstructuredXhtmlEditHandler" class="vtk.edit.editor.UnstructuredXHtmlEditController">
     <property name="resourceManager" ref="editor.unstructuredXhtmlResourceManager" />
     <property name="formView" value="editor.editView" />
-    <property name="successView" value="redirectToManage" />
+    <property name="successView" value="redirectToManageView" />
     <property name="defaultLocale" value="${view.defaultLocale}" />
   </bean>
 
@@ -400,13 +390,13 @@
 
   <bean id="editor.editCollectionHandler" parent="editor.abstractEditHandler">
     <property name="resourceManager" ref="editor.collectionResourceManager" />
-    <property name="successView" value="redirectToPreviewCollection" />
+    <property name="successView" value="redirectToPreviewCollectionView" />
   </bean>
 
   <bean id="editor.imageEditHandler" class="vtk.edit.editor.ImageEditController">
     <property name="resourceManager" ref="editor.imageResourceManager" />
     <property name="formView" value="editor.editView" />
-    <property name="successView" value="redirectToManage" />
+    <property name="successView" value="redirectToManageView" />
     <property name="loadImageService" ref="editor.loadImageService" />
     <property name="copyHelper" ref="copyHelperThenStore" />
     <property name="editService" ref="editor.imageEditService" />
@@ -420,47 +410,47 @@
 
   <bean id="editor.videoEditHandler" parent="editor.abstractEditHandler">
     <property name="resourceManager" ref="editor.videoResourceManager" />
-    <property name="successView" value="redirectToManage" />
+    <property name="successView" value="redirectToManageView" />
   </bean>
 
   <bean id="editor.audioEditHandler" parent="editor.abstractEditHandler">
     <property name="resourceManager" ref="editor.audioResourceManager" />
-    <property name="successView" value="redirectToManage" />
+    <property name="successView" value="redirectToManageView" />
   </bean>
 
   <bean id="editor.personEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.personResourceManager" />
-    <property name="successView" value="redirectToPreviewCollection" />
+    <property name="successView" value="redirectToPreviewCollectionView" />
   </bean>
 
   <bean id="editor.projectEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.projectResourceManager" />
-    <property name="successView" value="redirectToPreviewCollection" />
+    <property name="successView" value="redirectToPreviewCollectionView" />
   </bean>
 
   <bean id="editor.researchGroupEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.researchGroupResourceManager" />
-    <property name="successView" value="redirectToPreviewCollection" />
+    <property name="successView" value="redirectToPreviewCollectionView" />
   </bean>
 
   <bean id="editor.imageListingEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.imageListingResourceManager" />
-    <property name="successView" value="redirectToPreviewCollection" />
+    <property name="successView" value="redirectToPreviewCollectionView" />
   </bean>
 
   <bean id="editor.messageListingEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.messageListingResourceManager" />
-    <property name="successView" value="redirectToPreviewCollection" />
+    <property name="successView" value="redirectToPreviewCollectionView" />
   </bean>
 
   <bean id="editor.audioVideoListingEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.audioVideoListingResourceManager" />
-    <property name="successView" value="redirectToPreviewCollection" />
+    <property name="successView" value="redirectToPreviewCollectionView" />
   </bean>
 
   <bean id="editor.articleListingEditHandler" parent="editor.editCollectionHandler">
     <property name="resourceManager" ref="editor.articleListingResourceManager" />
-    <property name="successView" value="redirectToPreviewCollection" />
+    <property name="successView" value="redirectToPreviewCollectionView" />
   </bean>
 
   <bean id="editor.folderListingEditHandler" parent="editor.editCollectionHandler">
@@ -480,7 +470,7 @@
 
   <bean id="editor.editHandler" parent="editor.abstractEditHandler">
     <property name="resourceManager" ref="resourceManager" />
-    <property name="successView" value="redirectToManage" />
+    <property name="successView" value="redirectToManageView" />
     <property name="propertyEditPreprocessors">
       <map>
         <entry key-ref="tagsPropDef" value-ref="editor.propertyEditPreprocessors" />

@@ -34,7 +34,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 
 public abstract class DynamicPropertyValueProvider implements ReferenceDataProvider {
@@ -44,7 +46,7 @@ public abstract class DynamicPropertyValueProvider implements ReferenceDataProvi
     private static final String DYNAMIC_VALUES = "dynamicValues";
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         Map<String, Map<String, Object>> allDynamicValues;
 
         if (model.containsKey(DYNAMIC_VALUES)) {

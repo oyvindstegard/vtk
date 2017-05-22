@@ -174,22 +174,6 @@
     </property>
   </bean>
 
-  <bean id="articleListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="articleListing.feedView" value-ref="articleListing.feedView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="articleListing.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="articleListing.view" value-ref="articleListing.view" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="articleListing.view" parent="collectionListing.view" />
 
 </beans>

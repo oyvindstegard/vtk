@@ -31,6 +31,7 @@
 package vtk.web.api;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
@@ -38,16 +39,32 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-class ApiResponseBuilder {
+import org.eclipse.jetty.util.IO;
+
+public class ApiResponseBuilder {
     private int status;
     private Map<String, String> headers = new HashMap<>();
-    private String message = null;
+    private String stringMessage = null;
+    private InputStream streamMessage = null;
     
     public ApiResponseBuilder(int status) 
         { this.status = status; }
     
-    public ApiResponseBuilder message(String message) 
-        { this.message = message; return this; }
+    public ApiResponseBuilder message(String message) {
+        if (streamMessage != null) {
+            throw new IllegalStateException("message() has already been called");
+        }
+        this.stringMessage = message;
+        return this;
+    }
+    
+    public ApiResponseBuilder message(InputStream message) {
+        if (message != null) {
+            throw new IllegalStateException("message() has already been called");
+        }
+        this.streamMessage = message;
+        return this;
+    }
     
     public ApiResponseBuilder header(String name, String value) 
         { this.headers.put(name, value); return this; }
@@ -58,9 +75,12 @@ class ApiResponseBuilder {
             for (String name: headers.keySet()) {
                 response.setHeader(name, headers.get(name));
             }
-            if (message != null) {
+            if (stringMessage != null) {
                 PrintWriter writer = response.getWriter();
-                writer.write(message);
+                writer.write(stringMessage);
+            }
+            else if (streamMessage != null) {
+                IO.copy(streamMessage, response.getOutputStream());
             }
             response.flushBuffer();
         }

@@ -63,7 +63,7 @@ import vtk.web.referencedata.ReferenceDataProvider;
  */
 public class StaticModelDataProvider implements ReferenceDataProvider {
 
-    private final Map<String, Object> staticModelData = new HashMap<String, Object>();
+    private final Map<String, Object> staticModelData = new HashMap<>();
     
     private boolean mergeModelData = false;
     
@@ -150,8 +150,7 @@ public class StaticModelDataProvider implements ReferenceDataProvider {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-            throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         for (String key: this.staticModelData.keySet()) {
             if (!model.containsKey(key)) {
@@ -166,6 +165,7 @@ public class StaticModelDataProvider implements ReferenceDataProvider {
         }
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer(this.getClass().getName());
         sb.append(" [ ");

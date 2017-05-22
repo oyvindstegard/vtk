@@ -161,10 +161,12 @@
     <property name="messageKey" value="tabs.editWorkingCopy" />
   </bean>
 
-  <bean id="structuredResources.displayHandler" class="vtk.resourcemanagement.view.StructuredResourceDisplayController"
+  <bean id="structuredResources.displayHandler" 
+        class="vtk.resourcemanagement.view.StructuredResourceDisplayController"
     depends-on="structuredResource.parser">
     <property name="viewName" value="structuredResources.displayView" />
     <property name="resourceManager" ref="structuredResources.resourceManager" />
+    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
     <property name="htmlParser" ref="decorating.htmlParser" />
     <property name="templateManager" ref="structuredResources.templateManager" />
     <property name="resourceModelKey" value="structured-resource" />
@@ -196,8 +198,8 @@
   </bean>
 
   <bean id="structuredResources.templateManager" class="vtk.resourcemanagement.view.DecoratorTemplateManager">
-    <property name="templateFactory" ref="structuredResources.decoratorTemplateFactory" />
-    <property name="resourceManager" ref="structuredResources.resourceManager" />
+    <constructor-arg name="templateFactory" ref="structuredResources.decoratorTemplateFactory" />
+    <constructor-arg name="resourceManager" ref="structuredResources.resourceManager" />
   </bean>
 
   <bean id="structuredResources.decoratorTemplateFactory" class="vtk.web.decorating.SimpleDynamicDecoratorTemplateFactory">
@@ -503,46 +505,10 @@
     <property name="safeHtmlFilter" ref="resourceManager.htmlPropsFilter" />
     <property name="resourceManager" ref="structuredResources.resourceManager" />
     <property name="formView" value="structuredResources.editView" />
-    <property name="successView" value="redirectToManage" />
+    <property name="successView" value="redirectToManageView" />
     <property name="listComponentsService" ref="jsonDocumentsComponentsService" />
     <property name="defaultLocale" value="${view.defaultLocale}" />
   </bean>
-
-  <bean id="structuredResources.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="structuredResources.displayView" value-ref="structuredResources.displayView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="structuredResources.wrappingViewResolver" parent="adminViewResolver">
-    <property name="views">
-      <map>
-        <entry key="structuredResources.editView" value-ref="structuredResources.editView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="structuredResources.displayView" class="vtk.web.decorating.TemplateView">
-    <property name="templateRef" value="structured-resources.template" />
-    <property name="templateManager" ref="structuredResources.displayView.templateManager" />
-  </bean>
-
-  <bean id="structuredResources.displayView.templateManager"
-        class="vtk.web.decorating.StaticTemplateManager">
-    <property name="templateFactory" ref="structuredResources.displayView.decoratorTemplateFactory" />
-    <property name="uriPrefix" value="${article.decoratorTemplatesLocation}" />
-    <property name="characterEncoding" value="utf-8" />
-  </bean>
-
-  <bean id="structuredResources.displayView.decoratorTemplateFactory"
-        class="vtk.web.decorating.ParsedHtmlDecoratorTemplateFactory">
-    <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="componentResolver" ref="decorating.defaultComponentResolver" />
-    <property name="componentParser" ref="decorating.dollarSyntaxTemplateParser" />
-  </bean>
-
 
   <bean id="structuredResources.editView" parent="freemarkerView">
     <property name="url" value="structured-resources/editor.ftl" />

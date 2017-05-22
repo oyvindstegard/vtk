@@ -249,23 +249,6 @@
     </constructor-arg>
   </bean>
 
-  <bean id="eventListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="eventListing.feedView" value-ref="eventListing.feedView" />
-      </map>
-    </property>
-  </bean>
-
-
-  <bean id="eventListing.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="eventListing.view" value-ref="eventListing.view" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="eventListing.view" parent="collectionListing.view">
     <property name="attributesMap">
       <map>

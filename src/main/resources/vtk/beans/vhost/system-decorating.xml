@@ -3,30 +3,23 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-
-  <bean id="system.decoratingViewResolver" 
-        class="vtk.web.decorating.MappingViewResolver"
-        abstract="true">
-    <property name="viewWrapper" ref="system.viewWrapper" />
-  </bean>
-
-  <bean id="system.viewWrapper" 
-        class="vtk.web.decorating.DecoratingViewWrapper">
-    <property name="staticHeaders">
-      <map>
-        <entry key="Cache-Control" value="no-cache, must-revalidate" />
-        <entry key="Expires" value="0" />
-      </map>
-    </property>
-    <property name="preventDecoratingParameter" value="x-prevent-decorating" />
-    <property name="decorators">
-      <list>
-        <ref bean="system.templateDecorator" />
-        <!--
-            <ref bean="system.formTokenDecorator" />
-        -->
-      </list>
-    </property>
+  <bean id="system.decoratingFilter" class="vtk.web.servlet.DefaultFilterFactory">
+    <constructor-arg name="filter">
+      <bean class="vtk.web.decorating.DecoratingServletFilter">
+        <constructor-arg name="htmlParser" ref="decorating.htmlParser" />
+        <constructor-arg name="filters"><list /></constructor-arg>
+        <constructor-arg name="resolver" ref="system.decorationResolver" />
+        <constructor-arg name="componentResolver" ref="system.decoratorComponentResolver" />
+        <constructor-arg name="preventDecoratingParameter" value="x-prevent-decorating" />
+        
+        <constructor-arg name="staticHeaders">
+          <map>
+            <entry key="Cache-Control" value="no-cache, must-revalidate" />
+            <entry key="Expires" value="0" />
+          </map>
+        </constructor-arg>
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="system.csrfPreventionHandler" class="vtk.web.servlet.DefaultFilterFactory">
@@ -39,26 +32,10 @@
   </bean>
 
 
-  <bean id="system.templateDecorator"
-        class="vtk.web.decorating.TemplateDecorator">
-    <property name="htmlParser" ref="decorating.htmlParser" />
-    <property name="decorationResolver" ref="system.decorationResolver" />
-    <!--property name="parseFilters" ref="decorating.userFilters" /-->
-    <property name="postFilters">
-      <list>
-      <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="targetObject" ref="system.csrfPreventionHandler" />
-        <property name="targetMethod" value="filter" />
-      </bean>
-      </list>
-    </property>
-    <property name="tidyXhtml" value="false" />
-  </bean>
-
   <bean id="system.decorationResolver"
         class="vtk.web.decorating.ServiceAttributeDecorationResolver">
-    <property name="attributeName" ref="system.decoratorTemplateAttribute" />
-    <property name="templateManager" ref="system.decoratorTemplateManager" />
+    <constructor-arg name="attributeName" ref="system.decoratorTemplateAttribute" />
+    <constructor-arg name="templateManager" ref="system.decoratorTemplateManager" />
   </bean>
 
   <bean id="system.decoratorTemplateAttribute" class="java.lang.String">
@@ -68,23 +45,23 @@
 
   <bean id="system.decoratorTemplateManager"
         class="vtk.web.decorating.StaticTemplateManager">
-    <property name="templateFactory" ref="system.decoratorTemplateFactory" />
-    <property name="uriPrefix" value="${manage.decoratorTemplatesLocation}" />
-    <property name="characterEncoding" value="utf-8" />
+    <constructor-arg name="templateFactory" ref="system.decoratorTemplateFactory" />
+    <constructor-arg name="uriPrefix" value="${manage.decoratorTemplatesLocation}" />
+    <constructor-arg name="characterEncoding" value="utf-8" />
   </bean>
 
   <bean id="system.decoratorTemplateFactory"
         class="vtk.web.decorating.TextualDecoratorTemplateFactory">
-    <property name="parser" ref="system.decoratorTemplateParser" />
-    <property name="componentResolver">
-      <bean name="system.decoratorComponentResolver"
-            class="vtk.web.decorating.BeanContextComponentResolver">
-        <property name="availableComponentNamespaces">
-          <set>
-            <value>*</value>
-          </set>
-        </property>
-      </bean>
+    <constructor-arg name="parser" ref="system.decoratorTemplateParser" />
+    <constructor-arg name="componentResolver" ref="system.decoratorComponentResolver" />
+  </bean>
+
+  <bean name="system.decoratorComponentResolver"
+        class="vtk.web.decorating.BeanContextComponentResolver">
+    <property name="availableComponentNamespaces">
+      <set>
+        <value>*</value>
+      </set>
     </property>
   </bean>
 

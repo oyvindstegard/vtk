@@ -30,9 +30,11 @@
  */
 package vtk.web.decorating;
 
+import java.util.Optional;
 
+@FunctionalInterface
 public interface TemplateManager {
 
-    public Template getTemplate(String name) throws Exception;
+    public Optional<Template> getTemplate(String name);
     
 }

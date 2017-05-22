@@ -30,57 +30,70 @@
  */
 package vtk.web.actions.publish;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
+import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
-public class ConfirmPublishController implements Controller {
-
+public class ConfirmPublishController implements Controller, ReferenceDataProvider {
     private String viewName;
     private Service publishService;
+    private Service unpublishService;
+    
+    public ConfirmPublishController(String viewName, Service publishService, Service unpublishService) {
+        this.viewName = Objects.requireNonNull(viewName);
+        this.publishService = Objects.requireNonNull(publishService);
+        this.unpublishService = Objects.requireNonNull(unpublishService);
+    }
 
+    @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        Map<String, Object> model = new HashMap<String, Object>();
-
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Repository repository = requestContext.getRepository();
-        Path resourceURI = requestContext.getResourceURI();
-        String token = requestContext.getSecurityToken();
-        
-        Resource item = repository.retrieve(token, resourceURI, true);
-        Principal principal = requestContext.getPrincipal();
-        URL url = null;
-        try {
-            url = publishService.constructURL(item, principal);
-        } catch (Throwable t) { }
-
-        model.put("url", url);
-        model.put("name", item.getName());
-        model.put("type", publishService.getName());
-
+        Map<String, Object> model = new HashMap<>();
+        referenceData(model, request);
         return new ModelAndView(this.viewName, model);
     }
 
-    @Required
-    public void setViewName(String viewName) {
-        this.viewName = viewName;
-    }
+    @Override
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
+        try {
+            RequestContext requestContext = RequestContext.getRequestContext();
+            Repository repository = requestContext.getRepository();
+            Path resourceURI = requestContext.getResourceURI();
+            String token = requestContext.getSecurityToken();
 
-    @Required
-    public void setPublishService(Service publishService) {
-        this.publishService = publishService;
+            Resource item = repository.retrieve(token, resourceURI, true);
+            
+            Service target = item.isPublished() ? unpublishService : publishService;
+            
+            Principal principal = requestContext.getPrincipal();
+            URL url = null;
+            try {
+                url = target.constructURL(item, principal);
+            } catch (Throwable t) { }
+
+            model.put("url", url);
+            model.put("name", item.getName());
+            model.put("type", target.getName());
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
     }
 }

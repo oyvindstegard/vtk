@@ -30,6 +30,8 @@
  */
 package vtk.web.decorating;
 
+import java.util.Optional;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -45,14 +47,16 @@ public class BeanContextTemplateManager
     }
     
 
-    public Template getTemplate(String name) throws Exception {
+    public Optional<Template> getTemplate(String name) {
         try {
             Object bean = this.applicationContext.getBean(name, Template.class);
             if (bean instanceof Template) {
-                return (Template) bean;
+                return Optional.of((Template) bean);
             }
-        } catch (Throwable t) { }
-        return null;
+        }
+        catch (Throwable t) { 
+        }
+        return Optional.empty();
     }
 }
 

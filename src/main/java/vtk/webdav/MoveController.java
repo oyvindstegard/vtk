@@ -30,13 +30,11 @@
  */
 package vtk.webdav;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
@@ -59,23 +57,18 @@ public class MoveController extends AbstractWebdavController {
     private String trustedToken = null;
 
 
-	/**
+    /**
      * Performs the WebDAV 'MOVE' method.      
-     *
-     * @param request the HTTP servlet request
-     * @param response the HTTP servlet response
-     * @return a <code>ModelAndView</code> containing the HTTP status code.
      */
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         String destHeader = request.getHeader("Destination");
-        Map<String, Object> model = new HashMap<String, Object>();
-
+    
         try {
             Resource resource = repository.retrieve(trustedToken, uri, false);
             
@@ -102,53 +95,44 @@ public class MoveController extends AbstractWebdavController {
             }
             repository.move(token, uri, destURI, overwrite);
 
-            if (existed) {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                          new Integer(HttpServletResponse.SC_NO_CONTENT));
-            } else {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                          new Integer(HttpServletResponse.SC_CREATED));
-            }
-
-            return new ModelAndView("MOVE", model);
-
-        } catch (InvalidRequestException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_BAD_REQUEST));
-
-        } catch (IllegalOperationException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_FORBIDDEN));
-
-        } catch (ReadOnlyException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_FORBIDDEN));
-
-        } catch (FailedDependencyException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_PRECONDITION_FAILED));
-
-        } catch (ResourceOverwriteException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_PRECONDITION_FAILED));
+            int status = existed ? HttpServletResponse.SC_NO_CONTENT 
+                    : HttpServletResponse.SC_CREATED;
+            
+            responseBuilder(status)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Move: from " + uri + " to " + destURI + " succeeded")
+                .writeTo(response);
+        }
+        catch (InvalidRequestException e) {
+            responseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (IllegalOperationException | ReadOnlyException e) {
+            responseBuilder(HttpServletResponse.SC_FORBIDDEN)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (FailedDependencyException | ResourceOverwriteException e) {
+            responseBuilder(HttpServletResponse.SC_PRECONDITION_FAILED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
 
         } catch (ResourceLockedException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpUtil.SC_LOCKED));
-
-        } catch (ResourceNotFoundException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_NOT_FOUND));
+            responseBuilder(HttpUtil.SC_LOCKED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
         }
-
-        return new ModelAndView("MOVE", model);
+        catch (ResourceNotFoundException e) {
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
     }
    
     public void setTrustedToken(String trustedToken) {

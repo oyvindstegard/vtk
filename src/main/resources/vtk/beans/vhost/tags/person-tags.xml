@@ -44,14 +44,6 @@
     <property name="viewName" value="personTags.feedView" />
   </bean>
 
-  <bean id="personTags.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="personTags.feedView" value-ref="personTags.feedView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="personTags.feedView" parent="tags.feedView">
     <property name="feedMetadata">
       <map>

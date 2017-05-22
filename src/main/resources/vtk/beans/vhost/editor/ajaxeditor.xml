@@ -54,6 +54,11 @@
       </list>
     </property>
     <property name="handler" ref="ajaxeditor.iframeEditHandler" />
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="ajaxeditor.iframeEditHandler" class="vtk.web.display.url.ResourceServiceURLController">
@@ -63,14 +68,6 @@
     <property name="service" ref="ajaxeditor.service" />
     <property name="viewName" value="ajaxeditor.iframeView" />
     <property name="displayWorkingRevision" value="true" />
-  </bean>
-
-  <bean id="ajaxeditor.plainViewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="ajaxeditor.iframeView" value-ref="ajaxeditor.iframeView" />
-      </map>
-    </property>
   </bean>
 
   <bean id="ajaxeditor.iframeView" parent="freemarkerView">

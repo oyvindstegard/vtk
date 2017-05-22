@@ -30,14 +30,13 @@
  */
 package vtk.webdav;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.web.servlet.ModelAndView;
 
 import vtk.repository.ContentInputSources;
 import vtk.repository.IllegalOperationException;
@@ -87,9 +86,8 @@ public class PutController extends AbstractWebdavController {
         this.removeUserSpecifiedCharacterEncoding = removeUserSpecifiedCharacterEncoding;
     }
     
-
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
          
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
@@ -116,8 +114,8 @@ public class PutController extends AbstractWebdavController {
                 }
                 InputStream inStream = request.getInputStream();
                 repository.storeContent(token, resource.getURI(), ContentInputSources.fromStream(inStream));
-
-            } else {
+            }
+            else {
 
                 /* check for parent: */
                 Path parentURI = uri.getParent();                
@@ -163,7 +161,8 @@ public class PutController extends AbstractWebdavController {
                     resource.addProperty(prop);
                     store = true;
                 }
-            } else if (this.removeUserSpecifiedCharacterEncoding) {
+            }
+            else if (this.removeUserSpecifiedCharacterEncoding) {
                 resource.removeProperty(
                         Namespace.DEFAULT_NAMESPACE, 
                         PropertyType.CHARACTERENCODING_USER_SPECIFIED_PROP_NAME);
@@ -174,36 +173,20 @@ public class PutController extends AbstractWebdavController {
                 resource = repository.store(token, resource);
             }
 
-            if (exists) {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_OK);
-            } else {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_CREATED);
-            }
-
-            model.put(WebdavConstants.WEBDAVMODEL_ETAG, resource.getEtag());
-            return new ModelAndView(this.viewName, model);
-
-        } catch (ResourceNotFoundException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_NOT_FOUND);
-
-        } catch (ResourceLockedException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpUtil.SC_LOCKED);
-            
-        } catch (IllegalOperationException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_FORBIDDEN);
-
-        } catch (WebdavConflictException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_CONFLICT);
-
-        } catch (ReadOnlyException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE, HttpServletResponse.SC_FORBIDDEN);
-
+            int status = exists ? HttpServletResponse.SC_OK : HttpServletResponse.SC_CREATED;
+            responseBuilder(status).writeTo(response);
         }
-        return new ModelAndView("PUT", model);
+        catch (ResourceNotFoundException e) {
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND).writeTo(response);
+        }
+        catch (ResourceLockedException e) {
+            responseBuilder(HttpUtil.SC_LOCKED).writeTo(response);
+        }
+        catch (IllegalOperationException | ReadOnlyException e) {
+            responseBuilder(HttpServletResponse.SC_FORBIDDEN).writeTo(response);
+        }
+        catch (WebdavConflictException e) {
+            responseBuilder(HttpServletResponse.SC_CONFLICT).writeTo(response);
+        }
     }
 }

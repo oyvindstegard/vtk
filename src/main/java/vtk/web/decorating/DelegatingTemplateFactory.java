@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
 
 import vtk.util.io.InputSource;
 
@@ -46,32 +45,28 @@ public class DelegatingTemplateFactory implements TemplateFactory {
     private static Logger logger = LoggerFactory.getLogger(DelegatingTemplateFactory.class);
     private Map<Pattern, TemplateFactory> templateFactoryMap;
     
-    public Template newTemplate(InputSource templateSource)
-            throws InvalidTemplateException {
-        for (Pattern p: this.templateFactoryMap.keySet()) {
-            Matcher m = p.matcher(templateSource.getID());
-            if (m.find()) {
-                TemplateFactory tf = this.templateFactoryMap.get(p);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Creating template for source " 
-                            + templateSource + ", using template factory " + tf);
-                }
-                return tf.newTemplate(templateSource);
-            }
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("No matching template factory found for ID " 
-                    + templateSource.getID());
-        }
-        return null;
-    }
-
-    @Required public void setTemplateFactoryMap(Map<String, TemplateFactory> templateFactoryMap) {
-        this.templateFactoryMap = new HashMap<Pattern, TemplateFactory>();
+    public DelegatingTemplateFactory(Map<String, TemplateFactory> templateFactoryMap) {
+        this.templateFactoryMap = new HashMap<>();
         for (String key: templateFactoryMap.keySet()) {
             Pattern p = Pattern.compile(key);
             this.templateFactoryMap.put(p, templateFactoryMap.get(key));
         }
     }
+    public Template newTemplate(InputSource templateSource)
+            throws InvalidTemplateException {
+        for (Pattern p: templateFactoryMap.keySet()) {
+            Matcher m = p.matcher(templateSource.getID());
+            if (m.find()) {
+                TemplateFactory tf = templateFactoryMap.get(p);
+                    logger.debug("Creating template for source " 
+                            + templateSource + ", using template factory " + tf);
+                return tf.newTemplate(templateSource);
+            }
+        }
+            logger.debug("No matching template factory found for ID " 
+                    + templateSource.getID());
+        return null;
+    }
+
 }
 

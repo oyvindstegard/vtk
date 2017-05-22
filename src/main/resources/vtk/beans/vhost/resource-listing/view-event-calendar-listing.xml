@@ -166,40 +166,6 @@
     <property name="resolveMultiHostResultSet" value="false" />
   </bean>
 
-  <bean id="eventListingCalendar.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="eventListingCalendar.feedView" 
-               value-ref="eventListingCalendar.feedView" />
-
-        <entry key="calendarEventlisting.specificDateFeedView" 
-               value-ref="eventListingCalendar.feedView" />
-
-        <entry key="calendarEventListing.viewAllUpcomingFeedView" 
-               value-ref="eventListingCalendar.feedView" />
-
-        <!--
-
-        <entry key="calendarEventlisting.specificDateFeedView" 
-               value-ref="calendarEventlisting.specificDateFeedView" />
-
-        <entry key="calendarEventListing.viewAllUpcomingFeedView" 
-               value-ref="calendarEventListing.viewAllUpcomingFeedView" />
-        -->
-      </map>
-    </property>
-  </bean>
-
-  <bean id="eventListingCalendar.viewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="eventListingCalendar.view" value-ref="eventListingCalendar.view" />
-        <entry key="eventListingCalendarWithWidgetContextProvider.view" value-ref="eventListingCalendarWithWidgetContextProvider.view" />
-      </map>
-    </property>
-  </bean>
-
-
   <bean id="eventListingCalendar.feedView" class="vtk.web.display.collection.event.EventListingAtomFeedView"
     parent="atomFeedView">
     <property name="helper" ref="eventListingHelper" />

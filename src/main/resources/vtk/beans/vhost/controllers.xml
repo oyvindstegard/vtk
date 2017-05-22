@@ -13,12 +13,12 @@
 
   <bean id="redirectHandler" 
     class="vtk.web.http.RedirectController">
-    <property name="viewName" value="collectionRedirect" />
+    <property name="viewName" value="collectionRedirectView" />
   </bean>
 
   <bean id="httpOptionsHandler"
         class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="httpOptions" />
+    <property name="viewName" value="httpOptionsView" />
   </bean>
   
   <bean id="displayIndexFileHandler" class="vtk.web.display.index.IndexFileController" />
@@ -34,7 +34,7 @@
   <bean id="displayHTMLResourceHandler" 
     class="vtk.web.display.file.DisplayResourceController">
     <property name="displayProcessed" value="true" />
-    <property name="viewName" value="displayHTMLResource" />
+    <property name="viewName" value="displayResourceView" />
     <property name="ignoreLastModified" value="true" />
     <property name="ignoreLastModifiedOnCollections" value="true" />
   </bean>

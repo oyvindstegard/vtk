@@ -103,21 +103,11 @@
     <property name="propertyDefinition" ref="resourceAspectsPropDef" />
     <property name="toplevelField" value="visual-profile" />
     <property name="commandName" value="form" />
-    <property name="formView" value="visualProfileAspect.form" />
-    <property name="successView" value="redirectToManage" />
+    <property name="formView" value="visualProfileAspect.formView" />
+    <property name="successView" value="redirectToManageView" />
     <!--property name="configFile" ref="visualProfileAspect.configFile" /-->
     <property name="fieldConfig" ref="visualProfileAspect.fieldConfig" />
     <property name="token" ref="trustedToken" />
-  </bean>
-
-
-
-  <bean id="visualProfileAspect.viewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="visualProfileAspect.form" value-ref="visualProfileAspect.formView" />
-      </map>
-    </property>
   </bean>
 
   <bean id="visualProfileAspect.formView" parent="freemarkerView">

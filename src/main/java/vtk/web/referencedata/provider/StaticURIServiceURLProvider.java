@@ -36,6 +36,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
@@ -84,8 +85,7 @@ public class StaticURIServiceURLProvider implements ReferenceDataProvider {
     }
     
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-        throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         URL url = this.parameters == null ?
             this.service.constructURL(this.path) :
@@ -95,7 +95,7 @@ public class StaticURIServiceURLProvider implements ReferenceDataProvider {
         @SuppressWarnings("unchecked")
         Map<String, Object> urlMap = (Map<String, Object>) model.get(this.modelName);
         if (urlMap == null) {
-            urlMap = new HashMap<String, Object>();
+            urlMap = new HashMap<>();
         }
         urlMap.put("url", url);
         

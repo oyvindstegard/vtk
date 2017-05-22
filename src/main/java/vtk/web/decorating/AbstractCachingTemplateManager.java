@@ -31,33 +31,36 @@
 package vtk.web.decorating;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.beans.factory.annotation.Required;
 
 import vtk.util.io.InputSource;
 
 public abstract class AbstractCachingTemplateManager implements TemplateManager {
     private TemplateFactory templateFactory;
     
-    private Map<String, Template> templatesMap = new ConcurrentHashMap<String, Template>();
+    private Map<String, Template> templatesMap = new ConcurrentHashMap<>();
     
-    @Required public void setTemplateFactory(TemplateFactory templateFactory) {
+    public AbstractCachingTemplateManager(TemplateFactory templateFactory) {
         this.templateFactory = templateFactory;
     }
+    
+    public final Optional<Template> getTemplate(String name) {
+        Objects.requireNonNull(name, "Name cannot be null");
 
-    public final Template getTemplate(String name) throws Exception {
-        if (name == null) throw new IllegalArgumentException("Name cannot be null");
-
-        if (this.templatesMap.containsKey(name)) {
-            return this.templatesMap.get(name);
+        if (templatesMap.containsKey(name)) {
+            return Optional.ofNullable(templatesMap.get(name));
         }
-
-        InputSource templateSource = resolve(name);
-        Template template = this.templateFactory.newTemplate(templateSource);
+        
+        Optional<InputSource> templateSource = resolve(name);
+        if (!templateSource.isPresent()) {
+            return Optional.empty();
+        }
+        Template template = this.templateFactory.newTemplate(templateSource.get());
         this.templatesMap.put(name, template);
-        return template;
+        return Optional.of(template);
     }
     
-    protected abstract InputSource resolve(String name);
+    protected abstract Optional<InputSource> resolve(String name);
 }

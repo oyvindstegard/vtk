@@ -34,10 +34,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,7 +47,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.AuthorizationException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.InheritablePropertiesStoreContext;
@@ -85,15 +83,14 @@ public class ProppatchController extends AbstractWebdavController  {
     private Service webdavService;
     
     @SuppressWarnings("deprecation")
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
          
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
         Path uri = requestContext.getResourceURI();
-        Map<String, Object> model = new HashMap<String, Object>();
 
         try {
             Resource resource = repository.retrieve(token, uri, false);
@@ -116,7 +113,8 @@ public class ProppatchController extends AbstractWebdavController  {
             
             if (sc.getAffectedProperties().isEmpty()) {
                 resource = repository.store(token, resource);
-            } else {
+            }
+            else {
                 // One or more inheritable props are to be stored/removed
                 resource = repository.store(token, resource, sc);
             }
@@ -126,10 +124,12 @@ public class ProppatchController extends AbstractWebdavController  {
             byte[] buffer = null;
             try {
                 buffer = xml.getBytes("utf-8");
-            } catch (UnsupportedEncodingException ex) {
+            }
+            catch (UnsupportedEncodingException ex) {
                 logger.warn("Warning: UTF-8 encoding not supported", ex);
                 throw new RuntimeException("UTF-8 encoding not supported");
             }
+            
             response.setHeader("Content-Type", "text/xml;charset=utf-8");
             response.setContentLength(buffer.length);
             response.setStatus(HttpUtil.SC_MULTI_STATUS,
@@ -148,60 +148,35 @@ public class ProppatchController extends AbstractWebdavController  {
                     out.close();
                 }
             }
-            return null;
-            
-        } catch (InvalidRequestException e) {
-            this.logger.info("Invalid request on URI '" + uri + "'", e);
-            writeDavErrorResponse(response, new Integer(HttpServletResponse.SC_BAD_REQUEST), e);
-            return null;
-            
-        } catch (ResourceNotFoundException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ResourceNotFoundException for URI "
-                             + uri);
-            }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_NOT_FOUND));
-
-        } catch (ConstraintViolationException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ConstraintViolationException for URI "
-                             + uri, e);
-            }
-            writeDavErrorResponse(response, new Integer(HttpServletResponse.SC_FORBIDDEN), e);
-            return null;
-            
-        } catch (IllegalOperationException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught IllegalOperationException for URI "
-                             + uri, e);
-            }
-            writeDavErrorResponse(response, new Integer(HttpServletResponse.SC_FORBIDDEN), e);
-            return null;
-
-        } catch (ReadOnlyException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ReadOnlyException for URI "
-                             + uri);
-            }
-            writeDavErrorResponse(response, new Integer(HttpServletResponse.SC_FORBIDDEN), e);
-            return null;
-
-        } catch (ResourceLockedException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ResourceLockedException for URI " + uri);
-            }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpUtil.SC_LOCKED));
         }
-
-        return new ModelAndView("PROPPATCH", model);
+        catch (InvalidRequestException e) {
+            this.logger.info("Invalid request on URI '" + uri + "'", e);
+            writeDavErrorResponse(response, new Integer(HttpServletResponse.SC_BAD_REQUEST), e);            
+        }
+        catch (ResourceNotFoundException e) {
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (ConstraintViolationException e) {
+            writeDavErrorResponse(response, new Integer(HttpServletResponse.SC_FORBIDDEN), e);
+        }
+        catch (IllegalOperationException e) {
+            writeDavErrorResponse(response, new Integer(HttpServletResponse.SC_FORBIDDEN), e);
+        }
+        catch (ReadOnlyException e) {
+            writeDavErrorResponse(response, new Integer(HttpServletResponse.SC_FORBIDDEN), e);
+        }
+        catch (ResourceLockedException e) {
+            responseBuilder(HttpUtil.SC_LOCKED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
     }
     
-    @SuppressWarnings("deprecation")
-    private void writeDavErrorResponse(HttpServletResponse response, Integer status, Exception e) throws Exception { 
+    private void writeDavErrorResponse(HttpServletResponse response, Integer status, Exception e) throws IOException { 
         Element error = new Element("error", WebdavConstants.DAV_NAMESPACE);
         Element errormsg = new Element("errormsg", WebdavConstants.DEFAULT_NAMESPACE);
         String message = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
@@ -289,7 +264,7 @@ public class ProppatchController extends AbstractWebdavController  {
         for (Iterator<Element> actionIterator = root.getChildren().iterator();
              actionIterator.hasNext();) {
 
-            Element actionElement = (Element) actionIterator.next();
+            Element actionElement = actionIterator.next();
             String action = actionElement.getName();
 
             if (!("set".equals(action) || "remove".equals(action))) {

@@ -53,25 +53,6 @@
   </bean>
 
 
-  <bean id="transformXmlToHtmlViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="transformXmlResource" value-ref="transformXmlView" />
-      </map>
-    </property>
-    <property name="viewWrapper" ref="decoratingViewWrapper" />
-  </bean>
-
-
-  <bean id="transformXmlToRssViewResolver"
-        class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="transformRssResource" value-ref="transformRssView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="previewManagedXmlService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="previewService" />
     <property name="order" value="0" />
@@ -301,7 +282,7 @@
 
   <bean id="previewXmlResourceHandler" parent="abstractPreviewIframe">
     <property name="service" ref="displayResourceService" />
-    <property name="viewName" value="previewAdminIframe" />
+    <property name="viewName" value="previewAdminIframeView" />
   </bean>
 
 
@@ -309,7 +290,7 @@
         class="vtk.web.display.xml.DisplayXmlResourceController">
     <description>This is used as parent for all similar handlers</description>
     <property name="transformerManager" ref="transformerManager" />
-    <property name="viewName" value="transformXmlResource"/>
+    <property name="viewName" value="transformXmlView"/>
     <property name="handleLastModified" value="true" />
     <property name="lastModifiedEvaluator" ref="displayXmlHandlerLastModifiedEvaluator" />
   </bean> 
@@ -333,7 +314,7 @@
   <bean id="displayRssResourceHandler" 
     class="vtk.web.display.xml.DisplayXmlResourceController">
     <property name="transformerManager" ref="rssTransformerManager" />
-    <property name="viewName" value="transformRssResource" />
+    <property name="viewName" value="transformRssView" />
   </bean>
 
 
@@ -405,14 +386,13 @@
   </bean>
 
 
-  <bean id="transformXmlManageErrorViewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
+  <bean id="transformXmlManageErrorViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <constructor-arg name="views">
       <map>
         <entry key="manageXsltError" value-ref="manageXsltErrorView" />
         <entry key="manageXmlBuildError" value-ref="manageXmlBuildErrorView" />
       </map>
-    </property>
-    <!--property name="viewWrapper" ref="manageViewWrapper" /-->
+    </constructor-arg>
   </bean>
   
 

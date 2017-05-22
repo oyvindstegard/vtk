@@ -190,23 +190,6 @@
     <property name="secureCookies" value="${saml.lostPost.secureCookies}" />
   </bean>
 
-
-  <bean id="saml.viewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="saml.metadata" value-ref="saml.metadataView"/>
-      </map>
-    </property>
-  </bean>
-
-  <bean id="saml.decoratedViewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="saml.lostPost" value-ref="saml.lostPost.view"/>
-      </map>
-    </property>
-  </bean>
-
   <bean id="saml.metadataView" parent="freemarkerView">
     <property name="url" value="saml/metadata.ftl"/>
     <property name="contentType">

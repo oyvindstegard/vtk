@@ -81,14 +81,6 @@
     <property name="handler" ref="messageListing.feedHandler" />
   </bean>
 
-  <bean id="messageListing.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="messageListing.feedView" value-ref="messageListing.feedView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="messageListing.feedHandler" parent="messageListing.handler">
     <property name="viewName" value="messageListing.feedView" />
   </bean>

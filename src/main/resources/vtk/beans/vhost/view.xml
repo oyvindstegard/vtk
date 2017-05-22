@@ -2,36 +2,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <bean id="viewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="jsonView" value-ref="jsonView" />
-        <entry key="httpOptions" value-ref="httpOptionsView" />
-        <entry key="collectionRedirect" value-ref="collectionRedirectView" />
-        <entry key="redirect" value-ref="redirectView" />
-        <entry key="redirectToManage" value-ref="redirectToManageView" />
-        <entry key="redirectToPermissions" value-ref="redirectToPermissionView" />
-        <entry key="redirectToPreviewCollection" value-ref="redirectToPreviewCollectionView" />
-        <entry key="displayResource" value-ref="displayResourceView" />
-        <entry key="previewViewIframe" value-ref="previewViewIframeView" />
-        <entry key="previewPopup" value-ref="previewPopupView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="decoratorViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="displayHTMLResource"  value-ref="displayResourceView" />
-      </map>
-    </property>
-    <property name="viewWrapper" ref="decoratingViewWrapper" />
-  </bean>
-
-
+  <bean id="viewResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver" />
 
   <!-- View definitions -->
-
   <bean id="jsonView" class="vtk.web.view.JsonView">
     <property name="modelKey" value="json" />
     <property name="indentFactor" value="2" />
@@ -269,27 +242,6 @@
     </property>
   </bean>
 
-  <!--
-  <bean id="readPermissionsProvider" 
-    class="vtk.web.view.components.menu.DefaultListMenuProvider">
-    <constructor-arg ref="readPermissionFactory" />
-    <constructor-arg value="readPermissions" />
-  </bean>
-
-  <bean id="readPermissionFactory" class="vtk.util.SortedCollection">
-    <constructor-arg>
-      <bean class="org.springframework.core.OrderComparator" />
-    </constructor-arg>
-    <constructor-arg name="unique" value="true" />
-  </bean>
-
-  <bean id="readPermissionFactory.builder"
-        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
-    <property name="targetObject" ref="readPermissionFactory" />
-    <property name="targetMethod" value="add" />
-  </bean>
-  -->
-  
   <bean id="publishProvider" 
     class="vtk.web.view.components.menu.DefaultListMenuProvider">
     <constructor-arg ref="publishFactory" />

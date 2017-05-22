@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -119,11 +121,11 @@ public class CollectionListingProvider implements ReferenceDataProvider {
 
     public static final String DEFAULT_SORT_BY_PARAMETER = "name";
 
-    private static final Set<String> supportedResourceColumns = new HashSet<String>(Arrays.asList(new String[] {
+    private static final Set<String> supportedResourceColumns = new HashSet<>(Arrays.asList(new String[] {
             DEFAULT_SORT_BY_PARAMETER, "title", "content-length", "last-modified", "locked", "published",
             "permissions", "content-type", "resource-type", "owner" }));
 
-    private Map<String, Service> linkedServices = new HashMap<String, Service>();
+    private Map<String, Service> linkedServices = new HashMap<>();
     private Service browsingService;
     private boolean retrieveForProcessing = false;
     private Set<ResourceTypeDefinition> matchingResourceTypes = null;
@@ -162,9 +164,9 @@ public class CollectionListingProvider implements ReferenceDataProvider {
     }
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
-        Map<String, Object> collectionListingModel = new HashMap<String, Object>();
+        Map<String, Object> collectionListingModel = new HashMap<>();
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -173,115 +175,123 @@ public class CollectionListingProvider implements ReferenceDataProvider {
         collectionListingModel.put("childInfoItems", this.childInfoItems);
         Resource[] children = null;
 
-        Resource resource = repository.retrieve(token, uri, this.retrieveForProcessing);
-        if (!resource.isCollection()) {
-            // Can't do anything unless resource is a collection
-            return;
-        }
-        children = repository.listChildren(token, uri, true);
-        children = filterChildren(requestContext, children);
+        try {
+            Resource resource = repository.retrieve(token, uri, this.retrieveForProcessing);
+            if (!resource.isCollection()) {
+                // Can't do anything unless resource is a collection
+                return;
+            }
+            children = repository.listChildren(token, uri, true);
+            children = filterChildren(requestContext, children);
 
-        // Sort children according to input parameters
-        String sortBy = request.getParameter("sort-by");
-        boolean invertedSort = "true".equals(request.getParameter("invert"));
-        boolean validSortByParameter = false;
-        for (String childInfoItem : this.childInfoItems) {
-            if (childInfoItem.equals(sortBy))
-                validSortByParameter = true;
-        }
-        if (!validSortByParameter)
-            sortBy = DEFAULT_SORT_BY_PARAMETER;
-        org.springframework.web.servlet.support.RequestContext rc = new org.springframework.web.servlet.support.RequestContext(
-                request);
-        this.sortChildren(children, sortBy, invertedSort, rc);
-        collectionListingModel.put("sortedBy", sortBy);
-        collectionListingModel.put("invertedSort", invertedSort);
-        collectionListingModel.put("children", children);
-        List<String> linkedServiceNames = new ArrayList<String>();
+            // Sort children according to input parameters
+            String sortBy = request.getParameter("sort-by");
+            boolean invertedSort = "true".equals(request.getParameter("invert"));
+            boolean validSortByParameter = false;
+            for (String childInfoItem : this.childInfoItems) {
+                if (childInfoItem.equals(sortBy))
+                    validSortByParameter = true;
+            }
+            if (!validSortByParameter)
+                sortBy = DEFAULT_SORT_BY_PARAMETER;
+            org.springframework.web.servlet.support.RequestContext rc = new org.springframework.web.servlet.support.RequestContext(
+                    request);
+            this.sortChildren(children, sortBy, invertedSort, rc);
+            collectionListingModel.put("sortedBy", sortBy);
+            collectionListingModel.put("invertedSort", invertedSort);
+            collectionListingModel.put("children", children);
+            List<String> linkedServiceNames = new ArrayList<>();
 
-        for (String linkName : this.linkedServices.keySet()) {
-            linkedServiceNames.add(linkName);
-        }
-
-        collectionListingModel.put("linkedServiceNames", linkedServiceNames);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String>[] childLinks = new HashMap[children.length];
-        String[] permissionTooltips = new String[children.length];
-        String[] browsingLinks = new String[children.length];
-        
-        for (int i = 0; i < children.length; i++) {
-            Resource child = children[i];
-            Map<String, String> linkMap = new HashMap<String, String>();
             for (String linkName : this.linkedServices.keySet()) {
-                Service service = this.linkedServices.get(linkName);
+                linkedServiceNames.add(linkName);
+            }
+
+            collectionListingModel.put("linkedServiceNames", linkedServiceNames);
+
+            @SuppressWarnings("unchecked")
+            Map<String, String>[] childLinks = new HashMap[children.length];
+            String[] permissionTooltips = new String[children.length];
+            String[] browsingLinks = new String[children.length];
+
+            for (int i = 0; i < children.length; i++) {
+                Resource child = children[i];
+                Map<String, String> linkMap = new HashMap<>();
+                for (String linkName : this.linkedServices.keySet()) {
+                    Service service = this.linkedServices.get(linkName);
+                    try {
+                        String url = service.constructLink(child, principal);
+                        linkMap.put(linkName, url);
+                    } catch (ServiceUnlinkableException e) {
+                        // do nothing
+                    }
+                }
+                childLinks[i] = linkMap;
+
                 try {
-                    String url = service.constructLink(child, principal);
-                    linkMap.put(linkName, url);
+                    String url = this.browsingService.constructLink(child, principal);
+                    // XXX: until we straighten out the manage service assertion configuration:
+                    if (repository.authorize(principal, child.getAcl(), Privilege.READ)) {
+                        browsingLinks[i] = url;
+                    }
                 } catch (ServiceUnlinkableException e) {
                     // do nothing
                 }
-            }
-            childLinks[i] = linkMap;
-
-            try {
-                String url = this.browsingService.constructLink(child, principal);
-                // XXX: until we straighten out the manage service assertion configuration:
-                if (repository.authorize(principal, child.getAcl(), Privilege.READ)) {
-                    browsingLinks[i] = url;
+                if (aclTooltipHelper != null) {
+                    permissionTooltips[i] = aclTooltipHelper.generateTitle(
+                            child, child.getAcl(), child.isInheritedAcl(), request);
                 }
-            } catch (ServiceUnlinkableException e) {
-                // do nothing
             }
-            if (aclTooltipHelper != null) {
-                permissionTooltips[i] = aclTooltipHelper.generateTitle(
-                        child, child.getAcl(), child.isInheritedAcl(), request);
-            }
-        }
-        collectionListingModel.put("permissionTooltips", permissionTooltips);
-        collectionListingModel.put("childLinks", childLinks);
-        collectionListingModel.put("browsingLinks", browsingLinks);
+            collectionListingModel.put("permissionTooltips", permissionTooltips);
+            collectionListingModel.put("childLinks", childLinks);
+            collectionListingModel.put("browsingLinks", browsingLinks);
 
-        Map<String, String> sortByLinks = new HashMap<String, String>();
+            Map<String, String> sortByLinks = new HashMap<>();
 
-        for (String column : this.childInfoItems) {
-            Map<String, String> parameters = new HashMap<String, String>();
-            parameters.put("sort-by", column);
-            if (sortBy.equals(column) && !invertedSort) {
-                parameters.put("invert", "true");
+            for (String column : this.childInfoItems) {
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("sort-by", column);
+                if (sortBy.equals(column) && !invertedSort) {
+                    parameters.put("invert", "true");
+                }
+                String url = this.browsingService.constructLink(resource, principal, parameters);
+                sortByLinks.put(column, url);
             }
-            String url = this.browsingService.constructLink(resource, principal, parameters);
-            sortByLinks.put(column, url);
-        }
-        collectionListingModel.put("sortByLinks", sortByLinks);
+            collectionListingModel.put("sortByLinks", sortByLinks);
 
-        String parentURL = null;
-        if (resource.getURI().getParent() != null) {
-            try {
-                Resource parent = repository.retrieve(token, resource.getURI().getParent(), true);
-                parentURL = this.browsingService.constructLink(parent, principal);
-            } catch (RepositoryException e) {
-                // Ignore
-            } catch (AuthenticationException e) {
-                // Ignore
-            } catch (ServiceUnlinkableException e) {
-                // Ignore
+            String parentURL = null;
+            if (resource.getURI().getParent() != null) {
+                try {
+                    Resource parent = repository.retrieve(token, resource.getURI().getParent(), true);
+                    parentURL = this.browsingService.constructLink(parent, principal);
+                } catch (RepositoryException e) {
+                    // Ignore
+                } catch (AuthenticationException e) {
+                    // Ignore
+                } catch (ServiceUnlinkableException e) {
+                    // Ignore
+                }
             }
-        }
-        collectionListingModel.put("parentURL", parentURL);
-        
-        // Check if resource has READ_WRITE_UNPUBLISHED principals
-        Acl acl = resource.getAcl();
-        boolean hasWriteUnpublished = false;
-        if (acl != null) {
-            Set<Principal> principals = acl.getPrincipalSet(Privilege.READ_WRITE_UNPUBLISHED);
-            if (principals != null && !principals.isEmpty()) {
-                hasWriteUnpublished = true;
+            collectionListingModel.put("parentURL", parentURL);
 
+            // Check if resource has READ_WRITE_UNPUBLISHED principals
+            Acl acl = resource.getAcl();
+            boolean hasWriteUnpublished = false;
+            if (acl != null) {
+                Set<Principal> principals = acl.getPrincipalSet(Privilege.READ_WRITE_UNPUBLISHED);
+                if (principals != null && !principals.isEmpty()) {
+                    hasWriteUnpublished = true;
+
+                }
             }
+            model.put("hasWriteUnpublished", hasWriteUnpublished);
+            model.put("collectionListing", collectionListingModel);
         }
-        model.put("hasWriteUnpublished", hasWriteUnpublished);
-        model.put("collectionListing", collectionListingModel);
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Resource[] filterChildren(RequestContext requestContext, Resource[] children) throws Exception {
@@ -292,7 +302,7 @@ public class CollectionListingProvider implements ReferenceDataProvider {
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
 
-        List<Resource> filteredChildren = new ArrayList<Resource>();
+        List<Resource> filteredChildren = new ArrayList<>();
         for (Resource resource : children) {
             TypeInfo type = repository.getTypeInfo(resource);
             for (ResourceTypeDefinition resourceDef : this.matchingResourceTypes) {
@@ -333,7 +343,7 @@ public class CollectionListingProvider implements ReferenceDataProvider {
     public void setMatchingResourceTypes(Set<ResourceTypeDefinition> matchingResourceTypes) {
         this.matchingResourceTypes = matchingResourceTypes;
     }
-    
+
     public void setAclTooltipHelper(ACLTooltipHelper aclTooltipHelper) {
         this.aclTooltipHelper = aclTooltipHelper;
     }

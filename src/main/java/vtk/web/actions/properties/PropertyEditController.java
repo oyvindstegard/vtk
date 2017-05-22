@@ -30,6 +30,8 @@
  */
 package vtk.web.actions.properties;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +77,6 @@ import vtk.util.repository.DocumentPrincipalMetadataRetriever;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
 
@@ -116,7 +117,7 @@ import vtk.web.service.ServiceUnlinkableException;
  * 
  */
 public class PropertyEditController extends SimpleFormController<PropertyEditCommand> 
-    implements ReferenceDataProvider, ReferenceDataProviding {
+implements ReferenceDataProvider {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -367,8 +368,8 @@ public class PropertyEditController extends SimpleFormController<PropertyEditCom
                         if (this.logger.isDebugEnabled()) {
                             String debugOutput = def.isMultiple() ? java.util.Arrays.asList(property.getValues())
                                     .toString() : property.getValue().toString();
-                            this.logger.debug("Setting property '" + property + "'for resource " + resource
-                                    + " to value " + debugOutput);
+                                    this.logger.debug("Setting property '" + property + "'for resource " + resource
+                                            + " to value " + debugOutput);
                         }
                     }
 
@@ -399,7 +400,7 @@ public class PropertyEditController extends SimpleFormController<PropertyEditCom
     }
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
@@ -407,115 +408,120 @@ public class PropertyEditController extends SimpleFormController<PropertyEditCom
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
 
-        Resource resource = repository.retrieve(token, uri, false);
-        TypeInfo typeInfo = repository.getTypeInfo(resource);
-        List<PropertyItem> propsList = new ArrayList<>();
-        Map<String, PropertyItem> propsMap = new HashMap<>();
+        try {
+            Resource resource = repository.retrieve(token, uri, false);
+            TypeInfo typeInfo = repository.getTypeInfo(resource);
+            List<PropertyItem> propsList = new ArrayList<>();
+            Map<String, PropertyItem> propsMap = new HashMap<>();
 
-        Principal modifiedBy = resource.getModifiedBy();
-        Principal createdBy = resource.getCreatedBy();
-        Principal owner = resource.getOwner();
+            Principal modifiedBy = resource.getModifiedBy();
+            Principal createdBy = resource.getCreatedBy();
+            Principal owner = resource.getOwner();
 
-        if (this.documentPrincipalMetadataRetriever != null
-                && this.documentPrincipalMetadataRetriever.isDocumentSearchConfigured()) {
+            if (this.documentPrincipalMetadataRetriever != null
+                    && this.documentPrincipalMetadataRetriever.isDocumentSearchConfigured()) {
 
-            Locale preferredLocale = null;
-            if (this.localeResolver != null) {
-                preferredLocale = this.localeResolver.resolveLocale(request);
+                Locale preferredLocale = null;
+                if (this.localeResolver != null) {
+                    preferredLocale = this.localeResolver.resolveLocale(request);
+                }
+
+                Set<String> uids = new HashSet<>(Arrays.asList(modifiedBy.getName(), createdBy.getName(),
+                        owner.getName()));
+                Set<Principal> principalDocuments = this.documentPrincipalMetadataRetriever.getPrincipalDocumentsByUid(
+                        uids, preferredLocale);
+
+                if (principalDocuments != null) {
+                    for (Principal pd : principalDocuments) {
+                        if (modifiedBy.equals(pd)) {
+                            modifiedBy = pd;
+                        }
+                        if (createdBy.equals(pd)) {
+                            createdBy = pd;
+                        }
+                        if (owner.equals(pd)) {
+                            owner = pd;
+                        }
+                    }
+                }
+
             }
 
-            Set<String> uids = new HashSet<>(Arrays.asList(modifiedBy.getName(), createdBy.getName(),
-                    owner.getName()));
-            Set<Principal> principalDocuments = this.documentPrincipalMetadataRetriever.getPrincipalDocumentsByUid(
-                    uids, preferredLocale);
+            model.put("modifiedBy", modifiedBy);
+            model.put("createdBy", createdBy);
+            model.put("owner", owner);
 
-            if (principalDocuments != null) {
-                for (Principal pd : principalDocuments) {
-                    if (modifiedBy.equals(pd)) {
-                        modifiedBy = pd;
+            for (PropertyTypeDefinition def : this.propertyTypeDefinitions) {
+
+                if (!typeInfo.getResourceType().hasPropertyDefinition(def)) {
+                    if (this.logger.isDebugEnabled()) {
+                        this.logger.debug("Property type definition " + def + " not applicable for resource " + resource
+                                + ", skipping");
                     }
-                    if (createdBy.equals(pd)) {
-                        createdBy = pd;
+                    continue;
+                }
+                Property property = resource.getProperty(def);
+                String editURL = null;
+                String format = null;
+                String toggleURL = null;
+                String toggleValue = null;
+
+                RepositoryAction protectionLevel = def.getProtectionLevel();
+                if (protectionLevel == RepositoryAction.READ_WRITE && !resource.hasPublishDate()) {
+                    // Authorize for READ_WRITE_UNPUBLISHED instead:
+                    protectionLevel = RepositoryAction.READ_WRITE_UNPUBLISHED;
+                }
+                if (repository.isAuthorized(resource, protectionLevel, requestContext.getPrincipal(), true)) {
+
+                    Map<String, String> urlParameters = new HashMap<>();
+                    String namespaceURI = def.getNamespace().getUri();
+                    if (namespaceURI != null) {
+                        urlParameters.put("namespace", namespaceURI);
                     }
-                    if (owner.equals(pd)) {
-                        owner = pd;
+                    urlParameters.put("name", def.getName());
+                    if (def.getType() == PropertyType.Type.TIMESTAMP || def.getType() == PropertyType.Type.DATE) {
+                        format = this.dateFormat;
                     }
+
+                    try {
+                        editURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
+                    } catch (ServiceUnlinkableException e) {
+                        // Assertion doesn't match, OK in this case
+                    }
+
+                    if (Namespace.DEFAULT_NAMESPACE.equals(def.getNamespace())
+                            && PropertyType.OWNER_PROP_NAME.equals(def.getName())
+                            && !resource.getOwner().equals(requestContext.getPrincipal())) {
+
+                        // Using toggle parameter to take ownership:
+                        urlParameters.put(this.toggleRequestParameter, "true");
+                        toggleURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
+
+                    } else if (isToggleProperty(def)) {
+                        Value toggleValueObject = getToggleValue(def, property);
+                        if (toggleValueObject != null) {
+                            toggleValue = getValueAsString(toggleValueObject);
+                        }
+                        urlParameters.put(this.toggleRequestParameter, "true");
+                        toggleURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
+                    }
+                }
+
+                PropertyItem item = new PropertyItem(property, def, editURL, format, toggleURL, toggleValue);
+                propsList.add(item);
+                if (def.getNamespace() == Namespace.DEFAULT_NAMESPACE) {
+                    propsMap.put(def.getName(), item);
+                } else {
+                    propsMap.put(def.getNamespace().getPrefix() + ":" + def.getName(), item);
                 }
             }
 
+            model.put(this.propertyListModelName, propsList);
+            model.put(this.propertyMapModelName, propsMap);
         }
-
-        model.put("modifiedBy", modifiedBy);
-        model.put("createdBy", createdBy);
-        model.put("owner", owner);
-
-        for (PropertyTypeDefinition def : this.propertyTypeDefinitions) {
-
-            if (!typeInfo.getResourceType().hasPropertyDefinition(def)) {
-                if (this.logger.isDebugEnabled()) {
-                    this.logger.debug("Property type definition " + def + " not applicable for resource " + resource
-                            + ", skipping");
-                }
-                continue;
-            }
-            Property property = resource.getProperty(def);
-            String editURL = null;
-            String format = null;
-            String toggleURL = null;
-            String toggleValue = null;
-            
-            RepositoryAction protectionLevel = def.getProtectionLevel();
-            if (protectionLevel == RepositoryAction.READ_WRITE && !resource.hasPublishDate()) {
-                // Authorize for READ_WRITE_UNPUBLISHED instead:
-                protectionLevel = RepositoryAction.READ_WRITE_UNPUBLISHED;
-            }
-            if (repository.isAuthorized(resource, protectionLevel, requestContext.getPrincipal(), true)) {
-
-                Map<String, String> urlParameters = new HashMap<>();
-                String namespaceURI = def.getNamespace().getUri();
-                if (namespaceURI != null) {
-                    urlParameters.put("namespace", namespaceURI);
-                }
-                urlParameters.put("name", def.getName());
-                if (def.getType() == PropertyType.Type.TIMESTAMP || def.getType() == PropertyType.Type.DATE) {
-                    format = this.dateFormat;
-                }
-
-                try {
-                    editURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
-                } catch (ServiceUnlinkableException e) {
-                    // Assertion doesn't match, OK in this case
-                }
-
-                if (Namespace.DEFAULT_NAMESPACE.equals(def.getNamespace())
-                        && PropertyType.OWNER_PROP_NAME.equals(def.getName())
-                        && !resource.getOwner().equals(requestContext.getPrincipal())) {
-
-                    // Using toggle parameter to take ownership:
-                    urlParameters.put(this.toggleRequestParameter, "true");
-                    toggleURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
-
-                } else if (isToggleProperty(def)) {
-                    Value toggleValueObject = getToggleValue(def, property);
-                    if (toggleValueObject != null) {
-                        toggleValue = getValueAsString(toggleValueObject);
-                    }
-                    urlParameters.put(this.toggleRequestParameter, "true");
-                    toggleURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
-                }
-            }
-
-            PropertyItem item = new PropertyItem(property, def, editURL, format, toggleURL, toggleValue);
-            propsList.add(item);
-            if (def.getNamespace() == Namespace.DEFAULT_NAMESPACE) {
-                propsMap.put(def.getName(), item);
-            } else {
-                propsMap.put(def.getNamespace().getPrefix() + ":" + def.getName(), item);
-            }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-
-        model.put(this.propertyListModelName, propsList);
-        model.put(this.propertyMapModelName, propsMap);
     }
 
     private boolean isToggleProperty(PropertyTypeDefinition def) {
@@ -639,10 +645,5 @@ public class PropertyEditController extends SimpleFormController<PropertyEditCom
     public void setDocumentPrincipalMetadataRetriever(
             DocumentPrincipalMetadataRetriever documentPrincipalMetadataRetriever) {
         this.documentPrincipalMetadataRetriever = documentPrincipalMetadataRetriever;
-    }
-
-    @Override
-    public ReferenceDataProvider[] getReferenceDataProviders() {
-        return new ReferenceDataProvider[] { this };
     }
 }

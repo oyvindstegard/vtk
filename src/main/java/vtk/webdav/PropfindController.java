@@ -31,24 +31,33 @@
 package vtk.webdav;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.AuthorizationException;
+import vtk.repository.Lock;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
@@ -57,14 +66,19 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.ResourceLockedException;
 import vtk.repository.ResourceNotFoundException;
+import vtk.repository.resourcetype.PropertyType;
+import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.repository.resourcetype.Value;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
 import vtk.util.io.BoundedInputStream;
 import vtk.util.io.SizeLimitException;
+import vtk.util.repository.LocaleHelper;
 import vtk.util.text.TextUtils;
 import vtk.util.web.HttpUtil;
 import vtk.web.InvalidRequestException;
 import vtk.web.RequestContext;
+import vtk.web.service.Service;
 
 /**
  * Handler for PROPFIND requests.
@@ -107,22 +121,51 @@ import vtk.web.RequestContext;
  */
 public class PropfindController extends AbstractWebdavController 
                                 implements InitializingBean {
-
-
+    private Service webdavService = null;
+    private String collectionContentType = null;
     private long maxRequestSize = 40000;
-
     private Map<org.jdom.Namespace,Set<String>> childAuthorizeWhitelistProperties;
+
+    /**
+     * Sets the maximum number of bytes allowed in request body. This
+     * is to reduce the risk of DoS attacks by clients sending huge
+     * request bodies.
+     *
+     * @param newSize a <code>Long</code> value
+     */
+    public void setMaxRequestSize(long newSize) {
+        this.maxRequestSize = newSize;
+    }
+    
+    public void setCollectionContentType(String value) {
+        if (value != null) {
+            if (value.trim().equals("")) {
+                value = null;
+            }
+        }
+        this.collectionContentType = value;
+    }
+    
+    /**
+     * Sets the WebDAV service. This service is needed for URL
+     * construction (WebDAV PROPFIND browsing, downloading, etc.).
+     *
+     * @param webdavService a <code>Service</code> value
+     */
+    public void setWebdavService(Service webdavService) {
+        this.webdavService = webdavService;
+    }
 
     @Override
     public void afterPropertiesSet() {
         if (this.childAuthorizeWhitelistProperties == null) {
-            this.childAuthorizeWhitelistProperties = new HashMap<org.jdom.Namespace,Set<String>>();
+            this.childAuthorizeWhitelistProperties = new HashMap<>();
         }
         
         // Add standard set of DAV: props to whitelist
         Set<String> davProps = this.childAuthorizeWhitelistProperties.get(WebdavConstants.DAV_NAMESPACE);
         if (davProps == null) {
-            davProps = new HashSet<String>();
+            davProps = new HashSet<>();
             this.childAuthorizeWhitelistProperties.put(WebdavConstants.DAV_NAMESPACE, davProps);
         }
         davProps.addAll(DAV_PROPERTIES);
@@ -130,14 +173,13 @@ public class PropfindController extends AbstractWebdavController
 
 
     @Override
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
          
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
-        Map<String, Object> model = new HashMap<String, Object>();
         try {
             Resource resource = repository.retrieve(token, uri, false);
 
@@ -155,37 +197,30 @@ public class PropfindController extends AbstractWebdavController
                 depth = "1";
             }
 
-            model = buildPropfindModel(
+            PropfindRequestModel model = buildPropfindModel(
                 resource, requestBody, depth, token);
-         
-            return new ModelAndView("PROPFIND", model);
 
-        } catch (InvalidRequestException e) {
-            this.logger.warn("Caught InvalidRequestException for URI "
-                        + uri, e);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_BAD_REQUEST));
-
-        } catch (ResourceNotFoundException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ResourceNotFoundException for URI "
-                             + uri);
-            }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_NOT_FOUND));
-
-        } catch (ResourceLockedException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ResourceLockedException for URI "
-                             + uri);
-            }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpUtil.SC_LOCKED));
+            writeResponse(request, response, model);
         }
-        return new ModelAndView("HTTP_STATUS_VIEW", model);
+        catch (InvalidRequestException e) {
+            responseBuilder(HttpServletResponse.SC_BAD_REQUEST)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (ResourceNotFoundException e) {
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+
+        }
+        catch (ResourceLockedException e) {
+            responseBuilder(HttpUtil.SC_LOCKED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+            .writeTo(response);
+        }
     }
 
     /**
@@ -205,21 +240,17 @@ public class PropfindController extends AbstractWebdavController
      * sufficient rights to access the resource
      * @exception IOException if an I/O error occurs
      */
-    private Map<String, Object> buildPropfindModel(
-        Resource resource, Document requestBody, String depth, String token)
-        throws InvalidRequestException, ResourceNotFoundException,
-        AuthenticationException, AuthorizationException, Exception {
+    private PropfindRequestModel buildPropfindModel(
+        Resource resource, Document requestBody, String depth, String token) throws IOException {
         Repository repository = RequestContext.getRequestContext().getRepository();
         
-        Map<String, Object> model = new HashMap<String, Object>();
 
-        List<Resource> resourceList = new ArrayList<Resource>();
+        List<Resource> resourceList = new ArrayList<>();
         resourceList.add(resource);
         if (resource.isCollection()) {
             resourceList.addAll(getResourceDescendants(
                 resource.getURI(), depth, repository, token));
         }
-        model.put(WebdavConstants.WEBDAVMODEL_REQUESTED_RESOURCES, resourceList);
 
         Element root = requestBody.getRootElement();
         Element propType = (Element) root.getChildren().get(0);
@@ -235,7 +266,7 @@ public class PropfindController extends AbstractWebdavController
         
         boolean wildcardPropRequest = 
             ("allprop".equals(propTypeName) || "propname".equals(propTypeName)); 
-        model.put(WebdavConstants.WEBDAVMODEL_WILDCARD_PROP_REQUEST, wildcardPropRequest);
+        //model.put(WebdavConstants.WEBDAVMODEL_WILDCARD_PROP_REQUEST, wildcardPropRequest);
         
         List<Element> requestedProps = getRequestedProperties(requestBody, resource, depth);
         
@@ -243,17 +274,18 @@ public class PropfindController extends AbstractWebdavController
         // Maybe authorize all resources for read before allowing request to proceed
         maybeAuthorize(resourceList, requestedProps, depth, wildcardPropRequest);
 
-        model.put(WebdavConstants.WEBDAVMODEL_REQUESTED_PROPERTIES, requestedProps);
+        //model.put(WebdavConstants.WEBDAVMODEL_REQUESTED_PROPERTIES, requestedProps);
 
         /* if property name is 'allprop' or 'prop', we expect values
          * of the elements to be filled into the response elements */
         boolean appendPropertyValues = ("allprop".equals(propTypeName)
                                         || "prop".equals(propTypeName));
 
-        model.put(WebdavConstants.WEBDAVMODEL_REQUESTED_PROPERTIES_APPEND_VALUES,
-                  appendPropertyValues);
+        //model.put(WebdavConstants.WEBDAVMODEL_REQUESTED_PROPERTIES_APPEND_VALUES,
+                  //appendPropertyValues);
         
-        return model;
+        return new PropfindRequestModel(resourceList, requestedProps, 
+                appendPropertyValues, wildcardPropRequest);
     }
     
     /**
@@ -314,7 +346,7 @@ public class PropfindController extends AbstractWebdavController
      */
     protected List<Element> getRequestedProperties(Document requestBody, Resource res,
                                                    String depth) {
-        List<Element> propList = new ArrayList<Element>();
+        List<Element> propList = new ArrayList<>();
 
         /* Check for 'allprop' or 'propname': */
         if (requestBody.getRootElement().getChild(
@@ -332,8 +364,8 @@ public class PropfindController extends AbstractWebdavController
             // For wildcard we only include all props when depth is 0.
             // (Otherwise only standard WebDAV-props are provided.)
             if ("0".equals(depth)) {
-                List<Element> defaultNsPropList = new ArrayList<Element>();
-                List<Element> otherProps = new ArrayList<Element>();
+                List<Element> defaultNsPropList = new ArrayList<>();
+                List<Element> otherProps = new ArrayList<>();
                 /* Resource type (treat it as a normal property): */
                 defaultNsPropList.add(new Element("resourceType", WebdavConstants.DEFAULT_NAMESPACE.getURI()));
                 
@@ -393,11 +425,10 @@ public class PropfindController extends AbstractWebdavController
      * @return a <code>List</code> of <code>Resource</code> objects
      */
     protected List<Resource> getResourceDescendants(Path uri, String depth,
-                                          Repository repository, String token)
-        throws ResourceNotFoundException, AuthorizationException,
-        AuthenticationException, Exception {
+                                          Repository repository, String token) 
+                                                  throws IOException {
 
-        ArrayList<Resource> descendants = new ArrayList<Resource>();
+        ArrayList<Resource> descendants = new ArrayList<>();
         
         if (!(depth.equals("1") || depth.equals("infinity"))) {
             return descendants;
@@ -483,7 +514,7 @@ public class PropfindController extends AbstractWebdavController
      * The each string in list should be on the form "namespace:prop".
      */
     public void setChildAuthorizeWhitelistProperties(List<String> props) {
-        this.childAuthorizeWhitelistProperties = new HashMap<org.jdom.Namespace,Set<String>>();
+        this.childAuthorizeWhitelistProperties = new HashMap<>();
         
         for (String namespaceProp: props) {
             String[] kv = TextUtils.parseKeyValue(namespaceProp, ':', TextUtils.TRIM);
@@ -493,21 +524,556 @@ public class PropfindController extends AbstractWebdavController
             org.jdom.Namespace ns = org.jdom.Namespace.getNamespace(kv[0]);
             Set<String> propset = this.childAuthorizeWhitelistProperties.get(ns);
             if (propset == null) {
-                propset = new HashSet<String>();
+                propset = new HashSet<>();
                 this.childAuthorizeWhitelistProperties.put(ns, propset);
             }
             propset.add(kv[1]);
         }
     }
+    
+    private static class PropfindRequestModel {
+        public final List<Resource> resources;
+        public final List<Element> properties;
+        public final boolean appendValues;
+        public final boolean wildcardPropRequest;
+        private PropfindRequestModel(List<Resource> resources, List<Element> properties, 
+                boolean appendValues, boolean wildcardPropRequest) {
+            this.resources = resources;
+            this.properties = properties;
+            this.appendValues = appendValues;
+            this.wildcardPropRequest = wildcardPropRequest;
+        }
+    }
+    
 
     /**
-     * Sets the maximum number of bytes allowed in request body. This
-     * is to reduce the risk of DoS attacks by clients sending huge
-     * request bodies.
-     *
-     * @param newSize a <code>Long</code> value
+     *  Builds a DAV 'multistatus' XML element.
      */
-    public void setMaxRequestSize(long newSize) {
-        this.maxRequestSize = newSize;
+    private void writeResponse(HttpServletRequest request, 
+            HttpServletResponse response, PropfindRequestModel model) throws IOException {
+        
+        Element e = buildMultistatusElement(model);
+
+        Document doc = new Document(e);
+
+        Format format = Format.getPrettyFormat();
+        format.setEncoding("utf-8");
+        //format.setLineSeparator("\r\n");
+        //format.setIndent("");
+
+        XMLOutputter xmlOutputter = new XMLOutputter(format);
+        String xml = xmlOutputter.outputString(doc);
+        byte[] buffer = null;
+        try {
+            buffer = xml.getBytes("utf-8");
+        } catch (UnsupportedEncodingException ex) {
+            logger.warn("Warning: UTF-8 encoding not supported", ex);
+            throw new RuntimeException("UTF-8 encoding not supported");
+        }
+        response.setHeader("Content-Type", "text/xml;charset=utf-8");
+        response.setIntHeader("Content-Length", buffer.length);
+        response.setStatus(HttpUtil.SC_MULTI_STATUS,
+                WebdavUtil.getStatusMessage(
+                        HttpUtil.SC_MULTI_STATUS));
+        OutputStream out = null;
+        try {
+            out = response.getOutputStream();
+            out.write(buffer, 0, buffer.length);
+            out.flush();
+            out.close();
+
+        } finally {
+            if (out != null) {
+                out.flush();
+                out.close();
+            }
+        }
+    }
+
+    private Element buildMultistatusElement(PropfindRequestModel model) throws IOException {
+
+        Element multiStatus = new Element("multistatus", WebdavConstants.DAV_NAMESPACE);
+
+        for (Resource currentResource: model.resources) {
+                Element responseElement = buildResponseElement(
+                    currentResource, model.properties, 
+                    model.appendValues, model.wildcardPropRequest);
+            
+                multiStatus.addContent(responseElement);
+        }
+        
+        return multiStatus;
+    }
+   
+
+
+
+    /**
+     * Builds a DAV 'response' XML element from data in a
+     * <code>Resource</code>.
+     *
+     * @param resource the <code>Resource</code> that is being queried
+     * @param requestedProps a list of DAV property names (must be
+     * given as a list of <code>org.jdom.Element</code> objects) for
+     * which to find values
+     * @param appendPropertyValues determines whether property values should
+     * be appended to the JDOM elements or not (this is not always
+     * requested, i.e. when a client requests only "propnames").
+     * @return an <code>org.jdom.Element</code> representing the DAV
+     * response element
+     * @throws IOException 
+     */
+    private Element buildResponseElement(Resource resource,
+                                         List<Element> requestedProps,
+                                         boolean appendPropertyValues,
+                                         boolean isWildcardPropRequest) throws IOException {
+
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Principal p = requestContext.getPrincipal();
+
+        Element responseElement = new Element("response", WebdavConstants.DAV_NAMESPACE);
+        String href = this.webdavService.constructLink(resource, p);
+
+        responseElement.addContent(
+                new Element("href", WebdavConstants.DAV_NAMESPACE).addContent(href));
+        Element foundProperties = new Element("prop", WebdavConstants.DAV_NAMESPACE);
+        Element unknownProperties = new Element("prop", WebdavConstants.DAV_NAMESPACE);
+
+        for (Element prop: requestedProps) {
+            Element foundProp = buildPropertyElement(resource, prop, appendPropertyValues);
+
+            if (foundProp != null) {
+
+                foundProperties.addContent(foundProp);
+
+            } else {
+
+                unknownProperties.addContent(
+                    new Element(prop.getName(), prop.getNamespace().getPrefix(),
+                                prop.getNamespace().getURI()));
+            }
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Found properties: " + foundProperties.getChildren()
+                         + ", unknown properties: " + unknownProperties.getChildren());
+        }
+
+
+        if (foundProperties.getChildren().size() > 0) {
+
+            Element propStatElement = new Element("propstat", WebdavConstants.DAV_NAMESPACE);
+            propStatElement.addContent(foundProperties);
+            Element status = new Element("status", WebdavConstants.DAV_NAMESPACE);
+            status.addContent(WebdavUtil.getStatusMessage(HttpServletResponse.SC_OK));
+            propStatElement.addContent(status);
+            responseElement.addContent(propStatElement);
+        }
+        
+
+        if (unknownProperties.getChildren().size() > 0 && !isWildcardPropRequest) {
+
+            Element status = new Element("status", WebdavConstants.DAV_NAMESPACE);
+            Element propStatUnknown = new Element("propstat", WebdavConstants.DAV_NAMESPACE);
+            propStatUnknown.addContent(unknownProperties);
+            propStatUnknown.addContent(status);
+            status.addContent(WebdavUtil.getStatusMessage(HttpServletResponse.SC_NOT_FOUND));
+            responseElement.addContent(propStatUnknown);
+        }
+        
+        return responseElement;
+    }
+
+   
+
+    /**
+     * Translates DAV property names to appropriate method calls on a
+     * <code>Resource</code> object and returns JDOM elements
+     * containing the name and possibly also the value.
+     *
+     * @param resource the <code>Resource</code> object to query
+     * information about
+     * @param propElement DAV property name
+     * @param appendValue determines whether the value should be added
+     * to the JDOM element
+     * @return a JDOM element containing the property and possibly its
+     * value, or <code>null</code> if not found.
+     * @throws IOException 
+     */
+    protected Element buildPropertyElement(Resource resource, Element propElement, 
+            boolean appendValue) throws IOException {
+        
+        String propertyName = propElement.getName();
+        org.jdom.Namespace namespace = propElement.getNamespace();
+
+        Element element = new Element(propertyName, propElement.getNamespace());
+        if (!appendValue) {
+            return element;
+        }
+      
+        if (namespace.equals(WebdavConstants.DAV_NAMESPACE)) {
+
+            if (propertyName.equals("creationdate")) {
+                element.addContent(formatCreationTime(
+                                       resource.getCreationTime()));
+            
+            } else if (propertyName.equals("displayname")) {
+                String name = resource.getName();
+                element.addContent(name);
+
+            } else if (propertyName.equals("getcontentlanguage")) {
+                Locale locale = LocaleHelper.getLocale(resource.getContentLanguage());
+                if (locale == null) return null;
+                element.addContent(locale.getLanguage());
+
+            } else if (propertyName.equals("getcontentlength")) {
+                if (resource.isCollection()) {
+                    element.addContent("0");
+                } else {
+                    element.addContent(String.valueOf(
+                                           resource.getContentLength()));
+                }
+
+            } else if (propertyName.equals("getcontenttype")) {
+                String type = resource.getContentType();
+                
+                if (type == null || type.equals("")) {
+                    if (!resource.isCollection()) {
+                        return null;
+                    }
+                    if (this.collectionContentType != null) {
+                        element.addContent(this.collectionContentType);
+                    }
+                } else {
+                    element.addContent(type);
+                }
+               
+            } else if (propertyName.equals("getetag")) {
+                if (resource.getSerial() == null) {
+                    return null;
+                }
+                element.addContent(resource.getSerial());
+
+            } else if (propertyName.equals("getlastmodified")) {
+                element.addContent(HttpUtil.getHttpDateString(resource.getLastModified()));
+
+            } else if (propertyName.equals("lockdiscovery")) {
+                element = buildLockDiscoveryElement(resource);
+
+            } else if (propertyName.equals("resourcetype")) {
+                if (resource.isCollection()) {
+                    element.addContent(new Element("collection",
+                                                   WebdavConstants.DAV_NAMESPACE));
+                }
+            } else if (propertyName.equals("source")) {
+                //element.addContent(buildSourceElement(resource));
+                return null;            
+
+            } else if (propertyName.equals("supportedlock")) {
+                element = buildSupportedLockElement(resource);
+
+            } else if (propertyName.equals("supported-privilege-set")) {
+                element = buildSupportedPrivilegeSetElement(resource);
+
+            } else if (propertyName.equals("current-user-privilege-set")) {
+                element = buildCurrentUserPrivilegeSetElement(resource);
+            }
+
+
+        } else {
+
+            vtk.repository.Namespace ns;
+            if (WebdavConstants.DEFAULT_NAMESPACE.equals(namespace)) {
+                ns = vtk.repository.Namespace.DEFAULT_NAMESPACE;
+            } else {
+                ns = vtk.repository.Namespace.getNamespace(namespace.getURI());
+            }
+
+            if ("resourceType".equals(propertyName)) {
+                Element e = new Element("resourceType", WebdavConstants.DEFAULT_NAMESPACE);
+                e.setText(resource.getResourceType());
+                return e;
+            }
+
+            Property property = resource.getProperty(ns, propertyName);
+            if (property == null) {
+                return null;
+            }
+            
+            PropertyTypeDefinition def = property.getDefinition();
+            if (def != null && def.isMultiple()) {
+                element = buildMultiValueCustomPropertyElement(property);
+            } else {
+                element = buildCustomPropertyElement(property);
+            }
+        }
+
+        return element;
+    }
+   
+
+
+    /**
+     * Builds a WebDAV "lockdiscovery" JDOM element for a resource.
+     *
+     * @param resource the resource to find lock information about
+     * @return a JDOM lockdiscovery element
+     */
+    private Element buildLockDiscoveryElement(Resource resource) throws IOException {
+        Element lockDiscovery = new Element("lockdiscovery",
+                WebdavConstants.DAV_NAMESPACE);
+
+        Lock lock = resource.getLock();
+        
+        if (lock == null) {
+            // No lock on resource, return empty 'lockdiscovery' element.
+            return lockDiscovery;
+        }
+        
+        Element activeLock = new Element("activelock",
+                WebdavConstants.DAV_NAMESPACE);
+
+        String type = "exclusive";
+        String scope = "write";
+
+        activeLock.addContent(new Element("locktype",
+                WebdavConstants.DAV_NAMESPACE).addContent(new Element(type,
+                WebdavConstants.DAV_NAMESPACE)));
+
+        activeLock.addContent(new Element("lockscope",
+                WebdavConstants.DAV_NAMESPACE).addContent(new Element(scope,
+                WebdavConstants.DAV_NAMESPACE)));
+
+        activeLock.addContent(new Element("depth",
+                WebdavConstants.DAV_NAMESPACE).addContent(lock.getDepth().toString()));
+
+        activeLock.addContent(LockController.buildLockOwnerElement(lock.getOwnerInfo()));
+
+        long timeout = lock.getTimeout().getTime() - System.currentTimeMillis();
+
+        if (timeout < 0) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Lock's timeout was: " + lock.getTimeout()
+                        + ", (has already timed out) ");
+            }
+            return null;
+        }
+
+        String timeoutStr = "Second-" + (timeout / 1000);
+
+        activeLock.addContent(new Element("timeout",
+                WebdavConstants.DAV_NAMESPACE).addContent(timeoutStr));
+
+        activeLock.addContent(new Element("locktoken",
+                        WebdavConstants.DAV_NAMESPACE).addContent(new Element(
+                        "href", WebdavConstants.DAV_NAMESPACE).addContent(lock.getLockToken())));
+
+        lockDiscovery.addContent(activeLock);
+
+        return lockDiscovery;
+    }
+   
+
+
+
+
+    /**
+     * Builds a WebDAV "supportedlock" JDOM element for a resource.
+     * 
+     * @param resource
+     *            the resource in question
+     * @return a JDOM supportedlock element
+     */
+    private Element buildSupportedLockElement(Resource resource) {
+        Element supportedLock = new Element("supportedlock", WebdavConstants.DAV_NAMESPACE);
+        Element lockEntry = new Element("lockentry", WebdavConstants.DAV_NAMESPACE);
+        lockEntry.addContent(
+                new Element("lockscope", WebdavConstants.DAV_NAMESPACE).addContent(
+                        new Element("exclusive", WebdavConstants.DAV_NAMESPACE)));
+        lockEntry.addContent(
+                new Element("locktype", WebdavConstants.DAV_NAMESPACE).addContent(
+                        new Element("write", WebdavConstants.DAV_NAMESPACE)));
+
+        supportedLock.addContent(lockEntry);
+
+        return supportedLock;
+    }
+
+
+    /**
+     * Builds a JDOM element for a custom (non "DAV:" namespace)
+     * resource property.
+     */
+    private Element buildCustomPropertyElement(Property property) {
+
+        /* FIXME: This is not a particurlarly nice/efficient way of
+         * building the element. Assume first that the property is an
+         * XML fragment, and try to build a document from it. If that
+         * fails, we assume it is a 'name = value' style property, and
+         * build a simple JDOM element from it. */
+        PropertyTypeDefinition propDef = property.getDefinition();
+        String name = propDef.getName();
+        org.jdom.Namespace namespace = org.jdom.Namespace.getNamespace(propDef.getNamespace().getUri());
+
+        if (vtk.repository.Namespace.DEFAULT_NAMESPACE.equals(propDef.getNamespace())) {
+            namespace = WebdavConstants.DEFAULT_NAMESPACE;
+        }
+
+        String value = property.getValue().getNativeStringRepresentation();
+
+        /* If the value does not contain both "<" and ">" we know for
+         * sure that it is not an XML fragment: */
+
+        if (value.indexOf("<") >= 0 && value.indexOf(">") >= 0) {
+            
+            try {
+        
+                String xml = "<" + name + " xmlns=\"" +
+                    namespace.getURI() + "\">" + value + "</" +
+                    name + ">";
+
+                Document doc = (new SAXBuilder()).build(
+                    new StringReader(xml));
+
+                if (!doc.getRootElement().getNamespace().equals(namespace)) {
+                    doc.getRootElement().setNamespace(namespace);
+                }
+                Element rootElement = doc.getRootElement();
+                rootElement.detach();
+                return rootElement;
+            
+            } catch (IOException e) {
+
+                /* Ignore this, build a simple JDOM element instead. */
+
+            } catch (JDOMException e) {
+
+                /* Ignore this, build a simple JDOM element instead. */
+            }
+        }
+        
+        Element propElement = new Element(name, namespace);
+        
+        // Format dates according to HTTP spec, 
+        // use value's native string representation for other types.
+        if (property.getValue().getType() == PropertyType.Type.TIMESTAMP
+                || property.getValue().getType() == PropertyType.Type.DATE) {
+            propElement.setText(WebdavUtil.formatPropertyDateValue(property.getDateValue()));
+        } else {
+            propElement.setText(property.getValue().getNativeStringRepresentation());    
+        }
+        
+        return propElement;
+
+    }
+   
+    /**
+     * Make a simple XML-list structure out of a multi-valued property.
+     */
+    private Element buildMultiValueCustomPropertyElement(Property property) {
+        Value[] values = property.getValues();
+
+        PropertyTypeDefinition propDef = property.getDefinition();
+        org.jdom.Namespace namespace = org.jdom.Namespace.getNamespace(propDef.getNamespace().getUri());
+
+        if (vtk.repository.Namespace.DEFAULT_NAMESPACE.equals(propDef.getNamespace())) {
+            namespace = WebdavConstants.DEFAULT_NAMESPACE;
+        }
+        Element propElement = new Element(propDef.getName(), namespace);
+        
+        Element valuesElement = new Element("values", WebdavConstants.MULTI_VALUE_NAMESPACE);
+        
+        for (int i=0; i<values.length; i++) {
+            Element valueElement = 
+                new Element("value", WebdavConstants.MULTI_VALUE_NAMESPACE);
+
+            // Format dates according to HTTP spec, 
+            // use value's native string representation for other types.
+            if (values[i].getType() == PropertyType.Type.TIMESTAMP ||
+                    values[i].getType() == PropertyType.Type.DATE) {
+                valueElement.setText(WebdavUtil.formatPropertyDateValue(values[i].getDateValue()));
+            } else {
+                valueElement.setText(values[i].getNativeStringRepresentation());
+            }
+            
+            valuesElement.addContent(valueElement);
+        }
+        
+        propElement.addContent(valuesElement);
+        
+        return propElement;
+    }
+
+
+    private String formatCreationTime(Date date) {
+        /* example: 1970-01-01T12:00:00Z */
+        FastDateFormat formatter = FastDateFormat.getInstance(
+                "yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.TimeZone.getTimeZone("UTC"));
+
+        return formatter.format(date);
+    }
+
+    /* EXPERIMENTAL WebDAV ACL STUFF: */
+
+    /**
+     * Build the supported privilege set element.
+     * @param resource the requested resource
+     */
+    protected Element buildSupportedPrivilegeSetElement(Resource resource) {
+
+        Element supportedPrivilege =
+            new Element("supported-privilege", WebdavConstants.DAV_NAMESPACE);
+
+        supportedPrivilege.addContent(
+            new Element("privilege", WebdavConstants.DAV_NAMESPACE).addContent(
+                new Element("all", WebdavConstants.DAV_NAMESPACE)));
+        supportedPrivilege.addContent(
+            new Element("description", WebdavConstants.DAV_NAMESPACE).addContent(
+                "Any operation"));
+
+
+        Element sub = new Element("supported-privilege", WebdavConstants.DAV_NAMESPACE);
+        sub.addContent(
+            new Element("privilege", WebdavConstants.DAV_NAMESPACE).addContent(
+                new Element("read", WebdavConstants.DAV_NAMESPACE)));
+        sub.addContent(new Element("description", WebdavConstants.DAV_NAMESPACE).addContent(
+                           "Read any object"));
+        
+        supportedPrivilege.addContent(sub);
+
+
+        sub = new Element("supported-privilege", WebdavConstants.DAV_NAMESPACE);
+        sub.addContent(
+            new Element("privilege", WebdavConstants.DAV_NAMESPACE).addContent(
+                new Element("write", WebdavConstants.DAV_NAMESPACE)));
+        sub.addContent(
+            new Element("description", WebdavConstants.DAV_NAMESPACE).addContent(
+                           "Write any object"));
+        
+        supportedPrivilege.addContent(sub);
+        
+        Element supportedPrivilegeSet =
+            new Element("supported-privilege-set", WebdavConstants.DAV_NAMESPACE);
+        supportedPrivilegeSet.addContent(supportedPrivilege);
+
+        return supportedPrivilegeSet;
+    }
+    
+
+
+    /**
+     * Builds the current user privilege set element.
+     * @param resource the requested resource
+     */
+    protected Element buildCurrentUserPrivilegeSetElement(Resource resource) {
+        
+        Element e = new Element("current-user-privilege-set", WebdavConstants.DAV_NAMESPACE);
+        e.addContent(new Element("privilege", WebdavConstants.DAV_NAMESPACE).addContent(
+                         new Element("read", WebdavConstants.DAV_NAMESPACE)));
+        e.addContent(new Element("privilege", WebdavConstants.DAV_NAMESPACE).addContent(
+                         new Element("write", WebdavConstants.DAV_NAMESPACE)));
+        e.addContent(new Element("privilege", WebdavConstants.DAV_NAMESPACE).addContent(
+                         new Element("all", WebdavConstants.DAV_NAMESPACE)));
+        return e;
     }
 }

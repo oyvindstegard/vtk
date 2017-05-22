@@ -161,14 +161,6 @@
     <property name="addParam" value="report-type" /> 
   </bean>
 
-  <bean id="createFromDropDown.viewResolver" parent="viewResolver">
-    <property name="views">
-      <map>
-        <entry key="createFromDropDown.view" value-ref="createFromDropDown.view" />
-      </map>
-    </property>
-  </bean>
-  
   <bean id="createFromDropDown.view" parent="freemarkerView">
     <property name="url" value="pages/create-from-drop-down.ftl" />
     <property name="referenceDataProviders">
@@ -210,14 +202,6 @@
 
   <bean id="createDropDownHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
     <property name="viewName" value="createDropDown.view" />
-  </bean>
-
- <bean id="createDropDown.viewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="createDropDown.view" value-ref="createDropDown.view" />
-      </map>
-    </property>
   </bean>
 
   <bean id="createDropDown.view" parent="freemarkerView">

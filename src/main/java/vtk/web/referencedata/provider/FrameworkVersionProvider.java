@@ -55,9 +55,8 @@ import vtk.web.referencedata.ReferenceDataProvider;
 public class FrameworkVersionProvider implements ReferenceDataProvider {
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-        throws Exception {
-        Map<String, Object> versionModel = new HashMap<String, Object>();
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
+        Map<String, Object> versionModel = new HashMap<>();
         versionModel.put("version", Version.getVersion());
         versionModel.put("buildDate", Version.getBuildDate());
         versionModel.put("buildHost", Version.getBuildHost());

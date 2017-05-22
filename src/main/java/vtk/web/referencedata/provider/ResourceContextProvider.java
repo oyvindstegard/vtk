@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +124,7 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
     }
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         Map<String, Object> resourceContextModel = new HashMap<>();
 
@@ -152,8 +154,13 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
                         resource = repository.retrieve(requestContext.getSecurityToken(),
                                 requestContext.getResourceURI(), this.retrieveForProcessing, rev);
                     }
-                } catch (RepositoryException e) {
                 }
+                catch (RepositoryException e) {
+                }
+                catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+
             }
         }
 
@@ -166,7 +173,7 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
                 resource = repository.retrieve(requestContext.getSecurityToken(), requestContext.getResourceURI(),
                         this.retrieveForProcessing);
             } 
-            catch (RepositoryException e) { }
+            catch (RepositoryException|IOException e) { }
         }
         if (resource != null && !resource.getURI().isRoot()) {
             try {

@@ -30,6 +30,8 @@
  */
 package vtk.web.view.components.menu;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -158,7 +160,7 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
         this.retrieveForProcessing = retrieveForProcessing;
     }
 
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         ListMenu<String> menu = new ListMenu<>();
         menu.setLabel(label);
@@ -166,50 +168,55 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
-        Resource resource = repository.retrieve(requestContext.getSecurityToken(),
-                requestContext.getResourceURI(), retrieveForProcessing);
-        Service currentService = requestContext.getService();
+        try {
+            Resource resource = repository.retrieve(requestContext.getSecurityToken(),
+                    requestContext.getResourceURI(), retrieveForProcessing);
+            Service currentService = requestContext.getService();
 
-        MenuItem<String> activeItem = null;
+            MenuItem<String> activeItem = null;
 
-        int servicesLinkableCounts = 0;
+            int servicesLinkableCounts = 0;
 
-        for (Service service : services) {
-            String label = service.getName();
-            String title = getTitle(resource, service, request);
-            URL url = null;
-            try {
-                url = service.constructURL(resource, principal, matchAssertions);
-                servicesLinkableCounts++;
-            } catch (ServiceUnlinkableException ex) {
-                // ok
+            for (Service service : services) {
+                String label = service.getName();
+                String title = getTitle(resource, service, request);
+                URL url = null;
+                try {
+                    url = service.constructURL(resource, principal, matchAssertions);
+                    servicesLinkableCounts++;
+                } catch (ServiceUnlinkableException ex) {
+                    // ok
+                }
+
+                MenuItem<String> item = new MenuItem<>(title);
+                item.setLabel(label);
+                item.setTitle(title);
+                item.setUrl(url);
+
+                if (activeItem == null && isActiveService(currentService, service)) {
+                    item.setActive(true);
+                    activeItem = item;
+                }
+
+                menu.addItem(item);
             }
 
-            MenuItem<String> item = new MenuItem<>(title);
-            item.setLabel(label);
-            item.setTitle(title);
-            item.setUrl(url);
+            menu.setActiveItem(activeItem);
+            model.put(modelName, menu);
+            model.put(modelName + "ServicesLinkable", servicesLinkableCounts);
 
-            if (activeItem == null && isActiveService(currentService, service)) {
-                item.setActive(true);
-                activeItem = item;
+            if (referenceDataProviders != null) {
+                for (ReferenceDataProvider provider : referenceDataProviders) {
+                    provider.referenceData(model, request);
+                }
             }
 
-            menu.addItem(item);
+            if (referenceDataProvider != null) {
+                referenceDataProvider.referenceData(model, request);
+            }
         }
-
-        menu.setActiveItem(activeItem);
-        model.put(modelName, menu);
-        model.put(modelName + "ServicesLinkable", servicesLinkableCounts);
-
-        if (referenceDataProviders != null) {
-            for (ReferenceDataProvider provider : referenceDataProviders) {
-                provider.referenceData(model, request);
-            }
-        }
-
-        if (referenceDataProvider != null) {
-            referenceDataProvider.referenceData(model, request);
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
