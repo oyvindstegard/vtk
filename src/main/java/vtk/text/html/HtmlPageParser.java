@@ -58,17 +58,12 @@ import org.htmlparser.util.NodeList;
  */
 public class HtmlPageParser {
 
-    private Set<String> compositeTags = DefaultHtmlTagConfiguration.compositeTags();
     private Set<String> emptyTags = DefaultHtmlTagConfiguration.emptyTags();
     
     private String defaultDoctype = HtmlPage.DEFAULT_DOCTYPE;
 
     public void setDefaultDoctype(String defaultDoctype) {
         this.defaultDoctype = defaultDoctype;
-    }
-
-    public void setCompositeTags(Set<String> compositeTags) {
-        this.compositeTags = compositeTags;
     }
     
     public void setEmptyTags(Set<String> emptyTags) {
@@ -121,14 +116,11 @@ public class HtmlPageParser {
         Parser parser = new Parser(lexer);
 
         PrototypicalNodeFactory factory = new PrototypicalNodeFactory();
+        factory.setTagPrototype(new org.htmlparser.tags.CompositeTag());
 
-        for (String tag: this.compositeTags) {
-            factory.registerTag(new CompositeTag(new String[]{tag}));
-        }
         for (String tag: this.emptyTags) {
             factory.registerTag(new EmptyTag(new String[]{tag}));
         }
-        factory.registerTag(new CompositeTag(new String[] {this.getClass().getName()}));
         parser.setNodeFactory(factory);
 
         NodeList nodeList = parser.parse(null);

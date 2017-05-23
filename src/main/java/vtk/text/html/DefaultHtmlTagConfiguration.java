@@ -36,62 +36,25 @@ import java.util.Set;
 
 
 public final class DefaultHtmlTagConfiguration {
-
-    private static final Set<String> compositeTags = new HashSet<String>();
     private static final Set<String> emptyTags = new HashSet<String>();
     
     static {
-        compositeTags.add("button");
-        compositeTags.add("pre");
-        compositeTags.add("b");
-        compositeTags.add("address");
-        compositeTags.add("map");
-        compositeTags.add("thead");
-        compositeTags.add("tfoot");
-        compositeTags.add("tbody");
-        compositeTags.add("fieldset");
-        compositeTags.add("colgroup");
-        compositeTags.add("optgroup");
-        compositeTags.add("small");
-        compositeTags.add("big");
-        compositeTags.add("i");
-        compositeTags.add("tt");
-        compositeTags.add("em");
-        compositeTags.add("acronym");
-        compositeTags.add("strong");
-        compositeTags.add("code");
-        compositeTags.add("samp");
-        compositeTags.add("kbd");
-        compositeTags.add("var");
-        compositeTags.add("iframe");
-        compositeTags.add("noscript");
-        compositeTags.add("blockquote");
-        compositeTags.add("strike");
-        compositeTags.add("s");
-        compositeTags.add("dd");
-        compositeTags.add("dl");
-        
-        compositeTags.add("figure");
-        compositeTags.add("figcaption");
-        compositeTags.add("audio");
-        compositeTags.add("video");
-        
-        emptyTags.add("br");
         emptyTags.add("area");
-        emptyTags.add("link");
-        emptyTags.add("img");
-        emptyTags.add("param");
-        emptyTags.add("hr");
-        emptyTags.add("input");
-        emptyTags.add("col");
         emptyTags.add("base");
+        emptyTags.add("br");
+        emptyTags.add("col");
+        emptyTags.add("embed");
+        emptyTags.add("hr");
+        emptyTags.add("img");
+        emptyTags.add("input");
+        emptyTags.add("keygen");
+        emptyTags.add("link");
         emptyTags.add("meta");
+        emptyTags.add("param");
         emptyTags.add("source");
+        emptyTags.add("track");
+        emptyTags.add("wbr");
         emptyTags.add("esi:include");
-    }
-
-    public static Set<String> compositeTags() {
-        return Collections.unmodifiableSet(compositeTags);
     }
     
     public static Set<String> emptyTags() {
