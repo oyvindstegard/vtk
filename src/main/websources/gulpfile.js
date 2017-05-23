@@ -89,6 +89,12 @@ gulp.task('flash-copy', function () {
 gulp.task('js-copy', function () {
     return gulp.src('js/**/*.js')
         .pipe((config.production) ? minifyJs({keep_fnames: true}) : util.noop())
+        .on('error', function (e) {
+            util.log(e);
+            if (config.production) {
+              process.exit(1);
+            }
+        })
         .pipe(gulp.dest(TARGET + "/js"));
 });
 
