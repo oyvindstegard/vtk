@@ -49,6 +49,7 @@ import vtk.text.html.HtmlPageParser;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.servlet.AbstractServletFilter;
+import vtk.web.servlet.VTKServlet;
 
 public class DecoratingServletFilter extends AbstractServletFilter {
     private HtmlPageParser htmlParser;
@@ -91,6 +92,10 @@ public class DecoratingServletFilter extends AbstractServletFilter {
     }
 
     private boolean preventDecorating(HttpServletRequest request) {
+        if ("true".equals(request.getAttribute(VTKServlet.INDEX_FILE_REQUEST_ATTRIBUTE))) {
+            return true;
+        }
+
         if (preventDecoratingParameter == null) return false;
         if (request.getParameter(preventDecoratingParameter) != null)
             return true;

@@ -282,7 +282,7 @@
 
   <bean id="previewXmlResourceHandler" parent="abstractPreviewIframe">
     <property name="service" ref="displayResourceService" />
-    <property name="viewName" value="previewAdminIframe" />
+    <property name="viewName" value="previewAdminIframeView" />
   </bean>
 
 
@@ -290,7 +290,7 @@
         class="vtk.web.display.xml.DisplayXmlResourceController">
     <description>This is used as parent for all similar handlers</description>
     <property name="transformerManager" ref="transformerManager" />
-    <property name="viewName" value="transformXmlResource"/>
+    <property name="viewName" value="transformXmlView"/>
     <property name="handleLastModified" value="true" />
     <property name="lastModifiedEvaluator" ref="displayXmlHandlerLastModifiedEvaluator" />
   </bean> 
@@ -314,7 +314,7 @@
   <bean id="displayRssResourceHandler" 
     class="vtk.web.display.xml.DisplayXmlResourceController">
     <property name="transformerManager" ref="rssTransformerManager" />
-    <property name="viewName" value="transformRssResource" />
+    <property name="viewName" value="transformRssView" />
   </bean>
 
 

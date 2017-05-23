@@ -587,6 +587,7 @@
     </property>
     <property name="referenceDataProviders">
       <list>
+        <ref bean="resourceContextProvider" />
         <bean class="vtk.web.referencedata.provider.StaticURIServiceURLProvider">
           <property name="service" ref="staticResourceService" />
           <property name="path" value="${editor.fck.resourcesURL}" />

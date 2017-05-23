@@ -38,7 +38,7 @@
         </bean>
       </list>
     </property>
-    <property name="handler" ref="publish.globalConfirmUnpublishHandler" />
+    <property name="handler" ref="publish.globalConfirmPublishHandler" />
     <property name="attributes">
       <map>
         <entry key="resourceMenuRightOrder">
@@ -53,15 +53,14 @@
   </bean>
 
   <bean id="publish.globalConfirmPublishHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="aboutView" />
-    <property name="publishService" ref="publish.globalPublishResourceConfirmedService" />
+    <constructor-arg name="viewName" value="aboutView" />
+    <constructor-arg name="publishService" ref="publish.globalPublishResourceConfirmedService" />
+    <constructor-arg name="unpublishService" ref="publish.globalUnpublishResourceConfirmedService" />
   </bean>
 
-  <bean id="publish.globalConfirmUnpublishHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="aboutView" />
-    <property name="publishService" ref="publish.globalUnpublishResourceConfirmedService" />
+  <bean parent="resourceMenuRight.referenceDataProvidersBuilder">
+    <property name="arguments" ref="publish.globalConfirmPublishHandler" />
   </bean>
-
 
   <bean id="publish.publishResourceService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
@@ -95,7 +94,7 @@
         </bean>
       </list>
     </property>
-    <property name="handler" ref="confirmUnpublishResourceHandler" />
+    <property name="handler" ref="confirmPublishResourceHandler" />
     <property name="attributes">
       <map>
         <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
@@ -104,13 +103,9 @@
   </bean>
 
   <bean id="confirmPublishResourceHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="publish.confirmView" />
-    <property name="publishService" ref="publish.publishResourceConfirmedService" />
-  </bean>
-
-  <bean id="confirmUnpublishResourceHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <property name="viewName" value="publish.confirmView" />
-    <property name="publishService" ref="publish.unpublishResourceConfirmedService" />
+    <constructor-arg name="viewName" value="publish.confirmView" />
+    <constructor-arg name="publishService" ref="publish.publishResourceConfirmedService" />
+    <constructor-arg name="unpublishService" ref="publish.unpublishResourceConfirmedService" />
   </bean>
 
   <bean id="publish.confirmView" parent="freemarkerView">
