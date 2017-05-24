@@ -58,7 +58,6 @@
         parent="repositoryAware">
     <property name="transformerManager" ref="editTransformerManager" />
     <property name="schemaPropDef" ref="schemaPropDef" />
-    <property name="browseService" ref="browseService" />
 
     <property name="viewName" value="edit" />
     <property name="finishViewName" value="redirectToManage" />

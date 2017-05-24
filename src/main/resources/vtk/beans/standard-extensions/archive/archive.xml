@@ -10,6 +10,7 @@
         <entry key="resourceMenuLeftOrder">
           <value type="java.lang.Integer">1001</value>
         </entry>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
       </map>
     </property>
     <property name="assertions">
@@ -34,7 +35,7 @@
     <property name="parentViewOnSuccess" value="true" />
     <property name="copyAction" ref="manage.createArchiveAction" />
     <property name="commandName" value="command" />
-    <property name="formView" value="aboutView" />
+    <property name="formView" value="manage.createArchiveView" />
     <property name="successView" value="redirectToManageView" />
     <property name="cancelView" value="redirectToManageView" />
     <property name="validator">
@@ -42,6 +43,16 @@
     </property>
   </bean>
   
+  <bean id="manage.createArchiveView" parent="freemarkerView">
+    <property name="url" value="actions/create-archive.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+
+
   <bean parent="manage.resourceMenuLeftBuilder">
     <property name="arguments" ref="manage.createArchiveService" />
   </bean>
@@ -61,6 +72,7 @@
         <entry key="resourceMenuLeftOrder">
           <value type="java.lang.Integer">1001</value>
         </entry>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
       </map>
     </property>
     <property name="assertions">
@@ -88,7 +100,7 @@
     <property name="parentViewOnSuccess" value="true" />
     <property name="copyAction" ref="manage.expandArchiveAction" />
     <property name="commandName" value="command" />
-    <property name="formView" value="aboutView" />
+    <property name="formView" value="manage.expandArchiveView" />
     <property name="successView" value="redirectToManageView" />
     <property name="cancelView" value="redirectToManageView" />
     <property name="validator">
@@ -96,6 +108,15 @@
     </property>
   </bean>
   
+  <bean id="manage.expandArchiveView" parent="freemarkerView">
+    <property name="url" value="actions/expand-archive.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="manage.expandArchiveAction"
         class="vtk.web.actions.convert.ExpandArchiveAction">
     <property name="repository" ref="repository" />

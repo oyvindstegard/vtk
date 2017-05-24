@@ -58,7 +58,6 @@
   <import resource="commenting.xml" />
   <import resource="root-management.xml" />
   <import resource="metrics.xml" />
-  <import resource="browse.xml" />
   <import resource="webdav.xml" />
   <import resource="source.xml" />
   <import resource="plaintextedit.xml" />
