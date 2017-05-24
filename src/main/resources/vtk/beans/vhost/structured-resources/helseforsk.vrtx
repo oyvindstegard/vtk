@@ -93,6 +93,7 @@ resourcetype helseforsk {
     [def biobank document.properties.biobank]
     
 	[def approvalInternalStatus document.properties.approvalInternalStatus]
+	[def approvalInternalApprover document.properties.approvalInternalApprover]
 	[def approvalRekStatus document.properties.approvalRekStatus]
 	[def approvalNsdStatus document.properties.approvalNsdStatus]
 	[def approvalDatatilsynetStatus document.properties.approvalDatatilsynetStatus]
@@ -138,11 +139,13 @@ resourcetype helseforsk {
                     [call "comp:filenameFromPath" { "doc": doc }]
                   [endlist]
                 </ul>
-              [elseif approvalInternalApprover != null]  
-                <p>[localized "approvalInternalApprovedBy"]: [val approvalInternalApprover]</p>
               [else]
                 [if approvalInternalStatus = "APPROVED"]
-                  <p>[localized "documentsNotUploaded"]</p>
+                  [if approvalInternalApprover != null] 
+                    <p>[localized "approvalInternalApprovedBy"]: [val approvalInternalApprover]</p>
+                  [else]
+                    <p>[localized "documentsNotUploaded"]</p>
+                  [endif]
                 [endif]
               [endif]
             [endif]
