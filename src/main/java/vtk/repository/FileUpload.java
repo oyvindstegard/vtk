@@ -120,6 +120,9 @@ public class FileUpload {
                 );
             }
         }
+        catch (ValidationException e) {
+            throw e;
+        }
         catch (Exception e) {
             logger.warn("Caught exception while performing file upload", e);
             throw new ValidationException("manage.upload.error",
