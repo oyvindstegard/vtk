@@ -5,6 +5,7 @@
 
 <#if tabMessage?exists> <#-- the general one -->
   <div class="tabMessage">${tabMessage}</div>
+
 </#if>
 
 <#-- XXX: remove -->

@@ -19,6 +19,7 @@
         <entry key="resourceMenuRightOrder">
           <value type="java.lang.Integer">300</value>
         </entry>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
       </map>
     </property>
   </bean>
@@ -44,6 +45,7 @@
         <entry key="resourceMenuRightOrder">
           <value type="java.lang.Integer">300</value>
         </entry>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
       </map>
     </property>
   </bean>
@@ -53,9 +55,18 @@
   </bean>
 
   <bean id="publish.globalConfirmPublishHandler" class="vtk.web.actions.publish.ConfirmPublishController">
-    <constructor-arg name="viewName" value="aboutView" />
+    <constructor-arg name="viewName" value="publish.globalConfirmView" />
     <constructor-arg name="publishService" ref="publish.globalPublishResourceConfirmedService" />
     <constructor-arg name="unpublishService" ref="publish.globalUnpublishResourceConfirmedService" />
+  </bean>
+
+  <bean id="publish.globalConfirmView" parent="freemarkerView">
+    <property name="url" value="actions/publish-confirm.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
   </bean>
 
   <bean parent="resourceMenuRight.referenceDataProvidersBuilder">
@@ -182,7 +193,7 @@
   </bean>
 
   <bean id="publishResourceHandler" class="vtk.web.actions.publish.PublishResourceController">
-    <property name="successView" value="redirectToPublish" />
+    <property name="successView" value="redirectToManageView" />
     <property name="publishDatePropDef" ref="publishDatePropDef" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>

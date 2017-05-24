@@ -139,8 +139,8 @@
     <property name="urlPostProcessors" ref="manage.urlPostProcessors" />
     <property name="servletFilters">
       <list>
-        <ref bean="system.decoratingFilter" />
         <ref bean="system.csrfPreventionHandler" />
+        <ref bean="system.decoratingFilter" />
       </list>
     </property>
     <property name="handlerInterceptors">
@@ -347,6 +347,7 @@
         <entry key="resourceMenuRightOrder">
           <value type="java.lang.Integer">999</value>
         </entry>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
       </map>
     </property>
     <property name="handler" ref="manage.unlockFormHandler" />
@@ -388,6 +389,11 @@
       </list>
     </property>
     <property name="handler" ref="fileUploadHandler" />
+    <property name="attributes">
+      <map>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
+      </map>
+    </property>
   </bean>
 
   <bean parent="collectionMenuBuilder">
@@ -408,6 +414,11 @@
       </list>
     </property>
     <property name="handler" ref="createDocumentHandler" />
+    <property name="attributes">
+      <map>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
+      </map>
+    </property>
   </bean>
 
   <bean parent="collectionMenuBuilder">
@@ -429,6 +440,11 @@
       </list>
     </property>
     <property name="handler" ref="createCollectionHandler" />
+    <property name="attributes">
+      <map>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
+      </map>
+    </property>
   </bean>
 
   <bean parent="collectionMenuBuilder">
@@ -443,6 +459,7 @@
         <entry key="resourceMenuLeftOrder">
           <value type="java.lang.Integer">0</value>
         </entry>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
       </map>
     </property>
     <property name="assertions">
@@ -931,7 +948,7 @@
   </bean>
 
   <bean id="fileUploadHandler" class="vtk.web.actions.create.FileUploadController">
-    <property name="formView" value="manageCollectionListingView" />
+    <property name="formView" value="manage.fileUploadView" />
     <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="uploadForm" />
     <property name="downcaseNames" value="true" />
@@ -939,18 +956,36 @@
     <property name="tempDir" value="${upload.tempDir}" />
   </bean>
 
+  <bean id="manage.fileUploadView" parent="freemarkerView">
+    <property name="url" value="actions/upload.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="manage.unlockResourceHandler" class="vtk.web.actions.lock.UnlockResourceController">
-    <property name="viewName" value="redirectToManageViewView" />
+    <property name="viewName" value="redirectToManageView" />
   </bean>
 
   <bean id="manage.unlockFormHandler" class="vtk.web.actions.lock.UnlockFormController">
-    <property name="formView" value="aboutView" />
+    <property name="formView" value="manage.unlockFormView" />
     <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="unlockFormCommand" />
   </bean>
 
+  <bean id="manage.unlockFormView" parent="freemarkerView">
+    <property name="url" value="actions/unlock-form.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="createDocumentHandler" class="vtk.web.actions.create.TemplateBasedCreateController">
-    <property name="formView" value="manageCollectionListingView" />
+    <property name="formView" value="createDocumentView" />
     <property name="cancelView" value="redirectToManageView" />
     <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="createDocumentForm" />
@@ -963,6 +998,15 @@
     </property>
     <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
     <property name="templateManager" ref="templates.resourceTemplateManager" />
+  </bean>
+
+  <bean id="createDocumentView" parent="freemarkerView">
+    <property name="url" value="actions/create-document.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
   </bean>
 
   <bean id="defaultDocumentTemplates" class="vtk.web.actions.create.DefaultDocumentTemplates">
@@ -1004,7 +1048,7 @@
   </bean>
 
   <bean id="createCollectionHandler" class="vtk.web.actions.create.TemplateBasedCreateCollectionController">
-    <property name="formView" value="manageCollectionListingView" />
+    <property name="formView" value="manage.createCollectionView" />
     <property name="cancelView" value="redirectToManageView" />
     <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="createCollectionForm" />
@@ -1027,14 +1071,32 @@
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>
 
+  <bean id="manage.createCollectionView" parent="freemarkerView">
+    <property name="url" value="actions/create-collection.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="renameHandler" class="vtk.web.actions.copymove.RenameController">
-    <property name="formView" value="aboutView" />
+    <property name="formView" value="renameView" />
     <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="renameCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.copymove.RenameCommandValidator">
         <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
       </bean>
+    </property>
+  </bean>
+
+  <bean id="renameView" parent="freemarkerView">
+    <property name="url" value="actions/rename.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
     </property>
   </bean>
 
@@ -1497,11 +1559,16 @@
     <property name="name" value="tab-menu" />
     <property name="description" value="Displays the admin tab menu" />
     <property name="view" ref="manage.tabMenuView" />
-    <property name="exposeMvcModel" value="true" />
+    <property name="exposeMvcModel" value="false" />
   </bean>
 
   <bean id="manage.tabMenuView" parent="freemarkerView">
     <property name="url" value="system/tab-menu.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="manage.tabMenuProvider" />
+      </list>
+    </property>
   </bean>
 
   <bean id="manage.tabMessageComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
@@ -1816,10 +1883,9 @@
     <property name="referenceDataProviders">
       <list>
         <ref bean="parentLinkProvider" />
-        <ref bean="collectionMenuProvider" />
         <ref bean="manageCollectionlistingProvider" />
         <ref bean="resourceContextProvider" />
-        <ref bean="collectionMenuProvider" />
+        <!--ref bean="manage.tabMenuProvider" /-->
         <bean class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
           <property name="service" ref="manageCollectionListingService" />
           <property name="modelName" value="action" />
@@ -1891,7 +1957,7 @@
     <property name="retrieveForProcessing" value="false" />
   </bean>
 
-  <bean id="collectionMenuProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
+  <bean id="manage.tabMenuProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
     <constructor-arg value="tabMenuRight" />
     <constructor-arg ref="collectionActionServicesFactory" />
   </bean>
@@ -2184,7 +2250,6 @@
         <!--ref bean="readPermissionsProvider" /-->
         <ref bean="publishProvider" />
         <ref bean="sessionBeanProvider" />
-        <ref bean="browseUrlProvider" />
       </list>
     </constructor-arg>
   </bean>
@@ -2348,6 +2413,11 @@
       </list>
     </property>
     <property name="handler" ref="reauthenticateHandler" />
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="reauthenticateHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
