@@ -22,7 +22,8 @@ resourcetype helseforsk {
 	biobankNumber: string,
 	documents: string multiple,
 	approvalInternalStatus : string,
-	approvalInternal : string multiple
+	approvalInternal : string multiple,
+	approvalInternalApprover : string,
 	approvalRekStatus : string,
 	approvalRek : string multiple,
 	approvalRekNoNeedReason : string,
@@ -137,6 +138,8 @@ resourcetype helseforsk {
                     [call "comp:filenameFromPath" { "doc": doc }]
                   [endlist]
                 </ul>
+              [elseif approvalInternalApprover != null]  
+                <p>[localized "approvalInternalApprovedBy"]: [val approvalInternalApprover]</p>
               [else]
                 [if approvalInternalStatus = "APPROVED"]
                   <p>[localized "documentsNotUploaded"]</p>
@@ -326,6 +329,7 @@ resourcetype helseforsk {
     documents : (en : "Project description", no : "Prosjektbeskrivelse", nn : "Prosjektbeskrivelse"),
     approvals : (en : "Approvals", no : "Godkjenninger", nn : "Godkjenningar"),
     approvalInternal : (en : "Internal approval", no : "Intern godkjenning", nn : "Intern godkjenning"),
+    approvalInternalApprovedBy : (en : "Approved by", no : "Godkjent av", nn : "Godkjent av"),
     approvalRek : (en : "REK", no : "REK", nn : "REK"),
     approvalNsd : (en : "NSD", no : "NSD", nn : "NSD"),
     approvalDatatilsynet : (en : "Datatilsynet", no : "Datatilsynet", nn : "Datatilsynet"),
