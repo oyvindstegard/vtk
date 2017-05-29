@@ -1,4 +1,4 @@
-# VTK CMS
+# The VTK Web Framework README
 
 ## Installation
 
@@ -11,23 +11,22 @@ are necessary:
 2. Create a database using the DDL in the
    `src/main/sql/postgresql-schema.sql` (currently only PostgreSQL is
    supported, but HSQLDB has also been known to work in the past).
-   
-   Depending on how you set up the database, you may need to grant the necessary
+
+    Depending on how you set up the database, you may need to grant the necessary
    privileges to your JDBC user (e.g. `src/main/sql/grant_to_vrtx.sql` for a
    jdbc user vrtx).
 
 3. Set up the configuration. Configuration should be placed in the
    files `~/.vtk.properties` and `~/.vrtx.properties` 
    (also work as regular non-hidden files).
-```
-   indexStorageRootPath = [an empty directory for storing indices]
-   jdbcUsername = [your JDBC user]
-   jdbcPassword = [your JDBC password]
-   repositoryDataDirectory = [an empty directory for storing files]
-   repositoryTrashCanDirectory = [an empty directory for storing "deleted" files]
-   repositoryRevisionDirectory = [an empty directory for storing file revisions]
-   databaseURL = [your JDBC URL, e.g. jdbc:postgresql:my-user>]
-```
+
+        indexStorageRootPath = [an empty directory for storing indices]
+        jdbcUsername = [your JDBC user]
+        jdbcPassword = [your JDBC password]
+        repositoryDataDirectory = [an empty directory for storing files]
+        repositoryTrashCanDirectory = [an empty directory for storing "deleted" files]
+        repositoryRevisionDirectory = [an empty directory for storing file revisions]
+        databaseURL = [your JDBC URL, e.g. jdbc:postgresql:my-user>]
 
 4. Run the command `mvn jetty:run` (standing in the project
    directory). 
@@ -36,7 +35,8 @@ are necessary:
    http://localhost:9322/ and the WebDAV service on
    http://localhost:9321/. 
    
-    Log in as `root@localhost:fish` or user `user@localhost:pw`.
+    Log in as `root@localhost:fish` or user `user@localhost:pw` through the
+    [administration interface](http://localhost:9322/?vrtx=admin).
 
 6. See the default configuration file
    `src/main/resources/vtk/beans/vtk.properties` for
@@ -46,7 +46,26 @@ are necessary:
    `~/.vrtx-context.xml` (loaded if it exists).
 
 8. Create `folder-templates`, `document-templates` and set up simple
-   decorating in repository:
+   decorating using commands described in the following sub sections.
+
+### Setting some root node properties:
+
+Execute the following command in a Bourne-compatible shell:
+
+```
+curl -s -uroot@localhost:fish -X PROPPATCH http://localhost:9321/ -H 'Content-type: text/xml' \
+     --data-binary @- <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<D:propertyupdate xmlns:D="DAV:">
+  <D:set>
+    <D:prop><userTitle xmlns="vrtx">The VTK Web Framework</userTitle></D:prop>
+  </D:set>
+  <D:set>
+    <D:prop><recursive-listing xmlns="vrtx">false</recursive-listing></D:prop>
+  </D:set>
+</D:propertyupdate>
+EOF
+```
 
 ### Folder templates:
 
@@ -119,9 +138,9 @@ curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/decorating/templ
     <title>${document:title}</title>
     <!-- Include ugly CSS: -->
     <style type="text/css">
-      body { background: brown; }
-      h1 { background: pink; }
-      div#vrtx-collections { background: yellow; }
+      body { background: #d9b38c; }
+      h1 { background: #ffe6ea; }
+      div#vrtx-collections { background: #ffffcc; }
     </style>
   </head>
   <body>
@@ -144,4 +163,14 @@ curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/decorating/title
 
 EOF
 
+```
+
+### Upload README.md
+
+Assuming current directory is the VTK source code root, execute the following in
+a Bourne-compatible shell:
+
+```
+curl -uroot@localhost:fish -X PUT -H "Content-type: text/markdown; charset=UTF-8" \
+     --data-binary @README.md http://localhost:9321/README.md
 ```
