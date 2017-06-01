@@ -137,6 +137,11 @@
   <bean id="displayEmbedResource" class="vtk.web.display.media.DisplayEmbedMediaController">
     <property name="mediaPlayer" ref="mediaPlayer" />
     <property name="viewName" value="viewEmbedMediaPlayer" />
+    <property name="readRestrictedHeaders">
+      <map>
+        <entry key="X-Frame-Options" value="DENY" />
+      </map>
+    </property>
   </bean>
 
   <bean id="displayEmbedMediaResourceViewResolver" parent="viewResolver">
