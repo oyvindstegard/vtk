@@ -100,18 +100,15 @@ function GetUrlParam( paramName )
 
 function OpenFile( fileUrl )
 {
-    var oMsg =
-    {
-        'type'            : 'browse-select-resource',
-        'url'             : fileUrl,
-        'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
-    };
-
     var protocol;
     var host;
+    var ua = navigator.userAgent.toLowerCase() ;
     try {
         protocol = window.top.opener.location.protocol;
         host = window.top.opener.location.host;
+        if ( / trident\//.test(ua) ) { // IE <= 11
+            return LegacyOpenFile( fileUrl );
+        }
     } catch (e) {
         var openerParam = GetUrlParam( 'opener' );
         var parts = openerParam.split('/');
@@ -129,12 +126,35 @@ function OpenFile( fileUrl )
     }
     var sDomain = protocol + '//' + host ;
 
+    var oMsg =
+    {
+        'type'            : 'browse-select-resource',
+        'url'             : fileUrl,
+        'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
+    };
+
     window.top.opener.postMessage( oMsg, sDomain ) ;
-    var ua = navigator.userAgent.toLowerCase() ;
     window.top.close() ;
 
     if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
     {
+        window.top.opener.focus() ;
+    }
+}
+
+function LegacyOpenFile( fileUrl )
+{
+    if(window.top.opener.CKEDITOR) {
+        funcNum = GetUrlParam('CKEditorFuncNum');
+        window.top.opener.CKEDITOR.tools.callFunction( funcNum, fileUrl);
+        window.top.opener.SetUrl( fileUrl );
+    } else {
+        window.top.opener.SetUrl( fileUrl );
+    }
+
+    var ua = navigator.userAgent.toLowerCase();
+    window.top.close() ;
+    if(!(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua))) {
         window.top.opener.focus() ;
     }
 }
