@@ -74,7 +74,7 @@ public class ApiResponseBuilder {
     }
     
     public ApiResponseBuilder message(String message) {
-        this.handler= response -> {
+        this.handler = response -> {
           try {
               PrintWriter writer = response.getWriter();
               writer.write(message);
