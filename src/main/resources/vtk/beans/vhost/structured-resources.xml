@@ -93,6 +93,7 @@
         <ref bean="resourceTypeIsNotHelseforsk" />
         <ref bean="resourceTypeIsNotSamletProgram" />
         <ref bean="resourceTypeIsNotSamletRetning" />
+        <ref bean="resourceIsNotTpOnlyCourseSchedule" />
       </list>
     </property>
   </bean>
@@ -126,6 +127,32 @@
     <property name="resourceType" value="course-schedule" />
     <property name="invert" value="true" />
   </bean>
+
+  <bean id="resourceTypeIsCourseSchedule" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+    <property name="resourceType" value="course-schedule" />
+  </bean>
+
+  <bean id="resourcePropertyIsTpOnly" class="vtk.web.service.ResourcePropertyAssertion">
+    <property name="namespace" ref="STRUCTURED_RESOURCE_NAMESPACE" />
+    <property name="name" value="tp-only" />
+    <property name="value" value="true" />
+    <property name="checkExistenceOnly" value="false" />
+  </bean>
+
+  <bean id="resourceIsTpOnlyCourseSchedule" class="vtk.web.service.AndAssertion">
+    <property name="assertions">
+      <list>
+        <ref bean="resourceTypeIsCourseSchedule" />
+        <ref bean="resourcePropertyIsTpOnly" />
+      </list>
+    </property>
+  </bean>
+
+  <bean id="resourceIsNotTpOnlyCourseSchedule" class="vtk.web.service.InvertAssertion">
+    <property name="assertion" ref="resourceIsTpOnlyCourseSchedule" />
+  </bean>
+
+
 
   <bean id="structuredResources.workingCopyTabTitle" class="vtk.web.view.components.menu.AssertionTitleResolver">
     <property name="assertion">

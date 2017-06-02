@@ -10,6 +10,10 @@
     <property name="staticField" value="vtk.repository.Namespace.CUSTOM_NAMESPACE" />
   </bean>
 
+  <bean id="STRUCTURED_RESOURCE_NAMESPACE" class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">
+    <property name="staticField" value="vtk.repository.Namespace.STRUCTURED_RESOURCE_NAMESPACE" />
+  </bean>
+
   <bean id="CONTENT_NAMESPACE" class="vtk.repository.Namespace">
     <constructor-arg value="content" />
     <constructor-arg value="http://www.uio.no/content" />
