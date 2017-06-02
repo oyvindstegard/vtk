@@ -34,6 +34,7 @@ package vtk.web.service;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
@@ -43,7 +44,7 @@ public class InvertAssertion extends AbstractAssertion {
   
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        return ! this.assertion.matches(request, resource, principal);
+        return ! assertion.matches(request, resource, principal);
     }
     
     @Override
@@ -59,7 +60,7 @@ public class InvertAssertion extends AbstractAssertion {
 
     @Override
     public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        return true;
+        return !assertion.processURL(url, resource, principal, match);
     }
 
     @Required
