@@ -103,7 +103,8 @@ public class PropertiesApiHandler implements HttpRequestHandler {
         });
         
         bldr.forEach(resp -> {
-            resp.writeTo(response);
+            resp.header("Accept-Patch", "application/merge-patch+json")
+                .writeTo(response);
         });
     }
     
