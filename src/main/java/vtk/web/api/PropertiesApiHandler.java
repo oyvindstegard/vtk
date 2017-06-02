@@ -244,10 +244,12 @@ public class PropertiesApiHandler implements HttpRequestHandler {
                 if (prefix != null) {
                     ns = typeInfo.getNamespaceByPrefix(prefix);
                 }
-                if (ns != Namespace.DEFAULT_NAMESPACE) {
-                    throw new IllegalArgumentException(
-                            "Only properties in the default namespace are supported");
-                }
+                // XXX: properties of structured resources must be treated differently:
+                //if (ns == Namespace.STRUCTURED_RESOURCE_NAMESPACE) {
+                    // 1. fetch JSON content from repo
+                    // 2. attach input fields to JSON (or remove)
+                    // 3. store content
+                //}
                 
                 PropertyTypeDefinition propDef = typeInfo
                         .getPropertyTypeDefinition(ns, name);
