@@ -106,9 +106,6 @@ function OpenFile( fileUrl )
     try {
         protocol = window.top.opener.location.protocol;
         host = window.top.opener.location.host;
-        if ( / trident\//.test(ua) ) { // IE <= 11
-            return LegacyOpenFile( fileUrl );
-        }
     } catch (e) {
         var openerParam = GetUrlParam( 'opener' );
         var parts = openerParam.split('/');
@@ -138,23 +135,6 @@ function OpenFile( fileUrl )
 
     if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )
     {
-        window.top.opener.focus() ;
-    }
-}
-
-function LegacyOpenFile( fileUrl )
-{
-    if(window.top.opener.CKEDITOR) {
-        funcNum = GetUrlParam('CKEditorFuncNum');
-        window.top.opener.CKEDITOR.tools.callFunction( funcNum, fileUrl);
-        window.top.opener.SetUrl( fileUrl );
-    } else {
-        window.top.opener.SetUrl( fileUrl );
-    }
-
-    var ua = navigator.userAgent.toLowerCase();
-    window.top.close() ;
-    if(!(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua))) {
         window.top.opener.focus() ;
     }
 }

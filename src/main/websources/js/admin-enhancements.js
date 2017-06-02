@@ -2407,6 +2407,19 @@ function retokenizeFormsOpenSaveDialog(d2, isEditorSave) {
     8. Popups and CK browse server integration
 \*-------------------------------------------------------------------*/
 
+// Monkey patch window.open to make postMessage work for IE11
+if (typeof(window.native_open) === "undefined") {
+    window.native_open = window.open;
+    window.open = function () {
+        var args = (arguments.length <= 1) ? [arguments[0]] : Array.apply(null, arguments);
+        if (typeof(args[0]) === "undefined" || args[0] === "") {
+            args[0] = location.origin
+              + '/vrtx/__vrtx/static-resources/themes/default/images/ajax-loader.gif';
+        }
+        return window.native_open.apply(this, args);
+    };
+}
+
 // XXX: don't pollute global namespace
 var urlobj;
 var typestr;
@@ -2480,9 +2493,9 @@ if(gup("displaymsg", window.location.href) === "yes") {
   window.onunload = refreshParent;
 }
 
-$(window).on('message', function(e) {
+$(window).on("message", function(e) {
     var data = e.originalEvent.data;
-    if (data.type == 'browse-select-resource') {
+    if (data.type === "browse-select-resource") {
         if (data.CKEditorFuncNum) {
             if (window.CKEDITOR) {
                 window.CKEDITOR.tools.callFunction(data.CKEditorFuncNum, data.url);
