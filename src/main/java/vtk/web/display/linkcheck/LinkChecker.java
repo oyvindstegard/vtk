@@ -177,7 +177,7 @@ public class LinkChecker {
 
     public LinkCheckResult validate(LinkCheckRequest request) {
         LinkCheckResult result = validateInternal(request);
-        logger.debug("Validate: " + request + ": " + result);
+        logger.debug("Validate: {}: {}", request, result);
         return result;
     }
     
@@ -267,7 +267,7 @@ public class LinkChecker {
                 // Some broken servers return different result codes based on 
                 // HEAD versus GET, so we retry...
                 logger.debug("Validate (HEAD returned NOT_FOUND, "
-                        + "retrying with GET): href='" + urlToCheck + "'");
+                        + "retrying with GET): href={}", urlToCheck);
                 status = validateURL(urlToCheck, request.sendReferrer() ? 
                         base : null, request.customHeaders, "GET");
             }
@@ -293,7 +293,7 @@ public class LinkChecker {
         for (Pattern p: blackList) {
             Matcher m = p.matcher(url.toString());
             if (m.matches()) {
-                logger.debug("Black-listed: " + url + ", skipping link-check");
+                logger.debug("Black-listed: '{}', skipping link-check", url);
                 return true;
             }
         }
@@ -351,6 +351,9 @@ public class LinkChecker {
             if (location == null) {
                 return responseCode;
             }
+            
+            
+            logger.debug("Following redirect [{}/3]: {}", retry + 1, location);
             if (checkBlackList(location)) {
                 return HttpURLConnection.HTTP_OK;
             }
