@@ -352,7 +352,6 @@ public class LinkChecker {
                 return responseCode;
             }
             
-            
             logger.debug("Following redirect [{}/3]: {}", retry + 1, location);
             if (checkBlackList(location)) {
                 return HttpURLConnection.HTTP_OK;
@@ -373,6 +372,8 @@ public class LinkChecker {
         HttpURLConnection urlConnection = 
                 (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod(method);
+        
+        urlConnection.setInstanceFollowRedirects(false);
         urlConnection.setConnectTimeout(connectTimeout);
         urlConnection.setReadTimeout(readTimeout);
         urlConnection.setRequestProperty("User-Agent", userAgent);
