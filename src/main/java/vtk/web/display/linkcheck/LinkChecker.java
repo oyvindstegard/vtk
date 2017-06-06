@@ -177,7 +177,7 @@ public class LinkChecker {
 
     public LinkCheckResult validate(LinkCheckRequest request) {
         LinkCheckResult result = validateInternal(request);
-        logger.info("Validate: " + request + ": " + result);
+        logger.debug("Validate: " + request + ": " + result);
         return result;
     }
     
@@ -409,6 +409,7 @@ public class LinkChecker {
     
     public void setBlackList(List<String> blackList) {
         this.blackListConfig = blackList;
+        refreshBlackList();
     }
     
     public void refreshBlackList() {
