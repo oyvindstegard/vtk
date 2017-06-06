@@ -115,6 +115,8 @@ public final class ResourceMappers {
     public static class JsonStreamerBuilder implements MapperFactory<Consumer<JsonStreamer>> {
         private boolean compact = false;
         private ValueMapper<Object> valueMapper = null;
+        private boolean includeUris = true;
+        private boolean includeTypes = true;
         private boolean includeAcls = false;
         private Locale locale;
         
@@ -124,6 +126,16 @@ public final class ResourceMappers {
         
         public JsonStreamerBuilder compact(boolean compact) {
             this.compact = compact;
+            return this;
+        }
+        
+        public JsonStreamerBuilder uris(boolean includeUris) {
+            this.includeUris = includeUris;
+            return this;
+        }
+        
+        public JsonStreamerBuilder types(boolean includeTypes) {
+            this.includeTypes = includeTypes;
             return this;
         }
         
@@ -141,15 +153,17 @@ public final class ResourceMappers {
             ValueMapper<Object> mapper = valueMapper != null ?
                     valueMapper : jsonValueFormatter(() -> locale);
             if (compact) {
-                return jsonStreamerCompact(mapper, includeAcls);
+                return jsonStreamerCompact(mapper, includeUris, includeTypes, includeAcls);
             }
-            return jsonStreamerComplete(mapper, includeAcls);
+            return jsonStreamerComplete(mapper, includeUris, includeTypes, includeAcls);
         }
     }
     
     public static class JsonObjectBuilder implements MapperFactory<Json.MapContainer> {
         private Locale locale;
         private ValueMapper<Object> valueMapper = null;
+        private boolean includeUris = true;
+        private boolean includeTypes = true;
         private boolean includeAcls = false;
         
         public JsonObjectBuilder valueMapper(ValueMapper<Object> valueMapper) {
@@ -159,6 +173,16 @@ public final class ResourceMappers {
         private JsonObjectBuilder(Locale locale) {
             this.locale = Objects.requireNonNull(locale);
         }
+        public JsonObjectBuilder uris(boolean includeUris) {
+            this.includeUris = includeUris;
+            return this;
+        }
+        
+        public JsonObjectBuilder types(boolean includeTypes) {
+            this.includeTypes = includeTypes;
+            return this;
+        }
+
         public JsonObjectBuilder acls(boolean includeAcls) {
             this.includeAcls = includeAcls;
             return this;
@@ -167,7 +191,7 @@ public final class ResourceMappers {
         public PropertySetMapper<Json.MapContainer> build() {
             ValueMapper<Object> mapper = valueMapper != null ? 
                     valueMapper : jsonValueFormatter(() -> locale);
-            return jsonMapContainerCompact(mapper, includeAcls);
+            return jsonMapContainerCompact(mapper, includeUris, includeTypes, includeAcls);
         }
     }
     
@@ -201,11 +225,12 @@ public final class ResourceMappers {
     }
     
     private static PropertySetMapper<Json.MapContainer> 
-        jsonMapContainerCompact(ValueMapper<Object> valueFormatter, boolean includeAcls) {
+        jsonMapContainerCompact(ValueMapper<Object> valueFormatter, boolean includeUris, 
+                boolean includeTypes, boolean includeAcls) {
         return propset -> {
             Json.MapContainer map = new Json.MapContainer();
-            map.put("uri", propset.getURI());
-            map.put("type", propset.getResourceType());
+            if (includeUris) map.put("uri", propset.getURI());
+            if (includeTypes) map.put("type", propset.getResourceType());
             if (!propset.getProperties().isEmpty()) {
                 Json.MapContainer props = new Json.MapContainer();
                 for (Property p: propset) {
@@ -247,12 +272,13 @@ public final class ResourceMappers {
      * @return a property set mapper
      */
     private static PropertySetMapper<Consumer<JsonStreamer>> 
-        jsonStreamerCompact(ValueMapper<Object> valueFormatter, boolean includeAcls) {
+        jsonStreamerCompact(ValueMapper<Object> valueFormatter, boolean includeUris, 
+                boolean includeTypes, boolean includeAcls) {
         return propset -> streamer -> {
             try {
-                streamer.beginObject()
-                .member("uri", propset.getURI())
-                .member("type", propset.getResourceType());
+                streamer.beginObject();
+                if (includeUris) streamer.member("uri", propset.getURI());
+                if (includeTypes) streamer.member("type", propset.getResourceType());
 
                 if (!propset.getProperties().isEmpty()) {
                     streamer.key("properties").beginObject();
@@ -297,12 +323,13 @@ public final class ResourceMappers {
     
     
     private static PropertySetMapper<Consumer<JsonStreamer>> 
-        jsonStreamerComplete(ValueMapper<Object> valueFormatter, boolean includeAcls) {
+        jsonStreamerComplete(ValueMapper<Object> valueFormatter, boolean includeUris, 
+                boolean includeTypes, boolean includeAcls) {
         return propset -> streamer -> {
             try {
-                streamer.beginObject()
-                .member("uri", propset.getURI())
-                .member("type", propset.getResourceType());
+                streamer.beginObject();
+                if (includeUris) streamer.member("uri", propset.getURI());
+                if (includeTypes) streamer.member("type", propset.getResourceType());
                     
                 if (!propset.getProperties().isEmpty()) {
                     streamer.key("properties").beginArray();

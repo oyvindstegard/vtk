@@ -1,4 +1,4 @@
-# VTK CMS
+# The VTK Web Framework README
 
 ## Installation
 
@@ -10,27 +10,24 @@ are necessary:
 
 2. Create a database using the DDL in the
    `src/main/sql/postgresql-schema.sql` (currently only PostgreSQL is
-   supported, but HSQLDB has also been known to work in the past). The
-   current PostgreSQL usage requires the language `plpgsql` to be
-   installed in the database which can be installed with the following
-   command `createlang plpgsql <database>`.
-   
+   supported, but HSQLDB has also been known to work in the past).
+
     Depending on how you set up the database, you may need to grant the necessary
-   privileges to your JDBC user 
-   (e.g. `src/main/sql/grant_to_vrtx.sql` for a jdbc user vrtx).
+   privileges to your JDBC user (e.g. `src/main/sql/grant_to_vrtx.sql` for a
+   jdbc user vrtx).
 
 3. Set up the configuration. Configuration should be placed in the
    files `~/.vtk.properties` and `~/.vrtx.properties` 
    (also work as regular non-hidden files).
-```
-   indexStorageRootPath = [an empty directory for storing indices]
-   jdbcUsername = [your JDBC user]
-   jdbcPassword = [your JDBC password]
-   repositoryDataDirectory = [an empty directory for storing files]
-   repositoryTrashCanDirectory = [an empty directory for storing "deleted" files]
-   repositoryRevisionDirectory = [an empty directory for storing file revisions]
-   databaseURL = [your JDBC URL, e.g. jdbc:postgresql:my-user>]
-```  
+
+        indexStorageRootPath = [an empty directory for storing indices]
+        jdbcUsername = [your JDBC user]
+        jdbcPassword = [your JDBC password]
+        repositoryDataDirectory = [an empty directory for storing files]
+        repositoryTrashCanDirectory = [an empty directory for storing "deleted" files]
+        repositoryRevisionDirectory = [an empty directory for storing file revisions]
+        databaseURL = [your JDBC URL, e.g. jdbc:postgresql:my-user>]
+
 4. Run the command `mvn jetty:run` (standing in the project
    directory). 
 
@@ -38,7 +35,8 @@ are necessary:
    http://localhost:9322/ and the WebDAV service on
    http://localhost:9321/. 
    
-    Log in as `root@localhost:fish` or user `user@localhost:pw`.
+    Log in as `root@localhost:fish` or user `user@localhost:pw` through the
+    [administration interface](http://localhost:9322/?vrtx=admin).
 
 6. See the default configuration file
    `src/main/resources/vtk/beans/vtk.properties` for
@@ -48,9 +46,30 @@ are necessary:
    `~/.vrtx-context.xml` (loaded if it exists).
 
 8. Create `folder-templates`, `document-templates` and set up simple
-   decorating in repository:
+   decorating using commands described in the following sub sections.
+
+### Setting some root node properties:
+
+Execute the following command in a Bourne-compatible shell:
+
+```
+curl -s -uroot@localhost:fish -X PROPPATCH http://localhost:9321/ -H 'Content-type: text/xml' \
+     --data-binary @- <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<D:propertyupdate xmlns:D="DAV:">
+  <D:set>
+    <D:prop><userTitle xmlns="vrtx">The VTK Web Framework</userTitle></D:prop>
+  </D:set>
+  <D:set>
+    <D:prop><recursive-listing xmlns="vrtx">false</recursive-listing></D:prop>
+  </D:set>
+</D:propertyupdate>
+EOF
+```
 
 ### Folder templates:
+
+Execute the following commands in a Bourne-compatible shell:
 
 ```
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/
@@ -58,7 +77,7 @@ curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/folder-templat
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/folder-templates/types/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/folder-templates/types/article-listing/
 curl -s -uroot@localhost:fish -X PROPPATCH http://localhost:9321/vrtx/folder-templates/types/article-listing/ \
-     --data-binary @<(cat << EOF
+     --data-binary @- <<'EOF'
 <?xml version="1.0" encoding="utf-8" ?>
 <D:propertyupdate xmlns:D="DAV:"
   xmlns:v="vrtx">
@@ -69,22 +88,24 @@ curl -s -uroot@localhost:fish -X PROPPATCH http://localhost:9321/vrtx/folder-tem
   </D:set>
 </D:propertyupdate>
 EOF
-)
+
 curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/folder-templates/config.txt \
-     -H 'Content-Type: text/plain' --data-binary @<(cat << EOF
+     -H 'Content-Type: text/plain' --data-binary @- <<'EOF'
 / = types
 EOF
-)
+
 ```
 
 ### Document templates:
+
+Execute the following command in a Bourne-compatible shell:
 
 ```
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/doc-templates/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/doc-templates/types/
 curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/doc-templates/types/article.html \
-     -H 'Content-Type: application/json' --data-binary @<(cat << EOF
+     -H 'Content-Type: application/json' --data-binary @- <<'EOF'
 {
    "resourcetype": "structured-article",
    "properties":    {
@@ -94,51 +115,62 @@ curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/doc-templates/ty
    }
 }
 EOF
-)
+
 curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/doc-templates/config.txt \
-     -H 'Content-Type: text/plain' --data-binary @<(cat << EOF
+     -H 'Content-Type: text/plain' --data-binary @- <<'EOF'
 / = types
 EOF
-)
+
 ```
 
 ### Decorating:
+
+Execute the following command in a Bourne-compatible shell:
 
 ```
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/decorating/
 curl -s -uroot@localhost:fish -X MKCOL http://localhost:9321/vrtx/decorating/templates/
 curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/decorating/templates/simple.html \
-     -H 'Content-Type: text/html' --data-binary @<(cat << EOF
+     -H 'Content-Type: text/html' --data-binary @- <<'EOF'
 <!DOCTYPE html>
 <html>
   <head>
-    <title>\${document:title}</title>
+    <title>${document:title}</title>
     <!-- Include ugly CSS: -->
     <style type="text/css">
-      body { background: brown; }
-      h1 { background: pink; }
-      div#vrtx-collections { background: yellow; }
+      body { background: #d9b38c; }
+      h1 { background: #ffe6ea; }
+      div#vrtx-collections { background: #ffffcc; }
     </style>
   </head>
   <body>
     <!-- This ugly HTML is generated by template /vrtx/decorating/simple.html -->
-    \${document:body}
+    ${document:body}
     <hr>
-    \${resource:manage-url}
+    ${resource:manage-url}
   </body>
 </html>
 EOF
-)
+
 curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/decorating/config.txt \
-     -H 'Content-Type: text/plain' --data-binary @<(cat << EOF
+     -H 'Content-Type: text/plain' --data-binary @- <<'EOF'
 / = simple.html
 /vrtx/decorating = NONE
 EOF
-)
+
 curl -s -uroot@localhost:fish -X PUT http://localhost:9321/vrtx/decorating/title-config.txt \
-     -H 'Content-Type: text/plain' --data-binary @<(cat << EOF
+     -H 'Content-Type: text/plain' --data-binary @- <<'EOF'
 
 EOF
-)
+
 ```
 
+### Upload README.md
+
+Assuming current directory is the VTK source code root, execute the following in
+a Bourne-compatible shell:
+
+```
+curl -uroot@localhost:fish -X PUT -H "Content-type: text/markdown; charset=UTF-8" \
+     --data-binary @README.md http://localhost:9321/README.md
+```

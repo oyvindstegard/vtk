@@ -137,6 +137,22 @@
     <property name="handler" ref="api.getHandler"/>
   </bean>
 
+  <bean id="api.propertiesService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService" />
+    <property name="order" value="-101" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestParameterAssertion">
+          <property name="parameterName" value="mode" />
+          <property name="parameterValue" value="properties" />
+        </bean>
+      </list>
+    </property>
+    <property name="handler">
+      <bean class="vtk.web.api.PropertiesApiHandler" />
+    </property>
+  </bean>
+
   <bean id="api.putHandler" class="vtk.web.api.PutController">
     <constructor-arg value="${upload.maxFileSize}" />
     <constructor-arg value="${revisionStore.maxFileSize}" />
