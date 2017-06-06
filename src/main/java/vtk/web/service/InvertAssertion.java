@@ -41,6 +41,7 @@ import vtk.security.Principal;
 public class InvertAssertion extends AbstractAssertion {
     
     private Assertion assertion;
+    private boolean matchOnProcessURL = false;
   
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
@@ -60,12 +61,19 @@ public class InvertAssertion extends AbstractAssertion {
 
     @Override
     public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
+        if (!matchOnProcessURL) {
+            return true;
+        }
         return !assertion.processURL(url, resource, principal, match);
     }
 
     @Required
     public void setAssertion(Assertion assertion) {
         this.assertion = assertion;
+    }
+    
+    public void setMatchOnProcessURL(boolean matchOnProcessURL) {
+        this.matchOnProcessURL = matchOnProcessURL;
     }
     
     @Override
