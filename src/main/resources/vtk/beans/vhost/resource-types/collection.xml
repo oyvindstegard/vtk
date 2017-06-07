@@ -204,7 +204,6 @@
         <value>student-exchange-university-agreement-listing</value>
         <value>student-exchange-agreement-listing</value>
         <value>fixed-resources-collection</value>
-        <value>helseforsk-listing</value>
       </list>
     </property>
   </bean>
