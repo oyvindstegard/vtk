@@ -31,43 +31,70 @@
 package vtk.web.api;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.servlet.http.HttpServletResponse;
-
-import org.eclipse.jetty.util.IO;
 
 public class ApiResponseBuilder {
     private int status;
     private Map<String, String> headers = new HashMap<>();
-    private String stringMessage = null;
-    private InputStream streamMessage = null;
+    private Consumer<HttpServletResponse> handler;
     
-    public ApiResponseBuilder(int status) 
-        { this.status = status; }
+    public ApiResponseBuilder(int status) { 
+        this.status = status;
+     }
+    
+    public static ApiResponseBuilder ok(String message) {
+        return messageResponse(message, HttpServletResponse.SC_OK);
+    }
+    
+    public static ApiResponseBuilder notFound(String message) {
+        return messageResponse(message, HttpServletResponse.SC_NOT_FOUND);
+    }
+    
+    public static ApiResponseBuilder badRequest(String message) {
+        return messageResponse(message, HttpServletResponse.SC_BAD_REQUEST);
+    }
+    
+    public static ApiResponseBuilder forbidden(String message) {
+        return messageResponse(message, HttpServletResponse.SC_FORBIDDEN);
+    }
+    
+    public static ApiResponseBuilder internalServerError(String message) {
+        return messageResponse(message, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+    public static ApiResponseBuilder messageResponse(String message, int status) {
+        return new ApiResponseBuilder(status)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(message);
+    }
     
     public ApiResponseBuilder message(String message) {
-        if (streamMessage != null) {
-            throw new IllegalStateException("message() has already been called");
-        }
-        this.stringMessage = message;
+        this.handler = response -> {
+          try {
+              PrintWriter writer = response.getWriter();
+              writer.write(message);
+          }
+          catch (IOException e) {
+              throw new UncheckedIOException(e);
+          }
+        };
         return this;
     }
     
-    public ApiResponseBuilder message(InputStream message) {
-        if (message != null) {
-            throw new IllegalStateException("message() has already been called");
-        }
-        this.streamMessage = message;
+    public ApiResponseBuilder handler(Consumer<HttpServletResponse> handler) {
+        this.handler = handler;
         return this;
     }
     
-    public ApiResponseBuilder header(String name, String value) 
-        { this.headers.put(name, value); return this; }
+    public ApiResponseBuilder header(String name, String value) { 
+        this.headers.put(name, value); 
+        return this; 
+    }
     
     public void writeTo(HttpServletResponse response) throws UncheckedIOException {
         try {
@@ -75,12 +102,8 @@ public class ApiResponseBuilder {
             for (String name: headers.keySet()) {
                 response.setHeader(name, headers.get(name));
             }
-            if (stringMessage != null) {
-                PrintWriter writer = response.getWriter();
-                writer.write(stringMessage);
-            }
-            else if (streamMessage != null) {
-                IO.copy(streamMessage, response.getOutputStream());
+            if (handler!= null) {
+                handler.accept(response);
             }
             response.flushBuffer();
         }

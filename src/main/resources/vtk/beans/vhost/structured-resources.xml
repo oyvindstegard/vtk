@@ -150,6 +150,7 @@
 
   <bean id="resourceIsNotTpOnlyCourseSchedule" class="vtk.web.service.InvertAssertion">
     <property name="assertion" ref="resourceIsTpOnlyCourseSchedule" />
+    <property name="matchOnProcessURL" value="true" />
   </bean>
 
 

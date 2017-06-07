@@ -170,6 +170,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
             chain.doFilter(request, response);
             return;
         case "PUT":
+        case "PATCH":
         case "DELETE":
             verifyApiRequest(request, response, chain);
             return;
