@@ -33,6 +33,7 @@ package vtk.web.servlet;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -93,6 +94,9 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
         }
         if (t instanceof EOFException || 
                 (t.getCause() != null && (t.getCause() instanceof TimeoutException))) {
+            return true;
+        }
+        if (t instanceof ClosedChannelException) {
             return true;
         }
         return false;
