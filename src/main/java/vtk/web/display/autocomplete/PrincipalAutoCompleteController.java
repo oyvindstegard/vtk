@@ -31,7 +31,9 @@
 package vtk.web.display.autocomplete;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Required;
 
@@ -51,7 +53,7 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
 
         List<Principal> completions = this.dataProvider.getCompletions(input, context);
 
-        List<Suggestion> suggestions = new ArrayList<Suggestion>(completions.size());
+        List<Suggestion> suggestions = new ArrayList<>(completions.size());
         for (Principal principal : completions) {
             Suggestion suggestion = new Suggestion(5);
 
@@ -62,8 +64,9 @@ public class PrincipalAutoCompleteController extends AutoCompleteController {
                     continue;
                 }
             }
-            
-            final List<Object> values = principal.getMetadata().getValues(USER_SCOPED_AFFILIATION_ATTRIBUTE);
+            List<Object> values = Optional.ofNullable(principal.getMetadata())
+                    .map(metadata -> metadata.getValues(USER_SCOPED_AFFILIATION_ATTRIBUTE))
+                    .orElse(Collections.emptyList());
             
             // XXX: Special treatment for webid-groups and users
             if (principal.getQualifiedName().contains("webid.uio.no")) {
