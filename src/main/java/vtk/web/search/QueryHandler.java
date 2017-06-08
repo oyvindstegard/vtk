@@ -98,7 +98,10 @@ import vtk.web.service.Service;
  *     string is repeated a number of times, in order to reduce the length of the query string. 
  *     For example, the query <code>?q=field1=xxx OR field2=xxx OR field3=xxx ...</code> 
  *     can be shortened to <code>?q=xxx&t=my-template</code>, given that the template 
- *     {@code my-template} is defined as <code>field1={q} OR field2={q} OR field3={q}...</code> 
+ *     {@code my-template} is defined as <code>field1={q} OR field2={q} OR field3={q}...</code>
+ * <li>{@code tokenize} (boolean, used with the {@code t} parameter) - whether or not 
+ *      to tokenize the query parameter. If {@code true}, the template is expanded for each token
+ *      in the {@code q} parameter, and the resulting queries are joined using the {@code AND} operator.
  * <li>{@code format} - refers to one of a number of pre-configured formats. The default formats
  *     are {@code json}, {@code json-compact}, {@code xml}, {@code tab-separated}, {@code comma-separated} 
  *     and {@code semicolon-separated}.
@@ -161,7 +164,7 @@ public final class QueryHandler implements HttpRequestHandler {
         Result<SimpleSearcher.Query> query = format.flatMap(f -> buildQuery(wrappedRequest));
         Result<ResultSet> resultSet = query.flatMap(q -> Result.attempt(() -> searcher.search(token, q)));
 
-        logger.debug("Request: query=" + query + ", result=" + resultSet + ", handler=" + format);
+        logger.debug("Request: query={}, result={}, handler={}", query, resultSet, format);
         
         format.forEach(handler -> {
             try {
@@ -203,12 +206,18 @@ public final class QueryHandler implements HttpRequestHandler {
                 String name = request.getParameter("t");
                 String template = Objects.requireNonNull(
                         templates.get(name), "No such template: '" + name + "'");
-                
-                q = TextUtils.tokenizeWithPhrases(q).stream()
-                        .limit(10)
-                        .map(token -> escape(escape(token, ' ', '\\'), ' ', '\\'))
-                        .map(token -> template.replaceAll("\\{q\\}", token))
-                        .collect(Collectors.joining(" AND ", "(", ")"));
+
+                if ("true".equals(request.getParameter("tokenize"))) {
+                    q = TextUtils.tokenizeWithPhrases(q).stream()
+                            .limit(10)
+                            .map(token -> escape(escape(token, ' ', '\\'), ' ', '\\'))
+                            .map(token -> template.replaceAll("\\{q\\}", token))
+                            .collect(Collectors.joining(" AND ", "(", ")"));
+                }
+                else {
+                    q = escape(escape(q, ' ', '\\'), ' ', '\\');
+                    q = template.replaceAll("\\{q\\}", q);
+                }
             }
             return builder.query(q);
         }));
