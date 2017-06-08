@@ -72,7 +72,8 @@ function OpenFile( fileUrl )
     try {
         protocol = window.top.opener.location.protocol;
         host = window.top.opener.location.host;
-    } catch (e) {
+    } catch (e) {}
+    if (!protocol) {
         var openerParam = GetUrlParam( 'opener' );
         var parts = openerParam.split('/');
         if (parts.length < 3)
