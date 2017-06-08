@@ -86,16 +86,26 @@
   </bean>
 
   <bean id="editableResourcesAssertion" class="vtk.web.service.AndAssertion">
-    <property name="assertions">
+    <property name="assertions" ref="editableResourcesAssertion.list" />
+  </bean>
+
+  <bean id="editableResourcesAssertion.list" class="java.util.ArrayList">
+    <constructor-arg>
       <list>
         <ref bean="resourceTypeIsNotExam" />
         <ref bean="resourceTypeIsNotExamInfo" />
-        <ref bean="resourceTypeIsNotHelseforsk" />
         <ref bean="resourceTypeIsNotSamletProgram" />
         <ref bean="resourceTypeIsNotSamletRetning" />
         <ref bean="resourceIsNotTpOnlyCourseSchedule" />
       </list>
-    </property>
+    </constructor-arg>
+  </bean>
+
+  <bean id="editableResourcesAssertion.list.addValue" 
+        class="org.springframework.beans.factory.config.MethodInvokingBean"
+        abstract="true">
+    <property name="targetObject" ref="editableResourcesAssertion.list"/>
+    <property name="targetMethod" value="add"/>
   </bean>
 
   <bean id="resourceTypeIsNotExam" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
@@ -105,11 +115,6 @@
   
   <bean id="resourceTypeIsNotExamInfo" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
     <property name="resourceType" value="exam-info" />
-    <property name="invert" value="true" />
-  </bean>
-
-  <bean id="resourceTypeIsNotHelseforsk" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="helseforsk" />
     <property name="invert" value="true" />
   </bean>
 

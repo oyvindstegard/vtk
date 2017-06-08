@@ -30,62 +30,51 @@
  */
 package vtk.web.service;
 
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-
 public class AndAssertion implements Assertion {
+    private List<Assertion> assertions;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private Assertion[] assertions;
-
-
-    public void setAssertions(Assertion[] assertions) {
+    public void setAssertions(List<Assertion> assertions) {
         this.assertions = assertions;
     }
     
     @Override
     public void processURL(URL url) {
-        for (int i = 0; i < this.assertions.length; i++) {
-            this.assertions[i].processURL(url);
+        for (Assertion assertion: assertions) {
+            assertion.processURL(url);
         }
     }
     
     @Override
     public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        for (int i = 0; i < this.assertions.length; i++) {
-            if (!this.assertions[i].processURL(url, resource, principal, match)) {
+        for (Assertion assertion: assertions) {
+            if (!assertion.processURL(url, resource, principal, match)) {
                 return false;
             }
         }
         return true;
     }
     
-
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        for (int i = 0; i < this.assertions.length; i++) {
-            if (!this.assertions[i].matches(request, resource, principal)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Assertion " + this.assertions[i]
-                                 + " did not match, returning false");
-                }
+        for (Assertion assertion: assertions) {
+            if (!assertion.matches(request, resource, principal)) {
                 return false;
             }
         }
         return true;
     }
-    
 
     @Override
     public boolean conflicts(Assertion assertion) {
-        for (int i = 0; i < this.assertions.length; i++) {
-            if (this.assertions[i].conflicts(assertion)) {
+        for (Assertion a: assertions) {
+            if (a.conflicts(assertion)) {
                 return true;
             }
         }
@@ -95,9 +84,9 @@ public class AndAssertion implements Assertion {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("(");
-        for (int i = 0; i < this.assertions.length; i++) {
-            sb.append(this.assertions[i]);
-            if (i < this.assertions.length - 1) sb.append(" and ");
+        for (int i = 0; i < assertions.size(); i++) {
+            sb.append(assertions.get(i));
+            if (i < assertions.size() - 1) sb.append(" and ");
         }
         sb.append(")");
         return sb.toString();
