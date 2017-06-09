@@ -361,7 +361,7 @@
 
   <bean id="structuredResources.jsonURLCacheLoader" class="vtk.util.cache.loaders.JSONCacheLoader">
     <property name="connectTimeoutSeconds" value="1" />
-    <property name="readTimeoutSeconds" value="1" />
+    <property name="readTimeoutSeconds" value="5" />
   </bean>
 
   <bean id="structuredResources.freeCapacityJSONFunction" class="vtk.resourcemanagement.view.tl.CacheLookupFunction">
