@@ -99,7 +99,8 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
     private static final String STYLE_HORIZONTAL = "horizontal";
     private static final String STYLE_TABS = "tabs";
 
-    private static final String DEFAULT_STYLE = STYLE_NONE;
+	private static final String DEFAULT_DIRECTION = "asc";
+	private static final String DEFAULT_STYLE = STYLE_NONE;
 
     private static final Set<String> VALID_STYLES;
     static {
@@ -122,6 +123,9 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
 
     private static final String PARAMETER_PARENT_FOLDER_TITLE = "parent-folder-title";
     private static final String PARAMETER_PARENT_FOLDER_TITLE_DESC = "Overrides the parent folder title if include-parent-folder is set to true.";
+
+	protected static final String PARAMETER_SORT_DIRECTION = "direction";
+	private static final String PARAMETER_SORT_DIRECTION_DESC = "The sort direction. Legal values are 'asc', 'desc'. The default value is 'asc'";
 
     private static final String PARAMETER_STYLE = "style";
     private static final String PARAMETER_STYLE_DESC = "Defines the style of the menu. Must be one of "
@@ -231,9 +235,9 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         }
 
         if (childNames != null) {
-            items = sortSpecifiedOrder(childNames, nameItemMap);
+			items = sortSpecifiedOrder(childNames, nameItemMap);
         } else {
-            items = sortByOrder(items, menuRequest.getLocale(), true);
+			items = sortByOrder(items, menuRequest.getLocale(), menuRequest.getAscSorting());
         }
 
         // Insert parent first in list
@@ -467,7 +471,8 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
                 item.setActive(true);
             }
         }
-        items = sortByOrder(items, menuRequest.getLocale(), true);
+
+		items = sortByOrder(items, menuRequest.getLocale(), menuRequest.getAscSorting());
         ListMenu<PropertySet> submenu = new ListMenu<PropertySet>();
         submenu.addAllItems(items);
         return submenu;
@@ -517,6 +522,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         private boolean parentIncluded;
         private String parentTitle;
         private String[] childNames;
+		private boolean ascsorting;
         private String style;
         private int depth = DEFAULT_DEPTH;
         private Locale locale;
@@ -576,6 +582,16 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
             if (authenticated) {
                 this.token = requestContext.getSecurityToken();
             }
+
+			String direction = request.getStringParameter(PARAMETER_SORT_DIRECTION);
+			if (direction == null || direction.equals("asc")) {
+				this.ascsorting = true;
+			} else if (direction.equals("desc")) {
+				this.ascsorting = false;
+			} else {
+				throw new DecoratorComponentException(
+						"Invalid value for parameter 'direction': must be either 'asc' or 'desc'");
+			}
 
             this.style = request.getStringParameter(PARAMETER_STYLE);
             if (this.style == null) {
@@ -659,6 +675,10 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
             return this.childNames;
         }
 
+		public boolean getAscSorting() {
+			return this.ascsorting;
+		}
+
         public String getStyle() {
             return this.style;
         }
@@ -703,6 +723,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         map.put(PARAMETER_EXCLUDE_CHILDREN, PARAMETER_EXCLUDE_CHILDREN_DESC);
         map.put(PARAMETER_INCLUDE_PARENT, PARAMETER_INCLUDE_PARENT_DESC);
         map.put(PARAMETER_PARENT_FOLDER_TITLE, PARAMETER_PARENT_FOLDER_TITLE_DESC);
+		map.put(PARAMETER_SORT_DIRECTION, PARAMETER_SORT_DIRECTION_DESC);
         map.put(PARAMETER_AUTENTICATED, PARAMETER_AUTENTICATED_DESC);
         map.put(PARAMETER_DEPTH, PARAMETER_DEPTH_DESC);
         map.put(PARAMETER_DISPLAY_FROM_LEVEL, PARAMETER_DISPLAY_FROM_LEVEL_DESC);
