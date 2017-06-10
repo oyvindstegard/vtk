@@ -74,13 +74,13 @@
 
   <bean id="displayAudioResource" class="vtk.web.display.media.DisplayMediaController">
     <property name="mediaPlayer" ref="mediaPlayer" />
-    <property name="viewName" value="viewMediaPlayerView" />
+    <property name="viewName" value="displayMediaResourceView" />
     <property name="descriptionPropDef" ref="audioHtmlDescriptionPropDef" />
   </bean>
 
   <bean id="displayVideoResource" class="vtk.web.display.media.DisplayMediaController">
     <property name="mediaPlayer" ref="mediaPlayer" />
-    <property name="viewName" value="viewMediaPlayerView" />
+    <property name="viewName" value="displayMediaResourceView" />
     <property name="descriptionPropDef" ref="videoHtmlDescriptionPropDef" />
   </bean>
 
