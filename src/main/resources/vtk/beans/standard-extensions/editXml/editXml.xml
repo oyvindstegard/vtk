@@ -159,12 +159,12 @@
     <property name="arguments" ref="xmlEditErrorHandler" />
   </bean>
 
-  <bean id="xmlEditErrorViewResolver" parent="manageErrorViewResolver">
-    <property name="views">
+  <bean id="xmlEditErrorViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <constructor-arg name="views">
       <map>
         <entry key="xmlEditError" value-ref="xmlEditErrorView" />
       </map>
-    </property>
+    </constructor-arg>
   </bean>
   
 
