@@ -43,7 +43,7 @@
   </bean>
 
   <bean id="plaintextEdit.documentTooLargeHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="plaintextEdit.documentTooLarge" />
+    <property name="viewName" value="plaintextEdit.documentTooLargeView" />
   </bean>
 
   <bean id="plaintextXMLEditService" parent="plaintextEditService">
@@ -96,15 +96,6 @@
     <property name="parameterValue" value="plaintext-edit" />
   </bean>
 
-  <bean id="plaintextViewResolver" parent="adminViewResolver">
-    <property name="views">
-      <map>
-        <entry key="plaintextEdit" value-ref="plaintextEditView" />
-        <entry key="plaintextEdit.documentTooLarge" value-ref="plaintextEdit.documentTooLargeView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="plaintextEdit.documentTooLargeView" parent="freemarkerView">
     <property name="url" value="pages/plaintext-edit-too-large.ftl" />
   </bean>
@@ -129,8 +120,8 @@
   
   <bean id="plaintextEditHandler"
         class="vtk.edit.plaintext.PlaintextEditController">
-    <property name="formView" value="plaintextEdit" />
-    <property name="successView" value="redirectToManage" />
+    <property name="formView" value="plaintextEditView" />
+    <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="plaintextEditForm" />
     <property name="tooltipServices" ref="plaintextEdit.tooltipURLServicesFactory" />
     <property name="textResourceContentHelper" ref="textResourceContentHelper" />

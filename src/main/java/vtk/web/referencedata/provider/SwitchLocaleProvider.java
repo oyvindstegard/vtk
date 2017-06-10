@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,49 +90,54 @@ public class SwitchLocaleProvider implements ReferenceDataProvider {
     }
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         Map<String, Object> localeMap = new HashMap<>();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        Resource resource = repository.retrieve(token, requestContext.getResourceURI(), false);
+        try {
+            Resource resource = repository.retrieve(token, requestContext.getResourceURI(), false);
 
-        org.springframework.web.servlet.support.RequestContext springContext = new org.springframework.web.servlet.support.RequestContext(
-                request, request.getServletContext());
-        String currentLocale = springContext.getLocale().toString();
+            org.springframework.web.servlet.support.RequestContext springContext = new org.springframework.web.servlet.support.RequestContext(
+                    request, request.getServletContext());
+            String currentLocale = springContext.getLocale().toString();
 
-        Map<String, URL> localeServiceURLs = new HashMap<>();
-        Map<String, String> localeServiceActive = new HashMap<>();
-        List<String> localeServiceNames = new ArrayList<>();
+            Map<String, URL> localeServiceURLs = new HashMap<>();
+            Map<String, String> localeServiceActive = new HashMap<>();
+            List<String> localeServiceNames = new ArrayList<>();
 
-        for (String key : this.locales.keySet()) {
-            Service service = this.locales.get(key);
-            try {
-                localeServiceNames.add(key);
-                URL url = URL.create(request);
-                for (String name : service.constructURL(resource, principal).getParameterNames()) {
-                    if (!url.getParameterNames().contains(name)) {
-                        url.addParameter(name, service.constructURL(resource, principal).getParameter(name));
+            for (String key : this.locales.keySet()) {
+                Service service = this.locales.get(key);
+                try {
+                    localeServiceNames.add(key);
+                    URL url = URL.create(request);
+                    for (String name : service.constructURL(resource, principal).getParameterNames()) {
+                        if (!url.getParameterNames().contains(name)) {
+                            url.addParameter(name, service.constructURL(resource, principal).getParameter(name));
+                        }
                     }
-                }
-                localeServiceURLs.put(key, url);
-                if (!currentLocale.equals(key)) {
-                    localeServiceActive.put(key, "not-active");
-                } else {
-                    localeServiceActive.put(key, "active");
-                }
+                    localeServiceURLs.put(key, url);
+                    if (!currentLocale.equals(key)) {
+                        localeServiceActive.put(key, "not-active");
+                    } else {
+                        localeServiceActive.put(key, "active");
+                    }
 
-            } catch (ServiceUnlinkableException e) {
+                } catch (ServiceUnlinkableException e) {
+                }
             }
-        }
 
-        localeMap.put("currentLocale", currentLocale);
-        localeMap.put("localeServiceActive", localeServiceActive);
-        localeMap.put("localeServiceNames", localeServiceNames);
-        localeMap.put("localeServiceURLs", localeServiceURLs);
-        model.put(this.modelName, localeMap);
+            localeMap.put("currentLocale", currentLocale);
+            localeMap.put("localeServiceActive", localeServiceActive);
+            localeMap.put("localeServiceNames", localeServiceNames);
+            localeMap.put("localeServiceURLs", localeServiceURLs);
+            model.put(this.modelName, localeMap);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 }

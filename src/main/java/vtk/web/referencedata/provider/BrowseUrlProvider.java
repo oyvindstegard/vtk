@@ -30,12 +30,15 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -79,44 +82,49 @@ public class BrowseUrlProvider implements ReferenceDataProvider, InitializingBea
     }
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
-        Resource resource = repository.retrieve(token, uri, false);
+        try {
+            Resource resource = repository.retrieve(token, uri, false);
 
-        // This is the url to the parent of the document that's being edited
+            // This is the url to the parent of the document that's being edited
 
-        String viewUrl = this.viewService.constructLink(resource, principal);
+            String viewUrl = this.viewService.constructLink(resource, principal);
 
-        BrowseSessionBean sessionBean = (BrowseSessionBean)
-        request.getSession(true).getAttribute(BROWSE_SESSION_ATTRIBUTE);
+            BrowseSessionBean sessionBean = (BrowseSessionBean)
+                    request.getSession(true).getAttribute(BROWSE_SESSION_ATTRIBUTE);
 
-        /* Deleting session if you get a parameterlist which contains
+            /* Deleting session if you get a parameterlist which contains
 	   'id' because then its a new request on the browse-app */
 
-        if (sessionBean != null && request.getParameter("id") != null){
-            request.getSession(true).removeAttribute(BROWSE_SESSION_ATTRIBUTE);
-            sessionBean = null;
+            if (sessionBean != null && request.getParameter("id") != null){
+                request.getSession(true).removeAttribute(BROWSE_SESSION_ATTRIBUTE);
+                sessionBean = null;
+            }
+
+            if (sessionBean == null) {
+                sessionBean = new BrowseSessionBean();
+                sessionBean.setEditField(request.getParameter("id"));
+                sessionBean.setStartUrl(viewUrl);
+                request.getSession(true).setAttribute(BROWSE_SESSION_ATTRIBUTE, sessionBean);
+            }
+
+            /* Checking whether to make a relative link or not */
+
+            if (viewUrl.startsWith(sessionBean.getStartUrl()) && !viewUrl.equals(sessionBean.getStartUrl())) {
+                viewUrl = viewUrl.substring(sessionBean.getStartUrl().length());
+            }
+
+            model.put("browseURL", viewUrl);
+            model.put("editField", sessionBean.getEditField());
         }
-
-        if (sessionBean == null) {
-            sessionBean = new BrowseSessionBean();
-            sessionBean.setEditField(request.getParameter("id"));
-            sessionBean.setStartUrl(viewUrl);
-            request.getSession(true).setAttribute(BROWSE_SESSION_ATTRIBUTE, sessionBean);
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-
-        /* Checking whether to make a relative link or not */
-
-        if (viewUrl.startsWith(sessionBean.getStartUrl()) && !viewUrl.equals(sessionBean.getStartUrl())) {
-            viewUrl = viewUrl.substring(sessionBean.getStartUrl().length());
-        }
-
-        model.put("browseURL", viewUrl);
-        model.put("editField", sessionBean.getEditField());
     }
 }
 

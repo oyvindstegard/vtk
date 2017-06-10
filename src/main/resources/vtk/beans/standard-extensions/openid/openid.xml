@@ -48,16 +48,6 @@
     <property name="viewName" value="openid.authenticationForm" />
   </bean>
   
-  <bean id="openid.viewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="openid.authenticationForm" value-ref="openid.authenticationFormView" />
-      </map>
-    </property>
-    <property name="viewWrapper" ref="decoratingViewWrapper" />
-  </bean>
-
-
   <bean id="openid.authenticationFormView" parent="freemarkerView">
     <property name="url" value="pages/openid-auth-form.ftl" />
   </bean>

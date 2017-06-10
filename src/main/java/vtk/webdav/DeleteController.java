@@ -30,19 +30,16 @@
  */
 package vtk.webdav;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
 import vtk.repository.FailedDependencyException;
 import vtk.repository.IllegalOperationException;
 import vtk.repository.Path;
 import vtk.repository.ReadOnlyException;
 import vtk.repository.Repository;
-import vtk.repository.Resource;
 import vtk.repository.ResourceLockedException;
 import vtk.repository.ResourceNotFoundException;
 import vtk.util.web.HttpUtil;
@@ -55,24 +52,18 @@ import vtk.web.RequestContext;
  */
 public class DeleteController extends AbstractWebdavController {
 
-
     /**
      * Performs the WebDAV 'DELETE' method.
-     *
-     * @param request the HTTP request object
-     * @param response the <code>HttpServletResponse</code> response object
      */
-    public ModelAndView handleRequest(HttpServletRequest request,
-            HttpServletResponse response) throws Exception{
-
+    public void handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
-        Map<String, Object> model = new HashMap<String, Object>();
         try {
-            Resource resource = repository.retrieve(token, uri, false);
+            repository.retrieve(token, uri, false);
 
             if (this.logger.isDebugEnabled()) {
                 this.logger.debug("Attempting to delete resource " + uri);
@@ -90,45 +81,36 @@ public class DeleteController extends AbstractWebdavController {
             // Delete the document or collection:
             repository.delete(token, uri, recoverable);
 
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Resource " + uri + " deleted");
-            }
+            responseBuilder(HttpServletResponse.SC_OK)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Deleted: " + uri)
+                .writeTo(response);
 
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                    new Integer(HttpServletResponse.SC_OK));
-            return new ModelAndView("DELETE", model);
-
-        } catch (ResourceNotFoundException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                    new Integer(HttpServletResponse.SC_NOT_FOUND));
-
-        } catch (ResourceLockedException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ResourceLockedException for URI "
-                        + uri);
-            }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                    new Integer(HttpUtil.SC_LOCKED));
-
-        } catch (IllegalOperationException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                    new Integer(HttpServletResponse.SC_FORBIDDEN));
-
-        } catch (ReadOnlyException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                    new Integer(HttpServletResponse.SC_FORBIDDEN));
-
-        } catch (FailedDependencyException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                    new Integer(HttpUtil.SC_MULTI_STATUS));
         }
-
-        return new ModelAndView("DELETE", model);
+        catch (ResourceNotFoundException e) {
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (ResourceLockedException e) {
+            responseBuilder(HttpUtil.SC_LOCKED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (IllegalOperationException | ReadOnlyException e) {
+            responseBuilder(HttpServletResponse.SC_FORBIDDEN)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (FailedDependencyException e) {
+            responseBuilder(HttpServletResponse.SC_PRECONDITION_FAILED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
     }
 
 

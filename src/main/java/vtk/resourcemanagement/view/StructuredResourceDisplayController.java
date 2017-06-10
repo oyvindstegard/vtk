@@ -30,13 +30,19 @@
  */
 package vtk.resourcemanagement.view;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -45,6 +51,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -61,10 +68,7 @@ import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
 import vtk.web.RequestContext;
 import vtk.web.decorating.ComponentResolver;
-import vtk.web.decorating.HtmlPageContent;
-import vtk.web.decorating.PageContent;
 import vtk.web.decorating.Template;
-import vtk.web.decorating.TemplateExecution;
 import vtk.web.decorating.TemplateManager;
 import vtk.web.referencedata.ReferenceDataProvider;
 
@@ -78,6 +82,7 @@ public class StructuredResourceDisplayController implements Controller, Initiali
     private String viewName;
     private StructuredResourceManager resourceManager;
     private TemplateManager templateManager;
+    private ComponentResolver componentResolver;
     private HtmlPageParser htmlParser;
     private String resourceModelKey;
     private List<ReferenceDataProvider> configProviders;
@@ -88,11 +93,10 @@ public class StructuredResourceDisplayController implements Controller, Initiali
 
     // XXX: clean up this mess:
     private Map<StructuredResourceDescription,
-    Map<String, TemplateLanguageDecoratorComponent>> components = 
-        new ConcurrentHashMap<StructuredResourceDescription, Map<String, TemplateLanguageDecoratorComponent>>();
+        Map<String, TemplateLanguageDecoratorComponent>> components = 
+            new ConcurrentHashMap<>();
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -130,14 +134,14 @@ public class StructuredResourceDisplayController implements Controller, Initiali
             initComponentDefs(desc);
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         StructuredResource res = desc.buildResource(stream);
         model.put("structured-resource", res);
         model.put("resource", r);
         model.put(this.resourceModelKey, res);
 
         if (this.configProviders != null) {
-            Map<String, Object> config = new HashMap<String, Object>();
+            Map<String, Object> config = new HashMap<>();
             for (ReferenceDataProvider p : this.configProviders) {
                 p.referenceData(config, request);
             }
@@ -145,60 +149,51 @@ public class StructuredResourceDisplayController implements Controller, Initiali
         }
         request.setAttribute(MVC_MODEL_REQ_ATTR, model);
         
-        PageContent content = renderInitialPage(res, model, request);
-
-        if (content instanceof HtmlPageContent) {
-            HtmlPage page = ((HtmlPageContent) content).getHtmlContent();
-            if (this.postFilters != null) {
-                for (HtmlPageFilter filter: this.postFilters)
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        renderInitialPage(res, model, request, buffer);
+        
+        byte[] htmlBytes = buffer.toByteArray();
+        HtmlPage page = htmlParser
+                .parse(new ByteArrayInputStream(htmlBytes), StandardCharsets.UTF_8.name());
+        
+        if (postFilters != null) {
+            for (HtmlPageFilter filter: postFilters) {
                 page.filter(filter);
             }
-            model.put("page", ((HtmlPageContent) content).getHtmlContent());
-            return new ModelAndView(this.viewName, model);
         }
-        
         response.setContentType("text/html");
-        response.setCharacterEncoding(content.getOriginalCharacterEncoding());
-        response.setContentLength(content.getContent().length());
-        response.getWriter().write(content.getContent());
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        htmlBytes = page.getStringRepresentation().getBytes(StandardCharsets.UTF_8);
+        response.setContentLength(htmlBytes.length);
+        ServletOutputStream outputStream = response.getOutputStream();
+        outputStream.write(htmlBytes);
+        outputStream.flush();
+        outputStream.close();
         return null;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public PageContent renderInitialPage(StructuredResource res, Map model, HttpServletRequest request)
-    throws Exception {
-        final HtmlPage initialPage = this.htmlParser.createEmptyPage("initial-page");
-        HtmlPageContent content = new HtmlPageContent() {
-            public HtmlPage getHtmlContent() {
-                return initialPage;
-            }
-
-            public String getContent() {
-                return initialPage.getStringRepresentation();
-            }
-
-            public String getOriginalCharacterEncoding() {
-                return initialPage.getCharacterEncoding();
-            }
-        };
-
+    public void renderInitialPage(StructuredResource res, 
+            Map<String, Object> model, HttpServletRequest request, 
+            OutputStream out) throws Exception {
         String templateRef = res.getType().getName();
-        Template t = this.templateManager.getTemplate(templateRef);
-        TemplateExecution execution = t.newTemplateExecution(content, request, model, new HashMap<String, Object>());
-
-        ComponentResolver resolver = execution.getComponentResolver();
+        Optional<Template> t = templateManager.getTemplate(templateRef);
+        if (!t.isPresent()) {
+            throw new RuntimeException("Decorator template not found: " + templateRef);
+        }
+        Template template = t.get();
         Map<String, TemplateLanguageDecoratorComponent> components = this.components.get(res.getType());
-        resolver = new DynamicComponentResolver(COMPONENT_NS, resolver, components);
-        execution.setComponentResolver(resolver);
+        ComponentResolver resolver = new DynamicComponentResolver(COMPONENT_NS, componentResolver, components);
         request.setAttribute(COMPONENT_RESOLVER, resolver);
-        
-        return execution.render();
+        HtmlPage page = htmlParser.createEmptyPage("initial-page");
+        //response.setContentType("text/html;charset=utf-8");
+
+        template.render(page, out, StandardCharsets.UTF_8, request, model, new HashMap<>());
     }
 
     private void initComponentDefs(StructuredResourceDescription desc) throws Exception {
         // XXX: "concurrent initialization":
 
-        Map<String, TemplateLanguageDecoratorComponent> comps = new HashMap<String, TemplateLanguageDecoratorComponent>();
+        Map<String, TemplateLanguageDecoratorComponent> comps = new HashMap<>();
 
         List<ComponentDefinition> defs = desc.getAllComponentDefinitions();
         for (ComponentDefinition def : defs) {
@@ -263,12 +258,17 @@ public class StructuredResourceDisplayController implements Controller, Initiali
         this.resourceModelKey = resourceModelKey;
     }
 
+    @Required
+    public void setComponentResolver(ComponentResolver componentResolver) {
+        this.componentResolver = componentResolver;
+    }
+
     public void setConfigProviders(List<ReferenceDataProvider> configProviders) {
         this.configProviders = configProviders;
     }
 
     public void setPostFilters(List<HtmlPageFilter> postFilters) {
-        this.postFilters = new ArrayList<HtmlPageFilter>(postFilters);
+        this.postFilters = new ArrayList<>(postFilters);
     }
     
     @Required

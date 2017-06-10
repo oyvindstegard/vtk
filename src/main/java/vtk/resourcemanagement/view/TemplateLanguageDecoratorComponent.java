@@ -31,7 +31,6 @@
 package vtk.resourcemanagement.view;
 
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,9 +39,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import vtk.resourcemanagement.ComponentDefinition;
-import vtk.text.html.HtmlContent;
-import vtk.text.html.HtmlFragment;
 import vtk.text.html.HtmlPageParser;
 import vtk.text.tl.Context;
 import vtk.text.tl.DirectiveHandler;
@@ -53,14 +51,11 @@ import vtk.text.tl.TemplateParser;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
 import vtk.web.decorating.DynamicDecoratorTemplate;
-import vtk.web.decorating.HtmlDecoratorComponent;
 import vtk.web.decorating.components.AbstractDecoratorComponent;
 import vtk.web.decorating.components.DecoratorComponentException;
 
 
-public class TemplateLanguageDecoratorComponent extends AbstractDecoratorComponent
-implements HtmlDecoratorComponent {
-
+public class TemplateLanguageDecoratorComponent extends AbstractDecoratorComponent {
     private String namespace;
     private ComponentDefinition definition;
     private String modelKey;
@@ -114,21 +109,7 @@ implements HtmlDecoratorComponent {
         }
     }
 
-    public List<HtmlContent> render(DecoratorRequest request) throws Exception {
-        try {
-            compile();
-            Context ctx = createContext(request);
-            StringWriter writer = new StringWriter();
-            this.nodeList.render(ctx, writer);
-            HtmlFragment fragment = this.htmlParser.parseFragment(writer.getBuffer().toString());
-            return fragment.getContent();
-        } catch (Throwable t) {
-            logger.info("Error rendering component '" + getName() + "'", t);
-            throw new DecoratorComponentException("Error rendering component '" 
-                    + getName() + "': " + t.getMessage(), t);
-        }
-    }
-
+    @Override
     public void render(DecoratorRequest request, DecoratorResponse response)
     throws Exception {
         try {
@@ -165,7 +146,7 @@ implements HtmlDecoratorComponent {
 
     @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         for (String param : this.definition.getParameters()) {
             result.put(param, "#parameter");
         }

@@ -41,6 +41,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.shell.AbstractConsole;
 import vtk.web.referencedata.ReferenceDataProvider;
 
@@ -71,20 +72,19 @@ public class ShellExecutionResultProvider implements ReferenceDataProvider {
     
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-        throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
-        Map<String, Object> subModel = new HashMap<String, Object>();
+        Map<String, Object> subModel = new HashMap<>();
 
         for (Iterator<String> groupIter = this.groups.keySet().iterator(); groupIter.hasNext();) {
             String groupName = groupIter.next();
             Map<String, String> group = this.groups.get(groupName);
             
-            Map<String, String> resultGroupMap = new HashMap<String, String>();
+            Map<String, String> resultGroupMap = new HashMap<>();
 
             for (Iterator<String> itemIter = group.keySet().iterator(); itemIter.hasNext();) {
-                String itemName = (String) itemIter.next();
-                String expression = (String) group.get(itemName);
+                String itemName = itemIter.next();
+                String expression = group.get(itemName);
                 String result = null;
 
                 try {

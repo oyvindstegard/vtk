@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Date;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -87,35 +90,39 @@ public class RedirectProvider implements InitializingBean, ReferenceDataProvider
     public void afterPropertiesSet() throws Exception {
         if (this.redirectToService == null) {
             throw new BeanInitializationException(
-                "Bean property 'redirectToService' must be set");
+                    "Bean property 'redirectToService' must be set");
         }
     }
 
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-        throws Exception {
-        
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
+
         RequestContext requestContext = RequestContext.getRequestContext();
         Principal principal = requestContext.getPrincipal();
 
         Resource resource = null;
         resource = (Resource) model.get("resource");
+        try {
+            if (resource == null) {
+                Repository repository = requestContext.getRepository();
+                resource = repository.retrieve(
+                        requestContext.getSecurityToken(), requestContext.getResourceURI(), false);
+            }
 
-        if (resource == null) {
-            Repository repository = requestContext.getRepository();
-            resource = repository.retrieve(
-                requestContext.getSecurityToken(), requestContext.getResourceURI(), false);
+            URL redirectURL = this.redirectToService.constructURL(resource, principal);
+            if (this.urlAnchor != null) {
+                redirectURL.setRef(this.urlAnchor);
+            }
+            if (this.autoVarianceParam != null) {
+                redirectURL.addParameter(this.autoVarianceParam, "" + new Date().getTime());
+            }
+            model.put("redirectURL", redirectURL.toString());
         }
-        
-        URL redirectURL = this.redirectToService.constructURL(resource, principal);
-        if (this.urlAnchor != null) {
-            redirectURL.setRef(this.urlAnchor);
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        if (this.autoVarianceParam != null) {
-            redirectURL.addParameter(this.autoVarianceParam, "" + new Date().getTime());
-        }
-        model.put("redirectURL", redirectURL.toString());
+
     }
 
 }

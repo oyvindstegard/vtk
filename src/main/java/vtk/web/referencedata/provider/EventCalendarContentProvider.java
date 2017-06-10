@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -39,6 +41,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -59,7 +62,7 @@ public class EventCalendarContentProvider implements ReferenceDataProvider {
     private SearchComponent currentMonthSearchComponent;
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         SpecificDateSearchType searchType = helper.getSpecificDateSearchType(request);
         if (searchType != null) {
@@ -71,24 +74,32 @@ public class EventCalendarContentProvider implements ReferenceDataProvider {
         String token = requestContext.getSecurityToken();
         Path resourceURI = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
-        Resource resource = repository.retrieve(token, resourceURI, true);
-        Calendar cal = helper.getCurrentMonth();
+        try {
+            Resource resource = repository.retrieve(token, resourceURI, true);
+            Calendar cal = helper.getCurrentMonth();
 
-        String dateString = request.getParameter(EventListingHelper.REQUEST_PARAMETER_DATE);
-        if (dateString != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
-            try {
-                Date requestedMonth = sdf.parse(dateString);
-                cal.setTime(requestedMonth);
-            } catch (ParseException e) {
-                // Ignore, show current month
+            String dateString = request.getParameter(EventListingHelper.REQUEST_PARAMETER_DATE);
+            if (dateString != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+                try {
+                    Date requestedMonth = sdf.parse(dateString);
+                    cal.setTime(requestedMonth);
+                } catch (ParseException e) {
+                    // Ignore, show current month
+                }
             }
-        }
-        Listing plannedEvents = currentMonthSearchComponent.execute(request, resource, 1, 500, 0);
-        String eventDates = helper.getCalendarWidgetMonthEventDates(plannedEvents.getPropertySets(), cal);
-        model.put("allowedDates", eventDates);
+            Listing plannedEvents = currentMonthSearchComponent.execute(request, resource, 1, 500, 0);
+            String eventDates = helper.getCalendarWidgetMonthEventDates(plannedEvents.getPropertySets(), cal);
+            model.put("allowedDates", eventDates);
 
-        helper.setCalendarTitles(request, resource, model);
+            helper.setCalendarTitles(request, resource, model);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

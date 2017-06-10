@@ -30,11 +30,14 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -56,33 +59,38 @@ public class InvalidUidMessageProvider implements ReferenceDataProvider {
     private PrincipalFactory principalFactory;
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         RequestContext context = RequestContext.getRequestContext();
         Repository repository = context.getRepository();
         Path resourcePath = context.getResourceURI();
         String token = SecurityContext.getSecurityContext().getToken();
-        Resource resource = repository.retrieve(token, resourcePath, false);
-        PropertyTypeDefinition ptd = this.resourceTypeTree.getPropertyDefinitionByName("resource:username");
-        if (ptd == null) {
-            return;
-        }
-        Property prop = resource.getProperty(ptd);
-        if (prop == null) {
-            return;
-        }
-        String username = prop.getStringValue();
-        Principal principal = this.principalFactory.getPrincipal(username, Type.USER);
-        if (principal != null && principal.getMetadata() != null) {
-            return;
-        }
+        try {
+            Resource resource = repository.retrieve(token, resourcePath, false);
+            PropertyTypeDefinition ptd = this.resourceTypeTree.getPropertyDefinitionByName("resource:username");
+            if (ptd == null) {
+                return;
+            }
+            Property prop = resource.getProperty(ptd);
+            if (prop == null) {
+                return;
+            }
+            String username = prop.getStringValue();
+            Principal principal = this.principalFactory.getPrincipal(username, Type.USER);
+            if (principal != null && principal.getMetadata() != null) {
+                return;
+            }
 
-        org.springframework.web.servlet.support.RequestContext springContext = new org.springframework.web.servlet.support.RequestContext(
-                request);
-        String message = springContext
-                .getMessage(this.localizationKey, new Object[] { username }, this.localizationKey);
+            org.springframework.web.servlet.support.RequestContext springContext = new org.springframework.web.servlet.support.RequestContext(
+                    request);
+            String message = springContext
+                    .getMessage(this.localizationKey, new Object[] { username }, this.localizationKey);
 
-        model.put(this.modelName, message);
+            model.put(this.modelName, message);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Required

@@ -30,6 +30,8 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.RepositoryAction;
@@ -110,10 +113,9 @@ public class ResourcePrincipalPermissionsProvider implements ReferenceDataProvid
 
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-        throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         boolean result = false;
-        Map<String, Object> permissionsModel = new HashMap<String, Object>();
+        Map<String, Object> permissionsModel = new HashMap<>();
         RequestContext requestContext = RequestContext.getRequestContext();
         String scheme = request.getScheme();
         Integer port = request.getServerPort();
@@ -123,13 +125,15 @@ public class ResourcePrincipalPermissionsProvider implements ReferenceDataProvid
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
 
+        try {
         Resource resource = repository.retrieve(token, uri, false);
         if (resource == null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Resource is null [match = false]");
             }
             result = false;
-        } else {
+        }
+        else {
     
             if (this.requiresAuthentication && principal == null) {
                 if (logger.isDebugEnabled()) {
@@ -145,19 +149,25 @@ public class ResourcePrincipalPermissionsProvider implements ReferenceDataProvid
                     result = repository.isAuthorized(resource, this.permission, 
                             principal, this.considerLocks);
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
         if (result) {
             permissionsModel.put("permissionsQueryResult", "true");
-        } else {
+        }
+        else {
             permissionsModel.put("permissionsQueryResult", "false");            
         }
         permissionsModel.put("requestScheme", scheme);            
         permissionsModel.put("requestPort", port);            
         model.put(modelName, permissionsModel);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 }

@@ -58,8 +58,8 @@
 
   <bean id="webConsoleHandler"
         class="vtk.web.display.shell.CommandExecutorController">
-    <property name="formView" value="webConsole" />
-    <property name="successView" value="webConsole" />
+    <property name="formView" value="webConsoleView" />
+    <property name="successView" value="webConsoleView" />
     <property name="commandName" value="commandForm" />
     <property name="console" ref="beanShellWebConsole" />
   </bean>
@@ -71,8 +71,8 @@
   <bean id="vshellConsoleHandler"
         class="vtk.web.display.shell.CommandExecutorController">
 
-    <property name="formView" value="webConsole" />
-    <property name="successView" value="webConsole" />
+    <property name="formView" value="webConsoleView" />
+    <property name="successView" value="webConsoleView" />
     <property name="commandName" value="commandForm" />
     <property name="console" ref="vshellWebConsole" />
   </bean>
@@ -85,12 +85,12 @@
     <property name="url" value="pages/root/webconsole.ftl" />
   </bean>
 
-  <bean id="webConsoleViewResolver" parent="rootViewResolver">
-    <property name="views">
-      <map>
-        <entry key="webConsole" value-ref="webConsoleView" />
-      </map>
-    </property>
-  </bean>
+  <!-- <bean id="webConsoleViewResolver" class="vtk.web.decorating.MappingViewResolver"> -->
+  <!--   <constructor-arg name="views"> -->
+  <!--     <map> -->
+  <!--       <entry key="webConsole" value-ref="webConsoleView" /> -->
+  <!--     </map> -->
+  <!--   </constructor-arg> -->
+  <!-- </bean> -->
 
 </beans>

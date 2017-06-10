@@ -44,8 +44,6 @@ import vtk.repository.Resource;
 import vtk.util.io.IO;
 import vtk.util.repository.ContentTypeHelper;
 import vtk.web.InvalidModelException;
-import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.referencedata.ReferenceDataProviding;
 
 /**
  * "Web server" resembling view. Writes the contents of a resource to the client.
@@ -75,23 +73,12 @@ import vtk.web.referencedata.ReferenceDataProviding;
  * </ul>
  *
  */
-public class DisplayResourceView extends AbstractView
-        implements ReferenceDataProviding {
+public class DisplayResourceView extends AbstractView {
 
     private static Logger logger = LoggerFactory.getLogger(DisplayResourceView.class);
 
     private int streamBufferSize = 5000;
     private boolean supportRangeRequests = false;
-
-    private ReferenceDataProvider[] referenceDataProviders;
-
-    public ReferenceDataProvider[] getReferenceDataProviders() {
-        return this.referenceDataProviders;
-    }
-
-    public void setReferenceDataProviders(ReferenceDataProvider[] referenceDataProviders) {
-        this.referenceDataProviders = referenceDataProviders;
-    }
 
     public void setStreamBufferSize(int streamBufferSize) {
         if (streamBufferSize <= 0) {
@@ -109,8 +96,9 @@ public class DisplayResourceView extends AbstractView
     @SuppressWarnings("rawtypes")
     public void renderMergedOutputModel(Map model, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
+        
         Resource resource = getResource(model, request, response);
-
+        
         try {
             Range range = this.supportRangeRequests
                     ? getRangeHeader(request, resource) : null;

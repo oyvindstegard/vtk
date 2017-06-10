@@ -90,8 +90,8 @@
 
 
   <bean name="commenting.postCommentController" class="vtk.web.commenting.PostCommentController">
-    <property name="formView" value="commenting.redirectToDefault" />
-    <property name="successView" value="commenting.redirectToDefault" />
+    <property name="formView" value="commenting.redirectToDefaultView" />
+    <property name="successView" value="commenting.redirectToDefaultView" />
     <property name="commandName" value="postCommentForm" />
     <property name="requireCommentTitle" ref="commenting.titlesEnabled" />
     <property name="formSessionAttributeName" ref="commenting.postFormSessionAttributeName" />
@@ -156,13 +156,13 @@
 
   <bean name="commenting.deleteCommentController"
         class="vtk.web.commenting.DeleteCommentController">
-    <property name="viewName" value="commenting.redirectToDefault" />
+    <property name="viewName" value="commenting.redirectToDefaultView" />
   </bean>
 
   <bean name="commenting.deleteAllCommentsController"
         class="vtk.web.commenting.DeleteCommentController">
     <property name="deleteAllComments" value="true" />
-    <property name="viewName" value="commenting.redirectToDefault" />
+    <property name="viewName" value="commenting.redirectToDefaultView" />
   </bean>
 
   <bean name="commenting.resourceCommentsController"
@@ -236,23 +236,6 @@
   <bean id="commenting.hasDeletePermission"
         parent="abstractResourcePrincipalPermissionAssertion">
     <property name="privilege" value="ALL" />
-  </bean>
-
-  <bean id="commenting.viewResolver" parent="viewResolver">
-    <property name="views">
-      <map>
-        <entry key="commenting.redirectToDefault" value-ref="commenting.redirectToDefaultView" />
-        <entry key="commenting.feedView" value-ref="commenting.feedView" />
-      </map>
-    </property>
-  </bean>
-  
-  <bean id="commenting.decoratingViewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="commenting.resourceCommentsView" value-ref="commenting.resourceCommentsView" />
-      </map>
-    </property>
   </bean>
 
   <bean id="commenting.redirectToDefaultView" 
@@ -365,7 +348,7 @@
 
   <bean id="commenting.commentsFeedURLView" parent="freemarkerView">
     <property name="url" value="commenting/comments-feed-url.ftl" />
-    <property name="referenceDataProviderList">
+    <property name="referenceDataProviders">
       <list>
         <ref bean="resourceContextProvider" />
         <bean class="vtk.web.referencedata.provider.ResourceServiceURLProvider">

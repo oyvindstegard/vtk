@@ -54,7 +54,7 @@
 
   <bean id="abstractReportHandler" abstract="true"
         class="vtk.web.report.ReportHandler" parent="repositoryAware">
-    <property name="viewName" value="report" />
+    <property name="viewName" value="reportView" />
     <property name="localeResolver" ref="manageLocaleResolver" />
     <property name="documentPrincipalMetadataRetriever" ref="documentPrincipalMetadataRetriever" />
     <property name="viewReportService" ref="viewReportService" />
@@ -121,12 +121,12 @@
   <bean id="listResourcesReporter" class="vtk.web.report.ListResourcesReporter"
         parent="reporter">
     <property name="name" value="list-resources" />
-    <property name="viewName" value="listResources" />
+    <property name="viewName" value="listResourcesView" />
   </bean>
 
   <bean id="diagramReport" class="vtk.web.report.DiagramReport" parent="reporter">
     <property name="name" ref="diagramReportName" />
-    <property name="viewName" value="diagramReport" />
+    <property name="viewName" value="diagramReportView" />
     <property name="baseWebpageTypes" ref="baseWebpageTypes" />
     <property name="webpageTypes" ref="webpageTypes" />
     <property name="fileTypes" ref="fileTypes" />
@@ -194,7 +194,7 @@
 
   <bean id="brokenLinksReport" class="vtk.web.report.BrokenLinksReport" parent="reporter">
     <property name="name" value="broken-links" />
-    <property name="viewName" value="brokenLinksReport" />
+    <property name="viewName" value="brokenLinksReportView" />
     <property name="alternativeName" value="broken-links-collection" />
     <property name="alternativeViewName" value="brokenLinksCollectionReport" />
     <property name="manageService" ref="manageService" />
@@ -224,7 +224,7 @@
   <bean id="documentReporter" abstract="true" class="vtk.web.report.DocumentReporter" parent="reporter">
     <property name="manageService" ref="manageService" />
     <property name="reportService" ref="reportService" />
-    <property name="viewName" value="documentReport" />
+    <property name="viewName" value="documentReportView" />
     <property name="resolvePrincipalLink" value="true" />
     <property name="aclTooltipHelper" ref="aclTooltipHelper" />
   </bean>
@@ -488,25 +488,6 @@
     <property name="name" value="query" />
   </bean>
 
-
-  <bean id="report.viewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="report" value-ref="reportView" />
-        <entry key="listResources" value-ref="listResourcesView" />
-        <entry key="documentReport" value-ref="documentReportView" />
-        <entry key="diagramReport" value-ref="diagramReportView" />
-        <entry key="brokenLinksReport" value-ref="brokenLinksReportView" />
-        <entry key="brokenLinksCollectionReport" value-ref="brokenLinksCollectionReportView" />
-      </map>
-    </property>
-    <property name="referenceDataProviders">
-      <list>
-        <ref bean="resourceContextProvider" />
-      </list>
-    </property>
-  </bean>
-
   <bean id="reportView" parent="freemarkerView">
     <property name="url" value="pages/report/report.ftl" />
     <property name="attributesMap">
@@ -606,6 +587,7 @@
     </property>
     <property name="referenceDataProviders">
       <list>
+        <ref bean="resourceContextProvider" />
         <bean class="vtk.web.referencedata.provider.StaticURIServiceURLProvider">
           <property name="service" ref="staticResourceService" />
           <property name="path" value="${editor.fck.resourcesURL}" />

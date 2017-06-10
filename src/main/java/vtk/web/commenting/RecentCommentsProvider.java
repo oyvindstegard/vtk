@@ -30,6 +30,8 @@
  */
 package vtk.web.commenting;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -91,96 +93,102 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
     }
 
     @Override
-    public void referenceData(final Map<String, Object> model, HttpServletRequest servletRequest) throws Exception {
+    public void referenceData(final Map<String, Object> model, HttpServletRequest servletRequest) {
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
         Path uri = RequestContext.getRequestContext().getResourceURI();
-        
+
         // VTK-2460
         if (requestContext.isViewUnauthenticated()) {
             token = null;
             principal = null;
         }
 
-        Resource resource = repository.retrieve(token, uri, true);
-        // If deepCommentListing is specified, always find the nearest
-        // collection:
-        if (!resource.isCollection() && deepCommentsListing) {
-            uri = uri.getParent();
-            resource = repository.retrieve(token, uri, true);
-        }
-
-        List<Comment> comments = repository.getComments(token, resource, 
-                deepCommentsListing, maxComments);
-
-        Map<String, Resource> resourceMap = new HashMap<>();
-        Map<String, URL> commentURLMap = new HashMap<>();
-        List<Comment> filteredComments = new ArrayList<>();
-        for (Comment comment : comments) {
-            try { 
-                Resource r = repository.retrieve(token, comment.getURI(), true);
-                
-                // Don't include comments from resources that are not published
-                Property published = r.getProperty(Namespace.DEFAULT_NAMESPACE, 
-                        PropertyType.PUBLISHED_PROP_NAME);
-                if (!published.getBooleanValue()) {
-                    published = null;
-                }
-
-                if (!includeCommentsFromUnpublished && published == null) {
-                    continue;
-                }
-                
-                filteredComments.add(comment);
-                resourceMap.put(r.getURI().toString(), r);
-                URL commentURL = viewService.constructURL(r, principal);
-                commentURLMap.put(comment.getID(), commentURL);
-            }
-            catch (Throwable t) { }
-        }
-
-        boolean commentsAllowed =
-            repository.isAuthorized(resource, RepositoryAction.ADD_COMMENT, principal, false);
-
-        URL baseCommentURL = null;
         try {
-            baseCommentURL = viewService.constructURL(resource, principal);
-        }
-        catch (Exception e) { }
 
-        URL feedURL = null;
-        if (resourceCommentsFeedService != null) {
+            Resource resource = repository.retrieve(token, uri, true);
+            // If deepCommentListing is specified, always find the nearest
+            // collection:
+            if (!resource.isCollection() && deepCommentsListing) {
+                uri = uri.getParent();
+                resource = repository.retrieve(token, uri, true);
+            }
+
+            List<Comment> comments = repository.getComments(token, resource, 
+                    deepCommentsListing, maxComments);
+
+            Map<String, Resource> resourceMap = new HashMap<>();
+            Map<String, URL> commentURLMap = new HashMap<>();
+            List<Comment> filteredComments = new ArrayList<>();
+            for (Comment comment : comments) {
+                try { 
+                    Resource r = repository.retrieve(token, comment.getURI(), true);
+
+                    // Don't include comments from resources that are not published
+                    Property published = r.getProperty(Namespace.DEFAULT_NAMESPACE, 
+                            PropertyType.PUBLISHED_PROP_NAME);
+                    if (!published.getBooleanValue()) {
+                        published = null;
+                    }
+
+                    if (!includeCommentsFromUnpublished && published == null) {
+                        continue;
+                    }
+
+                    filteredComments.add(comment);
+                    resourceMap.put(r.getURI().toString(), r);
+                    URL commentURL = viewService.constructURL(r, principal);
+                    commentURLMap.put(comment.getID(), commentURL);
+                }
+                catch (Throwable t) { }
+            }
+
+            boolean commentsAllowed =
+                    repository.isAuthorized(resource, RepositoryAction.ADD_COMMENT, principal, false);
+
+            URL baseCommentURL = null;
             try {
-                feedURL = resourceCommentsFeedService.constructURL(resource, principal);
+                baseCommentURL = viewService.constructURL(resource, principal);
             }
             catch (Exception e) { }
-        }
 
-        URL recentCommentsURL = null;
-        if (recentCommentsService != null) {
-            try {
-                recentCommentsURL = recentCommentsService.constructURL(resource, principal);
+            URL feedURL = null;
+            if (resourceCommentsFeedService != null) {
+                try {
+                    feedURL = resourceCommentsFeedService.constructURL(resource, principal);
+                }
+                catch (Exception e) { }
             }
-            catch (Exception e) { }
-        }
 
-        model.put("commentsEnabled", false);
-        Property commentsEnabled = resource.getPropertyByPrefix(null, "commentsEnabled");
-        if (commentsEnabled != null) {
-            model.put("commentsEnabled", commentsEnabled.getBooleanValue());
-        }
+            URL recentCommentsURL = null;
+            if (recentCommentsService != null) {
+                try {
+                    recentCommentsURL = recentCommentsService.constructURL(resource, principal);
+                }
+                catch (Exception e) { }
+            }
 
-        model.put("resource", resource);
-        model.put("principal", principal);
-        model.put("comments", filteredComments);
-        model.put("resourceMap", resourceMap);
-        model.put("commentURLMap", commentURLMap);
-        model.put("commentsAllowed", commentsAllowed);
-        model.put("baseCommentURL", baseCommentURL);
-        model.put("feedURL", feedURL);
-        model.put("recentCommentsURL", recentCommentsURL);
+            model.put("commentsEnabled", false);
+            Property commentsEnabled = resource.getPropertyByPrefix(null, "commentsEnabled");
+            if (commentsEnabled != null) {
+                model.put("commentsEnabled", commentsEnabled.getBooleanValue());
+            }
+
+            model.put("resource", resource);
+            model.put("principal", principal);
+            model.put("comments", filteredComments);
+            model.put("resourceMap", resourceMap);
+            model.put("commentURLMap", commentURLMap);
+            model.put("commentsAllowed", commentsAllowed);
+            model.put("baseCommentURL", baseCommentURL);
+            model.put("feedURL", feedURL);
+            model.put("recentCommentsURL", recentCommentsURL);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 }

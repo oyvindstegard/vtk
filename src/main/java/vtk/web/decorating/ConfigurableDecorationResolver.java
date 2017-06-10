@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,8 +68,6 @@ import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 import vtk.web.servlet.StatusAwareHttpServletResponse;
-
-
 
 public class ConfigurableDecorationResolver implements DecorationResolver, InitializingBean {
 
@@ -149,7 +148,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         try {
             InputStream inputStream = this.repository.getInputStream(null, this.configPath, true);
             this.config = new PathMappingConfig(inputStream);
-        } catch(Throwable t) {
+        }
+        catch(Throwable t) {
             logger.warn("Unable to load decoration configuration file: " 
                     + this.configPath + ": " + t.getMessage(), t);
         }
@@ -168,9 +168,12 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
             resource = this.repository.retrieve(token, uri, true);
             typeInfo = this.repository.getTypeInfo(resource);
             
-        } catch (ResourceNotFoundException e) {
-        } catch (AuthorizationException e) {
-        } catch (Throwable t) {
+        }
+        catch (ResourceNotFoundException e) {
+        }
+        catch (AuthorizationException e) {
+        }
+        catch (Throwable t) {
             throw new RuntimeException(
                     "Unrecoverable error when decorating '" + uri + "'", t);
         }
@@ -305,7 +308,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                         if (!matchPredicate(predicate, resource)) {
                             score.put(entry, -1);
                             break;
-                        } else {
+                        }
+                        else {
                             if (!score.containsKey(entry)) {
                                 score.put(entry, 0);
                             }
@@ -342,7 +346,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                 type = type.getParentTypeDefinition();
             }
             return false;
-        } else if ("service".equals(predicate.getName())) {
+        }
+        else if ("service".equals(predicate.getName())) {
 
             Service currentService = RequestContext.getRequestContext().getService();
             while (currentService != null) {
@@ -356,7 +361,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                 }
                 currentService = currentService.getParent();
             }
-        } else if ("lang".equals(predicate.getName())) {
+        }
+        else if ("lang".equals(predicate.getName())) {
             if (this.localeResolver != null) {
                 RequestContext requestContext = RequestContext.getRequestContext();
                 HttpServletRequest request = requestContext.getServletRequest();
@@ -382,7 +388,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         try {
             String regexp = s.substring("regexp[".length(), s.length() - 1);
             return Pattern.compile(regexp, Pattern.DOTALL);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             return null;
         }
     }
@@ -399,9 +406,11 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                 break;
             } else if ("TIDY".equals(directive)) {
                 descriptor.tidy = true;
-            } else if ("NOPARSING".equals(directive)) {
+            }
+            else if ("NOPARSING".equals(directive)) {
                 descriptor.parse = false;
-            } else {
+            }
+            else {
                 String name = directive;
                 Map<String, Object> parameters = new HashMap<>();
                 int queryIndex = name.indexOf('?');
@@ -411,14 +420,14 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                     parameters = splitParameters(query);
                 }
                 
-                Template t = resolveTemplateReferences(locale, name);
+                Optional<Template> t = resolveTemplateReferences(locale, name);
 
-                if (t != null) {
+                if (t.isPresent()) {
                     if (!this.supportMultipleTemplates) {
                         descriptor.templates.clear();
                     }
-                    descriptor.templates.add(t);
-                    descriptor.templateParameters.put(t, parameters);
+                    descriptor.templates.add(t.get());
+                    descriptor.templateParameters.put(t.get(), parameters);
                 }
             }
         }
@@ -435,14 +444,16 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
             if (values == null || values.length == 0) {
                 result.put(name, null);
 
-            } else if (values.length > 1) {
+            }
+            else if (values.length > 1) {
                 List<Object> list = new ArrayList<>();
                 for (int i = 0; i < values.length; i++) {
                     list.add(values[i]);
                 }
                 result.put(name, list);
 
-            } else {
+            }
+            else {
               result.put(name, values[0]);  
             }
         }
@@ -486,18 +497,18 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
     }
 
 
-    private Template resolveTemplateReferences(Locale locale, String mapping)
+    private Optional<Template> resolveTemplateReferences(Locale locale, String mapping)
         throws Exception {
         
         String[] localizedRefs = buildLocalizedReferences(mapping, locale);
         for (int j = 0; j < localizedRefs.length; j++) {
             String localizedRef = localizedRefs[j];
-            Template t = this.templateManager.getTemplate(localizedRef);
-            if (t != null) {
+            Optional<Template> t = this.templateManager.getTemplate(localizedRef);
+            if (t.isPresent()) {
                 return t;
             }
         }
-        return null;
+        return Optional.empty();
     }
     
 

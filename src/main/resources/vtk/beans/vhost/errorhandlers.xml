@@ -126,16 +126,15 @@
   <!-- Error views-->
 
 
-  <bean id="errorViewResolver" parent="decoratorViewResolver">
-    <property name="order" value="0" />
-    <property name="views">
+  <bean id="errorViewResolver" class="vtk.web.decorating.MappingViewResolver">
+    <constructor-arg name="views">
       <map>
         <entry key="badRequestError" value-ref="badRequestErrorView" />
         <entry key="resourceNotFoundError" value-ref="resourceNotFoundErrorView" />
         <entry key="notAuthorizedError" value-ref="notAuthorizedErrorView" />
         <entry key="defaultError" value-ref="defaultErrorView" />
       </map>
-    </property>
+    </constructor-arg>
   </bean>
 
   <bean id="vtk.errorHandlers.viewBuilder"

@@ -74,22 +74,14 @@
 
   <bean id="displayAudioResource" class="vtk.web.display.media.DisplayMediaController">
     <property name="mediaPlayer" ref="mediaPlayer" />
-    <property name="viewName" value="viewMediaPlayer" />
+    <property name="viewName" value="displayMediaResourceView" />
     <property name="descriptionPropDef" ref="audioHtmlDescriptionPropDef" />
   </bean>
 
   <bean id="displayVideoResource" class="vtk.web.display.media.DisplayMediaController">
     <property name="mediaPlayer" ref="mediaPlayer" />
-    <property name="viewName" value="viewMediaPlayer" />
+    <property name="viewName" value="displayMediaResourceView" />
     <property name="descriptionPropDef" ref="videoHtmlDescriptionPropDef" />
-  </bean>
-
-  <bean id="displayMediaResourceViewResolver" parent="decoratorViewResolver">
-    <property name="views">
-      <map>
-        <entry key="viewMediaPlayer" value-ref="displayMediaResourceView" />
-      </map>
-    </property>
   </bean>
 
   <bean name="displayMediaResourceView" parent="freemarkerView">
@@ -136,18 +128,10 @@
 
   <bean id="displayEmbedResource" class="vtk.web.display.media.DisplayEmbedMediaController">
     <property name="mediaPlayer" ref="mediaPlayer" />
-    <property name="viewName" value="viewEmbedMediaPlayer" />
+    <property name="viewName" value="viewEmbedMediaPlayerView" />
   </bean>
 
-  <bean id="displayEmbedMediaResourceViewResolver" parent="viewResolver">
-    <property name="views">
-      <map>
-        <entry key="viewEmbedMediaPlayer" value-ref="displayEmbedMediaResourceView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean name="displayEmbedMediaResourceView" parent="freemarkerView">
+  <bean name="viewEmbedMediaPlayerView" parent="freemarkerView">
     <property name="url" value="pages/embed-media-player.ftl" />
     <property name="attributes">
       <map>

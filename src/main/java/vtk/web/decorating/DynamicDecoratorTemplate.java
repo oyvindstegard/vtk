@@ -30,11 +30,14 @@
  */
 package vtk.web.decorating;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -58,6 +61,7 @@ import vtk.text.tl.TemplateContext;
 import vtk.text.tl.TemplateHandler;
 import vtk.text.tl.TemplateParser;
 import vtk.util.io.InputSource;
+import vtk.web.RequestContext;
 
 
 public class DynamicDecoratorTemplate implements Template {
@@ -124,78 +128,36 @@ public class DynamicDecoratorTemplate implements Template {
         return parameters.get(name);
     }
     
-    public class Execution implements TemplateExecution {
-        private HtmlPageContent content;
-        private NodeList compiledTemplate;
-        private ComponentResolver componentResolver;
-        private HttpServletRequest request;
-        private Map<String, Object> templateParameters;
 
-        public Execution(HtmlPageContent content, NodeList compiledTemplate, 
-                ComponentResolver componentResolver, HttpServletRequest request,
-                Map<String, Object> templateParameters) {
-            this.content = content;
-            this.componentResolver = componentResolver;
-            this.compiledTemplate = compiledTemplate;
-            this.request = request;
-            this.templateParameters = templateParameters;
+    @Override
+    public void render(HtmlPage page, OutputStream out, Charset encoding,
+            HttpServletRequest request, Map<String, Object> model,
+            Map<String, Object> templateParameters) {
+        Locale locale = RequestContext.getRequestContext().getLocale();
+        Context context = new Context(locale);
+        for (String name: templateParameters.keySet()) {
+            context.define(name, templateParameters.get(name), true);
         }
+        context.setAttribute(SERVLET_REQUEST_CONTEXT_ATTR, request);
+        context.define(CR_REQ_ATTR, componentResolver, true);
+        context.define(HTML_REQ_ATTR, page, true);
+        request.setAttribute(PARAMS_REQ_ATTR, templateParameters);
         
-        public void setComponentResolver(ComponentResolver componentResolver) {
-            this.componentResolver = componentResolver;
+        try (Writer writer = new OutputStreamWriter(out)) {
+            compiledTemplate.render(context, writer);
         }
-        
-        @Override
-        public ComponentResolver getComponentResolver() {
-            return this.componentResolver;
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-
-        @Override
-        public PageContent render() throws Exception {
-            HtmlPage html = this.content.getHtmlContent();
-
-            Locale locale = 
-                new org.springframework.web.servlet.support.RequestContext(
-                        this.request, this.request.getServletContext()).getLocale();
-
-            Context context = new Context(locale);
-            for (String name : this.templateParameters.keySet()) {
-                context.define(name, this.templateParameters.get(name), true);
-            }
-            context.setAttribute(SERVLET_REQUEST_CONTEXT_ATTR, this.request);
-            context.define(CR_REQ_ATTR, this.componentResolver, true);
-            context.define(HTML_REQ_ATTR, html, true);
-            this.request.setAttribute(PARAMS_REQ_ATTR, this.templateParameters);
-            StringWriter writer = new StringWriter();
-
-            this.compiledTemplate.render(context, writer);
-            
-            if (htmlParser == null) {
-                return new ContentImpl(writer.toString(), this.content.getOriginalCharacterEncoding());
-            }
-            HtmlPage page = htmlParser.parse(
-                    new ByteArrayInputStream(writer.toString().getBytes("utf-8")), "utf-8");
-            return new HtmlPageContentImpl(page.getCharacterEncoding(), page);
+        catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
-    
     private boolean needCompile() {
         Optional<Instant> templateMod = templateSource.getLastModified();
         if (!templateMod.isPresent() || !lastModified.isPresent()) return true;
         return templateMod.get().isAfter(lastModified.get());
     }
-    
-    @Override
-    public TemplateExecution newTemplateExecution(
-            HtmlPageContent html, HttpServletRequest request,
-            Map<String, Object> model, Map<String, Object> templateParameters) throws Exception {
-
-        if (needCompile()) {
-            compile();
-        }
-        return new Execution(html, this.compiledTemplate, this.componentResolver, request, templateParameters);
-    }
-
     
     private synchronized void compile() throws Exception {
         if (!needCompile()) {

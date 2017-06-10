@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.web.referencedata.ReferenceDataProvider;
 
 
@@ -75,7 +76,7 @@ public class ParameterizableBeanProvider implements ReferenceDataProvider, Initi
     
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request) throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         model.put(this.modelName, this.object);
     }
 

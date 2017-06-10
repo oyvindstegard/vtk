@@ -35,6 +35,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
@@ -76,8 +77,7 @@ public class IndexFileMessageProvider implements ReferenceDataProvider {
     }
 
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-            throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         RequestContext context = RequestContext.getRequestContext();
         
@@ -94,6 +94,7 @@ public class IndexFileMessageProvider implements ReferenceDataProvider {
         model.put(this.modelName, message);
     }
     
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("{");
         sb.append("modelName : ").append(this.modelName);

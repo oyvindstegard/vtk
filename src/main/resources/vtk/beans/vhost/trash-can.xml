@@ -35,17 +35,9 @@
   </bean>
 
   <bean id="trashCanHandler" class="vtk.web.actions.trashcan.TrashCanController">
-    <property name="formView" value="trashCan" />
-    <property name="successView" value="redirectToManage" />
+    <property name="formView" value="trashCanView" />
+    <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="trashcan" />
-  </bean>
-
-  <bean id="trashCan.viewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="trashCan" value-ref="trashCanView" />
-      </map>
-    </property>
   </bean>
 
   <bean id="trashCanView" parent="freemarkerView">

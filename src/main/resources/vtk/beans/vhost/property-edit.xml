@@ -23,15 +23,6 @@
     <constructor-arg value="manage.propertyEditView" />
   </bean>
 
-
-  <bean id="manage.propertyEdit.viewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="manage.propertyEditView" value-ref="manage.propertyEditView" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="manage.propertyEditView" parent="freemarkerView">
     <property name="url" value="pages/property-edit.ftl" />
   </bean>

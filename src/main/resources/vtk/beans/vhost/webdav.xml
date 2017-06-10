@@ -73,7 +73,7 @@
 
   <bean id="webdav.davMountHandler" 
     class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="webdav.davMount" />
+    <property name="viewName" value="webdav.davMountView" />
   </bean>
 
   <bean id="webdavServiceUrlPostProcessors" class="org.springframework.beans.factory.config.ListFactoryBean">
@@ -166,11 +166,6 @@
         <bean id="get" class="vtk.web.service.RequestMethodAssertion">
           <property name="method" value="GET" />
         </bean>
-      </list>
-    </property>
-    <property name="handlerInterceptors">
-      <list>
-        <ref bean="webdavDisplayResourceHandlerInterceptor" />
       </list>
     </property>
     <property name="handler" ref="webdavGetHandler" />
@@ -428,7 +423,7 @@
   <bean id="webdavOptionsHandler" class="vtk.webdav.OptionsController" />
 
   <bean id="webdavGetHandler" class="vtk.web.display.file.DisplayResourceController">
-    <property name="viewName" value="webdavDisplayResource" />
+    <property name="viewName" value="webdavDisplayResourceView" />
     <property name="ignoreLastModified" value="true" />
   </bean>
 
@@ -436,6 +431,8 @@
 
   <bean id="webdavPropfindHandler" class="vtk.webdav.PropfindController" >
     <property name="childAuthorizeWhitelistProperties" ref="webdav.childAuthorizeWhitelistProperties" />
+    <property name="webdavService" ref="webdavService"/>
+    <property name="collectionContentType" value="${webdav.collectionContentType}" />
   </bean>
 
   <bean id="webdavLockHandler" class="vtk.webdav.LockController">
@@ -484,45 +481,6 @@
 
   <bean id="webdavProppatchHandler" class="vtk.webdav.ProppatchController">
     <property name="webdavService" ref="webdavService"/>
-  </bean>
-
-  <!-- View resolver -->
-  
-  <bean id="webdavViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="webdav.davMount" value-ref="webdav.davMountView" />
-        <entry key="webdavDisplayResource" value-ref="webdavDisplayResourceView" />
-        <entry key="OPTIONS" value-ref="OPTIONS" />
-        <entry key="PROPFIND" value-ref="PROPFIND" />
-        <entry key="HEAD" value-ref="HEAD" />
-        <entry key="LOCK" value-ref="LOCK" />
-        <entry key="PROPPATCH" value-ref="HTTP_STATUS_VIEW" />
-        <entry key="MKCOL" value-ref="HTTP_MKCOL_STATUS_VIEW" />
-        <entry key="MOVE" value-ref="HTTP_STATUS_VIEW" />
-        <entry key="UNLOCK" value-ref="HTTP_STATUS_VIEW" />
-        <entry key="COPY" value-ref="HTTP_STATUS_VIEW" />
-        <entry key="PUT" value-ref="HTTP_STATUS_VIEW" />
-        <entry key="POST" value-ref="HTTP_STATUS_VIEW" />
-        <entry key="DELETE" value-ref="HTTP_STATUS_VIEW" />
-        <entry key="HTTP_STATUS_VIEW" value-ref="HTTP_STATUS_VIEW" />
-        <entry key="HTTP_STATUS_NOT_FOUND" value-ref="HTTP_STATUS_NOT_FOUND_VIEW" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="webdavCollectionListingViewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="webdavCollectionListingHeadView" value-ref="webdavCollectionListingHeadView" />
-        <entry key="webdavCollectionListingView" value-ref="webdavCollectionListingView" />
-      </map>
-    </property>
-    <property name="referenceDataProviders">
-      <list>
-        <ref bean="manageLinkProvider" />
-      </list>
-    </property>
   </bean>
 
   <bean id="decorating.webdavNamespace" class="java.lang.String">
@@ -596,6 +554,7 @@
           <property name="urlName" value="url" />
           <property name="matchAssertions" value="true" />
         </bean>
+        <ref bean="manageLinkProvider" />
         <ref bean="resourceContextProvider" />
         <ref bean="webdavBreadCrumbProvider" />
         <ref bean="webdavCollectionListingProvider" />
@@ -604,21 +563,6 @@
   </bean>
 
   <bean id="webdavCollectionListingHeadView" parent="webdavCollectionListingView" />
-
-  <bean id="webdavDisplayResourceHandlerInterceptor"
-        class="vtk.web.interceptors.HeaderControlHandlerInterceptor">
-    <property name="includeLastModifiedHeader" value="false" />
-    <property name="includeEtagHeader" value="${webdavSupportETags}" />
-    <!-- Because of a bug in Resin (does not distinguish between GET
-         and PUT?), set a bunch of cache-preventing headers here: -->
-    <property name="staticHeaders">
-      <map>
-        <entry key="Cache-Control" value="no-cache, no-store, must-revalidate, max-age=0" />
-        <entry key="Expires" value="0" />
-        <entry key="Pragma" value="no-cache" />
-      </map>
-    </property>
-  </bean>
 
   <bean id="webdav.davMountView" parent="freemarkerView">
     <property name="contentType" value="application/davmount+xml" />
@@ -637,45 +581,7 @@
 
   <bean id="webdavDisplayResourceView" class="vtk.web.view.DisplayResourceView" />
 
-  <bean id="HTTP_STATUS_VIEW" class="vtk.web.view.SimpleHttpStatusView"/>
-
-  <bean id="HTTP_MKCOL_STATUS_VIEW" class="vtk.web.view.SimpleHttpStatusView">
-    <property name="contentType" value="text/html;charset=utf-8" />
-    <property name="body">
-      <value>
-        &lt;?xml version="1.0" encoding="utf-8"?&gt;
-        &lt;html&gt;&lt;head&gt;
-        &lt;title&gt;Created&lt;/title&gt;
-        &lt;/head&gt;
-        &lt;body&gt;Document created&lt;/body&gt;
-        &lt;/html&gt;
-      </value>
-    </property>
-  </bean>
-
-  <bean id="HTTP_STATUS_NOT_FOUND_VIEW"
-        class="vtk.web.view.SimpleHttpStatusView">
-    <property name="attributesMap">
-      <map>
-        <entry key="httpStatusCode">
-          <bean class="java.lang.Integer">
-            <constructor-arg><value>404</value></constructor-arg>
-          </bean>
-        </entry>
-      </map>  
-    </property>
-  </bean>  
-
-  <bean id="OPTIONS" class="vtk.webdav.OptionsView"/>
-
-  <bean id="PROPFIND" class="vtk.webdav.PropfindView">
-    <property name="webdavService" ref="webdavService"/>
-    <property name="collectionContentType" value="${webdav.collectionContentType}" />
-  </bean>
-
   <bean id="HEAD" class="vtk.web.view.DisplayResourceView" />
-
-  <bean id="LOCK" class="vtk.webdav.LockView"/>
 
   <bean id="webdavBreadCrumbProvider"
         class="vtk.web.referencedata.provider.BreadCrumbProvider">

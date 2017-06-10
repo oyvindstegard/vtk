@@ -30,19 +30,14 @@
  */
 package vtk.webdav;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
-import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
 import vtk.repository.Repository;
-import vtk.repository.Resource;
 import vtk.repository.ResourceNotFoundException;
-import vtk.security.AuthenticationException;
 import vtk.web.RequestContext;
 
 /**
@@ -56,37 +51,37 @@ public class OptionsController extends AbstractWebdavController {
      * DELETE, CONNECT, OPTIONS, PATCH, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE,
      * LOCK, UNLOCK, TRACE
      */
-    public ModelAndView handleRequest(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
 
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
-        Map<String, Object> model = new HashMap<String, Object>();
 
         // Note: '*' as request URI for OPTIONS requests should be translated to '/'
         // before we get here.
-        
-        Resource resource;
         try {
-            resource = repository.retrieve(token, uri, false);
-            model.put(WebdavConstants.WEBDAVMODEL_ETAG, resource.getEtag());
-
-        } catch (ResourceNotFoundException e) {
-            this.logger.debug("Caught ResourceNotFoundException for URI " + uri);
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_NOT_FOUND));
-
-        } catch (AuthorizationException e) {
-            this.logger.debug("Caught AuthorizationException for URI " + uri, e);
+            repository.retrieve(token, uri, false);
             
-        } catch (AuthenticationException e) {
-            this.logger.debug("Caught AuthorizationException for URI " + uri, e);
+            String optionsHeader = "1, 2";
+            String allowHeader = new StringBuilder("GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, ")
+                .append("PATCH, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE, ")
+                .append("LOCK, UNLOCK, TRACE").toString();
+            
+            responseBuilder(HttpServletResponse.SC_OK)
+                .header("Allow", allowHeader)
+                .header("MS-Author-Via", "DAV")
+                .header("DAV", optionsHeader)
+                .writeTo(response);
+            
         }
-
-        return new ModelAndView("OPTIONS", model);
+        catch (ResourceNotFoundException e) {
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message("Not found: " + uri)
+                .writeTo(response);
+        }
     }
 
 }

@@ -30,13 +30,10 @@
  */
 package vtk.webdav;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.web.servlet.ModelAndView;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -53,44 +50,33 @@ import vtk.web.RequestContext;
  */
 public class UnlockController extends AbstractWebdavController {
 
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
          
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
-        Map<String, Object> model = new HashMap<>();
         try {
             Resource resource = repository.retrieve(token, uri, false);
             String lockToken = getLockToken(request);
             if (resource.getLock() != null && !resource.getLock().getLockToken().equals(lockToken)) {
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                          new Integer(HttpServletResponse.SC_PRECONDITION_FAILED));
+                responseBuilder(HttpServletResponse.SC_PRECONDITION_FAILED).writeTo(response);
             }
             else {
                 repository.unlock(token, uri, lockToken);
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                        new Integer(HttpServletResponse.SC_OK));
-                model.put(WebdavConstants.WEBDAVMODEL_ETAG, resource.getEtag());
+                responseBuilder(HttpServletResponse.SC_OK).writeTo(response);
             }
-
-        } catch (InvalidRequestException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_BAD_REQUEST));
-
-        } catch (ResourceNotFoundException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_NOT_FOUND));
-
-        } catch (ResourceLockedException e) {
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpUtil.SC_LOCKED));
         }
-        return new ModelAndView("UNLOCK", model);
+        catch (InvalidRequestException e) {
+            responseBuilder(HttpServletResponse.SC_BAD_REQUEST).writeTo(response);
+        }
+        catch (ResourceNotFoundException e) {
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND).writeTo(response);
+        }
+        catch (ResourceLockedException e) {
+            responseBuilder(HttpUtil.SC_LOCKED).writeTo(response);
+        }
     }
    
     protected String getLockToken(HttpServletRequest request)

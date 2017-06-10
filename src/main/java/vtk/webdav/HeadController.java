@@ -30,13 +30,10 @@
  */
 package vtk.webdav;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.web.servlet.ModelAndView;
 
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -55,49 +52,42 @@ public class HeadController extends AbstractWebdavController {
     /**
      * Performs the HTTP/WebDAV 'HEAD' method.
      */
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    public void handleRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
          
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
-        Map<String, Object> model = new HashMap<>();
 
         try {
             Resource resource = repository.retrieve(token, uri, false);
             if (resource.isCollection()) {
-                if (this.logger.isDebugEnabled()) {
-                    this.logger.debug("HEAD on collection: setting status 404");
-                }
-                model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                        new Integer(HttpServletResponse.SC_NOT_FOUND));
-              return new ModelAndView("HTTP_STATUS_VIEW", model);
+                responseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                    .header("Content-Type", "text/plain;charset=utf-8")
+                    .message("HEAD on collection is not supported")
+                    .writeTo(response);
             }
-            model.put(WebdavConstants.WEBDAVMODEL_REQUESTED_RESOURCE, resource);
-            model.put("resource", resource);
-            return new ModelAndView("HEAD", model);
-            
-        } catch (ResourceNotFoundException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ResourceNotFoundException for URI "
-                             + uri);
+            String contentType = resource.getContentType();
+            if (resource.getCharacterEncoding() != null) {
+                contentType = contentType + ";charset=" + resource.getCharacterEncoding();
             }
-
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpServletResponse.SC_NOT_FOUND));
-            return new ModelAndView("HTTP_STATUS_VIEW", model);
-
-        } catch (ResourceLockedException e) {
-            if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Caught ResourceLockedException for URI "
-                             + uri);
-            }
-            model.put(WebdavConstants.WEBDAVMODEL_ERROR, e);
-            model.put(WebdavConstants.WEBDAVMODEL_HTTP_STATUS_CODE,
-                      new Integer(HttpUtil.SC_LOCKED));
-            return new ModelAndView("HTTP_STATUS_VIEW", model);
+            responseBuilder(HttpServletResponse.SC_OK)
+                .header("Content-Type", contentType)
+                .header("Content-Length", String.valueOf(resource.getContentLength()))
+                .writeTo(response);
+        }
+        catch (ResourceNotFoundException e) {
+            responseBuilder(HttpServletResponse.SC_NOT_FOUND)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
+        }
+        catch (ResourceLockedException e) {
+            responseBuilder(HttpUtil.SC_LOCKED)
+                .header("Content-Type", "text/plain;charset=utf-8")
+                .message(e.getMessage())
+                .writeTo(response);
         }
     }
 }

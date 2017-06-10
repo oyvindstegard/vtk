@@ -33,14 +33,6 @@
     <constructor-arg name="defaultName" value="message" />
   </bean>
 
-  <bean id="messageEditorHandler.viewResolver" parent="viewResolver">
-    <property name="views">
-      <map>
-        <entry key="messageEditorHandler.view" value-ref="messageEditorHandler.view" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="messageEditorHandler.view" parent="freemarkerView">
     <property name="url" value="pages/simple-structured-editor.ftl" />
     <property name="attributesMap">

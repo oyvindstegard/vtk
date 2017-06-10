@@ -47,6 +47,11 @@
         <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
       </bean>
     </property>
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="filebrowser.fckconnector.browseView" parent="freemarkerView">
@@ -64,17 +69,6 @@
     <property name="referenceDataProviders">
       <list>
       </list>
-    </property>
-  </bean>
-
-  <bean id="filebrowser.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="filebrowser.fckconnector.browseView"
-               value-ref="filebrowser.fckconnector.browseView" />
-        <entry key="filebrowser.fckconnector.uploadStatusView"
-               value-ref="filebrowser.fckconnector.uploadStatusView" />
-      </map>
     </property>
   </bean>
 

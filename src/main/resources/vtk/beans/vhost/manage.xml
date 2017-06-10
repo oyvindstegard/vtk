@@ -138,7 +138,10 @@
     </property>
     <property name="urlPostProcessors" ref="manage.urlPostProcessors" />
     <property name="servletFilters">
-      <ref bean="system.csrfPreventionHandler" />
+      <list>
+        <ref bean="system.csrfPreventionHandler" />
+        <ref bean="system.decoratingFilter" />
+      </list>
     </property>
     <property name="handlerInterceptors">
       <list>
@@ -274,6 +277,11 @@
     <property name="handler">
       <ref bean="manage.refreshLockHandler" />
     </property>
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="aboutResourceService" class="vtk.web.service.ServiceImpl">
@@ -339,6 +347,7 @@
         <entry key="resourceMenuRightOrder">
           <value type="java.lang.Integer">999</value>
         </entry>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
       </map>
     </property>
     <property name="handler" ref="manage.unlockFormHandler" />
@@ -380,6 +389,11 @@
       </list>
     </property>
     <property name="handler" ref="fileUploadHandler" />
+    <property name="attributes">
+      <map>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
+      </map>
+    </property>
   </bean>
 
   <bean parent="collectionMenuBuilder">
@@ -400,6 +414,11 @@
       </list>
     </property>
     <property name="handler" ref="createDocumentHandler" />
+    <property name="attributes">
+      <map>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
+      </map>
+    </property>
   </bean>
 
   <bean parent="collectionMenuBuilder">
@@ -421,6 +440,11 @@
       </list>
     </property>
     <property name="handler" ref="createCollectionHandler" />
+    <property name="attributes">
+      <map>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
+      </map>
+    </property>
   </bean>
 
   <bean parent="collectionMenuBuilder">
@@ -435,6 +459,7 @@
         <entry key="resourceMenuLeftOrder">
           <value type="java.lang.Integer">0</value>
         </entry>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
       </map>
     </property>
     <property name="assertions">
@@ -589,16 +614,8 @@
 
   <bean id="manage.createCollectionWithPropertiesHandler"
         class="vtk.web.actions.create.CreateCollectionWithProperties">
-    <property name="formView" value="manage.createcollectionwithpropertiesForm" />
-    <property name="successView" value="redirectToManage" />
-  </bean>
-
-  <bean id="manage.createcollectionwithproperties.viewResolver" parent="adminViewResolver">
-    <property name="views">
-      <map>
-        <entry key="manage.createcollectionwithpropertiesForm" value-ref="manage.createcollectionwithpropertiesFormView" />
-      </map>
-    </property>
+    <property name="formView" value="manage.createcollectionwithpropertiesFormView" />
+    <property name="successView" value="redirectToManageView" />
   </bean>
 
   <bean id="manage.createcollectionwithpropertiesFormView" parent="freemarkerView">
@@ -814,7 +831,7 @@
   </bean>
 
   <bean id="previewText.documentTooLargeHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="previewText.documentTooLarge" />
+    <property name="viewName" value="previewText.documentTooLargeView" />
   </bean>
 
   <bean id="previewCollectionListingService" class="vtk.web.service.ServiceImpl">
@@ -920,8 +937,8 @@
     </property>
     <property name="propertyListModelName" value="basicPropList" />
     <property name="propertyMapModelName" value="aboutItems" />
-    <property name="formView" value="admin" />
-    <property name="successView" value="redirectToAbout" />
+    <property name="formView" value="aboutView" />
+    <property name="successView" value="redirectToAboutView" />
     <property name="commandName" value="form" />
     <property name="dateFormat" value="dd.MM.yyyy HH:mm:ss" />
     <property name="valueFactory" ref="valueFactory" />
@@ -931,28 +948,46 @@
   </bean>
 
   <bean id="fileUploadHandler" class="vtk.web.actions.create.FileUploadController">
-    <property name="formView" value="manageCollectionListing" />
-    <property name="successView" value="redirectToManage" />
+    <property name="formView" value="manage.fileUploadView" />
+    <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="uploadForm" />
     <property name="downcaseNames" value="true" />
     <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
     <property name="tempDir" value="${upload.tempDir}" />
   </bean>
 
+  <bean id="manage.fileUploadView" parent="freemarkerView">
+    <property name="url" value="actions/upload.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="manage.unlockResourceHandler" class="vtk.web.actions.lock.UnlockResourceController">
-    <property name="viewName" value="redirectToManage" />
+    <property name="viewName" value="redirectToManageView" />
   </bean>
 
   <bean id="manage.unlockFormHandler" class="vtk.web.actions.lock.UnlockFormController">
-    <property name="formView" value="admin" />
-    <property name="successView" value="redirectToManage" />
+    <property name="formView" value="manage.unlockFormView" />
+    <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="unlockFormCommand" />
   </bean>
 
+  <bean id="manage.unlockFormView" parent="freemarkerView">
+    <property name="url" value="actions/unlock-form.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="createDocumentHandler" class="vtk.web.actions.create.TemplateBasedCreateController">
-    <property name="formView" value="manageCollectionListing" />
-    <property name="cancelView" value="redirectToManage" />
-    <property name="successView" value="redirectToManage" />
+    <property name="formView" value="createDocumentView" />
+    <property name="cancelView" value="redirectToManageView" />
+    <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="createDocumentForm" />
     <property name="downcaseNames" value="true" />
     <property name="descriptionPropDef" ref="descriptionPropDef" />
@@ -963,6 +998,15 @@
     </property>
     <property name="replaceNameChars" ref="createResource.nameReplacementMap" />
     <property name="templateManager" ref="templates.resourceTemplateManager" />
+  </bean>
+
+  <bean id="createDocumentView" parent="freemarkerView">
+    <property name="url" value="actions/create-document.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
   </bean>
 
   <bean id="defaultDocumentTemplates" class="vtk.web.actions.create.DefaultDocumentTemplates">
@@ -1004,9 +1048,9 @@
   </bean>
 
   <bean id="createCollectionHandler" class="vtk.web.actions.create.TemplateBasedCreateCollectionController">
-    <property name="formView" value="manageCollectionListing" />
-    <property name="cancelView" value="redirectToManage" />
-    <property name="successView" value="redirectToManage" />
+    <property name="formView" value="manage.createCollectionView" />
+    <property name="cancelView" value="redirectToManageView" />
+    <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="createCollectionForm" />
     <property name="userTitlePropDef" ref="userTitlePropDef" />
     <property name="downcaseCollectionNames" value="true" />
@@ -1027,9 +1071,18 @@
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
   </bean>
 
+  <bean id="manage.createCollectionView" parent="freemarkerView">
+    <property name="url" value="actions/create-collection.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="renameHandler" class="vtk.web.actions.copymove.RenameController">
-    <property name="formView" value="admin" />
-    <property name="successView" value="redirectToManage" />
+    <property name="formView" value="renameView" />
+    <property name="successView" value="redirectToManageView" />
     <property name="commandName" value="renameCommand" />
     <property name="validator">
       <bean class="vtk.web.actions.copymove.RenameCommandValidator">
@@ -1038,12 +1091,21 @@
     </property>
   </bean>
 
+  <bean id="renameView" parent="freemarkerView">
+    <property name="url" value="actions/rename.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="aclInheritanceHandler" class="vtk.web.actions.permissions.ToggleAclInheritanceController">
-    <property name="viewName" value="redirectToPermissions" />
+    <property name="viewName" value="redirectToPermissionsView" />
   </bean>
 
   <bean id="abstractPermissionsHandler" abstract="true" class="vtk.web.actions.permissions.ACLEditController">
-    <property name="formView" value="permissions" />
+    <property name="formView" value="permissionsView" />
     <property name="validator">
       <bean class="vtk.web.actions.permissions.ACLEditCommandValidator">
         <property name="principalManager" ref="principalManager" />
@@ -1063,50 +1125,50 @@
 
   <bean id="editReadPermissionsHandler" parent="abstractPermissionsHandler">
     <property name="privilege" value="READ" />
-    <property name="successView" value="redirectToPermissions" />
+    <property name="successView" value="redirectToPermissionsView" />
     <property name="commandName" value="permissionsForm_read" />
   </bean>
 
   <bean id="editReadWritePermissionsHandler" parent="abstractPermissionsHandler">
     <property name="privilege" value="READ_WRITE" />
-    <property name="successView" value="redirectToPermissions" />
+    <property name="successView" value="redirectToPermissionsView" />
     <property name="commandName" value="permissionsForm_read-write" />
   </bean>
 
   <bean id="editAdminPermissionsHandler" parent="abstractPermissionsHandler">
     <property name="privilege" value="ALL" />
-    <property name="successView" value="redirectToPermissions" />
+    <property name="successView" value="redirectToPermissionsView" />
     <property name="commandName" value="permissionsForm_all" />
   </bean>
 
   <bean id="editReadProcessedPermissionsHandler" parent="abstractPermissionsHandler">
     <property name="privilege" value="READ_PROCESSED" />
-    <property name="successView" value="redirectToPermissions" />
+    <property name="successView" value="redirectToPermissionsView" />
     <property name="commandName" value="permissionsForm_read-processed" />
   </bean>
 
   <bean id="editAddCommentPermissionsHandler" parent="abstractPermissionsHandler">
     <property name="privilege" value="ADD_COMMENT" />
-    <property name="successView" value="redirectToPermissions" />
+    <property name="successView" value="redirectToPermissionsView" />
     <property name="commandName" value="permissionsForm_add-comment" />
   </bean>
 
   <bean id="editReadWriteUnpublishedPermissionsHandler" parent="abstractPermissionsHandler">
     <property name="privilege" value="READ_WRITE_UNPUBLISHED" />
-    <property name="successView" value="redirectToPermissions" />
+    <property name="successView" value="redirectToPermissionsView" />
     <property name="commandName" value="permissionsForm_read-write-unpublished" />
   </bean>
 
   <bean id="permissionsHandler" class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="permissions" />
+    <property name="viewName" value="permissionsView" />
   </bean>
 
   <bean id="manageCollectionListingHandler" class="vtk.web.display.file.ResourceAwareParameterizableViewController">
-    <property name="viewName" value="manageCollectionListing" />
+    <property name="viewName" value="manageCollectionListingView" />
   </bean>
 
   <bean id="preview.displayPopupURLHandler" class="vtk.web.display.url.ResourceServiceURLController">
-    <property name="viewName" value="preview.displayPopupURL" />
+    <property name="viewName" value="preview.displayPopupURLView" />
     <property name="service" ref="viewService" />
     <property name="displayWorkingRevision" value="true" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
@@ -1120,57 +1182,30 @@
 
   <bean id="previewAdminIframeHandler" parent="abstractPreviewIframe">
     <property name="service" ref="viewService" />
-    <property name="viewName" value="previewAdminIframe" />
+    <property name="viewName" value="previewAdminIframeView" />
     <property name="displayWorkingRevision" value="true" />
   </bean>
 
   <bean id="previewImageHandler" parent="abstractPreviewIframe">
     <property name="service" ref="viewService" />
-    <property name="viewName" value="previewImage" />
+    <property name="viewName" value="previewMediaView" />
   </bean>
 
   <bean id="previewMediaHandler" parent="abstractPreviewIframe">
     <property name="service" ref="viewService" />
-    <property name="viewName" value="previewMedia" />
+    <property name="viewName" value="previewMediaView" />
   </bean>
 
   <bean id="previewTextHandler" class="vtk.web.display.file.DisplayResourceController">
     <!-- XXX preview size limit.. -->
     <property name="ignoreLastModified" value="true" />
-    <property name="viewName" value="previewText" />
+    <property name="viewName" value="previewTextView" />
     <property name="streamToString" value="true" />
   </bean>
 
   <bean id="previewFallbackHandler" class="vtk.web.display.file.DisplayResourceController">
     <property name="ignoreLastModified" value="true" />
-    <property name="viewName" value="previewFallback" />
-  </bean>
-
-  <!-- MANAGE views -->
-  <bean id="adminViewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="manageCollectionListing" value-ref="manageCollectionListingView" />
-        <entry key="admin" value-ref="aboutView" />
-        <entry key="permissions" value-ref="permissionsView" />
-        <entry key="previewImage" value-ref="previewMediaView" />
-        <entry key="previewMedia" value-ref="previewMediaView" />
-        <entry key="preview.displayPopupURL" value-ref="preview.displayPopupURLView" />
-        <entry key="previewAdminIframe" value-ref="previewAdminIframeView" />
-        <entry key="previewText" value-ref="previewTextView" />
-        <entry key="previewText.documentTooLarge" value-ref="previewText.documentTooLargeView" />
-        <entry key="previewFallback" value-ref="previewFallbackView" />
-      </map>
-    </property>
-  </bean>
-
-  <bean id="manage.plainViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="manage.refreshLockView" value-ref="manage.refreshLockView" />
-        <entry key="redirectToAbout" value-ref="redirectToAboutView" />
-      </map>
-    </property>
+    <property name="viewName" value="previewFallbackView" />
   </bean>
 
   <bean id="expiresSecProvider" class="vtk.web.referencedata.provider.ResourcePropertiesValueProvider">
@@ -1524,11 +1559,16 @@
     <property name="name" value="tab-menu" />
     <property name="description" value="Displays the admin tab menu" />
     <property name="view" ref="manage.tabMenuView" />
-    <property name="exposeMvcModel" value="true" />
+    <property name="exposeMvcModel" value="false" />
   </bean>
 
   <bean id="manage.tabMenuView" parent="freemarkerView">
     <property name="url" value="system/tab-menu.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="manage.tabMenuProvider" />
+      </list>
+    </property>
   </bean>
 
   <bean id="manage.tabMessageComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
@@ -1843,10 +1883,9 @@
     <property name="referenceDataProviders">
       <list>
         <ref bean="parentLinkProvider" />
-        <ref bean="collectionMenuProvider" />
         <ref bean="manageCollectionlistingProvider" />
         <ref bean="resourceContextProvider" />
-        <ref bean="collectionMenuProvider" />
+        <!--ref bean="manage.tabMenuProvider" /-->
         <bean class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
           <property name="service" ref="manageCollectionListingService" />
           <property name="modelName" value="action" />
@@ -1918,7 +1957,7 @@
     <property name="retrieveForProcessing" value="false" />
   </bean>
 
-  <bean id="collectionMenuProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
+  <bean id="manage.tabMenuProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
     <constructor-arg value="tabMenuRight" />
     <constructor-arg ref="collectionActionServicesFactory" />
   </bean>
@@ -2211,7 +2250,6 @@
         <!--ref bean="readPermissionsProvider" /-->
         <ref bean="publishProvider" />
         <ref bean="sessionBeanProvider" />
-        <ref bean="browseUrlProvider" />
       </list>
     </constructor-arg>
   </bean>
@@ -2238,12 +2276,11 @@
   </bean>
 
   <bean id="manageErrorViewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
+    <constructor-arg name="views">
       <map>
         <entry key="defaultManageError" value-ref="defaultManageErrorView" />
       </map>
-    </property>
-    <property name="viewWrapper" ref="system.viewWrapper" />
+    </constructor-arg>
   </bean>
 
   <bean id="defaultManageErrorView" parent="freemarkerView">
@@ -2344,14 +2381,6 @@
     <property name="principalFactory" ref="principalFactory" />
   </bean>
 
-  <bean id="emailApproval.viewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="emailApproval.view" value-ref="emailApproval.view" />
-      </map>
-    </property>
-  </bean>
-
   <bean id="emailApproval.view" parent="freemarkerView">
     <property name="url" value="pages/email-approval.ftl" />
     <property name="referenceDataProviders">
@@ -2384,18 +2413,15 @@
       </list>
     </property>
     <property name="handler" ref="reauthenticateHandler" />
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="reauthenticateHandler" class="org.springframework.web.servlet.mvc.ParameterizableViewController">
     <property name="viewName" value="reauthenticate.view" />
-  </bean>
-
-  <bean id="reauthenticate.viewResolver" class="vtk.web.decorating.MappingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="reauthenticate.view" value-ref="reauthenticate.view" />
-      </map>
-    </property>
   </bean>
 
   <bean id="reauthenticate.view" parent="freemarkerView">

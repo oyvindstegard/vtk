@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -114,8 +115,7 @@ public class ResourceMessageProvider implements ReferenceDataProvider, Initializ
     }
     
     @Override
-    public void referenceData(Map<String, Object> model, HttpServletRequest request)
-            throws Exception {
+    public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
         Resource resource = getResource(model);
         String message = null;
@@ -200,6 +200,7 @@ public class ResourceMessageProvider implements ReferenceDataProvider, Initializ
         }
     }
     
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer(this.getClass().getName());
         sb.append(" [ ");

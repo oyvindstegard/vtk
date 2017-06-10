@@ -152,16 +152,6 @@
     <property name="wrapOutputInBrackets" value="false" />
   </bean>
 
-  <bean id="rootViewResolver" parent="system.decoratingViewResolver">
-    <property name="views">
-      <map>
-        <entry key="rootView" value-ref="rootView" />
-        <entry key="serviceTree" value-ref="serviceTreeView" />
-        <entry key="repositoryReadOnly" value-ref="repositoryReadOnlyView" />
-      </map>
-    </property>
-  </bean>
-
   <!-- Service tree -->
 
   <bean parent="rootManage.tabsBuilder">
@@ -193,7 +183,7 @@
   
   <bean id="root2Handler"
     class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="serviceTree" />
+    <property name="viewName" value="serviceTreeView" />
   </bean>
   
   <bean id="serviceTreeView" parent="freemarkerView">
@@ -262,7 +252,7 @@
 
   <bean id="repositoryReadOnlyHandler"
         class="org.springframework.web.servlet.mvc.ParameterizableViewController">
-    <property name="viewName" value="repositoryReadOnly" />
+    <property name="viewName" value="repositoryReadOnlyView" />
   </bean>
 
   <bean id="repositoryReadOnlyStateProvider" class="vtk.web.actions.repo.RepositoryReadOnlyStateProvider">
@@ -320,7 +310,7 @@
   <bean id="repositoryReadOnlyController"
         class="vtk.web.actions.repo.RepositoryReadOnlyController">
     <property name="repository" ref="repository" />
-    <property name="viewName" value="repositoryReadOnly" />
+    <property name="viewName" value="repositoryReadOnlyView" />
     <property name="parameterName" value="read-only" />
   </bean>
 

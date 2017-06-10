@@ -31,6 +31,7 @@
         <entry key="resourceMenuLeftOrder">
           <value type="java.lang.Integer">999</value>
         </entry>
+        <entry key-ref="system.decoratorTemplateAttribute" value="dialog-template.html" />
       </map>
     </property>
     <property name="assertions">
@@ -52,13 +53,22 @@
 
   <bean id="deleteResourceHandler" class="vtk.web.actions.delete.DeleteResourceController">
     <property name="commandName" value="command" />
-    <property name="formView" value="admin" />
-    <property name="successView" value="redirectToManage" />
-    <property name="cancelView" value="redirectToManage" />
+    <property name="formView" value="deleteResourceView" />
+    <property name="successView" value="redirectToManageView" />
+    <property name="cancelView" value="redirectToManageView" />
   </bean>
   
   <bean id="deleteResourcesHandler" class="vtk.web.actions.delete.DeleteResourcesController">
-    <property name="viewName" value="manageCollectionListing" />
+    <property name="viewName" value="manageCollectionListingView" />
+  </bean>
+
+  <bean id="deleteResourceView" parent="freemarkerView">
+    <property name="url" value="actions/delete.ftl" />
+    <property name="referenceDataProviders">
+      <list>
+        <ref bean="resourceContextProvider" />
+      </list>
+    </property>
   </bean>
 
 </beans>
