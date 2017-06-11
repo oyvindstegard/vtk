@@ -26,23 +26,12 @@
         <ref bean="editXslStylesheetAvailable" />
       </list>
     </property>
-    <property name="handlerInterceptors">
-      <list>
-        <ref bean="editTabHelpURLServiceInterceptor" />
-      </list>
-    </property>
     <property name="handler" ref="xmlEditHandler" />
   </bean>
 
   <bean parent="manage.tabsBuilder">
     <property name="arguments" ref="editService" />
   </bean>
-
-  <bean id="editTabHelpURLServiceInterceptor"
-        class="vtk.web.ReferenceDataProvidingHandlerInterceptor">
-    <property name="providers" ref="editTabHelpURLProvider" />
-  </bean>
-
 
   <bean id="editXslStylesheetAvailable"
         class="vtk.web.service.XmlSchemaXPathAssertion">

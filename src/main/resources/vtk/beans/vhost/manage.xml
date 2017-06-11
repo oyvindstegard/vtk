@@ -657,9 +657,6 @@
   <bean id="previewService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService" />
     <property name="order" value="1" />
-    <!--
-    <property name="categories" value="tabMenu" />
-    -->
     <property name="attributes">
       <map>
         <entry key="tabOrder">
@@ -776,7 +773,14 @@
       </list>
     </property>
     <property name="handler" ref="previewImageHandler" />
-    <property name="handlerInterceptors" ref="previewAsWebpageServiceInterceptor" />
+  </bean>
+  <bean parent="manage.tabMessages.builder">
+    <property name="arguments">
+      <bean class="vtk.web.referencedata.ServiceReferenceDataProvider">
+        <constructor-arg name="service" ref="previewImageService" />
+        <constructor-arg name="provider" ref="viewAsWebpageMessageProvider" />
+      </bean>
+    </property>
   </bean>
 
 
@@ -788,8 +792,16 @@
       </list>
     </property>
     <property name="handler" ref="previewMediaHandler" />
-    <property name="handlerInterceptors" ref="previewAsWebpageServiceInterceptor" />
   </bean>
+  <bean parent="manage.tabMessages.builder">
+    <property name="arguments">
+      <bean class="vtk.web.referencedata.ServiceReferenceDataProvider">
+        <constructor-arg name="service" ref="previewMediaService" />
+        <constructor-arg name="provider" ref="viewAsWebpageMessageProvider" />
+      </bean>
+    </property>
+  </bean>
+
 
   <bean id="previewTextService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="10" />
@@ -854,32 +866,21 @@
       </list>
     </property>
     <property name="handler" ref="previewAdminIframeHandler" />
-    <property name="handlerInterceptors" ref="previewCollectionListingServiceInterceptor" />
   </bean>
 
   <bean parent="manage.tabsBuilder">
     <property name="arguments" ref="previewCollectionListingService" />
   </bean>
 
-  <bean id="previewCollectionListingServiceInterceptor" class="vtk.web.ReferenceDataProvidingHandlerInterceptor">
-    <property name="providers">
-      <list>
-        <ref bean="indexFileMessageProvider" />
-      </list>
-    </property>
-  </bean>
 
-  <bean id="previewAsWebpageServiceInterceptor" class="vtk.web.ReferenceDataProvidingHandlerInterceptor">
-    <property name="providers">
-      <list>
-        <ref bean="viewAsWebpageMessageProvider" />
-      </list>
-    </property>
-  </bean>
-
-  <bean id="indexFileMessageProvider" class="vtk.web.referencedata.provider.IndexFileMessageProvider">
-    <property name="modelName" value="tabMessage" />
-    <property name="localizationKey" value="preview.folderWithIndexFile.tabMessage" />
+  <bean id="indexFileMessageProvider" class="vtk.web.referencedata.ServiceReferenceDataProvider">
+    <constructor-arg name="service" ref="previewCollectionListingService" />
+    <constructor-arg name="provider">
+      <bean class="vtk.web.referencedata.provider.IndexFileMessageProvider">
+        <property name="modelName" value="tabMessage" />
+        <property name="localizationKey" value="preview.folderWithIndexFile.tabMessage" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="viewAsWebpageMessageProvider" class="vtk.web.referencedata.provider.ResourceMessageProvider">
@@ -1581,11 +1582,23 @@
 
   <bean id="manage.tabMessageView" parent="freemarkerView">
     <property name="url" value="system/tab-message.ftl" />
-    <property name="referenceDataProviders">
-      <list>
-        <ref bean="expiresSecProvider" />
-      </list>
-    </property>
+    <property name="referenceDataProviders" ref="manage.tabMessages" />
+  </bean>
+
+  <bean id="manage.tabMessages" class="java.util.ArrayList" />
+
+  <bean id="manage.tabMessages.builder"
+        class="org.springframework.beans.factory.config.MethodInvokingBean" abstract="true">
+    <property name="targetObject" ref="manage.tabMessages" />
+    <property name="targetMethod" value="add" />
+  </bean>
+
+  <bean parent="manage.tabMessages.builder">
+    <property name="arguments" ref="expiresSecProvider" />
+  </bean>
+
+  <bean parent="manage.tabMessages.builder">
+    <property name="arguments" ref="indexFileMessageProvider" />
   </bean>
 
   <bean id="manage.parentNavigationComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
@@ -1957,9 +1970,14 @@
     <property name="retrieveForProcessing" value="false" />
   </bean>
 
-  <bean id="manage.tabMenuProvider" class="vtk.web.view.components.menu.DefaultListMenuProvider">
-    <constructor-arg value="tabMenuRight" />
-    <constructor-arg ref="collectionActionServicesFactory" />
+  <bean id="manage.tabMenuProvider" class="vtk.web.referencedata.ServiceReferenceDataProvider">
+    <constructor-arg name="service" ref="manageCollectionListingService" />
+    <constructor-arg name="provider">
+      <bean class="vtk.web.view.components.menu.DefaultListMenuProvider">
+        <constructor-arg value="tabMenuRight" />
+        <constructor-arg ref="collectionActionServicesFactory" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="collectionActionServicesFactory" class="vtk.util.SortedCollection">

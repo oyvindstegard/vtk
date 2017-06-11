@@ -42,17 +42,21 @@
 
   <bean id="trashCanView" parent="freemarkerView">
     <property name="url" value="pages/trash-can.ftl" />
-    <property name="referenceDataProviders">
-      <list>
-        <ref bean="overDueLimitMessageProvider" />
-      </list>
-    </property>
   </bean>
 
-  <bean id="overDueLimitMessageProvider" class="vtk.web.referencedata.provider.OverDueLimitMessageProvider">
-    <property name="permanentDeleteOverdueLimitInDays" value="${repository.permanentDeleteOverdueLimitInDays}" />
+  <bean parent="manage.tabMessages.builder">
+    <property name="arguments" ref="overDueLimitMessageProvider" />
   </bean>
 
+  <bean id="overDueLimitMessageProvider" class="vtk.web.referencedata.ServiceReferenceDataProvider">
+    <constructor-arg name="service" ref="trashCanService" />
+    <constructor-arg name="provider">
+      <bean class="vtk.web.referencedata.provider.OverDueLimitMessageProvider">
+        <property name="permanentDeleteOverdueLimitInDays" value="${repository.permanentDeleteOverdueLimitInDays}" />
+      </bean>
+    </constructor-arg>
+  </bean>
+  
   <bean parent="messageSource.addBasenames">
     <property name="arguments" value="vtk.i18n.trash-can.trash-can" />
   </bean>

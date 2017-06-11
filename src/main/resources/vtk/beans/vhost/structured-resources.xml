@@ -31,19 +31,19 @@
     <property name="assertions">
       <ref bean="resourceTypeIsPerson" />
     </property>
-    <property name="handlerInterceptors" ref="invalidUidServiceInterceptor" />
+  </bean>
+
+  <bean parent="manage.tabMessages.builder">
+    <property name="arguments">
+      <bean class="vtk.web.referencedata.ServiceReferenceDataProvider">
+        <constructor-arg name="service" ref="previewPersonService" />
+        <constructor-arg name="provider" ref="invalidUidMessageProvider" />
+      </bean>
+    </property>
   </bean>
 
   <bean id="resourceTypeIsPerson" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
     <property name="resourceType" value="person" />
-  </bean>
-
-  <bean id="invalidUidServiceInterceptor" class="vtk.web.ReferenceDataProvidingHandlerInterceptor">
-    <property name="providers">
-      <list>
-        <ref bean="invalidUidMessageProvider" />
-      </list>
-    </property>
   </bean>
 
   <bean id="invalidUidMessageProvider" class="vtk.web.referencedata.provider.InvalidUidMessageProvider">
