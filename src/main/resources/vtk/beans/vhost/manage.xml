@@ -1611,6 +1611,7 @@
 
   <bean id="manage.parentNavigationView" parent="freemarkerView">
     <property name="url" value="system/parent-navigation.ftl" />
+    <property name="referenceDataProviders" ref="parentLinkProvider" />
   </bean>
 
   <bean id="manage.tabHelpComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
@@ -1895,10 +1896,8 @@
     <property name="url" value="pages/manage-collectionlisting.ftl" />
     <property name="referenceDataProviders">
       <list>
-        <ref bean="parentLinkProvider" />
         <ref bean="manageCollectionlistingProvider" />
         <ref bean="resourceContextProvider" />
-        <!--ref bean="manage.tabMenuProvider" /-->
         <bean class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
           <property name="service" ref="manageCollectionListingService" />
           <property name="modelName" value="action" />
