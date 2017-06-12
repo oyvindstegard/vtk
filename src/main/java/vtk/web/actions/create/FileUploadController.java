@@ -30,28 +30,21 @@
  */
 package vtk.web.actions.create;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import vtk.repository.ContentInputSources;
+import vtk.repository.*;
 
-import vtk.repository.Path;
-import vtk.repository.Repository;
-import vtk.repository.Resource;
-import vtk.util.io.IO;
+import vtk.util.ValidationException;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
@@ -65,13 +58,9 @@ import vtk.web.service.Service;
  * 2. Otherwise gives error-message and upload nothing if existing resources
  */
 public class FileUploadController extends SimpleFormController<FileUploadCommand> {
+    private static final Logger logger = LoggerFactory.getLogger(FileUploadController.class);
 
-    private static Logger logger = LoggerFactory.getLogger(FileUploadController.class);
-
-    private File tempDir = new File(System.getProperty("java.io.tmpdir"));
-
-    private boolean downcaseNames = false;
-    private Map<String, String> replaceNameChars;
+    private FileUpload fileUpload;
 
     @Override
     protected FileUploadCommand formBackingObject(HttpServletRequest request) throws Exception {
@@ -94,7 +83,6 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
-        Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         String filenamesToCheck = request.getParameter("filenamesToBeChecked");
 
@@ -107,18 +95,15 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
             ArrayList<String> existingFilenamesFixed = new ArrayList<>();
             
             for (String name : filenames) {
-                name = stripWindowsPath(name);
-                if (name == null || name.trim().equals("")) {
-                    errors.rejectValue("file", "manage.upload.resource.name-problem", "A resource has an illegal name");
-                    return new ModelAndView(getFormView(), model);
-                }
-                String fixedName = fixFileName(name);
-                if (fixedName.equals("")) {
-                    errors.rejectValue("file", "manage.upload.resource.name-problem", "A resource has an illegal name");
+                String fixedName;
+                try {
+                    fixedName = fileUpload.fixFileName(name);
+                } catch (ValidationException e) {
+                    errors.rejectValue("file", e.getErrorCode(), e.getMessage());
                     return new ModelAndView(getFormView(), model);
                 }
                 Path itemPath = uri.extend(fixedName);
-                if (repository.exists(token, itemPath)) {
+                if (fileUpload.fileExists(token, itemPath)) {
                     existingFilenames.add(name); 
                     existingFilenamesFixed.add(fixedName);
                 }
@@ -134,6 +119,7 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
             return new ModelAndView(getFormView(), model);
         }
         else {
+            boolean shouldOverwriteExisting = request.getParameter("overwrite") != null;
 
             if (command.getCancelAction() != null) {
                 command.setDone(true);
@@ -141,141 +127,20 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
             }
 
             ServletFileUpload upload = new ServletFileUpload();
-
-            boolean shouldOverwriteExisting = request.getParameter("overwrite") != null;
-
-            // Check request to see if there is any cached info about file item names
-            @SuppressWarnings("unchecked")
-            List<String> fileItemNames = (List<String>) request.getAttribute("vtk.MultipartUploadWrapper.FileItemNames");
-            if (fileItemNames != null && !shouldOverwriteExisting) {
-                // ok, use this to check for name collisions, so we can fail as early as possible.
-                for (String name : fileItemNames) {
-                    name = stripWindowsPath(name);
-                    if (name == null || name.trim().equals("")) {
-                        errors.rejectValue("file", "manage.upload.resource.name-problem", "A resource has an illegal name");
-                        return new ModelAndView(getFormView(), model);
-                    }
-                    String fixedName = fixFileName(name);
-                    if (fixedName.equals("")) {
-                        errors.rejectValue("file", "manage.upload.resource.name-problem", "A resource has an illegal name");
-                        return new ModelAndView(getFormView(), model);
-                    }
-                    Path itemPath = uri.extend(fixedName);
-                    if (repository.exists(token, itemPath)) {
-                        errors.rejectValue("file", "manage.upload.resource.exists", "A resource of this name already exists");
-                        return new ModelAndView(getFormView(), model);
-                    }
-                }
+            try {
+                fileUpload.upload(token, upload.getItemIterator(request), uri, shouldOverwriteExisting);
+            } catch (ValidationException e) {
+                errors.rejectValue("file", e.getErrorCode(), e.getMessage());
+                return new ModelAndView(getFormView(), model);
             }
 
-            // Iterate input stream. We can only safely consume the data once.
-            FileItemIterator iter = upload.getItemIterator(request);
-            Map<Path, IO.TempFile> fileMap = new LinkedHashMap<>();
-            while (iter.hasNext()) {
-                FileItemStream uploadItem = iter.next();
-                if (!uploadItem.isFormField()) {
-                    String name = stripWindowsPath(uploadItem.getName());
-                    Path itemPath = uri.extend(fixFileName(name));
-                    if (!shouldOverwriteExisting) { // Overwrite decided by user
-                        if (repository.exists(token, itemPath)) {
-                            // Clean up already created temporary files
-                            for (IO.TempFile t: fileMap.values()) {
-                                t.delete();
-                            }
-                            errors.rejectValue("file", "manage.upload.resource.exists", "A resource of this name already exists");
-                            return new ModelAndView(getFormView(), model);
-                        }
-                    }
-                    IO.TempFile tmpFile = IO.tempFile(uploadItem.openStream(), tempDir).perform();
-                    fileMap.put(itemPath, tmpFile);
-                }
-            }
-
-            // Write files
-            for (Map.Entry<Path,IO.TempFile> entry: fileMap.entrySet()) {
-                Path path = entry.getKey();
-                IO.TempFile tempFile = entry.getValue();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Uploaded resource will be: " + path);
-                }
-                try {
-                    if (repository.exists(token, path)) {
-                        repository.delete(token, path, false);
-                    }
-                    repository.createDocument(token, path, ContentInputSources.fromFile(tempFile.file(), true));
-                    tempFile.delete();
-                }
-                catch (Exception e) {
-                    logger.warn("Caught exception while performing file upload", e);
-
-                    // Clean now to free up temp files faster
-                    for (IO.TempFile t : fileMap.values()) {
-                        t.delete();
-                    }
-                    errors.rejectValue("file", "manage.upload.error",
-                            "An unexpected error occurred while processing file upload");
-                    return new ModelAndView(getFormView(), model);
-                }
-            }
             command.setDone(true);
         }
         return new ModelAndView(getSuccessView(), model);
     }
 
-    /**
-     * Attempts to extract only the file name from a Windows style pathname, by
-     * stripping away everything up to and including the last backslash in the
-     * path.
-     */
-    static String stripWindowsPath(String fileName) {
-
-        if (fileName == null || fileName.trim().equals("")) {
-            return null;
-        }
-
-        int pos = fileName.lastIndexOf("\\");
-
-        if (pos > fileName.length() - 2) {
-            return fileName;
-        }
-        else if (pos >= 0) {
-            return fileName.substring(pos + 1, fileName.length());
-        }
-
-        return fileName;
+    @Required
+    public void setFileUpload(FileUpload fileUpload) {
+        this.fileUpload = fileUpload;
     }
-
-    private String fixFileName(String name) {
-        if (this.downcaseNames) {
-            name = name.toLowerCase();
-        }
-
-        if (this.replaceNameChars != null) {
-            for (String regex : this.replaceNameChars.keySet()) {
-                String replacement = this.replaceNameChars.get(regex);
-                name = name.replaceAll(regex, replacement);
-            }
-        }
-        return name;
-    }
-
-    public void setReplaceNameChars(Map<String, String> replaceNameChars) {
-        this.replaceNameChars = replaceNameChars;
-    }
-
-    public void setDowncaseNames(boolean downcaseNames) {
-        this.downcaseNames = downcaseNames;
-    }
-
-    public void setTempDir(String tempDirPath) {
-        File tmp = new File(tempDirPath);
-        if (!tmp.exists()) {
-            throw new IllegalArgumentException("Unable to set tempDir: file " + tmp + " does not exist");
-        }
-        if (!tmp.isDirectory()) {
-            throw new IllegalArgumentException("Unable to set tempDir: file " + tmp + " is not a directory");
-        }
-        this.tempDir = tmp;
-    }
-
 }

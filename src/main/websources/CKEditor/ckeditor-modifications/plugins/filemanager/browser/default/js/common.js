@@ -21,40 +21,6 @@
  * Common objects and functions shared by all pages that compose the
  * File Browser dialog window.
  */
-
-// Automatically detect the correct document.domain (#1919).
-(function()
-{
-	var d = document.domain ;
-
-	while ( true )
-	{
-		// Test if we can access a parent property.
-		try
-		{
-			var test = window.top.opener.document.domain ;
-			break ;
-		}
-		catch( e )
-		{}
-
-		// Remove a domain part: www.mytest.example.com => mytest.example.com => example.com ...
-		d = d.replace( /.*?(?:\.|$)/, '' ) ;
-
-		if ( d.length == 0 )
-			break ;		// It was not able to detect the domain.
-
-		try
-		{
-			document.domain = d ;
-		}
-		catch (e)
-		{
-			break ;
-		}
-	}
-})() ;
-
 function AddSelectOption( selectElement, optionText, optionValue )
 {
 	var oOption = document.createElement("OPTION") ;
@@ -100,19 +66,14 @@ function GetUrlParam( paramName )
 
 function OpenFile( fileUrl )
 {
-    var oMsg =
-    {
-        'type'            : 'browse-select-resource',
-        'url'             : fileUrl,
-        'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
-    };
-
     var protocol;
     var host;
+    var ua = navigator.userAgent.toLowerCase() ;
     try {
         protocol = window.top.opener.location.protocol;
         host = window.top.opener.location.host;
-    } catch (e) {
+    } catch (e) {}
+    if (!protocol) {
         var openerParam = GetUrlParam( 'opener' );
         var parts = openerParam.split('/');
         if (parts.length < 3)
@@ -129,8 +90,14 @@ function OpenFile( fileUrl )
     }
     var sDomain = protocol + '//' + host ;
 
+    var oMsg =
+    {
+        'type'            : 'browse-select-resource',
+        'url'             : fileUrl,
+        'CKEditorFuncNum' : GetUrlParam( 'CKEditorFuncNum' )
+    };
+
     window.top.opener.postMessage( oMsg, sDomain ) ;
-    var ua = navigator.userAgent.toLowerCase() ;
     window.top.close() ;
 
     if ( !(/iphone/.test(ua) || /ipad/.test(ua) || /ipod/.test(ua) || /android/.test(ua)) )

@@ -48,11 +48,12 @@ public class DisplayEmbedMediaController implements Controller {
 
     private String viewName;
     private MediaPlayer mediaPlayer;
+    private Map<String, String> readRestrictedHeaders;
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
@@ -67,8 +68,10 @@ public class DisplayEmbedMediaController implements Controller {
             model.put("autoplay", autoplay);
         }
 
-        if (resource.isReadRestricted()) {
-            response.addHeader("X-Frame-Options", "DENY");
+        if (resource.isReadRestricted() && readRestrictedHeaders != null) {
+            readRestrictedHeaders.entrySet().stream().forEach((e) -> {
+                response.addHeader(e.getKey(), e.getValue());
+            });
         }
 
         return new ModelAndView(this.viewName, model);
@@ -82,6 +85,10 @@ public class DisplayEmbedMediaController implements Controller {
     @Required
     public void setMediaPlayer(MediaPlayer mediaPlayer) {
         this.mediaPlayer = mediaPlayer;
+    }
+
+    public void setReadRestrictedHeaders(Map<String, String> readRestrictedHeaders) {
+        this.readRestrictedHeaders = readRestrictedHeaders;
     }
 
 }

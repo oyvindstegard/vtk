@@ -1,30 +1,28 @@
 'use strict';
 
-var gulp = require('gulp');
-var watch = require('gulp-watch');
-var sequence = require('run-sequence');
-var util = require('gulp-util')
-var minifyCss = require('gulp-clean-css');
-var minifyJs = require('gulp-uglify');
-var jshint = require('gulp-jshint');
-var concat = require('gulp-concat');
-var concatBower = require('gulp-concat-vendor');
-var mainBowerFiles = require('main-bower-files');
-var sass = require('gulp-sass');
-var sourceMaps = require('gulp-sourcemaps');
-var del = require('del');
-var jasmineBrowser = require('gulp-jasmine-browser');
+const gulp = require('gulp');
+const watch = require('gulp-watch');
+const sequence = require('run-sequence');
+const util = require('gulp-util')
+const minifyCss = require('gulp-clean-css');
+const minifyJs = require('gulp-uglify');
+const jshint = require('gulp-jshint');
+const sass = require('gulp-sass');
+const sourceMaps = require('gulp-sourcemaps');
+const del = require('del');
+const jasmineBrowser = require('gulp-jasmine-browser');
+const gulpif = require('gulp-if');
 
-var config = {
+const config = {
     target: "../../../target/classes/web",
     testTarget: "../../../target/test-classes/web",
     ckeditor_version: "4.6.0",
     production: !!util.env.production
 };
 
-var TARGET = config.target;
+const TARGET = config.target;
 
-var fileForTest = [
+const fileForTest = [
     config.testTarget + '/jquery/jquery.min.js',
     config.testTarget + '/jquery/plugins/jquery.form.js',
     config.testTarget + '/js/frameworks/es5-shim-dejavu.js',
@@ -35,34 +33,34 @@ var fileForTest = [
     'test/**/*_test.js'
 ];
 
-gulp.task('lib-compile', function () {
-    var libJs = gulp.src(mainBowerFiles('**/*.js'),{ base: 'bower_components' })
-        .pipe(concatBower('lib.js'))
-        .pipe((config.production) ? minifyJs() : util.noop())
-        .pipe(gulp.dest(TARGET + '/js'));
-});
+function errorHandler(e) {
+    util.log(e);
+    if (config.production) {
+        process.exit(1);
+    }
+}
 
 gulp.task('theme-compile-sass', function () {
     return gulp.src('themes/default/scss/*.scss')
-        .pipe((!config.production) ? sourceMaps.init() : util.noop())
+        .pipe(gulpif(!config.production, sourceMaps.init()))
         .pipe(sass().on('error', sass.logError))
-        .pipe((config.production) ? minifyCss() : util.noop())
-        .pipe((!config.production) ? sourceMaps.write() : util.noop())
+        .pipe(gulpif(config.production, minifyCss()))
+        .pipe(gulpif(!config.production, sourceMaps.write()))
         .pipe(gulp.dest(TARGET + '/themes/default'));
 });
 
 gulp.task('theme-compile-editor-structured-resources-sass', function () {
     return gulp.src('themes/default/scss/structured-resources/*.scss')
-        .pipe((!config.production) ? sourceMaps.init() : util.noop())
+        .pipe(gulpif(!config.production, sourceMaps.init()))
         .pipe(sass().on('error', sass.logError))
-        .pipe((config.production) ? minifyCss() : util.noop())
-        .pipe((!config.production) ? sourceMaps.write() : util.noop())
+        .pipe(gulpif(config.production, minifyCss()))
+        .pipe(gulpif(!config.production, sourceMaps.write()))
         .pipe(gulp.dest(TARGET + '/themes/default/structured-resources'));
 });
 
 gulp.task('theme-copy-css', function () {
     return gulp.src(['themes/**/*.css'])
-        .pipe((config.production) ? minifyCss({inline: ['none']}) : util.noop())
+        .pipe(gulpif(config.production, minifyCss({inline: ['none']})))
         .pipe(gulp.dest(TARGET + '/themes'));
 });
 
@@ -89,6 +87,7 @@ gulp.task('flash-copy', function () {
 gulp.task('js-copy', function () {
     return gulp.src('js/**/*.js')
         .pipe((config.production) ? minifyJs({keep_fnames: true}) : util.noop())
+        .on('error', errorHandler)
         .pipe(gulp.dest(TARGET + "/js"));
 });
 
@@ -113,7 +112,7 @@ gulp.task('watch', function () {
     gulp.watch('themes/**/*.css', ['theme-copy-css'])
     gulp.watch('js/**/*.js', ['js-copy']);
     gulp.watch('jquery/**/*.js', ['jquery-plugins-copy', 'jquery-copy']);
-    gulp.watch('CKEditor/ckeditor-modifications/**', ['ckeditor-copy'])
+    gulp.watch('CKEditor/ckeditor-modifications/**', ['ckeditor-copy']);
 });
 
 gulp.task('clean', function () {
@@ -152,7 +151,6 @@ gulp.task('test-browser', ['test-dependencies'], function () {
 
 gulp.task('default', function () {
     return gulp.start(
-        'lib-compile',
         'theme-compile-sass',
         'theme-compile-editor-structured-resources-sass',
         'theme-copy-css',

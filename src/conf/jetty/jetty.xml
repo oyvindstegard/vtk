@@ -25,4 +25,8 @@
     <Arg>org.eclipse.jetty.server.Request.maxFormContentSize</Arg>
     <Arg>-1</Arg>
   </Call>
+  <Call name="setAttribute">
+    <Arg>org.eclipse.jetty.server.Request.maxFormKeys</Arg>
+    <Arg>3001</Arg>
+  </Call>
 </Configure>

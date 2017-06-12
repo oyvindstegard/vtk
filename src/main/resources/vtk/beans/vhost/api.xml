@@ -82,6 +82,23 @@
     <property name="handler" ref="api.putHandler"/>
   </bean>
 
+  <bean id="api.deleteService" class="vtk.web.service.ServiceImpl">
+    <property name="parent" ref="manageService" />
+    <property name="order" value="-101" />
+    <property name="assertions">
+      <list>
+        <bean class="vtk.web.service.RequestMethodAssertion">
+          <property name="method" value="DELETE" />
+        </bean>
+        <ref bean="resourceNotRootAssertion" />
+        <ref bean="deleteResourcePermissionAssertion" />
+      </list>
+    </property>
+    <property name="handler">
+      <bean class="vtk.web.api.DeleteApiHandler" />
+    </property>
+  </bean>
+
   <bean id="api.adminJsonGetService" class="vtk.web.service.ServiceImpl">
     <property name="parent" ref="manageService"/>
     <property name="order" value="-101" />
