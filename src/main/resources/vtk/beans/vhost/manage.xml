@@ -1611,7 +1611,12 @@
 
   <bean id="manage.parentNavigationView" parent="freemarkerView">
     <property name="url" value="system/parent-navigation.ftl" />
-    <property name="referenceDataProviders" ref="parentLinkProvider" />
+    <property name="referenceDataProviders">
+      <bean class="vtk.web.referencedata.ServiceReferenceDataProvider">
+        <constructor-arg name="service" ref="manageCollectionListingService" />
+        <constructor-arg name="provider" ref="parentLinkProvider" />
+      </bean>
+    </property>
   </bean>
 
   <bean id="manage.tabHelpComponent" class="vtk.web.decorating.components.ViewRenderingDecoratorComponent">
