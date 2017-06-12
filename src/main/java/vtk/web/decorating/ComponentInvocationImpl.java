@@ -39,13 +39,14 @@ import java.util.Map;
  * instance and request).
  */
 public class ComponentInvocationImpl implements ComponentInvocation {
-
     private String namespace;
     private String name;
+    private boolean optional;
     
     private Map<String, Object> parameters;
     
-    public ComponentInvocationImpl(String namespace, String name, Map<String, Object> parameters) {
+    public ComponentInvocationImpl(String namespace, String name, 
+            Map<String, Object> parameters, boolean optional) {
         if (name == null) {
             throw new IllegalArgumentException("Name argument is NULL");
         }
@@ -55,20 +56,34 @@ public class ComponentInvocationImpl implements ComponentInvocation {
         this.namespace = namespace;
         this.name = name;
         this.parameters = parameters;
+        this.optional = optional;
     }
     
+    public ComponentInvocationImpl(String namespace, String name, Map<String, Object> parameters) {
+        this(namespace, name, parameters, false);
+    }
+
+    @Override
     public String getNamespace() {
         return this.namespace;
     }
-    
+
+    @Override
     public String getName() {
         return this.name;
     }
 
+    @Override
     public Map<String, Object> getParameters() {
         return Collections.unmodifiableMap(this.parameters);
     }
+    
+    @Override
+    public boolean optional() {
+        return optional;
+    }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.getClass().getName()).append(":");

@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import vtk.text.html.HtmlUtil;
 
 
@@ -71,15 +72,23 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
         
         // Can use SimpleTemplate for top level parsing here ?
 
-        List<ComponentInvocation> fragmentList = new ArrayList<ComponentInvocation>();
+        List<ComponentInvocation> fragmentList = new ArrayList<>();
 
         int contentIdx = 0;
         while (true) {
+            boolean optionalInvocation = false;
             int directiveStart = s.indexOf("${", contentIdx);
             if (directiveStart == -1) {
-                break;
+                directiveStart = s.indexOf("$?{", contentIdx);
+                if (directiveStart == -1) {
+                    break;
+                }
+                directiveStart += 3;
+                optionalInvocation = true;
             }
-            directiveStart += 2;
+            else {
+                directiveStart += 2;
+            }
 
             int directiveEnd = nextIndexOf(s, '}', '\\', directiveStart);
             if (directiveEnd == -1) {
@@ -88,7 +97,7 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
 
             String componentContent = unescapedSubstring(
                     s, '}', '\\', directiveStart, directiveEnd);
-            ComponentInvocation c = parseDirective(componentContent);
+            ComponentInvocation c = parseDirective(componentContent, optionalInvocation);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Parsed directive '" + componentContent + "' --> " + c);
@@ -97,8 +106,10 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
             if (c == null) {
                 addStaticText(fragmentList, s.substring(contentIdx, directiveStart));
                 contentIdx = directiveStart;
-            } else {
-                addStaticText(fragmentList, s.substring(contentIdx, directiveStart - 2));
+            }
+            else {
+                int endIdx = optionalInvocation? directiveStart - 3 : directiveStart - 2;
+                addStaticText(fragmentList, s.substring(contentIdx, endIdx));
                 addDynamicComponent(fragmentList, c);
                 contentIdx = directiveEnd + 1;
             }
@@ -109,7 +120,7 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
         return fragmentList.toArray(new ComponentInvocation[fragmentList.size()]);
     }
 
-    private ComponentInvocation parseDirective(String s) {
+    private ComponentInvocation parseDirective(String s, boolean optional) {
         if (s == null || s.trim().length() <= 1) {
             return null;
         }
@@ -147,7 +158,7 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
             }
             return null;
         }
-        return new ComponentInvocationImpl(namespace, name, new HashMap<String, Object>(parameters));
+        return new ComponentInvocationImpl(namespace, name, new HashMap<>(parameters), optional);
     }
 
 
@@ -162,7 +173,6 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
         if (endIdx == -1) {
             endIdx = s.length();
         }
-
         return s.substring(0, endIdx);
     }
 
@@ -206,7 +216,7 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
      * parameter list is not well-formed.
      */
     private LinkedHashMap<String, Object> splitParameterList(String s) {
-        LinkedHashMap<String, Object> result = new LinkedHashMap<String, Object>();
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
         int startIdx = 0;
         while (true) {
             int equalsIdx = s.indexOf("=", startIdx);

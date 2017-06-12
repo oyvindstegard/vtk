@@ -283,7 +283,10 @@ public class ComponentInvokingNodeFilter implements HtmlNodeFilter, HtmlPageFilt
             try {
                 DecoratorComponent component = this.componentResolver.resolveComponent(
                         invocation.getNamespace(), invocation.getName());
-                if (component == null) {
+                if (component == null && invocation.optional()) {
+                    continue;
+                }
+                else if (component == null) {
                     sb.append("Invalid component reference: " + invocation.getNamespace()
                             + ":" + invocation.getName());
                     continue;
