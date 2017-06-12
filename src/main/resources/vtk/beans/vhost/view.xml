@@ -78,7 +78,7 @@
     </property>
   </bean>
 
-  <bean id="redirectToPermissionView"
+  <bean id="redirectToPermissionsView"
     class="vtk.web.view.RedirectView">
     <description>Standard HTTP redirect view to the permissions service</description>
     <property name="referenceDataProviders">
