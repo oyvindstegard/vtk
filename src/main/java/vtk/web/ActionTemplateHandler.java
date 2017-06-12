@@ -30,6 +30,7 @@
  */
 package vtk.web;
 
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.time.Instant;
@@ -210,7 +211,9 @@ public class ActionTemplateHandler implements HttpRequestHandler {
               ctx.define("userUrl", p.getURL(), true);
               ctx.define("locale", LocaleHelper.getPreferredLang(locale), true);
               
-              boolean renderResult = nodeList.render(ctx, response.getWriter());
+              PrintWriter writer = response.getWriter();
+              boolean renderResult = nodeList.render(ctx, writer);
+              writer.close();
               response.flushBuffer();
               return renderResult;
           }
