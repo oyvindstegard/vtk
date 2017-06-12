@@ -32,6 +32,7 @@ package vtk.web;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
@@ -274,7 +275,9 @@ public class AjaxEditorController implements Controller {
 
                 response.setContentType("text/html;charset=utf-8");
                 try {
-                    nodeList.render(ctx, response.getWriter());
+                    PrintWriter writer = response.getWriter();
+                    nodeList.render(ctx, writer);
+                    writer.close();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -297,7 +300,9 @@ public class AjaxEditorController implements Controller {
                 });
                 response.setContentType("text/plain;charset=utf-8");
                 try {
-                    nodeList.render(ctx, response.getWriter());
+                    PrintWriter writer = response.getWriter();
+                    nodeList.render(ctx, writer);
+                    writer.close();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
