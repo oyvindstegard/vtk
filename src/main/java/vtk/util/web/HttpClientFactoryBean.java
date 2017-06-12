@@ -53,10 +53,14 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 
 public class HttpClientFactoryBean implements FactoryBean<HttpClient> {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     
+    private String name = null;
     private int maxTotalConnections = 200;
     private int maxPerRouteConnections = 20;
     private int defaultConnectTimeout = 5000;
@@ -64,6 +68,10 @@ public class HttpClientFactoryBean implements FactoryBean<HttpClient> {
     private String socksProxyHost = null;
     private int socksProxyPort = -1;
     private List<Header> defaultHeaders = new ArrayList<Header>();
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public void setMaxTotalConnections(int maxTotalConnections) {
         this.maxTotalConnections = maxTotalConnections;
@@ -120,11 +128,13 @@ public class HttpClientFactoryBean implements FactoryBean<HttpClient> {
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(defaultConnectTimeout)
-                .setConnectionRequestTimeout(defaultReadTimeout)
+                .setSocketTimeout(defaultReadTimeout)
                 .setAuthenticationEnabled(true)
                 .setRedirectsEnabled(false)
                 .build();
-        
+
+        logger.info("Creating HttpClient(" + name + ") with RequestConfig = " + requestConfig.toString());
+
         return HttpClients.custom()
                 .setConnectionManager(connMgr)
                 .setDefaultRequestConfig(requestConfig)
@@ -177,5 +187,4 @@ public class HttpClientFactoryBean implements FactoryBean<HttpClient> {
             return new Socket(proxy);
         }
     }
-
 }
