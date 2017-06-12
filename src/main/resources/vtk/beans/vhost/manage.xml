@@ -2470,6 +2470,11 @@
       </list>
     </property>
     <property name="handler" ref="manage.actionService.handler" />
+    <property name="attributes">
+      <map>
+        <entry key="x-prevent-decorating" value="true" />
+      </map>
+    </property>
   </bean>
 
   <bean id="manage.actionService.inputProvider" class="vtk.util.repository.RepositoryInputSourceProvider">
