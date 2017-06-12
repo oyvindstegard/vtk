@@ -93,12 +93,23 @@
     <property name="sourceSet">
       <set>
         <ref bean="templateLanguage.toStringFunction" />
-        <ref bean="templateLanguage.toIntFunction" />
         <ref bean="templateLanguage.concatFunction" />
+        <ref bean="templateLanguage.appendFunction" />
         <ref bean="templateLanguage.splitFunction" />
         <ref bean="templateLanguage.trimFunction" />
+        <ref bean="templateLanguage.substringFunction" />
         <ref bean="templateLanguage.lengthFunction" />
         <ref bean="templateLanguage.getFunction" />
+        <ref bean="templateLanguage.toLowerCaseFunction" />
+        <ref bean="templateLanguage.toUpperCaseFunction" />
+        <ref bean="templateLanguage.ceilFunction" />
+        <ref bean="templateLanguage.floorFunction" />
+        <ref bean="templateLanguage.toIntFunction" />
+        <ref bean="templateLanguage.toDoubleFunction" />
+        <ref bean="templateLanguage.dateCompareFunction" />
+        <ref bean="templateLanguage.dateFormatFunction" />
+        <ref bean="templateLanguage.replaceFunction" />
+        <ref bean="templateLanguage.regexpReplaceFunction" />
         <ref bean="decorating.requestContextFunction" />
         <ref bean="decorating.componentAvailableFunction" />
         <ref bean="decorating.retrieveFunction" />
