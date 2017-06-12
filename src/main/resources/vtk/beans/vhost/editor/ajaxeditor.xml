@@ -21,6 +21,7 @@
     </property>
     <property name="attributes">
       <map>
+        <entry key="x-prevent-decorating" value="true" />
         <entry key="tabOrder">
           <value type="java.lang.Integer">152</value>
         </entry>
