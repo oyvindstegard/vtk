@@ -45,15 +45,16 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import vtk.text.html.HtmlNodeFilter;
 import vtk.text.html.HtmlPage;
 import vtk.text.html.HtmlPageParser;
+import vtk.text.html.HtmlPageParserException;
 
 public class DecoratingServletOutputStream extends ServletOutputStream {
-    private static Log logger = LogFactory.getLog(DecoratingServletOutputStream.class);
+    private static Logger logger = LoggerFactory.getLogger(DecoratingServletOutputStream.class);
     private ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     private HttpServletRequest request;
     private HttpServletResponse response;
@@ -120,16 +121,23 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
 
     private void decorate() throws Exception {
         InputStream in = new ByteArrayInputStream(buffer.toByteArray());
-        HtmlPage page = htmlParser.parse(in, encoding.toString(), filters);
-        if (template != null && !page.isFrameset()) {
-            
-            template.render(page, out, encoding, request, model, templateParameters);
+        try {
+            HtmlPage page = htmlParser.parse(in, encoding.toString(), filters);
+            if (template != null && !page.isFrameset()) {
+                logger.debug("Rendering template {}", template);
+                template.render(page, out, encoding, request, model, templateParameters);
+            }
+            else {
+                String s = page.getStringRepresentation();
+                out.write(s.getBytes(encoding));
+            }
+            out.flush();
         }
-        else {
-            String s = page.getStringRepresentation();
-            out.write(s.getBytes(encoding));
+        catch (HtmlPageParserException e) {
+            logger.debug("Failed to parse response stream", e);
+            out.write(buffer.toByteArray());
+            out.flush();
         }
-        out.flush();
     }
 
     @Override
