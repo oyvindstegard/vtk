@@ -120,6 +120,10 @@ public class TextualDecoratorTemplate implements Template {
 
                     DecoratorComponent component = componentResolver.resolveComponent(
                             fragment.getNamespace(), fragment.getName());
+                    
+                    if (component == null && fragment.optional()) {
+                        continue;
+                    }
 
                     String chunk = renderComponent(component, decoratorRequest);
                     if (logger.isDebugEnabled()) {

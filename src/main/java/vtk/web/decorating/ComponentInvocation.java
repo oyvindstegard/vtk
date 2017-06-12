@@ -57,4 +57,12 @@ public interface ComponentInvocation {
      */
     public Map<String, Object> getParameters();
 
+    /**
+     * Indicates whether this represents an optional component invocation 
+     * (i.e. invoke the component if it is available, otherwise do nothing,
+     * as opposed to printing an error message).
+     */
+    default public boolean optional() {
+        return false;
+    }
 }
