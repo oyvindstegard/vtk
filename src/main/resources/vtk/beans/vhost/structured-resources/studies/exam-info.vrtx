@@ -268,7 +268,7 @@ resourcetype exam-info {
     announcement : (en : "Announcement of examination results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultat"),
     task-available : (en : "Disclosure of exam assignment", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
     task-deadline : (en : "Submission deadline", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
-    task-attendance-before : (en : "Attendance before", no : "Oppmøte", nn : "Oppmøte"),
+    task-attendance-before : (en : "Attendance", no : "Oppmøte", nn : "Oppmøte"),
     results : (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
     attendance-before-text-prefix : (en : "Meet no later than", no : "Senest", nn : "Seinast"),
     attendance-before-text-postfix : (en : "minutes before the examination starts", no : "minutter før eksamen begynner", nn : "minutter før eksamen begynner"),
