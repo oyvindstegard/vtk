@@ -78,6 +78,7 @@ public class ApiResponseBuilder {
           try {
               PrintWriter writer = response.getWriter();
               writer.write(message);
+              writer.close();
           }
           catch (IOException e) {
               throw new UncheckedIOException(e);
