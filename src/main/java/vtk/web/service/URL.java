@@ -62,7 +62,7 @@ public class URL implements Serializable {
     private Integer port = null;
     private Path path = null;
     private String characterEncoding = "utf-8";
-    private Map<String, List<String>> parameters = new LinkedHashMap<String, List<String>>();
+    private Map<String, List<String>> parameters = new LinkedHashMap<>();
     private String ref = null;
     private boolean pathOnly = false;
     private boolean collection = false;
@@ -100,7 +100,7 @@ public class URL implements Serializable {
         for (Map.Entry<String, List<String>> entry : original.parameters.entrySet()) {
             String key = entry.getKey();
             List<String> values = entry.getValue();
-            this.parameters.put(key, new ArrayList<String>(values));
+            this.parameters.put(key, new ArrayList<>(values));
         }
     }
 
@@ -269,7 +269,7 @@ public class URL implements Serializable {
         checkNotImmutable();
         List<String> values = this.parameters.get(name);
         if (values == null) {
-            values = new ArrayList<String>(2);
+            values = new ArrayList<>(2);
             this.parameters.put(name, values);
         }
         values.add(value);
@@ -278,7 +278,7 @@ public class URL implements Serializable {
 
     /**
      * Sets a query string parameter on the URL. If the parameter already
-     * existed, this method overrides the existing value(s).
+     * existed, this method overwrites the existing value(s).
      * 
      * @param name
      *            the parameter name
@@ -291,7 +291,7 @@ public class URL implements Serializable {
         
         List<String> values = this.parameters.get(name);
         if (values == null) {
-            values = new ArrayList<String>(2);
+            values = new ArrayList<>(2);
             this.parameters.put(name, values);
         } else {
             values.clear();
@@ -302,7 +302,7 @@ public class URL implements Serializable {
     }
 
     /**
-     * Removes a query string parameter on this URL.
+     * Removes all query string parameters with a given name from this URL.
      * 
      * @param name
      *            the parameter name
@@ -311,6 +311,26 @@ public class URL implements Serializable {
     public URL removeParameter(String name) {
         checkNotImmutable();
         this.parameters.remove(name);
+        return this;
+    }
+    
+    /**
+     * Removes all query string parameters with a given name and value from this URL.
+     * 
+     * @param name
+     *            the parameter name
+     * @param name
+     *            the parameter value
+     * @return this URL
+     */
+    public URL removeParameter(String name, String value) {
+        List<String> list = this.parameters.get(name);
+        if (list != null) {
+            list.remove(value);
+            if (list.isEmpty()) {
+                this.parameters.remove(name);
+            }
+        }
         return this;
     }
 
@@ -359,11 +379,11 @@ public class URL implements Serializable {
         if (values == null || values.isEmpty()) {
             return null;
         }
-        return new ArrayList<String>(values);
+        return new ArrayList<>(values);
     }
 
     public List<String> getParameterNames() {
-        return new ArrayList<String>(this.parameters.keySet());
+        return new ArrayList<>(this.parameters.keySet());
     }
 
     public String getQueryString() {
@@ -976,7 +996,7 @@ public class URL implements Serializable {
      * keys nor values are URL-decoded.
      */
     public static Map<String, String[]> splitQueryString(String queryString) {
-        Map<String, String[]> queryMap = new LinkedHashMap<String, String[]>();
+        Map<String, String[]> queryMap = new LinkedHashMap<>();
         if (queryString != null) {
             if (queryString.startsWith("?")) {
                 queryString = queryString.substring(1);
