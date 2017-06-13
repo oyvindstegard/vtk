@@ -56,10 +56,14 @@ resourcetype exam-info {
       [if part.submissionDueDate]
         <p class="exam-submission"><strong>[localized 'task-deadline']:</strong> [call "comp:date-format" { "date" : part.submissionDueDate }][if part.submissionDueTime] [call "comp:time-format" { "time" : part.submissionDueTime, "date": part.submissionDueDate }][endif]</p>
       [endif]
+      
+      [if part.attendanceBefore]
+        <p class="exam-attendance-before"><strong>[localized 'task-attendance-before']:</strong> [localized 'attendance-before-text-prefix'] [val part.attendanceBefore] [localized 'attendance-before-text-postfix'].</p>
+      [endif]
 
       [def rooms part.rooms]
       [if rooms != null && rooms.length() > 0]
-        <p class="exam-place-info"><strong>[localized 'place']:</strong> [localized 'place-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
+        <p class="exam-place-info"><strong>[localized 'place']:</strong></p>
         <ul class="exam-rooms">
         [list rooms r]
           <li>
@@ -76,6 +80,9 @@ resourcetype exam-info {
           </li>
         [endlist]
         </ul>
+        [if rooms.length() > 1]
+          <p class="exam-place-info-multiple-rooms">[localized 'place-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
+        [endif]
       [endif]
 
       [if part.datasystem]
@@ -261,7 +268,10 @@ resourcetype exam-info {
     announcement : (en : "Announcement of examination results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultat"),
     task-available : (en : "Disclosure of exam assignment", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
     task-deadline : (en : "Submission deadline", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
+    task-attendance-before : (en : "Attendance before", no : "Oppmøte", nn : "Oppmøte"),
     results : (en : "Examination results", no : "Eksamensresultater", nn : "Eksamensresultatar"),
+    attendance-before-text-prefix : (en : "You have to meet up", no : "Du må møte opp senest", nn : "Du må møte opp senest"),
+    attendance-before-text-postfix : (en : "minutes before the exam starts", no : "minutter før eksamen begynner", nn : "minutter før eksamen begynner"),
     results-info : (en : "You will find your examination results by logging on to",
                     no : "Du finner eksamensresultatene dine i",
                     nn : "Du finn eksamensresultatane dine i"),
