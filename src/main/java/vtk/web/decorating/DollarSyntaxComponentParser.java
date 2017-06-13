@@ -48,8 +48,8 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
 
     private static Logger logger = LoggerFactory.getLogger(DollarSyntaxComponentParser.class);
 
-    private static final Pattern NAMESPACE_REGEX_PATTERN = Pattern.compile("[a-zA-Z]+");
-    private static final Pattern NAME_REGEX_PATTERN = Pattern.compile("[a-zA-Z]+(-[a-zA-Z]+)*");
+    private static final Pattern NAMESPACE_REGEX_PATTERN = Pattern.compile("[a-zA-Z]+$");
+    private static final Pattern NAME_REGEX_PATTERN = Pattern.compile("[a-zA-Z]+(-[a-zA-Z]+)*\\??$");
 
     public ComponentInvocation[] parse(Reader reader) throws Exception {
         BufferedReader bufferedReader = new BufferedReader(reader);
@@ -76,19 +76,11 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
 
         int contentIdx = 0;
         while (true) {
-            boolean optionalInvocation = false;
             int directiveStart = s.indexOf("${", contentIdx);
             if (directiveStart == -1) {
-                directiveStart = s.indexOf("$?{", contentIdx);
-                if (directiveStart == -1) {
-                    break;
-                }
-                directiveStart += 3;
-                optionalInvocation = true;
+                break;
             }
-            else {
-                directiveStart += 2;
-            }
+            directiveStart += 2;
 
             int directiveEnd = nextIndexOf(s, '}', '\\', directiveStart);
             if (directiveEnd == -1) {
@@ -97,7 +89,7 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
 
             String componentContent = unescapedSubstring(
                     s, '}', '\\', directiveStart, directiveEnd);
-            ComponentInvocation c = parseDirective(componentContent, optionalInvocation);
+            ComponentInvocation c = parseDirective(componentContent);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Parsed directive '" + componentContent + "' --> " + c);
@@ -108,8 +100,7 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
                 contentIdx = directiveStart;
             }
             else {
-                int endIdx = optionalInvocation? directiveStart - 3 : directiveStart - 2;
-                addStaticText(fragmentList, s.substring(contentIdx, endIdx));
+                addStaticText(fragmentList, s.substring(contentIdx, directiveStart - 2));
                 addDynamicComponent(fragmentList, c);
                 contentIdx = directiveEnd + 1;
             }
@@ -120,7 +111,7 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
         return fragmentList.toArray(new ComponentInvocation[fragmentList.size()]);
     }
 
-    private ComponentInvocation parseDirective(String s, boolean optional) {
+    private ComponentInvocation parseDirective(String s) {
         if (s == null || s.trim().length() <= 1) {
             return null;
         }
@@ -150,6 +141,11 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
             }
             return null;
         }
+        boolean optional = false;
+        if (name.endsWith("?")) {
+            name = name.substring(0, name.length() - 1);
+            optional = true;
+        }
 
         LinkedHashMap<String, Object> parameters = splitParameterList(s);
         if (parameters == null) {
@@ -173,6 +169,7 @@ public class DollarSyntaxComponentParser implements TextualComponentParser {
         if (endIdx == -1) {
             endIdx = s.length();
         }
+
         return s.substring(0, endIdx);
     }
 
