@@ -32,7 +32,6 @@ package vtk.web.display.ical;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -116,27 +115,27 @@ public final class EventAsICalHelper {
 
         StringBuilder iCalEntry = new StringBuilder();
         iCalEntry.append("BEGIN:VEVENT\n");
-        iCalEntry.append("DTSTAMP:" + getDtstamp() + "\n");
-        iCalEntry.append("UID:" + getUiD(event, repositoryId) + "\n");
-        iCalEntry.append("DTSTART:" + getICalDate(startDateProp.getDateValue()) + "Z\n");
+        iCalEntry.append("DTSTAMP:").append(getDtstamp()).append("\n");
+        iCalEntry.append("UID:").append(getUiD(event, repositoryId)).append("\n");
+        iCalEntry.append("DTSTART:").append(getICalDate(startDateProp.getDateValue())).append("Z\n");
 
         Property endDateProp = getProperty(event, endDate);
-        if (endDateProp != null) {
-            iCalEntry.append("DTEND:" + getICalDate(endDateProp.getDateValue()) + "Z\n");
+        if (endDateProp != null && endDateProp.getDateValue().after(startDateProp.getDateValue())) {
+            iCalEntry.append("DTEND:").append(getICalDate(endDateProp.getDateValue())).append("Z\n");
         }
 
         Property locationProp = getProperty(event, location);
         if (locationProp != null) {
-            iCalEntry.append("LOCATION:" + locationProp.getStringValue() + "\n");
+            iCalEntry.append("LOCATION:").append(locationProp.getStringValue()).append("\n");
         }
 
         Property descriptionProp = getProperty(event, introduction);
         if (descriptionProp != null && StringUtils.isNotBlank(descriptionProp.getStringValue())) {
-            iCalEntry.append("DESCRIPTION:" + getDescription(descriptionProp) + "\n");
+            iCalEntry.append("DESCRIPTION:").append(getDescription(descriptionProp)).append("\n");
         }
 
         String summary = event.getPropertyByPrefix(null, title).getStringValue();
-        iCalEntry.append("SUMMARY:" + summary + "\n");
+        iCalEntry.append("SUMMARY:").append(summary).append("\n");
         iCalEntry.append("END:VEVENT\n");
         return iCalEntry.toString();
     }
@@ -163,12 +162,9 @@ public final class EventAsICalHelper {
             at = url.getHost();
         }
 
-        StringBuilder uid = new StringBuilder();
-        uid.append(getICalDate(Calendar.getInstance().getTime())).append("-");
-        uid.append(String.valueOf(event.getURI().hashCode()).replace("-", "0"));
-        uid.append("@").append(at);
-
-        return uid.toString();
+        return getICalDate(Calendar.getInstance().getTime()) + "-" +
+                String.valueOf(event.getURI().hashCode()).replace("-", "0") +
+                "@" + at;
     }
 
     private String getICalDate(Date date) {
