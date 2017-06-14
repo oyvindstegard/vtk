@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -210,13 +211,19 @@ public final class QueryHandler implements HttpRequestHandler {
                 if ("true".equals(request.getParameter("tokenize"))) {
                     q = TextUtils.tokenizeWithPhrases(q).stream()
                             .limit(10)
-                            .map(token -> escape(escape(token, ' ', '\\'), ' ', '\\'))
-                            .map(token -> template.replaceAll("\\{q\\}", token))
+                            .map(token -> {
+                                String query = template.replaceAll("\\{'q\\}", token);
+                                query = query.replaceAll("\\{q\\}", 
+                                        escape(escape(token, ' ', '\\'), ' ', '\\')));
+                                return query;
+                            })
                             .collect(Collectors.joining(" AND ", "(", ")"));
                 }
                 else {
+                    String query = template.replaceAll("\\{'q\\}", q);
                     q = escape(escape(q, ' ', '\\'), ' ', '\\');
-                    q = template.replaceAll("\\{q\\}", q);
+                    query = query.replaceAll("\\{q\\}", q);
+                    q = query;
                 }
             }
             return builder.query(q);
