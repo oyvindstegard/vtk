@@ -31,6 +31,7 @@
 
 package vtk.web.view;
 
+import java.io.PrintWriter;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -102,11 +103,13 @@ public class JsonView extends AbstractView {
         }
         
         Object toSerialize = model.get(modelKey);
-        
-        JsonStreamer js = new JsonStreamer(response.getWriter(), 
-                getIndent(request), isEscapeSlashes(request));
-        
-        js.value(toSerialize);
+        try (PrintWriter writer = response.getWriter()) {
+            JsonStreamer js = new JsonStreamer(writer, 
+                    getIndent(request), isEscapeSlashes(request));
+            
+            js.value(toSerialize);
+        }
+        response.flushBuffer();
     }
     
     private boolean isEscapeSlashes(HttpServletRequest r) {
