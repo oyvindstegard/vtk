@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -214,7 +213,7 @@ public final class QueryHandler implements HttpRequestHandler {
                             .map(token -> {
                                 String query = template.replaceAll("\\{'q\\}", token);
                                 query = query.replaceAll("\\{q\\}", 
-                                        escape(escape(token, ' ', '\\'), ' ', '\\')));
+                                        escape(escape(token, ' ', '\\'), ' ', '\\'));
                                 return query;
                             })
                             .collect(Collectors.joining(" AND ", "(", ")"));
