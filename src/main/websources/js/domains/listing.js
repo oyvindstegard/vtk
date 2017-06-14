@@ -31,7 +31,7 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
       var speedCreationServices = vrtxAdm.isIE8 ? 0 : 350;
       for (i = tabMenuServices.length; i--;) {
           if (tabMenuServices[i] !== "fileUploadService") {
-            vrtxAdm.getFormAsync({
+            var getForm = vrtxAdm.getFormAsync({
               selector: "ul#tabMenuRight a#" + tabMenuServices[i],
               selectorClass: "vrtx-admin-form",
               insertAfterOrReplaceClass: "#active-tab ul#tabMenuRight",
@@ -49,6 +49,9 @@ $.when(vrtxAdmin.domainsIsReady).done(function() {
                 createTitleChange("#vrtx-textfield-file-title", $("#vrtx-textfield-file-name"), $("#isIndex"));
               }
             });
+            if (vrtxAdm.fragmentParams['action'] === tabMenuServices[i]) {
+                getForm();
+            }
           } else {
             if (vrtxAdm.isIOS5) { // TODO: feature detection
               _$("ul#tabMenuRight li." + tabMenuServices[i]).remove();
@@ -373,7 +376,7 @@ VrtxAdmin.prototype.initFileUpload = function initFileUpload() {
 
 // Credits: https://css-tricks.com/drag-and-drop-file-uploading/
 function initDragAndDropUpload(opts) {
-  vrtxAdmin.getFormAsync({
+  var getForm = vrtxAdmin.getFormAsync({
     selector: "ul#tabMenuRight a#fileUploadService",
     selectorClass: "vrtx-admin-form",
     insertAfterOrReplaceClass: "#active-tab ul#tabMenuRight",
@@ -395,6 +398,9 @@ function initDragAndDropUpload(opts) {
       $(vrtxAdmin.storedExistingHiddenMarkup).insertAfter("#active-tab ul#tabMenuRight");
     }
   });
+  if (vrtxAdmin.fragmentParams['action'] === "fileUploadService") {
+      getForm();
+  }
 
   var isUploadAction = $("#fileUploadService-form").length;
 

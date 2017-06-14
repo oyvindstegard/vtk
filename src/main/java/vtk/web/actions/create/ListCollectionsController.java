@@ -55,11 +55,13 @@ import vtk.web.JSONTreeHelper;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
+import vtk.web.service.URL;
 
 public class ListCollectionsController implements Controller {
 
     private ListCollectionsProvider provider;
     private Service service;
+    private String action;
     private Repository repository;
     private PropertyTypeDefinition unpublishedCollectionPropDef;
     
@@ -127,10 +129,14 @@ public class ListCollectionsController implements Controller {
 
         String title;
         try {
-            String url = service.constructURL(resource, principal, uriParameters).getPathRepresentation();     
-
-            title = "<a target=&quot;_top&quot; class=&quot;vrtx-button-small&quot; href=&quot;" + url + "&quot;>"
-                    + "<span>" + provider.getLocalizedTitle(request, buttonText, null) + "</span>" + "</a>";
+            URL url = service.constructURL(resource, principal, uriParameters);
+            if (action != null) {
+                url.setRef("action=" + action);
+            }
+            title = "<a target=&quot;_top&quot; class=&quot;vrtx-button-small&quot; href=&quot;"
+                    + url.getPathRepresentation() + "&quot;>"
+                    + "<span>" + provider.getLocalizedTitle(request, buttonText, null)
+                    + "</span>" + "</a>";
         } catch (ServiceUnlinkableException e) {
             title = "<span class=&quot;no-create-permission&quot;>"
                     + provider.getLocalizedTitle(request, "manage.no-permission", null) + "</span>";
@@ -191,4 +197,7 @@ public class ListCollectionsController implements Controller {
         this.service = service;
     }
 
+    public void setAction(String action) {
+        this.action = action;
+    }
 }
