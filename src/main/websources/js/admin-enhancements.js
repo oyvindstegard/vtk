@@ -27,37 +27,10 @@ var startLoadTime = getNowTime();
  * @constructor
  */
 function VrtxAdmin() {
-  var that = this;
 
   /** Cache jQuery instance internally
    * @type object */
   this._$ = $;
-
-  function urlParamsParser(paramStr) {
-    var paramDict = {};
-    var parts = paramStr.split('&');
-    for (var i = 0; i < parts.length; i++) {
-      var keyval = parts[i].split('=');
-      var key = keyval[0];
-      var value = (keyval[1] !== undefined) ? decodeURIComponent(keyval[1]) : null;
-      if (paramDict[key] === undefined) {
-        paramDict[key] = value;
-      } else if (typeof paramDict[key] === "string") {
-        var arr = [paramDict[key], value];
-        paramDict[key] = arr;
-      } else {
-        paramDict[key].push(value);
-      }
-    }
-    return paramDict;
-  }
-
-  $(window).on('hashchange', function(e) {
-    that.fragmentParams = urlParamsParser(location.hash.substring(1));
-    if ('action' in that.fragmentParams) {
-        location.reload();
-    }
-  });
 
   this.url = window.location.href;
   this.fragmentParams = urlParamsParser(location.hash.substring(1));
@@ -2763,6 +2736,34 @@ function gup(name, url) {
   var results = regex.exec(url);
   return (results === null) ? "" : results[1];
 }
+
+/* Creates an object out of a query-parameter formatted string
+ */
+function urlParamsParser(paramStr) {
+  var paramDict = {};
+  var parts = paramStr.split('&');
+  for (var i = 0; i < parts.length; i++) {
+    var keyval = parts[i].split('=');
+    var key = keyval[0];
+    var value = (keyval[1] !== undefined) ? decodeURIComponent(keyval[1]) : null;
+    if (paramDict[key] === undefined) {
+      paramDict[key] = value;
+    } else if (typeof paramDict[key] === "string") {
+      var arr = [paramDict[key], value];
+      paramDict[key] = arr;
+    } else {
+      paramDict[key].push(value);
+    }
+  }
+  return paramDict;
+}
+
+$(window).on('hashchange', function(e) {
+  vrtxAdmin.fragmentParams = urlParamsParser(location.hash.substring(1));
+  if ('action' in vrtxAdmin.fragmentParams) {
+      location.reload();
+  }
+});
 
 /* Remove duplicates from an array
  *
