@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -69,6 +70,7 @@ import vtk.util.Result;
 import vtk.util.repository.ResourceMappers;
 import vtk.util.repository.ResourceMappers.PropertySetMapper;
 import vtk.util.text.JsonStreamer;
+import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 
@@ -200,9 +202,25 @@ public final class QueryHandler implements HttpRequestHandler {
             if (request.getParameter("t") != null) {
                 String name = request.getParameter("t");
                 String template = Objects.requireNonNull(
-                        templates.get(name), "No such template: ' " + name + "'");
-                q = escape(escape(q, ' ', '\\'), ' ', '\\');
-                q = template.replaceAll("\\{q\\}", q);
+                        templates.get(name), "No such template: '" + name + "'");
+
+                if ("true".equals(request.getParameter("tokenize"))) {
+                    q = TextUtils.tokenizeWithPhrases(q).stream()
+                            .limit(10)
+                            .map(token -> {
+                                String query = template.replaceAll("\\{'q\\}", token);
+                                query = query.replaceAll("\\{q\\}", 
+                                        escape(escape(token, ' ', '\\'), ' ', '\\'));
+                                return query;
+                            })
+                            .collect(Collectors.joining(" AND ", "(", ")"));
+                }
+                else {
+                    String query = template.replaceAll("\\{'q\\}", q);
+                    q = escape(escape(q, ' ', '\\'), ' ', '\\');
+                    query = query.replaceAll("\\{q\\}", q);
+                    q = query;
+                }
             }
             return builder.query(q);
         }));
