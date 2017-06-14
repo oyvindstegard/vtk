@@ -30,7 +30,7 @@
  */
 package vtk.web.display.ical;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,7 +39,6 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import vtk.repository.Path;
-import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.web.RequestContext;
@@ -57,7 +56,7 @@ public class EventAsICalController implements Controller {
 
         Resource event = repository.retrieve(token, uri, true);
 
-        String iCal = this.iCalHelper.getAsICal(Arrays.asList((PropertySet) event));
+        String iCal = this.iCalHelper.getAsICal(Collections.singletonList(event));
         if (iCal == null) {
             return null;
         }
