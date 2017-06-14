@@ -85,6 +85,7 @@ public abstract class FilteredCollectionListingController implements Controller 
     private Map<String, List<String>> filters;
     private int pageLimit = 25;
     protected ResourceTypeTree resourceTypeTree;
+    private int defaultNumberOfResultSets = 3;
 
     private SearchSorting defaultSearchSorting;
     private List<String> configurablePropertySelectPointers;
@@ -95,8 +96,6 @@ public abstract class FilteredCollectionListingController implements Controller 
     private PropertyTypeDefinition showSubfolderMenuPropDef;
     private PropertyTypeDefinition showSubfolderTitlePropDef;
     private PropertyTypeDefinition numberOfResultSetsPropDef;
-
-    private static final int DEFAULT_NUMBER_OF_RESULT_SETS = 3;
 
     /* Override if other searcher is needed. (Example: multihostSearcher) */
     protected ResultSet search(Resource collection, Query query, int offset) {
@@ -233,7 +232,7 @@ public abstract class FilteredCollectionListingController implements Controller 
         Property showSubfolderMenu = collection.getProperty(showSubfolderMenuPropDef);
         if (showSubfolderMenu != null && showSubfolderMenu.getBooleanValue()) {
             Property numberOfResultSetsProp = collection.getProperty(numberOfResultSetsPropDef);
-            int numberOfResultSets = DEFAULT_NUMBER_OF_RESULT_SETS;
+            int numberOfResultSets = defaultNumberOfResultSets;
             if (numberOfResultSetsProp != null) {
                 numberOfResultSets = numberOfResultSetsProp.getIntValue();
             }
@@ -450,6 +449,10 @@ public abstract class FilteredCollectionListingController implements Controller 
     @Required
     public void setNumberOfResultSetsPropDef(PropertyTypeDefinition numberOfResultSetsPropDef) {
         this.numberOfResultSetsPropDef = numberOfResultSetsPropDef;
+    }
+
+    public void setDefaultNumberOfResultSets(int defaultNumberOfResultSets) {
+        this.defaultNumberOfResultSets = defaultNumberOfResultSets;
     }
 
 }
