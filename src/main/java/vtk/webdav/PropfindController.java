@@ -210,8 +210,9 @@ public class PropfindController extends AbstractWebdavController
         }
         catch (ResourceNotFoundException e) {
             responseBuilder(HttpServletResponse.SC_NOT_FOUND)
-                .header("Content-Type", "text/plain;charset=utf-8")
-                .message(e.getMessage())
+                // GULP WebDAV library does not handle request body in 404-responses: 
+                //.header("Content-Type", "text/plain;charset=utf-8")
+                //.message(e.getMessage())
                 .writeTo(response);
 
         }
