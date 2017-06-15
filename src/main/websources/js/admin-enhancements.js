@@ -33,6 +33,7 @@ function VrtxAdmin() {
   this._$ = $;
 
   this.url = window.location.href;
+  this.fragmentParams = urlParamsParser(location.hash.substring(1));
   this.rootUrl = "/vrtx/__vrtx/static-resources";
   this.bodyId = "";
   this.messages = {}; /* Populated with i18n in resource-bar.ftl */
@@ -1338,13 +1339,13 @@ VrtxAdmin.prototype.getFormAsync = function getFormAsync(opts) {
   var vrtxAdm = this, // use prototypal hierarchy
     _$ = vrtxAdm._$;
 
-  vrtxAdm.cachedBody.dynClick(opts.selector, function (e) {
+  function getForm () {
     if (vrtxAdm.asyncGetFormsInProgress) { // If there are any getFormAsync() in progress
       return false;
     }
     vrtxAdm.asyncGetFormsInProgress++;
 
-    var link = _$(this),
+    var link = _$(opts.selector),
         url = link.attr("href") || link.closest("form").attr("action"),
         modeUrl = window.location.href,
         isActionsListing = modeUrl.indexOf("&mode=actions-listing") !== -1,
@@ -1465,9 +1466,13 @@ VrtxAdmin.prototype.getFormAsync = function getFormAsync(opts) {
         }
       }
     });
-    e.stopPropagation();
-    e.preventDefault();
+  }
+  vrtxAdm.cachedBody.dynClick(opts.selector, function (event) {
+    getForm();
+    event.stopPropagation();
+    event.preventDefault();
   });
+  return getForm;
 };
 
 /**
@@ -2731,6 +2736,34 @@ function gup(name, url) {
   var results = regex.exec(url);
   return (results === null) ? "" : results[1];
 }
+
+/* Creates an object out of a query-parameter formatted string
+ */
+function urlParamsParser(paramStr) {
+  var paramDict = {};
+  var parts = paramStr.split('&');
+  for (var i = 0; i < parts.length; i++) {
+    var keyval = parts[i].split('=');
+    var key = keyval[0];
+    var value = (keyval[1] !== undefined) ? decodeURIComponent(keyval[1]) : null;
+    if (paramDict[key] === undefined) {
+      paramDict[key] = value;
+    } else if (typeof paramDict[key] === "string") {
+      var arr = [paramDict[key], value];
+      paramDict[key] = arr;
+    } else {
+      paramDict[key].push(value);
+    }
+  }
+  return paramDict;
+}
+
+$(window).on('hashchange', function(e) {
+  vrtxAdmin.fragmentParams = urlParamsParser(location.hash.substring(1));
+  if ('action' in vrtxAdmin.fragmentParams) {
+      location.reload();
+  }
+});
 
 /* Remove duplicates from an array
  *

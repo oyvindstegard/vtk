@@ -21,7 +21,8 @@
   <bean id="createDocumentDropDown.handler" class="vtk.web.actions.create.ListCollectionsController">
     <property name="provider" ref="createDropDown.provider" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
-    <property name="service" ref="createDocumentService" />
+    <property name="service" ref="manageService" />
+    <property name="action" value="createDocumentService" />
     <property name="repository" ref="repository" />
   </bean>
 
@@ -42,7 +43,8 @@
   <bean id="createCollectionDropDown.handler" class="vtk.web.actions.create.ListCollectionsController">
     <property name="provider" ref="createDropDown.provider" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
-    <property name="service" ref="createCollectionService" />
+    <property name="service" ref="manageService" />
+    <property name="action" value="createCollectionService" />
     <property name="repository" ref="repository" />
   </bean>
 
@@ -63,7 +65,8 @@
   <bean id="uploadFileDropDown.handler" class="vtk.web.actions.create.ListCollectionsController">
     <property name="provider" ref="createDropDown.provider" />
     <property name="unpublishedCollectionPropDef" ref="unpublishedCollectionPropDef" />
-    <property name="service" ref="fileUploadService" />
+    <property name="service" ref="manageService" />
+    <property name="action" value="fileUploadService" />
     <property name="repository" ref="repository" />
   </bean>
   
