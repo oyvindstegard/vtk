@@ -37,9 +37,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
@@ -47,6 +49,7 @@ import vtk.repository.search.QueryException;
 import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
+import vtk.web.service.URL;
 import vtk.web.tags.RepositoryTagElementsDataProvider;
 import vtk.web.tags.TagElement;
 import vtk.web.tags.TagsHelper;
@@ -80,9 +83,6 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
     private static final String PARAMETER_SHOW_OCCURENCE_DESC = "Display a number indicating the number of documents associated with the tag"
             + "Default value is: " + PARAMETER_SHOW_OCCURENCE_VALUE;
 
-    private static final String PARAMETER_SERVICE_URL = "service-url";
-    private static final String PARAMETER_SERVICE_URL_DESC = "Deprecated: NO LONGER USED. Kept to avoid breaking existing component references.";
-
     private static final String PARAMETER_RESOURCE_TYPE = TagsHelper.RESOURCE_TYPE_PARAMETER;
     private static final String PARAMETER_RESOURCE_TYPE_DESC = "Comma seperated list of resource types to search for tags in.";
 
@@ -101,30 +101,38 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
 
     private static final String PARAMETER_WHITELIST = "whitelist";
     private static final String PARAMETER_WHITELIST_DESC = "Comma separated whitelist of tags. Whitelist is optional Example: whitelist=[tag1,tag2]";
+    
+    private static final String PARAMETER_URL_PATTERN = "url-pattern";
+    private static final String PARAMETER_URL_PATTERN_DESC = 
+            "Pattern for generating a tag URL. Occurrences of '%t' are replaced with the tag value. "
+            + "Occurrences of %p are replaced with the current URI";
 
     private RepositoryTagElementsDataProvider tagElementsProvider;
     private ResourceTypeTree resourceTypeTree;
 
+    @Override
     protected String getDescriptionInternal() {
         return DESCRIPTION;
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
 
         map.put(PARAMETER_SCOPE, PARAMETER_SCOPE_DESC);
         map.put(PARAMETER_TAG_LIMIT, PARAMETER_TAG_LIMIT_DESC);
         map.put(PARAMETER_RESULT_SETS, PARAMETER_PARAMETER_RESULT_DESC);
         map.put(PARAMETER_SHOW_OCCURENCE, PARAMETER_SHOW_OCCURENCE_DESC);
-        map.put(PARAMETER_SERVICE_URL, PARAMETER_SERVICE_URL_DESC);
         map.put(PARAMETER_RESOURCE_TYPE, PARAMETER_RESOURCE_TYPE_DESC);
         map.put(PARAMETER_SORT_SELECTED_TAG_BY, PARAMETER_SORT_SELECTED_TAG_BY_DESC);
         map.put(PARAMETER_DISPLAY_SCOPE, PARAMETER_DISPLAY_SCOPE_DESC);
         map.put(PARAMETER_OVERRIDE_RESOURCE_TYPE_TITLE, PARAMETER_OVERRIDE_RESOURCE_TYPE_TITLE_DESC);
-
+        map.put(PARAMETER_WHITELIST, PARAMETER_WHITELIST_DESC);
+        map.put(PARAMETER_URL_PATTERN, PARAMETER_URL_PATTERN_DESC);
         return map;
     }
 
+    @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
@@ -167,7 +175,7 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
         }
 
         Object resourceTypeParam = request.getRawParameter(PARAMETER_RESOURCE_TYPE);
-        List<ResourceTypeDefinition> resourceTypeDefs = new ArrayList<ResourceTypeDefinition>();
+        List<ResourceTypeDefinition> resourceTypeDefs = new ArrayList<>();
         if (resourceTypeParam != null) {
             String[] resourceTypes = resourceTypeParam.toString().split(",");
             for (String resourceType : resourceTypes) {
@@ -178,7 +186,7 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
             }
         }
 
-        List<String> urlSortingParmas = new ArrayList<String>();
+        List<String> urlSortingParmas = new ArrayList<>();
         Object sortingParam = request.getRawParameter(PARAMETER_SORT_SELECTED_TAG_BY);
         if (sortingParam != null) {
             String[] sortingParams = sortingParam.toString().split(",");
@@ -208,6 +216,20 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
         try {
             List<TagElement> tagElements = tagElementsProvider.getTagElements(scopeUri, token, 1, 1, limit, 1,
                     resourceTypeDefs, urlSortingParmas, overrideResTypeTitle, displayScope, whiteList);
+            
+            String urlPattern = request.getStringParameter(PARAMETER_URL_PATTERN);
+            if (urlPattern != null) {
+                URL baseURL = requestContext.getRequestURL()
+                    .setPath(requestContext.getCurrentCollection())
+                    .clearParameters();
+                tagElements = tagElements.stream().map(elem -> {
+                    String newURL = urlPattern
+                            .replaceAll("%t", elem.getText())
+                            .replaceAll("%p", baseURL.getPath().toString());
+                    URL url = baseURL.relativeURL(newURL);
+                    return new TagElement(elem.getMagnitude(), url, elem.getText(), elem.getOccurences());
+                }).collect(Collectors.toList());
+            }
 
             // Populate model
             int numberOfTagsInEachColumn;
@@ -215,7 +237,8 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
             if (limit < PARAMETER_TAG_LIMIT_DEFAULT_VALUE && limit < tagElements.size()) {
                 numberOfTagsInEachColumn = limit / resultSet;
                 remainder = limit % resultSet;
-            } else {
+            }
+            else {
                 numberOfTagsInEachColumn = tagElements.size() / resultSet;
                 remainder = tagElements.size() % resultSet;
             }
@@ -239,13 +262,14 @@ public class TagsComponent extends ViewRenderingDecoratorComponent implements In
                 model.put("resourceTypes", resourceTypeDefs);
             }
 
-        } catch (QueryException qe) {
+        }
+        catch (QueryException qe) {
             throw new DecoratorComponentException("There was a problem with the data report query: " + qe.getMessage());
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             throw new DecoratorComponentException("Illegal value for parameter '" + PARAMETER_SCOPE
                     + "', must be a valid URI.");
         }
-
     }
 
     private ResourceTypeDefinition getResourceTypeDef(String resourceType) {
