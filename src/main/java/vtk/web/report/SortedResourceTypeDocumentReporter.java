@@ -44,7 +44,16 @@ import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.TypeTermQuery;
 import vtk.repository.search.query.UriPrefixQuery;
 
-public class LastModifiedReporter extends DocumentReporter {
+/**
+ * Reports documents with configurable resource type, sorting property and sort order direction.
+ *
+ * <p>All resources under system collection {@code /vrtx} are excluded.
+ *
+ * <p>Control over whether sub resource types of the specified resource type shall
+ * be included can be specified using {@link #setTermOperator(vtk.repository.search.query.TermOperator) }, value
+ * "IN" for inclusion of sub types (default) and "EQ" for only the specific type.
+ */
+public class SortedResourceTypeDocumentReporter extends DocumentReporter {
 
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition sortPropDef;

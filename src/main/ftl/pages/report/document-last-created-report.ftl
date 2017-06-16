@@ -1,6 +1,10 @@
 <#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
 <#import "/lib/vtk.ftl" as vrtx />
 
+<#-- This template is similar to pages/report/document-report.ftl, but with modifications
+     to displayed columns. Consider refactoring common parts into macros or something even more clever.
+-->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -65,19 +69,18 @@
       <thead>
         <tr>
           <th scope="col" id="vrtx-report-name"><@vrtx.msg code="report.title" default="Name" /></th>
-          <th scope="col" id="vrtx-report-last-modified"><@vrtx.msg code="report.last-modified" default="Last modified" /></th>
-          <th scope="col" id="vrtx-report-modified-by"><@vrtx.msg code="report.modified-by" default="Modified by" /></th>
+          <th scope="col" id="vrtx-report-created"><@vrtx.msg code="report.created" default="Created" /></th>
+          <th scope="col" id="vrtx-report-created-by"><@vrtx.msg code="report.created-by" default="Created by" /></th>
           <th scope="col" id="vrtx-report-permissions"><@vrtx.msg code="collectionListing.permissions" default="Permissions"/></th>
-          <#if report.reportname != "unpublished">
-            <th scope="col" id="vrtx-report-published"><@vrtx.msg code="report.published" default="Published" /></th>
-          </#if>
+          <th scope="col" id="vrtx-report-published"><@vrtx.msg code="report.published" default="Published" /></th>
         </tr>
       </thead>
       <tbody>
       <#assign count = 1 />
       <#assign collectionSize = report.result?size />
       <#list report.result as res >
-        <#assign lastModifiedTime = vrtx.propValue(res, 'lastModified') />
+        <#assign creationTime = vrtx.propValue(res, 'creationTime') />
+        <#assign createdBy = vrtx.prop(res, 'createdBy').principalValue />
         
         <#assign aclIsInherited = vrtx.getMsg("report.yes", "Yes")>
         <#if report.isInheritedAcl[res_index] >
@@ -91,12 +94,10 @@
         <#if report.viewURLs[res_index]?exists>
           <#assign url = report.viewURLs[res_index] />
         </#if>
-        <#if report.reportname != "unpublished">
-          <#assign published = vrtx.propValue(res, 'published')! />
-          <#assign publishedStatus = vrtx.getMsg("report.yes", "Yes")>
-          <#if published?has_content && published = "false">
-            <#assign publishedStatus = vrtx.getMsg("report.no", "No")>
-          </#if>
+        <#assign published = vrtx.propValue(res, 'published')! />
+        <#assign publishedStatus = vrtx.getMsg("report.yes", "Yes")>
+        <#if published?has_content && published = "false">
+          <#assign publishedStatus = vrtx.getMsg("report.no", "No")>
         </#if>
         
         <#assign isCollection = vrtx.propValue(res, 'collection') />
@@ -119,19 +120,18 @@
         <tr class="${rowType} <@vrtx.resourceToIconResolver res /> ${isCollection}${firstLast}">
 
           <td class="vrtx-report-name"><a href="${url}">${title}</a></td>
-          <td class="vrtx-report-last-modified">${lastModifiedTime}</td>
-          <td class="vrtx-report-last-modified-by">
-            <#assign modifiedBy = vrtx.prop(res, 'modifiedBy').principalValue />
-            <#if principalDocuments?? && principalDocuments[modifiedBy.name]??>
-              <#assign principal = principalDocuments[modifiedBy.name] />
+          <td class="vrtx-report-created">${creationTime}</td>
+          <td class="vrtx-report-created-by">
+            <#if principalDocuments?? && principalDocuments[createdBy.name]??>
+              <#assign principal = principalDocuments[createdBy.name] />
               <#if principal.URL??>
                 <a href="${principal.URL}">${principal.description}</a>
               <#else>
                 ${principal.description}
               </#if>
             <#else>
-              <#assign modifiedByNameLink = vrtx.propValue(res, 'modifiedBy', 'link') />
-              ${modifiedByNameLink?no_esc}
+              <#assign createdByNameLink = vrtx.propValue(res, 'createdBy', 'link') />
+              ${createdByNameLink?no_esc}
             </#if>
           </td>
           <td class="vrtx-report-permissions permissions">
