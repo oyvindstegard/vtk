@@ -68,6 +68,7 @@ public class CollectionListingController extends BaseCollectionListingController
     private boolean displayEditLinks;
     private boolean resolvePrincipalLink;
     private String customDisplay;
+    private String emptyDisplay;
 
     @Override
     public void runSearch(HttpServletRequest request, Resource collection, Map<String, Object> model, int pageLimit)
@@ -83,7 +84,7 @@ public class CollectionListingController extends BaseCollectionListingController
         Repository repository = requestContext.getRepository();
         Principal principal = requestContext.getPrincipal();
 
-        List<Listing> results = new ArrayList<Listing>();
+        List<Listing> results = new ArrayList<>();
 
         for (SearchComponent component : searchComponents) {
 
@@ -118,7 +119,7 @@ public class CollectionListingController extends BaseCollectionListingController
         if (resolvePrincipalLink && results.size() > 0 && helper != null) {
             Locale preferredLocale = localeResolver.resolveResourceLocale(collection);
 
-            Set<PropertySet> allFiles = new HashSet<PropertySet>();
+            Set<PropertySet> allFiles = new HashSet<>();
             for (Listing l : results) {
                 allFiles.addAll(l.getPropertySets());
             }
@@ -155,10 +156,13 @@ public class CollectionListingController extends BaseCollectionListingController
         if (customDisplay != null) {
             model.put("customDisplay", customDisplay);
         }
+        if (emptyDisplay != null) {
+            model.put("emptyDisplay", emptyDisplay);
+        }
     }
 
     protected Map<String, Integer> getNumberOfRecords(int page, int pageLimit, int resultSize) {
-        Map<String, Integer> numbers = new HashMap<String, Integer>();
+        Map<String, Integer> numbers = new HashMap<>();
         int numberShownElements = ((page - 1) * pageLimit) + 1;
         int includingThisPage = ((page - 1) * pageLimit) + resultSize;
         numbers.put("elementsOnPreviousPages", numberShownElements);
@@ -205,6 +209,10 @@ public class CollectionListingController extends BaseCollectionListingController
 
     public void setCustomDisplay(String customDisplay) {
         this.customDisplay = customDisplay;
+    }
+    
+    public void setEmptyDisplay(String emptyDisplay) {
+        this.emptyDisplay = emptyDisplay;
     }
 
 }

@@ -364,6 +364,7 @@
          <entry key="VRTX_DATE_VALUE_FORMATTER" value-ref="dateValueFormatter" />
          <entry key="VRTX_HTML_VALUE_FORMATTER" value-ref="htmlFormatter" />
          <entry key="VRTX_RESOURCE_TYPE_TREE" value-ref="resourceTypeTree" />
+         <entry key="VRTX_STRUCTURED_RESOURCE_MANAGER" value-ref="structuredResources.resourceManager" />
          <entry key="VRTX_HTML_UTIL">
            <bean class="vtk.text.html.HtmlUtil" />
          </entry>
