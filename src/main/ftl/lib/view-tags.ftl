@@ -139,7 +139,10 @@
   
   <div class="tagged-resources vrtx-resources">
     <#if resourceType??>
-      <#if resourceType = 'person'>
+      <#if customDisplayResourceType?? && resourceType = customDisplayResourceType && customDisplayImport??>
+        <#import customDisplayImport as customDisplay />
+        <@customDisplay.display listing />
+      <#elseif resourceType = 'person'>
         <@persons.displayPersons listing />
       <#elseif resourceType = 'structured-project'>
         <@projects.displayProjects listing />
