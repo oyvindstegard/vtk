@@ -57,15 +57,9 @@ import vtk.web.service.URL;
  */
 public class FeedComponent extends AbstractFeedComponent {
 
-    private static final String PARAMETER_FEED_DESCRIPTION = "feed-description";
-    private static final String PARAMETER_FEED_DESCRIPTION_DESC = "Must be set to 'true' to show feed description";
-
     private static final String PARAMETER_URL = "url";
     private static final String PARAMETER_URL_DESC = "The feed url. For host "
             + "local feeds, you get authenticated retrieval of the resource if you skip the protocol/host part";
-
-    private static final String PARAMETER_FEED_TITLE = "feed-title";
-    private static final String PARAMETER_FEED_TITLE_DESC = "Deprecated (use 'diplay-feed-title' instead). Kept to avoid breaking existing component references. (Set to 'false' if you don't want to show feed title)";
 
     private static final String PARAMETER_DISPLAY_FEED_TITLE = "display-feed-title";
     private static final String PARAMETER_DISPLAY_FEED_TITLE_DESC = "Set to 'false' if you don't want to show feed title";
@@ -76,27 +70,6 @@ public class FeedComponent extends AbstractFeedComponent {
     private static final String PARAMETER_ALL_MESSAGES_LINK = "all-messages-link";
     private static final String PARAMETER_ALL_MESSAGES_LINK_DESC = "Defaults to 'true' displaying 'All messages' link at the bottom. Set to 'false' to remove this link.";
 
-    private static final String PARAMETER_SORT = "sort";
-    private static final String PARAMETER_SORT_DESC = "Default sorted by published date. Set to 'item-title' to sort by this instead. "
-            + "You can control the direction of the sorting by using the keywords 'asc' or 'desc'. "
-            + "Usage examples: sort=[asc], sort=[item-title desc], sort=[published-date asc], etc. "
-            + "The default is descending direction (newest first) for published date and ascending when sorting by 'item-title'.";
-
-    private static final String PARAMETER_PUBLISHED_DATE = "published-date";
-    private static final String PARAMETER_PUBLISHED_DATE_DESC = "How to display published date, defaults to date and time. Set to 'date' to only display the date, or 'none' to not show the date";
-
-    private static final String PARAMETER_MAX_MESSAGES = "max-messages";
-    private static final String PARAMETER_MAX_MESSAGES_DESC = "The max number of messages to display, defaults to 10";
-
-    private static final String PARAMETER_ITEM_DESCRIPTION = "item-description";
-    private static final String PARAMETER_ITEM_DESCRIPTION_DESC = "Must be set to 'true' to show item descriptions";
-
-    private static final String PARAMETER_INCLUDE_IF_EMPTY = "include-if-empty";
-    private static final String PARAMETER_INCLUDE_IF_EMPTY_DESC = "Set to 'false' if you don't want to display empty feeds. Default is 'true'.";
-
-    private static final String PARAMETER_DISPLAY_CATEGORIES = "display-categories";
-    private static final String PARAMETER_DISPLAY_CATEGORIES_DESC = "Set to 'true' if feed elements should display contents of category field.";
-
     private ContentCache<String, SyndFeed> cache;
     private LocalFeedFetcher localFeedFetcher;
 
@@ -105,7 +78,7 @@ public class FeedComponent extends AbstractFeedComponent {
             throws Exception {
         super.processModel(model, request, response);
 
-        Map<String, Object> conf = new HashMap<String, Object>();
+        Map<String, Object> conf = new HashMap<>();
 
         String url = request.getStringParameter(PARAMETER_URL);
         if (url == null) {
@@ -156,16 +129,28 @@ public class FeedComponent extends AbstractFeedComponent {
                 if (tmpInt > 0) {
                     conf.put("maxMsgs", tmpInt);
                 }
-            } catch (Exception e) {
-            }
+            } catch (Exception e) { }
+        }
+
+        conf.put("offset", 0);
+        String offsetString = request.getStringParameter(PARAMETER_OFFSET);
+        if (offsetString != null) {
+            try {
+                int tmpInt = Integer.parseInt(offsetString);
+                if (tmpInt > 0) {
+                    conf.put("offset", tmpInt);
+                }
+            } catch (Exception e) { }
         }
 
         String publishedDateString = request.getStringParameter(PARAMETER_PUBLISHED_DATE);
         if ("none".equals(publishedDateString)) {
             conf.put("publishedDate", null);
-        } else if ("date".equals(publishedDateString)) {
+        }
+        else if ("date".equals(publishedDateString)) {
             conf.put("publishedDate", "short");
-        } else {
+        }
+        else {
             conf.put("publishedDate", "long");
         }
 
@@ -188,11 +173,13 @@ public class FeedComponent extends AbstractFeedComponent {
                         // Set to default for title, if not already specified.
                         conf.put("sortAscending", true);
                     }
-                } else if ("asc".equalsIgnoreCase(token)) {
+                }
+                else if ("asc".equalsIgnoreCase(token)) {
                     conf.remove("sortDescending");
                     conf.put("sortAscending", true);
                     directionSpecified = true;
-                } else if ("desc".equalsIgnoreCase(token)) {
+                }
+                else if ("desc".equalsIgnoreCase(token)) {
                     conf.remove("sortAscending");
                     conf.put("sortDescending", true);
                     directionSpecified = true;
@@ -211,15 +198,19 @@ public class FeedComponent extends AbstractFeedComponent {
                 baseURL = new URL(requestURL);
                 retrieveLocalResource(feedURL);
                 feed = this.localFeedFetcher.getFeed(feedURL, request);
-            } else {
+            }
+            else {
                 baseURL = new URL(feedURL);
                 feed = this.cache.get(url);
             }
-        } catch (AuthenticationException e) {
+        }
+        catch (AuthenticationException e) {
             auth = false;
-        } catch (AuthorizationException e) {
+        }
+        catch (AuthorizationException e) {
             auth = false;
-        } catch (ResourceNotFoundException e) {
+        }
+        catch (ResourceNotFoundException e) {
             throw new DecoratorComponentException(url + " does not exist");
         }
 
@@ -239,28 +230,22 @@ public class FeedComponent extends AbstractFeedComponent {
         List<String> elementOrder = getElementOrder(PARAMETER_FEED_ELEMENT_ORDER, request);
         model.put("elementOrder", elementOrder);
 
-        Map<String, String> descriptionNoImage = new HashMap<String, String>();
-        Map<String, String> imgMap = new HashMap<String, String>();
+        Map<String, String> descriptionNoImage = new HashMap<>();
+        Map<String, String> imgMap = new HashMap<>();
 
-        @SuppressWarnings("unchecked")
         List<SyndEntry> entries = feed.getEntries();
         boolean filter = !parameterHasValue(PARAMETER_ALLOW_MARKUP, "true", request);
         for (SyndEntry entry : entries) {
-
             HtmlFragment description = getDescription(entry, baseURL, requestURL, filter);
-
             if (description == null) {
                 descriptionNoImage.put(entry.toString(), null);
                 continue;
             }
-
             HtmlElement image = removeImage(description);
             if (image != null) {
                 imgMap.put(entry.toString(), image.getEnclosedContent());
             }
-
             descriptionNoImage.put(entry.toString(), description.getStringRepresentation());
-
         }
         model.put("descriptionNoImage", descriptionNoImage);
         model.put("imageMap", imgMap);
@@ -276,12 +261,13 @@ public class FeedComponent extends AbstractFeedComponent {
 
     @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_ITEM_PICTURE, PARAMETER_ITEM_PICTURE_DESC);
         map.put(PARAMETER_IF_EMPTY_MESSAGE, PARAMETER_IF_EMPTY_MESSAGE_DESC);
         map.put(PARAMETER_FEED_ELEMENT_ORDER, PARAMETER_FEED_ELEMENT_ORDER_DESC);
         map.put(PARAMETER_URL, PARAMETER_URL_DESC);
         map.put(PARAMETER_MAX_MESSAGES, PARAMETER_MAX_MESSAGES_DESC);
+        map.put(PARAMETER_OFFSET, PARAMETER_OFFSET_DESC);
         map.put(PARAMETER_FEED_TITLE, PARAMETER_FEED_TITLE_DESC);
         map.put(PARAMETER_DISPLAY_FEED_TITLE, PARAMETER_DISPLAY_FEED_TITLE_DESC);
         map.put(PARAMETER_OVERRIDE_FEED_TITLE, PARAMETER_OVERRIDE_FEED_TITLE_DESC);
@@ -303,5 +289,4 @@ public class FeedComponent extends AbstractFeedComponent {
     public void setLocalFeedFetcher(LocalFeedFetcher localFeedFetcher) {
         this.localFeedFetcher = localFeedFetcher;
     }
-
 }
