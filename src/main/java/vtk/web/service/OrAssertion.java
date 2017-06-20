@@ -30,6 +30,10 @@
  */
 package vtk.web.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
@@ -45,23 +49,22 @@ import vtk.security.Principal;
  */
 public class OrAssertion implements Assertion {
 
-    private Assertion[] assertions = new Assertion[0];
+    private List<Assertion> assertions = new ArrayList<Assertion>();
 
-
-    public void setAssertions(Assertion[] assertions) {
+    public void setAssertions(List<Assertion> assertions) {
         this.assertions = assertions;
     }
     
     @Override
     public void processURL(URL url) {
-        this.assertions[0].processURL(url);
+        this.assertions.get(0).processURL(url);
     }
     
     @Override
     public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        for (int i = 0; i < this.assertions.length; i++) {
+        for (Assertion assertion : assertions) {
             // Process URL only for first matching assertion:
-            if (this.assertions[i].processURL(url, resource, principal, match)) {
+            if (assertion.processURL(url, resource, principal, match)) {
                 return true;
             }
         }
@@ -71,8 +74,8 @@ public class OrAssertion implements Assertion {
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        for (int i = 0; i < this.assertions.length; i++) {
-            if (this.assertions[i].matches(request, resource, principal)) {
+        for (Assertion assertion : assertions) {
+            if (assertion.matches(request, resource, principal)) {
                 return true;
             }
         }
@@ -81,9 +84,9 @@ public class OrAssertion implements Assertion {
     
 
     @Override
-    public boolean conflicts(Assertion assertion) {
-        for (int i = 0; i < this.assertions.length; i++) {
-            if (!this.assertions[i].conflicts(assertion)) {
+    public boolean conflicts(Assertion otherAssertion) {
+        for (Assertion assertion : assertions) {
+            if (!assertion.conflicts(otherAssertion)) {
                 return false;
             }
         }
@@ -92,13 +95,10 @@ public class OrAssertion implements Assertion {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("(");
-        for (int i = 0; i < this.assertions.length; i++) {
-            sb.append(this.assertions[i]);
-            if (i < this.assertions.length - 1) sb.append(" or ");
-        }
-        sb.append(")");
-        return sb.toString();
+        return assertions
+            .stream()
+            .map(x -> x.toString())
+            .collect(Collectors.joining(" or "));
     }
 
 }
