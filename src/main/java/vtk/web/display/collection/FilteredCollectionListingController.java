@@ -85,6 +85,7 @@ public abstract class FilteredCollectionListingController implements Controller 
     private Map<String, List<String>> filters;
     private int pageLimit = 25;
     protected ResourceTypeTree resourceTypeTree;
+    private int defaultNumberOfResultSets = 3;
 
     private SearchSorting defaultSearchSorting;
     private List<String> configurablePropertySelectPointers;
@@ -94,6 +95,7 @@ public abstract class FilteredCollectionListingController implements Controller 
     private SubFolderMenuProvider subFolderMenuProvider;
     private PropertyTypeDefinition showSubfolderMenuPropDef;
     private PropertyTypeDefinition showSubfolderTitlePropDef;
+    private PropertyTypeDefinition numberOfResultSetsPropDef;
 
     /* Override if other searcher is needed. (Example: multihostSearcher) */
     protected ResultSet search(Resource collection, Query query, int offset) {
@@ -229,8 +231,13 @@ public abstract class FilteredCollectionListingController implements Controller 
 
         Property showSubfolderMenu = collection.getProperty(showSubfolderMenuPropDef);
         if (showSubfolderMenu != null && showSubfolderMenu.getBooleanValue()) {
-            model.put("showSubfolderMenu",
-                    subFolderMenuProvider.getSubfolderMenuWithThreeGeneratedResultSets(collection, request));
+            Property numberOfResultSetsProp = collection.getProperty(numberOfResultSetsPropDef);
+            int numberOfResultSets = defaultNumberOfResultSets;
+            if (numberOfResultSetsProp != null) {
+                numberOfResultSets = numberOfResultSetsProp.getIntValue();
+            }
+            model.put("showSubfolderMenu", subFolderMenuProvider.getSubfolderMenuWithGeneratedResultSets(collection,
+                    request, numberOfResultSets));
             Property showSubfolderTitle = collection.getProperty(showSubfolderTitlePropDef);
             if (showSubfolderTitle != null) {
                 model.put("showSubfolderTitle", showSubfolderTitle.getStringValue());
@@ -437,6 +444,15 @@ public abstract class FilteredCollectionListingController implements Controller 
     @Required
     public void setShowSubfolderTitlePropDef(PropertyTypeDefinition showSubfolderTitlePropDef) {
         this.showSubfolderTitlePropDef = showSubfolderTitlePropDef;
+    }
+
+    @Required
+    public void setNumberOfResultSetsPropDef(PropertyTypeDefinition numberOfResultSetsPropDef) {
+        this.numberOfResultSetsPropDef = numberOfResultSetsPropDef;
+    }
+
+    public void setDefaultNumberOfResultSets(int defaultNumberOfResultSets) {
+        this.defaultNumberOfResultSets = defaultNumberOfResultSets;
     }
 
 }

@@ -43,43 +43,43 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <#if collection.resourceType = 'image-listing'>
-    <@images.addScripts collection />
-  <#else>
-    <#if cssURLs?exists>
-      <#list cssURLs as cssURL>
-        <link rel="stylesheet" href="${cssURL}" type="text/css" />
-      </#list>
+  <head>
+    <#if collection.resourceType = 'image-listing'>
+      <@images.addScripts collection />
+    <#else>
+      <#if cssURLs?exists>
+        <#list cssURLs as cssURL>
+          <link rel="stylesheet" href="${cssURL}" type="text/css" />
+        </#list>
+      </#if>
+      <#if printCssURLs?exists>
+        <#list printCssURLs as cssURL>
+          <link rel="stylesheet" href="${cssURL}" media="print" type="text/css" />
+        </#list>
+      </#if>
+      <#if jsURLs?exists>
+        <#list jsURLs as jsURL>
+          <script type="text/javascript" src="${jsURL}"></script>
+        </#list>
+      </#if>
     </#if>
-    <#if printCssURLs?exists>
-      <#list printCssURLs as cssURL>
-        <link rel="stylesheet" href="${cssURL}" media="print" type="text/css" />
-      </#list>
-    </#if>
-    <#if jsURLs?exists>
-      <#list jsURLs as jsURL>
-        <script type="text/javascript" src="${jsURL}"></script>
-      </#list>
-    </#if>
-  </#if>
 
-  <#if alternativeRepresentations?exists && !(hideAlternativeRepresentation?exists && hideAlternativeRepresentation)>
-    <#list alternativeRepresentations as alt>
-      <link rel="alternate" type="${alt.contentType}" title="${alt.title}" href="${alt.url}" />
-    </#list>
-  </#if>
-
-  <title>${title}
-    <#if page?has_content && !overriddenTitle?has_content>
-      <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page}</#if>
+    <#if alternativeRepresentations?exists && !(hideAlternativeRepresentation?exists && hideAlternativeRepresentation)>
+      <#list alternativeRepresentations as alt>
+        <link rel="alternate" type="${alt.contentType}" title="${alt.title}" href="${alt.url}" />
+      </#list>
     </#if>
-  </title>
-  
-  <#if page?has_content>
-    <#if "${page}" != "1"><meta name="robots" content="noindex, follow"/> </#if>
-  </#if>
-</head>
+
+    <title>${title}
+      <#if page?has_content && !overriddenTitle?has_content>
+        <#if "${page}" != "1"> - <@vrtx.msg code="viewCollectionListing.page" /> ${page}</#if>
+      </#if>
+    </title>
+    
+    <#if page?has_content>
+      <#if "${page}" != "1"><meta name="robots" content="noindex, follow"/> </#if>
+    </#if>
+  </head>
 
 <body id="vrtx-${resource.resourceType}">
   <#assign page = page?default(1) />
@@ -123,7 +123,7 @@
           (introduction?has_content || introductionImage?has_content)>
             <div class="vrtx-introduction">
               <#-- Image -->
-      	      <@viewutils.displayImage resource />
+  	          <@viewutils.displayImage resource />
               <#-- Introduction -->
               <#if introduction?has_content>
                 ${introduction.stringValue?no_esc}
@@ -133,7 +133,7 @@
           <#-- List collections: -->
           <#if subFolderMenu?exists> 
             <div id="vrtx-collections" class="vrtx-collections">
-  	      <@subfolder.displaySubFolderMenu subFolderMenu />
+                <@subfolder.displaySubFolderMenu subFolderMenu />
             </div>
           </#if> 
         </#if> 
@@ -154,7 +154,6 @@
       </a></p>
     </#if>
   </#if>
-
 
   <#-- List resources: -->
   <!--stopindex-->
@@ -204,6 +203,11 @@
         </#if>
       </#list>
     </#if>
+  <#elseif !searchComponents?has_content>
+    <#if emptyDisplay??>
+      <#import emptyDisplay as emptyDisplayImport />
+      <@emptyDisplayImport.displayEmpty title />
+    </#if>
   </#if>
   <@projects.projectListingViewServiceURL />
   <@master.masterListingViewServiceURL />
@@ -232,6 +236,6 @@
   <#if isEventCalendarListing>
       </div>
   </#if>
-  <!--startindex-->
+<!--startindex-->
 </body>
 </html>

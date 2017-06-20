@@ -70,6 +70,9 @@ public class TagsController implements Controller {
     private RepositoryTagElementsDataProvider tagElementsProvider;
     private TagsHelper tagsHelper;
 
+    private String customDisplayResourceType;
+    private String customDisplayImport;
+
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         Map<String, Object> model = new HashMap<String, Object>();
@@ -99,6 +102,11 @@ public class TagsController implements Controller {
         Link scopeUpLink = tagsHelper.getScopeUpUrl(request, resource, model, tag, resourceTypes, displayScope, true);
         model.put(TagsHelper.SCOPE_UP_MODEL_KEY, scopeUpLink);
         model.put("requestURL", requestContext.getRequestURL());
+
+        if (customDisplayResourceType != null && customDisplayImport != null) {
+            model.put("customDisplayResourceType", customDisplayResourceType);
+            model.put("customDisplayImport", customDisplayImport);
+        }
 
         return new ModelAndView(viewName, model);
     }
@@ -207,6 +215,14 @@ public class TagsController implements Controller {
     @Required
     public void setTagsHelper(TagsHelper tagsHelper) {
         this.tagsHelper = tagsHelper;
+    }
+
+    public void setCustomDisplayResourceType(String customDisplayResourceType) {
+        this.customDisplayResourceType = customDisplayResourceType;
+    }
+
+    public void setCustomDisplayImport(String customDisplayImport) {
+        this.customDisplayImport = customDisplayImport;
     }
 
 }

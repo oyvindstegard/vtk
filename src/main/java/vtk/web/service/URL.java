@@ -315,7 +315,7 @@ public class URL implements Serializable {
     }
     
     /**
-     * Removes all query string parameters with a given name and value from this URL.
+     * Removes a single query string parameter with a given name and value from this URL.
      * 
      * @param name
      *            the parameter name
@@ -327,6 +327,26 @@ public class URL implements Serializable {
         List<String> list = this.parameters.get(name);
         if (list != null) {
             list.remove(value);
+            if (list.isEmpty()) {
+                this.parameters.remove(name);
+            }
+        }
+        return this;
+    }
+    
+    /**
+     * Removes all query string parameters with a given name and value from this URL.
+     * 
+     * @param name
+     *            the parameter name
+     * @param name
+     *            the parameter value
+     * @return this URL
+     */
+    public URL removeParameters(String name, String value) {
+        List<String> list = this.parameters.get(name);
+        if (list != null) {
+            list.removeIf(str -> str.equals(value));
             if (list.isEmpty()) {
                 this.parameters.remove(name);
             }

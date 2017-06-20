@@ -403,11 +403,11 @@
 
 
 <#--
- * requestLanguage
- *
- * Gets the ISO 639-1 language code for the current request
- *
--->
+  * requestLanguage
+  *
+  * Gets the ISO 639-1 language code for the current request
+  *
+  -->
 <#macro requestLanguage>
   <#compress>
     ${springMacroRequestContext.locale.language}
@@ -415,11 +415,12 @@
 </#macro>
 
 <#--
- * These functions needs some documentation..
- -->
+  * These functions need documentation
+  *
+  -->
 <#function resourceTypeName resource>
-    <#local locale = springMacroRequestContext.getLocale() />
-    <#return getMsg("resourcetype.name." + resource.resourceType) />
+  <#local locale = springMacroRequestContext.getLocale() />
+  <#return getMsg("resourcetype.name." + resource.resourceType) />
 </#function>
 
 <#function prop resource propName prefix=''>
@@ -456,6 +457,18 @@
   <#if propVal??>
     <#if propVal?is_markup_output><#local propVal = propVal?markup_string /></#if>
     <#return propVal />
+  </#if>
+</#function>
+
+
+<#function resourceAspect resource expression>
+  <#local aspects = vrtx.prop(resource, 'aspects')! />
+  <#if aspects?? && aspects?has_content && (aspects.getJSONValue()!)??>
+    <#local json = aspects.getJSONValue() />
+    <#if json?? && json?has_content>
+      <#local result = statics['vtk.util.text.Json'].select(json, expression)! />
+      <#if result?? && result?has_content><#return result /></#if>
+    </#if>
   </#if>
 </#function>
 

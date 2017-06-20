@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
   <bean id="filteredListing.abstract.handler" abstract="true"
-    class="vtk.web.display.collection.FilteredCollectionListingController">
+        class="vtk.web.display.collection.FilteredCollectionListingController">
     <property name="viewName" value="filteredListing.view" />
     <property name="defaultSearchSorting" ref="filteredListing.defaultSearchSorting" />
     <property name="viewService" ref="viewService" />
@@ -12,6 +12,7 @@
     <property name="subFolderMenuProvider" ref="subFolderMenuProvider" />
     <property name="showSubfolderMenuPropDef" ref="showSubfolderMenuPropDef" />
     <property name="showSubfolderTitlePropDef" ref="showSubfolderTitlePropDef" />
+    <property name="numberOfResultSetsPropDef" ref="numberOfResultSetsPropDef" />
   </bean>
 
   <bean id="filteredListing.defaultSearchSorting" class="vtk.web.search.SearchSorting">
@@ -46,6 +47,40 @@
             <entry key="hideLabel" value="true" />
           </map>
         </entry>
+      </map>
+    </property>
+  </bean>
+
+  <bean id="numberOfResultSetsPropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
+    <property name="name" value="number-of-result-sets" />
+    <property name="type" value="INT" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_WRITE" />
+    <property name="mandatory" value="false" />
+    <property name="valueFormatter">
+      <bean class="vtk.repository.resourcetype.MessageSourceValueFormatter">
+        <constructor-arg value="INT" />
+        <constructor-arg value="vtk.beans.vhost.resource-types.properties.number-of-result-sets" />
+      </bean>
+    </property>
+    <property name="vocabulary">
+      <bean class="vtk.repository.resourcetype.ValueVocabulary">
+        <constructor-arg value="INT" />
+        <property name="values">
+          <list>
+            <value>1</value>
+            <value>2</value>
+            <value>3</value>
+            <value>4</value>
+          </list>
+        </property>
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="filteredListing.viewResolver" parent="decoratorViewResolver">
+    <property name="views">
+      <map>
+        <entry key="filteredListing.view" value-ref="filteredListing.view" />
       </map>
     </property>
   </bean>
