@@ -90,7 +90,7 @@ resourcetype exam-info {
           <p class="exam-place-info-multiple-rooms">[localized 'place-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
         [else]
           <p class="exam-place-info"><strong>[localized 'place']:</strong> [list rooms r][call "comp:room" { "rom": r }][endlist]</p>
-        [endif]W
+        [endif]
       [endif]
 
       [if part.datasystem]
