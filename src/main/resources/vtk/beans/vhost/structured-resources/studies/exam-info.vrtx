@@ -36,6 +36,21 @@ resourcetype exam-info {
       [if (hours > 0 || minutes > 0)] ([if hours > 0][val hours] [localized 'time-hours'][endif][if minutes > 0] [val minutes] [localized 'time-minutes'][endif])[endif]
       ##
     }
+    
+    room(r) {
+      ##
+      [if r.buildingName]
+        [if r.buildingUrl]
+          [def url r.buildingUrl]
+        [else]
+          [def url concat("https://www.google.no/maps/place/", r.buildingName)]
+        [endif]
+        <a href="[val url]">[if r.roomName][val r.roomName] [endif][val r.buildingName]</a>
+      [elseif r.buildingId]
+        [if r.roomId][val r.roomId] [endif][val r.buildingId]
+      [endif]
+      ##
+    }
 
     exam-part (part, isSubPart, addTitle) {
       ##
@@ -63,25 +78,18 @@ resourcetype exam-info {
 
       [def rooms part.rooms]
       [if rooms != null && rooms.length() > 0]
-        <p class="exam-place-info"><strong>[localized 'place']:</strong></p>
-        <ul class="exam-rooms">
-        [list rooms r]
-          <li>
-            [if r.buildingName]
-              [if r.buildingUrl]
-                [def url r.buildingUrl]
-              [else]
-                [def url concat("https://www.google.no/maps/place/", r.buildingName)]
-              [endif]
-              <a href="[val url]">[if r.roomName][val r.roomName] [endif][val r.buildingName]</a>
-            [elseif r.buildingId]
-              [if r.roomId][val r.roomId] [endif][val r.buildingId]
-            [endif]
-          </li>
-        [endlist]
-        </ul>
         [if rooms.length() > 1]
+          <p class="exam-place-info"><strong>[localized 'place']:</strong></p>
+          <ul class="exam-rooms">
+          [list rooms r]
+            <li>
+              [call "comp:room" { r: r }]
+            </li>
+          [endlist]
+          </ul>
           <p class="exam-place-info-multiple-rooms">[localized 'place-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
+        [else]
+          <p class="exam-place-info"><strong>[localized 'place']:</strong> [list rooms r][call "comp:room" { r: r }][endlist]</p>
         [endif]
       [endif]
 
