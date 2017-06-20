@@ -37,17 +37,17 @@ resourcetype exam-info {
       ##
     }
     
-    room(r) {
+    room(rom) {
       ##
-      [if r.buildingName]
-        [if r.buildingUrl]
-          [def url r.buildingUrl]
+      [if rom.buildingName]
+        [if rom.buildingUrl]
+          [def url rom.buildingUrl]
         [else]
-          [def url concat("https://www.google.no/maps/place/", r.buildingName)]
+          [def url concat("https://www.google.no/maps/place/", rom.buildingName)]
         [endif]
-        <a href="[val url]">[if r.roomName][val r.roomName] [endif][val r.buildingName]</a>
-      [elseif r.buildingId]
-        [if r.roomId][val r.roomId] [endif][val r.buildingId]
+        <a href="[val url]">[if rom.roomName][val rom.roomName] [endif][val rom.buildingName]</a>
+      [elseif rom.buildingId]
+        [if rom.roomId][val rom.roomId] [endif][val rom.buildingId]
       [endif]
       ##
     }
@@ -83,14 +83,14 @@ resourcetype exam-info {
           <ul class="exam-rooms">
           [list rooms r]
             <li>
-              [call "comp:room" { r: r }]
+              [call "comp:room" { "rom": r }]
             </li>
           [endlist]
           </ul>
           <p class="exam-place-info-multiple-rooms">[localized 'place-info'] <a href="//studentweb.uio.no/">Studentweb</a>.</p>
         [else]
-          <p class="exam-place-info"><strong>[localized 'place']:</strong> [list rooms r][call "comp:room" { r: r }][endlist]</p>
-        [endif]
+          <p class="exam-place-info"><strong>[localized 'place']:</strong> [list rooms r][call "comp:room" { "rom": r }][endlist]</p>
+        [endif]W
       [endif]
 
       [if part.datasystem]
