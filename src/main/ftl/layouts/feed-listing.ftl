@@ -17,41 +17,57 @@
   
   <#if feed.entries?size gt 0>
     <#assign entries = feed.entries />
-      <#if conf.sortByTitle?exists>
-        <#assign entries = entries?sort_by("title") />
-        <#if !conf.sortAscending?exists>
-          <#-- Reverse order, descending sort requested, and ascending is default -->
-          <#assign entries = entries?reverse />
-        </#if> 
-      <#else>
-        <#if (conf.sortDescending)?exists && conf.sortDescending>
-          <#assign entries = entries?sort_by("publishedDate")?reverse />
+    <#if conf.sortByTitle?exists>
+      <#assign entries = entries?sort_by("title") />
+      <#if !conf.sortAscending?exists>
+        <#-- Reverse order, descending sort requested, and ascending is default -->
+        <#assign entries = entries?reverse />
+      </#if> 
+    <#else>
+      <#if (conf.sortDescending)?exists && conf.sortDescending>
+        <#assign entries = entries?sort_by("publishedDate")?reverse />
 
-        <#elseif (conf.sortAscending)?exists && conf.sortAscending>
-          <#assign entries = entries?sort_by("publishedDate") />
-        </#if>
+      <#elseif (conf.sortAscending)?exists && conf.sortAscending>
+        <#assign entries = entries?sort_by("publishedDate") />
       </#if>
+    </#if>
 
-      <#assign maxMsgs = conf.maxMsgs />
-      <#if entries?size lt maxMsgs>
-        <#assign maxMsgs = entries?size />
-      </#if>
+    <#assign maxMsgs = conf.maxMsgs />
+    <#if entries?size lt maxMsgs>
+      <#assign maxMsgs = entries?size />
+    </#if>
 
-     <ul class="items">
-       <#assign "counter" = 1>
-       <#list entries[0..maxMsgs-1] as entry>
-         <#if counter == maxMsgs>
-           <li class="item-${counter} item-last">
-         <#else>
-           <li class="item-${counter}">
-         </#if>
-         <#list elementOrder as element >
-           <@displayEntry entry conf element />
-         </#list>
-         </li>
-         <#assign counter = counter+1>
-      </#list>
-    </ul>
+    <#assign offset = conf.offset />
+    <#if offset lt 0>
+      <#assign offset = 0 />
+    </#if>
+    <#if offset gt entries?size>
+      <#assign offset = entries?size />
+    </#if>
+
+    <#assign endIndex = offset + maxMsgs - 1 />
+    <#if endIndex gt entries?size>
+      <#assign endIndex = entries?size - 1 />
+    </#if>
+
+    <#if offset lt entries?size>
+      <ul class="items">
+        <#assign "counter" = 1>
+        <#list entries[offset..endIndex] as entry>
+          <#if counter == maxMsgs>
+            <li class="item-${counter} item-last">
+          <#else>
+              <li class="item-${counter}">
+          </#if>
+          <#list elementOrder as element >
+            <@displayEntry entry conf element />
+          </#list>
+              </li>
+              <#assign counter = counter+1>
+        </#list>
+      </ul>
+    </#if>
+
   </#if>
   
   <#if displayIfEmptyMessage?exists && feed.entries?size = 0>

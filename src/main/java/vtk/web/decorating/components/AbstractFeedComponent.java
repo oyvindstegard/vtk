@@ -55,14 +55,44 @@ public abstract class AbstractFeedComponent extends ViewRenderingDecoratorCompon
 
     protected HtmlPageFilter safeHtmlFilter;
 
+    protected static final String PARAMETER_MAX_MESSAGES = "max-messages";
+    protected static final String PARAMETER_MAX_MESSAGES_DESC = "The max number of messages to display, defaults to 10";
+
+    protected static final String PARAMETER_OFFSET = "offset";
+    protected static final String PARAMETER_OFFSET_DESC = "The position in the message list to display messages from. Default is 0";
+    
+    protected static final String PARAMETER_FEED_TITLE = "feed-title";
+    protected static final String PARAMETER_FEED_TITLE_DESC = "Deprecated (use 'diplay-feed-title' instead). Kept to avoid breaking existing component references. (Set to 'false' if you don't want to show feed title)";
+
+    protected static final String PARAMETER_FEED_DESCRIPTION = "feed-description";
+    protected static final String PARAMETER_FEED_DESCRIPTION_DESC = "Must be set to 'true' to show feed description";
+
+    protected static final String PARAMETER_ITEM_DESCRIPTION = "item-description";
+    protected static final String PARAMETER_ITEM_DESCRIPTION_DESC = "Must be set to 'true' to show item descriptions";
+
     protected static final String PARAMETER_ITEM_PICTURE = "item-picture";
     protected static final String PARAMETER_ITEM_PICTURE_DESC = "Must be set to 'true' to show item picture";
 
     protected static final String PARAMETER_IF_EMPTY_MESSAGE = "if-empty-message";
-    protected static final String PARAMETER_IF_EMPTY_MESSAGE_DESC = "Message to be displayd if feed is empty";
+    protected static final String PARAMETER_IF_EMPTY_MESSAGE_DESC = "Message to be displayed if feed is empty";
 
     protected static final String PARAMETER_FEED_ELEMENT_ORDER = "element-order";
-    protected static final String PARAMETER_FEED_ELEMENT_ORDER_DESC = "The order that the elementes are listed";
+    protected static final String PARAMETER_FEED_ELEMENT_ORDER_DESC = "The order in which the elementes are listed";
+    
+    protected static final String PARAMETER_SORT = "sort";
+    protected static final String PARAMETER_SORT_DESC = "Default sorted by published date. Set to 'item-title' to sort by this instead. "
+            + "You can control the direction of the sorting by using the keywords 'asc' or 'desc'. "
+            + "Usage examples: sort=[asc], sort=[item-title desc], sort=[published-date asc], etc. "
+            + "The default is descending direction (newest first) for published date and ascending when sorting by 'item-title'.";
+
+    protected static final String PARAMETER_PUBLISHED_DATE = "published-date";
+    protected static final String PARAMETER_PUBLISHED_DATE_DESC = "How to display published date, defaults to date and time. Set to 'date' to only display the date, or 'none' to not show the date";
+
+    protected static final String PARAMETER_INCLUDE_IF_EMPTY = "include-if-empty";
+    protected static final String PARAMETER_INCLUDE_IF_EMPTY_DESC = "Set to 'false' if you don't want to display empty feeds. Default is 'true'.";
+
+    protected static final String PARAMETER_DISPLAY_CATEGORIES = "display-categories";
+    protected static final String PARAMETER_DISPLAY_CATEGORIES_DESC = "Set to 'true' if feed elements should display contents of category field.";
 
     protected static final String PARAMETER_ALLOW_MARKUP = "allow-markup";
     protected static final String PARAMETER_ALLOW_MARKUP_DESC = "Set to 'true' to include span elements and class attributes";

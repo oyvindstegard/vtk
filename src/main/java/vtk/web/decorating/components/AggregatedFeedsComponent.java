@@ -40,6 +40,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import com.sun.syndication.feed.synd.SyndEntry;
+import com.sun.syndication.feed.synd.SyndFeed;
+import com.sun.syndication.feed.synd.SyndFeedImpl;
+
 import vtk.text.html.HtmlElement;
 import vtk.text.html.HtmlFragment;
 import vtk.util.cache.ContentCache;
@@ -48,13 +52,18 @@ import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
 import vtk.web.service.URL;
 
-import com.sun.syndication.feed.synd.SyndEntry;
-import com.sun.syndication.feed.synd.SyndFeed;
-import com.sun.syndication.feed.synd.SyndFeedImpl;
-
 public class AggregatedFeedsComponent extends AbstractFeedComponent {
 
+    private static final String PARAMETER_URLS = "urls";
+    private static final String PARAMETER_URLS_DESC = "Comma separated list of feed urls.";
+    
+    private static final String PARAMETER_DISPLAY_CHANNEL = "display-channel";
+    private static final String PARAMETER_DISPLAY_CHANNEL_DESC = 
+            "Defaults to 'true', displaying the items source feed";
+    
+    
     private ContentCache<String, SyndFeed> cache;
+    
     private LocalFeedFetcher localFeedFetcher;
 
     public void setContentCache(ContentCache<String, SyndFeed> cache) {
@@ -70,14 +79,14 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
             throws Exception {
         super.processModel(model, request, response);
 
-        Map<String, Object> conf = new HashMap<String, Object>();
+        Map<String, Object> conf = new HashMap<>();
 
-        String urls = request.getStringParameter(Parameter.URLS.getId());
+        String urls = request.getStringParameter(PARAMETER_URLS);
         if (urls == null) {
             throw new DecoratorComponentException("Component parameter 'urls' is required");
         }
 
-        String feedTitle = request.getStringParameter(Parameter.FEED_TITLE.getId());
+        String feedTitle = request.getStringParameter(PARAMETER_FEED_TITLE);
         if (feedTitle != null) {
             conf.put("feedTitleValue", feedTitle.trim());
         }
@@ -86,16 +95,16 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
             conf.put("itemPicture", true);
         }
 
-        if (!parameterHasValue(Parameter.DISPLAY_CHANNEL.getId(), "false", request)) {
+        if (!parameterHasValue(PARAMETER_DISPLAY_CHANNEL, "false", request)) {
             conf.put("displayChannel", true);
         }
 
-        if (parameterHasValue(Parameter.ITEM_DESCRIPTION.getId(), "true", request)) {
+        if (parameterHasValue(PARAMETER_ITEM_DESCRIPTION, "true", request)) {
             conf.put("itemDescription", true);
         }
 
         conf.put("maxMsgs", 10);
-        String maxMsgsString = request.getStringParameter(Parameter.MAX_MESSAGES.getId());
+        String maxMsgsString = request.getStringParameter(PARAMETER_MAX_MESSAGES);
         if (maxMsgsString != null) {
             try {
                 int tmpInt = Integer.parseInt(maxMsgsString);
@@ -105,13 +114,27 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
             } catch (Exception e) {
             }
         }
-
-        String publishedDateString = request.getStringParameter(Parameter.PUBLISHED_DATE.getId());
+        
+        conf.put("offset", 0);
+        String offsetString = request.getStringParameter(PARAMETER_OFFSET);
+        if (offsetString != null) {
+            try {
+                int tmpInt = Integer.parseInt(offsetString);
+                if (tmpInt > 0) {
+                    conf.put("offset", tmpInt);
+                }
+            }
+            catch (Exception e) { }
+        }
+        
+        String publishedDateString = request.getStringParameter(PARAMETER_PUBLISHED_DATE);
         if ("none".equals(publishedDateString)) {
             conf.put("publishedDate", null);
-        } else if ("date".equals(publishedDateString)) {
+        }
+        else if ("date".equals(publishedDateString)) {
             conf.put("publishedDate", "short");
-        } else {
+        }
+        else {
             conf.put("publishedDate", "long");
         }
 
@@ -121,7 +144,7 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
         // item-title desc
         // desc item-title
         // etc..
-        String sortString = request.getStringParameter(Parameter.SORT.getId());
+        String sortString = request.getStringParameter(PARAMETER_SORT);
         // Indicates explicitly set sort direction
         boolean directionSpecified = false;
         if (sortString != null) {
@@ -134,10 +157,12 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
                         // Set to default for title, if not already specified.
                         conf.put("sortAscending", true);
                     }
-                } else if ("asc".equalsIgnoreCase(token)) {
+                }
+                else if ("asc".equalsIgnoreCase(token)) {
                     conf.put("sortAscending", true);
                     directionSpecified = true;
-                } else if ("desc".equalsIgnoreCase(token)) {
+                }
+                else if ("desc".equalsIgnoreCase(token)) {
                     conf.remove("sortAscending");
                     directionSpecified = true;
                 }
@@ -145,13 +170,13 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
         }
 
         boolean includeIfEmpty = true;
-        String includeIfEmptyParam = request.getStringParameter(Parameter.INCLUDE_IF_EMPTY.getId());
+        String includeIfEmptyParam = request.getStringParameter(PARAMETER_INCLUDE_IF_EMPTY);
         if ("false".equalsIgnoreCase(includeIfEmptyParam)) {
             includeIfEmpty = false;
         }
         conf.put("includeIfEmpty", includeIfEmpty);
 
-        String displayCategoriesParam = request.getStringParameter(Parameter.DISPLAY_CATEGORIES.getId());
+        String displayCategoriesParam = request.getStringParameter(PARAMETER_DISPLAY_CATEGORIES);
         if (displayCategoriesParam != null && "true".equalsIgnoreCase(displayCategoriesParam)) {
             conf.put("displayCategories", true);
         }
@@ -162,10 +187,10 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
         feed.setAuthor("Vortex");
         feed.setLink("http://www.uio.no");
 
-        List<SyndEntry> entries = new ArrayList<SyndEntry>();
+        List<SyndEntry> entries = new ArrayList<>();
         feed.setEntries(entries);
 
-        Map<SyndEntry, SyndFeed> feedMapping = new HashMap<SyndEntry, SyndFeed>();
+        Map<SyndEntry, SyndFeed> feedMapping = new HashMap<>();
 
         boolean displayChannel = conf.get("displayChannel") != null && (Boolean) conf.get("displayChannel");
         if (displayChannel) {
@@ -175,14 +200,15 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
         URL requestURL = RequestContext.getRequestContext().getRequestURL();
 
         String[] urlArray = urls.split(",");
-        Map<String, String> imgMap = new HashMap<String, String>();
-        Map<String, String> descriptionNoImage = new HashMap<String, String>();
+        Map<String, String> imgMap = new HashMap<>();
+        Map<String, String> descriptionNoImage = new HashMap<>();
 
         parseFeeds(request, entries, feedMapping, imgMap, descriptionNoImage, requestURL, urlArray);
 
         try {
             sort(entries);
-        } catch (MissingPublishedDateException e) {
+        }
+        catch (MissingPublishedDateException e) {
             SyndFeed f = feedMapping.get(e.getEntry());
             throw new MissingPublishedDateException("Unable to sort feed '" + f.getUri()
                     + "': does not contain published date");
@@ -237,11 +263,13 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
                     baseURL = new URL(requestURL);
                     retrieveLocalResource(feedURL);
                     tmpFeed = this.localFeedFetcher.getFeed(feedURL, request);
-                } else {
+                }
+                else {
                     baseURL = new URL(feedURL);
                     tmpFeed = this.cache.get(url);
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 String m = e.getMessage();
                 if (m == null) {
                     m = e.getClass().getName();
@@ -251,9 +279,9 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
             if (tmpFeed == null) {
                 throw new RuntimeException("Unable to load feed: " + url);
             }
-            @SuppressWarnings("unchecked")
+
             List<SyndEntry> tmpEntries = tmpFeed.getEntries();
-            List<SyndEntry> filteredEntries = new ArrayList<SyndEntry>(tmpEntries);
+            List<SyndEntry> filteredEntries = new ArrayList<>(tmpEntries);
             boolean filter = !parameterHasValue(PARAMETER_ALLOW_MARKUP, "true", request);
             for (SyndEntry entry : tmpEntries) {
                 if (entries.contains(entry)) {
@@ -293,63 +321,34 @@ public class AggregatedFeedsComponent extends AbstractFeedComponent {
         }
     }
 
+    @Override
     protected String getDescriptionInternal() {
         return "Inserts a feed (RSS, Atom) component on the page";
     }
 
-    private enum Parameter {
-        URLS("urls", "Comma separated list of feed urls."), FEED_TITLE("feed-title",
-                "An optional string to show as feed title"), DISPLAY_CHANNEL("display-channel",
-                "Defaults to 'true', displaying the items source feed"), SORT(
-                "sort",
-                "Default sorted by published date. Set to 'item-title' to sort by this instead. "
-                        + "You can control the direction of the sorting by using the keywords 'asc' or 'desc'. "
-                        + "Usage examples: sort=[asc], sort=[item-title desc], sort=[published-date asc], etc. "
-                        + "The default is descending (newest first) for published date and ascending when sorting by 'item-title'."), PUBLISHED_DATE(
-                "published-date",
-                "How to display published date, defaults to date and time. Set to 'date' to only display the date, or 'none' to not show the date"), MAX_MESSAGES(
-                "max-messages", "The max number of messages to display, defaults to 10"), ITEM_DESCRIPTION(
-                "item-description", "Must be set to 'true' to show item descriptions"), INCLUDE_IF_EMPTY(
-                "include-if-empty", "Set to 'false' if you don't want to display empty feeds. Default is 'true'."), DISPLAY_CATEGORIES(
-                "display-categories", "Set to 'true' if feed elements should display contents of category field.");
 
-        private final String id;
-        private final String desc;
-
-        private Parameter(String id, String desc) {
-            this.id = id;
-            this.desc = desc;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getDesc() {
-            return desc;
-        }
-    }
-
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_ITEM_PICTURE, PARAMETER_ITEM_PICTURE_DESC);
         map.put(PARAMETER_IF_EMPTY_MESSAGE, PARAMETER_IF_EMPTY_MESSAGE_DESC);
         map.put(PARAMETER_FEED_ELEMENT_ORDER, PARAMETER_FEED_ELEMENT_ORDER_DESC);
-        map.put(Parameter.URLS.getId(), Parameter.URLS.getDesc());
-        map.put(Parameter.FEED_TITLE.getId(), Parameter.FEED_TITLE.getDesc());
-        map.put(Parameter.MAX_MESSAGES.getId(), Parameter.MAX_MESSAGES.getDesc());
-        map.put(Parameter.DISPLAY_CHANNEL.getId(), Parameter.DISPLAY_CHANNEL.getDesc());
-        map.put(Parameter.ITEM_DESCRIPTION.getId(), Parameter.ITEM_DESCRIPTION.getDesc());
-        map.put(Parameter.PUBLISHED_DATE.getId(), Parameter.PUBLISHED_DATE.getDesc());
-        map.put(Parameter.SORT.getId(), Parameter.SORT.getDesc());
-        map.put(Parameter.INCLUDE_IF_EMPTY.getId(), Parameter.INCLUDE_IF_EMPTY.getDesc());
-        map.put(Parameter.DISPLAY_CATEGORIES.getId(), Parameter.DISPLAY_CATEGORIES.getDesc());
+        map.put(PARAMETER_MAX_MESSAGES, PARAMETER_MAX_MESSAGES_DESC);
+        map.put(PARAMETER_OFFSET, PARAMETER_OFFSET_DESC);
+        map.put(PARAMETER_URLS, PARAMETER_URLS_DESC);
+        map.put(PARAMETER_FEED_TITLE, PARAMETER_FEED_TITLE_DESC);
+        map.put(PARAMETER_DISPLAY_CHANNEL, PARAMETER_DISPLAY_CHANNEL_DESC);
+        map.put(PARAMETER_ITEM_DESCRIPTION, PARAMETER_ITEM_DESCRIPTION_DESC);
+        map.put(PARAMETER_PUBLISHED_DATE, PARAMETER_PUBLISHED_DATE_DESC);
+        map.put(PARAMETER_SORT, PARAMETER_SORT_DESC);
+        map.put(PARAMETER_INCLUDE_IF_EMPTY, PARAMETER_INCLUDE_IF_EMPTY_DESC);
+        map.put(PARAMETER_DISPLAY_CATEGORIES, PARAMETER_DISPLAY_CATEGORIES_DESC);
         map.put(PARAMETER_ALLOW_MARKUP, PARAMETER_ALLOW_MARKUP_DESC);
         return map;
     }
 
     public static class FeedMapping {
-        Map<SyndEntry, SyndFeed> feedMapping = new HashMap<SyndEntry, SyndFeed>();
+        Map<SyndEntry, SyndFeed> feedMapping = new HashMap<>();
 
         public FeedMapping(Map<SyndEntry, SyndFeed> feedMapping) {
             super();
