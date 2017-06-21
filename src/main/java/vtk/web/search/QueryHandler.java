@@ -231,8 +231,7 @@ public final class QueryHandler implements HttpRequestHandler {
         qry = qry.flatMap(builder -> Result.attempt(() -> {
             if (request.getParameter("limit") != null) {
                 Integer limit = Integer
-                        .parseInt(Objects.requireNonNull(request.getParameter("limit"), 
-                                "Request parameter 'limit' must be an integer > 0"));
+                        .parseInt(request.getParameter("limit"));
                 return builder.limit(limit);
             }
             return builder;
@@ -261,8 +260,7 @@ public final class QueryHandler implements HttpRequestHandler {
 
         qry = qry.flatMap(builder -> Result.attempt(() -> {
             if (request.getParameter("sort") != null) {
-                return builder.sorting(Objects.requireNonNull(request.getParameter("sort"), 
-                        "Request parameter 'sorting' cannot be empty"));
+                return builder.sorting(request.getParameter("sort"));
             }
             return builder;
         }));
