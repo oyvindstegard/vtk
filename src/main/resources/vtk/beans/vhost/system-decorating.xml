@@ -9,7 +9,6 @@
         <constructor-arg name="htmlParser" ref="decorating.htmlParser" />
         <constructor-arg name="filters"><list /></constructor-arg>
         <constructor-arg name="resolver" ref="system.decorationResolver" />
-        <constructor-arg name="componentResolver" ref="system.decoratorComponentResolver" />
         <constructor-arg name="preventDecoratingParameter" value="x-prevent-decorating" />
         
         <constructor-arg name="staticHeaders">

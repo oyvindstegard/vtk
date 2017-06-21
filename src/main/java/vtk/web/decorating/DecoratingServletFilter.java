@@ -55,21 +55,18 @@ public class DecoratingServletFilter extends AbstractServletFilter {
     private HtmlPageParser htmlParser;
     private List<HtmlNodeFilter> filters;
     private DecorationResolver resolver;
-    private ComponentResolver componentResolver;
     private String preventDecoratingParameter;
     private Map<String, String> staticHeaders;
     private long maxSize;
     
     public DecoratingServletFilter(HtmlPageParser htmlParser,
             List<HtmlNodeFilter> filters, DecorationResolver resolver,
-            ComponentResolver componentResolver, 
             String preventDecoratingParameter,
             Map<String, String> staticHeaders,
             long maxSize) {
         this.htmlParser = htmlParser;
         this.filters = new ArrayList<>(filters);
         this.resolver = resolver;
-        this.componentResolver = componentResolver;
         this.preventDecoratingParameter = preventDecoratingParameter;
         if (staticHeaders != null) this.staticHeaders = new HashMap<>(staticHeaders);
         this.maxSize = maxSize;
