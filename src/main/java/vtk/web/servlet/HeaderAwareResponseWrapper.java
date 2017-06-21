@@ -48,7 +48,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class HeaderAwareResponseWrapper extends StatusAwareResponseWrapper {
 
-    private Map<String, List<Object>> headers = new HashMap<String, List<Object>>();
+    private Map<String, List<Object>> headers = new HashMap<>();
     
     public HeaderAwareResponseWrapper(HttpServletResponse response) {
         super(response);
@@ -87,12 +87,13 @@ public class HeaderAwareResponseWrapper extends StatusAwareResponseWrapper {
     private void addHeaderInternal(String name, Object value, boolean overwrite) {
         List<Object> values = this.headers.get(name);
         if (values == null || overwrite) {
-            values = new ArrayList<Object>();
+            values = new ArrayList<>();
         }
         values.add(value);
         this.headers.put(name, values);
     }
 
+    @Override
     public Collection<String> getHeaderNames() {
         return Collections.unmodifiableCollection(this.headers.keySet());
     }
@@ -130,5 +131,10 @@ public class HeaderAwareResponseWrapper extends StatusAwareResponseWrapper {
         }
         List<Object> list = this.headers.get(name);
         return list.size() == 1;
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + getResponse() + "," + headers + ")";
     }
 }
