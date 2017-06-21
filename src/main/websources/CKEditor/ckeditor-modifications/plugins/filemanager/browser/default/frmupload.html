@@ -56,7 +56,7 @@ function OnSubmit()
 	    uploadResponse.innerHTML = xhr.response;
 	    var scripts = uploadResponse.getElementsByTagName('script');
 	    if (scripts.length === 1) {
-	      eval(scripts[0].innerText);
+	      eval(scripts[0].textContent);
 	    } else {
 	      alert("Expects one and only one script tag in the upload response");
 	    }
