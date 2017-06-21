@@ -18,6 +18,7 @@
             <entry key="Expires" value="0" />
           </map>
         </constructor-arg>
+        <constructor-arg name="maxSize" value="${decorating.maxDocumentSize}" />
       </bean>
     </constructor-arg>
   </bean>

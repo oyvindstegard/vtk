@@ -58,18 +58,19 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
     private List<HtmlNodeFilter> filters;
     private ComponentResolver componentResolver;
     private ServletOutputStream out = null;
+    private long maxSize;
     private Charset encoding;
     
     private String contentType = null;
     private long contentLength = -1L;
     
-    private static long maxSize = 4000000L;
     
     public DecoratingServletResponse(HttpServletRequest request, 
             HttpServletResponse response, DecorationResolver resolver,
             HtmlPageParser htmlParser,
             List<HtmlNodeFilter> filters,
-            ComponentResolver componentResolver) {
+            ComponentResolver componentResolver, 
+            long maxSize) {
         super(response);
         this.request = request;
         this.response = response;
@@ -78,6 +79,7 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
         this.filters = filters;
         this.componentResolver = componentResolver;
         this.contentType = getContentType();
+        this.maxSize = maxSize;
     }
     
     @Override
@@ -94,7 +96,7 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
         if (contentType != null && contentType.startsWith("text/html")) {
             try {
                 DecorationDescriptor descriptor = resolver.resolve(request, this);
-                logger.debug("Descriptor" + getStatus() + "]: " + descriptor);
+                logger.debug("Descriptor[" + getStatus() + "]: " + descriptor);
                 List<Template> templates = descriptor.getTemplates();
 
                 if (descriptor.decorate() && templates != null && !templates.isEmpty()) {
@@ -173,8 +175,7 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
         
         Charset encoding = Charset.forName(getCharacterEncoding());
         return  new DecoratingServletOutputStream(stream,
-                request, (HttpServletResponse) response,
-                model, parameters, encoding, template, htmlParser, filters);
+                request, model, parameters, encoding, template, htmlParser, filters, maxSize);
     }
     
 }

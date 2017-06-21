@@ -43,7 +43,6 @@ import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +54,14 @@ import vtk.text.html.HtmlPageParserException;
 
 public class DecoratingServletOutputStream extends ServletOutputStream {
     private static Logger logger = LoggerFactory.getLogger(DecoratingServletOutputStream.class);
+    
+    private OutputStream out;
     private ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    private long contentLimit;
+    private boolean limitExceeded = false;
     private HttpServletRequest request;
-    private HttpServletResponse response;
     private Map<String, Object> model;
     private Map<String, Object> templateParameters;
-    private OutputStream out;
     private Charset encoding;
     private Template template;
     private HtmlPageParser htmlParser;
@@ -69,15 +70,14 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
 
     public DecoratingServletOutputStream(OutputStream out,
             HttpServletRequest request,
-            HttpServletResponse response,
             Map<String, Object> model,
             Map<String, Object> templateParameters,
             Charset encoding,
             Template template, 
             HtmlPageParser htmlParser,
-            List<HtmlNodeFilter> filters) {
+            List<HtmlNodeFilter> filters,
+            long contentLimit) {
         this.request = request;
-        this.response = response;
         this.model = model;
         this.templateParameters = templateParameters;
         this.out = out;
@@ -90,6 +90,7 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
         else {
             this.filters = new ArrayList<>();
         }
+        this.contentLimit = contentLimit;
     }
     
     @Override
@@ -116,10 +117,25 @@ public class DecoratingServletOutputStream extends ServletOutputStream {
     @Override
     public void write(int b) throws IOException {
         if (committed) throw new IOException("Closed");
+        if (limitExceeded) {
+            out.write(b);
+            return;
+        }
         buffer.write(b);
+        if (buffer.size() >= contentLimit) {
+            logger.debug("Content length of {} exceeds size limit of {}", 
+                    request.getRequestURI(), contentLimit);
+            limitExceeded = true;
+            out.write(buffer.toByteArray());
+        }
     }
 
     private void decorate() throws Exception {
+        if (limitExceeded) {
+            out.flush();
+            return;
+        }
+        
         InputStream in = new ByteArrayInputStream(buffer.toByteArray());
         try {
             HtmlPage page = htmlParser.parse(in, encoding.toString(), filters);

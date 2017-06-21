@@ -11,6 +11,7 @@
         <constructor-arg name="componentResolver" ref="decorating.defaultComponentResolver" />
         <constructor-arg name="preventDecoratingParameter" value="x-prevent-decorating" />
         <constructor-arg name="staticHeaders"><null /></constructor-arg>
+        <constructor-arg name="maxSize" value="${decorating.maxDocumentSize}" />
       </bean>
     </constructor-arg>
   </bean>
