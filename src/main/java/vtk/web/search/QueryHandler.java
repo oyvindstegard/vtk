@@ -98,7 +98,10 @@ import vtk.web.service.Service;
  *     string is repeated a number of times, in order to reduce the length of the query string. 
  *     For example, the query <code>?q=field1=xxx OR field2=xxx OR field3=xxx ...</code> 
  *     can be shortened to <code>?q=xxx&t=my-template</code>, given that the template 
- *     {@code my-template} is defined as <code>field1={q} OR field2={q} OR field3={q}...</code>
+ *     {@code my-template} is defined as <code>field1={q} OR field2={q} OR field3={q}...</code>.
+ *     Whitespace in the request parameter {@code q} is normally escaped (using {@code \}) 
+ *     before the template is applied. In cases where non-escaped input is wanted, 
+ *     the token <code>{'q}</code> may be used in the template.
  * <li>{@code tokenize} (boolean, used with the {@code t} parameter) - whether or not 
  *      to tokenize the query parameter. If {@code true}, the template is expanded for each token
  *      in the {@code q} parameter, and the resulting queries are joined using the {@code AND} operator.
