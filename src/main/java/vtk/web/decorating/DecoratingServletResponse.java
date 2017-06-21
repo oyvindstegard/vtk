@@ -56,20 +56,15 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
     private DecorationResolver resolver;
     private HtmlPageParser htmlParser;
     private List<HtmlNodeFilter> filters;
-    private ComponentResolver componentResolver;
     private ServletOutputStream out = null;
     private long maxSize;
-    private Charset encoding;
-    
     private String contentType = null;
-    private long contentLength = -1L;
     
     
     public DecoratingServletResponse(HttpServletRequest request, 
             HttpServletResponse response, DecorationResolver resolver,
             HtmlPageParser htmlParser,
             List<HtmlNodeFilter> filters,
-            ComponentResolver componentResolver, 
             long maxSize) {
         super(response);
         this.request = request;
@@ -77,7 +72,6 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
         this.resolver = resolver;
         this.htmlParser = htmlParser;
         this.filters = filters;
-        this.componentResolver = componentResolver;
         this.contentType = getContentType();
         this.maxSize = maxSize;
     }
@@ -141,7 +135,6 @@ public class DecoratingServletResponse extends HttpServletResponseWrapper {
                         && contentLength < maxSize) {
                     return;
                 }
-                this.contentLength = contentLength;
             } 
             catch (Exception e) { }
         }

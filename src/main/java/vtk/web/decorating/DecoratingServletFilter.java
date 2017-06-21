@@ -86,7 +86,7 @@ public class DecoratingServletFilter extends AbstractServletFilter {
         
         response = new DecoratingServletResponse(
                 request, response, resolver, htmlParser, 
-                filters, componentResolver, maxSize);
+                filters, maxSize);
         if (staticHeaders != null) {
             response = new StaticHeadersResponse(response, staticHeaders);
         }
