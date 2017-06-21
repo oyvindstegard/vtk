@@ -52,7 +52,7 @@ resourcetype exam-info {
       ##
     }
 
-    exam-part (part, isSubPart, addTitle) {
+    exam-part (part, isSubPart, addTitle, lang) {
       ##
       [if addTitle = "true"]
         [if isSubPart = "true"]<h3>[else]<h2>[endif]
@@ -73,7 +73,7 @@ resourcetype exam-info {
       [endif]
       
       [if part.attendanceBefore]
-        <p class="exam-attendance-before"><strong>[localized 'task-attendance-before']:</strong> [localized 'attendance-before-text-prefix'] [val part.attendanceBefore] [localized 'attendance-before-text-postfix'].</p>
+        <p class="exam-attendance-before"><strong>[localized 'task-attendance-before']:</strong> [if lang = "en"][localized 'attendance-before-text-prefix'] [endif][val part.attendanceBefore] [localized 'attendance-before-text-postfix'].</p>
       [endif]
 
       [def rooms part.rooms]
@@ -108,7 +108,7 @@ resourcetype exam-info {
       ##
     }
 
-    exam-ordning (ordning, termNr, isMoreThanOneArrangements, count) {
+    exam-ordning (ordning, termNr, isMoreThanOneArrangements, count, lang) {
       ##
 
       [if ordning.deadlineWithdrawal != null && isMoreThanOneArrangements = false]
@@ -128,22 +128,22 @@ resourcetype exam-info {
         <p>[val ordning.name].</p>
       [endif]
 
-      [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "false" }]
+      [call "comp:exam-part" { "part" : ordning, "isSubPart": "false", "addTitle": "false", "lang": lang }]
 
       [def examParts ordning.examParts]
       [if examParts != null && examParts.length() > 0]
         [list examParts examPart]
           [if (examPart.termNr = null || termNr = null || (int(examPart.termNr) = int(termNr)))]
             [if isMoreThanOneArrangements]
-              [call "comp:exam-part" { "part" : examPart, "isSubPart": "true", "addTitle": "true" }]
+              [call "comp:exam-part" { "part" : examPart, "isSubPart": "true", "addTitle": "true", "lang": lang }]
             [else]
-              [call "comp:exam-part" { "part" : examPart, "isSubPart": "false", "addTitle": "true" }]
+              [call "comp:exam-part" { "part" : examPart, "isSubPart": "false", "addTitle": "true", "lang": lang }]
             [endif]
 
             [def partDays examPart.partDays]
             [if partDays]
               [list partDays partDay]
-                [call "comp:exam-part" { "part" : partDay, "isSubPart": "true", "addTitle": "true" }]
+                [call "comp:exam-part" { "part" : partDay, "isSubPart": "true", "addTitle": "true", "lang": lang }]
               [endlist]
             [endif]
           [endif]
@@ -153,7 +153,7 @@ resourcetype exam-info {
         [def partDays ordning.partDays]
         [if partDays]
           [list partDays partDay]
-            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true", "addTitle": "true" }]
+            [call "comp:exam-part" { "part" : partDay, "isSubPart": "true", "addTitle": "true", "lang": lang }]
           [endlist]
         [endif]
       [endif]
@@ -231,7 +231,7 @@ resourcetype exam-info {
                   [def count 0]
                   [list arrangements arr]
                     [if arr.status = "Ordinær eksamen" || arr.status = "Ordinary examinaton"]
-                      [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr, "isMoreThanOneArrangements": isMoreThanOneArrangements, "count": count }]
+                      [call "comp:exam-ordning" { "ordning" : arr, "termNr": termNr, "isMoreThanOneArrangements": isMoreThanOneArrangements, "count": count, "lang": lang }]
                       [def count count + 1]
                     [endif]
                   [endlist]
