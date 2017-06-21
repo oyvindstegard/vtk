@@ -30,14 +30,20 @@
  */
 package vtk.web.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
+
 import vtk.repository.Path;
 
 public class URLTest {
@@ -172,6 +178,41 @@ public class URLTest {
         URL x1 = URL.parse("http://example.com/%c3%b8");
         URL x2 = URL.parse("http://example.com/%f8", "iso-8859-1");
         assertEquals(x1.getPath(), x2.getPath());
+    }
+    
+    @Test
+    public void queryParameters() {
+        URL url = URL.parse("http://example.com/");
+        url = url.addParameter("param1", "value1");
+        assertEquals("http://example.com/?param1=value1", url.toString());
+        
+        url = url.addParameter("param2", "value2");
+        assertEquals("http://example.com/?param1=value1&param2=value2", url.toString());
+        
+        url = url.addParameter("param2", "value3");
+        assertEquals("http://example.com/?param1=value1&param2=value2&param2=value3", url.toString());
+        
+        url = url.setParameter("param2", "value2");
+        assertEquals("http://example.com/?param1=value1&param2=value2", url.toString());
+
+        url = url.addParameter("param2", "value3")
+                .removeParameter("param2");
+        assertEquals("http://example.com/?param1=value1", url.toString());
+        
+        url = url.addParameter("param2", "value2")
+                .addParameter("param2", "value3")
+                .addParameter("param2", "value3");
+        assertEquals("http://example.com/?param1=value1&param2=value2&param2=value3&param2=value3", url.toString());
+        
+        url = url.removeParameter("param2", "value3");
+        assertEquals("http://example.com/?param1=value1&param2=value2&param2=value3", url.toString());
+        
+        url = url.addParameter("param2", "value3")
+                .removeParameters("param2", "value3");
+        assertEquals("http://example.com/?param1=value1&param2=value2", url.toString());
+        
+        url = url.clearParameters();
+        assertEquals("http://example.com/", url.toString());
     }
     
     @Test

@@ -324,6 +324,7 @@ public class URL implements Serializable {
      * @return this URL
      */
     public URL removeParameter(String name, String value) {
+        checkNotImmutable();
         List<String> list = this.parameters.get(name);
         if (list != null) {
             list.remove(value);
@@ -344,6 +345,7 @@ public class URL implements Serializable {
      * @return this URL
      */
     public URL removeParameters(String name, String value) {
+        checkNotImmutable();
         List<String> list = this.parameters.get(name);
         if (list != null) {
             list.removeIf(str -> str.equals(value));
