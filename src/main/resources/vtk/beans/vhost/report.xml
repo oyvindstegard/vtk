@@ -70,6 +70,7 @@
       <list>
         <ref bean="lastModifiedReporter" />
         <ref bean="unpublishedReporter" />
+        <ref bean="lastCreatedReporter" />
       </list>
     </property>
     <property name="hiddenReporters">
@@ -229,12 +230,21 @@
     <property name="aclTooltipHelper" ref="aclTooltipHelper" />
   </bean>
 
-  <bean id="lastModifiedReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="lastModifiedReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="last-modified" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
     <property name="type" value="file" />
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
+  </bean>
+
+  <bean id="lastCreatedReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
+    <property name="name" value="last-created" />
+    <property name="sortPropDef" ref="creationTimePropDef" />
+    <property name="titlePropDef" ref="titlePropDef" />
+    <property name="type" value="file" />
+    <property name="sortOrder" ref="SORT_ORDER.DESC" />
+    <property name="viewName" value="documentLastCreatedReportView" />
   </bean>
 
   <bean id="unpublishedReporter" class="vtk.web.report.UnpublishedReporter" parent="documentReporter">
@@ -275,7 +285,7 @@
     <property name="webpageTypes" ref="webpageTypes" />
   </bean>
 
-  <bean id="imageReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="imageReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="imageReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -284,7 +294,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="audioReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="audioReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="audioReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -293,7 +303,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="videoReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="videoReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="videoReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -302,7 +312,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="pdfReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="pdfReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="pdfReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -311,7 +321,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="docReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="docReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="docReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -320,7 +330,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="pptReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="pptReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="pptReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -329,7 +339,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="xlsReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="xlsReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="xlsReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -338,7 +348,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="textReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="textReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="textReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -348,7 +358,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="frontpageReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="frontpageReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="frontpageReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -357,7 +367,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="folderReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="folderReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="folderReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -366,7 +376,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="fileReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="fileReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="fileReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -375,7 +385,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="structured-articleReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="structured-articleReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="structured-articleReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -384,7 +394,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="structured-eventReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="structured-eventReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="structured-eventReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -393,7 +403,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="structured-messageReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="structured-messageReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="structured-messageReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -402,7 +412,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="personReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="personReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="personReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -411,7 +421,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="structured-projectReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="structured-projectReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="structured-projectReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -420,7 +430,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="structured-masterReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="structured-masterReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="structured-masterReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -429,7 +439,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="research-groupReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="research-groupReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="research-groupReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -438,7 +448,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="organizational-unitReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="organizational-unitReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="organizational-unitReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -447,7 +457,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="contact-supervisorReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="contact-supervisorReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="contact-supervisorReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -456,7 +466,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="managed-xmlReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="managed-xmlReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="managed-xmlReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -465,7 +475,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="htmlReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="htmlReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="htmlReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -474,7 +484,7 @@
     <property name="sortOrder" ref="SORT_ORDER.DESC" />
   </bean>
 
-  <bean id="phpReporter" class="vtk.web.report.LastModifiedReporter" parent="documentReporter">
+  <bean id="phpReporter" class="vtk.web.report.SortedResourceTypeDocumentReporter" parent="documentReporter">
     <property name="name" value="phpReporter" />
     <property name="sortPropDef" ref="lastModifiedPropDef" />
     <property name="titlePropDef" ref="titlePropDef" />
@@ -523,6 +533,19 @@
 
   <bean id="documentReportView" parent="freemarkerView">
     <property name="url" value="pages/report/document-report.ftl" />
+    <property name="attributesMap">
+      <map>
+        <entry key="cssURLs">
+          <list>
+            <value>${themeBaseURL}/report/report.css</value>
+          </list>
+        </entry>
+      </map>
+    </property>
+  </bean>
+  <!-- Similar to "documentReportView", but with different result columns. -->
+  <bean id="documentLastCreatedReportView" parent="freemarkerView">
+    <property name="url" value="pages/report/document-last-created-report.ftl" />
     <property name="attributesMap">
       <map>
         <entry key="cssURLs">
