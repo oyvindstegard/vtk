@@ -1,0 +1,81 @@
+<dom-module id="vrtx-file-upload">
+  <template>
+    <style>
+      /* shadow DOM styles go here */
+      :host {
+        display: block;
+      }
+    </style>
+
+    <form name="file-upload" id="file-upload-form" action="[[action]]" method="POST" enctype="multipart/form-data">
+      <input name="csrf-prevention-token" value="[[csrf]]" type="hidden" />
+      <h1>[[title]]</h1>
+      <div class="error-container">
+        <ul class="errors"></ul>
+      </div>
+      <div id="file-upload-container">
+        <input id="file" name="file" type="file" />
+      </div>
+      <div id="submit-buttons">
+        <button name="save" type="submit">[[save]]</button>
+        <button name="cancel" type="submit">[[cancel]]</button>
+      </div>
+    </form>
+    <form name="file-check" id="file-check-form" action="[[action]]" method="POST" enctype="multipart/form-data">
+      <input name="csrf-prevention-token" value="[[csrf]]" type="hidden" />
+    </form>
+
+  </template>
+  <script>
+    function getCookie(name) {
+        var value = " " + document.cookie;
+        var c_start = value.indexOf(" " + name + "=");
+        if (c_start == -1) {
+            value = null;
+        }
+        else {
+            c_start = value.indexOf("=", c_start) + 1;
+            var c_end = value.indexOf(";", c_start);
+            if (c_end == -1) {
+                c_end = value.length;
+            }
+            value = unescape(value.substring(c_start,c_end));
+        }
+        return value;
+    }
+
+    class VrtxFileUpload extends Polymer.Element {
+      static get is() {
+        return "vrtx-file-upload";
+      }
+
+      static get properties() {
+        return {
+          action: {
+            type: String
+          },
+          title: {
+            type: String
+          },
+          csrf: {
+            type: String,
+            value: getCookie("csrftoken")
+          },
+          save: {
+            type: String,
+            value: "Upload"
+          },
+          cancel: {
+            type: String,
+            value: "Cancel"
+          }
+        }
+      }
+
+      constructor() {
+        super();
+      }
+    }
+    customElements.define(VrtxFileUpload.is, VrtxFileUpload);
+  </script>
+</dom-module>

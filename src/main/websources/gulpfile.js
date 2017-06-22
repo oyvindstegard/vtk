@@ -12,6 +12,7 @@ const sourceMaps = require('gulp-sourcemaps');
 const del = require('del');
 const jasmineBrowser = require('gulp-jasmine-browser');
 const gulpif = require('gulp-if');
+const polymerBuild = require('polymer-build');
 
 const config = {
     target: "../../../target/classes/web",
@@ -106,6 +107,21 @@ gulp.task('ckeditor-copy', ['ckeditor-org'],  function () {
         .pipe(gulp.dest(TARGET + '/ckeditor-build'));
 });
 
+gulp.task('doctypes', function () {
+    return gulp.src('doctypes/**/*.ftl')
+        .pipe(gulp.dest(TARGET + "/doctypes"));
+});
+
+gulp.task('bower', function () {
+    return gulp.src('bower_components/**')
+        .pipe(gulp.dest(TARGET + "/components/"));
+})
+
+gulp.task('webcomponents', function () {
+    return gulp.src('components/**/*.html')
+        .pipe(gulp.dest(TARGET + "/components"));
+});
+
 gulp.task('watch', function () {
     gulp.watch('themes/default/scss/*.scss', ['theme-compile-sass']);
     gulp.watch('themes/default/scss/structured-resources/*.scss', ['theme-compile-editor-structured-resources-sass']);
@@ -113,6 +129,8 @@ gulp.task('watch', function () {
     gulp.watch('js/**/*.js', ['js-copy']);
     gulp.watch('jquery/**/*.js', ['jquery-plugins-copy', 'jquery-copy']);
     gulp.watch('CKEditor/ckeditor-modifications/**', ['ckeditor-copy']);
+    gulp.watch('doctypes/**/*.ftl', ['doctypes'])
+    gulp.watch('components/**/*.html', ['webcomponents'])
 });
 
 gulp.task('clean', function () {
@@ -160,6 +178,9 @@ gulp.task('default', function () {
         'jquery-plugins-copy',
         'jquery-copy',
         'ckeditor-copy',
-        'flash-copy'
+        'flash-copy',
+        'doctypes',
+        'bower',
+        'webcomponents'
     );
 });

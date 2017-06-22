@@ -18,6 +18,7 @@
     "jasmine-ajax": "^3.2.0",
     "jshint": "^2.9.1",
     "phantomjs-prebuilt": "^2.1.7",
+    "polymer-build": "^1.5.1",
     "run-sequence": "^1.2.1"
   }
 }
