@@ -618,7 +618,7 @@ VrtxEditor.prototype.setupEditorMaxHeight = function setupEditorMaxHeight(c, opt
 
 VrtxEditor.prototype.setupEditorToolbar = function setupEditorToolbar(c, opts) {
   var tb = vrtxEditor.richtextEditorFacade.toolbars;
-  return classification.isMain ? ((c.isCourseDescriptionB || c.isCourseGroup) ? tb.studyRefToolbar
+  return classification.isMain ? (c.isMessage ? tb.messageToolbar : (c.isCourseDescriptionB || c.isCourseGroup) ? tb.studyRefToolbar
                                                                               : (c.isStudyContent ? tb.studyToolbar
                                                                                                   : tb.completeToolbar))
                                : (c.isMessage ? tb.messageToolbar
