@@ -214,8 +214,10 @@ resourcetype exam-info {
               [endif]
 
               [if resp.errorMessage]
-                <p>[localized 'lookup-unable']: [val examInfoURL]</p>
-                <p>[localized 'lookup-unable-error-msg']: [val resp.errorMessage]</p>
+                <p>[localized 'lookup-unable']</p>
+                <p>[localized 'lookup-unable-extra']<a href='https://studentweb.uio.no/'>Studentweb</a>[localized 'lookup-unable-extra-end']</p>
+                <p style="display: none;">URL: [val examInfoURL]</p>
+                <p style="display: none;">Error message: [val resp.errorMessage]</p>
               [else]
                 [def arrangements resp.payload.arrangements]
                 [if arrangements != null && arrangements.length() > 0]
@@ -273,7 +275,9 @@ resourcetype exam-info {
                   nn : "Du finn informasjon om kvar du skal møte ved å logge på"),
     system : (en : "Examination system", no : "Eksamenssystem", nn : "Eksamenssystem"),
     comment : (en : "Comment", no : "Merknad", nn : "Merknad"),
-    announcement : (en : "Announcement of examination results", no : "Kunngjøring av eksamensresultater", nn : "Kunngjering av eksamensresultat"),
+    announcement : (en : "Announcement of examination results",
+                    no : "Kunngjøring av eksamensresultater",
+                    nn : "Kunngjering av eksamensresultat"),
     task-available : (en : "Disclosure of exam assignment", no : "Utlevering av oppgaven", nn : "Utlevering av oppgåva"),
     task-deadline : (en : "Submission deadline", no : "Innleveringsfrist", nn : "Innleveringsfrist"),
     task-attendance-before : (en : "Attendance", no : "Oppmøte", nn : "Oppmøte"),
@@ -293,8 +297,18 @@ resourcetype exam-info {
     no-data : (en : "Information about time and place for the exam is not published yet for this course",
                no : "Informasjon om tid og sted for eksamen er ikke publisert for dette emnet",
                nn : "Informasjon om tid og stad for eksamen er ikkje publisert for dette emne"),
-    lookup-unable : (en : "Could not look up exam info", no : "Kunne ikke hente eksamensinfo", nn : "Kunne ikkje henta eksamensinfo"),
-    lookup-unable-error-msg : (en : "Error message", no : "Feilbeskjed", nn : "Feilbeskjed"),
-    external-service-unavailable : (en: "No external service available", no : "Ingen ekstern tjeneste tilgjengelig", nn : "Ingen ekstern teneste tilgjengeleg")
+    lookup-unable : (en : "We are having trouble retrieving info from the Common Student System (FS).",
+                     no : "Vi klarer ikke å hente ut data om tid og sted for eksamen fra FS (Felles studentsystem).",
+                     nn : "Vi klarer ikkje å hente ut data om tid og sted for eksamen fra FS (Felles studentsystem)."),
+    lookup-unable-extra : (en : "If you are a student on this course, you can check the time and place for examination in ",
+                           no : "Hvis du er student på emnet, kan du logge inn i ",
+                           nn : "Om du er student på emnet, kan du logge inn i "),
+    lookup-unable-extra-end : (en : ".",
+                               no : " for å se tid og sted for eksamen.",
+                               nn : " for å se tid og sted for eksamen."),
+    external-service-unavailable : (en: "No external service available",
+                                    no : "Ingen ekstern tjeneste tilgjengelig",
+                                    nn : "Ingen ekstern teneste tilgjengeleg")
   }
+
 }
