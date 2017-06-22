@@ -265,8 +265,10 @@
     <property name="trim" value="true" />
   </bean>
 
-  <!-- TODO get rid of this and/or move out of this config file: -->
+  <!-- !!!!!!! TODO get rid of this and/or move out of this config file: -->
   <!-- ## Will search across multiple hosts when configured to do so ## -->
-  <bean id="multiHostSearcher" class="vtk.repository.MultiHostSearcher" />
+  <bean id="multiHostSearcher" class="vtk.repository.MultiHostSearcher" >
+    <property name="enabled" value="false" />
+  </bean>
   
 </beans>

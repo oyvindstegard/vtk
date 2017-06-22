@@ -37,8 +37,10 @@ import vtk.repository.search.Search;
 import vtk.web.service.URL;
 
 /*
- * TODO this class does not belong in the vtk.repository package, 
+ * XXX this class does not belong in the vtk.repository package,
  * or even in the VTK project in its current form !
+ *
+ * XXX2: we really need to clean up this mess now !!
  */
 public class MultiHostSearcher {
 
@@ -48,34 +50,39 @@ public class MultiHostSearcher {
     public static final String NAME_PROP_NAME = "solr.name";
 
     private MultiHostSearchComponent multiHostSearchComponent;
+    private boolean enabled = true; // hack to allow disabling use Solr for repository queries even though it is configured..
 
     public ResultSet search(String token, Search search) {
-        if (multiHostSearchComponent != null) {
+        if (enabled && multiHostSearchComponent != null) {
             return multiHostSearchComponent.search(token, search);
         }
         return null;
     }
 
     public PropertySet retrieve(String token, URL url) {
-        if (multiHostSearchComponent != null) {
+        if (enabled && multiHostSearchComponent != null) {
             return multiHostSearchComponent.retrieve(token, url);
         }
         return null;
     }
 
     public Set<PropertySet> retrieve(String token, Set<URL> urls) {
-        if (multiHostSearchComponent != null) {
+        if (enabled && multiHostSearchComponent != null) {
             return multiHostSearchComponent.retrieve(token, urls);
         }
         return null;
     }
 
     public boolean isMultiHostSearchEnabled() {
-        return this.multiHostSearchComponent != null;
+        return enabled && this.multiHostSearchComponent != null;
     }
 
     public void setMultiHostSearchComponent(MultiHostSearchComponent multiHostSearchComponent) {
         this.multiHostSearchComponent = multiHostSearchComponent;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
 }
