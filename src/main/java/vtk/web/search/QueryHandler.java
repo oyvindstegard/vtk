@@ -334,7 +334,7 @@ public final class QueryHandler implements HttpRequestHandler {
             PrintWriter writer = response.getWriter();
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("application/json");
+            response.setContentType("application/json;charset=utf-8");
             
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())
@@ -368,7 +368,7 @@ public final class QueryHandler implements HttpRequestHandler {
             PrintWriter writer = response.getWriter();
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("application/json");
+            response.setContentType("application/json;charset=utf-8");
             
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())
