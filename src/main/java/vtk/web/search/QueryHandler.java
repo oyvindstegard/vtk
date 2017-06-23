@@ -331,10 +331,9 @@ public final class QueryHandler implements HttpRequestHandler {
         (query, result, requestContext, request, response) -> {
 
         SuccessfulResponseHandler successHandler = (q, rs) -> {
-            PrintWriter writer = response.getWriter();
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("application/json;charset=utf-8");
+            response.setContentType("application/json");
             
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())
@@ -342,6 +341,7 @@ public final class QueryHandler implements HttpRequestHandler {
                     .acls(false)
                     .build();
             
+            PrintWriter writer = response.getWriter();
             JsonStreamer streamer = new JsonStreamer(writer, 2, false)
                     .beginObject()
                     .member("size", rs.getSize())
@@ -365,10 +365,9 @@ public final class QueryHandler implements HttpRequestHandler {
     public static ResponseHandler completeJsonResponseHandler = 
         (query, result, requestContext, request, response) -> {
         SuccessfulResponseHandler successHandler = (q, rs) -> {
-            PrintWriter writer = response.getWriter();
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("application/json;charset=utf-8");
+            response.setContentType("application/json");
             
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())
@@ -376,6 +375,7 @@ public final class QueryHandler implements HttpRequestHandler {
                     .acls(true)
                     .build();
             
+            PrintWriter writer = response.getWriter();
             JsonStreamer streamer = new JsonStreamer(writer, 2, false)
                     .beginObject()
                     .member("size", rs.getSize())
@@ -401,7 +401,6 @@ public final class QueryHandler implements HttpRequestHandler {
 
         SuccessfulResponseHandler successHandler = (q, rs) -> {
             try {
-                OutputStream stream = response.getOutputStream();
 
                 Function<PropertySet, Optional<vtk.web.service.URL>> linkConstructor = propset -> {
                     Optional<Service> service = requestContext.service("viewService");
@@ -424,11 +423,12 @@ public final class QueryHandler implements HttpRequestHandler {
                             .linkConstructor(linkConstructor)
                             .build();
                 
-                XMLStreamWriter xml = XMLOutputFactory.newInstance()
-                        .createXMLStreamWriter(stream, "UTF-8");
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.setContentType("application/xml;charset=utf-8");
-
+                
+                OutputStream stream = response.getOutputStream();
+                XMLStreamWriter xml = XMLOutputFactory.newInstance()
+                        .createXMLStreamWriter(stream, "UTF-8");
                 xml.writeStartDocument();
 
                 xml.writeStartElement("results");
