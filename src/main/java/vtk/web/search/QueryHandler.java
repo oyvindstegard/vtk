@@ -333,11 +333,13 @@ public final class QueryHandler implements HttpRequestHandler {
         SuccessfulResponseHandler successHandler = (q, rs) -> {
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("application/json");
-            
+            response.setContentType("application/json");            
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())
                     .compact(true)
+                    .uris(q.fields.contains("uri") || q.fields.contains("*"))
+                    .types(q.fields.contains("type") || q.fields.contains("*"))
+                    .names(q.fields.contains("name") || q.fields.contains("*"))
                     .acls(false)
                     .build();
             
@@ -372,6 +374,9 @@ public final class QueryHandler implements HttpRequestHandler {
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())
                     .compact(false)
+                    .uris(true)
+                    .types(true)
+                    .names(true)
                     .acls(true)
                     .build();
             
@@ -531,6 +536,10 @@ public final class QueryHandler implements HttpRequestHandler {
                         }
                         else if ("type".equals(field)) {
                             line.append(escape(propset.getResourceType(), separator, '\\'));
+                            blank = false;
+                        }
+                        else if ("name".equals(field)) {
+                            line.append(escape(propset.getName(), separator, '\\'));
                             blank = false;
                         }
                     }
