@@ -80,6 +80,7 @@ public final class SimpleSearcher {
         Set<String> fields = new HashSet<>();
         fields.add("uri");
         fields.add("type");
+        fields.add("name");
         fields.add("acl");
         SPECIAL_FIELDS = Collections.unmodifiableSet(fields);
     }

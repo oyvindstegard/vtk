@@ -335,17 +335,19 @@ public final class QueryHandler implements HttpRequestHandler {
         (query, result, requestContext, request, response) -> {
 
         SuccessfulResponseHandler successHandler = (q, rs) -> {
-            PrintWriter writer = response.getWriter();
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("application/json");
-            
+            response.setContentType("application/json");            
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())
                     .compact(true)
+                    .uris(q.fields.contains("uri") || q.fields.contains("*"))
+                    .types(q.fields.contains("type") || q.fields.contains("*"))
+                    .names(q.fields.contains("name") || q.fields.contains("*"))
                     .acls(false)
                     .build();
             
+            PrintWriter writer = response.getWriter();
             JsonStreamer streamer = new JsonStreamer(writer, 2, false)
                     .beginObject()
                     .member("size", rs.getSize())
@@ -369,7 +371,6 @@ public final class QueryHandler implements HttpRequestHandler {
     public static ResponseHandler completeJsonResponseHandler = 
         (query, result, requestContext, request, response) -> {
         SuccessfulResponseHandler successHandler = (q, rs) -> {
-            PrintWriter writer = response.getWriter();
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json");
@@ -377,9 +378,13 @@ public final class QueryHandler implements HttpRequestHandler {
             PropertySetMapper<Consumer<JsonStreamer>> mapper = ResourceMappers
                     .jsonStreamer(requestContext.getLocale())
                     .compact(false)
+                    .uris(true)
+                    .types(true)
+                    .names(true)
                     .acls(true)
                     .build();
             
+            PrintWriter writer = response.getWriter();
             JsonStreamer streamer = new JsonStreamer(writer, 2, false)
                     .beginObject()
                     .member("size", rs.getSize())
@@ -405,7 +410,6 @@ public final class QueryHandler implements HttpRequestHandler {
 
         SuccessfulResponseHandler successHandler = (q, rs) -> {
             try {
-                OutputStream stream = response.getOutputStream();
 
                 Function<PropertySet, Optional<vtk.web.service.URL>> linkConstructor = propset -> {
                     Optional<Service> service = requestContext.service("viewService");
@@ -428,11 +432,12 @@ public final class QueryHandler implements HttpRequestHandler {
                             .linkConstructor(linkConstructor)
                             .build();
                 
-                XMLStreamWriter xml = XMLOutputFactory.newInstance()
-                        .createXMLStreamWriter(stream, "UTF-8");
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.setContentType("application/xml;charset=utf-8");
-
+                
+                OutputStream stream = response.getOutputStream();
+                XMLStreamWriter xml = XMLOutputFactory.newInstance()
+                        .createXMLStreamWriter(stream, "UTF-8");
                 xml.writeStartDocument();
 
                 xml.writeStartElement("results");
@@ -535,6 +540,10 @@ public final class QueryHandler implements HttpRequestHandler {
                         }
                         else if ("type".equals(field)) {
                             line.append(escape(propset.getResourceType(), separator, '\\'));
+                            blank = false;
+                        }
+                        else if ("name".equals(field)) {
+                            line.append(escape(propset.getName(), separator, '\\'));
                             blank = false;
                         }
                     }

@@ -456,7 +456,7 @@ resourcetype semester-page {
     semesterpage-for : (en : "Semester page for", no : "Semesterside for", nn : "Semesterside for"),
     term-v : (en : "Spring", no : "Vår", nn : "Vår"),
     term-h : (en : "Autumn", no : "Høst", nn : "Høst"),
-    term-s : (en : "Summer", no : "Sommer", nn : "Sommer"),
+    term-s : (en : "Summer", no : "Sommer", nn : "Sommar"),
     termin : (en : "Term", no : "Termin", nn : "Termin"),
     schedule : (en : "Schedule", no : "Timeplan", nn : "Timeplan"),
     exam : (en : "Examination: Time and place", no : "Eksamen: Tid og sted", nn : "Eksamen: Tid og stad"),
