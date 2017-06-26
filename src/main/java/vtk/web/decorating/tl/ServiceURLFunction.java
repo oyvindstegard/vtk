@@ -36,8 +36,10 @@ import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
 import vtk.web.decorating.tl.DomainTypes.Failure;
 import vtk.web.decorating.tl.DomainTypes.RequestContextType;
+import vtk.web.decorating.tl.DomainTypes.ResourceDomainType;
 import vtk.web.decorating.tl.DomainTypes.Success;
 import vtk.web.service.ServiceUrlProvider;
+import vtk.web.service.ServiceUrlProvider.ServiceUrlBuilder;
 
 public class ServiceURLFunction extends Function {
     private final ServiceUrlProvider serviceUrlProvider;
@@ -59,13 +61,24 @@ public class ServiceURLFunction extends Function {
 
         if (arg1 == null || arg2 == null)
             return new Failure<>("NULL argument(s)");
-        String path = arg1.toString();
         String serviceName = arg2.toString();
 
         try {
-            return new Success<>(serviceUrlProvider.builder(serviceName)
-                .withPath(Path.fromString(path)).build().toString()
-            );
+            RequestContextType rc = (RequestContextType) arg0;
+            ServiceUrlBuilder builder = serviceUrlProvider.builder(serviceName);
+            if (arg1 instanceof Path) {
+                builder = builder.withPath((Path) arg1);
+            }
+            else if (arg1 instanceof ResourceDomainType) {
+                builder = builder.withResource(((ResourceDomainType) arg1).self());
+                builder.withMatchAssertions(true);
+            }
+            else {
+                builder = builder.withPath(Path.fromString(arg1.toString()));
+            }
+            builder = builder.withPrincipal(rc.principal());
+            
+            return new Success<>(builder.build());
         } catch (Throwable t) { return new Failure<>(t); }
     }
 

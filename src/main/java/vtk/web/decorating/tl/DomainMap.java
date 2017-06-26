@@ -79,8 +79,8 @@ public class DomainMap extends AbstractMap<String, Object> {
         this.entrySet = Collections.unmodifiableSet(entrySet);
     }
     
-  @Override
-  public Set<java.util.Map.Entry<String, Object>> entrySet() {
-      return entrySet;
-  }
+    @Override
+    public Set<java.util.Map.Entry<String, Object>> entrySet() {
+        return entrySet;
+    }
 }

@@ -37,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -45,9 +47,11 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
+import vtk.repository.Resource;
 import vtk.repository.store.PrincipalMetadata;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
+import vtk.util.repository.ResourceToMapConverter;
 import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
@@ -75,6 +79,7 @@ final class DomainTypes {
                 "value",   object
             );
         }
+        @Override
         public boolean isSuccess() { return true; }
         public T value() { return (T) get("value"); }
     }
@@ -92,10 +97,22 @@ final class DomainTypes {
                 "error",   msg
              );
         }
+        @Override
         public boolean isSuccess() { return false; }
         public String error() { return (String) get("error"); }
     }
     
+    public static final class ResourceDomainType extends DomainMap {
+        private Resource self;
+        public ResourceDomainType(Resource resource) {
+            super(toArray(ResourceToMapConverter.toMap(resource)));
+            this.self = resource;
+        }            
+        
+        Resource self() {
+            return self;
+        }
+    }
 
     public static final class RequestContextType extends DomainMap {
         
@@ -194,10 +211,10 @@ final class DomainTypes {
         for (Enumeration<String> names = request.getHeaderNames(); names.hasMoreElements();) {
             String name = names.nextElement();
             Enumeration<String> values = request.getHeaders(name);
-            List<String> valueList = new ArrayList<String>();
+            List<String> valueList = new ArrayList<>();
             while (values.hasMoreElements()) valueList.add(values.nextElement());
             
-            Map<String, Object> entry = new HashMap<String, Object>();
+            Map<String, Object> entry = new HashMap<>();
             if (!valueList.isEmpty()) {
                 entry.put("values", valueList);
                 entry.put("value", valueList.get(0));
@@ -222,6 +239,16 @@ final class DomainTypes {
             result.put(privilege.toString(), principals);
         }
         return result;
+    }
+    
+    private static Object[] toArray(Map<String, Object> map) {
+        Set<Entry<String, Object>> entrySet = map.entrySet();
+        List<Object> list = new ArrayList<>();
+        for (Entry<String, Object> entry: entrySet) {
+            list.add(entry.getKey());
+            list.add(entry.getValue());
+        }
+        return list.toArray(new Object[list.size()]);
     }
 
 }
