@@ -26,6 +26,8 @@
  * [Oct. 2013] Added string constants to CLASSES object-literal for all CSS classes inside $.Autocompleter.Select
  * [Oct. 2013] Added option "updateInput" to make it possible to disable updating of input field on select (set default to true)
  * [Mar. 2014] Added ARIA status message and busy attribute to autocomplete field when loading
+ * [Jun. 2017] Added possibility to rank autocomplete results with options.rank(data) that runs in fillList()
+ * [Jun. 2017] Added total data length to options.formatItem() as last parameter (will not affect any existing code)
  */
 
 ;
@@ -718,7 +720,7 @@
       var offset = 0;
       if(len > 0) {
         var j = len - 1;
-        var formattedMoreLink = options.formatItem(data[j].data, j + 1, max, data[j].value, term);
+        var formattedMoreLink = options.formatItem(data[j].data, j + 1, max, data[j].value, term, len);
         if(/^###MORE###LINK###.*$/.test(formattedMoreLink)) {
           formattedMoreLink = formattedMoreLink.replace(/^###MORE###LINK###[\s]*/, "");
           var dataMoreLink = data[j];
@@ -727,11 +729,16 @@
           formattedMoreLink = null;
         }
       }
+      
+      if(options.rank) {
+        data = options.rank(data);
+      }
+      
       for ( var i = 0; i < (max-offset); i++) {
         if (!data[i])
             continue;
           
-        var formatted = options.formatItem(data[i].data, i + 1, max, data[i].value, term);
+        var formatted = options.formatItem(data[i].data, i + 1, max, data[i].value, term, len);
         if (formatted === false)
           continue;
        
