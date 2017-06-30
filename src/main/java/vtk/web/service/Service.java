@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
@@ -80,10 +79,8 @@ public interface Service extends Ordered {
      * are cleared, and the path is set to {@code /}.
      * @return the URL constructor
      */
-    public default URLConstructor urlConstructor(URL base) {
-        return new URLConstructor(Objects.requireNonNull(base), this);
-    }
-
+    public URLConstructor urlConstructor(URL base);
+    
     /**
      * A class that constructs URLs to a service based on
      * various information provided by the caller, such as  
@@ -101,7 +98,7 @@ public interface Service extends Ordered {
         private boolean matchAssertions = false;
         private Map<String, List<String>> parameters;
 
-        private URLConstructor(URL base, Service service) {
+        URLConstructor(URL base, Service service) {
             this.base = new URL(base).clearParameters().setPath(Path.ROOT);
             this.service = service;
         }

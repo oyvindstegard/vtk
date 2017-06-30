@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.servlet.Filter;
@@ -86,6 +87,11 @@ public class ServiceImpl implements Service, BeanNameAware {
     private List<URLPostProcessor> accumulatedUrlPostProcessors = null;
     private ServiceNameProvider serviceNameProvider;
     
+    @Override
+    public URLConstructor urlConstructor(URL base) {
+        return new Service.URLConstructor(Objects.requireNonNull(base), this);
+    }
+
     @Override
     public List<Assertion> getAllAssertions() {
         if (this.allAssertions == null) {
