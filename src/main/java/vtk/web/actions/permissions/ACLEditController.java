@@ -38,9 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -68,6 +66,7 @@ import vtk.util.repository.DocumentPrincipalMetadataRetriever;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class ACLEditController extends SimpleFormController<ACLEditCommand> 
     implements InitializingBean {
@@ -135,8 +134,12 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
         RequestContext requestContext = RequestContext.getRequestContext();
         Service service = requestContext.getService();
 
-        String submitURL = service.constructLink(resource, principal);
-        ACLEditCommand command = new ACLEditCommand(submitURL);
+        URL submitURL = service.urlConstructor(URL.create(requestContext.getServletRequest()))
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
+        
+        ACLEditCommand command = new ACLEditCommand(submitURL.toString());
 
         command.setAcl(acl);
         command.setPrivilege(this.privilege);
@@ -159,7 +162,7 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
             }
         }
 
-        List<Principal> authorizedUsers = new ArrayList<Principal>(Arrays.asList(privilegedPrincipals));
+        List<Principal> authorizedUsers = new ArrayList<>(Arrays.asList(privilegedPrincipals));
         Collections.sort(authorizedUsers, Principal.PRINCIPAL_NAME_COMPARATOR);
         authorizedUsers.addAll(Arrays.asList(acl.listPrivilegedPseudoPrincipals(this.privilege)));
 
@@ -439,7 +442,7 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
         Set<Principal> principalDocuments = null;
         if (this.documentPrincipalMetadataRetriever.isDocumentSearchConfigured()) {
             principalDocuments = this.documentPrincipalMetadataRetriever.getPrincipalDocumentsByUid(
-                    new HashSet<String>(values), preferredLocale);
+                    new HashSet<>(values), preferredLocale);
         }
 
         for (String value : values) {

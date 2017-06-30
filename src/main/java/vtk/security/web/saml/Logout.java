@@ -39,8 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.opensaml.common.SAMLObject;
 import org.opensaml.common.binding.BasicSAMLMessageContext;
 import org.opensaml.saml2.binding.decoding.HTTPRedirectDeflateDecoder;
@@ -51,6 +49,8 @@ import org.opensaml.ws.message.encoder.MessageEncodingException;
 import org.opensaml.ws.transport.http.HttpServletRequestAdapter;
 import org.opensaml.xml.security.credential.Credential;
 import org.opensaml.xml.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import vtk.security.AuthenticationProcessingException;
 import vtk.security.SecurityContext;
@@ -75,7 +75,9 @@ public class Logout extends SamlService {
 
         URL savedURL = URL.create(request);
         if (this.redirectService != null) {
-            savedURL = this.redirectService.constructURL(savedURL.getPath());
+            savedURL = redirectService.urlConstructor(savedURL)
+                    .withURI(savedURL.getPath())
+                    .constructURL();
         }
 
         if (SamlAuthenticationHandler.browserIsIE(request) && manageAssertion.matches(request, null, null)) {
@@ -83,7 +85,7 @@ public class Logout extends SamlService {
                 authLogger.debug(request.getRemoteAddr() + " - request-URI: " + request.getRequestURI() + " - "
                         + "IE detected, initiating cookie removal");
             }
-            Map<String, String> myMap = new HashMap<String, String>();
+            Map<String, String> myMap = new HashMap<>();
             myMap.put("true", "true");
             String cookieTicket = iECookieStore.addToken(request, myMap).toString();
             savedURL.addParameter(ieCookieLogoutTicket, cookieTicket);
@@ -196,7 +198,7 @@ public class Logout extends SamlService {
     }
 
     private LogoutRequest logoutRequestFromServletRequest(HttpServletRequest request) {
-        BasicSAMLMessageContext<LogoutRequest, ?, ?> messageContext = new BasicSAMLMessageContext<LogoutRequest, SAMLObject, SAMLObject>();
+        BasicSAMLMessageContext<LogoutRequest, ?, ?> messageContext = new BasicSAMLMessageContext<>();
         HttpServletRequestAdapter adapter = new HttpServletRequestAdapter(request);
         messageContext.setInboundMessageTransport(adapter);
 
@@ -221,15 +223,15 @@ public class Logout extends SamlService {
 
         List<Pair<String, String>> queryParams = urlBuilder.getQueryParams();
         queryParams.clear();
-        queryParams.add(new Pair<String, String>("SAMLResponse", message));
-        queryParams.add(new Pair<String, String>("RelayState", relayState));
+        queryParams.add(new Pair<>("SAMLResponse", message));
+        queryParams.add(new Pair<>("RelayState", relayState));
 
         if (signingCredential != null) {
             try {
-                queryParams.add(new Pair<String, String>("SigAlg", enc
+                queryParams.add(new Pair<>("SigAlg", enc
                         .getSignatureAlgorithmURI(signingCredential, null)));
                 String sigMaterial = urlBuilder.buildQueryString();
-                queryParams.add(new Pair<String, String>("Signature", enc.generateSignature(signingCredential, enc
+                queryParams.add(new Pair<>("Signature", enc.generateSignature(signingCredential, enc
                         .getSignatureAlgorithmURI(signingCredential, null), sigMaterial)));
             } catch (MessageEncodingException ex) {
                 throw new AuthenticationProcessingException("Exception caught when encoding and signing parameters", ex);

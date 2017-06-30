@@ -89,15 +89,15 @@ public class AlphabeticalCollectionListingController extends CollectionListingCo
         int page = ListingPager.getPage(request, ListingPager.UPCOMING_PAGE_PARAM);
         int limit = pageLimit;
         int totalHits = 0;
-        Map<String, List<ListingEntry>> alpthabeticalOrdredResult = new LinkedHashMap<String, List<ListingEntry>>();
-        List<Listing> results = new ArrayList<Listing>();
+        Map<String, List<ListingEntry>> alpthabeticalOrdredResult = new LinkedHashMap<>();
+        List<Listing> results = new ArrayList<>();
 
         for (SearchComponent component : searchComponents) {
             Listing listing = component.execute(request, collection, page, limit, 0);
             results.add(listing);
             totalHits = listing.getTotalHits();
             List<ListingEntry> entries = listing.getEntries();
-            List<ListingEntry> tmpFiles = new ArrayList<ListingEntry>();
+            List<ListingEntry> tmpFiles = new ArrayList<>();
 
             // array is convenient for string constructors
             char currentIndexChar[] = new char[1];
@@ -117,7 +117,7 @@ public class AlphabeticalCollectionListingController extends CollectionListingCo
                         alpthabeticalOrdredResult.put(key, tmpFiles);
                     }
                     currentIndexChar[0] = firstCharInTitle;
-                    tmpFiles = new ArrayList<ListingEntry>();
+                    tmpFiles = new ArrayList<>();
                 }
                 tmpFiles.add(entry);
             }
@@ -132,7 +132,9 @@ public class AlphabeticalCollectionListingController extends CollectionListingCo
         }
 
         Service service = RequestContext.getRequestContext().getService();
-        URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
+        URL baseURL = service.urlConstructor(URL.create(request))
+                .withURI(RequestContext.getRequestContext().getResourceURI())
+                .constructURL();
 
         model.put("alpthabeticalOrdredResult", alpthabeticalOrdredResult);
         

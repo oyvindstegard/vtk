@@ -57,6 +57,7 @@ import vtk.security.Principal;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 /**
  * This view renders a feed based on a object in the model of type {@link java.util.Map} with key
@@ -160,7 +161,7 @@ public class RomeFeedView implements View {
         Principal principal = RequestContext.getRequestContext().getPrincipal();
 
         for (int i = 0; i < resources.length; i++) {
-            SyndEntry entry = getSyndEntryForResource(resources[i], principal);
+            SyndEntry entry = getSyndEntryForResource(request, resources[i], principal);
             feedEntries.add(entry);
         }
        
@@ -210,7 +211,7 @@ public class RomeFeedView implements View {
      *            title, String url, String publishDate, String doctype, String tilhorighet
      * @return SyndEntry RSS feed with values corresponding to document values
      */
-    private SyndEntry getSyndEntryForResource(Resource resource, Principal principal) {
+    private SyndEntry getSyndEntryForResource(HttpServletRequest request, Resource resource, Principal principal) {
         // RSS entry objects
         SyndEntry entry = new SyndEntryImpl();
         String title = resource.getTitle();
@@ -225,20 +226,26 @@ public class RomeFeedView implements View {
             }
   
             entry.setTitle(formatTitle(title));
-        } else {
+        }
+        else {
             entry.setTitle("Title is missing");
         }
         
         entry.setAuthor(resource.getOwner().getName());
+
+        URL url = browsingService.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
      
-        String link = this.browsingService.constructLink(resource, principal);
-        entry.setLink(link);
+        entry.setLink(url.toString());
 
         if (this.useTimestampInIdentifier) {
             long lastModified = resource.getLastModified().getTime();
-            entry.setUri(link + "#" + lastModified); 
-        } else {
-            entry.setUri(link); 
+            entry.setUri(url.toString()+ "#" + lastModified); 
+        }
+        else {
+            entry.setUri(url.toString()); 
         }
         
         entry.setPublishedDate(resource.getCreationTime());

@@ -43,6 +43,7 @@ import vtk.repository.RecoverableResource;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class TrashCanObjectSorter {
 
@@ -66,22 +67,27 @@ public class TrashCanObjectSorter {
 
     public static Map<String, TrashCanSortLink> getSortLinks(Service service, Resource resource, Principal principal,
             HttpServletRequest request) {
-        Map<String, TrashCanSortLink> sortLinks = new HashMap<String, TrashCanSortLink>();
+        Map<String, TrashCanSortLink> sortLinks = new HashMap<>();
         Order requestedSortOrder = TrashCanObjectSorter.getSortOrder(request
                 .getParameter(TrashCanObjectSorter.SORT_BY_PARAM));
         for (Order order : Order.values()) {
-            Map<String, String> parameters = new HashMap<String, String>();
-            parameters.put(TrashCanObjectSorter.SORT_BY_PARAM, order.getType());
+            Map<String, List<String>> parameters = new HashMap<>();
+            parameters.put(TrashCanObjectSorter.SORT_BY_PARAM, Collections.singletonList(order.getType()));
             boolean invert = request.getParameter(TrashCanObjectSorter.INVERT_PARAM) != null;
             boolean selected = false;
             if (order.equals(requestedSortOrder)) {
                 selected = true;
                 if (!invert) {
-                    parameters.put(TrashCanObjectSorter.INVERT_PARAM, "true");
+                    parameters.put(TrashCanObjectSorter.INVERT_PARAM, Collections.singletonList("true"));
                 }
             }
-            String url = service.constructLink(resource, principal, parameters);
-            sortLinks.put(order.getType(), new TrashCanSortLink(url, selected));
+            URL url = service.urlConstructor(URL.create(request))
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .withParameters(parameters)
+                    .constructURL();
+            
+            sortLinks.put(order.getType(), new TrashCanSortLink(url.toString(), selected));
         }
         return sortLinks;
     }

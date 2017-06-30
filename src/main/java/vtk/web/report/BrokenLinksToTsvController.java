@@ -38,16 +38,18 @@ import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.time.FastDateFormat;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.web.RequestContext;
 import vtk.web.report.BrokenLinksReport.CollectionStats;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 import vtk.web.view.freemarker.MessageLocalizer;
 
 public class BrokenLinksToTsvController implements Controller {
@@ -66,9 +68,13 @@ public class BrokenLinksToTsvController implements Controller {
 
         Map<String, CollectionStats> map = brokenLinksReporter.getAccumulatorMap(token, resource, request);
         if (map.size() <= 0) {
-            Map<String, Object> model = new HashMap<String, Object>();
-            model.put("serviceURL",
-                    reportService.constructURL(resource, RequestContext.getRequestContext().getPrincipal()));
+            Map<String, Object> model = new HashMap<>();
+            
+            URL serviceURL = reportService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .withPrincipal(requestContext.getPrincipal())
+                    .constructURL();
+            model.put("serviceURL", serviceURL);
             model.put("report", brokenLinksReporter.getReportContent(token, resource, request));
             return new ModelAndView(brokenLinksReporter.getViewName(), model);
         }

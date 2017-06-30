@@ -32,6 +32,7 @@ package vtk.web.actions.create;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class ListCollectionsController implements Controller {
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         String uri = null;
         try {
-            uri = (String) request.getParameter("uri");
+            uri = request.getParameter("uri");
         } catch (Exception e) {
             badRequest(e, response);
             return null;
@@ -92,7 +93,7 @@ public class ListCollectionsController implements Controller {
             String token) throws Exception {
 
         String buttonText = mapServiceParamToButtonText(request.getParameter(PARAMETER_SERVICE));
-        Map<String, String> uriParameters = getReportTypeParam(request.getParameter(PARAMETER_REPORT_TYPE));
+        Map<String, List<String>> uriParameters = getReportTypeParam(request.getParameter(PARAMETER_REPORT_TYPE));
         
         Json.ListContainer listNodes = new Json.ListContainer();
         for (Resource resource : resources) {
@@ -123,13 +124,19 @@ public class ListCollectionsController implements Controller {
         }
     }
     
-    private JSONObject generateJSONObjectNode(Resource resource, String token, HttpServletRequest request, Map<String, String> uriParameters, String buttonText) {
+    private JSONObject generateJSONObjectNode(Resource resource, String token, HttpServletRequest request, Map<String, List<String>> uriParameters, String buttonText) {
         JSONObject o = new JSONObject();
-        Principal principal = RequestContext.getRequestContext().getPrincipal();
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Principal principal = requestContext.getPrincipal();
 
         String title;
         try {
-            URL url = service.constructURL(resource, principal, uriParameters);
+            URL url = service.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .withParameters(uriParameters)
+                    .constructURL();
+            
             if (action != null) {
                 url.setRef("action=" + action);
             }
@@ -169,10 +176,10 @@ public class ListCollectionsController implements Controller {
         return "manage.place-here";
     }
     
-    private Map<String, String> getReportTypeParam(String reportType) {
-        Map<String, String> uriParameters = new HashMap<String, String>();
-        if(reportType != null) {
-            uriParameters.put(PARAMETER_REPORT_TYPE, reportType);
+    private Map<String, List<String>> getReportTypeParam(String reportType) {
+        Map<String, List<String>> uriParameters = new HashMap<>();
+        if (reportType != null) {
+            uriParameters.computeIfAbsent(PARAMETER_REPORT_TYPE, k -> new ArrayList<>()).add(reportType);
         }
         return uriParameters;
     }

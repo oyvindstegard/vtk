@@ -75,6 +75,7 @@ final class DomainTypes {
                 "value",   object
             );
         }
+        @Override
         public boolean isSuccess() { return true; }
         public T value() { return (T) get("value"); }
     }
@@ -92,12 +93,14 @@ final class DomainTypes {
                 "error",   msg
              );
         }
+        @Override
         public boolean isSuccess() { return false; }
         public String error() { return (String) get("error"); }
     }
     
 
     public static final class RequestContextType extends DomainMap {
+        private RequestContext requestContext;
         
         private static Map<String, Object> principalMetadata(RequestContext requestContext) {
             Locale locale = RequestContextUtils.getLocale(requestContext.getServletRequest());
@@ -121,6 +124,7 @@ final class DomainTypes {
                "view-unauthenticated", requestContext.isViewUnauthenticated(),
                "principal-metadata",   principalMetadata(requestContext)
              );
+            this.requestContext = requestContext;
         }
         public Path currentCollection() { return (Path) get("current-collection"); }
         public Boolean indexFile()      { return (Boolean) get("index-file"); }
@@ -134,6 +138,7 @@ final class DomainTypes {
             { return (Boolean) get("view-unauthenticated"); }
         public Map<String, Object> headers()
             { return (Map<String, Object>) get("headers"); }
+        RequestContext requestContext () { return requestContext; }
     }
 
 
@@ -194,10 +199,10 @@ final class DomainTypes {
         for (Enumeration<String> names = request.getHeaderNames(); names.hasMoreElements();) {
             String name = names.nextElement();
             Enumeration<String> values = request.getHeaders(name);
-            List<String> valueList = new ArrayList<String>();
+            List<String> valueList = new ArrayList<>();
             while (values.hasMoreElements()) valueList.add(values.nextElement());
             
-            Map<String, Object> entry = new HashMap<String, Object>();
+            Map<String, Object> entry = new HashMap<>();
             if (!valueList.isEmpty()) {
                 entry.put("values", valueList);
                 entry.put("value", valueList.get(0));

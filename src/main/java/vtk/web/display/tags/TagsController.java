@@ -75,7 +75,7 @@ public class TagsController implements Controller {
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         RequestContext requestContext = RequestContext.getRequestContext();
         String token = requestContext.getSecurityToken();
@@ -133,9 +133,13 @@ public class TagsController implements Controller {
             model.put(TagsHelper.RESOURCE_TYPE_MODEL_KEY, resourceTypes.get(0).getName());
         }
 
-        Service service = vtk.web.RequestContext.getRequestContext().getService();
-        URL baseURL = service.constructURL(resource.getURI());
-        tagsHelper.processUrl(baseURL, tag, resourceTypes, sortFieldParams, displayScope, overrideResourceTypeTitle);
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Service service = requestContext.getService();
+        URL baseURL = service.urlConstructor(requestContext.getRequestURL())
+                .withURI(resource.getURI())
+                .constructURL();
+        tagsHelper.processUrl(baseURL, tag, resourceTypes, sortFieldParams, 
+                displayScope, overrideResourceTypeTitle);
 
         Optional<ListingPager.Pagination> pagination = 
                 ListingPager.pagination(totalHits, pageLimit, baseURL, page);
@@ -149,11 +153,13 @@ public class TagsController implements Controller {
         model.put("page", page);
 
         if (alternativeRepresentations != null) {
-            Set<Object> alt = new HashSet<Object>();
+            Set<Object> alt = new HashSet<>();
             for (String contentType : alternativeRepresentations.keySet()) {
                 try {
                     Service altService = alternativeRepresentations.get(contentType);
-                    URL url = altService.constructURL(resource.getURI());
+                    URL url = altService.urlConstructor(requestContext.getRequestURL())
+                            .withURI(resource.getURI())
+                            .constructURL();
                     tagsHelper.processUrl(url, tag, resourceTypes, sortFieldParams, displayScope,
                             overrideResourceTypeTitle);
                     String title = altService.getName();
@@ -162,7 +168,7 @@ public class TagsController implements Controller {
                     title = rc.getMessage(altService.getName(), new Object[] { resource.getTitle() },
                             altService.getName());
 
-                    Map<String, Object> m = new HashMap<String, Object>();
+                    Map<String, Object> m = new HashMap<>();
                     m.put("title", title);
                     m.put("url", url);
                     m.put("contentType", contentType);

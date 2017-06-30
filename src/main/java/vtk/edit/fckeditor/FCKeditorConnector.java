@@ -201,7 +201,9 @@ public class FCKeditorConnector implements Controller {
                 continue;
             }
             Map<String, Object> entry = new HashMap<>();
-            URL url = this.viewService.constructURL(r, null);
+            URL url = viewService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(r)
+                    .constructURL();
             entry.put("resource", r);
             entry.put("url", url);
             if (!r.isCollection()) {
@@ -280,7 +282,9 @@ public class FCKeditorConnector implements Controller {
             newResource.addProperty(prop);
             repository.store(token, newResource);
 
-            URL fileURL = this.viewService.constructURL(uri);
+            URL fileURL = viewService.urlConstructor(URL.create(request))
+                    .withURI(uri)
+                    .constructURL();
 
             model.put("error", existed ? 201 : 0);
             model.put("fileURL", fileURL);

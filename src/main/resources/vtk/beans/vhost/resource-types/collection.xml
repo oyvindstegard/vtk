@@ -165,6 +165,7 @@
     <property name="displayManuallyApprovedPropDef" ref="displayManuallyApprovedPropDef" />
     <property name="manuallyApprovedPropDef" ref="manuallyApprovedResourcesPropDef" />
     <property name="viewService" ref="viewService" />
+    <property name="canonicalUrlConstructor" ref="canonicalUrlConstructor" />
   </bean>
 
   <bean id="navigationTitlePropDef" class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">

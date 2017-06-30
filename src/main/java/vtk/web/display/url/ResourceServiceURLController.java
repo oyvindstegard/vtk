@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -86,9 +87,13 @@ public class ResourceServiceURLController implements Controller {
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         Resource resource = repository.retrieve(token, uri, false);
-        URL resourceViewURL = this.service.constructURL(resource, principal, false);
+        URL resourceViewURL = service.urlConstructor(requestContext.getRequestURL())
+                .withResource(resource)
+                .withPrincipal(principal)
+                .matchAssertions(false)
+                .constructURL();
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         if (this.displayWorkingRevision) {
             Revision workingCopy = null;
@@ -103,7 +108,8 @@ public class ResourceServiceURLController implements Controller {
                     resource = repository.retrieve(token, uri, false, workingCopy);
                     model.put("workingCopy", workingCopy);
                     resourceViewURL.addParameter("revision", Revision.Type.WORKING_COPY.name());
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
                 }
             }
         }

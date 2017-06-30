@@ -37,6 +37,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Comment;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -63,19 +64,23 @@ public class BlogListingController extends CollectionListingController {
         model.put("tagElements", tagElements);
         List<Comment> comments = repository.getComments(token, collection, true, 4);
 
-        Map<String, Resource> resourceMap = new HashMap<String, Resource>();
-        Map<String, URL> urlMap = new HashMap<String, URL>();
+        Map<String, Resource> resourceMap = new HashMap<>();
+        Map<String, URL> urlMap = new HashMap<>();
 
         for (Comment comment : comments) {
             Resource r = repository.retrieve(token, comment.getURI(), true);
             resourceMap.put(r.getURI().toString(), r);
-            urlMap.put(r.getURI().toString(), this.getViewService().constructURL(r.getURI()));
+            URL url = viewService.urlConstructor(URL.create(request)).withURI(r.getURI()).constructURL();
+            urlMap.put(r.getURI().toString(), url);
         }
+        
+        URL moreCommentsURL = commentingService.urlConstructor(URL.create(request))
+                .withURI(collection.getURI()).constructURL();
 
         model.put("comments", comments);
         model.put("urlMap", urlMap);
         model.put("resourceMap", resourceMap);
-        model.put("moreCommentsUrl", commentingService.constructLink(collection.getURI()));
+        model.put("moreCommentsUrl", moreCommentsURL);
     }
 
     @Required

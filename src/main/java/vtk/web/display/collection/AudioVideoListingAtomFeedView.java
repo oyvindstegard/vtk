@@ -42,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
-import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
@@ -90,7 +89,8 @@ public class AudioVideoListingAtomFeedView extends ListingFeedView {
             }
 
             Link mediaLink = abdera.getFactory().newLink();
-            mediaLink.setHref(viewService.constructLink(result.getURI()));
+            URL href = viewService.urlConstructor(URL.create(request)).withURI(result.getURI()).constructURL();
+            mediaLink.setHref(href.toString());
             mediaLink.setRel("enclosure");
             Resource mediaResource = repository.retrieve(token, result.getURI(), true);
             mediaLink.setMimeType(mediaResource.getContentType());
@@ -98,26 +98,20 @@ public class AudioVideoListingAtomFeedView extends ListingFeedView {
 
             // Item poster image link to summary
             StringBuilder summary = new StringBuilder();
-            String posterImageString = null;
             Property posterImageProp = result.getProperty(posterImagePropDef);
             if (posterImageProp != null) {
-                posterImageString = posterImageProp.getStringValue();
-                if (!posterImageString.startsWith("/") && !posterImageString.startsWith("http://")
-                        && !posterImageString.startsWith("https://")) {
-                    try {
-                        Path posterPath = result.getURI().getParent().expand(posterImageString);
-                        posterImageString = viewService.constructLink(posterPath);
-                    } catch (Throwable t) {
-                    }
-                } else if (URL.isRelativeURL(posterImageString)) {
-                    posterImageString = viewService.constructLink(Path.fromString(posterImageString));
-                }
-            } else if (result.getResourceType().equals(VIDEOREF_TYPE)) {
-                // We can assume that a videoref will always have a thumbnail
-                posterImageString = thumbnailService.constructLink(result.getURI());
+                URL base = URL.create(request).relativeURL(posterImageProp.getStringValue());
+                URL posterImageURL = viewService.urlConstructor(base)
+                        .withURI(base.getPath()).constructURL();
+                summary.append("<img src=\"").append(
+                        HtmlUtil.encodeBasicEntities(posterImageURL.toString())).append("\"/>");
             }
-            if (posterImageString != null) {
-                summary.append("<img src=\"").append(HtmlUtil.encodeBasicEntities(posterImageString)).append("\"/>");
+            else if (result.getResourceType().equals(VIDEOREF_TYPE)) {
+                // We can assume that a videoref will always have a thumbnail
+                URL thumbnailURL = thumbnailService.urlConstructor(URL.create(request))
+                        .withURI(result.getURI()).constructURL();
+                summary.append("<img src=\"").append(
+                        HtmlUtil.encodeBasicEntities(thumbnailURL.toString())).append("\"/>");
             }
 
             // Item description to summary
@@ -156,7 +150,11 @@ public class AudioVideoListingAtomFeedView extends ListingFeedView {
             }
 
             Link link = abdera.getFactory().newLink();
-            link.setHref(viewService.constructLink(result.getURI()));
+            
+            URL alternateURL = viewService.urlConstructor(URL.create(request))
+                    .withURI(result.getURI()).constructURL();
+            
+            link.setHref(alternateURL.toString());
             link.setRel("alternate");
             entry.addLink(link);
 

@@ -33,6 +33,7 @@ package vtk.web.decorating.components;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
@@ -55,9 +56,10 @@ public class SearchFormComponent extends ViewRenderingDecoratorComponent {
             scopeUri = Path.fromStringWithTrailingSlash(uriParam);
         } catch (Exception e) {}
         
-        URL searchURL = service.constructURL(scopeUri);
+        URL searchURL = service.urlConstructor(URL.create(request.getServletRequest()))
+                .withURI(scopeUri)
+                .constructURL();
         model.put("url", searchURL);
-
     }
 
     @Required

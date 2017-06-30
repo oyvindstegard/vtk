@@ -67,7 +67,7 @@ public class DisplayRevisionsController implements Controller {
     @Override
     public ModelAndView handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         
         RequestContext requestContext = RequestContext.getRequestContext();
         Repository repository = requestContext.getRepository();
@@ -78,33 +78,52 @@ public class DisplayRevisionsController implements Controller {
         
         Object workingCopy = null;
         Revision latest = null;
-        List<Object> allRevisions = new ArrayList<Object>();
-        List<Object> regularRevisions = new ArrayList<Object>();
+        List<Object> allRevisions = new ArrayList<>();
+        List<Object> regularRevisions = new ArrayList<>();
         
         Resource resource = repository.retrieve(token, uri, false);
         URL displayURL = null;
         try {
-            displayURL = this.viewService.constructURL(resource, principal);
-        } catch (Throwable t) { }
+            displayURL = viewService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL();
+        }
+        catch (Throwable t) { }
+        
         URL diffURL = null;
         try {
-            diffURL = this.viewDiffService.constructURL(resource, principal);
-        } catch (Throwable t) { }
+            diffURL = viewDiffService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL();
+        }
+        catch (Throwable t) { }
+
         URL deleteURL = null;
         try {
-            deleteURL = this.deleteService.constructURL(resource, principal);
-        } catch (Throwable t) { }
+            deleteURL = deleteService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL();
+        }
+        catch (Throwable t) { }
+        
         URL restoreURL = null;
         try {
-            restoreURL = this.restoreService.constructURL(resource, principal);
-        } catch (Throwable t) { }
+            restoreURL = restoreService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL();
+        }
+        catch (Throwable t) { }
 
         Map<String, Object> prevRevisionMap = null;
         Revision prevRevision = null;
         Revision firstRevision = null;
         
         for (Revision revision: revisions) {
-            Map<String, Object> rev = new HashMap<String, Object>();
+            Map<String, Object> rev = new HashMap<>();
             rev.put("id", revision.getID());
             rev.put("name", revision.getName());
             rev.put("timestamp", revision.getTimestamp());
@@ -119,7 +138,7 @@ public class DisplayRevisionsController implements Controller {
                         || revision.getType() == Revision.Type.WORKING_COPY); 
             
             if (haveDisplayURL) {
-                if(prevRevision != null) { 
+                if (prevRevision != null) { 
                     prevRevisionMap.put("diffURL", new URL(diffURL)
                                    .setParameter("revision", revision.getName() + "," + prevRevision.getName()));
                 }
@@ -127,10 +146,11 @@ public class DisplayRevisionsController implements Controller {
                    .setParameter("revision", revision.getName()));
                 prevRevisionMap = rev;
                 
-                if(revision.getType() == Revision.Type.WORKING_COPY) {
+                if (revision.getType() == Revision.Type.WORKING_COPY) {
                     rev.put("diffURL", new URL(diffURL)
                        .setParameter("revision", "HEAD," + revision.getName()));
-                } else {
+                }
+                else {
                     prevRevision = revision;
                     if(firstRevision == null) {
                         firstRevision = revision;
@@ -140,7 +160,8 @@ public class DisplayRevisionsController implements Controller {
 
             if (revision.getType() == Revision.Type.WORKING_COPY) {
                 workingCopy = rev;
-            } else {
+            }
+            else {
                 if (latest == null) {
                     latest = revision;
                 }
@@ -159,11 +180,16 @@ public class DisplayRevisionsController implements Controller {
                 if (repository.isAuthorized(resource, RepositoryAction.READ_WRITE_UNPUBLISHED,
                         principal, true)) {
                     try {
-                        URL u = this.deleteService.constructURL(resource, principal, false);
+                        URL u = deleteService.urlConstructor(requestContext.getRequestURL())
+                                .withResource(resource)
+                                .withPrincipal(principal)
+                                .matchAssertions(false)
+                                .constructURL();
                         rev.put("deleteURL", new URL(u)
                         .setParameter("revision", revision.getName()));
                         
-                    } catch (Throwable t) { }
+                    }
+                    catch (Throwable t) { }
                 }
             }
             

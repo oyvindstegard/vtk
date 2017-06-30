@@ -95,9 +95,12 @@ public class ReportHandler implements Controller {
         Resource resource = repository.retrieve(token, uri, false);
 
         Service service = requestContext.getService();
-        URL serviceURL = service.constructURL(resource, securityContext.getPrincipal());
+        URL serviceURL = service.urlConstructor(requestContext.getRequestURL())
+                .withResource(resource)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("serviceURL", serviceURL);
 
         String reportType = request.getParameter(AbstractReporter.REPORT_TYPE_PARAM);
@@ -114,9 +117,15 @@ public class ReportHandler implements Controller {
 
                 model.put("report", report);
 
-                Map<String, String> typeParam = new HashMap<String, String>();
-                typeParam.put(AbstractReporter.REPORT_TYPE_PARAM, reportType);
-                model.put("viewReportServiceURL", viewReportService.constructURL(resource, securityContext.getPrincipal(), typeParam));
+                Map<String, List<String>> typeParam = new HashMap<>();
+                typeParam.computeIfAbsent(AbstractReporter.REPORT_TYPE_PARAM, k -> new ArrayList<>()).add(reportType);
+                URL viewReportServiceURL = viewReportService.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(requestContext.getPrincipal())
+                        .withParameters(typeParam)
+                        .constructURL();
+                
+                model.put("viewReportServiceURL", viewReportServiceURL);
 
                 String selectedViewName = reporter.getViewName();
                 
@@ -138,7 +147,7 @@ public class ReportHandler implements Controller {
         }
 
         if (collectionPrimaryReporters != null && collectionPrimaryReporters.containsKey(resource.getResourceType())) {
-            List<Reporter> primaryReportersList = new ArrayList<Reporter>(primaryReporters);
+            List<Reporter> primaryReportersList = new ArrayList<>(primaryReporters);
 
             for (Reporter reporter : collectionPrimaryReporters.get(resource.getResourceType())) {
                 primaryReportersList.add(reporter);
@@ -150,7 +159,7 @@ public class ReportHandler implements Controller {
         }
 
         if (collectionReporters != null && collectionReporters.containsKey(resource.getResourceType())) {
-            List<Reporter> reportersList = new ArrayList<Reporter>(reporters);
+            List<Reporter> reportersList = new ArrayList<>(reporters);
 
             for (Reporter reporter : collectionReporters.get(resource.getResourceType())) {
                 reportersList.add(reporter);
@@ -169,7 +178,7 @@ public class ReportHandler implements Controller {
         Object reportResourceList = report.get("result");
         if (reportResourceList != null && reportResourceList instanceof List<?>) {
             List<?> reportResources = (ArrayList<?>) reportResourceList;
-            Set<String> uids = new HashSet<String>();
+            Set<String> uids = new HashSet<>();
             for (Object obj : reportResources) {
                 if (obj instanceof PropertySet) {
                     PropertySet ps = (PropertySet) obj;
@@ -189,7 +198,7 @@ public class ReportHandler implements Controller {
 
     private void addReports(List<Reporter> reportList, String modelKey, Map<String, Object> model, URL serviceURL) {
         if (reportList != null) {
-            List<ReporterObject> reporterObjects = new ArrayList<ReporterObject>();
+            List<ReporterObject> reporterObjects = new ArrayList<>();
             for (Reporter reporter : reportList) {
                 if (!reporter.isEnabled()) {
                     continue;

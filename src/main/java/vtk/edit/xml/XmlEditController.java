@@ -32,7 +32,6 @@ package vtk.edit.xml;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,9 +42,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.jdom.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jdom.JDOMException;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
@@ -65,6 +64,7 @@ import vtk.util.repository.ContentTypeHelper;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
+import vtk.web.service.URL;
 import vtk.xml.StylesheetCompilationException;
 import vtk.xml.TransformerManager;
 
@@ -110,7 +110,7 @@ public class XmlEditController implements Controller {
     private static String NEW_SUB_ELEMENT_AT_ACTION = "newSubElementAt";
     
     
-    private Map<String, ActionHandler> actionMapping = new HashMap<String, ActionHandler>();
+    private Map<String, ActionHandler> actionMapping = new HashMap<>();
 
     public XmlEditController() {
         this.actionMapping.put(EDIT_ACTION, new EditController());
@@ -147,7 +147,7 @@ public class XmlEditController implements Controller {
             }
 
             ActionHandler handler = this.actionMapping.get(action);
-            Map<String, Object> model = new HashMap<String, Object>();
+            Map<String, Object> model = new HashMap<>();
 
             if (handler != null)
                 model = handler.handle(request, document, documentDefinition);
@@ -241,8 +241,14 @@ public class XmlEditController implements Controller {
         if (this.browseService != null) {
             try {
                 Resource parentResource = this.repository.retrieve(token, resource.getURI().getParent(), false);
-                Util.setXsltParameter(model, "BROWSEURL", this.browseService
-                        .constructLink(parentResource, principal));
+                URL browseURL = browseService.urlConstructor(
+                        URL.create(RequestContext.getRequestContext().getServletRequest()))
+                        .withResource(parentResource)
+                        .withPrincipal(principal)
+                        .constructURL();
+
+                Util.setXsltParameter(model, "BROWSEURL", browseURL.toString());
+
             } catch (AuthorizationException e) {
                 // No browse available for this resource
             } catch (AuthenticationException e) {
@@ -254,38 +260,33 @@ public class XmlEditController implements Controller {
 
         Path uri = resource.getURI();
         Service service = RequestContext.getRequestContext().getService();
-        Map<String,String> actionParam = new HashMap<String,String>();
+        HttpServletRequest request = RequestContext.getRequestContext().getServletRequest();
+        Map<String,String> actionParam = new HashMap<>();
+        
+        URL serviceURL = service.urlConstructor(URL.create(request)).withURI(uri).constructURL();
+        
 
         actionParam.put(ACTION_PARAMETER_NAME, EDIT_ACTION);
-        Util.setXsltParameter(model, "editElementServiceURL", 
-                service.constructLink(uri, actionParam));
-        actionParam.put(ACTION_PARAMETER_NAME, EDIT_DONE_ACTION);
+        Util.setXsltParameter(model, "editElementServiceURL",
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, EDIT_ACTION).toString());
         Util.setXsltParameter(model, "editElementDoneServiceURL", 
-                service.constructLink(uri, actionParam));
-        actionParam.put(ACTION_PARAMETER_NAME, MOVE_ACTION);
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, EDIT_DONE_ACTION).toString());
         Util.setXsltParameter(model, "moveElementServiceURL", 
-                service.constructLink(uri, actionParam));
-        actionParam.put(ACTION_PARAMETER_NAME, MOVE_DONE_ACTION);
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, MOVE_ACTION).toString());
         Util.setXsltParameter(model, "moveElementDoneServiceURL", 
-                service.constructLink(uri, actionParam));
-        actionParam.put(ACTION_PARAMETER_NAME, DELETE_ELEMENT_ACTION);
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, MOVE_DONE_ACTION).toString());
         Util.setXsltParameter(model, "deleteElementServiceURL", 
-                service.constructLink(uri, actionParam));
-        actionParam.put(ACTION_PARAMETER_NAME, NEW_AT_ACTION);
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, DELETE_ELEMENT_ACTION).toString());
         Util.setXsltParameter(model, "newElementAtServiceURL", 
-                service.constructLink(uri, actionParam));
-        actionParam.put(ACTION_PARAMETER_NAME, NEW_ACTION);
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, NEW_AT_ACTION).toString());
         Util.setXsltParameter(model, "newElementServiceURL", 
-                service.constructLink(uri, actionParam));
-        actionParam.put(ACTION_PARAMETER_NAME, NEW_SUB_ELEMENT_AT_ACTION);
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, NEW_ACTION).toString());
         Util.setXsltParameter(model, "newSubElementAtServiceURL",
-                service.constructLink(uri, actionParam));
-        actionParam.put(ACTION_PARAMETER_NAME, DELETE_SUB_ELEMENT_AT_ACTION);
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, NEW_SUB_ELEMENT_AT_ACTION).toString());
         Util.setXsltParameter(model, "deleteSubElementAtServiceURL",
-                service.constructLink(uri, actionParam));
-        actionParam.put(ACTION_PARAMETER_NAME, FINISH_ACTION);
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, DELETE_SUB_ELEMENT_AT_ACTION).toString());
         Util.setXsltParameter(model, "finishEditingServiceURL",
-                service.constructLink(uri, actionParam));
+                new URL(serviceURL).setParameter(ACTION_PARAMETER_NAME, FINISH_ACTION).toString());
 
     }
 
@@ -313,7 +314,7 @@ public class XmlEditController implements Controller {
 
         logger.warn(sb.toString());
         
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         Util.setXsltParameter(model, "ERRORMESSAGE", "UNNSUPPORTED_ACTION_IN_MODE");
         return model;
     }
@@ -332,7 +333,7 @@ public class XmlEditController implements Controller {
         
         Resource resource = this.repository.retrieve(token, uri, false);
         
-        Map<String, Object> sessionMap = new HashMap<String, Object>();
+        Map<String, Object> sessionMap = new HashMap<>();
 
         EditDocument document = null;
         SchemaDocumentDefinition documentDefinition = null;
@@ -370,7 +371,7 @@ public class XmlEditController implements Controller {
         /* try to instantiate schema-parser */
         try {
             documentDefinition = 
-                new SchemaDocumentDefinition(docType, new URL(schemaURL));
+                new SchemaDocumentDefinition(docType, new java.net.URL(schemaURL));
         } catch (JDOMException e) {
             throw new XMLEditException("Schema build failure for schema '" + schemaURL + "'", e);
         } catch (MalformedURLException e) {

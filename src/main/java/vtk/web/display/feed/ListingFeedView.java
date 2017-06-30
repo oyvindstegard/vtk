@@ -217,7 +217,11 @@ public class ListingFeedView implements View {
 
     protected void addFeedLinks(HttpServletRequest request, Resource feedScope, Feed feed) {
         RequestContext requestContext = RequestContext.getRequestContext();
-        URL feedAlternateURL = viewService.constructURL(feedScope);
+        URL feedAlternateURL = viewService.urlConstructor(requestContext.getRequestURL())
+                .withResource(feedScope)
+                .matchAssertions(false)
+                .constructURL();
+
         feed.addLink(feedAlternateURL.toString(), "alternate");
         feed.addLink(requestContext.getRequestURL().toString(), "self");
     }
@@ -282,7 +286,8 @@ public class ListingFeedView implements View {
             Link link = abdera.getFactory().newLink();
             String urlString;
             if (!MultiHostUtil.isMultiHostPropertySet(resource)) {
-                urlString = viewService.constructLink(resource.getURI());
+                urlString = viewService.urlConstructor(URL.create(request))
+                        .withURI(resource.getURI()).constructURL().toString();
             }
             else {
                 urlString = MultiHostUtil.getMultiHostUrlProp(resource).getStringValue();
@@ -302,7 +307,10 @@ public class ListingFeedView implements View {
                     Path propRef = getPropRef(resource, mediaRef.getStringValue());
                     if (propRef != null) {
                         RequestContext requestContext = RequestContext.getRequestContext();
-                        mediaLink.setHref(viewService.constructLink(propRef));
+                        URL href = viewService.urlConstructor(requestContext.getRequestURL())
+                                .withURI(propRef)
+                                .constructURL();
+                        mediaLink.setHref(href.toString());
                         mediaLink.setRel("enclosure");
                         Repository repository = requestContext.getRepository();
                         String token = requestContext.getSecurityToken();
@@ -370,7 +378,9 @@ public class ListingFeedView implements View {
     private HtmlFragment prepareSummary(HttpServletRequest request, PropertySet propSet) {
         StringBuilder sb = new StringBuilder();
 
-        URL baseURL = viewService.constructURL(propSet.getURI());
+        URL baseURL = viewService.urlConstructor(URL.create(request))
+                .withURI(propSet.getURI())
+                .constructURL();
 
         if (!isExtendedFormat(request)) {
             // Maintain same behavior for IMAGE_REF in SearchResultMapper as before VTK-4174
@@ -413,8 +423,11 @@ public class ListingFeedView implements View {
 
     private String imageRef(PropertySet propSet) {
         String ret = null;
+        URL requestURL = RequestContext.getRequestContext().getRequestURL();
 
-        URL baseURL = viewService.constructURL(propSet.getURI());
+        URL baseURL = viewService.urlConstructor(requestURL)
+                .withURI(propSet.getURI())
+                .constructURL();
 
         Property picture = getProperty(propSet, picturePropDefPointer);
         if (picture != null) {
@@ -432,8 +445,7 @@ public class ListingFeedView implements View {
              * protocol-relative URLs, should have been a utility function operating directly on the values.
              */
             String imgHtml = "<img src=\"" + HtmlUtil.encodeBasicEntities(imageRef) + "\" />";
-            HtmlFragment imgElem = HtmlUtil.linkResolveFilter(imgHtml, baseURL, RequestContext
-                    .getRequestContext().getRequestURL(), useProtocolRelativeImages);
+            HtmlFragment imgElem = HtmlUtil.linkResolveFilter(imgHtml, baseURL, requestURL, useProtocolRelativeImages);
             try {
                 ret = ((HtmlElement) imgElem.getContent().get(0)).getAttribute("src").getValue();
             }
@@ -448,7 +460,11 @@ public class ListingFeedView implements View {
     private String imageThumbnailRef(PropertySet propSet) {
         String ret = null;
 
-        URL baseURL = viewService.constructURL(propSet.getURI());
+        URL requestURL = RequestContext.getRequestContext().getRequestURL();
+
+        URL baseURL = viewService.urlConstructor(requestURL)
+                .withURI(propSet.getURI())
+                .constructURL();
 
         Property picture = getProperty(propSet, picturePropDefPointer);
         if (picture != null) {
@@ -511,7 +527,14 @@ public class ListingFeedView implements View {
 
     protected String getId(Path resourceUri, Property publishedDateProp, String prefix)
             throws URIException, UnsupportedEncodingException {
-        String host = viewService.constructURL(resourceUri).getHost();
+        
+        URL requestURL = RequestContext.getRequestContext().getRequestURL();
+        
+        String host = viewService.urlConstructor(requestURL)
+                .withURI(resourceUri)
+                .constructURL()
+                .getHost();
+        
         StringBuilder sb = new StringBuilder(TAG_PREFIX);
         sb.append(host + ",");
         sb.append(publishedDateProp.getFormattedValue("iso-8601-short", null) + ":");

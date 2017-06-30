@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,19 +44,13 @@ import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
+import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
-import vtk.web.service.ServiceUrlProvider;
 import vtk.web.service.URL;
 
 
 public class LinkConstructorImpl implements LinkConstructor {
     private static final Logger logger = LoggerFactory.getLogger(LinkConstructorImpl.class);
-    
-	private final ServiceUrlProvider serviceUrlProvider;
-
-    public LinkConstructorImpl(ServiceUrlProvider serviceUrlProvider) {
-        this.serviceUrlProvider = serviceUrlProvider;
-    }
 
     public URL construct(Object arg, String parametersCSV, String serviceName) {
         if (arg == null) return null;
@@ -63,7 +58,7 @@ public class LinkConstructorImpl implements LinkConstructor {
             Path uri = null;
             Resource resource = null;
             String strUri = null;
-            
+
             if (arg instanceof Resource) {
                 resource = (Resource) arg;
                 uri = resource.getURI();
@@ -77,7 +72,7 @@ public class LinkConstructorImpl implements LinkConstructor {
                     return getUrlFromUrl(strUri);
                 }
                 uri = RequestContext.getRequestContext().getResourceURI();
-                
+
                 if (isSet(strUri)) {
                     uri = RequestContext.getRequestContext().getCurrentCollection();
 
@@ -93,27 +88,32 @@ public class LinkConstructorImpl implements LinkConstructor {
                 throw new IllegalArgumentException("Unsupported argument type: " + arg);
             }
 
-            ServiceUrlProvider.ServiceUrlBuilder urlBuilder;
+            Service.URLConstructor urlBuilder = null;
+
             if (isSet(serviceName)) {
-                urlBuilder = serviceUrlProvider.builder(serviceName);
+                Optional<Service> service = RequestContext.getRequestContext().service(serviceName);
+                if (service.isPresent()) {
+                    urlBuilder = service.get().urlConstructor(RequestContext.getRequestContext().getRequestURL());
+                }
             }
-            else {
-                urlBuilder = serviceUrlProvider.builder(RequestContext.getRequestContext().getService());
+
+            if (urlBuilder == null) {
+
+                urlBuilder = RequestContext.getRequestContext().getService().urlConstructor( 
+                        RequestContext.getRequestContext().getRequestURL());
             }
             Principal principal = RequestContext.getRequestContext().getPrincipal();
             if (resource != null) {
-                return urlBuilder
-                        .withResource(resource)
+                return urlBuilder.withResource(resource)
                         .withPrincipal(principal)
                         .withParameters(getParametersMap(parametersCSV))
-                        .build();
-                
+                        .constructURL();
             }
             return urlBuilder
-                    .withPath(uri)
+                    .withURI(uri)
                     .withPrincipal(principal)
                     .withParameters(getParametersMap(parametersCSV))
-                    .build();
+                    .constructURL();
 
         }
         catch (ServiceUnlinkableException e) {
@@ -137,26 +137,26 @@ public class LinkConstructorImpl implements LinkConstructor {
         return value != null && !value.trim().equals("");
     }
 
-	private Map<String, List<String>> getParametersMap(String parametersCSV) {
-	    if (parametersCSV == null || parametersCSV.trim().equals(""))
-	        return null;
-	    
-	    Map<String, List<String>> parameters = new LinkedHashMap<>();
+    private Map<String, List<String>> getParametersMap(String parametersCSV) {
+        if (parametersCSV == null || parametersCSV.trim().equals(""))
+            return null;
 
-	    for (String mapping: parametersCSV.split(",")) {
-			if (!mapping.contains("=")) {
-				throw new IllegalArgumentException(
-				        "Each entry in the parameters string must be in the format "
-						+ "'<paramname>=<paramvalue>'");
-			}	
+        Map<String, List<String>> parameters = new LinkedHashMap<>();
 
-			String parameterName = mapping.substring(0, mapping.indexOf("=")).trim();
-			
-			List<String> parameterValues = Collections.singletonList(
+        for (String mapping: parametersCSV.split(",")) {
+            if (!mapping.contains("=")) {
+                throw new IllegalArgumentException(
+                        "Each entry in the parameters string must be in the format "
+                                + "'<paramname>=<paramvalue>'");
+            }	
+
+            String parameterName = mapping.substring(0, mapping.indexOf("=")).trim();
+
+            List<String> parameterValues = Collections.singletonList(
                     mapping.substring(mapping.lastIndexOf("=") + 1).trim()
-            );
-			parameters.put(parameterName, parameterValues);
-		}
-		return parameters;
-	}
+                    );
+            parameters.put(parameterName, parameterValues);
+        }
+        return parameters;
+    }
 }

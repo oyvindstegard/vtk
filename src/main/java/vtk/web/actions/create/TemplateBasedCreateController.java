@@ -45,8 +45,8 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
-import vtk.repository.ContentInputSources;
 
+import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -57,6 +57,7 @@ import vtk.util.io.IO;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 import vtk.web.templates.ResourceTemplate;
 import vtk.web.templates.ResourceTemplateManager;
 
@@ -80,10 +81,13 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
         Repository repository = requestContext.getRepository();
 
         Resource collection = repository.retrieve(token, uri, false);
-        String url = service.constructLink(collection, requestContext.getPrincipal());
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(collection)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
         String collectionType = collection.getResourceType();
         
-        CreateDocumentCommand command = new CreateDocumentCommand(url);
+        CreateDocumentCommand command = new CreateDocumentCommand(url.toString());
 
         List<ResourceTemplate> l = templateManager.getDocumentTemplates(token, uri);
         
@@ -207,7 +211,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
                     List<String> list = sortmap.get(name);
                     list.add(t.getUri().toString());
                 } else {
-                    ArrayList<String> list = new ArrayList<String>();
+                    ArrayList<String> list = new ArrayList<>();
                     list.add(t.getUri().toString());
                     sortmap.put(name, list);
                 }
@@ -245,7 +249,7 @@ public class TemplateBasedCreateController extends SimpleFormController<CreateDo
             throws Exception {
         super.onBindAndValidate(request, command, errors);
 
-        CreateDocumentCommand createDocumentCommand = (CreateDocumentCommand) command;
+        CreateDocumentCommand createDocumentCommand = command;
 
         if (createDocumentCommand.getCancelAction() != null)
             return;

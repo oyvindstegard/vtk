@@ -116,7 +116,7 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
         
         String content = diffRevisions(revisionNameA, revisionNameB, request);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("revisionA", revisionNameA);
         model.put("revisionB", revisionNameB);
         model.put("content", content);
@@ -124,7 +124,9 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
         
         // TODO: Diff service
         RequestContext requestContext = RequestContext.getRequestContext();
-        URL originalUrl = viewService.constructURL(requestContext.getResourceURI());
+        URL originalUrl = viewService.urlConstructor(requestContext.getRequestURL())
+                .withURI(requestContext.getResourceURI())
+                .constructURL();
 
         originalUrl.addParameter("revision", revisionNameB);
         model.put("originalUrl", originalUrl);
@@ -169,7 +171,11 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Resource resource = repository.retrieve(token, requestContext.getResourceURI(), false);
-        URL forwardURL = viewService.constructURL(resource, requestContext.getPrincipal());
+        
+        URL forwardURL = viewService.urlConstructor(requestContext.getRequestURL())
+                .withResource(resource)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
         forwardURL.clearParameters();
         if (!"HEAD".equals(revisionName)) {
             forwardURL.addParameter("revision", revisionName);
@@ -215,11 +221,11 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
         
         List<Revision> revisions = repository.getRevisions(token, uri);
 
-        List<Object> allRevisions = new ArrayList<Object>();
+        List<Object> allRevisions = new ArrayList<>();
         String revisionBNext = null;
         boolean haveRecentlySeenRevisionA = false;
         for (Revision revision: revisions) {
-            Map<String, Object> rev = new HashMap<String, Object>();
+            Map<String, Object> rev = new HashMap<>();
             rev.put("id", revision.getID());
             rev.put("name", revision.getName());
             rev.put("timestamp", revision.getTimestamp());

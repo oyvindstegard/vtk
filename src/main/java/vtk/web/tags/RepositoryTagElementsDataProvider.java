@@ -37,6 +37,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.web.RequestContext;
@@ -102,7 +103,7 @@ public class RepositoryTagElementsDataProvider {
             List<TagFrequency> freqList, int magnitudeMax, int magnitudeMin) {
 
         // Makes a list with TagElement instances
-        List<TagElement> tagElements = new ArrayList<TagElement>(freqList.size());
+        List<TagElement> tagElements = new ArrayList<>(freqList.size());
 
         if (!freqList.isEmpty()) {
 
@@ -136,16 +137,20 @@ public class RepositoryTagElementsDataProvider {
         int frequencyLeveled = frequency - minFreq;
         float magnitude = (float) frequencyLeveled / (float) maxLeveled;
 
-        return (int) Math.round(magnitude * (magnitudeMax - magnitudeMin) + magnitudeMin);
+        return Math.round(magnitude * (magnitudeMax - magnitudeMin) + magnitudeMin);
     }
 
     private URL getUrl(String tagName, Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs,
             List<String> urlSortingParmas, String overrideResourceTypeTitle, boolean displayScope) {
 
-        URL url = this.tagService.constructURL(scopeUri);
+        URL url = tagService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                .withURI(scopeUri)
+                .constructURL();
+        
         if (scopeUri.isRoot() && !this.servesRoot) {
             scopeUri = RequestContext.getRequestContext().getCurrentCollection();
-            url = this.tagService.constructURL(scopeUri);
+            
+            url = url.setPath(scopeUri);
             url.addParameter(TagsHelper.SCOPE_PARAMETER, Path.ROOT.toString());
         }
         url.addParameter(TagsHelper.TAG_PARAMETER, tagName);

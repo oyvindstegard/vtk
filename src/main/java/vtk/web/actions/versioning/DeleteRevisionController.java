@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.repository.Revision;
@@ -66,7 +67,10 @@ public class DeleteRevisionController implements Controller {
         Path uri = requestContext.getResourceURI();
         
         Resource resource = requestContext.getRepository().retrieve(token, uri, false);
-        URL redirectURL = this.redirectService.constructURL(resource, principal);
+        URL redirectURL = redirectService.urlConstructor(requestContext.getRequestURL())
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
         
         String revisionParam = request.getParameter("revision");
         if (revisionParam == null) {
@@ -88,7 +92,8 @@ public class DeleteRevisionController implements Controller {
 
         try {
             requestContext.getRepository().deleteRevision(token, uri, revision);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             logger.warn("Failed to delete revision on " + uri + ": " + revision, t);
         }
         response.sendRedirect(redirectURL.toString());

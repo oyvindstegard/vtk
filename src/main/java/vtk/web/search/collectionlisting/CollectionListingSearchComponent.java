@@ -95,8 +95,10 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
                 lastModified, token);
         Element cached = cache.get(cacheKey);
         Object cachedObj = cached != null ? cached.getObjectValue() : null;
-
-        URL localHostBaseURL = viewService.constructURL(Path.ROOT);
+        
+        URL localHostBaseURL = viewService.urlConstructor(URL.create(request))
+                .withURI(Path.ROOT)
+                .constructURL();
 
         boolean isMultiHostSearch = false; // Mark if multi host search required
         boolean isCached = false; // Mark if retrieved from cache
@@ -184,9 +186,9 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
         }
 
         // Different categories of additional queries
-        List<Query> localOtherQueries = new ArrayList<Query>();
-        List<Query> localIncludeUriQueries = new ArrayList<Query>();
-        List<Query> localExcludeUriQueries = new ArrayList<Query>();
+        List<Query> localOtherQueries = new ArrayList<>();
+        List<Query> localIncludeUriQueries = new ArrayList<>();
+        List<Query> localExcludeUriQueries = new ArrayList<>();
         for (Query localQuery : additionalQueries) {
             if (localQuery instanceof UriPrefixQuery) {
                 if (((UriPrefixQuery) localQuery).isInverted()) {
@@ -261,7 +263,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
     }
 
     private List<Query> getAdditionalQueries(Resource collection, HttpServletRequest request) {
-        List<Query> result = new ArrayList<Query>();
+        List<Query> result = new ArrayList<>();
         if (queryBuilders != null) {
             for (SearchComponentQueryBuilder queryBuilder : queryBuilders) {
                 Query q = queryBuilder.build(collection, request);

@@ -30,8 +30,11 @@
  */
 package vtk.web.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
@@ -61,9 +64,187 @@ import vtk.security.web.AuthenticationChallenge;
  * </ul>
  * 
  * @see vtk.web.service.ServiceHandlerMapping
- *  
  */
 public interface Service extends Ordered {
+
+    /**
+     * Creates a URL constructor for this service. Typical usage:
+     * <code>
+     *   URL base = requestContext.getRequestURL(); // starting point
+     *   URL serviceURL = service.urlConstructor(base)
+     *      .resource(resource)
+     *      .principal(principal)
+     *      .constructURL();
+     * </code>
+     * @param base the starting point for the URL construction. The request parameters 
+     * are cleared, and the path is set to {@code /}.
+     * @return the URL constructor
+     */
+    public default URLConstructor urlConstructor(URL base) {
+        return new URLConstructor(Objects.requireNonNull(base), this);
+    }
+
+    /**
+     * A class that constructs URLs to a service based on
+     * various information provided by the caller, such as  
+     * {@link Path URI}, {@link Resource resource}, or 
+     * {@link Principal principal}. The URL may or may not be constructed
+     * based on the {@link Assertion assertions} 
+     * that are configured on the service.
+     */
+    public static class URLConstructor {
+        private Service service;
+        private URL base;
+        private Path uri;
+        private Resource resource;
+        private Principal principal;
+        private boolean matchAssertions = false;
+        private Map<String, List<String>> parameters;
+
+        private URLConstructor(URL base, Service service) {
+            this.base = new URL(base).clearParameters().setPath(Path.ROOT);
+            this.service = service;
+        }
+
+        /**
+         * Specifies the {@link Path path} part of the URL. 
+         * Assertions will not be matched when constructing URLs with this mechanism.
+         * @param uri the path of the URL
+         * @return this URL constructor
+         */
+        public URLConstructor withURI(Path uri) {
+            this.uri = uri;
+            return this;
+        }
+
+        /**
+         * Specifies the {@link Path path} part of the URL, as well as enabling assertion
+         * matching possible when constructing URLs (implies {@link #matchAssertions}).
+         * @param resource the resource object whose URI will constitute the path of the URL
+         * @return this URL constructor
+         */
+        public URLConstructor withResource(Resource resource) {
+            this.resource = resource;
+            this.matchAssertions = true;
+            return this;
+        }
+
+        /**
+         * Specifies the {@link Principal principal} for which the URL is constructed. If no 
+         * principal (or the value {@code null}) is specified, the URL construction is 
+         * considered to be anonymous.
+         * @param principal the principal
+         * @return this URL constructor
+         */
+        public URLConstructor withPrincipal(Principal principal) {
+            this.principal = principal;
+            return this;
+        }
+
+        /**
+         * Specifies whether to perform assertion matching when constructing the URL. 
+         * This requires {@link #resource} to also be called.
+         * @param matchAssertions whether to perform assertion matching 
+         * (the default is {@code false}, unless {@link #resource} is called).
+         * @return this URL constructor
+         * @see Assertion#processURL(URL, Resource, Principal, boolean)
+         * @see Assertion#processURL(URL)
+         */
+        public URLConstructor matchAssertions(boolean matchAssertions) {
+            this.matchAssertions = matchAssertions;
+            return this;
+        }
+
+        /**
+         * Specifies a query string parameter to add to the constructed URL
+         * @param name the name of the query string parameter
+         * @param value the value of the query string parameter
+         * @return this URL constructor
+         */
+        public URLConstructor withParameter(String name, String value) {
+            parameters.computeIfAbsent(name, k -> new ArrayList<>()).add(value);
+            return this;
+        }
+        
+        /**
+         * Specifies map of a query string parameters to add to the constructed URL
+         * @param parameters the query string parameter map
+         * @return this URL constructor
+         */
+        public URLConstructor withParameters(Map<String, List<String>> parameters) {
+            if (parameters != null) {
+                this.parameters = new HashMap<>(parameters);
+            }
+            return this;
+        }
+
+       /**
+        * Attempts to construct the URL. All assertions of this service (and its ancestors)
+        * are given an opportunity to contribute to the URL construction. If {@link #resource} 
+        * and/or {@link #matchAssertions} is specified, 
+        * {@link Assertion#processURL(URL, Resource, Principal, boolean)} is called for each 
+        * assertion, otherwise {@link Assertion#processURL(URL)} is called.
+        * 
+        * If the URL cannot be constructed (i.e. at least one assertion fails to match),
+        * {@link ServiceUnlinkableException} is thrown.
+        * 
+        * @return the URL as constructed by the service
+        * @throws ServiceUnlinkableException if at least one assertion fails to match
+        */
+        public URL constructURL() throws ServiceUnlinkableException {
+            if (resource == null && uri == null) {
+                throw new IllegalStateException(
+                        "Either 'resource' or 'uri' must be specified");
+            }
+            if (matchAssertions && resource == null) {
+                throw new IllegalStateException(
+                        "Cannot match assertions unless 'resource' is specified");
+            }
+            
+            URL urlObject = new URL(this.base);
+            if (resource != null) {
+                urlObject.setPath(resource.getURI());
+            }
+            else {
+                urlObject.setPath(uri);
+            }
+            
+            if (resource != null && resource.isCollection()) {
+                urlObject.setCollection(true);
+            }
+            
+            if (parameters != null) {
+                for (Map.Entry<String, List<String>> entry: parameters.entrySet()) {
+                    for (String value: entry.getValue()) {
+                        urlObject.addParameter(entry.getKey(), value);
+                    }
+                }
+            }
+            
+            for (Assertion assertion: service.getAllAssertions()) {
+                boolean match = false;
+                if (resource != null) {
+                    try { 
+                        match = assertion.processURL(urlObject, resource,
+                                principal, matchAssertions);
+                    }
+                    catch (Exception e) { }
+
+                    if (match == false) {
+                        throw new ServiceUnlinkableException(
+                                "Unable to construct URL to service " + service.getName() 
+                                + " for resource " + resource.getURI() + ". "
+                                + "Assertion " + assertion + " failed to match");
+                    }
+                }
+                else {
+                    assertion.processURL(urlObject);
+                }
+            }
+            service.postProcess(urlObject, resource);
+            return urlObject;
+        }
+    }
 
     /**
      * Gets this service's list of assertions.
@@ -107,8 +288,6 @@ public interface Service extends Ordered {
      */
     public Object getAttribute(String name);
     
-    
-
     /**
      * Gets this service's parent service.
      *
@@ -117,8 +296,6 @@ public interface Service extends Ordered {
      */
     public Service getParent();
 	
-
-
     /**
      * Checks whether this service is a descendant of another service.
      *
@@ -129,102 +306,6 @@ public interface Service extends Ordered {
     public boolean isDescendantOf(Service service);
 
     /**
-     * Constructs a link (URL) for this service to a given resource
-     * and a principal.
-     *
-     * @param resource the resource to construct the URL for
-     * @param principal the current principal
-     * @return the constructed URL
-     * @exception ServiceUnlinkableException if at least one the
-     * assertions for this service (or any of the ancestors) fail to
-     * match for the resource or principal.
-     */
-    public String constructLink(Resource resource, Principal principal)
-        throws ServiceUnlinkableException;
-	
-
-    public URL constructURL(Resource resource, Principal principal)
-        throws ServiceUnlinkableException;
-
-
-    /**
-     * Constructs a link (URL) for this service to a given resource
-     * and a principal.
-     *
-     * @param resource the resource to construct the URL for
-     * @param principal the current principal
-     * @return the constructed URL
-     * @param matchAssertions determines whether all assertions must
-     * match in order for the link to be constructed
-     * @exception ServiceUnlinkableException if
-     * <code>matchAssertions</code> is <code>true</code> and at least
-     * one of the assertions for this service (or any of the
-     * ancestors) fail to match for the resource or principal.
-     */
-    public String constructLink(Resource resource, Principal principal,
-                                boolean matchAssertions)
-        throws ServiceUnlinkableException;
-
-    public URL constructURL(Resource resource, Principal principal,
-                            boolean matchAssertions)
-        throws ServiceUnlinkableException;
-
-    /**
-     * Constructs a link (URL) for this service to a given resource
-     * and a principal, and a map of extra parameters that will go in
-     * the query string.
-     *
-     * @param resource the resource to construct the URL for
-     * @param principal the current principal
-     * @param parameters a <code>Map</code> of (key, value) pairs that
-     * will be appended to the query string.
-     * @return the constructed URL
-     * @exception ServiceUnlinkableException if at least one of the
-     * assertions for this service (or any of the ancestors) fail to
-     * match for the resource or principal.
-     */
-    public String constructLink(Resource resource, Principal principal, Map<String, String> parameters)
-        throws ServiceUnlinkableException;
-
-    public URL constructURL(Resource resource, Principal principal, Map<String, String> parameters)
-        throws ServiceUnlinkableException;
-
-    /**
-     * Constructs a link (URL) for this service to a given resource
-     * and a principal, and a map of extra parameters that will go in
-     * the query string. 
-     *
-     * @param resource the resource to construct the URL for
-     * @param principal the current principal
-     * @param parameters a map of (key, value) pairs that
-     * will be appended to the query string.
-     * @param matchAssertions determines whether all assertions must
-     * match in order for the link to be constructed
-     * @return the constructed URL
-     * @exception ServiceUnlinkableException if
-     * <code>matchAssertions</code> is <code>true</code> and at least
-     * one of the assertions for this service (or any of the
-     * ancestors) fail to match for the resource or principal.
-     */
-    public String constructLink(Resource resource, Principal principal, Map<String, String> parameters,
-                                boolean matchAssertions)
-        throws ServiceUnlinkableException;
-	
-    public URL constructURL(Resource resource, Principal principal, Map<String, String> parameters,
-                            boolean matchAssertions)
-        throws ServiceUnlinkableException;
-
-    public String constructLink(Path uri);
-
-    public URL constructURL(Path uri);
-    
-    public URL constructURL(Resource resource);
-
-    public String constructLink(Path uri, Map<String, String> parameters);
-
-    public URL constructURL(Path uri, Map<String, String> parameters);
-
-    /**
      * Gets the list of handler interceptors for this service, if any.
      *
      * @return a <code>List</code> of {@link
@@ -232,7 +313,6 @@ public interface Service extends Ordered {
      */
     public List<HandlerInterceptor> getHandlerInterceptors();
     
-
     /**
      * Gets the list of servlet filters for this service, if any.
      *
@@ -249,8 +329,6 @@ public interface Service extends Ordered {
      */
     public AuthenticationChallenge getAuthenticationChallenge();
 
-
-
     /**
      * Adds this service to the children of another service.
      *
@@ -264,5 +342,10 @@ public interface Service extends Ordered {
      * @return A localized name for this service
      */
     public String getLocalizedName(Resource resource, HttpServletRequest request);
+
+    /**
+     * TODO: remove from interface
+     */
+    void postProcess(URL urlObject, Resource resource);
 
 }

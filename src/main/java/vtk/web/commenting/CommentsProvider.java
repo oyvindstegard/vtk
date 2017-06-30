@@ -125,8 +125,12 @@ public class CommentsProvider implements ReferenceDataProvider {
 
             URL baseDeleteURL = null;
             try {
-                baseDeleteURL = deleteCommentService.constructURL(resource, principal);
-            } catch (Exception e) { }
+                baseDeleteURL = deleteCommentService.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
+            }
+            catch (Exception e) { }
 
             for (Comment c: comments) {
                 if (baseDeleteURL != null) {
@@ -138,27 +142,43 @@ public class CommentsProvider implements ReferenceDataProvider {
             model.put("deleteCommentURLs", deleteCommentURLs);
 
             try {
-                URL deleteAllCommentsURL = deleteAllCommentsService.constructURL(resource, principal);
+                URL deleteAllCommentsURL = deleteAllCommentsService.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
                 model.put("deleteAllCommentsURL", deleteAllCommentsURL);
-            } catch (Exception e) { }
+            }
+            catch (Exception e) { }
 
 
             URL baseCommentURL = null;
             try {
-                baseCommentURL = currentService.constructURL(resource, principal);
-            } catch (Exception e) { }
+                baseCommentURL = currentService.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
+            }
+            catch (Exception e) { }
             model.put("baseCommentURL", baseCommentURL);
 
             try {
-                URL postCommentURL = postCommentService.constructURL(resource, principal);
+                URL postCommentURL = postCommentService.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
                 model.put("postCommentURL", postCommentURL);
-            } catch (Exception e) { }
+            }
+            catch (Exception e) { }
 
             if (this.loginService != null && principal == null) {
                 try {
-                    URL loginURL = loginService.constructURL(resource, principal);
+                    URL loginURL = loginService.urlConstructor(requestContext.getRequestURL())
+                            .withResource(resource)
+                            .withPrincipal(principal)
+                            .constructURL();
                     model.put("loginURL", loginURL);
-                } catch (Exception e) { }
+                }
+                catch (Exception e) { }
             }
 
             if (resourceCommentsFeedService != null) {
@@ -166,9 +186,13 @@ public class CommentsProvider implements ReferenceDataProvider {
                 // Only provide feed subscription link if resource is READ for ALL.
                 if (repository.isAuthorized(resource, RepositoryAction.READ, PrincipalFactory.ALL, false)) {
                     try {
-                        URL feedURL = resourceCommentsFeedService.constructURL(resource, principal);
+                        URL feedURL = resourceCommentsFeedService.urlConstructor(requestContext.getRequestURL())
+                                .withResource(resource)
+                                .withPrincipal(principal)
+                                .constructURL();
                         model.put("feedURL", feedURL);
-                    } catch (Exception e) { }
+                    }
+                    catch (Exception e) { }
                 }
             }
         }

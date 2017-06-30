@@ -44,8 +44,8 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
-import vtk.repository.ContentInputSources;
 
+import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -115,7 +115,10 @@ public class ImageEditController extends ResourceEditController {
         if (wrapper.isSaveCopy()) {
             Path destUri = copyHelper.copyResource(resource.getURI(), resource.getURI(), repository, token, resource, is);
             this.resourceManager.unlock();
-            return new ModelAndView(new RedirectView(this.editService.constructURL(destUri).toString()));
+            URL url = editService.urlConstructor(URL.create(request))
+                    .withURI(destUri)
+                    .constructURL();
+            return new ModelAndView(new RedirectView(url.toString()));
         }
 
         repository.store(token, resource);
@@ -153,9 +156,12 @@ public class ImageEditController extends ResourceEditController {
 
     private Map<String, Object> addImageEditorServices(Map<String, Object> model, Resource resource, Principal principal) {
         if (this.loadImageService != null) {
-            URL imageSourceURL = this.loadImageService.constructURL(resource, principal);
             
             RequestContext requestContext = RequestContext.getRequestContext();
+            URL imageSourceURL = loadImageService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL();
             if(requestContext.getServletRequest().isSecure() && imageSourceURL.getProtocol().equals("http")) {
                 imageSourceURL.setProtocol("https");
             }

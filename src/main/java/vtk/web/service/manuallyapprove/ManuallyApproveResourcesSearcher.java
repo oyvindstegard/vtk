@@ -135,11 +135,15 @@ public class ManuallyApproveResourcesSearcher {
 
         // The final product. Will be populated with search results.
         List<ManuallyApproveResource> result = new ArrayList<>();
+        
+        RequestContext requestContext = RequestContext.getRequestContext();
 
-        Repository repository = RequestContext.getRequestContext().getRepository();
+        Repository repository = requestContext.getRepository();
         String token = SecurityContext.getSecurityContext().getToken();
-        URL localHostURL = viewService.constructURL(Path.ROOT);
-
+        URL localHostURL = viewService.urlConstructor(requestContext.getRequestURL())
+                .withURI(Path.ROOT)
+                .constructURL();
+        
         ConfigurablePropertySelect propertySelect = null;
         if (this.configurablePropertySelectPointers != null && this.resourceTypeTree != null) {
             for (String propPointer : this.configurablePropertySelectPointers) {
@@ -165,7 +169,7 @@ public class ManuallyApproveResourcesSearcher {
 
         // Get all resources that are eligible for manual approval, all
         // separated on origin (location)
-        Map<String, List<PropertySet>> resourceSet = new HashMap<String, List<PropertySet>>();
+        Map<String, List<PropertySet>> resourceSet = new HashMap<>();
 
         // Get resources to manually approve
         for (String location : locations) {
@@ -360,7 +364,7 @@ public class ManuallyApproveResourcesSearcher {
     private Set<PropertySet> getAlreadyApprovedMissingSource(Set<String> alreadyApproved,
             List<ManuallyApproveResource> result, Repository repository, String token, URL localHostURL) {
 
-        Set<String> missingAlreadyApproved = new HashSet<String>();
+        Set<String> missingAlreadyApproved = new HashSet<>();
         for (String s : alreadyApproved) {
             Optional<URL> url = getAsURL(s);
             boolean found = false;
@@ -375,11 +379,11 @@ public class ManuallyApproveResourcesSearcher {
             }
         }
 
-        Set<PropertySet> alreadyApprovedResources = new HashSet<PropertySet>();
+        Set<PropertySet> alreadyApprovedResources = new HashSet<>();
         if (missingAlreadyApproved.size() > 0) {
 
-            Set<String> localPathsAsStringSet = new HashSet<String>();
-            Set<URL> urls = new HashSet<URL>();
+            Set<String> localPathsAsStringSet = new HashSet<>();
+            Set<URL> urls = new HashSet<>();
 
             for (String approved : missingAlreadyApproved) {
 

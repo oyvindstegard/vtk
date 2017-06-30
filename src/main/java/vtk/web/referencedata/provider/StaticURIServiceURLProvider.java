@@ -30,7 +30,9 @@
  */
 package vtk.web.referencedata.provider;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -65,7 +67,7 @@ public class StaticURIServiceURLProvider implements ReferenceDataProvider {
     private Path path;
     private Service service;
     private String modelName = null;
-    private Map<String, String> parameters;
+    private Map<String, List<String>> parameters = new HashMap<>();
     
     
     @Required public void setPath(String path) {
@@ -81,16 +83,19 @@ public class StaticURIServiceURLProvider implements ReferenceDataProvider {
     }
     
     public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
+        for (String key: parameters.keySet()) {
+            String value = parameters.get(key);
+            this.parameters.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+        }
     }
     
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
-
-        URL url = this.parameters == null ?
-            this.service.constructURL(this.path) :
-            this.service.constructURL(this.path, this.parameters);
         
+        URL url = service.urlConstructor(URL.create(request))
+            .withURI(path)
+            .withParameters(parameters)
+            .constructURL();
 
         @SuppressWarnings("unchecked")
         Map<String, Object> urlMap = (Map<String, Object>) model.get(this.modelName);

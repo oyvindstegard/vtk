@@ -56,6 +56,7 @@ import vtk.web.search.Listing;
 import vtk.web.search.ListingEntry;
 import vtk.web.search.SearchComponent;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class EventComponent extends ViewRenderingDecoratorComponent {
 
@@ -119,7 +120,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
             throws Exception {
         super.processModel(model, request, response);
 
-        Map<String, Object> conf = new HashMap<String, Object>();
+        Map<String, Object> conf = new HashMap<>();
 
         String uri = request.getStringParameter(PARAMETER_URI);
         if (uri == null) {
@@ -183,12 +184,17 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
         Resource resource = null;
         try {
             resource = repo.retrieve(token, resourcePath, false);
-            conf.put("uri", viewService.constructURL(resource));
-        } catch (AuthenticationException e) {
-        } catch (AuthorizationException e) {
-        } catch (ResourceNotFoundException e) {
+            URL url = viewService.urlConstructor(rc.getRequestURL())
+                    .withResource(resource)
+                    .matchAssertions(false)
+                    .constructURL();
+            conf.put("uri", url);
+        }
+        catch (AuthenticationException | AuthorizationException e) { }
+        catch (ResourceNotFoundException e) {
             throw new DecoratorComponentException(uri + " does not exist");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new DecoratorComponentException(e.getMessage());
         }
 
@@ -211,7 +217,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
 
         if (showOnlyOngoing) {
             Calendar startDate, now = Calendar.getInstance();
-            List<ListingEntry> tmpEvents = new ArrayList<ListingEntry>(events.getEntries());
+            List<ListingEntry> tmpEvents = new ArrayList<>(events.getEntries());
 
             for (ListingEntry entry : events.getEntries()) {
 
@@ -252,7 +258,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
             tomorrow.add(Calendar.DATE, 1);
             model.put("tomorrow", tomorrow.getTime());
 
-            List<PropertySetTmp> psList = new ArrayList<PropertySetTmp>();
+            List<PropertySetTmp> psList = new ArrayList<>();
             for (ListingEntry entry : events.getEntries()) {
 
                 PropertySet ps = entry.getPropertySet();
@@ -281,7 +287,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
             midnight.set(Calendar.MILLISECOND, 0);
 
             PropertySetTmp pst;
-            List<PropertySetDate> groupedByDayEvents = new ArrayList<PropertySetDate>();
+            List<PropertySetDate> groupedByDayEvents = new ArrayList<>();
             while (groupedByDayEvents.size() < maxEvents && 0 < psList.size()) {
                 for (int i = 0; i < psList.size(); i++) {
                     pst = psList.get(i);
@@ -349,7 +355,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
     }
 
     private List<String> getElementOrder(String param, DecoratorRequest request) {
-        List<String> resultOrder = new ArrayList<String>();
+        List<String> resultOrder = new ArrayList<>();
 
         String[] order = null;
         try {
@@ -472,12 +478,14 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
         this.defaultElementOrder = defaultElementOrder;
     }
 
+    @Override
     protected String getDescriptionInternal() {
         return "Inserts a event list component on the page";
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_ADD_TO_CALENDAR, PARAMETER_ADD_TO_CALENDAR_DESC);
         map.put(PARAMETER_ALL_EVENTS_LINK, PARAMETER_ALL_EVENTS_LINK_DESC);
         map.put(PARAMETER_ALL_EVENTS_TEXT, PARAMETER_ALL_EVENTS_TEXT_DESC);

@@ -35,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -55,6 +56,7 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
     private boolean displayOnlyIfAuth = false;
     private boolean displayAuthUser = false;
 
+    @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
@@ -73,7 +75,7 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
 
         model.put("principal", principal);
 
-        Map<String, URL> options = new LinkedHashMap<String, URL>();
+        Map<String, URL> options = new LinkedHashMap<>();
 
         try {
             if (principal == null && !displayOnlyIfAuth) { // Not logged in (unauthenticated)
@@ -82,15 +84,20 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
                 loginURL.addParameter("authTarget", request.getServletRequest().getScheme());
                 options.put("login", loginURL);
                 this.putAdminURL(options, resource, request);
-            } else if (principal != null) { // Logged in (authenticated)
+            }
+            else if (principal != null) { // Logged in (authenticated)
                 if (displayAuthUser) {
                     options.put("principal-desc", null);
                 }
                 this.putAdminURL(options, resource, request);
-                options.put("logout", this.logoutService.constructURL(resource, principal));
+                URL logoutURL = logoutService.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
+                options.put("logout", logoutURL);
             }
-        } catch (Exception e) {
         }
+        catch (Exception e) { }
 
         model.put("options", options);
     }
@@ -98,10 +105,15 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
     private void putAdminURL(Map<String, URL> options, Resource resource, DecoratorRequest request) throws Exception {
         Service adminService = this.alternativeLoginServices.get("admin");
         if (adminService != null) {
+            
+            URL adminURL = adminService.urlConstructor(URL.create(request.getServletRequest()))
+                    .withURI(resource.getURI())
+                    .constructURL();
             if (resource.isCollection()) {
-                options.put("admin-collection", adminService.constructURL(resource.getURI()));
-            } else {
-                options.put("admin", adminService.constructURL(resource.getURI()));
+                options.put("admin-collection", adminURL);
+            }
+            else {
+                options.put("admin", adminURL);
             }
         }
     }
@@ -122,12 +134,14 @@ public class LoginManageComponent extends ViewRenderingDecoratorComponent {
         this.logoutService = logoutService;
     }
 
+    @Override
     protected String getDescriptionInternal() {
         return DESCRIPTION;
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         return map;
     }
 

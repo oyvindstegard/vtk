@@ -93,14 +93,20 @@ public class ResourceServiceExistsURLProvider implements ReferenceDataProvider, 
             if (uri != null) {
                 resource = repository.retrieve(token, uri, true);
             }
-        } catch (Throwable t) { }
+        }
+        catch (Throwable t) { }
 
         URL url = null;
         try {
             if (resource != null) {
-                url = service.constructURL(resource, principal, true);
+                url = service.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .matchAssertions(true)
+                        .constructURL();
             }
-        } catch (ServiceUnlinkableException ex) { }
+        }
+        catch (ServiceUnlinkableException ex) { }
 
         model.put(this.urlName, url);
     }

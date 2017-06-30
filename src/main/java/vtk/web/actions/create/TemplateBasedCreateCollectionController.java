@@ -56,6 +56,7 @@ import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.actions.ActionsHelper;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 import vtk.web.templates.ResourceTemplate;
 import vtk.web.templates.ResourceTemplateManager;
 import vtk.web.view.freemarker.MessageLocalizer;
@@ -82,9 +83,12 @@ public class TemplateBasedCreateCollectionController
         Repository repository = requestContext.getRepository();
         Resource resource = repository.retrieve(requestContext.getSecurityToken(), requestContext.getResourceURI(),
                 false);
-        String url = service.constructLink(resource, requestContext.getPrincipal());
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
 
-        CreateCollectionCommand command = new CreateCollectionCommand(url);
+        CreateCollectionCommand command = new CreateCollectionCommand(url.toString());
         
         // Set normal folder template as the selected
         command.setSourceURI(NORMAL_FOLDER_IDENTIFIER);
@@ -99,7 +103,7 @@ public class TemplateBasedCreateCollectionController
             CreateCollectionCommand command, Errors errors) throws Exception {
         
         RequestContext requestContext = RequestContext.getRequestContext();
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -109,7 +113,7 @@ public class TemplateBasedCreateCollectionController
         HttpServletRequest servletRequest = requestContext.getServletRequest();
         org.springframework.web.servlet.support.RequestContext springRequestContext = new org.springframework.web.servlet.support.RequestContext(
                 servletRequest);
-        Map<String, String> tmp = new LinkedHashMap<String, String>();
+        Map<String, String> tmp = new LinkedHashMap<>();
 
         String standardCollectionName = new MessageLocalizer("property.standardCollectionName", "Standard collection",
                 null, springRequestContext).get(null).toString();
@@ -132,7 +136,7 @@ public class TemplateBasedCreateCollectionController
             HttpServletResponse response, CreateCollectionCommand command,
             BindException errors) throws Exception {
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         if (command.getCancelAction() != null) {
             command.setDone(true);
@@ -209,7 +213,7 @@ public class TemplateBasedCreateCollectionController
     }
 
     private Resource createNewFolder(CreateCollectionCommand command, Path uri, RequestContext requestContext) throws Exception {
-        CreateCollectionCommand createCollectionCommand = (CreateCollectionCommand) command;
+        CreateCollectionCommand createCollectionCommand = command;
 
         String title = createCollectionCommand.getTitle();
         String name = fixCollectionName(createCollectionCommand.getName());
@@ -349,7 +353,7 @@ public class TemplateBasedCreateCollectionController
     }
 
     public void setNormalFolderProperties(Map<PropertyTypeDefinition, Value> normalFolderProperties) {
-        this.normalFolderProperties = new HashMap<PropertyTypeDefinition, Value>();
+        this.normalFolderProperties = new HashMap<>();
         this.normalFolderProperties.putAll(normalFolderProperties);
     }
 }

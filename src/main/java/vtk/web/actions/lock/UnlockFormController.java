@@ -42,6 +42,7 @@ import vtk.repository.Resource;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class UnlockFormController extends SimpleFormController<UnlockFormCommand> {
 
@@ -53,8 +54,11 @@ public class UnlockFormController extends SimpleFormController<UnlockFormCommand
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Resource resource = repository.retrieve(token, uri, false);
-        String url = service.constructLink(resource, requestContext.getPrincipal());
-        UnlockFormCommand command = new UnlockFormCommand(url);
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
+        UnlockFormCommand command = new UnlockFormCommand(url.toString());
         return command;
     }
 

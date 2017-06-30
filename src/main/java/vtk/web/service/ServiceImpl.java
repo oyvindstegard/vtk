@@ -44,12 +44,8 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import vtk.repository.Path;
 import vtk.repository.Resource;
-import vtk.security.Principal;
 import vtk.security.web.AuthenticationChallenge;
-import vtk.util.net.NetUtils;
-import vtk.web.RequestContext;
 import vtk.web.service.provider.ServiceNameProvider;
 import vtk.web.servlet.FilterFactory;
 
@@ -74,9 +70,6 @@ import vtk.web.servlet.FilterFactory;
  *
  */
 public class ServiceImpl implements Service, BeanNameAware {
-
-    private static final String DEFAULT_HOST = NetUtils.guessHostName();
-    
     // FIXME: Cache for all assertions, don't use directly!
     private volatile List<Assertion> allAssertions;
 
@@ -225,130 +218,10 @@ public class ServiceImpl implements Service, BeanNameAware {
         }
         return false;
     }
-
-
-    @Override
-    public String constructLink(Resource resource, Principal principal) {
-        return constructLink(resource, principal, null, true);
-    }
-
-    @Override
-    public URL constructURL(Resource resource) {
-        return constructURL(resource, null, null, false);
-    }
-    
-    @Override
-    public URL constructURL(Resource resource, Principal principal) {
-        return constructURL(resource, principal, null, true);
-    }
-
-
-    @Override
-    public String constructLink(Resource resource, Principal principal,
-                                boolean matchAssertions) {
-        return constructLink(resource, principal, null, matchAssertions);
-    }
-
-
-    @Override
-    public URL constructURL(Resource resource, Principal principal,
-                                boolean matchAssertions) {
-        return constructURL(resource, principal, null, matchAssertions);
-    }
-
-	
-    @Override
-    public String constructLink(Resource resource, Principal principal,
-                                Map<String, String> parameters) {
-        return constructLink(resource, principal, parameters, true);
-    }
-
-    @Override
-    public URL constructURL(Resource resource, Principal principal,
-                               Map<String, String> parameters) {
-        return constructURL(resource, principal, parameters, true);
-    }
-
-    @Override
-    public String constructLink(Resource resource, Principal principal,
-                                Map<String, String> parameters, boolean matchAssertions) {
-        return constructURL(resource, principal, parameters, matchAssertions).toString();
-    }
-	
-    @Override
-    public URL constructURL(Resource resource, Principal principal,
-                                Map<String, String> parameters, boolean matchAssertions) {
-        URL urlObject = 
-            constructInternal(resource, principal, parameters, getAllAssertions(), 
-                    matchAssertions);
-
-        postProcess(urlObject, resource);
-
-        return urlObject;
-    }
-
-    @Override
-    public String constructLink(Path uri) {
-        return constructURL(uri).toString();
-    }
-
-    @Override
-    public URL constructURL(Path uri) {
-        String protocol = "http";
-        String host = DEFAULT_HOST;
-        if (RequestContext.exists()) {
-            RequestContext requestContext = RequestContext.getRequestContext();
-            HttpServletRequest request = requestContext.getServletRequest();
-            protocol = request.isSecure() ? "https" : "http"; 
-            host = request.getServerName();
-        }
-        URL urlObject = new URL(protocol, host, uri);
-
-        for (Assertion assertion: getAllAssertions()) {
-            assertion.processURL(urlObject);
-        }
-
-        postProcess(urlObject, null);
-        
-        return urlObject;
-    }
-
-    @Override
-    public String constructLink(Path uri, Map<String, String> parameters) {
-        return constructURL(uri, parameters).toString();
-    }
-
-    @Override
-    public URL constructURL(Path uri, Map<String, String> parameters) {
-        String protocol = "http";
-        String host = DEFAULT_HOST;
-        if (RequestContext.exists()) {
-            RequestContext requestContext = RequestContext.getRequestContext();
-            HttpServletRequest request = requestContext.getServletRequest();
-            protocol = request.isSecure() ? "https" : "http"; 
-            host = request.getServerName();
-        }
-        URL urlObject = new URL(protocol, host, uri);
-
-        if (parameters != null) {
-            for (Map.Entry<String, String> entry: parameters.entrySet()) {
-                urlObject.addParameter(entry.getKey(), entry.getValue());
-            }
-        }
-
-        for (Assertion assertion: getAllAssertions()) {
-            assertion.processURL(urlObject);
-        }
-       
-        postProcess(urlObject, null);
-        
-        return urlObject;
-    }
     
     public void setHandlerInterceptors(List<HandlerInterceptor> handlerInterceptors) {
         this.handlerInterceptors = handlerInterceptors;
     }
-    
 
     @Override
     public List<HandlerInterceptor> getHandlerInterceptors() {
@@ -402,8 +275,8 @@ public class ServiceImpl implements Service, BeanNameAware {
         this.order = order;
     }
 
-
-    private void postProcess(URL urlObject, Resource resource) {
+    // XXX: clean up
+    public void postProcess(URL urlObject, Resource resource) {
         List<URLPostProcessor> urlPostProcessors = getAllURLPostProcessors();
 
         if (urlPostProcessors != null) {
@@ -411,60 +284,17 @@ public class ServiceImpl implements Service, BeanNameAware {
                 try {
                     if (resource != null) {
                         urlProcessor.processURL(urlObject, resource, this);
-                    } else {
+                    }
+                    else {
                         urlProcessor.processURL(urlObject, this);
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     throw new ServiceUnlinkableException("URL Post processor " + urlProcessor
                                                          + " threw exception", e);
                 }
             }
         }
-    }
-
-    private URL constructInternal(Resource resource, Principal principal,
-            Map<String, String> parameters, List<Assertion> assertions, boolean matchAssertions) {
-
-        Path path = resource.getURI();
-
-        String protocol = "http";
-        String host = DEFAULT_HOST;
-        if (RequestContext.exists()) {
-            RequestContext requestContext = RequestContext.getRequestContext();
-            HttpServletRequest request = requestContext.getServletRequest();
-            protocol = request.isSecure() ? "https" : "http"; 
-            host = request.getServerName();
-        }
-        URL urlObject = new URL(protocol, host, path);
-        
-        if (resource.isCollection()) {
-            urlObject.setCollection(true);
-        }
-        
-        if (parameters != null) {
-            for (Map.Entry<String, String> entry: parameters.entrySet()) {
-                urlObject.addParameter(entry.getKey(), entry.getValue());
-            }
-        }
-        // urlObject.setQuery(parameters);
-
-        for (Assertion assertion: assertions) {
-            boolean match = false;
-            try { 
-                match = assertion.processURL(urlObject, resource,
-                    principal, matchAssertions);
-            }
-            catch (Exception e) {}
-            
-            if (match == false) {
-                throw new ServiceUnlinkableException("Service "
-                        + getName() + " cannot be applied to resource "
-                        + resource.getURI() + ". Assertion " + assertion
-                        + " false for resource.");
-            }
-        }
-
-        return urlObject;
     }
 
 

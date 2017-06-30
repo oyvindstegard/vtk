@@ -49,6 +49,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
@@ -61,11 +67,6 @@ import vtk.repository.resourcetype.Value;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Utility class for performing searches returning result sets wrapped in an XML
@@ -227,8 +228,12 @@ public class XmlSearcher {
 
     private URL getUrl(PropertySet propSet) {
         Path uri = propSet.getURI();
-        URL url = this.linkToService.constructURL(uri);
-        if (collectionResourceTypeDef != null && collectionResourceTypeDef.getName().equals(propSet.getResourceType())) {
+        RequestContext requestContext = RequestContext.getRequestContext();
+        URL url = linkToService.urlConstructor(requestContext.getRequestURL())
+                .withURI(uri)
+                .constructURL();
+        if (collectionResourceTypeDef != null 
+                && collectionResourceTypeDef.getName().equals(propSet.getResourceType())) {
             url.setCollection(true);
         }
         return url;
@@ -307,8 +312,12 @@ public class XmlSearcher {
                     valueString = uri.getParent().toString() + "/" + valueString;
                 }
                 try {
-                    valueString = this.linkToService.constructLink(Path.fromString(valueString));
-                } catch (Exception e) {
+                    valueString = linkToService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                            .withURI(Path.fromString(valueString))
+                            .constructURL()
+                            .toString();
+                }
+                catch (Exception e) {
                     logger.warn(valueString + " led to exception ", e);
                 }
             }
@@ -323,12 +332,12 @@ public class XmlSearcher {
 
     private static class Formats {
 
-        private Map<PropertyTypeDefinition, Set<String>> formats = new HashMap<PropertyTypeDefinition, Set<String>>();
+        private Map<PropertyTypeDefinition, Set<String>> formats = new HashMap<>();
 
         public void addFormat(PropertyTypeDefinition def, String format) {
             Set<String> s = this.formats.get(def);
             if (s == null) {
-                s = new HashSet<String>();
+                s = new HashSet<>();
                 this.formats.put(def, s);
             }
             s.add(format);
@@ -337,7 +346,7 @@ public class XmlSearcher {
         public Set<String> getFormats(PropertyTypeDefinition def) {
             Set<String> set = this.formats.get(def);
             if (set == null) {
-                set = new HashSet<String>();
+                set = new HashSet<>();
             }
             return set;
         }
@@ -482,7 +491,7 @@ public class XmlSearcher {
         // Splits fields on ',' characters, allowing commas to appear
         // within (non-nested) brackets.
         private List<String> splitFields(String fields) {
-            List<String> results = new ArrayList<String>();
+            List<String> results = new ArrayList<>();
 
             StringBuilder field = new StringBuilder();
             boolean insideBrackets = false;

@@ -54,6 +54,7 @@ import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
+import vtk.web.service.URL;
 
 public class ResourceEditController extends SimpleFormController<ResourceEditWrapper> {
     protected ResourceWrapperManager resourceManager;
@@ -111,7 +112,7 @@ public class ResourceEditController extends SimpleFormController<ResourceEditWra
 
     protected Map<String, Object> getModelProperties(Object command, Resource resource, Principal principal,
             Repository repository) {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put(getCommandName(), command);
         model.put("published", resource.isPublished());
         model.put("hasPublishDate", resource.hasPublishDate());
@@ -146,7 +147,7 @@ public class ResourceEditController extends SimpleFormController<ResourceEditWra
         model.put("hasPublishDate", resource.hasPublishDate());
         model.put("onlyWriteUnpublished", !repository.authorize(principal, resource.getAcl(), Privilege.READ_WRITE));
         model.put("defaultLocale", this.defaultLocale);
-        model.put("tooltips", resolveTooltips(resource, principal));
+        model.put("tooltips", resolveTooltips(request, resource, principal));
 
         return model;
     }
@@ -155,17 +156,22 @@ public class ResourceEditController extends SimpleFormController<ResourceEditWra
         this.tooltipServices = tooltipServices;
     }
 
-    private List<Map<String, String>> resolveTooltips(Resource resource, Principal principal) {
+    private List<Map<String, String>> resolveTooltips(HttpServletRequest request, 
+            Resource resource, Principal principal) {
         if (this.tooltipServices == null) {
             return null;
         }
-        List<Map<String, String>> tooltips = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> tooltips = new ArrayList<>();
         for (Service service : this.tooltipServices) {
-            String url = null;
+            URL url = null;
             try {
-                url = service.constructLink(resource, principal);
-                Map<String, String> tooltip = new HashMap<String, String>();
-                tooltip.put("url", url);
+                url = service.urlConstructor(URL.create(request))
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
+                
+                Map<String, String> tooltip = new HashMap<>();
+                tooltip.put("url", url.toString());
                 tooltip.put("messageKey", "plaintextEdit.tooltip." + service.getName());
                 tooltips.add(tooltip);
             } catch (ServiceUnlinkableException e) {

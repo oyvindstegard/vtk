@@ -42,6 +42,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.edit.editor.ResourceWrapperManager;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -51,6 +52,7 @@ import vtk.util.mail.MailHelper;
 import vtk.util.mail.MailTemplateProvider;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class ShareViaEmailController implements Controller {
     private String viewName;
@@ -72,7 +74,7 @@ public class ShareViaEmailController implements Controller {
             return null;
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         String method = request.getMethod();
 
         if (this.displayUpscoping != null) {
@@ -111,8 +113,12 @@ public class ShareViaEmailController implements Controller {
                     validAddresses = validAddresses && MailExecutor.isValidEmail(emailFrom);
                     
                     if (validAddresses) {
-                        String url = this.viewService.constructURL(uri).toString();
-                        String mailBody = mailTemplateProvider.generateMailBody(resource.getTitle(), url, emailFrom, comment, "", this.siteName);
+                        URL url = viewService.urlConstructor(requestContext.getRequestURL())
+                                .withURI(uri)
+                                .constructURL();
+                        String mailBody = mailTemplateProvider
+                                .generateMailBody(resource.getTitle(), url.toString(), 
+                                        emailFrom, comment, "", this.siteName);
 
                         MimeMessage mimeMessage = mailExecutor.createMimeMessage(
                                 mailBody,

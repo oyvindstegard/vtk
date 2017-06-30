@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.Resource;
@@ -75,9 +76,14 @@ public class DiagramReport extends AbstractReporter {
         int total, totalWebpages, files;
 
         /* Create base URL. */
+        RequestContext requestContext = RequestContext.getRequestContext();
         Principal p = SecurityContext.getSecurityContext().getPrincipal();
         Service service = RequestContext.getRequestContext().getService();
-        URL baseURL = new URL(service.constructURL(resource, p));
+        
+        URL baseURL = service.urlConstructor(requestContext.getRequestURL())
+                .withResource(resource)
+                .withPrincipal(p)
+                .constructURL();
 
         /* Get count and URL for file and folder. */
         try {
@@ -90,7 +96,8 @@ public class DiagramReport extends AbstractReporter {
             result.put("foldersURL", new URL(baseURL).addParameter(REPORT_TYPE_PARAM, "folderReporter"));
 
             result.put("firsttotal", files + folders);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return result;
         }
 
@@ -129,7 +136,8 @@ public class DiagramReport extends AbstractReporter {
             result.put("typeURL", typeURL);
 
             result.put("secondtotal", total);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return result;
         }
 
@@ -161,8 +169,8 @@ public class DiagramReport extends AbstractReporter {
             result.put("webTypeURL", typeURL);
 
             result.put("thirdtotal", total);
-        } catch (Exception e) {
         }
+        catch (Exception e) { }
 
         return result;
     }

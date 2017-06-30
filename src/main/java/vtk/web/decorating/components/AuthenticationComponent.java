@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -68,15 +69,18 @@ public class AuthenticationComponent extends ViewRenderingDecoratorComponent {
         this.logoutService = logoutService;
     }
 
+    @Override
     protected String getDescriptionInternal() {
         return DESCRIPTION;
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         return map;
     }
 
+    @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
@@ -99,24 +103,35 @@ public class AuthenticationComponent extends ViewRenderingDecoratorComponent {
         Service alternativeService = alternativeLoginServices.get(destinationService);
         if (principal == null && alternativeService != null) {
             try {
-                URL loginURL = alternativeService.constructURL(resource.getURI());
+                URL loginURL = alternativeService.urlConstructor(URL.create(request.getServletRequest()))
+                        .withURI(resource.getURI())
+                        .constructURL();
                 model.put("loginURL", loginURL);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
             }
             return;
         }
 
         if (principal == null) {
             try {
-                URL loginURL = this.defaultLoginService.constructURL(resource, principal);
+                URL loginURL = defaultLoginService.urlConstructor(URL.create(request.getServletRequest()))
+                        .withResource(resource)
+                        .constructURL();
                 model.put("loginURL", loginURL);
-            } catch (Exception e) {
             }
-        } else {
+            catch (Exception e) {
+            }
+        }
+        else {
             try {
-                URL logoutURL = this.logoutService.constructURL(resource, principal);
+                URL logoutURL = logoutService.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
                 model.put("logoutURL", logoutURL);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
             }
         }
     }

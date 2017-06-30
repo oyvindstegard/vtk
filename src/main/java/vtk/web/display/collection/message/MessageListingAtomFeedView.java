@@ -56,13 +56,16 @@ public class MessageListingAtomFeedView extends ListingFeedView {
                 Namespace.STRUCTURED_RESOURCE_NAMESPACE, "listingDisplayedMessage");
         if (messageProp != null) {
             try {
-                URL baseURL = viewService.constructURL(result.getURI());
+                URL baseURL = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                        .withURI(result.getURI())
+                        .constructURL();
                 HtmlFragment summary = HtmlUtil.linkResolveFilter(
                         messageProp.getStringValue(), baseURL, RequestContext
                         .getRequestContext().getRequestURL(), 
                         useProtocolRelativeImages);
                 setFeedEntrySummary(entry, summary);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 logger.warn("Could not set feed entry summary as XHTML" + e.getMessage());
 
                 // XXX Attempt to set as HTML?

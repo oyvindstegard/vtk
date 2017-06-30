@@ -603,8 +603,7 @@
     <property name="webPort" value="${canonicalUrl.webPort}" />
   </bean>
 
-  <!-- Building URLs to a service -->
-  <bean id="serviceUrlProvider" class="vtk.web.service.ServiceUrlProvider" />
+  <bean id="serviceResolver" class="vtk.web.service.BeanContextServiceResolver" />
 
   <bean id="propertySearch.queryService" class="vtk.web.service.ServiceImpl">
     <property name="order" value="-999" />

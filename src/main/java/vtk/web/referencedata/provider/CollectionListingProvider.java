@@ -61,6 +61,7 @@ import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
+import vtk.web.service.URL;
 
 /**
  * Directory listing model builder. Creates a model map 'collectionListing' with
@@ -219,21 +220,29 @@ public class CollectionListingProvider implements ReferenceDataProvider {
                 for (String linkName : this.linkedServices.keySet()) {
                     Service service = this.linkedServices.get(linkName);
                     try {
-                        String url = service.constructLink(child, principal);
-                        linkMap.put(linkName, url);
-                    } catch (ServiceUnlinkableException e) {
+                        URL url = service.urlConstructor(URL.create(request))
+                                .withResource(child)
+                                .withPrincipal(principal)
+                                .constructURL();
+                        linkMap.put(linkName, url.toString());
+                    }
+                    catch (ServiceUnlinkableException e) {
                         // do nothing
                     }
                 }
                 childLinks[i] = linkMap;
 
                 try {
-                    String url = this.browsingService.constructLink(child, principal);
+                    URL url = browsingService.urlConstructor(URL.create(request))
+                            .withResource(child)
+                            .withPrincipal(principal)
+                            .constructURL();
                     // XXX: until we straighten out the manage service assertion configuration:
                     if (repository.authorize(principal, child.getAcl(), Privilege.READ)) {
-                        browsingLinks[i] = url;
+                        browsingLinks[i] = url.toString();
                     }
-                } catch (ServiceUnlinkableException e) {
+                }
+                catch (ServiceUnlinkableException e) {
                     // do nothing
                 }
                 if (aclTooltipHelper != null) {
@@ -248,13 +257,15 @@ public class CollectionListingProvider implements ReferenceDataProvider {
             Map<String, String> sortByLinks = new HashMap<>();
 
             for (String column : this.childInfoItems) {
-                Map<String, String> parameters = new HashMap<>();
-                parameters.put("sort-by", column);
+                URL sortURL = browsingService.urlConstructor(URL.create(request))
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
+                sortURL = sortURL.addParameter("sort-by", column);
                 if (sortBy.equals(column) && !invertedSort) {
-                    parameters.put("invert", "true");
+                    sortURL = sortURL.addParameter("invert", "true");
                 }
-                String url = this.browsingService.constructLink(resource, principal, parameters);
-                sortByLinks.put(column, url);
+                sortByLinks.put(column, sortURL.toString());
             }
             collectionListingModel.put("sortByLinks", sortByLinks);
 
@@ -262,12 +273,13 @@ public class CollectionListingProvider implements ReferenceDataProvider {
             if (resource.getURI().getParent() != null) {
                 try {
                     Resource parent = repository.retrieve(token, resource.getURI().getParent(), true);
-                    parentURL = this.browsingService.constructLink(parent, principal);
-                } catch (RepositoryException e) {
-                    // Ignore
-                } catch (AuthenticationException e) {
-                    // Ignore
-                } catch (ServiceUnlinkableException e) {
+                    parentURL = browsingService.urlConstructor(URL.create(request))
+                        .withResource(parent)
+                        .withPrincipal(principal)
+                        .constructURL()
+                        .toString();
+                }
+                catch (RepositoryException | AuthenticationException | ServiceUnlinkableException e) {
                     // Ignore
                 }
             }

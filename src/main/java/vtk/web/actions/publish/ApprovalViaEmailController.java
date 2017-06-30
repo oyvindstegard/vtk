@@ -43,6 +43,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.edit.editor.ResourceWrapperManager;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -58,6 +59,7 @@ import vtk.util.mail.MailHelper;
 import vtk.util.mail.MailTemplateProvider;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class ApprovalViaEmailController implements Controller {
     private String viewName;
@@ -80,7 +82,7 @@ public class ApprovalViaEmailController implements Controller {
             return null;
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         String method = request.getMethod();
 
         boolean userEmailFound = true;
@@ -97,11 +99,14 @@ public class ApprovalViaEmailController implements Controller {
         }
 
         String title = resource.getTitle();
-        String url = manageService.constructURL(uri).toString();
+        URL url = manageService.urlConstructor(URL.create(request))
+                .withURI(uri)
+                .constructURL();
+        
         String[] subjectParams = { getLocalizedMsg(request, "resourcetype.name." + resource.getResourceType(),
                 new Object[0]) };
         String subject = getLocalizedMsg(request, "send-to-approval.subject", subjectParams);
-        String mailBody = mailTemplateProvider.generateMailBody(title, url, emailFrom, "", "", "");
+        String mailBody = mailTemplateProvider.generateMailBody(title, url.toString(), emailFrom, "", "", "");
 
         if (method.equals("POST")) {
             String emailTo = request.getParameter("emailTo");
@@ -136,7 +141,8 @@ public class ApprovalViaEmailController implements Controller {
                         }
                     }
                     if (validAddresses && MailExecutor.isValidEmail(emailFrom)) {
-                        mailBody = mailTemplateProvider.generateMailBody(title, url, emailFrom, comment, "", "");
+                        mailBody = mailTemplateProvider.generateMailBody(
+                                title, url.toString(), emailFrom, comment, "", "");
 
                         MimeMessage mimeMessage = mailExecutor.createMimeMessage(mailBody, emailMultipleTo, emailFrom,
                                 true, subject);

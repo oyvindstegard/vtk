@@ -103,7 +103,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
 
     private static final Set<String> VALID_STYLES;
     static {
-        VALID_STYLES = new HashSet<String>();
+        VALID_STYLES = new HashSet<>();
         VALID_STYLES.add(STYLE_NONE);
         VALID_STYLES.add(STYLE_VERTICAL);
         VALID_STYLES.add(STYLE_HORIZONTAL);
@@ -144,6 +144,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
     protected String modelName = "menu";
     protected int searchLimit = DEFAULT_SEARCH_LIMIT;
 
+    @Override
     public void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
         ListMenuRequest menuRequest = new ListMenuRequest(request);
@@ -173,7 +174,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
 
     private ListMenu<PropertySet> buildMainMenu(ListMenuRequest menuRequest) {
 
-        ListMenu<PropertySet> menu = new ListMenu<PropertySet>();
+        ListMenu<PropertySet> menu = new ListMenu<>();
         menu.setLabel(menuRequest.getStyle());
 
         Query query = buildMainSearch(menuRequest);
@@ -183,8 +184,8 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         String[] childNames = menuRequest.getChildNames();
         MenuItem<PropertySet> parent = null;
 
-        List<MenuItem<PropertySet>> items = new ArrayList<MenuItem<PropertySet>>();
-        Map<String, MenuItem<PropertySet>> nameItemMap = new HashMap<String, MenuItem<PropertySet>>();
+        List<MenuItem<PropertySet>> items = new ArrayList<>();
+        Map<String, MenuItem<PropertySet>> nameItemMap = new HashMap<>();
 
         for (int i = 0; i < rs.getSize(); i++) {
             PropertySet resource = rs.getResult(i);
@@ -372,7 +373,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
     private List<MenuItem<PropertySet>> sortSpecifiedOrder(String[] childNames,
             Map<String, MenuItem<PropertySet>> nameItemMap) {
 
-        List<MenuItem<PropertySet>> result = new ArrayList<MenuItem<PropertySet>>();
+        List<MenuItem<PropertySet>> result = new ArrayList<>();
         for (String name : childNames) {
             name = name.trim();
             MenuItem<PropertySet> item = nameItemMap.get(name);
@@ -407,7 +408,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
             return null;
         }
 
-        Map<Path, List<PropertySet>> childMap = new HashMap<Path, List<PropertySet>>();
+        Map<Path, List<PropertySet>> childMap = new HashMap<>();
 
         for (PropertySet resource : rs.getAllResults()) {
 
@@ -416,7 +417,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
 
             List<PropertySet> childList = childMap.get(parentURI);
             if (childList == null) {
-                childList = new ArrayList<PropertySet>();
+                childList = new ArrayList<>();
                 childMap.put(parentURI, childList);
             }
 
@@ -444,7 +445,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
     private ListMenu<PropertySet> buildSubItems(Path childrenKey, Map<Path, List<PropertySet>> childMap,
             ListMenuRequest menuRequest) {
 
-        List<MenuItem<PropertySet>> items = new ArrayList<MenuItem<PropertySet>>();
+        List<MenuItem<PropertySet>> items = new ArrayList<>();
         List<PropertySet> children = childMap.get(childrenKey);
 
         if (children == null) {
@@ -468,17 +469,22 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
             }
         }
         items = sortByOrder(items, menuRequest.getLocale(), true);
-        ListMenu<PropertySet> submenu = new ListMenu<PropertySet>();
+        ListMenu<PropertySet> submenu = new ListMenu<>();
         submenu.addAllItems(items);
         return submenu;
     }
 
     protected MenuItem<PropertySet> buildItem(PropertySet resource) {
-        MenuItem<PropertySet> item = new MenuItem<PropertySet>(resource);
+        MenuItem<PropertySet> item = new MenuItem<>(resource);
 
         // Url
         Path uri = resource.getURI();
-        URL url = this.menuGenerator.getViewService().constructURL(uri);
+        
+        URL url = menuGenerator.getViewService()
+                .urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                .withURI(uri)
+                .constructURL();
+                
         // Know it's a folder, append "/"
         url.setCollection(true);
         item.setUrl(url);
@@ -521,7 +527,7 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         private int depth = DEFAULT_DEPTH;
         private Locale locale;
         private String token;
-        private List<String> excludedChildren = new ArrayList<String>();
+        private List<String> excludedChildren = new ArrayList<>();
 
         ListMenuRequest(DecoratorRequest request) {
             RequestContext requestContext = RequestContext.getRequestContext();
@@ -691,12 +697,14 @@ public class ListMenuComponent extends ViewRenderingDecoratorComponent {
         this.searchLimit = searchLimit;
     }
 
+    @Override
     protected String getDescriptionInternal() {
         return "Displays a menu based on the subfolders of a specified folder (path)";
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_URI, PARAMETER_URI_DESC);
         map.put(PARAMETER_STYLE, PARAMETER_STYLE_DESC);
         map.put(PARAMETER_INCLUDE_CHILDREN, PARAMETER_INCLUDE_CHILDREN_DESC);

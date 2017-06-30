@@ -33,11 +33,9 @@ package vtk.web.search.collectionlisting;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import vtk.repository.MultiHostSearcher;
@@ -54,7 +52,6 @@ import vtk.repository.resourcetype.Value;
 import vtk.repository.resourcetype.ValueFormatter;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
 import vtk.web.service.Service;
-import vtk.web.service.URL;
 
 public class CollectionListingAggregationResolverTest {
 
@@ -75,16 +72,6 @@ public class CollectionListingAggregationResolverTest {
     private static MultiHostSearcher mockMultiHostSearcher;
     private static Service mockViewService;
 
-    @BeforeClass
-    public static void init() {
-        mockViewService = context.mock(Service.class);
-        context.checking(new Expectations() {
-            {
-                allowing(mockViewService).constructURL(Path.ROOT);
-                will(returnValue(URL.parse("http://www.uio.no/")));
-            }
-        });
-    }
 
     @Before
     public void setUp() {

@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
@@ -76,7 +77,11 @@ public class ForwardingController implements Controller, ServletContextAware {
         RequestContext requestContext = RequestContext.getRequestContext();
         Path uri = requestContext.getResourceURI();
         URL requestedURL = requestContext.getRequestURL();
-        URL dispatchURL = this.service.constructURL(uri).setCollection(requestedURL.isCollection());
+        
+        URL dispatchURL = service.urlConstructor(requestContext.getRequestURL())
+                .withURI(uri)
+                .constructURL()
+                .setCollection(requestedURL.isCollection());
         
         if (this.preserveRequestProtocol) {
             dispatchURL.setProtocol(requestedURL.getProtocol());

@@ -41,6 +41,7 @@ import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class PersonPressPhotoLinkComponent extends ViewRenderingDecoratorComponent {
 
@@ -49,6 +50,7 @@ public class PersonPressPhotoLinkComponent extends ViewRenderingDecoratorCompone
 
     private Service viewAsWebpage;
 
+    @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
@@ -68,23 +70,24 @@ public class PersonPressPhotoLinkComponent extends ViewRenderingDecoratorCompone
             return;
         }
 
-        Path imageUri = null;
+        URL base = URL.create(requestContext.getServletRequest());
+        
+        Path imageUri = base.relativeURL(pictureProp.getStringValue()).getPath();
+        
         Resource pictureResource = null;
         try {
-            if (pictureProp.getStringValue().startsWith("/")) {
-                imageUri = Path.fromString(pictureProp.getStringValue());
-            } else {
-                imageUri = requestContext.getCurrentCollection().expand(pictureProp.getStringValue());
-            }
             pictureResource = repository.retrieve(token, imageUri, true);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             model.put(PRESS_PHOTO_PROROPERTY_NAME, pictureProp.getStringValue());
             return;
         }
 
         if (pictureResource != null && "image".equals(pictureResource.getResourceType())) {
-            model.put(PRESS_PHOTO_PROROPERTY_NAME, getViewAsWebpage().constructLink(imageUri));
-        } else {
+            URL imageUrl = getViewAsWebpage().urlConstructor(base).withURI(imageUri).constructURL();
+            model.put(PRESS_PHOTO_PROROPERTY_NAME, imageUrl.toString());
+        }
+        else {
             model.put(PRESS_PHOTO_PROROPERTY_NAME, pictureProp.getStringValue());
         }
 

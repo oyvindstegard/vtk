@@ -79,6 +79,7 @@ import vtk.util.web.HttpUtil;
 import vtk.web.InvalidRequestException;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 /**
  * Handler for PROPFIND requests.
@@ -633,10 +634,13 @@ public class PropfindController extends AbstractWebdavController
         Principal p = requestContext.getPrincipal();
 
         Element responseElement = new Element("response", WebdavConstants.DAV_NAMESPACE);
-        String href = this.webdavService.constructLink(resource, p);
+        URL href = webdavService.urlConstructor(URL.create(requestContext.getServletRequest()))
+                .withResource(resource)
+                .withPrincipal(p)
+                .constructURL();
 
         responseElement.addContent(
-                new Element("href", WebdavConstants.DAV_NAMESPACE).addContent(href));
+                new Element("href", WebdavConstants.DAV_NAMESPACE).addContent(href.toString()));
         Element foundProperties = new Element("prop", WebdavConstants.DAV_NAMESPACE);
         Element unknownProperties = new Element("prop", WebdavConstants.DAV_NAMESPACE);
 

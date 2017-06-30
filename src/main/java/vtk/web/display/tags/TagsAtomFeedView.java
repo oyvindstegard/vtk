@@ -53,7 +53,10 @@ public class TagsAtomFeedView extends ListingFeedView {
     @Override
     protected void addFeedLinks(HttpServletRequest request, Resource feedScope, Feed feed) {
         RequestContext requestContext = RequestContext.getRequestContext();
-        URL feedAlternateURL = viewService.constructURL(feedScope);
+        URL feedAlternateURL = viewService.urlConstructor(requestContext.getRequestURL())
+                .withResource(feedScope)
+                .matchAssertions(false)
+                .constructURL();
         String tag = requestContext.getRequestURL().getParameter("tag");
         if (tag != null) feedAlternateURL.addParameter("tag", tag);
         feed.addLink(feedAlternateURL.toString(), "alternate");

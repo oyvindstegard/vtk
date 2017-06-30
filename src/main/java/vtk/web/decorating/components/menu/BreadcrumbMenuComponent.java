@@ -108,7 +108,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
 
         if (!currentResource.isCollection()) {
             try {
-				currentResource = repository.retrieve(token, uri.getParent(), true);
+                currentResource = repository.retrieve(token, uri.getParent(), true);
             } catch (AuthorizationException e) {
                 model.put("breadcrumb", breadCrumbElements);
                 return;
@@ -120,7 +120,12 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
                 breadCrumbElements.remove(breadCrumbElements.size() - 1);
             }
         }
-        URL markedUrl = this.menuGenerator.getViewService().constructURL(currentResource, principal, false);
+        URL markedUrl = menuGenerator.getViewService().urlConstructor(requestContext.getRequestURL())
+                .withResource(currentResource)
+                .withPrincipal(principal)
+                .matchAssertions(false)
+                .constructURL();
+        
         breadCrumbElements.add(new BreadcrumbElement(markedUrl, getMenuTitle(currentResource)));
 
         // XXX: for this case currentResource will never be equal any of the
@@ -147,7 +152,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
                         principal, repository);
                 breadCrumbElements.remove(breadCrumbElements.size() - 1);
                 if (menuItemList.size() > maxSiblings) {
-                    menuItemList = new ArrayList<MenuItem<PropertySet>>();
+                    menuItemList = new ArrayList<>();
                     menuItemList.add(buildItem(currentResource));
                 }
             }
@@ -184,7 +189,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
         titleProp[1] = this.menuGenerator.getTitlePropDef();
         breadCrumbProvider.setTitleOverrideProperties(titleProp);
         breadCrumbProvider.afterPropertiesSet();
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         breadCrumbProvider.referenceData(map, RequestContext.getRequestContext().getServletRequest());
         Object o = map.get(breadcrumbName);
 
@@ -193,7 +198,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
         }
 
         BreadcrumbElement[] list = (BreadcrumbElement[]) o;
-        List<BreadcrumbElement> result = new ArrayList<BreadcrumbElement>();
+        List<BreadcrumbElement> result = new ArrayList<>();
         for (int i = 0; i < list.length; i++) {
             result.add(list[i]);
         }
@@ -205,7 +210,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
             Resource currentResource, Principal principal, Repository repository)
             throws Exception {
 
-        List<MenuItem<PropertySet>> menuItems = new ArrayList<MenuItem<PropertySet>>();
+        List<MenuItem<PropertySet>> menuItems = new ArrayList<>();
         if (!requestContext.isPreviewUnpublished()) {
             if (currentResource.getProperty(menuGenerator.getUnpublishedCollectionPropDef()) != null) {
                 return menuItems;
@@ -257,7 +262,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
     private int getIntegerGreaterThanZero(String prameter, DecoratorRequest request, int returnWhenParamNotFound) {
         int value = returnWhenParamNotFound;
         try {
-            value = Integer.parseInt((String) request.getStringParameter(prameter));
+            value = Integer.parseInt(request.getStringParameter(prameter));
             if (value < 1)
                 intergerMustBeGreaterThanZeroException(prameter);
         } catch (NumberFormatException e) {
@@ -273,7 +278,7 @@ public class BreadcrumbMenuComponent extends ListMenuComponent {
 
     @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_DISPLAY_FROM_LEVEL, BREAD_CRUMB_MENU_PARAMETER_DISPLAY_FROM_LEVEL_DESC);
         map.put(PARAMETER_MAX_NUMBER_OF_SIBLINGS, PARAMETER_MAX_NUMBER_OF_SIBLINGS_DESC);
         return map;

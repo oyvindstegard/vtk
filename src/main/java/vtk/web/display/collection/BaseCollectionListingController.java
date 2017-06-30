@@ -98,7 +98,7 @@ public class BaseCollectionListingController implements ListingController {
 
         Resource collection = repository.retrieve(token, uri, true);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         Map<String, Object> subfolders = getSubFolderMenu(collection, request);
         if (subfolders != null) {
@@ -126,7 +126,10 @@ public class BaseCollectionListingController implements ListingController {
                 Map<String, Object> m = new HashMap<>();
                 Service service = alternativeRepresentations.get(contentType);
                 try {
-                    URL url = service.constructURL(collection, principal);
+                    URL url = service.urlConstructor(requestContext.getRequestURL())
+                            .withResource(collection)
+                            .withPrincipal(principal)
+                            .constructURL();
                     if (includeRequestParametersInAlternativeRepresentation) {
                         Enumeration<String> requestParameters = request.getParameterNames();
                         while (requestParameters.hasMoreElements()) {

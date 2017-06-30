@@ -30,6 +30,13 @@
  */
 package vtk.web;
 
+import java.io.IOException;
+import java.util.Enumeration;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.web.HttpRequestHandler;
 
 import vtk.repository.Path;
@@ -37,26 +44,17 @@ import vtk.security.AuthenticationException;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Enumeration;
-
 public class FileBrowserController implements HttpRequestHandler {
     private static final String FCK_URI_TEMPLATE = "%s/plugins/filemanager/browser/default/browser.html?basefolder=%s&connector=%s";
-    private final String connectorURL;
     private final String editorBase;
+    private Path fckConnectorBase;
+    private Service fckConnectorService;
 
-    public FileBrowserController(
-            Service fckConnector,
-            String fckConnectorBase,
-            String editorBase
-    ) {
-        this.connectorURL = URL.encode(fckConnector.constructURL(
-                Path.fromString(fckConnectorBase)).getPathRepresentation());
+    public FileBrowserController(Service fckConnector,
+            String fckConnectorBase, String editorBase) {
         this.editorBase = editorBase;
+        this.fckConnectorBase = Path.fromString(fckConnectorBase);
+        this.fckConnectorService = fckConnector;
     }
 
     @Override
@@ -67,6 +65,11 @@ public class FileBrowserController implements HttpRequestHandler {
         if (rc.getPrincipal() == null) {
             throw new AuthenticationException();
         }
+        
+        String connectorURL = URL.encode(fckConnectorService.urlConstructor(rc.getRequestURL())
+                .withURI(fckConnectorBase)
+                .constructURL()
+                .getPathRepresentation());
         String redirectURL = String.format(
                 FCK_URI_TEMPLATE, editorBase, rc.getResourceURI(), connectorURL
         );

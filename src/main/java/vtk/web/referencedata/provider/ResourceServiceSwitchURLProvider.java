@@ -44,6 +44,7 @@ import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Assertion;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class ResourceServiceSwitchURLProvider implements ReferenceDataProvider {
 
@@ -62,7 +63,9 @@ public class ResourceServiceSwitchURLProvider implements ReferenceDataProvider {
         try {
             Resource resource = repository.retrieve(token, resourceURI, true);
 
-            String link = getService().constructLink(resource.getURI());
+            URL link = getService().urlConstructor(URL.create(request))
+                    .withURI(resource.getURI()).constructURL();
+            
             boolean displayResource = true;
             List<Assertion> serviceAssertions = getService().getAssertions();
             for (Assertion assertion : serviceAssertions) {
@@ -76,7 +79,7 @@ public class ResourceServiceSwitchURLProvider implements ReferenceDataProvider {
                 model.put(linkToResourceName, resource.getURI().toString());
             }
             else {
-                model.put(linkToServiceName, link);
+                model.put(linkToServiceName, link.toString());
             }
         }
         catch (IOException e) {

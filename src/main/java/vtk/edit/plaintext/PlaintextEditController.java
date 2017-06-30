@@ -30,7 +30,6 @@
  */
 package vtk.edit.plaintext;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -46,8 +45,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import vtk.repository.ContentInputSources;
 
+import vtk.repository.ContentInputSources;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -66,6 +65,7 @@ import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
+import vtk.web.service.URL;
 
 /**
  * Controller that handles editing of plaintext resource content.
@@ -145,11 +145,14 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
                 Depth.ZERO, this.lockTimeoutSeconds, null);
 
         Resource resource = repository.retrieve(token, uri, false);
-        String url = service.constructLink(resource, principal);
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
         String content = getTextualContent(resource, requestContext);
         
-        List<Map<String, String>> tooltips = resolveTooltips(resource, principal);
-        return new PlaintextEditCommand(content, url, tooltips);
+        List<Map<String, String>> tooltips = resolveTooltips(request, resource, principal);
+        return new PlaintextEditCommand(content, url.toString(), tooltips);
     }
 
 
@@ -285,15 +288,18 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
     }
     
 
-    private List<Map<String, String>> resolveTooltips(Resource resource, Principal principal) {
+    private List<Map<String, String>> resolveTooltips(HttpServletRequest request, Resource resource, Principal principal) {
         List<Map<String, String>> tooltips = new ArrayList<>();
         if (this.tooltipServices != null) {
             for (Service service: this.tooltipServices) {
-                String url = null;
+                URL url = null;
                 try {
-                    url = service.constructLink(resource, principal);
+                    url = service.urlConstructor(URL.create(request))
+                            .withResource(resource)
+                            .withPrincipal(principal)
+                            .constructURL();
                     Map<String, String> tooltip = new HashMap<>();
-                    tooltip.put("url", url);
+                    tooltip.put("url", url.toString());
                     tooltip.put("messageKey", "plaintextEdit.tooltip." + service.getName());
                     tooltips.add(tooltip);
                 }

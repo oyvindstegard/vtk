@@ -297,9 +297,12 @@ public class ProppatchController extends AbstractWebdavController  {
         Element multistatus = new Element("multistatus", WebdavConstants.DAV_NAMESPACE);
         Element response = new Element("response", WebdavConstants.DAV_NAMESPACE);
         Element href = new Element("href", WebdavConstants.DAV_NAMESPACE);
-        URL url = this.webdavService.constructURL(resource, principal);
+        RequestContext requestContext = RequestContext.getRequestContext();
+        URL url = webdavService.urlConstructor(requestContext.getRequestURL())
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
         href.setText(url.toString());
-
         
         Element propstat = new Element("propstat", WebdavConstants.DAV_NAMESPACE);
         multistatus.addContent(response);

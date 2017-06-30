@@ -170,8 +170,11 @@ public class EventListingController extends BaseCollectionListingController {
             totalHits += previous.getTotalHits();
             previous = null;
         }
-        Service service = RequestContext.getRequestContext().getService();
-        URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Service service = requestContext.getService();
+        URL baseURL = service.urlConstructor(requestContext.getRequestURL())
+                .withURI(requestContext.getResourceURI())
+                .constructURL();
 
         Optional<ListingPager.Pagination> pagination = 
                 ListingPager.pagination(totalHits, pageLimit, totalUpcomingHits,

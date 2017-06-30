@@ -59,6 +59,7 @@ import vtk.util.repository.DocumentPrincipalMetadataRetriever;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 /**
  * Model builder that retrieves various Access Control List (ACL) information
@@ -127,17 +128,24 @@ public class ACLProvider implements ReferenceDataProvider {
                     String privilegeName = action.getName();
                     Service editService = this.aclEditServices.get(action);
                     try {
-                        String url = editService.constructLink(resource, requestContext.getPrincipal());
-                        editURLs.put(privilegeName, url);
-                    } catch (Exception e) {
+                        URL url = editService.urlConstructor(URL.create(request))
+                                .withResource(resource)
+                                .withPrincipal(requestContext.getPrincipal())
+                                .constructURL();
+                        
+                        editURLs.put(privilegeName, url.toString());
                     }
+                    catch (Exception e) { }
                 }
             }
 
             try {
                 if (this.aclInheritanceService != null) {
-                    String url = this.aclInheritanceService.constructLink(resource, requestContext.getPrincipal());
-                    editURLs.put("inheritance", url);
+                    URL url = aclInheritanceService.urlConstructor(URL.create(request))
+                            .withResource(resource)
+                            .withPrincipal(requestContext.getPrincipal())
+                            .constructURL();
+                    editURLs.put("inheritance", url.toString());
                 }
             }
             catch (Exception e) { }

@@ -30,15 +30,17 @@
  */
 package vtk.resourcemanagement.property;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DerivedPropertyDescription extends PropertyDescription {
 
-    private List<String> dependentProperties;
+    private List<String> dependentProperties = new ArrayList<>();
     private DerivedPropertyEvaluationDescription evaluationDesciption;
     private String defaultProperty;
 
     public void setDependentProperties(List<String> dependentProperties) {
+        if (dependentProperties != null)
         this.dependentProperties = dependentProperties;
     }
 

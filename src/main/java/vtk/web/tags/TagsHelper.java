@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.support.RequestContext;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.repository.ResourceNotFoundException;
@@ -140,7 +141,7 @@ public final class TagsHelper {
     private Object[] getLocalizationParams(String tag, boolean scopeUp, boolean displayScope, String scopeTitle,
             String overrideResourceTypeTitle) {
 
-        List<Object> params = new ArrayList<Object>();
+        List<Object> params = new ArrayList<>();
         if (!StringUtils.isBlank(overrideResourceTypeTitle) && !scopeUp) {
             params.add(overrideResourceTypeTitle);
         }
@@ -166,7 +167,7 @@ public final class TagsHelper {
     public List<ResourceTypeDefinition> getResourceTypes(HttpServletRequest request) {
         String[] resourcePrams = request.getParameterValues(TagsHelper.RESOURCE_TYPE_PARAMETER);
         if (resourcePrams != null) {
-            List<ResourceTypeDefinition> resourceTypes = new ArrayList<ResourceTypeDefinition>();
+            List<ResourceTypeDefinition> resourceTypes = new ArrayList<>();
             for (String resourceType : resourcePrams) {
                 try {
                     ResourceTypeDefinition resourceTypeDef = resourceTypeTree
@@ -186,9 +187,12 @@ public final class TagsHelper {
 
         if (servesWebRoot && !resource.getURI().equals(Path.ROOT)) {
             Link scopeUpLink = new Link();
-            Service service = vtk.web.RequestContext.getRequestContext().getService();
-            URL url = service.constructURL(resource.getURI());
-            url.setPath(Path.ROOT);
+            vtk.web.RequestContext requestContext = vtk.web.RequestContext.getRequestContext();
+            Service service = requestContext.getService();
+            URL url = service.urlConstructor(requestContext.getRequestURL())
+                    .withURI(Path.ROOT)
+                    .constructURL();
+            
             List<String> sortFieldParams = null;
             if (!StringUtils.isBlank(tag) && sort) {
                 Object searchResult = model.get("listing");

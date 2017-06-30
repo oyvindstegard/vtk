@@ -112,7 +112,7 @@ public abstract class QuerySearchComponent implements SearchComponent {
         }
 
         // The actual resources we are going to display
-        List<ListingEntry> entries = new ArrayList<ListingEntry>();
+        List<ListingEntry> entries = new ArrayList<>();
         Repository repository = requestContext.getRepository();
         Principal principal = requestContext.getPrincipal();
         for (int i = 0; i < num; i++) {
@@ -122,8 +122,11 @@ public abstract class QuerySearchComponent implements SearchComponent {
             Property urlProp = propSet.getProperty(Namespace.DEFAULT_NAMESPACE, MultiHostSearcher.URL_PROP_NAME);
             if (urlProp != null) {
                 url = URL.parse(urlProp.getStringValue());
-            } else {
-                url = viewService.constructURL(propSet.getURI());
+            }
+            else {
+                url = viewService.urlConstructor(URL.create(request))
+                        .withURI(propSet.getURI())
+                        .constructURL();
                 if (displayEditLinks && helper != null) {
                     editInfo = helper.checkResourceForEditLink(repository, propSet, token, principal);
                 }

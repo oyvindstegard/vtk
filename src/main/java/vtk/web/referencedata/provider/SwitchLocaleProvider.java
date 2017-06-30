@@ -113,9 +113,20 @@ public class SwitchLocaleProvider implements ReferenceDataProvider {
                 try {
                     localeServiceNames.add(key);
                     URL url = URL.create(request);
-                    for (String name : service.constructURL(resource, principal).getParameterNames()) {
+                    List<String> localeParameters = service.urlConstructor(url)
+                            .withResource(resource)
+                            .withPrincipal(principal)
+                            .constructURL()
+                            .getParameterNames();
+                    
+                    for (String name: localeParameters) {
                         if (!url.getParameterNames().contains(name)) {
-                            url.addParameter(name, service.constructURL(resource, principal).getParameter(name));
+                            String localeParam = service.urlConstructor(url)
+                                    .withResource(resource)
+                                    .withPrincipal(principal)
+                                    .constructURL()
+                                    .getParameter(name);
+                            url.addParameter(name, localeParam);
                         }
                     }
                     localeServiceURLs.put(key, url);

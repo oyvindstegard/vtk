@@ -122,7 +122,10 @@ public class LogoutController extends SimpleFormController<LogoutCommand> implem
                 requestContext.getSecurityToken(), requestContext.getResourceURI(), true);
                     
         Service service = requestContext.getService();
-        URL submitURL = service.constructURL(resource, principal);
+        URL submitURL = service.urlConstructor(requestContext.getRequestURL())
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
         LogoutCommand logoutCommand = new LogoutCommand(submitURL);
         return logoutCommand;
     }
@@ -145,15 +148,22 @@ public class LogoutController extends SimpleFormController<LogoutCommand> implem
         }
 
         if (command.getUseRedirectService() != null) {
-            String url = this.redirectService.constructLink(resource, principal);
-            sendRedirect(url, request, response);
+            URL url = redirectService.urlConstructor(URL.create(request))
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL();
+            sendRedirect(url.toString(), request, response);
             return null;
         }
         
         String referrer = request.getHeader("Referer");
         String url = referrer;
         if (url == null) {
-            url = this.redirectService.constructLink(resource, principal);
+            url = redirectService.urlConstructor(URL.create(request))
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL()
+                    .toString();
         }
         sendRedirect(url, request, response);
         return null;

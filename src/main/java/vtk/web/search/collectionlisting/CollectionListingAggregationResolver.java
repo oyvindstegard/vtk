@@ -57,6 +57,7 @@ import vtk.web.RequestContext;
 import vtk.web.display.collection.aggregation.AggregationResolver;
 import vtk.web.display.collection.aggregation.CollectionListingAggregatedResources;
 import vtk.web.search.MultiHostUtil;
+import vtk.web.service.CanonicalUrlConstructor;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -98,6 +99,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
     private PropertyTypeDefinition displayManuallyApprovedPropDef;
     private PropertyTypeDefinition manuallyApprovedPropDef;
     private Service viewService;
+    private CanonicalUrlConstructor canonicalUrlConstructor;
 
     /**
      * Limit the number of folders to aggregate from
@@ -117,8 +119,8 @@ public class CollectionListingAggregationResolver implements AggregationResolver
 
         if (isDisplayAggregation(collection) || isDisplayManuallyApproved(collection)) {
 
-            Map<URL, Set<Path>> aggregationSet = new HashMap<URL, Set<Path>>();
-            Map<URL, Set<Path>> manuallyApprovedSet = new HashMap<URL, Set<Path>>();
+            Map<URL, Set<Path>> aggregationSet = new HashMap<>();
+            Map<URL, Set<Path>> manuallyApprovedSet = new HashMap<>();
 
             // Keep a reference to the starting point, avoid circular references
             // to self when resolving aggregation
@@ -156,7 +158,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
                         if (paths != null) {
                             paths.add(path);
                         } else {
-                            Set<Path> pathSet = new HashSet<Path>();
+                            Set<Path> pathSet = new HashSet<>();
                             pathSet.add(path);
                             manuallyApprovedSet.put(base, pathSet);
                         }
@@ -184,7 +186,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
     private Set<PropertySet> resolveAggregation(PropertySet resource, Map<URL, Set<Path>> aggregationSet,
             URL currentHostURL, URL startCollectionURL) {
 
-        Set<PropertySet> resultSet = new HashSet<PropertySet>();
+        Set<PropertySet> resultSet = new HashSet<>();
         if (isDisplayAggregation(resource)) {
             Property aggregationProp = resource.getProperty(aggregationPropDef);
 
@@ -201,7 +203,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
                 }
 
                 // Get a set of urls to aggregate from
-                Set<URL> urlSet = new HashSet<URL>();
+                Set<URL> urlSet = new HashSet<>();
                 for (Value val : aggregationList) {
                     String aggStr = val.getStringValue();
 
@@ -230,7 +232,10 @@ public class CollectionListingAggregationResolver implements AggregationResolver
                     // hosts and paths to aggregate from
                     resultSet.add(ps);
 
-                    URL aggregationURL = this.viewService.constructURL(ps.getURI());
+                    URL aggregationURL = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                            .withURI(ps.getURI())
+                            .constructURL();
+    
                     Property urlProp = ps.getProperty(Namespace.DEFAULT_NAMESPACE, MultiHostSearcher.URL_PROP_NAME);
                     if (urlProp != null) {
                         aggregationURL = URL.parse(urlProp.getStringValue());
@@ -241,8 +246,9 @@ public class CollectionListingAggregationResolver implements AggregationResolver
                     Set<Path> paths = aggregationSet.get(keyURL);
                     if (paths != null) {
                         paths.add(path);
-                    } else {
-                        Set<Path> pathSet = new HashSet<Path>();
+                    }
+                    else {
+                        Set<Path> pathSet = new HashSet<>();
                         pathSet.add(path);
                         aggregationSet.put(keyURL, pathSet);
                     }
@@ -297,7 +303,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
 
     private Set<PropertySet> getResources(Set<URL> urls) {
 
-        Set<PropertySet> result = new HashSet<PropertySet>();
+        Set<PropertySet> result = new HashSet<>();
 
         String token = null;
         if (RequestContext.exists()) {
@@ -316,7 +322,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
                 String localHost = getLocalHostUrl().getHost();
                 for (URL url : urls) {
 
-                    Set<String> uris = new HashSet<String>();
+                    Set<String> uris = new HashSet<>();
                     if (localHost.equals(url.getHost())) {
                         uris.add(url.getPath().toString());
                     }
@@ -356,7 +362,7 @@ public class CollectionListingAggregationResolver implements AggregationResolver
     }
 
     private URL getLocalHostUrl() {
-        return viewService.constructURL(Path.ROOT);
+        return canonicalUrlConstructor.canonicalUrl(Path.ROOT);
     }
 
     @Override
@@ -418,6 +424,11 @@ public class CollectionListingAggregationResolver implements AggregationResolver
         this.viewService = viewService;
     }
 
+    @Required
+    public void setCanonicalUrlConstructor(CanonicalUrlConstructor canonicalUrlConstructor) {
+        this.canonicalUrlConstructor = canonicalUrlConstructor;
+    }
+    
     public void setLimit(int limit) {
         if (limit < 1) {
             logger.warn("Limit must be > 0, defaulting to " + DEFAULT_LIMIT);

@@ -49,6 +49,7 @@ import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.actions.ActionsHelper;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class DeleteResourceController extends SimpleFormController<DeleteCommand> {
 
@@ -62,10 +63,13 @@ public class DeleteResourceController extends SimpleFormController<DeleteCommand
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
         Resource resource = repository.retrieve(token, requestContext.getResourceURI(), false);
-        String url = service.constructLink(resource, principal);
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
         String name = resource.getName();
 
-        return new DeleteCommand(name, url);
+        return new DeleteCommand(name, url.toString());
     }
     
     @Override
@@ -89,7 +93,7 @@ public class DeleteResourceController extends SimpleFormController<DeleteCommand
         // File that for some reason failed on delete. Separated by a
         // key (String) that specifies type of failure and identifies
         // path to resource that failed.
-        Map<String, List<Path>> failures = new HashMap<String, List<Path>>();
+        Map<String, List<Path>> failures = new HashMap<>();
         
         ActionsHelper.deleteResource(repository, token, uri, true, failures);
         
