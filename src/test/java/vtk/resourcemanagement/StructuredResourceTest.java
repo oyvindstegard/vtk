@@ -61,11 +61,6 @@ public class StructuredResourceTest {
         testCreate("person");
     }
 
-    @Test
-    public void testCreateCourseSchedule() throws Exception {
-        testCreate("course-schedule");
-    }
-
     private void testCreate(String resourceTypeName) throws Exception {
         InputStream stream = this.getClass().getResourceAsStream(resourceTypeName.concat(".json"));
         StructuredResource sr = StructuredResource.create(DUMMY_DESC, stream);
