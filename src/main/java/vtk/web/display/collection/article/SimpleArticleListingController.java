@@ -72,7 +72,7 @@ public class SimpleArticleListingController extends BaseCollectionListingControl
             atLeastOneFeaturedArticle = featuredArticles != null && featuredArticles.size() > 0;
         }
 
-        List<Listing> results = new ArrayList<Listing>();
+        List<Listing> results = new ArrayList<>();
         if (request.getParameter(ListingPager.PREVIOUS_PAGE_PARAM) == null) {
             // Search featured articles
             featuredArticles = this.searcher.getFeaturedArticles(request, collection, featuredArticlesPage, pageLimit,
@@ -128,8 +128,11 @@ public class SimpleArticleListingController extends BaseCollectionListingControl
             totalHits += defaultArticles.getTotalHits();
             defaultArticles = null;
         }
-        Service service = RequestContext.getRequestContext().getService();
-        URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
+        RequestContext requestContext = RequestContext.getRequestContext();
+        Service service = requestContext.getService();
+        URL baseURL = service.urlConstructor(requestContext.getRequestURL())
+                .withURI(requestContext.getResourceURI())
+                .constructURL();
 
         Optional<ListingPager.Pagination> pagination = 
                 ListingPager.pagination(totalHits, pageLimit,

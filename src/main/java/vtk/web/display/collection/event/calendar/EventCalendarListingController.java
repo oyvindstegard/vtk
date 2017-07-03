@@ -43,10 +43,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Property;
 import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
+import vtk.web.RequestContext;
 import vtk.web.display.collection.event.EventListingController;
 import vtk.web.display.collection.event.EventListingHelper;
 import vtk.web.display.listing.ListingPager;
@@ -113,13 +115,22 @@ public class EventCalendarListingController extends EventListingController {
         if (groupedByDayEvents.size() > 0 || (furtherUpcoming != null && furtherUpcoming.size() > 0)) {
             model.put(EventListingHelper.DISPLAY_LISTING_ICAL_LINK, true);
         }
-
-        URL viewAllUpcomingURL = this.viewAllUpcomingService.constructURL(collection);
+        
+        RequestContext requestContext = RequestContext.getRequestContext();
+        URL viewAllUpcomingURL = viewAllUpcomingService.urlConstructor(requestContext.getRequestURL())
+                .withResource(collection)
+                .matchAssertions(false)
+                .constructURL();
+        
         model.put("viewAllUpcomingURL", viewAllUpcomingURL);
         model.put("viewAllUpcomingTitle",
                 this.helper.getEventTypeTitle(request, collection, "eventListing.viewAllUpcoming", false));
 
-        URL viewAllPreviousURL = this.viewAllPreviousService.constructURL(collection);
+        URL viewAllPreviousURL = viewAllPreviousService.urlConstructor(requestContext.getRequestURL())
+                .withResource(collection)
+                .matchAssertions(false)
+                .constructURL();
+
         model.put("viewAllPreviousURL", viewAllPreviousURL);
         model.put("viewAllPreviousTitle",
                 this.helper.getEventTypeTitle(request, collection, "eventListing.viewAllPrevious", false));
@@ -127,7 +138,7 @@ public class EventCalendarListingController extends EventListingController {
     }
 
     private List<GroupedEvents> groupEvents(Listing result) {
-        List<GroupedEvents> groupedByDayEvents = new ArrayList<GroupedEvents>();
+        List<GroupedEvents> groupedByDayEvents = new ArrayList<>();
         if (result != null && result.size() > 0) {
             List<ListingEntry> allEvents = result.getEntries();
             for (int i = 0; i < this.daysAhead; i++) {
@@ -139,7 +150,7 @@ public class EventCalendarListingController extends EventListingController {
                 cal.set(Calendar.MILLISECOND, 0);
                 Listing subListing = new Listing(result.getResource(), null, result.getName(), result.getOffset());
                 subListing.setDisplayPropDefs(result.getDisplayPropDefs());
-                List<ListingEntry> subListingEvents = new ArrayList<ListingEntry>();
+                List<ListingEntry> subListingEvents = new ArrayList<>();
                 for (ListingEntry entry : allEvents) {
                     if (this.isWithinDaysAhead(cal.getTime(), entry.getPropertySet())) {
                         subListingEvents.add(entry);
@@ -181,7 +192,7 @@ public class EventCalendarListingController extends EventListingController {
 
             // Default is now, in case there are no grouped by events
             Date lastGroupedByDay = Calendar.getInstance().getTime();
-            Set<ListingEntry> allGroupedByEvents = new HashSet<ListingEntry>();
+            Set<ListingEntry> allGroupedByEvents = new HashSet<>();
             if (groupedEvents != null && groupedEvents.size() > 0) {
                 for (GroupedEvents ge : groupedEvents) {
                     allGroupedByEvents.addAll(ge.getEvents().getEntries());
@@ -192,7 +203,7 @@ public class EventCalendarListingController extends EventListingController {
                 }
             }
 
-            List<ListingEntry> filteredEventsWithoutGrouped = new ArrayList<ListingEntry>(result.getEntries());
+            List<ListingEntry> filteredEventsWithoutGrouped = new ArrayList<>(result.getEntries());
             filteredEventsWithoutGrouped.removeAll(allGroupedByEvents);
             if (filteredEventsWithoutGrouped.size() == 0) {
                 return null;
@@ -203,7 +214,7 @@ public class EventCalendarListingController extends EventListingController {
             // grouped events. Now get "furtherUpcomingLimit" further events
             // "daysAhead" from now
 
-            List<ListingEntry> furtherEvents = new ArrayList<ListingEntry>();
+            List<ListingEntry> furtherEvents = new ArrayList<>();
             for (ListingEntry entry : filteredEventsWithoutGrouped) {
                 PropertySet ps = entry.getPropertySet();
                 if (this.isWithinFurtherUpcoming(ps, lastGroupedByDay)) {

@@ -50,6 +50,7 @@ import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
+import vtk.web.service.URL;
 
 /**
  * Standard resource context model builder. Creates a model map with "standard"
@@ -196,7 +197,11 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
 
         resourceContextModel.put("currentServiceName", currentService.getName());
         try {
-            resourceContextModel.put("currentServiceURL", currentService.constructURL(resource, principal));
+            URL currentServiceURL = currentService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL();
+            resourceContextModel.put("currentServiceURL", currentServiceURL);
         }
         catch (ServiceUnlinkableException e) { }
         catch (Exception e) { }

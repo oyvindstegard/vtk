@@ -84,8 +84,12 @@ public class ConfirmPublishController implements Controller, ReferenceDataProvid
             Principal principal = requestContext.getPrincipal();
             URL url = null;
             try {
-                url = target.constructURL(item, principal);
-            } catch (Throwable t) { }
+                url = target.urlConstructor(requestContext.getRequestURL())
+                        .withResource(item)
+                        .withPrincipal(principal)
+                        .constructURL();
+            }
+            catch (Throwable t) { }
 
             model.put("url", url);
             model.put("name", item.getName());

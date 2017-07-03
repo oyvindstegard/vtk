@@ -108,7 +108,7 @@ public class ListingActionsController implements Controller {
         children = filter(requestContext, children, types);
 
         paramList = csvParameter(request, "actions");
-        List<String> actions = new LinkedList<String>();
+        List<String> actions = new LinkedList<>();
         for (String s: paramList) {
             if (!this.actions.containsKey(s))
                 throw new IllegalArgumentException("Invalid action: '" + s 
@@ -143,7 +143,7 @@ public class ListingActionsController implements Controller {
     
     
     private List<String> csvParameter(HttpServletRequest request, String parameter) {
-        List<String> result = new LinkedList<String>();
+        List<String> result = new LinkedList<>();
         String param = request.getParameter(parameter);
         if (param != null) {
             String[] values = param.split(",");
@@ -174,9 +174,13 @@ public class ListingActionsController implements Controller {
         for (String action: selection) {
             Service service = actions.get(action);
             try {
-                URL url = service.constructURL(resource, requestContext.getPrincipal());
+                URL url = service.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(requestContext.getPrincipal())
+                        .constructURL();
                 result.put(action, url);
-            } catch (Throwable t) { }
+            }
+            catch (Throwable t) { }
         }
         return result;
     }

@@ -42,8 +42,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
-import vtk.repository.ContentInputSources;
 
+import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -100,27 +100,27 @@ public class SimpleStructuredEditor implements Controller {
         if ("POST".equals(request.getMethod())) {
             if (request.getParameter(ACTION_PARAMETER_VALUE_CANCEL) != null) {
                 repository.unlock(token, uri, null);
-                setRedirect(response, currentResource.isCollection() ? uri : uri.getParent(), null, null);
+                setRedirect(request, response, currentResource.isCollection() ? uri : uri.getParent(), null, null);
                 return null;
             }
             else if (request.getParameter(ACTION_PARAMETER_VALUE_DELETE) != null) {
                 // This is going to be replaced later
                 repository.unlock(token, uri, null);
                 repository.delete(token, uri, true);
-                setRedirect(response, uri.getParent(), uri, ACTION_PARAMETER_VALUE_DELETE);
+                setRedirect(request, response, uri.getParent(), uri, ACTION_PARAMETER_VALUE_DELETE);
                 return null;
             }
             else if (currentResource.isCollection() && 
                     request.getParameter(ACTION_PARAMETER_VALUE_SAVE) != null) {
                 Path newUri = createNewDocument(request, repository, token, uri);
-                setRedirect(response, uri, newUri, ACTION_PARAMETER_VALUE_NEW);
+                setRedirect(request, response, uri, newUri, ACTION_PARAMETER_VALUE_NEW);
                 return null;
             }
             else if (resourceType.equals(currentResource.getResourceType()) && 
                     request.getParameter(ACTION_PARAMETER_VALUE_SAVE) != null) {
                 updateDocument(request, token, repository, uri);
                 repository.unlock(token, uri, null);
-                setRedirect(response, uri.getParent(), uri, ACTION_PARAMETER_VALUE_UPDATE);
+                setRedirect(request, response, uri.getParent(), uri, ACTION_PARAMETER_VALUE_UPDATE);
                 return null;
             }
         }
@@ -138,11 +138,16 @@ public class SimpleStructuredEditor implements Controller {
         return new ModelAndView(viewName, model);
     }
 
-    private void setRedirect(HttpServletResponse response, Path collection, 
+    private void setRedirect(HttpServletRequest request, HttpServletResponse response, Path collection, 
             Path document, String action) throws IOException, Exception {
         response.addIntHeader("Refresh", 0);
 
-        URL url = viewService.constructURL(collection);
+        RequestContext requestContext = RequestContext.getRequestContext();
+        
+        URL url = viewService.urlConstructor(requestContext.getRequestURL())
+                .withURI(collection)
+                .constructURL();
+        
         if (action != null || document != null) {
             url.addParameter("action", action);
             url.addParameter("uri", document.toString());

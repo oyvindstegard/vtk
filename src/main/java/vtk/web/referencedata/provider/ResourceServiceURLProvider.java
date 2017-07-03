@@ -163,10 +163,14 @@ public class ResourceServiceURLProvider implements ReferenceDataProvider {
         URL url = null;
         try {
             if (resource != null) {
-                url = this.service.constructURL(resource, principal,
-                                                 this.matchAssertions);
+                url = service.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .matchAssertions(matchAssertions)
+                        .constructURL();
             }
-        } catch (ServiceUnlinkableException ex) { }
+        }
+        catch (ServiceUnlinkableException ex) { }
         
         urlMap.put(this.urlName, url);
         if (url != null) {

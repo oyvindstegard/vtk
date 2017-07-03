@@ -49,6 +49,7 @@ import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.security.PrincipalFactory;
 import vtk.web.ACLTooltipHelper;
+import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -65,12 +66,16 @@ public abstract class DocumentReporter extends AbstractReporter {
 
     @Override
     public Map<String, Object> getReportContent(String token, Resource resource, HttpServletRequest request) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         result.put(REPORT_NAME, getName());
+        RequestContext requestContext = RequestContext.getRequestContext();
 
         if (backReportName != null) {
-            URL backURL = new URL(reportService.constructURL(resource));
-            backURL.addParameter(REPORT_TYPE_PARAM, backReportName);
+            URL backURL = reportService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .matchAssertions(false)
+                    .constructURL()
+                    .addParameter(REPORT_TYPE_PARAM, backReportName);
 
             result.put("backURLname", backReportName);
             result.put("backURL", backURL);
@@ -107,7 +112,7 @@ public abstract class DocumentReporter extends AbstractReporter {
         boolean[] isInheritedAcl = new boolean[rs.getSize()];
         URL[] viewURLs = new URL[rs.getSize()];
         String[] permissionTooltips = new String[rs.getSize()];
-        List<PropertySet> list = new ArrayList<PropertySet>();
+        List<PropertySet> list = new ArrayList<>();
         
         
         List<PropertySet> allResults = rs.getAllResults();
@@ -120,7 +125,10 @@ public abstract class DocumentReporter extends AbstractReporter {
                     && !acl.hasPrivilege(Privilege.READ_PROCESSED, PrincipalFactory.ALL);
             isInheritedAcl[i] = propSet.isInheritedAcl();
             if (manageService != null) {
-                viewURLs[i] = manageService.constructURL(propSet.getURI()).setProtocol("http");
+                viewURLs[i] = manageService.urlConstructor(URL.create(request))
+                        .withURI(propSet.getURI())
+                        .constructURL()
+                        .setProtocol("http");
             }
             if (aclTooltipHelper != null) {
                 permissionTooltips[i] = aclTooltipHelper.generateTitle(

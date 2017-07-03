@@ -176,7 +176,7 @@ public class RequestContextInitializer implements ContextInitializer, ServiceRes
             this.nonRepositoryRoots = nonRepositoryRoots;
         }
     }
-    
+
     @Override
     public Optional<Service> service(String name) {
         return Optional.ofNullable(services.get(Objects.requireNonNull(name)));

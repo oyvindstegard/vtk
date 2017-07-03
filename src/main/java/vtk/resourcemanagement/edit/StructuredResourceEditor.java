@@ -232,10 +232,12 @@ public class StructuredResourceEditor extends SimpleFormController<FormSubmitCom
         StructuredResourceDescription description = resourceManager.get(resource.getResourceType());
         StructuredResource structuredResource = description.buildResource(stream);
 
-        URL url = RequestContext.getRequestContext().getService().constructURL(uri);
-        URL listComponentServiceURL = listComponentsService.constructURL(uri);
-
-        
+        URL url = requestContext.getService().urlConstructor(requestContext.getRequestURL())
+                .withURI(uri)
+                .constructURL();
+        URL listComponentServiceURL = listComponentsService.urlConstructor(requestContext.getRequestURL())
+                .withURI(uri)
+                .constructURL();
         Locale locale = resource.getContentLocale();
         if (locale == null) {
             locale = defaultLocale;

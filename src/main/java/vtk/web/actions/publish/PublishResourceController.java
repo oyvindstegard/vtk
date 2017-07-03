@@ -51,6 +51,7 @@ import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.actions.ActionsHelper;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class PublishResourceController extends SimpleFormController<PublishResourceCommand> {
 
@@ -74,8 +75,13 @@ public class PublishResourceController extends SimpleFormController<PublishResou
         Principal principal = requestContext.getPrincipal();
 
         Resource resource = repository.retrieve(token, uri, false);
-        String url = service.constructLink(resource, principal);
-        return new PublishResourceCommand(url);
+        
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
+                
+        return new PublishResourceCommand(url.toString());
     }
 
     @Override
@@ -92,7 +98,7 @@ public class PublishResourceController extends SimpleFormController<PublishResou
         // Map of files that for some reason failed on publish. Separated by a
         // key (String) that specifies type of failure and identifies list of
         // paths to resources that failed.
-        Map<String, List<Path>> failures = new HashMap<String, List<Path>>();
+        Map<String, List<Path>> failures = new HashMap<>();
         
         if (publishResourceCommand.getPublishResourceAction() != null) {
             if (PUBLISH_PARAM.equals(action) || PUBLISH_PARAM_GLOBAL.equals(action)) {

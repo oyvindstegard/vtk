@@ -52,6 +52,7 @@ import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.actions.trashcan.TrashCanObjectSorter.Order;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class TrashCanController extends SimpleFormController<TrashCanCommand> {
 
@@ -66,12 +67,15 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
         Service service = requestContext.getService();
         Principal principal = requestContext.getPrincipal();
 
-        String submitURL = service.constructLink(resource, principal);
-        TrashCanCommand command = new TrashCanCommand(submitURL, resource);
+        URL submitURL = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
+        TrashCanCommand command = new TrashCanCommand(submitURL.toString(), resource);
 
         List<RecoverableResource> recoverableResources = 
                 repository.getRecoverableResources(token, uri);
-        List<TrashCanObject> trashCanObjects = new ArrayList<TrashCanObject>();
+        List<TrashCanObject> trashCanObjects = new ArrayList<>();
         for (RecoverableResource rr : recoverableResources) {
             TrashCanObject tco = new TrashCanObject();
             tco.setRecoverableResource(rr);
@@ -162,16 +166,16 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
     private RecoveryObject getRecoverableResources(Path parentURI, 
             List<RecoverableResource> selectedResources) throws Exception {
         
-        List<String> duplicateConflicted = new ArrayList<String>();
-        Set<String> duplicates = new HashSet<String>();
+        List<String> duplicateConflicted = new ArrayList<>();
+        Set<String> duplicates = new HashSet<>();
         for (RecoverableResource rr : selectedResources) {
             if (!duplicates.add(rr.getName())) {
                 duplicateConflicted.add(rr.getName());
             }
         }
 
-        List<RecoverableResource> recoverable = new ArrayList<RecoverableResource>();
-        List<RecoverableResource> conflicted = new ArrayList<RecoverableResource>();
+        List<RecoverableResource> recoverable = new ArrayList<>();
+        List<RecoverableResource> conflicted = new ArrayList<>();
         for (RecoverableResource rr : selectedResources) {
             Path recoveryPath = parentURI.extend(rr.getName());
             if (!this.exists(recoveryPath) && !duplicateConflicted.contains(rr.getName())) {

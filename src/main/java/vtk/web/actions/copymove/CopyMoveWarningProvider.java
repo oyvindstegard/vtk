@@ -94,7 +94,9 @@ public class CopyMoveWarningProvider implements ReferenceDataProvider {
         Acl srcAcl = srcAclResource.getAcl();
         Acl destAcl = destAclResource.getAcl();
         
-        URL confirmURL = this.confirmationService.constructURL(destinationUri);
+        URL confirmURL = confirmationService.urlConstructor(requestContext.getRequestURL())
+                .withURI(destinationUri)
+                .constructURL();
         
         if ("copy-resources".equals(sessionBean.getAction())) {
             if (!(destAcl.hasPrivilege(Privilege.READ, PrincipalFactory.ALL) || destAcl.hasPrivilege(

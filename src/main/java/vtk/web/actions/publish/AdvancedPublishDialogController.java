@@ -50,6 +50,7 @@ import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class AdvancedPublishDialogController extends SimpleFormController<EditPublishingCommand> {
 
@@ -65,9 +66,12 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
         Resource resource = repository.retrieve(token, uri, false);
 
         Service service = requestContext.getService();
-        String submitURL = service.constructLink(resource, requestContext.getPrincipal());
-
-        EditPublishingCommand command = new EditPublishingCommand(submitURL);
+        URL submitURL = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
+        
+        EditPublishingCommand command = new EditPublishingCommand(submitURL.toString());
         command.setResource(resource);
         return command;
     }
@@ -76,7 +80,7 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
     protected Map<String, Object> referenceData(HttpServletRequest request,
             EditPublishingCommand command, Errors errors) throws Exception {
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("formName", this.getCommandName());
         return model;
     }

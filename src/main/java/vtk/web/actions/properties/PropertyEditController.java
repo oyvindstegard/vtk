@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,6 +80,7 @@ import vtk.web.SimpleFormController;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
+import vtk.web.service.URL;
 
 /**
  * A {@link Property property} edit controller. This class is both a form
@@ -174,11 +176,11 @@ implements ReferenceDataProvider {
             }
         }
 
-        Map<String, String> urlParameters = new HashMap<>();
+        Map<String, List<String>> urlParameters = new HashMap<>();
         String namespaceURI = definition.getNamespace().getUri();
         if (namespaceURI != null)
-            urlParameters.put("namespace", namespaceURI);
-        urlParameters.put("name", definition.getName());
+            urlParameters.put("key", Collections.singletonList(namespaceURI));
+        urlParameters.put("name", Collections.singletonList(definition.getName()));
 
         List<String> formAllowedValues = null;
         String hierarchicalHelpUrl = null;
@@ -196,9 +198,14 @@ implements ReferenceDataProvider {
         }
 
         Service service = requestContext.getService();
-        String editURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
-
-        return new PropertyEditCommand(editURL, definition, value, formAllowedValues, hierarchicalHelpUrl);
+        URL editURL = service.urlConstructor(URL.create(requestContext.getServletRequest()))
+            .withResource(resource)
+            .withPrincipal(requestContext.getPrincipal())
+            .withParameters(urlParameters)
+            .constructURL();
+        
+        return new PropertyEditCommand(editURL.toString(), definition, value, 
+                formAllowedValues, hierarchicalHelpUrl);
     }
 
     @Override
@@ -473,18 +480,23 @@ implements ReferenceDataProvider {
                 }
                 if (repository.isAuthorized(resource, protectionLevel, requestContext.getPrincipal(), true)) {
 
-                    Map<String, String> urlParameters = new HashMap<>();
+                    Map<String, List<String>> urlParameters = new HashMap<>();
                     String namespaceURI = def.getNamespace().getUri();
                     if (namespaceURI != null) {
-                        urlParameters.put("namespace", namespaceURI);
+                        urlParameters.put("namespace", Collections.singletonList(namespaceURI));
                     }
-                    urlParameters.put("name", def.getName());
+                    urlParameters.put("name", Collections.singletonList(def.getName()));
                     if (def.getType() == PropertyType.Type.TIMESTAMP || def.getType() == PropertyType.Type.DATE) {
                         format = this.dateFormat;
                     }
 
                     try {
-                        editURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
+                        editURL = service.urlConstructor(URL.create(request))
+                            .withResource(resource)
+                            .withPrincipal(requestContext.getPrincipal())
+                            .withParameters(urlParameters).constructURL()
+                            .toString();
+                        
                     } catch (ServiceUnlinkableException e) {
                         // Assertion doesn't match, OK in this case
                     }
@@ -494,16 +506,26 @@ implements ReferenceDataProvider {
                             && !resource.getOwner().equals(requestContext.getPrincipal())) {
 
                         // Using toggle parameter to take ownership:
-                        urlParameters.put(this.toggleRequestParameter, "true");
-                        toggleURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
+                        urlParameters.put(this.toggleRequestParameter, Collections.singletonList("true"));
+                        
+                        toggleURL = service.urlConstructor(URL.create(request))
+                                .withResource(resource)
+                                .withPrincipal(requestContext.getPrincipal())
+                                .withParameters(urlParameters).constructURL()
+                                .toString();
 
-                    } else if (isToggleProperty(def)) {
+                    }
+                    else if (isToggleProperty(def)) {
                         Value toggleValueObject = getToggleValue(def, property);
                         if (toggleValueObject != null) {
                             toggleValue = getValueAsString(toggleValueObject);
                         }
-                        urlParameters.put(this.toggleRequestParameter, "true");
-                        toggleURL = service.constructLink(resource, requestContext.getPrincipal(), urlParameters);
+                        urlParameters.put(this.toggleRequestParameter, Collections.singletonList("true"));
+                        toggleURL = service.urlConstructor(URL.create(request))
+                                .withResource(resource)
+                                .withPrincipal(requestContext.getPrincipal())
+                                .withParameters(urlParameters).constructURL()
+                                .toString();
                     }
                 }
 

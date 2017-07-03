@@ -46,6 +46,7 @@ import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
+import vtk.web.service.URL;
 
 /**
  * URL (link) reference data provider. Puts a URL to a fixed resource
@@ -149,8 +150,12 @@ public class FixedResourceServiceURLProvider
         String url = null;
         try {
             if (resource != null) {
-                url = this.service.constructLink(resource, principal,
-                                                 this.matchAssertions);
+                url = service.urlConstructor(URL.create(request))
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .matchAssertions(matchAssertions)
+                        .constructURL()
+                        .toString();
             }
         } catch (ServiceUnlinkableException ex) { }
 

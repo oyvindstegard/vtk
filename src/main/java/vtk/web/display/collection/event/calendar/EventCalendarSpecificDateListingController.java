@@ -79,8 +79,13 @@ public class EventCalendarSpecificDateListingController extends EventCalendarLis
                 model.put("specificDateEvents", specificDateEvents);
                 model.put(MODEL_KEY_SEARCH_COMPONENTS, Collections.singletonList(specificDateEvents));
 
-                Service service = RequestContext.getRequestContext().getService();
-                URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
+                RequestContext requestContext = RequestContext.getRequestContext();
+                Service service = requestContext.getService();
+                
+                URL baseURL = service.urlConstructor(requestContext.getRequestURL())
+                        .withURI(requestContext.getResourceURI())
+                        .constructURL();
+                
                 baseURL.setParameter(EventListingHelper.REQUEST_PARAMETER_DATE,
                         request.getParameter(EventListingHelper.REQUEST_PARAMETER_DATE));
 

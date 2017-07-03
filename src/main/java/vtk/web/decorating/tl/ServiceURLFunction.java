@@ -30,21 +30,23 @@
  */
 package vtk.web.decorating.tl;
 
+import java.util.Optional;
+
 import vtk.repository.Path;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
+import vtk.web.RequestContext;
 import vtk.web.decorating.tl.DomainTypes.Failure;
 import vtk.web.decorating.tl.DomainTypes.RequestContextType;
 import vtk.web.decorating.tl.DomainTypes.Success;
-import vtk.web.service.ServiceUrlProvider;
+import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class ServiceURLFunction extends Function {
-    private final ServiceUrlProvider serviceUrlProvider;
     
-    public ServiceURLFunction(Symbol symbol, ServiceUrlProvider serviceUrlProvider) {
+    public ServiceURLFunction(Symbol symbol) {
         super(symbol, 3);
-        this.serviceUrlProvider = serviceUrlProvider;
     }
 
     @Override
@@ -63,10 +65,19 @@ public class ServiceURLFunction extends Function {
         String serviceName = arg2.toString();
 
         try {
-            return new Success<>(serviceUrlProvider.builder(serviceName)
-                .withPath(Path.fromString(path)).build().toString()
-            );
-        } catch (Throwable t) { return new Failure<>(t); }
+            RequestContext requestContext = ((RequestContextType) arg0).requestContext();
+            Optional<Service> service = requestContext.service(serviceName);
+            
+            Optional<URL> url = service.map(s -> s.urlConstructor(requestContext.getRequestURL())
+                    .withURI(Path.fromString(path))
+                    .constructURL());
+            
+            return new Success<>(url.orElseThrow(() -> 
+                new IllegalArgumentException("Service '" + serviceName + "' not found"))); 
+        }
+        catch (Throwable t) {
+            return new Failure<>(t);
+        }
     }
 
 }

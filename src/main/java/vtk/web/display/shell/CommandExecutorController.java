@@ -46,6 +46,7 @@ import vtk.shell.AbstractConsole;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 
 public class CommandExecutorController extends SimpleFormController<ExecutorCommand> {
@@ -66,9 +67,13 @@ public class CommandExecutorController extends SimpleFormController<ExecutorComm
         
         Resource resource = repository.retrieve(
             token, requestContext.getResourceURI(), false);
-        String url = service.constructLink(resource, requestContext.getPrincipal());
-         
-        ExecutorCommand command = new ExecutorCommand(url);
+        
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
+        
+        ExecutorCommand command = new ExecutorCommand(url.toString());
         return command;
     }
 

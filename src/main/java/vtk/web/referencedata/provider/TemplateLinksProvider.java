@@ -53,6 +53,7 @@ import vtk.util.text.SimpleTemplate;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 /**
  * Provides links generated from patterns with placeholders for
@@ -129,13 +130,19 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
                     final StringBuilder url = new StringBuilder();
                     template.apply(variable -> {
                         if ("url".equals(variable)) {
-                            String s = service.constructLink(resource, principal);
+                            String s = service.urlConstructor(URL.create(request))
+                                    .withResource(resource)
+                                    .withPrincipal(principal)
+                                    .constructURL()
+                                    .toString();
                             try {
                                 return URLEncoder.encode(s, URL_ENCODING_CHARSET);
-                            } catch (UnsupportedEncodingException e) {
+                            }
+                            catch (UnsupportedEncodingException e) {
                                 return "";
                             }
-                        } else {
+                        }
+                        else {
                             // Assume it's a reference to a resource property
                             String prefix = null;
                             String name = null;
@@ -191,7 +198,10 @@ public class TemplateLinksProvider implements ReferenceDataProvider {
                                 Path currentCollection = RequestContext.getRequestContext().getCurrentCollection();
                                 retVal = currentCollection.expand(retVal).toString();
                             }
-                            retVal = viewService.constructLink(Path.fromString(retVal));
+                            retVal = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                                    .withURI(Path.fromString(retVal))
+                                    .constructURL()
+                                    .toString();
                         } catch (Exception iae) {
                             retVal = "";
                         }

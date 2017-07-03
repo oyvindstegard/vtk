@@ -46,6 +46,7 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.Value;
 import vtk.repository.search.ResultSet;
+import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
@@ -82,9 +83,9 @@ public final class MenuGenerator {
     }
 
 	public ListMenu<PropertySet> buildListMenu(ResultSet rs, MenuRequest menuRequest, String modelName, boolean ascendingSort) {
-        ListMenu<PropertySet> menu = new ListMenu<PropertySet>();
-        Map<Path, List<PropertySet>> childMap = new HashMap<Path, List<PropertySet>>();
-        List<PropertySet> toplevel = new ArrayList<PropertySet>();
+        ListMenu<PropertySet> menu = new ListMenu<>();
+        Map<Path, List<PropertySet>> childMap = new HashMap<>();
+        List<PropertySet> toplevel = new ArrayList<>();
         for (int i = 0; i < rs.getSize(); i++) {
             PropertySet resource = rs.getResult(i);
 
@@ -100,13 +101,13 @@ public final class MenuGenerator {
             List<PropertySet> childList = childMap.get(parentURI);
 
             if (childList == null) {
-                childList = new ArrayList<PropertySet>();
+                childList = new ArrayList<>();
                 childMap.put(parentURI, childList);
             }
             childList.add(resource);
         }
 
-        List<MenuItem<PropertySet>> toplevelItems = new ArrayList<MenuItem<PropertySet>>();
+        List<MenuItem<PropertySet>> toplevelItems = new ArrayList<>();
 
         for (PropertySet resource : toplevel) {
             toplevelItems.add(buildItem(resource, childMap, menuRequest));
@@ -124,10 +125,13 @@ public final class MenuGenerator {
 
     private MenuItem<PropertySet> buildItem(PropertySet resource, Map<Path, List<PropertySet>> childMap,
             MenuRequest menuRequest) {
+
         Path uri = resource.getURI();
 
         URL url = null;
-        url = this.viewService.constructURL(uri);
+        url = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                .withURI(uri)
+                .constructURL();
         url.setCollection(true);
 
         Property titleProperty = resource.getProperty(this.navigationTitlePropDef);
@@ -135,7 +139,7 @@ public final class MenuGenerator {
         Value titleValue = titleProperty != null ? titleProperty.getValue() : new Value(resource.getName(),
                 PropertyType.Type.STRING);
 
-        MenuItem<PropertySet> item = new MenuItem<PropertySet>(resource);
+        MenuItem<PropertySet> item = new MenuItem<>(resource);
         item.setUrl(url);
 
         String itemTitle = titleProperty != null ? titleProperty.getFormattedValue() : titleValue.getStringValue();
@@ -145,7 +149,7 @@ public final class MenuGenerator {
 
         List<PropertySet> children = childMap.get(resource.getURI());
         if (children != null) {
-            ListMenu<PropertySet> subMenu = new ListMenu<PropertySet>();
+            ListMenu<PropertySet> subMenu = new ListMenu<>();
 
             subMenu.setComparator(new ListMenuComparator(menuRequest.getLocale(), this.importancePropDef,
                     this.navigationTitlePropDef, menuRequest.isAscendingSort(), menuRequest.isSortByName(), menuRequest
@@ -154,8 +158,10 @@ public final class MenuGenerator {
             for (PropertySet child : children) {
                 subMenu.addItem(buildItem(child, childMap, menuRequest));
             }
-
-            URL moreUrl = this.viewService.constructURL(resource.getURI());
+            
+            URL moreUrl = viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                    .withURI(resource.getURI())
+                    .constructURL();
             moreUrl.setCollection(true);
             subMenu.setMoreUrl(moreUrl);
             subMenu.setMaxNumberOfItems(menuRequest.getMaxNumberOfChildren());
@@ -165,7 +171,7 @@ public final class MenuGenerator {
     }
 
     public Map<String, Object> buildMenuModel(ListMenu<PropertySet> menu, MenuRequest menuRequest, boolean ascendingSort) {
-        List<ListMenu<PropertySet>> resultList = new ArrayList<ListMenu<PropertySet>>();
+        List<ListMenu<PropertySet>> resultList = new ArrayList<>();
 
         int resultSets = menuRequest.getResultSets();
         List<MenuItem<PropertySet>> allItems = menu.getItemsSorted();
@@ -200,7 +206,7 @@ public final class MenuGenerator {
             startIdx = endIdx;
             endIdx = startIdx + itemsPerResultSet;
 
-            ListMenu<PropertySet> m = new ListMenu<PropertySet>();
+            ListMenu<PropertySet> m = new ListMenu<>();
             m.setComparator(new ListMenuComparator(menuRequest.getLocale(), this.importancePropDef,
 					this.navigationTitlePropDef, ascendingSort, menuRequest.isSortByName(), menuRequest
                             .getSortProperty()));
@@ -211,7 +217,7 @@ public final class MenuGenerator {
             resultList.add(m);
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("resultSets", resultList);
         if (groupResultSetsBy > 0) {
             model.put("groupResultSetsBy", groupResultSetsBy);

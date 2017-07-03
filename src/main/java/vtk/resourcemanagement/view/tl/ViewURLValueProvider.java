@@ -34,6 +34,7 @@ import vtk.repository.PropertySet;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
+import vtk.web.RequestContext;
 import vtk.web.service.Service;
 
 public class ViewURLValueProvider extends Function {
@@ -51,6 +52,9 @@ public class ViewURLValueProvider extends Function {
         if (!(arg instanceof PropertySet)) {
             throw new RuntimeException("Argument must be a resource object: " + arg);
         }
-        return this.viewService.constructLink(((PropertySet) arg).getURI());
+        return viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                .withURI(((PropertySet) arg).getURI())
+                .constructURL()
+                .toString();
     }
 }

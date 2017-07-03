@@ -109,8 +109,10 @@ public class RedirectProvider implements InitializingBean, ReferenceDataProvider
                 resource = repository.retrieve(
                         requestContext.getSecurityToken(), requestContext.getResourceURI(), false);
             }
-
-            URL redirectURL = this.redirectToService.constructURL(resource, principal);
+            URL redirectURL = redirectToService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL();
             if (this.urlAnchor != null) {
                 redirectURL.setRef(this.urlAnchor);
             }

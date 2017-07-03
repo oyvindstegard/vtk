@@ -47,6 +47,7 @@ import vtk.repository.Resource;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class RenameController extends SimpleFormController<RenameCommand> {
 
@@ -60,9 +61,12 @@ public class RenameController extends SimpleFormController<RenameCommand> {
         
         Resource resource = repository.retrieve(
                 requestContext.getSecurityToken(), requestContext.getResourceURI(), false);
-        String url = service.constructLink(resource, requestContext.getPrincipal());
-
-        RenameCommand command = new RenameCommand(resource, url);
+        
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
+        RenameCommand command = new RenameCommand(resource, url.toString());
         return command;
     }
 

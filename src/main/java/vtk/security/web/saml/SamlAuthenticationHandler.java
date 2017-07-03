@@ -88,7 +88,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
     private String ieReturnURL;
 
-    private Map<String, String> staticHeaders = new HashMap<String, String>();
+    private Map<String, String> staticHeaders = new HashMap<>();
 
     private Collection<LoginListener> loginListeners;
 
@@ -210,7 +210,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
         }
 
         if (browserIsIE(request)) {
-            Map<String, String> cookieMap = new HashMap<String, String>();
+            Map<String, String> cookieMap = new HashMap<>();
 
             URL resourceURL = this.login.getRelayStateURL(request);
 
@@ -240,9 +240,14 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
 
             URL currentURL = null;
             if (inManageMode) {
-                currentURL = this.redirectToViewService.constructURL(Path.fromString(ieCookieSetterURI));
-            } else {
-                currentURL = this.redirectToAdminService.constructURL(Path.fromString(ieCookieSetterURI));
+                currentURL = redirectToViewService.urlConstructor(URL.create(request))
+                        .withURI(Path.fromString(ieCookieSetterURI))
+                        .constructURL();
+            }
+            else {
+                currentURL = redirectToAdminService.urlConstructor(URL.create(request))
+                        .withURI(Path.fromString(ieCookieSetterURI))
+                        .constructURL();
             }
             currentURL.setProtocol("https");
             currentURL.addParameter(ieCookieTicket, cookieTicket);
@@ -309,7 +314,7 @@ public class SamlAuthenticationHandler implements AuthenticationChallenge, Authe
             c.setMaxAge(0);
             response.addCookie(c);
         }
-        List<String> spCookies = new ArrayList<String>();
+        List<String> spCookies = new ArrayList<>();
         spCookies.add(vrtxAuthSP);
         spCookies.add(uioAuthIDP);
 

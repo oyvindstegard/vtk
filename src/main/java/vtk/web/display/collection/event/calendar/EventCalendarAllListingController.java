@@ -73,7 +73,9 @@ public class EventCalendarAllListingController extends EventCalendarListingContr
         }
         
         Service service = RequestContext.getRequestContext().getService();
-        URL serviceURL = service.constructURL(collection.getURI());
+        URL serviceURL = service.urlConstructor(URL.create(request))
+                .withURI(collection.getURI())
+                .constructURL();
         String viewType = serviceURL.getParameter(EventListingHelper.REQUEST_PARAMETER_VIEW);
 
         model.put(viewType, result);

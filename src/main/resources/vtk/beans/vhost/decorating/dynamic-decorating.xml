@@ -135,7 +135,6 @@
         <constructor-arg value="url" />
       </bean>
     </constructor-arg>
-    <constructor-arg ref="serviceUrlProvider"/>
   </bean>
 
   <bean id="decorating.requestContextFunction" 

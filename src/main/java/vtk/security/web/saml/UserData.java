@@ -49,7 +49,7 @@ import org.opensaml.xml.schema.XSString;
 
 public class UserData {
 
-    private Map<String, List<String>> attrs = new HashMap<String, List<String>>();
+    private Map<String, List<String>> attrs = new HashMap<>();
 
 
     public UserData(Assertion assertion) {
@@ -114,7 +114,7 @@ public class UserData {
     private List<String> extractValues(Attribute attribute) {
 
         List<XMLObject> values = attribute.getAttributeValues();
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         for (XMLObject val : values) {
             if (!(val instanceof XSString)) {
@@ -131,5 +131,10 @@ public class UserData {
             result.add(s.getValue());
         }
         return result;
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" + attrs + ")";
     }
 }

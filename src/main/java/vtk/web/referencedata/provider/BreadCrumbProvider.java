@@ -163,7 +163,7 @@ public class BreadCrumbProvider implements ReferenceDataProvider, InitializingBe
     private List<BreadcrumbElement> generateBreadcrumb(RequestContext requestContext, Path uri,
             boolean skipLastElement, boolean isIndexFile, boolean displayHidden, String serviceName) {
 
-        List<BreadcrumbElement> breadCrumb = new ArrayList<BreadcrumbElement>();
+        List<BreadcrumbElement> breadCrumb = new ArrayList<>();
         if (uri.isRoot()) {
             return breadCrumb;
         }
@@ -202,7 +202,11 @@ public class BreadCrumbProvider implements ReferenceDataProvider, InitializingBe
                 }
                 title = StringUtils.isBlank(navigationTitle) ? title : navigationTitle;
 
-                URL url = service.constructURL(r, principal, false);
+                URL url = service.urlConstructor(requestContext.getRequestURL())
+                        .withResource(r)
+                        .withPrincipal(principal)
+                        .matchAssertions(false)
+                        .constructURL();
                 if (!skipLastElement) {
                     if (i == length - 1) {
                         if (serviceNameCrumb != null) {

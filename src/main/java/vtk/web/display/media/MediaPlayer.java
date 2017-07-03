@@ -31,6 +31,7 @@
 package vtk.web.display.media;
 
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.AuthorizationException;
@@ -206,7 +207,13 @@ public class MediaPlayer {
     }
 
     private void addMediaUrl(Resource mediaResource, Map<String, Object> model) {
-        model.put("media", this.viewService.constructURL(mediaResource));
+        RequestContext requestContext = RequestContext.getRequestContext();
+        URL mediaURL = viewService.urlConstructor(requestContext.getRequestURL())
+                .withResource(mediaResource)
+                .matchAssertions(false)
+                .constructURL();
+                
+        model.put("media", mediaURL);
     }
 
     // Adds media URL to model, possibly non-local or unreadable local resource. Local resources are resolved to absolute
@@ -232,15 +239,18 @@ public class MediaPlayer {
         Property thumbnail = mediaResource.getProperty(thumbnailPropDef);
         if (posterImageProp != null) {
             poster = createUrl(posterImageProp.getStringValue());
-        } else if (thumbnail != null) {
-            poster = thumbnailService.constructURL(mediaResource);
+        }
+        else if (thumbnail != null) {
+            RequestContext requestContext = RequestContext.getRequestContext();
+            poster = thumbnailService.urlConstructor(requestContext.getRequestURL())
+                    .withResource(mediaResource)
+                    .matchAssertions(false)
+                    .constructURL();
             // Work-around for SelectiveProtocolManager URL post-processing which sets
             // URL protocol to "http" for open resources, but this causes mixed-mode
             // in secure page context, since this URL points to an inline element (image).
-            if (RequestContext.exists()) {
-                if (RequestContext.getRequestContext().getServletRequest().isSecure()) {
-                    poster.setProtocol("https");
-                }
+            if (RequestContext.getRequestContext().getServletRequest().isSecure()) {
+                poster.setProtocol("https");
             }
         }
 
@@ -287,8 +297,12 @@ public class MediaPlayer {
         if (mediaRef.startsWith("/")) {
             URL localURL = null;
             try {
+                RequestContext requestContext = RequestContext.getRequestContext();
+
                 Path uri = Path.fromString(mediaRef);
-                localURL = this.viewService.constructURL(uri);
+                localURL = viewService.urlConstructor(requestContext.getRequestURL())
+                        .withURI(uri)
+                        .constructURL();
             } catch (Exception e) {
                 // ignore
             }

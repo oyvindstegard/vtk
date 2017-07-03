@@ -42,6 +42,7 @@ import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
 import vtk.text.html.HtmlUtil;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public class ACLTooltipHelper {
    
@@ -122,7 +123,10 @@ public class ACLTooltipHelper {
 
     private void genEditOrViewButton(HttpServletRequest request, PropertySet r, boolean authorizedToAdmin,
             boolean authorizedToRead, StringBuilder title) {
-        String uriService = this.permissionsService.constructURL(r.getURI()).getPathRepresentation();
+        String uriService = permissionsService.urlConstructor(URL.create(request))
+                .withURI(r.getURI())
+                .constructURL()
+                .getPathRepresentation();
         if (authorizedToAdmin) {
             title.append("&nbsp;&nbsp;<a class=&quot;vrtx-button-small&quot; href=&quot;" + uriService
                     + "&quot;><span>" + getLocalizedTitle(request, "report.list-resources.edit", null)

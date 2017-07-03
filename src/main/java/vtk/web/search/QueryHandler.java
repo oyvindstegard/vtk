@@ -73,6 +73,7 @@ import vtk.util.text.JsonStreamer;
 import vtk.util.text.TextUtils;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 /**
  * A search handler that accepts queries as request parameters and returns 
@@ -418,7 +419,10 @@ public final class QueryHandler implements HttpRequestHandler {
                     }
                     else {
                         try {
-                            return Optional.of(service.get().constructURL(propset.getURI()));
+                            URL url = service.get().urlConstructor(requestContext.getRequestURL())
+                                    .withURI(propset.getURI())
+                                    .constructURL();
+                            return Optional.of(url);
                         }
                         catch (Throwable t) {
                             return Optional.empty();

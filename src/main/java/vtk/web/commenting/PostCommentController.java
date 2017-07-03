@@ -39,9 +39,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.owasp.html.PolicyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.owasp.html.PolicyFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
@@ -86,7 +86,10 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
         Service service = requestContext.getService();
         Resource resource = repository.retrieve(token, 
                 requestContext.getResourceURI(), false);
-        URL url = service.constructURL(resource, requestContext.getPrincipal());
+        URL url = service.urlConstructor(requestContext.getRequestURL())
+                .withResource(resource)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
         PostCommentCommand command = new PostCommentCommand(url);
         return command;
     }

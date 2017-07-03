@@ -34,9 +34,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang.time.FastDateFormat;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Namespace;
 import vtk.repository.Property;
@@ -64,12 +65,12 @@ public class AudioVideoListingRSSFeedGenerator extends RSSFeedGenerator {
         Listing entryElements = searchComponent.execute(RequestContext.getRequestContext().getServletRequest(),
                 feedScope, 1, 500, 0);
 
-        List<Map<String, Object>> feedEntries = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> feedEntries = new ArrayList<>();
 
         for (ListingEntry entry : entryElements.getEntries()) {
 
             PropertySet ps = entry.getPropertySet();
-            Map<String, Object> feedEntry = new HashMap<String, Object>();
+            Map<String, Object> feedEntry = new HashMap<>();
 
             // Item title
             String title = ps.getProperty(titlePropDef).getStringValue();
@@ -89,8 +90,13 @@ public class AudioVideoListingRSSFeedGenerator extends RSSFeedGenerator {
             Property urlProp = ps.getProperty(Namespace.DEFAULT_NAMESPACE, MultiHostSearcher.URL_PROP_NAME);
             if (urlProp != null) {
                 urlString = URL.parse(urlProp.getStringValue()).toString();
-            } else {
-                urlString = viewService.constructLink(ps.getURI());
+            }
+            else {
+                urlString = viewService.urlConstructor(
+                        URL.create(RequestContext.getRequestContext().getServletRequest()))
+                        .withURI(ps.getURI())
+                        .constructURL()
+                        .toString();
             }
             feedEntry.put("link", urlString);
 

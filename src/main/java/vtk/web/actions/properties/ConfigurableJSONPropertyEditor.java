@@ -138,10 +138,10 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
             if (!"enum".equals(this.desc.getType())) {
                 return null;
             }
-            List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> result = new ArrayList<>();
             List<?> values = this.desc.getValues();
             for (Object v : values) {
-                Map<String, Object> map = new HashMap<String, Object>();
+                Map<String, Object> map = new HashMap<>();
                 map.put("label", this.desc.getLocalizedValue(v, this.locale));
                 map.put("value", v);
                 boolean selected = this.value == null ? v == null 
@@ -204,7 +204,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
         Json.MapContainer combined = uri == Path.ROOT ? null 
                 : resolver.resolve(uri.getParent(), this.toplevelField);
         
-        List<FormElement> elements = new ArrayList<FormElement>();
+        List<FormElement> elements = new ArrayList<>();
         for (PropertyAspectField field: this.fieldConfig.getFields()) {
             FormElement element = new FormElement(field, requestLocale);
             if (toplevel != null) {
@@ -218,7 +218,9 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
             }
             elements.add(element);
         }
-        URL url = requestContext.getService().constructURL(uri);
+        URL url = requestContext.getService().urlConstructor(requestContext.getRequestURL())
+                .withURI(uri)
+                .constructURL();
         return new Form(url, elements);
     }
 
@@ -312,7 +314,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
         
         repository.store(token, resource);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("form", form);
         return new ModelAndView(getFormView(), model);
     }

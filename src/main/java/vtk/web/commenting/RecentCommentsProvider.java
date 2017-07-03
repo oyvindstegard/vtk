@@ -139,7 +139,10 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
 
                     filteredComments.add(comment);
                     resourceMap.put(r.getURI().toString(), r);
-                    URL commentURL = viewService.constructURL(r, principal);
+                    URL commentURL = viewService.urlConstructor(requestContext.getRequestURL())
+                            .withResource(r)
+                            .withPrincipal(principal)
+                            .constructURL();
                     commentURLMap.put(comment.getID(), commentURL);
                 }
                 catch (Throwable t) { }
@@ -150,14 +153,20 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
 
             URL baseCommentURL = null;
             try {
-                baseCommentURL = viewService.constructURL(resource, principal);
+                baseCommentURL = viewService.urlConstructor(requestContext.getRequestURL())
+                        .withResource(resource)
+                        .withPrincipal(principal)
+                        .constructURL();
             }
             catch (Exception e) { }
 
             URL feedURL = null;
             if (resourceCommentsFeedService != null) {
                 try {
-                    feedURL = resourceCommentsFeedService.constructURL(resource, principal);
+                    feedURL = resourceCommentsFeedService.urlConstructor(requestContext.getRequestURL())
+                            .withResource(resource)
+                            .withPrincipal(principal)
+                            .constructURL();
                 }
                 catch (Exception e) { }
             }
@@ -165,7 +174,10 @@ public class RecentCommentsProvider implements ReferenceDataProvider {
             URL recentCommentsURL = null;
             if (recentCommentsService != null) {
                 try {
-                    recentCommentsURL = recentCommentsService.constructURL(resource, principal);
+                    recentCommentsURL = recentCommentsService.urlConstructor(requestContext.getRequestURL())
+                            .withResource(resource)
+                            .withPrincipal(principal)
+                            .constructURL();
                 }
                 catch (Exception e) { }
             }

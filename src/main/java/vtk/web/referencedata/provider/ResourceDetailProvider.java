@@ -56,6 +56,7 @@ import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceUnlinkableException;
+import vtk.web.service.URL;
 
 /**
  * XXX This provider is named something generic, and as a result now contains
@@ -132,15 +133,19 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
                 String key = entry.getKey();
                 Service service = entry.getValue();
 
-                String url = null;
+                URL url = null;
                 try {
                     if (resource != null) {
-                        url = service.constructLink(resource, requestContext.getPrincipal());
+                        url = service.urlConstructor(URL.create(request))
+                                .withResource(resource)
+                                .withPrincipal(requestContext.getPrincipal())
+                                .constructURL();
                     }
-                } catch (ServiceUnlinkableException e) {
+                }
+                catch (ServiceUnlinkableException e) {
                     // Ignore
                 }
-                resourceDetailModel.put(key, url);
+                resourceDetailModel.put(key, url != null ? url.toString() : null);
             }
 
             // Resolve inheritable props inheritance

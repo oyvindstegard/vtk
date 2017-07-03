@@ -42,12 +42,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import vtk.repository.*;
 
+import vtk.repository.FileUpload;
+import vtk.repository.Path;
+import vtk.repository.Repository;
+import vtk.repository.Resource;
 import vtk.util.ValidationException;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 /**
  * A controller that uploads resources
@@ -71,9 +75,12 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
         Resource resource = repository.retrieve(requestContext.getSecurityToken(), requestContext.getResourceURI(),
                 false);
 
-        String url = service.constructLink(resource, requestContext.getPrincipal());
-
-        FileUploadCommand command = new FileUploadCommand(url);
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(requestContext.getPrincipal())
+                .constructURL();
+        
+        FileUploadCommand command = new FileUploadCommand(url.toString());
         return command;
     }
 

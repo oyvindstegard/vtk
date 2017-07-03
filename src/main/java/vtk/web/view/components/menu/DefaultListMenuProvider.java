@@ -182,7 +182,11 @@ public class DefaultListMenuProvider implements ReferenceDataProvider {
                 String title = getTitle(resource, service, request);
                 URL url = null;
                 try {
-                    url = service.constructURL(resource, principal, matchAssertions);
+                    url = service.urlConstructor(requestContext.getRequestURL())
+                            .withResource(resource)
+                            .withPrincipal(principal)
+                            .matchAssertions(matchAssertions)
+                            .constructURL();
                     servicesLinkableCounts++;
                 } catch (ServiceUnlinkableException ex) {
                     // ok

@@ -51,11 +51,11 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.ConfigurablePropertySelect;
 import vtk.repository.search.Parser;
 import vtk.repository.search.PropertySortField;
+import vtk.repository.search.ResourceSortField;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
 import vtk.repository.search.SortField;
 import vtk.repository.search.Sorting;
-import vtk.repository.search.ResourceSortField;
 import vtk.repository.search.query.AclReadForAllQuery;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.OrQuery;
@@ -65,6 +65,7 @@ import vtk.repository.search.query.Query;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.UriPrefixQuery;
 import vtk.util.text.Json;
+import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -109,8 +110,13 @@ public class BrokenLinksReport extends DocumentReporter {
    
     private void populateMap(String token, Resource resource, 
             Map<String, Object> result, HttpServletRequest request, boolean isCollectionView) {
-        URL reportURL = super.getReportService()
-                .constructURL(resource).addParameter(REPORT_TYPE_PARAM, getName());
+        
+        RequestContext requestContext = RequestContext.getRequestContext();
+        URL reportURL = super.getReportService().urlConstructor(requestContext.getRequestURL())
+                .withResource(resource)
+                .matchAssertions(false) // Preserve previous ServiceImpl#constructURL behavior
+                .constructURL()
+                .addParameter(REPORT_TYPE_PARAM, getName());
 
         if (isCollectionView) {
             reportURL.addParameter(getAlternativeName(), "");
@@ -224,8 +230,12 @@ public class BrokenLinksReport extends DocumentReporter {
                     if (count > (pageSize * page) - pageSize && count <= pageSize * page) {
                         cs = pairs.getValue();
                         uri = Path.fromString(pairs.getKey());
-                        cs.url = getReportService().constructURL(uri).addParameter(
-                                REPORT_TYPE_PARAM, "broken-links");
+                        
+                        cs.url = getReportService().urlConstructor(URL.create(request))
+                                .withURI(uri)
+                                .constructURL()
+                                .addParameter(REPORT_TYPE_PARAM, "broken-links");
+                        
                         try {
                             r = repository.retrieve(token, uri, false);
                             cs.title = r.getTitle();
@@ -254,13 +264,16 @@ public class BrokenLinksReport extends DocumentReporter {
                 if (readRestriction == null)
                     readRestriction = FILTER_READ_RESTRICTION_PARAM_DEFAULT_VALUE;
 
-                Map<String, String> usedFilters = new LinkedHashMap<>();
-                usedFilters.put(FILTER_LINK_TYPE_PARAM_NAME, linkType);
-                usedFilters.put(FILTER_PUBLISHED_PARAM_NAME, published);
-                usedFilters.put(FILTER_READ_RESTRICTION_PARAM_NAME, readRestriction);
+                Map<String, List<String>> usedFilters = new LinkedHashMap<>();
+                usedFilters.computeIfAbsent(FILTER_LINK_TYPE_PARAM_NAME, k -> new ArrayList<>()).add(linkType);
+                usedFilters.computeIfAbsent(FILTER_PUBLISHED_PARAM_NAME, k -> new ArrayList<>()).add(published);
+                usedFilters.computeIfAbsent(FILTER_READ_RESTRICTION_PARAM_NAME, k -> new ArrayList<>()).add(readRestriction);
 
-                URL exportURL = brokenLinksToTsvReportService.constructURL(
-                        resource, null, usedFilters, false);
+                URL exportURL = brokenLinksToTsvReportService.urlConstructor(URL.create(request))
+                        .withResource(resource)
+                        .withParameters(usedFilters)
+                        .matchAssertions(false)
+                        .constructURL();
 
                 String[] exclude = request.getParameterValues(EXCLUDE_PATH_PARAM_NAME);
                 if (exclude != null)

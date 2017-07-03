@@ -76,7 +76,7 @@ public class ArticleListingController extends BaseCollectionListingController {
             atLeastOneFeaturedArticle = featuredArticles != null && featuredArticles.size() > 0;
         }
 
-        List<Listing> results = new ArrayList<Listing>();
+        List<Listing> results = new ArrayList<>();
         if (request.getParameter(ListingPager.PREVIOUS_PAGE_PARAM) == null) {
             // Search featured articles
             featuredArticles = this.searcher.getFeaturedArticles(request, collection, featuredArticlesPage, pageLimit,
@@ -129,7 +129,9 @@ public class ArticleListingController extends BaseCollectionListingController {
             defaultArticles = null;
         }
         Service service = RequestContext.getRequestContext().getService();
-        URL baseURL = service.constructURL(RequestContext.getRequestContext().getResourceURI());
+        URL baseURL = service.urlConstructor(URL.create(request))
+                .withURI(RequestContext.getRequestContext().getResourceURI())
+                .constructURL();
         
         Optional<ListingPager.Pagination> pagination = 
                 ListingPager.pagination(totalHits, pageLimit, 

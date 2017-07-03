@@ -37,13 +37,15 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.output.DOMOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.w3c.dom.NodeList;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -51,7 +53,7 @@ import vtk.security.Principal;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
-import org.w3c.dom.NodeList;
+import vtk.web.service.URL;
 
 /**
  * XSL reference data provider
@@ -165,7 +167,7 @@ public class XSLReferenceDataProvider implements ReferenceDataProvider {
             @SuppressWarnings("unchecked")
             Map<String, Object> subModel = (Map<String, Object>) model.get(this.modelName);
             if (subModel == null) {
-                subModel = new HashMap<String, Object>();
+                subModel = new HashMap<>();
                 model.put(this.modelName, subModel);
             }
 
@@ -180,8 +182,13 @@ public class XSLReferenceDataProvider implements ReferenceDataProvider {
             subModel.put(CONTENT_LANGUAGE, resource.getContentLanguage());
             subModel.put(PARENT_COLLECTION, resource.getURI().getParent());
             subModel.put(CURRENT_URL, request.getRequestURL());
-            subModel.put(ADMIN_URL, this.adminService.constructLink(resource,
-                    principal, this.matchAdminServiceAssertions));
+            URL adminURL = adminService.urlConstructor(URL.create(request))
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .matchAssertions(matchAdminServiceAssertions)
+                    .constructURL();
+            
+            subModel.put(ADMIN_URL, adminURL.toString());
 
             if (this.supplyRequestParameters) {
                 subModel.put(REQUEST_PARAMETERS, getRequestParams(request));
@@ -219,7 +226,7 @@ public class XSLReferenceDataProvider implements ReferenceDataProvider {
         Document doc = new Document(new Element(PATH_ELEMENTS));
         Element pathElements = doc.getRootElement();
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         this.breadCrumbProvider.referenceData(model, request);
 
         BreadcrumbElement[] crumbs = 

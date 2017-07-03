@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Comment;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -73,18 +74,26 @@ public class CommentsFeedController implements Controller {
 
         List<Comment> comments = repository.getComments(token, resource, true, 50);
 
-        Map<String, Resource> resourceMap = new HashMap<String, Resource>();
-        Map<String, URL> urlMap = new HashMap<String, URL>();
+        Map<String, Resource> resourceMap = new HashMap<>();
+        Map<String, URL> urlMap = new HashMap<>();
         resourceMap.put(resource.getURI().toString(), resource);
-        urlMap.put(resource.getURI().toString(), this.viewService.constructURL(resource.getURI()));
+        
+        URL url = viewService.urlConstructor(URL.create(request))
+                .withURI(resource.getURI())
+                .constructURL();
+        
+        urlMap.put(resource.getURI().toString(), url);
         for (Comment comment : comments) {
             Resource r = repository.retrieve(token, comment.getURI(), true);
             resourceMap.put(r.getURI().toString(), r);
-            urlMap.put(r.getURI().toString(), this.viewService.constructURL(r.getURI()));
+            URL resourceURL = viewService.urlConstructor(URL.create(request))
+                    .withURI(r.getURI())
+                    .constructURL();
+            urlMap.put(r.getURI().toString(), resourceURL);
         }
         URL selfURL = URL.create(request);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("resource", resource);
         model.put("principal", principal);
         model.put("comments", comments);

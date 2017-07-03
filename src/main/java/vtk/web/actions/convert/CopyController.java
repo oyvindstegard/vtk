@@ -46,6 +46,7 @@ import vtk.security.Principal;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 public abstract class CopyController<T extends CopyCommand> extends SimpleFormController<T> {
 
@@ -69,8 +70,11 @@ public abstract class CopyController<T extends CopyCommand> extends SimpleFormCo
         Principal principal = requestContext.getPrincipal();
         
         Resource resource = repository.retrieve(token, requestContext.getResourceURI(), false);
-        String url = service.constructLink(resource, principal);
-
+        URL url = service.urlConstructor(URL.create(request))
+                .withResource(resource)
+                .withPrincipal(principal)
+                .constructURL();
+        
         String name = resource.getName();
         if (name.indexOf(".") > 0) {
             name = name.substring(0, name.lastIndexOf("."));
@@ -81,7 +85,7 @@ public abstract class CopyController<T extends CopyCommand> extends SimpleFormCo
         if (this.resourceName != null) {
             name = this.resourceName;
         }
-        return createCommand(name, url);
+        return createCommand(name, url.toString());
     }
 
     

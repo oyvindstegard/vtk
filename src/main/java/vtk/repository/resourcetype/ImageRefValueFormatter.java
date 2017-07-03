@@ -35,6 +35,7 @@ import java.util.Locale;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
 import vtk.repository.Path;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
@@ -87,7 +88,9 @@ public class ImageRefValueFormatter implements ValueFormatter, ApplicationContex
                 RequestContext requestContext = RequestContext.getRequestContext();
                 ref = requestContext.getCurrentCollection().extend(val);
             }
-            URL url = thumbnailService.constructURL(ref);
+            URL url = thumbnailService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                    .withURI(ref)
+                    .constructURL();
             return url.getPathRepresentation();
         } catch (Throwable t) {
             return val;

@@ -46,6 +46,7 @@ import vtk.security.Principal;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 import vtk.web.service.Service;
+import vtk.web.service.URL;
 
 /**
  * Creates model data for the browse application. 
@@ -92,8 +93,11 @@ public class BrowseUrlProvider implements ReferenceDataProvider, InitializingBea
             Resource resource = repository.retrieve(token, uri, false);
 
             // This is the url to the parent of the document that's being edited
-
-            String viewUrl = this.viewService.constructLink(resource, principal);
+            String viewUrl = viewService.urlConstructor(URL.create(request))
+                    .withResource(resource)
+                    .withPrincipal(principal)
+                    .constructURL()
+                    .toString();
 
             BrowseSessionBean sessionBean = (BrowseSessionBean)
                     request.getSession(true).getAttribute(BROWSE_SESSION_ATTRIBUTE);
