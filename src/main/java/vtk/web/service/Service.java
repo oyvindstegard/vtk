@@ -159,6 +159,9 @@ public interface Service extends Ordered {
          * @return this URL constructor
          */
         public URLConstructor withParameter(String name, String value) {
+            if (this.parameters == null) {
+                this.parameters = new HashMap<>();
+            }
             parameters.computeIfAbsent(name, k -> new ArrayList<>()).add(value);
             return this;
         }
