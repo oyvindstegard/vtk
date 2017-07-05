@@ -2,7 +2,7 @@
 <#import "/lib/vtk.ftl" as vrtx />
 <#import "/lib/view-utils.ftl" as viewutils />
 
-<#if conf.auth>
+<#if conf.auth && (events?? || groupedByDayEvents??)>
   <#assign include = "false">
   <#if (conf.type = "groupedByDayEvents" && groupedByDayEvents?has_content)>
     <div class="vrtx-event-component vrtx-event-component-psd">
