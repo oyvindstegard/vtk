@@ -37,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -45,9 +47,11 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 import vtk.repository.Acl;
 import vtk.repository.Path;
 import vtk.repository.Privilege;
+import vtk.repository.Resource;
 import vtk.repository.store.PrincipalMetadata;
 import vtk.security.Principal;
 import vtk.security.PrincipalFactory;
+import vtk.util.repository.ResourceToMapConverter;
 import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
@@ -98,6 +102,17 @@ final class DomainTypes {
         public String error() { return (String) get("error"); }
     }
     
+    public static final class ResourceDomainType extends DomainMap {
+        private Resource self;
+        public ResourceDomainType(Resource resource) {
+            super(toArray(ResourceToMapConverter.toMap(resource)));
+            this.self = resource;
+        }            
+        
+        Resource self() {
+            return self;
+        }
+    }
 
     public static final class RequestContextType extends DomainMap {
         private RequestContext requestContext;
@@ -227,6 +242,16 @@ final class DomainTypes {
             result.put(privilege.toString(), principals);
         }
         return result;
+    }
+    
+    private static Object[] toArray(Map<String, Object> map) {
+        Set<Entry<String, Object>> entrySet = map.entrySet();
+        List<Object> list = new ArrayList<>();
+        for (Entry<String, Object> entry: entrySet) {
+            list.add(entry.getKey());
+            list.add(entry.getValue());
+        }
+        return list.toArray(new Object[list.size()]);
     }
 
 }

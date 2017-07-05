@@ -30,6 +30,7 @@
  */
 package vtk.web.decorating.components;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -189,17 +190,15 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
                     .matchAssertions(false)
                     .constructURL();
             conf.put("uri", url);
-        }
-        catch (AuthenticationException | AuthorizationException e) { }
-        catch (ResourceNotFoundException e) {
+        } catch (AuthenticationException | AuthorizationException e) {
+        } catch (ResourceNotFoundException e) {
             throw new DecoratorComponentException(uri + " does not exist");
-        }
-        catch (Exception e) {
+        } catch (IOException e) {
             throw new DecoratorComponentException(e.getMessage());
         }
 
         conf.put("auth", resource != null);
-        if (resource == null) {
+        if (resource == null || !resource.isPublished()) {
             model.put("conf", conf);
             return;
         }
@@ -212,8 +211,8 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
             model.put("eventsTitle", resource.getTitle());
         }
 
-        Listing events = search.execute(RequestContext.getRequestContext().getServletRequest(), resource, 1, maxEvents,
-                0);
+        Listing events;
+        events = search.execute(RequestContext.getRequestContext().getServletRequest(), resource, 1, maxEvents, 0);
 
         if (showOnlyOngoing) {
             Calendar startDate, now = Calendar.getInstance();

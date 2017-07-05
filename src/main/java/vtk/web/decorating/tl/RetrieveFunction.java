@@ -36,7 +36,6 @@ import vtk.repository.Resource;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
-import vtk.util.repository.ResourceToMapConverter;
 import vtk.web.RequestContext;
 import vtk.web.decorating.tl.DomainTypes.Failure;
 import vtk.web.decorating.tl.DomainTypes.Result;
@@ -65,7 +64,7 @@ public class RetrieveFunction extends Function {
 
          try {
             Resource resource = repository.retrieve(token, uri, true);
-            return new Success<>(ResourceToMapConverter.toMap(resource));
+            return new Success<>(new DomainTypes.ResourceDomainType(resource));
         } catch (Throwable t) {
             return new Failure<>(t);
         }
