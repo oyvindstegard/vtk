@@ -272,6 +272,10 @@ public class SecurityInitializer {
      * @return <code>true</code> if any state was removed, <code>false</code> otherwise
      */
     public boolean removeAuthState(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
         if (!SecurityContext.exists()) {
             return false;
         }
@@ -316,11 +320,6 @@ public class SecurityInitializer {
                     response.addCookie(c);
                 }
             }
-        }
-
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
         }
 
         return true;
@@ -400,6 +399,7 @@ public class SecurityInitializer {
                 }
             }
         }
+
         return result;
     }
 

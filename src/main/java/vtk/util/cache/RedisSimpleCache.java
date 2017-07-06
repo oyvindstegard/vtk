@@ -69,7 +69,7 @@ public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     public void put(K key, V value) {
         if (key == null) return;
         try (Jedis jedis = pool.getResource()) {
-            byte[] bkey = (prefix + key.toString()).getBytes(StandardCharsets.UTF_8);
+            byte[] bkey = generateKey(key);
             ByteArrayOutputStream valueStream = new ByteArrayOutputStream();
             ObjectOutputStream oout = new ObjectOutputStream(valueStream);
             oout.writeObject(value);
@@ -90,7 +90,7 @@ public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     public V get(K key) {
         if (key == null) return null;
         try (Jedis jedis = pool.getResource()) {
-            byte[] bkey = (prefix + key.toString()).getBytes(StandardCharsets.UTF_8);
+            byte[] bkey = generateKey(key);
             byte[] bs = jedis.get(bkey);
             
             if (bs == null) return null;
@@ -112,7 +112,7 @@ public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     public V remove(K key) {
         if (key == null) return null;
         try (Jedis jedis = pool.getResource()) {
-            byte[] bkey = key.toString().getBytes(StandardCharsets.UTF_8);
+            byte[] bkey = generateKey(key);
             byte[] bs = jedis.get(bkey);
             
             if (bs == null) return null;
@@ -137,6 +137,10 @@ public class RedisSimpleCache<K, V> implements SimpleCache<K, V> {
     @Override
     public Set<K> getKeys() {
         throw new UnsupportedOperationException();
+    }
+
+    private byte[] generateKey(K key) {
+        return (prefix + key.toString()).getBytes(StandardCharsets.UTF_8);
     }
 
 }
