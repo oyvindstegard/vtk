@@ -59,14 +59,16 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
 
     @Override
     public String getRequestedSessionId(HttpServletRequest request) {
-        Optional<Cookie> cookie = sessionCookie(request);
-        if (cookie.isPresent()) return cookie.get().getValue();
-        return null;
+        String cookieName = request.isSecure() ? cookieNameHttps : cookieNameHttp;
+        Optional<Cookie> cookie = sessionCookie(request, cookieName);
+        return cookie.map(Cookie::getValue).orElse(null);
     }
 
     @Override
-    public void onNewSession(Session session, HttpServletRequest request,
-            HttpServletResponse response) {
+    public void onNewSession(
+            Session session, HttpServletRequest request,
+            HttpServletResponse response
+    ) {
         String cookieName = request.isSecure() ? cookieNameHttps : cookieNameHttp;
         Cookie cookie = new Cookie(cookieName, session.getId());
         logger.debug("New session cookie: " + cookieName + ":" + session.getId());
@@ -78,22 +80,28 @@ public class CookieHttpSessionStrategy implements HttpSessionStrategy {
     }
 
     @Override
-    public void onInvalidateSession(HttpServletRequest request,
-            HttpServletResponse response) {
-        Optional<String> id = sessionCookie(request).map(cookie -> cookie.getValue());
-        String cookieName = request.isSecure() ? cookieNameHttps : cookieNameHttp;
+    public void onInvalidateSession(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        response.addCookie(clearCookie(request, cookieNameHttp, false));
+        if (request.isSecure()) {
+            response.addCookie(clearCookie(request, cookieNameHttps, true));
+        }
+    }
+
+    private Cookie clearCookie(HttpServletRequest request, String cookieName, boolean secure) {
+        Optional<String> id = sessionCookie(request, cookieName).map(Cookie::getValue);
         Cookie cookie = new Cookie(cookieName, id.orElse(""));
         logger.debug("Remove session cookie: " + cookieName);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
-        cookie.setSecure(request.isSecure());
+        cookie.setSecure(secure);
         cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        return cookie;
     }
     
-    private Optional<Cookie> sessionCookie(HttpServletRequest request) {
-        String cookieName = request.isSecure() ? cookieNameHttps : cookieNameHttp;
-
+    private Optional<Cookie> sessionCookie(HttpServletRequest request, String cookieName) {
         return Optional.ofNullable(request.getCookies())
             .flatMap(cookies -> Arrays.stream(cookies)
                     .filter(c -> c.getName().equals(cookieName)).findFirst());
