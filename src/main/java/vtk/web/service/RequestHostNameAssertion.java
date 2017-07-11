@@ -103,7 +103,11 @@ public class RequestHostNameAssertion implements WebAssertion {
 
     @Override
     public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
-        url = new URL(url);
+        return Optional.of(processURL(url));
+    }
+    
+    @Override
+    public URL processURL(URL url) {
         boolean found = false;
         for (String hostName: this.hostNames) {
             if ("*".equals(hostName)
@@ -115,11 +119,6 @@ public class RequestHostNameAssertion implements WebAssertion {
         if (!found) {
             url.setHost(defaultHostName);
         }
-        return Optional.of(url);
-    }
-    
-    @Override
-    public URL processURL(URL url) {
         return url;
     }
 
