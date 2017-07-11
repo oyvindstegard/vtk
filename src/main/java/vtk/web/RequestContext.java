@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -103,7 +104,7 @@ public class RequestContext {
     private final URL requestURL;
     private final Path currentCollection;
     private final Path indexFileURI;
-    private final Locale locale;
+    private final Supplier<Locale> locale;
     private final boolean isIndexFile;
     private final boolean viewUnauthenticated;
     private final boolean previewUnpublished;
@@ -139,7 +140,7 @@ public class RequestContext {
         this.securityContext = securityContext;
         this.indexFileURI = indexFileURI;
         this.service = service;
-        this.locale = RequestContextUtils.getLocale(servletRequest);
+        this.locale = () -> RequestContextUtils.getLocale(servletRequest);
         this.serviceResolver = serviceResolver;
         this.isIndexFile = isIndexFile;
         this.viewUnauthenticated = viewUnauthenticated;
@@ -349,7 +350,7 @@ public class RequestContext {
      * Gets the request locale, as resolved by the {@link LocaleResolver}
      */
     public Locale getLocale() {
-        return locale;
+        return locale.get();
     }
 
     public RepositoryTraversal rootTraversal(String token, Path uri) {
