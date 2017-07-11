@@ -66,16 +66,16 @@
               <#elseif count == size && menu.label != "resourceMenuRight">
                     <li class="${item.label} last">
               <#else>
-                      <li class="${item.label}">
+                    <li class="${item.label}">
               </#if>
               <#if item_index != 0 && item_index != menu.items?size>${between}</#if>
               <#attempt>
                 <#include "/actions/list-menu.${item.label}.ftl" />
-            <#recover>
-                ${prepend}<a id="${item.label}" href="${item.url}">${item.title}</a>${append}
-            </#attempt>
-              </li>
-            <#assign count = count+1 />
+              <#recover>
+                  ${prepend}<a id="${item.label}" href="${item.url}">${item.title}</a>${append}
+              </#attempt>
+                    </li>
+              <#assign count = count+1 />
             </#if>
           </#if>
         </#list>
@@ -87,17 +87,17 @@
           <ul class="list-menu" id="${menu.label}">
             <li class="readPermission first">
         <#else>
-          <li class="readPermission">
+              <li class="readPermission">
         </#if>
-            <h3>${vrtx.getMsg("collectionListing.permissions")}</h3>
-            <#if !resourceContext.currentResource.readRestricted >
-              <p><span class="allowed-for-all">${vrtx.getMsg("collectionListing.permissions.readAll")}</span></p>
-            <#else>
-              <p><span class="restricted">${vrtx.getMsg("collectionListing.permissions.restricted")}</span></p>
-            </#if>
-          </li>
-          <li class="resourceType last">
-            <h3>${vrtx.getMsg("resource.type")}</h3>
+        <h3>${vrtx.getMsg("collectionListing.permissions")}</h3>
+        <#if !resourceContext.currentResource.readRestricted >
+          <p><span class="allowed-for-all">${vrtx.getMsg("collectionListing.permissions.readAll")}</span></p>
+        <#else>
+          <p><span class="restricted">${vrtx.getMsg("collectionListing.permissions.restricted")}</span></p>
+        </#if>
+              </li>
+              <li class="resourceType last">
+                <h3>${vrtx.getMsg("property.resourceType")}</h3>
             <p><span>${vrtx.getMsg("resourcetype.name.${resourceContext.currentResource.resourceType}")}</span></p>
           </li>
       </#if>
