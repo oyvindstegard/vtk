@@ -32,6 +32,7 @@ package vtk.web.service;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 import vtk.repository.Path;
 import vtk.repository.Resource;
@@ -44,24 +45,28 @@ public class ConfigurableURLPostProcessor implements URLPostProcessor {
     private Map<String, String> parameters;
     
     @Override
-    public void processURL(URL url, Service service, Optional<Resource> resource) {
-        if (protocol != null) {
-            url.setProtocol(protocol);
-        }
-        if (host != null) {
-            url.setHost(host);
-        }
-        if (port != null) {
-            url.setPort(port);
-        }
-        if (path != null) {
-            url.setPath(path);
-        }
-        if (parameters != null) {
-            for (String param: parameters.keySet()) {
-                url.setParameter(param, parameters.get(param));
+    public BiFunction<URL, Optional<Resource>, URL> urlProcessor(
+            Service service, URL base) {
+        return (url, optResource) -> {
+            if (protocol != null) {
+                url.setProtocol(protocol);
             }
-        }
+            if (host != null) {
+                url.setHost(host);
+            }
+            if (port != null) {
+                url.setPort(port);
+            }
+            if (path != null) {
+                url.setPath(path);
+            }
+            if (parameters != null) {
+                for (String param: parameters.keySet()) {
+                    url.setParameter(param, parameters.get(param));
+                }
+            }
+            return url;
+        };
     }
 
     public void setProtocol(String protocol) {

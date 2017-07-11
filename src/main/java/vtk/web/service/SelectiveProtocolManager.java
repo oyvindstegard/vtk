@@ -32,6 +32,7 @@ package vtk.web.service;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -68,35 +69,67 @@ public class SelectiveProtocolManager extends RequestProtocolAssertion
     private boolean selectiveAccessEnabled = false;
     
     
+
     /**
      * {@link URLPostProcessor#processURL(URL, Service, Optional<Resource>)}
      */
     @Override
-    public void processURL(URL url, Service service,
-            Optional<Resource> optResource) {
-        if (!this.selectiveAccessEnabled) {
-            return;
-        }
-        if (!optResource.isPresent()) {
-            return;
-        }
-        Resource resource = optResource.get();
-        if (resource.isReadRestricted()) {
-            return;
-        }
-        Set<Service> services = resource.isCollection() ? 
-                this.genURLCollectionServices : this.genURLFileServices;
-        if (services == null) {
-            return;
-        }
-        if (!services.contains(service)) {
-            return;
-        }
-        // XXX this is wrong if request [page] context is secure and the URL
-        // points to an element which will be used inline in document (causes mixed-mode
-        // in such cases). However, don't know if fix for such situations is appropriate here.
-        url.setProtocol("http");
+    public BiFunction<URL, Optional<Resource>, URL> urlProcessor(
+            Service service, URL base) {
+        return (url, optResource) -> {
+            if (!this.selectiveAccessEnabled) {
+                return url;
+            }
+            if (!optResource.isPresent()) {
+                return url;
+            }
+            Resource resource = optResource.get();
+            if (resource.isReadRestricted()) {
+                return url;
+            }
+            Set<Service> services = resource.isCollection() ? 
+                    this.genURLCollectionServices : this.genURLFileServices;
+            if (services == null) {
+                return url;
+            }
+            if (!services.contains(service)) {
+                return url;
+            }
+            // XXX this is wrong if request [page] context is secure and the URL
+            // points to an element which will be used inline in document (causes mixed-mode
+            // in such cases). However, don't know if fix for such situations is appropriate here.
+            return url.setProtocol("http");
+        };
     }
+//    /**
+//     * {@link URLPostProcessor#processURL(URL, Service, Optional<Resource>)}
+//     */
+//    @Override
+//    public void processURL(URL url, Service service,
+//            Optional<Resource> optResource) {
+//        if (!this.selectiveAccessEnabled) {
+//            return;
+//        }
+//        if (!optResource.isPresent()) {
+//            return;
+//        }
+//        Resource resource = optResource.get();
+//        if (resource.isReadRestricted()) {
+//            return;
+//        }
+//        Set<Service> services = resource.isCollection() ? 
+//                this.genURLCollectionServices : this.genURLFileServices;
+//        if (services == null) {
+//            return;
+//        }
+//        if (!services.contains(service)) {
+//            return;
+//        }
+//        // XXX this is wrong if request [page] context is secure and the URL
+//        // points to an element which will be used inline in document (causes mixed-mode
+//        // in such cases). However, don't know if fix for such situations is appropriate here.
+//        url.setProtocol("http");
+//    }
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource,

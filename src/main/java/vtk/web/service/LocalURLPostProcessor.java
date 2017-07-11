@@ -31,14 +31,15 @@
 package vtk.web.service;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 import vtk.repository.Resource;
 
 public class LocalURLPostProcessor implements URLPostProcessor {
 
     @Override
-    public void processURL(URL url, Service service,
-            Optional<Resource> resource) {
-        url.setPathOnly(true);
+    public BiFunction<URL, Optional<Resource>, URL> urlProcessor(
+            Service service, URL base) {
+        return (url, optResource) -> url.setPathOnly(true);
     }
 }

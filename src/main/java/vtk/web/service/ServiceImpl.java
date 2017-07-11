@@ -188,6 +188,10 @@ public class ServiceImpl implements Service, BeanNameAware {
         return this.assertions;
     }
 	
+    @Override
+    public Optional<List<URLPostProcessor>> urlProcessors() {
+        return Optional.ofNullable(getAllURLPostProcessors());
+    }
 
     private List<URLPostProcessor> getAllURLPostProcessors() {
         if (this.accumulatedUrlPostProcessors != null) {
@@ -302,24 +306,7 @@ public class ServiceImpl implements Service, BeanNameAware {
     public void setOrder(int order) {
         this.order = order;
     }
-
-    public void postProcess(URL urlObject, Optional<Resource> resource) {
-        List<URLPostProcessor> urlPostProcessors = getAllURLPostProcessors();
-
-        if (urlPostProcessors != null) {
-            for (URLPostProcessor urlProcessor: urlPostProcessors) {
-                try {
-                    urlProcessor.processURL(urlObject, this, resource);
-                }
-                catch (Throwable e) {
-                    throw new ServiceUnlinkableException("URL Post processor " + urlProcessor
-                                                         + " threw exception", e);
-                }
-            }
-        }
-    }
-
-
+    
     public void setServiceNameProvider(ServiceNameProvider serviceNameProvider) {
         this.serviceNameProvider = serviceNameProvider;
     }
@@ -386,7 +373,5 @@ public class ServiceImpl implements Service, BeanNameAware {
             return false;
         return true;
     }
-
-
 
 }

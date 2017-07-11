@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
@@ -97,13 +99,18 @@ public interface Service extends Ordered {
         private Resource resource;
         private Principal principal;
         private Map<String, List<String>> parameters;
-
+        private Optional<List<BiFunction<URL, Optional<Resource>, URL>>> urlProcessors;
+        
         URLConstructor(URL base, Service service) {
             this.base = new URL(base)
                     .clearParameters()
                     .setPath(Path.ROOT)
                     .setCollection(false);
             this.service = service;
+            this.urlProcessors = service.urlProcessors()
+                    .map(list -> list.stream()
+                            .map(factory -> factory.urlProcessor(service, base))
+                            .collect(Collectors.toList()));
         }
 
         /**
@@ -225,7 +232,11 @@ public interface Service extends Ordered {
                     urlObject = url.get();
                 }
             }
-            service.postProcess(urlObject, Optional.ofNullable(resource));
+            if (urlProcessors.isPresent()) {
+                for (BiFunction<URL, Optional<Resource>, URL> processor: urlProcessors.get()) {
+                    urlObject = processor.apply(urlObject, Optional.ofNullable(resource));
+                }
+            }
             return urlObject;
         }
     }
@@ -328,8 +339,9 @@ public interface Service extends Ordered {
     public String getLocalizedName(Resource resource, HttpServletRequest request);
 
     /**
-     * TODO: remove from interface
+     * Gets an optional list of {@link URLPostProcessor URL post processors} 
+     * for this service
+     * @return the (optional) list of URL post processors
      */
-    void postProcess(URL urlObject, Optional<Resource> resource);
-
+    public Optional<List<URLPostProcessor>> urlProcessors();
 }
