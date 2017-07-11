@@ -31,11 +31,14 @@
 package vtk.web.actions.properties;
 
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Resource;
+import vtk.repository.resourcetype.RepositoryAssertion;
 import vtk.security.Principal;
-import vtk.web.service.RepositoryAssertion;
 
 
 /**
@@ -54,9 +57,12 @@ public class EnumerationPropertyDescriptor implements InitializingBean {
     public boolean isApplicableProperty(Resource resource, Principal principal) {
         if (this.assertions == null)
             return true;
-
+        
+        Optional<Resource> optResource = Optional.ofNullable(resource);
+        Optional<Principal> optPrincipal = Optional.ofNullable(principal);
+        
         for (int i = 0; i < this.assertions.length; i++) {
-            if (!this.assertions[i].matches(resource, principal)) {
+            if (!this.assertions[i].matches(optResource, optPrincipal)) {
                 return false;
             }
         }
@@ -176,6 +182,7 @@ public class EnumerationPropertyDescriptor implements InitializingBean {
     }
     
     
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(this.getClass().getName()).append("[");

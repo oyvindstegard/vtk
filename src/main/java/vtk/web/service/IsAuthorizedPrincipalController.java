@@ -31,7 +31,7 @@ public class IsAuthorizedPrincipalController implements Controller {
         Map<String, Object> model = new HashMap<>();
         Map<String, Object> body = new LinkedHashMap<>();
 
-        RequestContext rc = RequestContext.getRequestContext();
+        RequestContext rc = RequestContext.getRequestContext(request);
         Repository repository = rc.getRepository();
         Resource resource = repository.retrieve(rc.getSecurityToken(), rc.getResourceURI(), true);
 

@@ -60,7 +60,7 @@ public class ResourceAwareLocaleResolver extends AbstractLocaleResolver {
      */
     @Override
     public Locale resolveLocale(HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         return resolveResourceLocale(uri);
     }

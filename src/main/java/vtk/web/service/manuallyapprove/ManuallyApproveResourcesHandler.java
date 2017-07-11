@@ -31,8 +31,6 @@
 package vtk.web.service.manuallyapprove;
 
 import java.io.PrintWriter;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,13 +38,12 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
 import vtk.repository.MultiHostSearcher;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -59,7 +56,6 @@ import vtk.security.SecurityContext;
 import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 import vtk.web.RequestContext;
-import vtk.web.search.MultiHostUtil;
 import vtk.web.service.URL;
 
 /**
@@ -97,8 +93,8 @@ public class ManuallyApproveResourcesHandler implements Controller {
     @SuppressWarnings("unchecked")
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        Repository repository = RequestContext.getRequestContext().getRepository();
-        Path currentCollectionPath = RequestContext.getRequestContext().getCurrentCollection();
+        Repository repository = RequestContext.getRequestContext(request).getRepository();
+        Path currentCollectionPath = RequestContext.getRequestContext(request).getCurrentCollection();
         String token = SecurityContext.getSecurityContext().getToken();
         Resource currentCollection = repository.retrieve(token, currentCollectionPath, false);
         Property manuallyApproveFromProp = currentCollection.getProperty(manuallyApproveFromPropDef);
@@ -113,7 +109,7 @@ public class ManuallyApproveResourcesHandler implements Controller {
             return null;
         }
 
-        Set<String> locations = new HashSet<String>();
+        Set<String> locations = new HashSet<>();
         // Parameter "locations" overrides property, because user might change
         // content and update service before storing resource
         if (manuallyApproveFromParam != null) {
@@ -152,7 +148,7 @@ public class ManuallyApproveResourcesHandler implements Controller {
             }
         }
 
-        Set<String> alreadyApproved = new HashSet<String>();
+        Set<String> alreadyApproved = new HashSet<>();
         if (manuallyApprovedResourcesProp != null) {
             Value[] manuallyApprovedResourcesValues = manuallyApprovedResourcesProp.getValues();
             for (Value manuallyApprovedResourcesValue : manuallyApprovedResourcesValues) {
@@ -174,7 +170,7 @@ public class ManuallyApproveResourcesHandler implements Controller {
         if (cachedObj != null) {
             result = (List<ManuallyApproveResource>) cachedObj;
         } else {
-            result = searcher.getManuallyApproveResources(currentCollection, locations, alreadyApproved);
+            result = searcher.getManuallyApproveResources(request, currentCollection, locations, alreadyApproved);
             cache.put(new Element(cacheKey, result));
         }
 

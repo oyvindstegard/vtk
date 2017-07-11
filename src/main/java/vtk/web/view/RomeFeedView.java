@@ -158,7 +158,7 @@ public class RomeFeedView implements View {
         // (Each entry is set with a title, link, published date and a description)
         // ( -> Description can be plain text or HTML)
         List<SyndEntry> feedEntries = new ArrayList<>();
-        Principal principal = RequestContext.getRequestContext().getPrincipal();
+        Principal principal = RequestContext.getRequestContext(request).getPrincipal();
 
         for (int i = 0; i < resources.length; i++) {
             SyndEntry entry = getSyndEntryForResource(request, resources[i], principal);

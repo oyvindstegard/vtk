@@ -30,16 +30,18 @@
  */
 package vtk.edit.editor;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 import vtk.web.RequestContext;
 
 public class ImageResourceWrapperManager extends ResourceWrapperManager {
 
     @Override
-    public ResourceEditWrapper createResourceEditWrapper() throws Exception {
+    public ResourceEditWrapper createResourceEditWrapper(HttpServletRequest request) throws Exception {
         ImageResourceEditWrapper wrapper = new ImageResourceEditWrapper(this);
-        Path uri = RequestContext.getRequestContext().getResourceURI();
-        populateWrapper(wrapper, uri, false);
+        Path uri = RequestContext.getRequestContext(request).getResourceURI();
+        populateWrapper(request, wrapper, uri, false);
         return wrapper;
     }
 

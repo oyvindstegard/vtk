@@ -1,21 +1,20 @@
-<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true />
 <#import "/spring.ftl" as spring />
 
-<#--
- * vtk.ftl
- *
- * (Will become) a collection of useful FreeMarker macros and functions :)
- *
- * The  "exposeSpringMacroHelpers" property on the spring FreeMarker configuration must be set.
- *
- -->
+  <#--
+    * vtk.ftl
+    *
+    * (Will become) a collection of useful FreeMarker macros and functions :)
+    *
+    * The  "exposeSpringMacroHelpers" property on the spring FreeMarker configuration must be set.
+    *
+    -->
 
 <#if !springMacroRequestContext?exists>
   <#stop "springMacroRequestContext must be exposed. See the
          'exposeSpringMacroHelpers' property of the FreeMarker
          configuration." />
 </#if>
-
 
 <#function getUri resource>
   <#assign uri = resource.URI />
@@ -53,7 +52,7 @@
 
 
 <#-- XXX: remove this when properties 'introduction' and 'description'
-     are merged: -->
+  are merged: -->
 <#function getIntroduction resource>
   <#local introduction = vrtx.propValue(resource, "introduction")! />
   <#if introduction?has_content><#return introduction /></#if>
@@ -61,19 +60,19 @@
 
 
 <#--
- * msg
- *
- * Get a localized message from the spring RequestContext. 
- * Example: <@vrtx.msg code="my.message.key" default="My default message" args="['my param']" />
- *
- * @param code the code of the localized message
- * @param default (optional - set to code if not specified) the default message if the localized message did not
- *        exist for the given locale.
- * @param args (optional) arguments for the message
- * @param locale (optional) the locale with which to look up the message. Defaults to the request locale.
- * @param escape (optional) whether to HTML-escape the message before outputting it. Default is true.
- *
--->
+  * msg
+  *
+  * Get a localized message from the spring RequestContext. 
+  * Example: <@vrtx.msg code="my.message.key" default="My default message" args="['my param']" />
+  *
+  * @param code the code of the localized message
+  * @param default (optional - set to code if not specified) the default message if the localized message did not
+  *        exist for the given locale.
+  * @param args (optional) arguments for the message
+  * @param locale (optional) the locale with which to look up the message. Defaults to the request locale.
+  * @param escape (optional) whether to HTML-escape the message before outputting it. Default is true.
+  *
+  -->
 <#macro msg code default=code args=[] locale=springMacroRequestContext.getLocale() escape=true>
   <#compress>
     <#local localizer =
@@ -85,44 +84,44 @@
 
 <#function resourceLanguage>
   <#if resourceLocaleResolver?exists>
-     <#local l = resourceLocaleResolver.resolveLocale(null)?string />
-     <#return getMsg("language."+l, l) />
+    <#local l = resourceLocaleResolver.resolveLocale(VRTX_SERVLET_REQUEST)?string />
+    <#return getMsg("language."+l, l) />
   </#if>
 </#function>
 
 
 <#--
- * getMsg
- *
- * Same as the macro 'msg' with escape=false, but returns a value instead of printing it.
- * Example: <#assign msg = vrtx.getMsg("my.message.key", "My default message", ['my param']) />
- *
- * @param code the code of the localized message
- * @param default the default message if the localized message did not
- *        exist for the currently selected locale.
- * @param args (optional) arguments for the message
- * @param locale (optional) the locale to use when looking up the message
- *
--->
+  * getMsg
+  *
+  * Same as the macro 'msg' with escape=false, but returns a value instead of printing it.
+  * Example: <#assign msg = vrtx.getMsg("my.message.key", "My default message", ['my param']) />
+  *
+  * @param code the code of the localized message
+  * @param default the default message if the localized message did not
+  *        exist for the currently selected locale.
+  * @param args (optional) arguments for the message
+  * @param locale (optional) the locale to use when looking up the message
+  *
+  -->
 <#function getMsg code default=code args=[] locale=springMacroRequestContext.getLocale()>
-    <#assign localizer =
-    "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
-    <#return localizer.msg />
+  <#assign localizer =
+  "vtk.web.view.freemarker.MessageLocalizer"?new(code, default, args, springMacroRequestContext) />
+  <#return localizer.msg />
 </#function>
 
 
 <#--
- * date
- *
- * Get a localized, formatted date string from a date object.
- * Examples: <@vrtx.date value=my.date.object format='short' />
- *           <@vrtx.date value=my.date.object format='yyyy-MM-dddd HH:mm:ss' />
- *
- * @param value the date object
- * @param format a named format, or a java DateFormat
- *        string. See vtk.repository.resourcetype.ValueFormatter
- *
--->
+  * date
+  *
+  * Get a localized, formatted date string from a date object.
+  * Examples: <@vrtx.date value=my.date.object format='short' />
+  *           <@vrtx.date value=my.date.object format='yyyy-MM-dddd HH:mm:ss' />
+  *
+  * @param value the date object
+  * @param format a named format, or a java DateFormat
+  *        string. See vtk.repository.resourcetype.ValueFormatter
+  *
+  -->
 <#macro date value format locale=springMacroRequestContext.getLocale()>
   <#compress>
     <#if VRTX_DATE_VALUE_FORMATTER?exists>
@@ -137,20 +136,20 @@
 
 
 <#--
- * calcDate
- *
- * Get a localized, formatted date string from a date object.
- *
- * Same as date macro except it returns the string instead of print it. 
- *
- * Examples: vrtx.date(my.date.object, 'short')
- *           vrtx.date(my.date.object, 'yyyy-MM-dddd HH:mm:ss')
- *
- * @param value the date object
- * @param format a named format, or a java DateFormat
- *        string. See vtk.repository.resourcetype.ValueFormatter
- *
--->
+  * calcDate
+  *
+  * Get a localized, formatted date string from a date object.
+  *
+  * Same as date macro except it returns the string instead of print it. 
+  *
+  * Examples: vrtx.date(my.date.object, 'short')
+  *           vrtx.date(my.date.object, 'yyyy-MM-dddd HH:mm:ss')
+  *
+  * @param value the date object
+  * @param format a named format, or a java DateFormat
+  *        string. See vtk.repository.resourcetype.ValueFormatter
+  *
+  -->
 <#function calcDate value format>
   <#if VRTX_DATE_VALUE_FORMATTER?exists>
     <#local constructor = "freemarker.template.utility.ObjectConstructor"?new() />
@@ -164,14 +163,14 @@
 
 
 <#--
- * parseInt
- *
- * Attempts to parse an integer from a string
- * Example: <#assign val = vrtx.parseInt("222") />
- *
- * @param value the string value
- *
--->
+  * parseInt
+  *
+  * Attempts to parse an integer from a string
+  * Example: <#assign val = vrtx.parseInt("222") />
+  *
+  * @param value the string value
+  *
+  -->
 <#function parseInt value>
   <#assign constructor = "freemarker.template.utility.ObjectConstructor"?new() />
   <#assign parser = constructor("java.lang.Integer", 0) />
@@ -180,15 +179,15 @@
 
 
 <#--
- * flattenHtml
- *
- * Flattens an HTML string.
- * Example: <@vrtx.flattenHtml value='<div>foo</div>' /> (produces 'foo')
- *
- * @param value the HTML string
- * @param escape whether to HTML-escape the flattened string (default true)
- *
--->
+  * flattenHtml
+  *
+  * Flattens an HTML string.
+  * Example: <@vrtx.flattenHtml value='<div>foo</div>' /> (produces 'foo')
+  *
+  * @param value the HTML string
+  * @param escape whether to HTML-escape the flattened string (default true)
+  *
+  -->
 <#macro flattenHtml value escape=true>
   <#if value?is_markup_output>
     <#local value = value?markup_string />
@@ -207,14 +206,14 @@
 </#macro>
 
 <#--
- * genPreviewImg
- *
- * Generate thumbnail with absolute path
- * Example: <@vrtx.genThumbnail value='image.png' />
- *
- * @param value the URL
- *
--->
+  * genPreviewImg
+  *
+  * Generate thumbnail with absolute path
+  * Example: <@vrtx.genThumbnail value='image.png' />
+  *
+  * @param value the URL
+  *
+  -->
 <#macro genPreviewImg value>
   <#compress>
     <#local thumbnail = '' />
@@ -234,15 +233,15 @@
 </#macro>
 
 <#--
- * linkResolveFilter
- *
- * Resolves relative links in an HTML string.
- *
- * @param value the HTML string
- * @param baseURL the URL to the resource that is base for the url
- * @param requestURL URL from the request
- *
--->
+  * linkResolveFilter
+  *
+  * Resolves relative links in an HTML string.
+  *
+  * @param value the HTML string
+  * @param baseURL the URL to the resource that is base for the url
+  * @param requestURL URL from the request
+  *
+  -->
 <#macro linkResolveFilter value baseURL requestURL protocolRelative=false>
   <#compress>
     <#if VRTX_HTML_UTIL?exists>
@@ -256,7 +255,7 @@
 
 <#function relativeLinkConstructor resourceUri serviceName >
   <#if linkConstructor(resourceUri,serviceName)?exists >
-    <#local constructedURL = linkConstructor(resourceUri,serviceName) />
+    <#local constructedURL = linkConstructor(resourceUri, serviceName) />
   </#if>
   <#if constructedURL?exists && resourceUri?exists && !resourceUri?contains("://") >
     <#return constructedURL.getPathRepresentation() />
@@ -270,51 +269,51 @@
 
 <#function linkConstructor resource serviceName >
   <#if VRTX_LINK_CONSTRUCTOR?exists && resource?exists && serviceName?exists >
-    <#if VRTX_LINK_CONSTRUCTOR.construct(resource,null,serviceName)?exists>
-      <#return VRTX_LINK_CONSTRUCTOR.construct(resource,null,serviceName) />
+    <#if VRTX_LINK_CONSTRUCTOR.construct(VRTX_SERVLET_REQUEST, resource, null, serviceName)?exists>
+      <#return VRTX_LINK_CONSTRUCTOR.construct(VRTX_SERVLET_REQUEST, resource, null, serviceName) />
     </#if>
   </#if>
 </#function>
 
 <#function adminActionURL resource action>
-  <#if VRTX_LINK_CONSTRUCTOR.construct(resource, null, 'manage.actionService.withWritePermission')?exists>
-    <#return VRTX_LINK_CONSTRUCTOR.construct(resource, null, 'manage.actionService.withWritePermission').setParameter('admin-action', action)  />
+  <#if VRTX_LINK_CONSTRUCTOR.construct(VRTX_SERVLET_REQUEST, resource, null, 'manage.actionService.withWritePermission')?exists>
+    <#return VRTX_LINK_CONSTRUCTOR.construct(VRTX_SERVLET_REQUEST, resource, null, 'manage.actionService.withWritePermission').setParameter('admin-action', action)  />
   </#if>
 </#function>
 
 <#function adminManageActionURL resource action>
-  <#if VRTX_LINK_CONSTRUCTOR.construct(resource, null, 'manage.actionService.withAdminPermission')?exists>
-    <#return VRTX_LINK_CONSTRUCTOR.construct(resource, null, 'manage.actionService.withAdminPermission').setParameter('admin-action', action) />
+  <#if VRTX_LINK_CONSTRUCTOR.construct(VRTX_SERVLET_REQUEST, resource, null, 'manage.actionService.withAdminPermission')?exists>
+    <#return VRTX_LINK_CONSTRUCTOR.construct(VRTX_SERVLET_REQUEST, resource, null, 'manage.actionService.withAdminPermission').setParameter('admin-action', action) />
   </#if>
 </#function>
 
 <#--
- * invokeComponentRefs
- *
- * Invokes decorating components in an HTML string
- * Example: <@vrtx.invokeComponentRefs html='<div>${include:file uri=[/foo.txt]}</div>' />
- *
- * @param html the HTML string
- *
--->
+  * invokeComponentRefs
+  *
+  * Invokes decorating components in an HTML string
+  * Example: <@vrtx.invokeComponentRefs html='<div>${include:file uri=[/foo.txt]}</div>' />
+  *
+  * @param html the HTML string
+  *
+  -->
 <#macro invokeComponentRefs html>
   <#local frag = VRTX_HTML_UTIL.parseFragment(html) />
-  ${frag.filter(VRTX_DECORATING_NODE_FILTER)}
+  ${frag.filter(VRTX_DECORATING_NODE_FILTER.nodeFilter(VRTX_SERVLET_REQUEST))}
   ${frag.stringRepresentation?no_esc}
 </#macro>
 
 
 <#--
- * limit
- *
- * Limits a string to a maximum number of characters
- * Example: <@vrtx.limit nchars='3'>some text</@vrtx.limit> - produces 'som'
- *
- * @param nchars the maximum number of characters
- * @param elide whether or not to append '...' to the string in case
- *        its length is greater than the maximum allowed value
- *
--->
+  * limit
+  *
+  * Limits a string to a maximum number of characters
+  * Example: <@vrtx.limit nchars='3'>some text</@vrtx.limit> - produces 'som'
+  *
+  * @param nchars the maximum number of characters
+  * @param elide whether or not to append '...' to the string in case
+  *        its length is greater than the maximum allowed value
+  *
+  -->
 <#macro limit nchars elide=false>
   <#compress>
     <#local val><#nested /></#local>
@@ -334,14 +333,14 @@
 </#macro>
 
 <#--
- * breakSpecificChar
- * Breaks a string if longer than maximum characters on a char or recursive on nchars
- * Example: <@vrtx.breakSpecificChar nchars=2 char='@'>root@localhost</@vrtx.breakSpecificChar>
- *
- * @param nchars the maximum number of characters before split
- * @param char the char to split on
- *
--->
+  * breakSpecificChar
+  * Breaks a string if longer than maximum characters on a char or recursive on nchars
+  * Example: <@vrtx.breakSpecificChar nchars=2 char='@'>root@localhost</@vrtx.breakSpecificChar>
+  *
+  * @param nchars the maximum number of characters before split
+  * @param char the char to split on
+  *
+  -->
 <#macro breakSpecificChar nchars splitClass="comment-author-part" char="">
   <#compress>
     <#local val><#nested /></#local>
@@ -363,37 +362,37 @@
 </#macro>
 
 <#macro splitParts val newVal splitClass cut_index nr>
-   <#local start = cut_index * nr />
-   <#if ((cut_index + start) < val?length)>
-     <#local end = cut_index + start />
-     <#local newVal = newVal + "<span class='${splitClass}-split'>" + val?substring(start, end) + "</span>" />
-     <@splitParts val newVal splitClass cut_index nr+1 />
-   <#else>
-     <#local newVal = newVal + "<span class='${splitClass}-split'>" + val?substring(start, val?length) + "</span>" />
-     ${newVal?no_esc}   
-   </#if>
+  <#local start = cut_index * nr />
+  <#if ((cut_index + start) < val?length)>
+    <#local end = cut_index + start />
+    <#local newVal = newVal + "<span class='${splitClass}-split'>" + val?substring(start, end) + "</span>" />
+    <@splitParts val newVal splitClass cut_index nr+1 />
+  <#else>
+    <#local newVal = newVal + "<span class='${splitClass}-split'>" + val?substring(start, val?length) + "</span>" />
+    ${newVal?no_esc}   
+  </#if>
 </#macro>
 
 <#--
- * fileNamesAsLimitedList
- * Make filenames with full path into a list with only filename limited by a number
- *
- * @param files the files
- * @param limit number of filenames to list
- *
--->
+  * fileNamesAsLimitedList
+  * Make filenames with full path into a list with only filename limited by a number
+  *
+  * @param files the files
+  * @param limit number of filenames to list
+  *
+  -->
 <#macro fileNamesAsLimitedList files limit=10>
   <#compress>
     <#local numberOfRemainingFiles = (files?size - limit)  />
     <ul>
-    <#local more = false />
-    <#list files as file>
-      <#if file_index == limit>
-        <#local more = true />
-        <#break />
-      </#if>
-      <li>${file?split("/")?last}</li>
-    </#list>
+      <#local more = false />
+      <#list files as file>
+        <#if file_index == limit>
+          <#local more = true />
+          <#break />
+        </#if>
+        <li>${file?split("/")?last}</li>
+      </#list>
     </ul>
     <#if more>
       <p>... <@msg code="trash-can.permanent.delete.confirm.and" default="and"/> ${numberOfRemainingFiles} <@msg code="trash-can.permanent.delete.confirm.more" default="mode"/></p>
@@ -473,23 +472,23 @@
 </#function>
 
 <#--
- * isOfType
- *
- * Function to query resource type hierarchy.
- *
- * Test if a resource type is of another [super/mixin] type.
- *
- * @param superType the super/mixin type name as a string
- * @param testType the test type name as a string.
- * @return true if testType is descendant type of superType, false otherwise.
--->
+  * isOfType
+  *
+  * Function to query resource type hierarchy.
+  *
+  * Test if a resource type is of another [super/mixin] type.
+  *
+  * @param superType the super/mixin type name as a string
+  * @param testType the test type name as a string.
+  * @return true if testType is descendant type of superType, false otherwise.
+  -->
 <#function isOfType superTypeName testTypeName>
   <#if VRTX_RESOURCE_TYPE_TREE?exists>
     <#attempt>
       <#local superDef = VRTX_RESOURCE_TYPE_TREE.getResourceTypeDefinitionByName(superTypeName) />
       <#return VRTX_RESOURCE_TYPE_TREE.isContainedType(superDef, testTypeName) />
-    <#recover>
-      <#return false />
+      <#recover>
+        <#return false />
     </#attempt>
   </#if>
   <#return false />
@@ -522,7 +521,7 @@
             <#local hackedProp = def.createProperty(imageRef.toString())>
             <#return hackedProp.getFormattedValue(format, locale) />
           </#if>
-        <#recover>
+          <#recover>
         </#attempt>
         <#return prop.getFormattedValue(format, locale) />
       </#if>
@@ -532,11 +531,11 @@
 
 <#function fixRelativeMediaFile uri uriOrPath>
   <#attempt>
-  <#if !uri?starts_with("/") && !uri?starts_with("http://") && !uri?starts_with("https://")>
-     <#return uriOrPath.getParent().expand(uri).toString()>
-  </#if>
-  <#recover></#recover>
-  <#return uri />
+    <#if !uri?starts_with("/") && !uri?starts_with("http://") && !uri?starts_with("https://")>
+      <#return uriOrPath.getParent().expand(uri).toString()>
+    </#if>
+    <#recover></#recover>
+    <#return uri />
 </#function>
 
 
@@ -547,7 +546,7 @@
     <#local def = prop.definition />
     <#local type = def.type />
     <#if type = 'IMAGE_REF'>
-      <#return resource.getPropResource(def)! />
+      <#return resource.getPropResource(VRTX_SERVLET_REQUEST, def)! />
     </#if>
   </#if>
 </#function>
@@ -561,12 +560,12 @@
 
 
 <#--
- * displayUserPrincipal
- *
- * Display the principal. If URL exists wrapped with a link and full description.
- *
- * @param principal the principal
--->
+  * displayUserPrincipal
+  *
+  * Display the principal. If URL exists wrapped with a link and full description.
+  *
+  * @param principal the principal
+  -->
 <#macro displayUserPrincipal principal>
   <#compress>
     <#if (principal.URL)??>
@@ -579,12 +578,12 @@
 
 
 <#--
- * displayGroupPrincipal
- *
- * Display the principal. If URL exists wrapped with a link and full description.
- *
- * @param principal the principal
--->
+  * displayGroupPrincipal
+  *
+  * Display the principal. If URL exists wrapped with a link and full description.
+  *
+  * @param principal the principal
+  -->
 <#macro displayGroupPrincipal principal>
   <#compress>
     <#if (principal.URL)??>
@@ -596,12 +595,12 @@
 </#macro>
 
 <#--
- * cssPlaceholder
- *
- * Output css references for the given place
- *
- * @param place The name for this place
--->
+  * cssPlaceholder
+  *
+  * Output css references for the given place
+  *
+  * @param place The name for this place
+  -->
 <#macro cssPlaceholder place>
   <#if cssRegistry?? && place??>
     <#list cssRegistry.getMedia(place) as cssURL>
@@ -612,12 +611,12 @@
 
 
 <#--
- * javascriptPlaceholder
- *
- * Output css references for the given place
- *
- * @param place The name for this place
--->
+  * javascriptPlaceholder
+  *
+  * Output css references for the given place
+  *
+  * @param place The name for this place
+  -->
 <#macro javascriptPlaceholder place>
   <#if javascriptRegistry?? && place??>
     <#list javascriptRegistry.getMedia(place) as jsURL>
@@ -628,41 +627,41 @@
 
 
 <#--
- * csrfPreventionToken
- *
- * Generate a Cross-Site Request Forgery (CSRF) prevention token for a
- * given form URL. Produces a hidden form field with the token.
- *
- * @param url the url
--->
+  * csrfPreventionToken
+  *
+  * Generate a Cross-Site Request Forgery (CSRF) prevention token for a
+  * given form URL. Produces a hidden form field with the token.
+  *
+  * @param url the url
+  -->
 <#macro csrfPreventionToken url>
   <input type="hidden"
          name="${statics['vtk.security.web.CSRFPreventionHandler'].TOKEN_REQUEST_PARAMETER}"
-         value="${VRTX_CSRF_PREVENTION_HANDLER.newToken(url)}" />
+         value="${VRTX_CSRF_PREVENTION_HANDLER.newToken(url, VRTX_SERVLET_REQUEST)}" />
 </#macro>
 
 
 <#--
- * displayTime
- *
- * Display time as HH:mm:ss based on a positive integer as representation of time
- *
- * @param timeSec the integer
--->
+  * displayTime
+  *
+  * Display time as HH:mm:ss based on a positive integer as representation of time
+  *
+  * @param timeSec the integer
+  -->
 <#macro displayTime timeSec >
-    <#local sec = (timeSec % 60) />
-    <#local min = ((timeSec-sec) % 3600) / 60 />
-    <#local hours = ((timeSec-(sec+(min*60))) / 3600 ) />
-    <#if (hours > 0)>${hours}:</#if>${min}:<#if (sec > 0 || (hours > 0 || min > 0) )>${sec?string("00")}</#if>
+  <#local sec = (timeSec % 60) />
+  <#local min = ((timeSec-sec) % 3600) / 60 />
+  <#local hours = ((timeSec-(sec+(min*60))) / 3600 ) />
+  <#if (hours > 0)>${hours}:</#if>${min}:<#if (sec > 0 || (hours > 0 || min > 0) )>${sec?string("00")}</#if>
 </#macro>
 
 <#--
- * calculateResourceSize
- *
- * Display bytes approx. as float in the metric system
- *
- * @param contentLength the content length in bytes
--->
+  * calculateResourceSize
+  *
+  * Display bytes approx. as float in the metric system
+  *
+  * @param contentLength the content length in bytes
+  -->
 <#macro calculateResourceSize contentLength>
   <#if contentLength <= 1000>
     ${contentLength} B
@@ -678,29 +677,29 @@
 </#macro>
 
 <#--
- * calculateResourceSizeToKB
- *
- * Display bytes approx. as integer in KB
- *
- * @param contentLength the content length in bytes
--->
+  * calculateResourceSizeToKB
+  *
+  * Display bytes approx. as integer in KB
+  *
+  * @param contentLength the content length in bytes
+  -->
 <#macro calculateResourceSizeToKB contentLength>
   ${(contentLength / 1000)?string("#")} KB
 </#macro>
 
 <#--
- * getEvenlyColumnDistribution
- *
- * Get number of items per column when totalItems is evenly distributed across maxColumns (from left to right)
- *
- * Based on: http://stackoverflow.com/questions/1244338/algorithm-to-evenly-distribute-items-into-3-columns
- * (with ?floor instead of ?round to distribute e.g. 10 as 4,3,3 and not 3,3,4)
- *
- * @param totalItems the total number of items
- * @param column the column
- * @param maxColumns the max number of columns
- * @return the number of items per column
--->
+  * getEvenlyColumnDistribution
+  *
+  * Get number of items per column when totalItems is evenly distributed across maxColumns (from left to right)
+  *
+  * Based on: http://stackoverflow.com/questions/1244338/algorithm-to-evenly-distribute-items-into-3-columns
+  * (with ?floor instead of ?round to distribute e.g. 10 as 4,3,3 and not 3,3,4)
+  *
+  * @param totalItems the total number of items
+  * @param column the column
+  * @param maxColumns the max number of columns
+  * @return the number of items per column
+  -->
 <#function getEvenlyColumnDistribution totalItems column maxColumns>
   <#assign n = (totalItems / maxColumns)?floor />
   <#if ((totalItems % maxColumns) >= column)>
@@ -711,13 +710,13 @@
 
 
 <#--
- * recoverableResourceToIconResolver
- *
- * Resolves icon based on resource contentType
- * RecoverableResource does not support propValue to get obsoleted and therefore we use this extra macro temporarily.
- *
- * @param resource the resource
--->
+  * recoverableResourceToIconResolver
+  *
+  * Resolves icon based on resource contentType
+  * RecoverableResource does not support propValue to get obsoleted and therefore we use this extra macro temporarily.
+  *
+  * @param resource the resource
+  -->
 <#macro recoverableResourceToIconResolver resource>
   <#compress>
     <#local iconText = "" />
@@ -736,12 +735,12 @@
 </#macro>
 
 <#--
- * resourceToIconResolver
- *
- * Resolves icon based on resource contentType
- *
- * @param resource the resource
--->
+  * resourceToIconResolver
+  *
+  * Resolves icon based on resource contentType
+  *
+  * @param resource the resource
+  -->
 <#macro resourceToIconResolver resource>
   <#compress>
     <#local iconText = "" />
@@ -753,33 +752,33 @@
       <#local iconText = resourceContentTypeToIconResolver(contentType) />
     </#if>
     <#if resource.published?? >
-        <#local unpublishedColl = propValue(resource, 'unpublishedCollection')??>
-        <#if unpublishedColl || !resource.published>
-            <#local iconText = iconText + " unpublished">
-        </#if>
+      <#local unpublishedColl = propValue(resource, 'unpublishedCollection')??>
+      <#if unpublishedColl || !resource.published>
+        <#local iconText = iconText + " unpublished">
+      </#if>
     </#if>
     ${iconText}
   </#compress>
 </#macro>
 
 <#--
- * resourceContentTypeToIconResolver
- *
- * Resolves icon based on resource contentType
- *
- * @param contentType the contentTyoe
- * @return icon text
--->
+  * resourceContentTypeToIconResolver
+  *
+  * Resolves icon based on resource contentType
+  *
+  * @param contentType the contentTyoe
+  * @return icon text
+  -->
 <#function resourceContentTypeToIconResolver contentType>
   <#if contentType = "application/octet-stream">
     <#return "binary" />
   <#elseif contentType = "application/x-apple-diskimage">
     <#return "dmg" />
   <#elseif contentType = "application/zip"
-        || contentType = "application/x-gzip"
-        || contentType = "application/x-bzip2"
-        || contentType = "application/x-7z-compressed"
-        || contentType = "application/x-compress">
+  || contentType = "application/x-gzip"
+  || contentType = "application/x-bzip2"
+  || contentType = "application/x-7z-compressed"
+  || contentType = "application/x-compress">
     <#return "zip" />
   <#elseif contentType = "application/java-archive">
     <#return "jar" />
@@ -789,18 +788,18 @@
 </#function>
 
 <#-- REWORKED SPRINGS VERSION
- * 
- * formRadioButtons
- *
- * Show radio buttons.
- *
- * @param path the name of the field to bind to
- * @param options a map (value=label) of all the available options
- * @param separator the html tag or other character list that should be used to
- *        separate each option. Typically '&nbsp;', '<br>' or in most cases '<li>'
- * @param attributes any additional attributes for the element (such as class
- *        or CSS styles or size
--->
+  * 
+  * formRadioButtons
+  *
+  * Show radio buttons.
+  *
+  * @param path the name of the field to bind to
+  * @param options a map (value=label) of all the available options
+  * @param separator the html tag or other character list that should be used to
+  *        separate each option. Typically '&nbsp;', '<br>' or in most cases '<li>'
+  * @param attributes any additional attributes for the element (such as class
+  *        or CSS styles or size
+  -->
 
 <#-- FIXME: Only works for CreateDocument -->
 <#macro formRadioButtons path options pre post descriptions=[] titles=[] cTN=false attributes="" splitAfterFirstTitle="">
@@ -809,8 +808,8 @@
   <#list options?keys as key>
     ${pre}
     <input type="radio" name="${spring.status.expression}" id="${key}" value="${key}"
-      <#if spring.status.value?default("") == key>checked="checked"</#if>
-      <#if (cTN && titles?has_content && titles[key]?exists)>onclick="createChangeTemplate(${titles[key]?string})"</#if> ${attributes} <@spring.closeTag/>
+           <#if spring.status.value?default("") == key>checked="checked"</#if>
+           <#if (cTN && titles?has_content && titles[key]?exists)>onclick="createChangeTemplate(${titles[key]?string})"</#if> ${attributes} <@spring.closeTag/>
     <label for="${key}">${options[key]}</label>
     <#if (descriptions?has_content && descriptions[key]?exists)>
       <div class="radioDescription" id="${key}_description">${descriptions[key]}</div>

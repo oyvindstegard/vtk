@@ -30,11 +30,14 @@
  */
 package vtk.resourcemanagement.view.tl;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.PropertySet;
 import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
 import vtk.web.RequestContext;
+import vtk.web.decorating.DynamicDecoratorTemplate;
 import vtk.web.service.Service;
 
 public class ViewURLValueProvider extends Function {
@@ -52,7 +55,10 @@ public class ViewURLValueProvider extends Function {
         if (!(arg instanceof PropertySet)) {
             throw new RuntimeException("Argument must be a resource object: " + arg);
         }
-        return viewService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+        HttpServletRequest request = (HttpServletRequest) 
+                ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+
+        return viewService.urlConstructor(RequestContext.getRequestContext(request).getRequestURL())
                 .withURI(((PropertySet) arg).getURI())
                 .constructURL()
                 .toString();

@@ -30,6 +30,8 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
@@ -39,7 +41,7 @@ import vtk.security.Principal;
 /**
  * Assertion that matches on request (parameter, value) pairs.
  */
-public class RequestParameterAssertion implements Assertion {
+public class RequestParameterAssertion implements WebAssertion {
 
     private String parameterName = "";
     private String parameterValue = "";
@@ -60,12 +62,11 @@ public class RequestParameterAssertion implements Assertion {
         return parameterValue;
     }
 
-    public boolean conflicts(Assertion assertion) {
+    @Override
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof RequestParameterAssertion) {
-
             if (parameterName.equals(
                     ((RequestParameterAssertion)assertion).getParameterName())) {
-
                 return ! (parameterValue.equals(
                         ((RequestParameterAssertion)assertion).getParameterValue()));
             }
@@ -73,21 +74,24 @@ public class RequestParameterAssertion implements Assertion {
         return false;
     }
 
-
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        processURL(url);
-        return true;
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        return Optional.of(processURL(url));
     }
 
-    public void processURL(URL url) {
-        url.setParameter(parameterName, parameterValue);
+    @Override
+    public URL processURL(URL url) {
+        return url.setParameter(parameterName, parameterValue);
     }
 
+    @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
         return parameterValue.equals(request.getParameter(parameterName)); 
     }
 
     
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("request.parameters[");
         sb.append(parameterName).append("]");

@@ -124,10 +124,8 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
      * 
      * @return a new CSRF prevention token
      */
-    public String newToken(URL url) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        HttpServletRequest servletRequest = requestContext.getServletRequest();
-        HttpSession session = servletRequest.getSession(false);
+    public String newToken(URL url, HttpServletRequest request) throws Exception {
+        HttpSession session = request.getSession(false);
         if (session == null) {
             throw new IllegalStateException("Session does not exist");
         }
@@ -287,7 +285,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
     }
 
     private void verifyToken(HttpServletRequest request, String token, URL requestURL) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         if (requestContext.getPrincipal() == null) {
             throw new AuthenticationException("Illegal anonymous action");
         }
@@ -520,8 +518,7 @@ public class CSRFPreventionHandler extends AbstractServletFilter implements Html
             }
             url.setRef(null);
 
-            RequestContext requestContext = RequestContext.getRequestContext();
-            HttpSession session = requestContext.getServletRequest().getSession(false);
+            HttpSession session = request.getSession(false);
 
             if (session != null) {
 

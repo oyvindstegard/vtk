@@ -89,7 +89,7 @@ public class ListingActionsController implements Controller {
     public ModelAndView handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
         Resource collection = requestContext.getRepository().retrieve(
                 requestContext.getSecurityToken(), 

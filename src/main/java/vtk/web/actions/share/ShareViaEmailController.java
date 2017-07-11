@@ -64,7 +64,7 @@ public class ShareViaEmailController implements Controller {
     private String displayUpscoping;
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
@@ -117,7 +117,7 @@ public class ShareViaEmailController implements Controller {
                                 .withURI(uri)
                                 .constructURL();
                         String mailBody = mailTemplateProvider
-                                .generateMailBody(resource.getTitle(), url.toString(), 
+                                .generateMailBody(request, resource.getTitle(), url.toString(), 
                                         emailFrom, comment, "", this.siteName);
 
                         MimeMessage mimeMessage = mailExecutor.createMimeMessage(
@@ -147,7 +147,7 @@ public class ShareViaEmailController implements Controller {
                 }
             }
         }
-        model.put("resource", this.resourceManager.createResourceWrapper());
+        model.put("resource", this.resourceManager.createResourceWrapper(request));
         return new ModelAndView(this.viewName, model);
     }
 

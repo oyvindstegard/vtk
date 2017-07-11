@@ -39,16 +39,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 
+import vtk.repository.Path;
 import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.ResourceTypeTree;
 import vtk.repository.SystemChangeContext;
-import vtk.repository.search.Parser;
 import vtk.repository.search.PropertySelect;
+import vtk.repository.search.QueryParserFactory;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
 import vtk.repository.search.Searcher;
 import vtk.repository.search.Sorting;
+import vtk.repository.search.SortingParserFactory;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
 import vtk.repository.search.query.Query;
 import vtk.security.SecurityContext;
 
@@ -60,7 +64,9 @@ public class IndexQueryPathSelector implements PathSelector {
     private final Logger logger = LoggerFactory.getLogger(IndexQueryPathSelector.class);
     
     protected Searcher searcher;
-    protected Parser parser;
+    protected QueryParserFactory parser;
+    protected QueryStringPreProcessor queryProcessor;
+    protected SortingParserFactory sortingParser;
     protected ResourceTypeTree resourceTypeTree;
     
     private String queryString;
@@ -108,11 +114,16 @@ public class IndexQueryPathSelector implements PathSelector {
         if (queryString == null) {
             throw new IllegalStateException("No query string configured");
         }
-        return parser.parse(queryString);
+        if (queryProcessor != null) {
+            ProcessorContext queryProcessorContext = 
+                    new QueryStringPreProcessor.ProcessorContext(Path.ROOT, Path.ROOT);
+            queryString = queryProcessor.process(queryString, queryProcessorContext);
+        }
+        return parser.getParser().parse(queryString);
     }
     
     protected Sorting getSorting(SystemChangeContext context) {
-        return parser.parseSortString(sortString);
+        return sortingParser.parser().parse(sortString);
     }
     
     public void setQueryString(String queryString) {
@@ -123,8 +134,16 @@ public class IndexQueryPathSelector implements PathSelector {
         this.sortString = sortString;
     }
     
-    public void setParser(Parser parser) {
+    public void setParser(QueryParserFactory parser) {
         this.parser = parser;
+    }
+    
+    public void setQueryProcessor(QueryStringPreProcessor queryProcessor) {
+        this.queryProcessor = queryProcessor;
+    }
+    
+    public void setSortingParser(SortingParserFactory sortingParser) {
+        this.sortingParser = sortingParser;
     }
 
     public boolean isUseDefaultExcludes() {

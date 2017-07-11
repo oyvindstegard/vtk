@@ -321,6 +321,7 @@
            <bean class="vtk.text.html.HtmlUtil" />
          </entry>
          <entry key="VRTX_DECORATING_NODE_FILTER" value-ref="decorating.ssiNodeFilter" />
+         <!--entry key="VRTX_SERVLET_REQUEST_SUPPLIER" value-ref="IMPLEMENT_ME" /-->
          <entry key="VRTX_CSRF_PREVENTION_HANDLER">
              <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
                <property name="targetObject" ref="system.csrfPreventionHandler" />

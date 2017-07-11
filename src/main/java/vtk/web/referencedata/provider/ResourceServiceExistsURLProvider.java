@@ -82,7 +82,7 @@ public class ResourceServiceExistsURLProvider implements ReferenceDataProvider, 
         
         Service service = (Service) beanFactory.getBean(serviceName);
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -100,9 +100,7 @@ public class ResourceServiceExistsURLProvider implements ReferenceDataProvider, 
         try {
             if (resource != null) {
                 url = service.urlConstructor(requestContext.getRequestURL())
-                        .withResource(resource)
-                        .withPrincipal(principal)
-                        .matchAssertions(true)
+                        .withURI(resource.getURI())
                         .constructURL();
             }
         }

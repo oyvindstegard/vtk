@@ -60,7 +60,7 @@
       });
     });
     
-    var CURRENT_RESOURCE_LANGAGE = "${resourceLocaleResolver.resolveLocale(null)?string}";
+    var CURRENT_RESOURCE_LANGAGE = "${resourceLocaleResolver.resolveLocale(VRTX_SERVLET_REQUEST)?string}";
     UNSAVED_CHANGES_CONFIRMATION = "<@vrtx.msg code='manage.unsavedChangesConfirmation' />";
     COMPLETE_UNSAVED_CHANGES_CONFIRMATION = "<@vrtx.msg code='manage.completeUnsavedChangesConfirmation' />";
     window.onbeforeunload = unsavedChangesInEditorMessage;

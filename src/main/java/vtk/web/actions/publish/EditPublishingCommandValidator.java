@@ -36,16 +36,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import vtk.repository.Property;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
+import vtk.web.SimpleFormController;
 
-public class EditPublishingCommandValidator implements Validator {
+public class EditPublishingCommandValidator implements SimpleFormController.Validator<EditPublishingCommand> {
 
     private static final String DATE_FORMAT_COMPLETE = "yyyy-MM-dd HH:mm";
     private static final String DATE_FORMAT_HOUR = "yyyy-MM-dd HH";
@@ -53,7 +55,7 @@ public class EditPublishingCommandValidator implements Validator {
     private static List<String> dateformats;
 
     static {
-        dateformats = new ArrayList<String>();
+        dateformats = new ArrayList<>();
         dateformats.add(DATE_FORMAT_COMPLETE);
         dateformats.add(DATE_FORMAT_HOUR);
         dateformats.add(DATE_FORMAT_SIMPLE);
@@ -63,15 +65,8 @@ public class EditPublishingCommandValidator implements Validator {
     private PropertyTypeDefinition unpublishDatePropDef;
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public boolean supports(Class clazz) {
-        return clazz == EditPublishingCommand.class;
-    }
-
-    @Override
-    public void validate(Object command, Errors errors) {
-        EditPublishingCommand editPublishingCommand = (EditPublishingCommand) command;
-        
+    public void validate(HttpServletRequest request,
+            EditPublishingCommand editPublishingCommand, Errors errors) {
         if (editPublishingCommand.getCancelAction() != null) {
             return;
         }

@@ -186,9 +186,10 @@ public class FeedComponent extends AbstractFeedComponent {
                 }
             }
         }
-
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request.getServletRequest());
         SyndFeed feed = null;
-        URL requestURL = RequestContext.getRequestContext().getRequestURL();
+        URL requestURL = requestContext.getRequestURL();
         URL baseURL = null;
         URL feedURL = null;
         boolean auth = true;
@@ -196,7 +197,7 @@ public class FeedComponent extends AbstractFeedComponent {
             feedURL = requestURL.relativeURL(url);
             if (feedURL.getHost().equals(requestURL.getHost())) {
                 baseURL = new URL(requestURL);
-                retrieveLocalResource(feedURL);
+                retrieveLocalResource(feedURL, requestContext);
                 feed = this.localFeedFetcher.getFeed(feedURL, request);
             }
             else {

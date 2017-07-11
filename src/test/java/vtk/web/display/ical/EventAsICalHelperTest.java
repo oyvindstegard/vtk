@@ -7,6 +7,7 @@ import java.util.Calendar;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import vtk.context.BaseContext;
 import vtk.repository.Namespace;
@@ -61,16 +62,17 @@ public class EventAsICalHelperTest {
         BaseContext.pushContext();
         SecurityContext securityContext = new SecurityContext(null, null);
         SecurityContext.setSecurityContext(securityContext);
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         RequestContext requestContext = new RequestContext(null, securityContext,
                 null, null, null, Path.ROOT, null, false,
                 false, true, repository, new DefaultPrincipalMetadataDAO());
-        RequestContext.setRequestContext(requestContext);
+        RequestContext.setRequestContext(requestContext, mockRequest);
     }
 
     @Test
     public void getAsICal() throws Exception {
         String iCal = helper.getAsICal(Arrays.asList(
-                getEvent(Path.fromString("/events/some-event.html"))));
+                getEvent(Path.fromString("/events/some-event.html"))), "localhost");
         assertNotNull(iCal);
     }
 

@@ -58,7 +58,7 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
 
     @Override
     protected TrashCanCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
@@ -104,7 +104,7 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
             return new ModelAndView(getFormView(), model);
         }
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path parentURI = command.getParentResource().getURI();
@@ -113,7 +113,7 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
         if (command.getRecoverAction() != null) {
 
             RecoveryObject recoveryObject = 
-                    getRecoverableResources(parentURI, selectedResources);
+                    getRecoverableResources(request, parentURI, selectedResources);
 
             // Recover what u can
             for (RecoverableResource rr : recoveryObject.getRecoverable()) {
@@ -126,7 +126,7 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
             if (conflicted != null && conflicted.size() > 0) {
                 String msgKey = "trash-can.recovery.conflict.";
                 msgKey = conflicted.size() == 1 ? msgKey + "single" : msgKey + "multiple";
-                Message msg = new Message(msgKey);
+                Message msg = new Message(request, msgKey);
 
                 for (RecoverableResource rr : conflicted) {
                     msg.addMessage(rr.getName());
@@ -138,7 +138,7 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
                 }
                 command.setTrashCanObjects(conflictedObjs);
                 
-                RequestContext.getRequestContext().addErrorMessage(msg);
+                RequestContext.getRequestContext(request).addErrorMessage(msg);
                 return new ModelAndView(getFormView(), model);
             }
 
@@ -163,7 +163,7 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
         throw new IllegalArgumentException("Invalid action, cannot process");
     }
 
-    private RecoveryObject getRecoverableResources(Path parentURI, 
+    private RecoveryObject getRecoverableResources(HttpServletRequest request, Path parentURI, 
             List<RecoverableResource> selectedResources) throws Exception {
         
         List<String> duplicateConflicted = new ArrayList<>();
@@ -178,17 +178,18 @@ public class TrashCanController extends SimpleFormController<TrashCanCommand> {
         List<RecoverableResource> conflicted = new ArrayList<>();
         for (RecoverableResource rr : selectedResources) {
             Path recoveryPath = parentURI.extend(rr.getName());
-            if (!this.exists(recoveryPath) && !duplicateConflicted.contains(rr.getName())) {
+            if (!this.exists(request, recoveryPath) && !duplicateConflicted.contains(rr.getName())) {
                 recoverable.add(rr);
-            } else {
+            }
+            else {
                 conflicted.add(rr);
             }
         }
         return new RecoveryObject(recoverable, conflicted);
     }
 
-    private boolean exists(Path path) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    private boolean exists(HttpServletRequest request, Path path) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         return repository.exists(null, path);
     }

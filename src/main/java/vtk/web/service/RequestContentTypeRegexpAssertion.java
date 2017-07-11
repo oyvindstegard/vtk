@@ -30,6 +30,7 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,10 +42,9 @@ import vtk.security.Principal;
 /**
  * Assertion for regular expression matching on the resource content type.
  */
-public class RequestContentTypeRegexpAssertion implements Assertion {
+public class RequestContentTypeRegexpAssertion implements WebAssertion {
 
     private Pattern pattern = null;
-
 
     /**
      * @param pattern The pattern to set.
@@ -57,41 +57,41 @@ public class RequestContentTypeRegexpAssertion implements Assertion {
     }
     
 
+    @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        // TODO: fixme
         String contentType = request.getContentType();
-        
         if (contentType == null) return false;
-        
         Matcher m = this.pattern.matcher(contentType);
         return m.matches();
     }
 
 
-    public boolean conflicts(Assertion assertion) {
+    @Override
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
-    /** 
-     * @see java.lang.Object#toString()
-     */
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        return Optional.of(url);
+    }
+
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-		
+                
         sb.append(super.toString());
         sb.append("; pattern = ").append(this.pattern.pattern());
-		
+                
         return sb.toString();
     }
 
-
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        return true;
-    }
-
-
-    public void processURL(URL url) {
-        // Empty
-    }
 
 }

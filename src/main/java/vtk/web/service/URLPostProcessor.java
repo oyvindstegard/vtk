@@ -30,13 +30,13 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import vtk.repository.Resource;
 
 
 public interface URLPostProcessor {
 
-    public void processURL(URL url, Resource resource, Service service) throws Exception;
-
-    public void processURL(URL url, Service service) throws Exception;
+    public void processURL(URL url, Service service, Optional<Resource> resource);
 
 }

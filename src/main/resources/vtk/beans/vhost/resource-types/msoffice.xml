@@ -14,11 +14,13 @@
     </property>
   </bean>
   
-  <bean id="resourceTypeIsOoXml" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="resourceTypeIsOoXml" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+        parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="ooXmlResourceTypeDefinition" />
   </bean>
   
-  <bean id="resourceTypeIsNotOoXml" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="resourceTypeIsNotOoXml" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+        parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="ooXmlResourceTypeDefinition" />
   	<property name="invert" value="true" />
   </bean>
@@ -60,20 +62,20 @@
     </property>
   </bean>
   
-  <bean id="contentTypeMatchesOoXml" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/(msword|ms-excel|x-msexcel|ms-ppt|vnd\.((ms-word(|\.(document|template)\.macroEnabled\.12)|ms-excel(|\.(sheet(|\.binary)|template|addin|)\.macroEnabled\.12)|ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12))|(openxmlformats-officedocument\.(wordprocessingml\.(document|template)|spreadsheetml\.(sheet|template)|presentationml\.(presentation|template|slideshow)))))" />
+  <bean id="contentTypeMatchesOoXml" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/(msword|ms-excel|x-msexcel|ms-ppt|vnd\.((ms-word(|\.(document|template)\.macroEnabled\.12)|ms-excel(|\.(sheet(|\.binary)|template|addin|)\.macroEnabled\.12)|ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12))|(openxmlformats-officedocument\.(wordprocessingml\.(document|template)|spreadsheetml\.(sheet|template)|presentationml\.(presentation|template|slideshow)))))" />
   </bean>
 
-  <bean id="contentTypeMatchesDoc" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/(msword|vnd\.(ms-word(|\.(document|template)\.macroEnabled\.12)|openxmlformats-officedocument\.wordprocessingml\.(document|template)))" />
+  <bean id="contentTypeMatchesDoc" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/(msword|vnd\.(ms-word(|\.(document|template)\.macroEnabled\.12)|openxmlformats-officedocument\.wordprocessingml\.(document|template)))" />
   </bean>
   
-  <bean id="contentTypeMatchesXls" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/(ms-excel|x-msexcel|vnd\.(ms-excel(|\.(sheet(|\.binary)|template|addin)\.macroEnabled\.12)|openxmlformats-officedocument\.spreadsheetml\.(sheet|template)))" />
+  <bean id="contentTypeMatchesXls" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/(ms-excel|x-msexcel|vnd\.(ms-excel(|\.(sheet(|\.binary)|template|addin)\.macroEnabled\.12)|openxmlformats-officedocument\.spreadsheetml\.(sheet|template)))" />
   </bean>
   
-  <bean id="contentTypeMatchesPpt" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/(ms-ppt|vnd\.(ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12)|openxmlformats-officedocument\.presentationml\.(presentation|template|slideshow)))" />
+  <bean id="contentTypeMatchesPpt" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/(ms-ppt|vnd\.(ms-powerpoint(|\.(addin|presentation|template|slideshow)\.macroEnabled\.12)|openxmlformats-officedocument\.presentationml\.(presentation|template|slideshow)))" />
   </bean>
 
 </beans>

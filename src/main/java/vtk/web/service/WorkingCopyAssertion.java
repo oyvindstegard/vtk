@@ -32,6 +32,7 @@ package vtk.web.service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -42,22 +43,22 @@ import vtk.repository.Revision.Type;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
 
-public class WorkingCopyAssertion implements Assertion {
+public class WorkingCopyAssertion implements WebAssertion {
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal,
-            boolean match) {
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
+        return url;
     }
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource,
             Principal principal) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         try {
@@ -74,7 +75,7 @@ public class WorkingCopyAssertion implements Assertion {
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 

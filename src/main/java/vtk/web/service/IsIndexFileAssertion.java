@@ -30,31 +30,34 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
 
-public class IsIndexFileAssertion implements Assertion {
+public class IsIndexFileAssertion implements WebAssertion {
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
+        return url;
     }
     
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         return requestContext.isIndexFile();
     }
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 

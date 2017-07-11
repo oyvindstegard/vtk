@@ -30,10 +30,23 @@
  */
 package vtk.repository.search.preprocessor;
 
+import java.util.Objects;
+
+import vtk.repository.Path;
 import vtk.repository.search.QueryException;
 
 public interface QueryStringPreProcessor {
+    
+    public static final class ProcessorContext {
+        public final Path currentURI;
+        public final Path currentCollection;
 
-    public String process(String queryString) throws QueryException;
+        public ProcessorContext(Path currentURI, Path currentCollection) {
+            this.currentURI = Objects.requireNonNull(currentURI);
+            this.currentCollection = Objects.requireNonNull(currentCollection);
+        }
+    }
+
+    public String process(String queryString, ProcessorContext ctx) throws QueryException;
 
 }

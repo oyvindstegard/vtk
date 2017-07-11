@@ -32,8 +32,6 @@ package vtk.repository.resourcetype;
 
 import java.util.List;
 
-import vtk.web.service.RepositoryAssertion;
-
 
 public interface PrimaryResourceTypeDefinition extends ResourceTypeDefinition {
 

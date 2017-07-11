@@ -71,7 +71,7 @@ public class ApprovalViaEmailController implements Controller {
     private PrincipalFactory principalFactory;
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
@@ -106,7 +106,7 @@ public class ApprovalViaEmailController implements Controller {
         String[] subjectParams = { getLocalizedMsg(request, "resourcetype.name." + resource.getResourceType(),
                 new Object[0]) };
         String subject = getLocalizedMsg(request, "send-to-approval.subject", subjectParams);
-        String mailBody = mailTemplateProvider.generateMailBody(title, url.toString(), emailFrom, "", "", "");
+        String mailBody = mailTemplateProvider.generateMailBody(request, title, url.toString(), emailFrom, "", "", "");
 
         if (method.equals("POST")) {
             String emailTo = request.getParameter("emailTo");
@@ -141,7 +141,7 @@ public class ApprovalViaEmailController implements Controller {
                         }
                     }
                     if (validAddresses && MailExecutor.isValidEmail(emailFrom)) {
-                        mailBody = mailTemplateProvider.generateMailBody(
+                        mailBody = mailTemplateProvider.generateMailBody(request,
                                 title, url.toString(), emailFrom, comment, "", "");
 
                         MimeMessage mimeMessage = mailExecutor.createMimeMessage(mailBody, emailMultipleTo, emailFrom,
@@ -168,7 +168,7 @@ public class ApprovalViaEmailController implements Controller {
         }
         model.put("emailSubject", subject);
         model.put("emailBody", mailBody);
-        model.put("resource", resourceManager.createResourceWrapper());
+        model.put("resource", resourceManager.createResourceWrapper(request));
         return new ModelAndView(viewName, model);
     }
 

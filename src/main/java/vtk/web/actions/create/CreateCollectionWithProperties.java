@@ -70,7 +70,7 @@ public class CreateCollectionWithProperties extends SimpleFormController<CreateO
     protected Map<String, Object> referenceData(HttpServletRequest request,
             CreateOperation command, Errors errors) throws Exception {
         Map<String, Object> model = new HashMap<String, Object>();
-        URL submitURL = RequestContext.getRequestContext().getRequestURL();
+        URL submitURL = RequestContext.getRequestContext(request).getRequestURL();
         model.put("submitURL", submitURL);
         return model;
     }
@@ -79,7 +79,7 @@ public class CreateCollectionWithProperties extends SimpleFormController<CreateO
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, CreateOperation operation,
             BindException errors) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         

@@ -56,7 +56,7 @@ import vtk.security.AuthenticationProcessingException;
 import vtk.security.SecurityContext;
 import vtk.security.web.SecurityInitializer;
 import vtk.web.InvalidRequestException;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -67,7 +67,7 @@ public class Logout extends SamlService {
     private String ieCookieLogoutTicket;
     private IECookieStore iECookieStore;
 
-    private Assertion manageAssertion;
+    private WebAssertion manageAssertion;
 
     private static Logger authLogger = LoggerFactory.getLogger("vtk.security.web.AuthLog");
 
@@ -252,7 +252,7 @@ public class Logout extends SamlService {
         this.iECookieStore = iECookieStore;
     }
 
-    public void setManageAssertion(Assertion manageAssertion) {
+    public void setManageAssertion(WebAssertion manageAssertion) {
         this.manageAssertion = manageAssertion;
     }
 }

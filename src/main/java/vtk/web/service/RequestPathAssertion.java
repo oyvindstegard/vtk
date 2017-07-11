@@ -30,9 +30,12 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -47,12 +50,12 @@ import vtk.security.Principal;
  * 
  * <ul><li><code>path</code> - the path string to match against
  */
-public class RequestPathAssertion implements Assertion {
+public class RequestPathAssertion implements WebAssertion {
 
     private Path path;
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof RequestPathAssertion) {
             return ! (this.path.equals(((RequestPathAssertion)assertion).path));
         }
@@ -66,14 +69,14 @@ public class RequestPathAssertion implements Assertion {
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        processURL(url);
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(processURL(url));
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
         url.setPath(this.path);
+        return url;
     }
     
     @Required 

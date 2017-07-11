@@ -75,16 +75,23 @@ public class ResourcePropsNodeFactory implements DirectiveHandler {
         final Token arg1 = tokens.get(0);
 
         context.add(new Node() {
+            @Override
             public boolean render(Context ctx, Writer out) throws Exception {
                 Resource resource;
-                RequestContext requestContext = RequestContext.getRequestContext();
+                
+                HttpServletRequest request = (HttpServletRequest) 
+                        ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+                if (request == null) {
+                    throw new RuntimeException("Servlet request not found in context by attribute: "
+                            + DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+                }
+                RequestContext requestContext = RequestContext.getRequestContext(request);
+                
                 String token = requestContext.getSecurityToken();
                 Repository repository = requestContext.getRepository();
                 String ref = arg1.getValue(ctx).toString();
                 
                 if (ref.equals(".")) {
-                    HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
-//                    HttpServletRequest request = requestContext.getServletRequest();
                     Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
                     if (o == null) {
                         throw new Exception("Unable to locate resource: no model: " 

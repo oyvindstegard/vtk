@@ -74,7 +74,7 @@ public class LinkCheckController implements Controller {
         }
         URL base = URL.create(request);
         base.clearParameters();
-        List<LinkCheckResult> results = checkLinks(urls, base, shouldSendReferrer());
+        List<LinkCheckResult> results = checkLinks(urls, base, shouldSendReferrer(request));
         writeResults(results, response);
         return null;
     }
@@ -82,7 +82,7 @@ public class LinkCheckController implements Controller {
     private List<LinkCheckResult> checkLinks(List<String> input, URL base, 
             boolean sendReferrer) {
         
-        List<LinkCheckResult> results = new ArrayList<LinkCheckResult>();
+        List<LinkCheckResult> results = new ArrayList<>();
         for (String link : input) {
             LinkCheckRequest request = LinkCheckRequest.builder(link, base)
                     .sendReferrer(sendReferrer)
@@ -147,7 +147,7 @@ public class LinkCheckController implements Controller {
         try {
             String line;
             int n = 0;
-            List<String> urls = new ArrayList<String>();
+            List<String> urls = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
                 if (line.length() > 500) {
                     continue; // Facebook API link often exceeds 500 chars -
@@ -194,9 +194,9 @@ public class LinkCheckController implements Controller {
         return input;
     }
 
-    private boolean shouldSendReferrer() {
+    private boolean shouldSendReferrer(HttpServletRequest request) {
         try {
-            RequestContext rc = RequestContext.getRequestContext();
+            RequestContext rc = RequestContext.getRequestContext(request);
             Repository repo = rc.getRepository();
             Resource r = repo.retrieve(rc.getSecurityToken(), rc.getResourceURI(), true);
             return !r.isReadRestricted();

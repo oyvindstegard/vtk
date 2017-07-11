@@ -84,7 +84,7 @@ public class BrowseUrlProvider implements ReferenceDataProvider, InitializingBea
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
         Path uri = requestContext.getResourceURI();

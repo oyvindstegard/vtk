@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.repository.search;
+package vtk.web.search;
 
 import static vtk.repository.resourcetype.PropertyType.Type.IMAGE_REF;
 import static vtk.repository.resourcetype.PropertyType.Type.STRING;
@@ -40,15 +40,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -64,6 +66,13 @@ import vtk.repository.ResourceTypeTree;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.repository.resourcetype.Value;
+import vtk.repository.search.ConfigurablePropertySelect;
+import vtk.repository.search.PropertySelect;
+import vtk.repository.search.QueryException;
+import vtk.repository.search.ResultSet;
+import vtk.repository.search.Search;
+import vtk.repository.search.Searcher;
+import vtk.repository.search.Sorting;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
@@ -71,37 +80,41 @@ import vtk.web.service.URL;
 /**
  * Utility class for performing searches returning result sets wrapped in an XML
  * structure.
- * 
- * XXX: move this class to another package (has vtk.web.* dependencies
- * among other things).
- * 
  */
 public class XmlSearcher {
-
     private static final String URL_IDENTIFIER = "url";
-
     private static Logger logger = LoggerFactory.getLogger(XmlSearcher.class);
-
+    
+    private HttpServletRequest request;
     private Searcher searcher;
-    private Parser parser;
+    private SearchParser parserFactory;
     private ResourceTypeTree resourceTypeTree;
     private int maxResults = 2000;
-    private String defaultLocale = Locale.getDefault().getLanguage();
-
+    private Locale defaultLocale;
     private Service linkToService;
     private ResourceTypeDefinition collectionResourceTypeDef;
-
-    @Required
-    public void setSearcher(Searcher searcher) {
-        this.searcher = searcher;
+    
+    public static Function<HttpServletRequest, XmlSearcher> xmlSearcherFactory(Searcher searcher, 
+            SearchParser parser, ResourceTypeTree resourceTypeTree, int maxResults, 
+            Locale defaultLocale, Service linkToService, 
+            ResourceTypeDefinition collectionResourceTypeDef) {
+        
+        return request -> new XmlSearcher(request, searcher, parser, resourceTypeTree, 
+                maxResults, defaultLocale, linkToService, collectionResourceTypeDef);
+        
     }
-
-    public void setMaxResults(int maxResults) {
+    
+    public XmlSearcher(HttpServletRequest request, Searcher searcher, SearchParser parser, 
+            ResourceTypeTree resourceTypeTree, int maxResults, Locale defaultLocale, 
+            Service linkToService, ResourceTypeDefinition collectionResourceTypeDef) {
+        this.request = Objects.requireNonNull(request);
+        this.searcher = Objects.requireNonNull(searcher);
+        this.parserFactory = Objects.requireNonNull(parser);
+        this.resourceTypeTree = Objects.requireNonNull(resourceTypeTree);
         this.maxResults = maxResults;
-    }
-
-    public void setDefaultLocale(String defaultLocale) {
-        this.defaultLocale = defaultLocale;
+        this.defaultLocale = Objects.requireNonNull(defaultLocale);
+        this.linkToService = Objects.requireNonNull(linkToService);
+        this.collectionResourceTypeDef = Objects.requireNonNull(collectionResourceTypeDef);
     }
 
     /**
@@ -117,8 +130,8 @@ public class XmlSearcher {
         int limit = this.maxResults;
         try {
             limit = Integer.parseInt(maxResultsStr);
-        } catch (NumberFormatException e) {
         }
+        catch (NumberFormatException e) { }
 
         Document doc = executeDocumentQuery(query, sort, limit, 0, fields, authorizeCurrentPrincipal, false);
         return doc.getDocumentElement().getChildNodes();
@@ -127,13 +140,13 @@ public class XmlSearcher {
     public Document executeDocumentQuery(String query, String sort, int maxResults, int offset, String fields,
             boolean authorizeCurrentPrincipal, boolean includeUnpublished) throws QueryException {
         // VTK-2460
-        if (RequestContext.getRequestContext().isViewUnauthenticated()) {
+        if (RequestContext.getRequestContext(request).isViewUnauthenticated()) {
             authorizeCurrentPrincipal = false;
         }
 
         String token = null;
         if (authorizeCurrentPrincipal) {
-            RequestContext requestContext = RequestContext.getRequestContext();
+            RequestContext requestContext = RequestContext.getRequestContext(request);
             token = requestContext.getSecurityToken();
         }
         return executeDocumentQuery(token, query, sort, maxResults, offset, fields, includeUnpublished);
@@ -156,10 +169,10 @@ public class XmlSearcher {
         }
 
         try {
-            SearchEnvironment envir = new SearchEnvironment(sort, fields);
+            SearchEnvironment envir = new SearchEnvironment(request, sort, fields);
 
             Search search = new Search();
-            search.setQuery(this.parser.parse(query));
+            search.setQuery(this.parserFactory.parser(request).parse(query));
             if (envir.getSorting() != null)
                 search.setSorting(envir.getSorting());
             search.setLimit(limit);
@@ -171,7 +184,8 @@ public class XmlSearcher {
             ResultSet rs = this.searcher.execute(token, search);
 
             addResultSetToDocument(rs, doc, envir);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.warn("Error occurred while performing query: '" + query + "'", e);
 
             Element errorElement = doc.createElement("error");
@@ -184,7 +198,6 @@ public class XmlSearcher {
             errorElement.appendChild(text);
 
         }
-
         return doc;
     }
 
@@ -228,7 +241,7 @@ public class XmlSearcher {
 
     private URL getUrl(PropertySet propSet) {
         Path uri = propSet.getURI();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         URL url = linkToService.urlConstructor(requestContext.getRequestURL())
                 .withURI(uri)
                 .constructURL();
@@ -277,14 +290,14 @@ public class XmlSearcher {
                     valuesElement.appendChild(valueElement);
                 }
                 propertyElement.appendChild(valuesElement);
-
-            } else if (propDef.isMultiple()) {
+            }
+            else if (propDef.isMultiple()) {
                 String value = prop.getFormattedValue(format, locale);
                 Element valueElement = getValueElement(propDef, uri, value, format, doc);
                 valueElement.setAttribute("format", format);
                 propertyElement.appendChild(valueElement);
-
-            } else {
+            }
+            else {
                 String value = prop.getFormattedValue(format, locale);
                 Element valueElement = getValueElement(propDef, uri, value, format, doc);
                 if (format != null) {
@@ -312,7 +325,7 @@ public class XmlSearcher {
                     valueString = uri.getParent().toString() + "/" + valueString;
                 }
                 try {
-                    valueString = linkToService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+                    valueString = linkToService.urlConstructor(RequestContext.getRequestContext(request).getRequestURL())
                             .withURI(Path.fromString(valueString))
                             .constructURL()
                             .toString();
@@ -360,18 +373,19 @@ public class XmlSearcher {
     }
 
     private class SearchEnvironment {
-
+        private HttpServletRequest request;
         private PropertySelect select = null;
         private Sorting sort;
         private Formats formats = new Formats();
-        private Locale locale = new Locale(defaultLocale);
+        private Locale locale = defaultLocale;
         private boolean reportUri = false;
         private boolean reportName = false;
         private boolean reportType = false;
         private boolean reportUrl = false;
 
-        public SearchEnvironment(String sort, String fields) {
-            this.sort = parser.parseSortString(sort);
+        public SearchEnvironment(HttpServletRequest request, String sort, String fields) {
+            this.request = request;
+            this.sort = parserFactory.parser(request).parseSortString(sort);
             parseFields(fields);
             resolveLocale();
         }
@@ -461,13 +475,12 @@ public class XmlSearcher {
                 if (def != null) {
                     selectedFields.addPropertyDefinition(def);
                 }
-                // System.out.println("__formats: " + this.formats);
             }
         }
 
         private void resolveLocale() {
             try {
-                RequestContext requestContext = RequestContext.getRequestContext();
+                RequestContext requestContext = RequestContext.getRequestContext(request);
                 String token = requestContext.getSecurityToken();
                 Path uri = requestContext.getResourceURI();
                 Repository repository = requestContext.getRepository();
@@ -480,11 +493,10 @@ public class XmlSearcher {
                     }
                     this.locale = new Locale(lang);
                 }
+            }
+            catch (Throwable t) {
+                logger.debug("Unable to resolve locale of resource", t);
 
-            } catch (Throwable t) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Unable to resolve locale of resource", t);
-                }
             }
         }
 
@@ -499,13 +511,14 @@ public class XmlSearcher {
                 if (',' == fields.charAt(i) && !insideBrackets) {
                     results.add(field.toString());
                     field = new StringBuilder();
-                } else {
+                }
+                else {
                     if ('[' == fields.charAt(i)) {
                         if (!insideBrackets) {
                             insideBrackets = true;
                         }
-
-                    } else if (']' == fields.charAt(i)) {
+                    }
+                    else if (']' == fields.charAt(i)) {
                         if (insideBrackets) {
                             insideBrackets = false;
                         }
@@ -513,11 +526,9 @@ public class XmlSearcher {
                     field.append(fields.charAt(i));
                 }
             }
-
             if (field.length() > 0) {
                 results.add(field.toString());
             }
-
             return results;
         }
 
@@ -536,25 +547,5 @@ public class XmlSearcher {
         public boolean reportUrl() {
             return this.reportUrl;
         }
-
-    }
-
-    @Required
-    public void setLinkToService(Service linkToService) {
-        this.linkToService = linkToService;
-    }
-
-    public void setCollectionResourceTypeDef(ResourceTypeDefinition collectionResourceTypeDef) {
-        this.collectionResourceTypeDef = collectionResourceTypeDef;
-    }
-
-    @Required
-    public void setParser(Parser parser) {
-        this.parser = parser;
-    }
-
-    @Required
-    public void setResourceTypeTree(ResourceTypeTree resourceTypeTree) {
-        this.resourceTypeTree = resourceTypeTree;
     }
 }

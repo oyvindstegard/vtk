@@ -35,15 +35,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.security.SecurityContext;
 import vtk.util.repository.ResourceArchiver;
+import vtk.web.RequestContext;
 
 public class CreateArchiveAction implements CopyAction {
 
@@ -54,10 +57,10 @@ public class CreateArchiveAction implements CopyAction {
     private ResourceArchiver archiver;
 
     @Override
-    public void process(Path uri, Path copyUri, Map<String, Object> properties) throws Exception {
-
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
-        String token = securityContext.getToken();
+    public void process(HttpServletRequest request, Path uri, Path copyUri, 
+            Map<String, Object> properties) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        String token = requestContext.getSecurityToken();
 
         Resource resource = this.repository.retrieve(token, uri, false);
         if (!resource.isCollection()) {

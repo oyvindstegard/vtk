@@ -30,22 +30,59 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Lock;
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-public class ResourceLockedAssertion
-  extends AbstractRepositoryAssertion {
+public class ResourceLockedAssertion extends AbstractAssertion {
 
     private boolean byCurrentUser = true;
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        if (!matches(resource, principal)) {
+            return Optional.empty();
+        }
+        return Optional.of(url);
+    }
+
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+
+
+    @Override
+    public boolean matches(HttpServletRequest request, Resource resource,
+            Principal principal) {
+        return matches(resource, principal);
+    }
+    
+    @Override
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
+
     @Override
-    public boolean matches(Resource resource, Principal principal) {
+    public String toString() {
+        if (this.byCurrentUser) {
+            return "resource.lockedBy(currentUser)";
+        }
+        return "resource.locked";
+    }
+
+    public void setByCurrentUser(boolean byCurrentUser) {
+        this.byCurrentUser = byCurrentUser;
+    }
+
+    private boolean matches(Resource resource, Principal principal) {
         Principal principalLockedBy = null;
         if (resource == null) {
             return false;
@@ -64,15 +101,4 @@ public class ResourceLockedAssertion
         return principal.equals(principalLockedBy);
     }
 
-    @Override
-    public String toString() {
-        if (this.byCurrentUser) {
-            return "resource.lockedBy(currentUser)";
-        }
-        return "resource.locked";
-    }
-
-    public void setByCurrentUser(boolean byCurrentUser) {
-        this.byCurrentUser = byCurrentUser;
-    }
 }

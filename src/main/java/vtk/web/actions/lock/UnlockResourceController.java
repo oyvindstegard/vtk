@@ -55,7 +55,7 @@ public class UnlockResourceController extends AbstractController {
 
     protected ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();

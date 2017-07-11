@@ -44,7 +44,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.servlet.support.RequestContextUtils;
 
-import vtk.context.BaseContext;
 import vtk.repository.Acl;
 import vtk.repository.AuthorizationException;
 import vtk.repository.Comment;
@@ -80,17 +79,18 @@ import vtk.web.service.URL;
  * request context can be obtained from application code in the following way:
  * 
  * <pre>
- * RequestContext requestContext = RequestContext.getRequestContext();
+ * RequestContext requestContext = RequestContext.getRequestContext(request);
  * </pre>
  * 
  */
 public class RequestContext {
-
+    private static final String REQUEST_ATTRIBUTE = 
+            RequestContext.class.getName() + ".requestAttribute";
+    
     public static final String PREVIEW_UNPUBLISHED_PARAM_NAME = "vrtxPreviewUnpublished";
     public static final String PREVIEW_UNPUBLISHED_PARAM_VALUE = "true";
     private static final String HTTP_REFERER = "Referer";
 
-    private final HttpServletRequest servletRequest;
     private final SecurityContext securityContext;
     private PrincipalMetadata cachedPrincipalMetadata = null;
     private final PrincipalMetadataDAO principalLookup;
@@ -100,15 +100,20 @@ public class RequestContext {
     private final ServiceResolver serviceResolver;
     private final Path resourceURI;
     private final Acl resourceAcl;
+    private final URL requestURL;
     private final Path currentCollection;
     private final Path indexFileURI;
+    private final Locale locale;
     private final boolean isIndexFile;
     private final boolean viewUnauthenticated;
+    private final boolean previewUnpublished;
+    private final String revisionParameter;
     private List<Message> infoMessages = new ArrayList<>(0);
     private List<Message> errorMessages = new ArrayList<>(0);
     
     // Set on first invocation (otherwise JUnit tests fail):
     private RevisionWrapper revisionWrapper = null;
+
     
 
     /**
@@ -131,15 +136,16 @@ public class RequestContext {
             ServiceResolver serviceResolver, Resource resource, Path uri, Path indexFileURI, 
             boolean isIndexFile, boolean viewUnauthenticated,
             boolean inRepository, Repository repository, PrincipalMetadataDAO principalLookup) {
-        this.servletRequest = servletRequest;
         this.securityContext = securityContext;
         this.indexFileURI = indexFileURI;
         this.service = service;
+        this.locale = RequestContextUtils.getLocale(servletRequest);
         this.serviceResolver = serviceResolver;
         this.isIndexFile = isIndexFile;
         this.viewUnauthenticated = viewUnauthenticated;
         this.repository = repository;
         this.inRepository = inRepository;
+        this.requestURL = URL.create(servletRequest).setImmutable();
         if (resource != null) {
             this.resourceURI = resource.getURI();
             this.resourceAcl = resource.getAcl();
@@ -157,46 +163,52 @@ public class RequestContext {
         }
         if (principalLookup == null) {
             throw new NullPointerException("principalLookup");
-        }
+        }        
         this.principalLookup = principalLookup;
-    }
-
-    public static void setRequestContext(RequestContext requestContext) {
-        BaseContext ctx = BaseContext.getContext();
-        ctx.setAttribute(RequestContext.class.getName(), requestContext);
-    }
-
-    public static boolean exists() {
-        if (BaseContext.exists()) {
-            return BaseContext.getContext().getAttribute(RequestContext.class.getName()) != null;
+        
+        boolean previewUnpublished = false;
+        if (servletRequest != null) {
+            previewUnpublished = servletRequest.getParameter(PREVIEW_UNPUBLISHED_PARAM_NAME) != null;
+            if (!previewUnpublished) {
+                String referer = servletRequest.getHeader(HTTP_REFERER);
+                if (referer != null) {
+                    try {
+                        URL refererUrl = URL.parse(referer);
+                        previewUnpublished = refererUrl.getParameter(PREVIEW_UNPUBLISHED_PARAM_NAME) != null;
+                    }
+                    catch (Exception e) {
+                        previewUnpublished = false;
+                    }
+                }
+            }
         }
-        return false;
+        this.previewUnpublished = previewUnpublished;
+        
+        this.revisionParameter = (servletRequest != null && servletRequest.getParameter("revision") != null 
+                && previewUnpublished) ? servletRequest.getParameter("revision") : null;
+    }
+
+    public static void setRequestContext(RequestContext requestContext, HttpServletRequest request) {
+        request.setAttribute(REQUEST_ATTRIBUTE, requestContext);
+    }
+
+    public static boolean exists(HttpServletRequest request) {
+        return request.getAttribute(REQUEST_ATTRIBUTE) != null;
     }
 
     /**
      * Gets the current request context.
      * 
      */
-    public static RequestContext getRequestContext() {
-        BaseContext ctx = BaseContext.getContext();
-        RequestContext requestContext = (RequestContext) ctx.getAttribute(RequestContext.class.getName());
-        return requestContext;
-    }
-
-    /**
-     * Gets the current servlet request.
-     * 
-     * @return the servlet request
-     */
-    public HttpServletRequest getServletRequest() {
-        return this.servletRequest;
+    public static RequestContext getRequestContext(HttpServletRequest request) {
+        return (RequestContext) request.getAttribute(REQUEST_ATTRIBUTE);
     }
 
     /**
      * Gets the request URL
      */
     public URL getRequestURL() {
-        return URL.create(this.servletRequest);
+        return requestURL;
     }
 
     /**
@@ -283,7 +295,6 @@ public class RequestContext {
         sb.append(": [");
         sb.append("resourceURI = ").append(this.resourceURI);
         sb.append(", service = ").append(this.service.getName());
-        sb.append(", servletRequest = ").append(this.servletRequest);
         sb.append("]");
         return sb.toString();
     }
@@ -306,10 +317,9 @@ public class RequestContext {
 
     public Repository getRepository() {
         if (revisionWrapper != null) return revisionWrapper;
-        if (servletRequest != null && servletRequest.getParameter("revision") != null 
-                && isPreviewUnpublished()) {
+        if (revisionParameter != null) {
             this.revisionWrapper = new RevisionWrapper(
-                    this.repository, resourceURI, servletRequest.getParameter("revision"));
+                    this.repository, resourceURI, revisionParameter);
             return this.revisionWrapper;
         }
         return this.repository;
@@ -339,7 +349,7 @@ public class RequestContext {
      * Gets the request locale, as resolved by the {@link LocaleResolver}
      */
     public Locale getLocale() {
-        return RequestContextUtils.getLocale(getServletRequest());
+        return locale;
     }
 
     public RepositoryTraversal rootTraversal(String token, Path uri) {
@@ -351,23 +361,7 @@ public class RequestContext {
     }
 
     public boolean isPreviewUnpublished() {
-    	boolean result = false;
-        if (servletRequest != null) {
-            result = servletRequest.getParameter(PREVIEW_UNPUBLISHED_PARAM_NAME) != null;
-            if (!result) {
-                String referer = servletRequest.getHeader(HTTP_REFERER);
-                if (referer != null) {
-                    try {
-                        URL refererUrl = URL.parse(referer);
-                        result = refererUrl.getParameter(PREVIEW_UNPUBLISHED_PARAM_NAME) != null;
-                    } catch (Exception e) {
-                        //probably invalid url
-                        result = false;
-                    }
-                }
-            }
-        }
-        return result;
+        return previewUnpublished;
     }
     
     private static class RevisionWrapper extends RepositoryWrapper {

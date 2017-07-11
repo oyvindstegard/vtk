@@ -11,7 +11,9 @@
           <property name="assertions">
             <list>
               <ref bean="resourceTypeIsPerson" />
-              <ref bean="resourceIsPersonListing" />
+              <bean class="vtk.web.service.RepositoryAssertionWrapper">
+                <constructor-arg name="assertion" ref="resourceIsPersonListing" />
+              </bean>
             </list>
           </property>
         </bean>

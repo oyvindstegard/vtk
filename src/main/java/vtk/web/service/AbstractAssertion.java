@@ -36,7 +36,7 @@ import org.springframework.beans.factory.BeanNameAware;
 /**
  * Abstract bean name aware base class for assertions.
  */
-public abstract class AbstractAssertion implements Assertion, BeanNameAware {
+public abstract class AbstractAssertion implements WebAssertion, BeanNameAware {
 
     private String beanName;
 
@@ -47,7 +47,8 @@ public abstract class AbstractAssertion implements Assertion, BeanNameAware {
     public void setBeanName(String beanName) {
         this.beanName = beanName;
     }
-
+    
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         

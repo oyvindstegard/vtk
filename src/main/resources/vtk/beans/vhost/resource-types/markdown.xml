@@ -28,8 +28,8 @@
   </bean>
 
   <bean id="markdown.contentTypeAssertion" 
-        class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="text/markdown" />
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="text/markdown" />
   </bean>
 
   <bean id="markdown.titlePropDef"

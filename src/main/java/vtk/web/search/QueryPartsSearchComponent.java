@@ -55,7 +55,7 @@ public class QueryPartsSearchComponent extends QuerySearchComponent {
         Query query = this.getQuery(collection, request);
 
         Search search = new Search();
-        if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+        if (RequestContext.getRequestContext(request).isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
         }
         search.setQuery(query);
@@ -66,7 +66,7 @@ public class QueryPartsSearchComponent extends QuerySearchComponent {
             search.setPropertySelect(propertySelect);
         }
 
-        Repository repository = RequestContext.getRequestContext().getRepository();
+        Repository repository = RequestContext.getRequestContext(request).getRepository();
         return repository.search(token, search);
     }
 

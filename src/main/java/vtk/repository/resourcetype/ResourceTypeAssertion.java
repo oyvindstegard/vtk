@@ -28,13 +28,15 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.service;
+package vtk.repository.resourcetype;
+
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.TypeInfo;
-import vtk.repository.resourcetype.ResourceTypeDefinition;
 import vtk.security.Principal;
 
 /**
@@ -51,13 +53,11 @@ import vtk.security.Principal;
  * asserting
  * </ul>
  */
-public class ResourceTypeAssertion extends AbstractRepositoryAssertion {
-
+public class ResourceTypeAssertion implements RepositoryAssertion {
     private Repository repository;
     private ResourceTypeDefinition resourceTypeDefinition;
     private boolean invert = false;
     private boolean exactMatch = false;
-
     private String resourceType;
 
     public void setResourceTypeDefinition(ResourceTypeDefinition resourceTypeDefinition) {
@@ -72,70 +72,57 @@ public class ResourceTypeAssertion extends AbstractRepositoryAssertion {
         this.resourceType = resourceType;
     }
     
+    public void setExactMatch(boolean exactMatch) {
+        this.exactMatch = exactMatch;
+    }
+
     @Required
     public void setRepository(Repository repository) {
         this.repository = repository;
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
-        // XXX: implement
-        return false;
+    public boolean matches(Optional<Resource> resource,
+            Optional<Principal> principal) {
+
+        if (resource.isPresent()) {
+            return matches(resource.get());
+        }
+        return invert;
     }
 
-    @Override
-    public boolean matches(Resource resource, Principal principal) {
+    private boolean matches(Resource resource) {
+        TypeInfo typeInfo = repository.getTypeInfo(resource);
+        boolean match = false;
 
-        if (resource == null) {
-            return this.invert;
-        }
-
-        try {
-
-            TypeInfo typeInfo = this.repository.getTypeInfo(resource);
-            boolean match = false;
-
-            if (this.exactMatch) {
-                if (this.resourceTypeDefinition != null) {
-                    match = (typeInfo.getResourceType().equals(this.resourceTypeDefinition));
-                } else {
-                    typeInfo.getResourceType().getName().equals(this.resourceType);
-                }
-            } else {
-                if (this.resourceTypeDefinition != null) {
-                    match = typeInfo.isOfType(this.resourceTypeDefinition);
-                } else {
-                    match = typeInfo.isOfType(this.resourceType);
-                }
+        if (exactMatch) {
+            if (resourceTypeDefinition != null) {
+                match = (typeInfo.getResourceType().equals(resourceTypeDefinition));
             }
-
-            if (this.invert)
-                return !match;
-
-            return match;
-
-        } catch (RuntimeException e) {
-            // XXX Hmm. Don't wrap runtime-exceptions, because we then hide
-            //     the real exception type information, which is needed
-            //     in higher level error handling.
-            //     For instance, handling of AuthenticationException in VTKServlet.
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            else {
+                typeInfo.getResourceType().getName().equals(resourceType);
+            }
         }
+        else {
+            if (resourceTypeDefinition != null) {
+                match = typeInfo.isOfType(resourceTypeDefinition);
+            }
+            else {
+                match = typeInfo.isOfType(resourceType);
+            }
+        }
+        if (invert) {
+            return !match;
+        }
+        return match;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("resourcetype ");
-        if (this.invert) sb.append("not ");
-        sb.append(this.exactMatch ? "is " : "in ");
-        sb.append(this.resourceTypeDefinition != null ? this.resourceTypeDefinition.getName() : this.resourceType);
+        if (invert) sb.append("not ");
+        sb.append(exactMatch ? "is " : "in ");
+        sb.append(resourceTypeDefinition != null ? resourceTypeDefinition.getName() : resourceType);
         return sb.toString();
     }
-
-    public void setExactMatch(boolean exactMatch) {
-        this.exactMatch = exactMatch;
-    }
-
 }

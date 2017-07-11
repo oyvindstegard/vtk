@@ -43,8 +43,8 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
-
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -121,9 +121,10 @@ public class TagsReportingComponent {
      * @throws java.io.IOException
      * @throws QueryException
      */
-    public List<TagFrequency> getTags(Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
+    public List<TagFrequency> getTags(HttpServletRequest request, 
+            Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
             int tagOccurenceMin, String requestSecurityToken) throws IOException  {
-        return getTags(scopeUri, resourceTypeDefs, limit, tagOccurenceMin, requestSecurityToken, null);
+        return getTags(request, scopeUri, resourceTypeDefs, limit, tagOccurenceMin, requestSecurityToken, null);
     }
 
     /**
@@ -141,7 +142,8 @@ public class TagsReportingComponent {
      * @throws QueryException
      */
     @SuppressWarnings("unchecked")
-    public List<TagFrequency> getTags(Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
+    public List<TagFrequency> getTags(HttpServletRequest request,
+            Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs, int limit,
             int tagOccurenceMin, String requestSecurityToken, Set<String> whiteList) throws IOException  {
 
         final String token = useStaticToken ? this.staticToken : requestSecurityToken;
@@ -149,7 +151,7 @@ public class TagsReportingComponent {
         Set<String> rtNames = resourceTypeDefs == null ? Collections.emptySet()
                 : resourceTypeDefs.stream().map(d -> d.getName()).collect(Collectors.toSet());
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repo = requestContext.getRepository();
         Resource scopeResource = repo.retrieve(token, scopeUri, true);
 
@@ -158,7 +160,7 @@ public class TagsReportingComponent {
 
             Set<Path> aggregationPaths = null;
             if (aggregationResolver != null) {
-                aggregationPaths = aggregationResolver.getAggregationPaths(scopeUri);
+                aggregationPaths = aggregationResolver.getAggregationPaths(request, scopeUri);
             }
 
             if (aggregationPaths == null) {
@@ -179,12 +181,12 @@ public class TagsReportingComponent {
 
             if (rtNames.size() == 1) {
                 typeScopeQuery = getTypeScopeQuery(rtNames.iterator().next(), scopeResource,
-                        requestContext.getServletRequest());
+                        request);
             } else {
                 OrQuery or = new OrQuery();
                 for (String rtName : rtNames) {
                     // Consider TermOperator.IN to get hierarchical type support
-                    or.add(getTypeScopeQuery(rtName, scopeResource, requestContext.getServletRequest()));
+                    or.add(getTypeScopeQuery(rtName, scopeResource, request));
                 }
                 typeScopeQuery = or;
             }
@@ -215,7 +217,7 @@ public class TagsReportingComponent {
 
         // Set up index search
         Search search = new Search();
-        if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+        if (RequestContext.getRequestContext(request).isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
         }
         search.setQuery(topLevel);

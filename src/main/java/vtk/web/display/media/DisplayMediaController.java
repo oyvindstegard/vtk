@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Property;
 import vtk.repository.Repository;
@@ -55,15 +56,15 @@ public class DisplayMediaController implements Controller {
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
         Resource resource = repository.retrieve(token, uri, true);
 
-        mediaPlayer.addMediaPlayer(model, uri.toString());
+        mediaPlayer.addMediaPlayer(request, model, uri.toString());
 
         /* vrtx=view-as-webpage will always show download link. */
         model.put("showDL", "true");

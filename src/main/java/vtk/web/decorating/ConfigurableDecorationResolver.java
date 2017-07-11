@@ -159,7 +159,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                                         HttpServletResponse response) throws Exception {
         
         InternalDescriptor descriptor = new InternalDescriptor();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         Resource resource = null;
         TypeInfo typeInfo = null;
@@ -207,7 +207,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         }
         
         if (paramString == null && !errorPage) {
-            paramString = checkPathMatch(uri, resource);
+            paramString = checkPathMatch(request, uri, resource);
         }
         
         if (paramString != null) {
@@ -271,7 +271,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         return null;
     }
 
-    private String checkPathMatch(Path uri, Resource resource) throws Exception {
+    private String checkPathMatch(HttpServletRequest request, 
+            Path uri, Resource resource) throws Exception {
         if (this.config == null) {
             return null;
         }
@@ -305,7 +306,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
                         score.put(entry, 0);
                     }
                     for (Qualifier predicate: predicates) {
-                        if (!matchPredicate(predicate, resource)) {
+                        if (!matchPredicate(request, predicate, resource)) {
                             score.put(entry, -1);
                             break;
                         }
@@ -334,7 +335,8 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
     }
     
 
-    private boolean matchPredicate(Qualifier predicate, Resource resource) throws Exception {
+    private boolean matchPredicate(HttpServletRequest request, 
+            Qualifier predicate, Resource resource) throws Exception {
         if ("type".equals(predicate.getName())) {
             
             TypeInfo typeInfo = this.repository.getTypeInfo(resource);
@@ -349,7 +351,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         }
         else if ("service".equals(predicate.getName())) {
 
-            Service currentService = RequestContext.getRequestContext().getService();
+            Service currentService = RequestContext.getRequestContext(request).getService();
             while (currentService != null) {
                 Object attr = currentService.getAttribute("decorating.servicePredicateName");
                 if (attr != null && attr instanceof String) {
@@ -364,8 +366,6 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         }
         else if ("lang".equals(predicate.getName())) {
             if (this.localeResolver != null) {
-                RequestContext requestContext = RequestContext.getRequestContext();
-                HttpServletRequest request = requestContext.getServletRequest();
                 Locale locale = this.localeResolver.resolveLocale(request);
                 String value = predicate.getValue();
                 if (value.equals(locale.getLanguage() + "_" + locale.getCountry() + "_" + locale.getVariant())) {

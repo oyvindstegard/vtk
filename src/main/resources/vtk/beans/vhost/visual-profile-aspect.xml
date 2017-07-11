@@ -86,8 +86,8 @@
     <property name="operator" value="NEQ" />
   </bean>
         
-  <bean id="visualProfileAspect.resourceTypeAssertion" class="vtk.web.service.OrAssertion">
-    <property name="assertions">
+  <bean id="visualProfileAspect.resourceTypeAssertion" class="vtk.repository.resourcetype.RepositoryOrAssertion">
+    <constructor-arg name="assertions">
       <list>
         <ref bean="resourceInCollection" />
         <ref bean="resourceTypeIsManagedXml" />
@@ -96,7 +96,7 @@
         <ref bean="contentTypeMatchesPhp" />
         <!--ref bean="resourceIsApt" /-->
       </list>
-    </property>
+    </constructor-arg>
   </bean>
 
   <bean id="visualProfileAspect.editor" class="vtk.web.actions.properties.ConfigurableJSONPropertyEditor">

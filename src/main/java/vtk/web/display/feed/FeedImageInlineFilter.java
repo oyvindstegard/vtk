@@ -75,7 +75,8 @@ public class FeedImageInlineFilter extends AbstractServletFilter {
             HttpServletResponse response, FilterChain chain)
                     throws IOException, ServletException {
         if ("true".equals(request.getParameter("inline-thumbnails"))) {
-            chain.doFilter(request, new FilterHttpServletResponse(response));
+            RequestContext requestContext = RequestContext.getRequestContext(request);
+            chain.doFilter(request, new FilterHttpServletResponse(response, requestContext));
         }
         else {
             chain.doFilter(request, response);
@@ -88,9 +89,11 @@ public class FeedImageInlineFilter extends AbstractServletFilter {
         
         boolean filter = false;
         private ServletOutputStream out = null;
+        private RequestContext requestContext;
 
-        public FilterHttpServletResponse(HttpServletResponse response) {
+        public FilterHttpServletResponse(HttpServletResponse response, RequestContext requestContext) {
             super(response);
+            this.requestContext = requestContext;
         }
         
         @Override
@@ -126,7 +129,7 @@ public class FeedImageInlineFilter extends AbstractServletFilter {
             if (out != null) throw new IOException("Output stream already opened");
             if (filter) {
                 FilterServletOutputStream filterStream = 
-                        new FilterServletOutputStream(super.getOutputStream());
+                        new FilterServletOutputStream(super.getOutputStream(), requestContext);
                 this.out = filterStream;
                 return filterStream;
             }
@@ -144,9 +147,11 @@ public class FeedImageInlineFilter extends AbstractServletFilter {
         private OutputStream out;
         private ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         private boolean committed = false;
+        private RequestContext requestContext;
         
-        public FilterServletOutputStream(OutputStream out) {
+        public FilterServletOutputStream(OutputStream out, RequestContext requestContext) {
             this.out = out;
+            this.requestContext = requestContext;
         }
         
         @Override
@@ -174,8 +179,8 @@ public class FeedImageInlineFilter extends AbstractServletFilter {
         }
         
         private void transform() throws Exception {
-          XMLInputFactory inputFactory = XMLInputFactory.newFactory();
-          XMLEventReader xmlReader = inputFactory.createXMLEventReader(
+            XMLInputFactory inputFactory = XMLInputFactory.newFactory();
+            XMLEventReader xmlReader = inputFactory.createXMLEventReader(
                   new ByteArrayInputStream(buffer.toByteArray()));
           
           Writer writer = new OutputStreamWriter(out);
@@ -200,7 +205,7 @@ public class FeedImageInlineFilter extends AbstractServletFilter {
                   String data = chars.getData();
                   if (data.startsWith("/") || data.startsWith("//")) {
                       try {
-                          inlineImage(data, writer, imgBuffer);
+                          inlineImage(requestContext, data, writer, imgBuffer);
                       }
                       catch (Throwable t) {
                           logger.debug("Failed to inline image thumbnail: " + data, t);
@@ -220,8 +225,8 @@ public class FeedImageInlineFilter extends AbstractServletFilter {
           writer.close();
         }
         
-        private void inlineImage(String ref, Writer writer, byte[] buffer) throws Exception {
-            RequestContext requestContext = RequestContext.getRequestContext();
+        private void inlineImage(RequestContext requestContext, String ref, 
+                Writer writer, byte[] buffer) throws Exception {
             Repository repo = requestContext.getRepository();
             String token = requestContext.getSecurityToken();
             

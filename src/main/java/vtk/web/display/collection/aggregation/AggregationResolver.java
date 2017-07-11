@@ -32,6 +32,8 @@ package vtk.web.display.collection.aggregation;
 
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 import vtk.repository.PropertySet;
 
@@ -46,7 +48,8 @@ public interface AggregationResolver {
      * @return Collection of locations to aggregate from for a given resource.
      * 
      */
-    public CollectionListingAggregatedResources getAggregatedResources(PropertySet collection);
+    public CollectionListingAggregatedResources getAggregatedResources(HttpServletRequest request,
+            PropertySet collection);
 
     /**
      * Returns a list containing all local paths a given resource is set to
@@ -56,6 +59,7 @@ public interface AggregationResolver {
      *         <code>null</code> if resource not found.
      */
     @Deprecated
-    public Set<Path> getAggregationPaths(Path pathToResource);
+    public Set<Path> getAggregationPaths(HttpServletRequest request,
+            Path pathToResource);
 
 }

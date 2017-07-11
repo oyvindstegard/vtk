@@ -34,6 +34,8 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -45,14 +47,18 @@ public class CopyHelper {
     private CopyAction copyAction;
     private StoreAfterCopyAction storeAfterCopyAction;
 
-    public Path copyResource(Path uri, Path destUri, Repository repository, String token, Resource src, InputStream is)
+    public Path copyResource(HttpServletRequest request, 
+            Path uri, Path destUri, Repository repository, 
+            String token, Resource src, InputStream is)
             throws Exception {
         destUri = makeDestUri(destUri, repository, token, src);
         if (this.copyAction != null) {
-            this.copyAction.process(uri, destUri, null);
-        } else if (this.storeAfterCopyAction != null && src != null) {
-            this.storeAfterCopyAction.process(destUri, src, is);
-        } else {
+            this.copyAction.process(request, uri, destUri, null);
+        }
+        else if (this.storeAfterCopyAction != null && src != null) {
+            this.storeAfterCopyAction.process(request, destUri, src, is);
+        }
+        else {
             repository.copy(token, uri, destUri, false, false);
         }
         return destUri;

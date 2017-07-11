@@ -33,7 +33,10 @@ package vtk.web.actions.copymove;
 import java.io.InputStream;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Property;
@@ -49,8 +52,9 @@ public class StoreAfterCopyAction {
     
     private Set<PropertyTypeDefinition> preservedProperties;
     
-    public void process(Path copyUri, Resource src, InputStream stream) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public void process(HttpServletRequest request, Path copyUri, 
+            Resource src, InputStream stream) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
 

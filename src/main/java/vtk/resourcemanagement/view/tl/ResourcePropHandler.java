@@ -45,6 +45,7 @@ import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
 import vtk.web.RequestContext;
+import vtk.web.decorating.DynamicDecoratorTemplate;
 
 public class ResourcePropHandler extends Function {
 
@@ -66,9 +67,15 @@ public class ResourcePropHandler extends Function {
         }
 
         if (resource == null) {
-            RequestContext requestContext = RequestContext.getRequestContext();
+            HttpServletRequest request = (HttpServletRequest) 
+                    ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+            if (request == null) {
+                throw new RuntimeException("Servlet request not found in context by attribute: "
+                        + DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+            }
+            RequestContext requestContext = RequestContext.getRequestContext(request);
+
             if (ref.equals(".")) {
-                HttpServletRequest request = requestContext.getServletRequest();
                 Object o = request.getAttribute(StructuredResourceDisplayController.MVC_MODEL_REQ_ATTR);
                 if (o == null) {
                     throw new RuntimeException("Unable to access MVC model: "

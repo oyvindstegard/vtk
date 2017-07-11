@@ -137,7 +137,7 @@ public class ResourceServiceURLProvider implements ReferenceDataProvider {
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -164,9 +164,7 @@ public class ResourceServiceURLProvider implements ReferenceDataProvider {
         try {
             if (resource != null) {
                 url = service.urlConstructor(requestContext.getRequestURL())
-                        .withResource(resource)
-                        .withPrincipal(principal)
-                        .matchAssertions(matchAssertions)
+                        .withURI(resource.getURI())
                         .constructURL();
             }
         }

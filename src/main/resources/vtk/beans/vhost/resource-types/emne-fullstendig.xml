@@ -22,28 +22,28 @@
 
 
   <!-- bean id="emneEmnekodeExist" 
-        class="vtk.web.service.ResourcePropertyAssertion">
+        class="vtk.repository.resourcetype.ResourcePropertyAssertion">
     <property name="namespace" value="http://www.uio.no/xsd/studier/emne" />
     <property name="name" value="emnekode" />
     <property name="value" value="" />
   </bean>
 
   <bean id="emneEmnenavnExist" 
-        class="vtk.web.service.ResourcePropertyAssertion">
+        class="vtk.repository.resourcetype.ResourcePropertyAssertion">
     <property name="namespace" value="http://www.uio.no/xsd/studier/emne" />
     <property name="name" value="emnenavn" />
     <property name="value" value="" />
   </bean>
 
   <bean id="emneStudiepoengExist" 
-        class="vtk.web.service.ResourcePropertyAssertion">
+        class="vtk.repository.resourcetype.ResourcePropertyAssertion">
     <property name="namespace" value="http://www.uio.no/xsd/studier/emne" />
     <property name="name" value="studiepoeng" />
     <property name="value" value="" />
   </bean>
 
   <bean id="emneStatusGjeldende" 
-        class="vtk.web.service.ResourcePropertyAssertion">
+        class="vtk.repository.resourcetype.ResourcePropertyAssertion">
     <property name="namespace" value="http://www.uio.no/xsd/studier/emne" />
     <property name="name" value="status" />
     <property name="value" value="gjeldende-emne" />

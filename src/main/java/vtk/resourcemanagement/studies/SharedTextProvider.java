@@ -23,7 +23,8 @@ public class SharedTextProvider implements ReferenceDataProvider {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void referenceData(Map model, HttpServletRequest request) {
         try {
-            Map<String, Map<String, Json.MapContainer>> sharedTextPropsMap = sharedTextResolver.resolveSharedTexts();
+            Map<String, Map<String, Json.MapContainer>> sharedTextPropsMap = 
+                    sharedTextResolver.resolveSharedTexts(request);
             model.put("sharedTextProps", sharedTextPropsMap);
         }
         catch (Exception e) {

@@ -44,8 +44,12 @@
     <property name="iCalHelper" ref="event.iCalHelper" />
   </bean>
 
-  <bean id="resourceTypeIsStructuredEvent" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="structured-event" />
+  <bean id="resourceTypeIsStructuredEvent" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="structured-event" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="event.iCalHelper" class="vtk.web.display.ical.EventAsICalHelper">

@@ -2,77 +2,77 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
     
-    <!-- Portal XML resource -->
-    
-    <bean id="portalXmlResource"
+  <!-- Portal XML resource -->
+  
+  <bean id="portalXmlResource"
         class="vtk.repository.resourcetype.PrimaryResourceTypeDefinitionImpl">
-        <property name="name" value="portal"/>
-        <property name="namespace" ref="PORTAL_NAMESPACE" />
-        <property name="parentTypeDefinition" ref="managedXmlResource" />
-        <property name="propertyTypeDefinitions">
-            <list>
-                <ref bean="portalTitlePropDef" />
-                <ref bean="portalShortTitlePropDef" />
-                <ref bean="portalIntroductionPropDef" />
-            </list>
-        </property>
-        <property name="assertions">
-            <list>
-                <ref bean="schemaIsPortal" />
-            </list>
-        </property>
-    </bean>
-    
-    <bean id="PORTAL_NAMESPACE" class="vtk.repository.Namespace">
-        <constructor-arg value="portal" />
-        <constructor-arg value="http://www.uio.no/xsd/uio/portal" />
-    </bean>
-    
-    <bean id="schemaIsPortal" 
-        class="vtk.web.service.ResourcePropertyRegexpAssertion">
-        <property name="namespace" ref="DEFAULT_NAMESPACE" />
-        <property name="name" value="schema" />
-        <property name="pattern" value="http://www.uio.no/xsd/common/portal/v00.*" />
-    </bean>
-    
-    
-    <bean id="portalTitlePropDef"
+    <property name="name" value="portal"/>
+    <property name="namespace" ref="PORTAL_NAMESPACE" />
+    <property name="parentTypeDefinition" ref="managedXmlResource" />
+    <property name="propertyTypeDefinitions">
+      <list>
+        <ref bean="portalTitlePropDef" />
+        <ref bean="portalShortTitlePropDef" />
+        <ref bean="portalIntroductionPropDef" />
+      </list>
+    </property>
+    <property name="assertions">
+      <list>
+        <ref bean="schemaIsPortal" />
+      </list>
+    </property>
+  </bean>
+  
+  <bean id="PORTAL_NAMESPACE" class="vtk.repository.Namespace">
+    <constructor-arg value="portal" />
+    <constructor-arg value="http://www.uio.no/xsd/uio/portal" />
+  </bean>
+  
+  <bean id="schemaIsPortal" 
+        class="vtk.repository.resourcetype.ResourcePropertyRegexpAssertion">
+    <property name="namespace" ref="DEFAULT_NAMESPACE" />
+    <property name="name" value="schema" />
+    <property name="pattern" value="http://www.uio.no/xsd/common/portal/v00.*" />
+  </bean>
+  
+  
+  <bean id="portalTitlePropDef"
         class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-        <property name="name" value="title" />
-        <property name="type" value="STRING" />
-        <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
-        <property name="mandatory" value="false" />
-        <property name="propertyEvaluator" ref="portalTitleEvaluator" />
-    </bean>
-    
-    <bean id="portalTitleEvaluator" parent="abstractXPathEvaluator">
-        <property name="expression" value="/portal/title" />
-    </bean>
+    <property name="name" value="title" />
+    <property name="type" value="STRING" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="false" />
+    <property name="propertyEvaluator" ref="portalTitleEvaluator" />
+  </bean>
+  
+  <bean id="portalTitleEvaluator" parent="abstractXPathEvaluator">
+    <property name="expression" value="/portal/title" />
+  </bean>
 
-    <bean id="portalShortTitlePropDef"
+  <bean id="portalShortTitlePropDef"
         class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-        <property name="name" value="short-title" />
-        <property name="type" value="STRING" />
-        <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
-        <property name="mandatory" value="false" />
-        <property name="propertyEvaluator" ref="portalShortTitleEvaluator" />
-    </bean>
-    
-    <bean id="portalShortTitleEvaluator" parent="abstractXPathEvaluator">
-        <property name="expression" value="/portal/short-title" />
-    </bean>
+    <property name="name" value="short-title" />
+    <property name="type" value="STRING" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="false" />
+    <property name="propertyEvaluator" ref="portalShortTitleEvaluator" />
+  </bean>
+  
+  <bean id="portalShortTitleEvaluator" parent="abstractXPathEvaluator">
+    <property name="expression" value="/portal/short-title" />
+  </bean>
 
-    <bean id="portalIntroductionPropDef"
+  <bean id="portalIntroductionPropDef"
         class="vtk.repository.resourcetype.PropertyTypeDefinitionImpl" parent="abstractPropDef">
-        <property name="name" value="introduction" />
-        <property name="type" value="STRING" />
-        <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
-        <property name="mandatory" value="false" />
-        <property name="propertyEvaluator" ref="portalIntroductionEvaluator" />
-    </bean>
-    
-    <bean id="portalIntroductionEvaluator" parent="abstractXPathEvaluator">
-        <property name="expression" value="/portal/introduction" />
-    </bean>
-    
+    <property name="name" value="introduction" />
+    <property name="type" value="STRING" />
+    <property name="protectionLevel" ref="PROTECTION_LEVEL_UNEDITABLE" />
+    <property name="mandatory" value="false" />
+    <property name="propertyEvaluator" ref="portalIntroductionEvaluator" />
+  </bean>
+  
+  <bean id="portalIntroductionEvaluator" parent="abstractXPathEvaluator">
+    <property name="expression" value="/portal/introduction" />
+  </bean>
+  
 </beans>

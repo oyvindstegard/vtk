@@ -30,13 +30,13 @@
  */
 package vtk.repository.search.preprocessor;
 
+import static org.junit.Assert.assertEquals;
+
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.api.Invocation;
 import org.jmock.lib.action.CustomAction;
-import static org.junit.Assert.*;
 import org.junit.Test;
-
 
 public class OutputEscapingExpressionEvaluatorWrapperTest {
 
@@ -45,13 +45,16 @@ public class OutputEscapingExpressionEvaluatorWrapperTest {
         
         Mockery context = new Mockery();
         final ExpressionEvaluator dummy = context.mock(ExpressionEvaluator.class);
+        
+        final QueryStringPreProcessor.ProcessorContext mockContext = 
+                context.mock(QueryStringPreProcessor.ProcessorContext.class);
         context.checking(new Expectations() {
             {
-                allowing(dummy).evaluate(with(any(String.class)));
+                allowing(dummy).evaluate(with(any(String.class)), mockContext);
                 will(new CustomAction("echo 1st arg"){
                     @Override
                     public Object invoke(Invocation invocation) throws Throwable {
-                        return (String)invocation.getParameter(0);
+                        return invocation.getParameter(0);
                     }
                 });
                 allowing(dummy).matches(with(any(String.class)));
@@ -64,28 +67,28 @@ public class OutputEscapingExpressionEvaluatorWrapperTest {
         evaluator.setWrappedEvaluator(dummy);
   
         assertEquals("/foo\\ bar/baz", 
-                evaluator.evaluate("/foo bar/baz"));
+                evaluator.evaluate("/foo bar/baz", mockContext));
         
         assertEquals("/foo\\ bar/\\<baz\\>", 
-                evaluator.evaluate("/foo bar/<baz>"));
+                evaluator.evaluate("/foo bar/<baz>", mockContext));
         
         assertEquals("/foo\\ bar/\\<baz\\>/backslash\\\\", 
-                evaluator.evaluate("/foo bar/<baz>/backslash\\"));
+                evaluator.evaluate("/foo bar/<baz>/backslash\\", mockContext));
         
         assertEquals("/foo/bar/baz", 
-                evaluator.evaluate("/foo/bar/baz"));
+                evaluator.evaluate("/foo/bar/baz", mockContext));
 
         assertEquals("", 
-                evaluator.evaluate(""));
+                evaluator.evaluate("", mockContext));
         
         assertEquals("/foo/folder\\ \\(2\\)", 
-                evaluator.evaluate("/foo/folder (2)"));
+                evaluator.evaluate("/foo/folder (2)", mockContext));
         
         assertEquals("\\\\",
-                evaluator.evaluate("\\"));
+                evaluator.evaluate("\\", mockContext));
         
         assertEquals("X",
-                evaluator.evaluate("X"));
+                evaluator.evaluate("X", mockContext));
         
     }
     

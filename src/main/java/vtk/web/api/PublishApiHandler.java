@@ -53,9 +53,9 @@ public class PublishApiHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         
-        Result<PublishRequest> publishRequest = publishRequest(requestContext);
+        Result<PublishRequest> publishRequest = publishRequest(request);
         
         Result<ApiResponseBuilder> builder = publishRequest.flatMap(req -> {
             return req.action == PublishAction.PUBLISH ? 
@@ -99,8 +99,9 @@ public class PublishApiHandler implements HttpRequestHandler {
         } 
     }
     
-    private Result<PublishRequest> publishRequest(RequestContext requestContext) {
-        HttpServletRequest request = requestContext.getServletRequest();
+    private Result<PublishRequest> publishRequest(HttpServletRequest request) {
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
         
         Result<PublishAction> pubAction = Result.attempt(() -> {
             if (!"POST".equals(request.getMethod()))

@@ -30,12 +30,14 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.util.StringUtils;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
-import vtk.web.RequestContext;
 
 
 /**
@@ -48,8 +50,7 @@ import vtk.web.RequestContext;
  *   (positive integers)
  * </ul>
  */
-public class RequestPortAssertion
-  implements Assertion {
+public class RequestPortAssertion implements WebAssertion {
 
     private static final int PORT_ANY = -1;
 
@@ -74,7 +75,7 @@ public class RequestPortAssertion
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
 
         if (assertion instanceof RequestPortAssertion) {
             boolean conflict = true;
@@ -103,35 +104,28 @@ public class RequestPortAssertion
 
 
     @Override
-    public void processURL(URL url) {
-        if (this.ports[0] != PORT_ANY) {
-            url.setPort(new Integer(this.ports[0]));
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        url = new URL(url);
+        if (this.ports.length == 1 && this.ports[0] == PORT_ANY) {
+            // Handle special case of port = * (preserve port of original URL)
+            return Optional.of(url);
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
-        if (requestContext != null) {
-
-            int requestPort = requestContext.getServletRequest().getServerPort();
-            if (this.ports.length == 1 && this.ports[0] == PORT_ANY) {
-                // Handle special case of port = *:
-                url.setPort(new Integer(requestPort));
-            } else {
-                for (int i = 0; i < this.ports.length; i++) {
-                    if (this.ports[i] == requestPort) {
-                        url.setPort(new Integer(requestPort));
-                        break;
-                    }
-                }
+        for (int port: ports) {
+            if (port == url.getPort()) {
+                break;
+            }
+            if (port != PORT_ANY) {
+                url.setPort(port);
+                break;
             }
         }
+        return Optional.of(url);
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal,
-                              boolean match) {
-        processURL(url);
-        return true;
+    public URL processURL(URL url) {
+        return url;
     }
-
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource,
@@ -163,7 +157,5 @@ public class RequestPortAssertion
         sb.append(")");
         return sb.toString();
     }
-
-
 
 }

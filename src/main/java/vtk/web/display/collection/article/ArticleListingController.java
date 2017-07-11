@@ -128,9 +128,11 @@ public class ArticleListingController extends BaseCollectionListingController {
             totalHits += defaultArticles.getTotalHits();
             defaultArticles = null;
         }
-        Service service = RequestContext.getRequestContext().getService();
-        URL baseURL = service.urlConstructor(URL.create(request))
-                .withURI(RequestContext.getRequestContext().getResourceURI())
+
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        Service service = requestContext.getService();
+        URL baseURL = service.urlConstructor(requestContext.getRequestURL())
+                .withURI(requestContext.getResourceURI())
                 .constructURL();
         
         Optional<ListingPager.Pagination> pagination = 

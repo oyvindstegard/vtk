@@ -2,7 +2,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-  <bean id="structuredResources.typeAssertion" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="structuredResources.typeAssertion" 
+        class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="json.managedObjectResourceType" />
   </bean>
 
@@ -42,8 +43,13 @@
     </property>
   </bean>
 
-  <bean id="resourceTypeIsPerson" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="person" />
+  <bean id="resourceTypeIsPerson" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean 
+          class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="person" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="invalidUidMessageProvider" class="vtk.web.referencedata.provider.InvalidUidMessageProvider">
@@ -107,33 +113,57 @@
     <property name="targetMethod" value="add"/>
   </bean>
 
-  <bean id="resourceTypeIsNotExam" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="exam" />
-    <property name="invert" value="true" />
+  <bean id="resourceTypeIsNotExam" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="exam" />
+        <property name="invert" value="true" />
+      </bean>
+    </constructor-arg>
   </bean>
   
-  <bean id="resourceTypeIsNotExamInfo" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="exam-info" />
-    <property name="invert" value="true" />
+  <bean id="resourceTypeIsNotExamInfo" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="exam-info" />
+        <property name="invert" value="true" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceTypeIsNotSamletProgram" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="samlet-program" />
-    <property name="invert" value="true" />
+  <bean id="resourceTypeIsNotSamletProgram" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="samlet-program" />
+        <property name="invert" value="true" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceTypeIsNotSamletRetning" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="samlet-retning" />
-    <property name="invert" value="true" />
+  <bean id="resourceTypeIsNotSamletRetning" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="samlet-retning" />
+        <property name="invert" value="true" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceTypeIsNotCourseSchedule" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="course-schedule" />
-    <property name="invert" value="true" />
+  <bean id="resourceTypeIsNotCourseSchedule" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="course-schedule" />
+        <property name="invert" value="true" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceTypeIsCourseSchedule" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="course-schedule" />
+  <bean id="resourceTypeIsCourseSchedule" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="course-schedule" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="structuredResources.workingCopyTabTitle" class="vtk.web.view.components.menu.AssertionTitleResolver">
@@ -146,7 +176,6 @@
   <bean id="structuredResources.displayHandler" 
         class="vtk.resourcemanagement.view.StructuredResourceDisplayController"
     depends-on="structuredResource.parser">
-    <property name="viewName" value="structuredResources.displayView" />
     <property name="resourceManager" ref="structuredResources.resourceManager" />
     <property name="componentResolver" ref="decorating.defaultComponentResolver" />
     <property name="htmlParser" ref="decorating.htmlParser" />
@@ -234,10 +263,8 @@
 
   <bean id="structuredResources.callDirective" class="vtk.resourcemanagement.view.tl.ComponentInvokerNodeFactory">
     <constructor-arg value="call" />
-    <constructor-arg>
-      <bean class="vtk.resourcemanagement.view.StructuredResourceDisplayController$ComponentSupport" />
-    </constructor-arg>
-    <constructor-arg ref="structuredResources.tlFunctions" />
+    <constructor-arg name="componentResolver" ref="decorating.defaultComponentResolver" />
+    <constructor-arg name="functionResolver" ref="structuredResources.tlFunctions" />
   </bean>
 
   <bean id="structuredResources.tlFunctions" class="vtk.text.tl.expr.Expression.FunctionResolver" />
@@ -560,18 +587,30 @@
     </constructor-arg>
   </bean>
 
-  <bean id="resourceTypeIsOrganizationalUnit" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceType" value="organizational-unit" />
+  <bean id="resourceTypeIsOrganizationalUnit" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceType" value="organizational-unit" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceTypeIsOrganizationalUnitPublications" class="vtk.web.service.ResourceTypeAssertion"
-    parent="repositoryAware">
-    <property name="resourceType" value="unit-publications" />
+  <bean id="resourceTypeIsOrganizationalUnitPublications" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
+            parent="repositoryAware">
+        <property name="resourceType" value="unit-publications" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean id="resourceTypeIsProject" class="vtk.web.service.ResourceTypeAssertion"
-    parent="repositoryAware">
-    <property name="resourceType" value="structured-project" />
+  <bean id="resourceTypeIsProject" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion"
+            parent="repositoryAware">
+        <property name="resourceType" value="structured-project" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <!-- ### SHARED TEXT ### -->

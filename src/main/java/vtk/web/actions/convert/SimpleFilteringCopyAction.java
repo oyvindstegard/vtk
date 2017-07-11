@@ -33,13 +33,16 @@ package vtk.web.actions.convert;
 import java.io.InputStream;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.ContentInputSources;
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.security.SecurityContext;
+import vtk.web.RequestContext;
 
 public class SimpleFilteringCopyAction implements CopyAction, InitializingBean {
 
@@ -47,8 +50,11 @@ public class SimpleFilteringCopyAction implements CopyAction, InitializingBean {
     private Filter filter;
 
     @Override
-    public void process(Path originalUri, Path copyUri, Map<String, Object> properties) throws Exception {
-        String token = SecurityContext.getSecurityContext().getToken();
+    public void process(HttpServletRequest request,
+            Path originalUri, Path copyUri, Map<String, Object> properties) throws Exception {
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
+        String token = requestContext.getSecurityToken();
 
         this.repository.copy(token, originalUri, copyUri, false, true);
 
@@ -60,7 +66,8 @@ public class SimpleFilteringCopyAction implements CopyAction, InitializingBean {
 
                 this.repository.store(token, resource);
                 this.repository.storeContent(token, copyUri, ContentInputSources.fromStream(is));
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 try {
                     this.repository.delete(token, copyUri, true);
                 } catch (Exception ex) {

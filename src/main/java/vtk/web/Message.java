@@ -37,22 +37,22 @@ import javax.servlet.http.HttpServletRequest;
 
 
 public class Message {
+    private HttpServletRequest request;
     private String identifier = "message";
     private String titleCode;
-    private List<String> messageCodes = new ArrayList<String>();
+    private List<String> messageCodes = new ArrayList<>();
 
-    public Message(String titleCode) {
+    public Message(HttpServletRequest request, String titleCode) {
         if (titleCode == null || "".equals(titleCode.trim())) {
             throw new IllegalArgumentException("Message code cannot be empty");
         }
+        this.request = request;
         this.titleCode = titleCode;
     }
 
     public String getTitle() {
-        RequestContext ctx = RequestContext.getRequestContext();
-        HttpServletRequest servletRequest = ctx.getServletRequest();
         org.springframework.web.servlet.support.RequestContext springRequestContext =
-            new org.springframework.web.servlet.support.RequestContext(servletRequest);
+            new org.springframework.web.servlet.support.RequestContext(request);
         return springRequestContext.getMessage(this.titleCode, this.titleCode);
     }
     
@@ -75,17 +75,16 @@ public class Message {
     }
 
     public List<String> getMessages() {
-        RequestContext ctx = RequestContext.getRequestContext();
-        HttpServletRequest servletRequest = ctx.getServletRequest();
         org.springframework.web.servlet.support.RequestContext springRequestContext =
-            new org.springframework.web.servlet.support.RequestContext(servletRequest);
-        List<String> result = new ArrayList<String>(); 
+            new org.springframework.web.servlet.support.RequestContext(request);
+        List<String> result = new ArrayList<>(); 
         for (String msgCode: this.messageCodes) {
             result.add(springRequestContext.getMessage(msgCode, msgCode));
         }
         return result;
     }
     
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("{");
         sb.append("identifier: ").append(this.identifier);

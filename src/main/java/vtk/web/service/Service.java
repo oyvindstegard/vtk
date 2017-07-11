@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
@@ -86,7 +87,7 @@ public interface Service extends Ordered {
      * various information provided by the caller, such as  
      * {@link Path URI}, {@link Resource resource}, or 
      * {@link Principal principal}. The URL may or may not be constructed
-     * based on the {@link Assertion assertions} 
+     * based on the {@link WebAssertion assertions} 
      * that are configured on the service.
      */
     public static class URLConstructor {
@@ -95,17 +96,19 @@ public interface Service extends Ordered {
         private Path uri;
         private Resource resource;
         private Principal principal;
-        private boolean matchAssertions = false;
         private Map<String, List<String>> parameters;
 
         URLConstructor(URL base, Service service) {
-            this.base = new URL(base).clearParameters().setPath(Path.ROOT);
+            this.base = new URL(base)
+                    .clearParameters()
+                    .setPath(Path.ROOT)
+                    .setCollection(false);
             this.service = service;
         }
 
         /**
          * Specifies the {@link Path path} part of the URL. 
-         * Assertions will not be matched when constructing URLs with this mechanism.
+         * Assertions will not be able to perform resource matching.
          * @param uri the path of the URL
          * @return this URL constructor
          */
@@ -115,14 +118,13 @@ public interface Service extends Ordered {
         }
 
         /**
-         * Specifies the {@link Path path} part of the URL, as well as enabling assertion
-         * matching possible when constructing URLs (implies {@link #matchAssertions}).
+         * Specifies the {@link Path path} part of the URL, as well as enabling assertions
+         * to perform matching.
          * @param resource the resource object whose URI will constitute the path of the URL
          * @return this URL constructor
          */
         public URLConstructor withResource(Resource resource) {
             this.resource = resource;
-            this.matchAssertions = true;
             return this;
         }
 
@@ -135,20 +137,6 @@ public interface Service extends Ordered {
          */
         public URLConstructor withPrincipal(Principal principal) {
             this.principal = principal;
-            return this;
-        }
-
-        /**
-         * Specifies whether to perform assertion matching when constructing the URL. 
-         * This requires {@link #resource} to also be called.
-         * @param matchAssertions whether to perform assertion matching 
-         * (the default is {@code false}, unless {@link #resource} is called).
-         * @return this URL constructor
-         * @see Assertion#processURL(URL, Resource, Principal, boolean)
-         * @see Assertion#processURL(URL)
-         */
-        public URLConstructor matchAssertions(boolean matchAssertions) {
-            this.matchAssertions = matchAssertions;
             return this;
         }
 
@@ -180,10 +168,9 @@ public interface Service extends Ordered {
 
        /**
         * Attempts to construct the URL. All assertions of this service (and its ancestors)
-        * are given an opportunity to contribute to the URL construction. If {@link #resource} 
-        * and/or {@link #matchAssertions} is specified, 
-        * {@link Assertion#processURL(URL, Resource, Principal, boolean)} is called for each 
-        * assertion, otherwise {@link Assertion#processURL(URL)} is called.
+        * are given an opportunity to contribute to the URL construction. If {@link #resource}
+        * is specified, {@link WebAssertion#processURL(URL, Resource, Principal)} is called for each 
+        * assertion, otherwise {@link WebAssertion#processURL(URL)} is called.
         * 
         * If the URL cannot be constructed (i.e. at least one assertion fails to match),
         * {@link ServiceUnlinkableException} is thrown.
@@ -196,11 +183,6 @@ public interface Service extends Ordered {
                 throw new IllegalStateException(
                         "Either 'resource' or 'uri' must be specified");
             }
-            if (matchAssertions && resource == null) {
-                throw new IllegalStateException(
-                        "Cannot match assertions unless 'resource' is specified");
-            }
-            
             URL urlObject = new URL(this.base);
             if (resource != null) {
                 urlObject.setPath(resource.getURI());
@@ -221,16 +203,15 @@ public interface Service extends Ordered {
                 }
             }
             
-            for (Assertion assertion: service.getAllAssertions()) {
-                boolean match = false;
+            for (WebAssertion assertion: service.getAllAssertions()) {
+                Optional<URL> url = Optional.empty();
                 if (resource != null) {
-                    try { 
-                        match = assertion.processURL(urlObject, resource,
-                                principal, matchAssertions);
+                    try {
+                        url = assertion.processURL(urlObject, resource, principal);
                     }
                     catch (Exception e) { }
 
-                    if (match == false) {
+                    if (!url.isPresent()) {
                         throw new ServiceUnlinkableException(
                                 "Unable to construct URL to service " + service.getName() 
                                 + " for resource " + resource.getURI() + ". "
@@ -238,10 +219,13 @@ public interface Service extends Ordered {
                     }
                 }
                 else {
-                    assertion.processURL(urlObject);
+                    url = Optional.ofNullable(assertion.processURL(urlObject));
+                }
+                if (url.isPresent()) {
+                    urlObject = url.get();
                 }
             }
-            service.postProcess(urlObject, resource);
+            service.postProcess(urlObject, Optional.ofNullable(resource));
             return urlObject;
         }
     }
@@ -249,17 +233,17 @@ public interface Service extends Ordered {
     /**
      * Gets this service's list of assertions.
      *
-     * @return a <code>List</code> of {@link Assertion} objects.
+     * @return a <code>List</code> of {@link WebAssertion} objects.
      * @see vtk.web.service.ServiceHandlerMapping
      */
-    public List<Assertion> getAssertions();
+    public List<WebAssertion> getAssertions();
 
     /**
      * Gets this service's list of assertions, including ancestor assertions.
      *
-     * @return a <code>List</code> of {@link Assertion} objects.
+     * @return a <code>List</code> of {@link WebAssertion} objects.
      */
-    public List<Assertion> getAllAssertions();
+    public List<WebAssertion> getAllAssertions();
 
     
     /**
@@ -346,6 +330,6 @@ public interface Service extends Ordered {
     /**
      * TODO: remove from interface
      */
-    void postProcess(URL urlObject, Resource resource);
+    void postProcess(URL urlObject, Optional<Resource> resource);
 
 }

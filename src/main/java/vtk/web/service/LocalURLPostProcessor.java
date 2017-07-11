@@ -30,18 +30,15 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import vtk.repository.Resource;
 
 public class LocalURLPostProcessor implements URLPostProcessor {
 
     @Override
-    public void processURL(URL url, Service service) throws Exception {
-        url.setPathOnly(true);
-    }
-
-    @Override
-    public void processURL(URL url, Resource resource, Service service)
-            throws Exception {
+    public void processURL(URL url, Service service,
+            Optional<Resource> resource) {
         url.setPathOnly(true);
     }
 }

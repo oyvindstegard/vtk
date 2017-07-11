@@ -56,7 +56,7 @@
   </bean>
 
   <bean id="queryStringParser" abstract="true" class="vtk.web.search.ParsedQueryBuilder">
-    <property name="queryParser" ref="searchParser" />
+    <property name="queryParserFactory" ref="queryParserFactory" />
   </bean>
 
   <bean id="documentPrincipalMetadataRetriever" class="vtk.util.repository.DocumentPrincipalMetadataRetriever" />

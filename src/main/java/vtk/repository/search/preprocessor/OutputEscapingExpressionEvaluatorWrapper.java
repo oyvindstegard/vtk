@@ -31,7 +31,9 @@
 package vtk.repository.search.preprocessor;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.search.QueryException;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
 
 /**
  * Wrap another {@link ExpressionEvaluator} and apply escaping to output of
@@ -46,8 +48,9 @@ public class OutputEscapingExpressionEvaluatorWrapper implements
     private ExpressionEvaluator wrappedEvaluator;
     
     @Override
-    public String evaluate(String token) throws QueryException {
-        return escapeStringValue(this.wrappedEvaluator.evaluate(token));
+    public String evaluate(String token, ProcessorContext ctx)
+            throws QueryException {
+        return escapeStringValue(this.wrappedEvaluator.evaluate(token, ctx));
     }
 
     @Override
@@ -109,6 +112,4 @@ public class OutputEscapingExpressionEvaluatorWrapper implements
 
         return new String(output, 0, p);
     }
-    
-
 }

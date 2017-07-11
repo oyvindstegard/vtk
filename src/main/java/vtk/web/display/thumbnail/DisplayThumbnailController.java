@@ -65,7 +65,7 @@ public class DisplayThumbnailController implements Controller, LastModified {
 
     @Override
     public long getLastModified(HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         try {
@@ -78,7 +78,7 @@ public class DisplayThumbnailController implements Controller, LastModified {
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();

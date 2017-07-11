@@ -145,8 +145,7 @@ public class ResourceXsltView extends AbstractView implements InitializingBean {
 
 
     @Override
-    @SuppressWarnings("rawtypes")
-    protected void renderMergedOutputModel(Map model, HttpServletRequest request,
+    protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request,
                                            HttpServletResponse response)
         throws Exception {
         

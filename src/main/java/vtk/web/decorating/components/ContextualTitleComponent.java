@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.web.RequestContext;
@@ -49,7 +50,7 @@ public class ContextualTitleComponent extends AbstractDecoratorComponent {
     @Override
     public void render(DecoratorRequest request, DecoratorResponse response)
             throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         Path path = getUriParameter(request);
         if (path == null) {
             path = requestContext.getResourceURI();

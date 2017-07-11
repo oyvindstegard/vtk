@@ -31,12 +31,14 @@
 
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-public class ConfigAssertion implements Assertion {
+public class ConfigAssertion implements WebAssertion {
     
     private String config;
     
@@ -56,18 +58,20 @@ public class ConfigAssertion implements Assertion {
     }
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
         
     @Override
-    public void processURL(URL url) {
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        return true;
+    public URL processURL(URL url) {
+        return url;
     }
+
     
     @Override
     public String toString() {

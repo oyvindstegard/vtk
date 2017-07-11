@@ -32,32 +32,34 @@ package vtk.web.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.security.PrincipalImpl;
 import vtk.security.PrincipalManager;
 
-public class GroupMembershipAssertion implements Assertion {
+public class GroupMembershipAssertion implements WebAssertion {
     
-    private Collection<Principal> groups = new ArrayList<Principal>();
+    private Collection<Principal> groups = new ArrayList<>();
     private boolean allowAll = false;
     private PrincipalManager principalManager;
     
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal,
-            boolean match) {
-        if (!match) {
-            return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        if (!match(principal)) {
+            return Optional.empty();
         }
-        return match(principal);
+        return Optional.of(url);
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
+        return url;
     }
 
     @Override
@@ -67,7 +69,7 @@ public class GroupMembershipAssertion implements Assertion {
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
     
@@ -104,4 +106,5 @@ public class GroupMembershipAssertion implements Assertion {
         }
         return false;
     }
+
 }

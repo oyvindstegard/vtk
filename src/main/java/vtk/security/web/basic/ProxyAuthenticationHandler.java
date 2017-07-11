@@ -41,7 +41,7 @@ import vtk.security.AuthenticationProcessingException;
 import vtk.security.Principal;
 import vtk.security.PrincipalImpl;
 import vtk.security.PrincipalStore;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 
 /**
  * Proxy authentication handler. 
@@ -58,7 +58,7 @@ import vtk.web.service.Assertion;
  * regular expressions, and an optional {@link PrincipalStore} can be
  * used to validate (otherwise syntactically correct) target users.</p>
  * 
- * <p>A set of {@link Assertion assertions} can also be configured to limit 
+ * <p>A set of {@link WebAssertion assertions} can also be configured to limit 
  * the scope in which this authentication handler attempts to perform 
  * authentication.</p>
  */
@@ -69,7 +69,7 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
     private PrincipalStore targetPrincipalStore = null;
     private String requestParam = null;
     
-    private List<Assertion> assertions = null;
+    private List<WebAssertion> assertions = null;
 
     /**
      * Constructs a new proxy authentication handler.
@@ -93,7 +93,7 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
         if (!proxyUserExpression.matcher(sysuser).matches()) return false;
         if (req.getParameter(requestParam) == null) return false;
         if (assertions != null) {
-            for (Assertion a: assertions)
+            for (WebAssertion a: assertions)
                 if (!a.matches(req, null, null)) return false;
         }
         return true;
@@ -115,7 +115,7 @@ public class ProxyAuthenticationHandler extends HttpBasicAuthenticationHandler {
         return new AuthResult(targetUid);
     }
 
-    public void setAssertions(List<Assertion> assertions) {
+    public void setAssertions(List<WebAssertion> assertions) {
         if (assertions == null || assertions.isEmpty()) return;
         this.assertions = new ArrayList<>(assertions);
     }

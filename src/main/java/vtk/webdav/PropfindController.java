@@ -177,7 +177,7 @@ public class PropfindController extends AbstractWebdavController
     public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
          
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
@@ -198,7 +198,7 @@ public class PropfindController extends AbstractWebdavController
                 depth = "1";
             }
 
-            PropfindRequestModel model = buildPropfindModel(
+            PropfindRequestModel model = buildPropfindModel(request,
                 resource, requestBody, depth, token);
 
             writeResponse(request, response, model);
@@ -242,9 +242,9 @@ public class PropfindController extends AbstractWebdavController
      * sufficient rights to access the resource
      * @exception IOException if an I/O error occurs
      */
-    private PropfindRequestModel buildPropfindModel(
+    private PropfindRequestModel buildPropfindModel(HttpServletRequest request,
         Resource resource, Document requestBody, String depth, String token) throws IOException {
-        Repository repository = RequestContext.getRequestContext().getRepository();
+        Repository repository = RequestContext.getRequestContext(request).getRepository();
         
 
         List<Resource> resourceList = new ArrayList<>();
@@ -274,7 +274,7 @@ public class PropfindController extends AbstractWebdavController
         
         // VTK-3235
         // Maybe authorize all resources for read before allowing request to proceed
-        maybeAuthorize(resourceList, requestedProps, depth, wildcardPropRequest);
+        maybeAuthorize(request, resourceList, requestedProps, depth, wildcardPropRequest);
 
         //model.put(WebdavConstants.WEBDAVMODEL_REQUESTED_PROPERTIES, requestedProps);
 
@@ -294,8 +294,8 @@ public class PropfindController extends AbstractWebdavController
      * Maybe do READ_PROCESSED authorization on all resources, depending on
      * parameters. (VTK-3235)
      */
-    private void maybeAuthorize(List<Resource> resources, List<Element> requestedProps, 
-                                    String depth, boolean wildcard) 
+    private void maybeAuthorize(HttpServletRequest request, List<Resource> resources, 
+            List<Element> requestedProps, String depth, boolean wildcard) 
         throws AuthorizationException {
         
         if ("0".equals(depth) || wildcard) {
@@ -316,7 +316,7 @@ public class PropfindController extends AbstractWebdavController
             }
         }
         if (authorize) {
-            RequestContext requestContext = RequestContext.getRequestContext();
+            RequestContext requestContext = RequestContext.getRequestContext(request);
             Repository repo = requestContext.getRepository();
             Principal principal = requestContext.getPrincipal();
             for (Resource r: resources) {
@@ -554,7 +554,7 @@ public class PropfindController extends AbstractWebdavController
     private void writeResponse(HttpServletRequest request, 
             HttpServletResponse response, PropfindRequestModel model) throws IOException {
         
-        Element e = buildMultistatusElement(model);
+        Element e = buildMultistatusElement(request, model);
 
         Document doc = new Document(e);
 
@@ -592,12 +592,13 @@ public class PropfindController extends AbstractWebdavController
         }
     }
 
-    private Element buildMultistatusElement(PropfindRequestModel model) throws IOException {
+    private Element buildMultistatusElement(HttpServletRequest request, 
+            PropfindRequestModel model) throws IOException {
 
         Element multiStatus = new Element("multistatus", WebdavConstants.DAV_NAMESPACE);
 
         for (Resource currentResource: model.resources) {
-                Element responseElement = buildResponseElement(
+                Element responseElement = buildResponseElement(request, 
                     currentResource, model.properties, 
                     model.appendValues, model.wildcardPropRequest);
             
@@ -625,16 +626,15 @@ public class PropfindController extends AbstractWebdavController
      * response element
      * @throws IOException 
      */
-    private Element buildResponseElement(Resource resource,
-                                         List<Element> requestedProps,
-                                         boolean appendPropertyValues,
-                                         boolean isWildcardPropRequest) throws IOException {
+    private Element buildResponseElement(HttpServletRequest request, 
+            Resource resource, List<Element> requestedProps,
+            boolean appendPropertyValues, boolean isWildcardPropRequest) throws IOException {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal p = requestContext.getPrincipal();
 
         Element responseElement = new Element("response", WebdavConstants.DAV_NAMESPACE);
-        URL href = webdavService.urlConstructor(URL.create(requestContext.getServletRequest()))
+        URL href = webdavService.urlConstructor(requestContext.getRequestURL())
                 .withResource(resource)
                 .withPrincipal(p)
                 .constructURL();

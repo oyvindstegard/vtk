@@ -21,10 +21,10 @@
 </#macro>
 
 <#--
- * Displays the image-property of a resource.
- * 
- * @param resource The resource to display image from
--->
+  * Displays the image-property of a resource.
+  * 
+  * @param resource The resource to display image from
+  -->
 <#macro displayImage resource displayAsThumbnail=false>
   
   <#local imageRes = vrtx.propResource(resource, "picture")! />
@@ -33,13 +33,16 @@
   <#local caption = vrtx.propValue(resource, "caption")! />
   
   <#if introductionImage??>
-  
+    
     <#if !imageRes?has_content>
       <img class="vrtx-introduction-image" src="${introductionImage}" alt="${introductionImageAlt}" />
     <#else>
 
       <#if displayAsThumbnail>
-        <#local introductionImage = vrtx.propValue(resource, "picture", "thumbnail")!'' />
+        <#local introductionImage = vrtx.propValue(resource, "picture")!'' />
+        <#if introductionImage?has_content>
+          <#local introductionImage = vrtx.linkConstructor(introductionImage, 'displayThumbnailService') />
+        </#if>
       </#if>
 
       <#local pixelWidth = (imageRes.getValueByName("pixelWidth"))! />

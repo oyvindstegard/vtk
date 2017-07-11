@@ -88,6 +88,8 @@ public class FreeMarkerViewRenderer extends FreeMarkerView {
                 provider.referenceData(model, request);
             }
         }
+        model.put("VRTX_SERVLET_REQUEST", request);
+
         return super.buildTemplateModel(model, request, response);
     }
     

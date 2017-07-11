@@ -155,7 +155,7 @@ public class XmlEditController implements Controller {
             if (model == null)
                 model = handleModeError(document, request);
 
-            referenceData(model, document);
+            referenceData(request, model, document);
 
             return new ModelAndView(this.viewName, model);
         } catch (RepositoryException e) {
@@ -167,13 +167,13 @@ public class XmlEditController implements Controller {
     private void finish(HttpServletRequest request, EditDocument document)
     throws Exception {
         document.finish();
-        Path uri = RequestContext.getRequestContext().getResourceURI();
+        Path uri = RequestContext.getRequestContext(request).getResourceURI();
         String sessionID = XmlEditController.class.getName() + ":" + uri; 
         request.getSession(true).removeAttribute(sessionID);
     }
     
     private Map<String, Object> getSessionMap(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
 
         String sessionID = XmlEditController.class.getName() + ":" + uri; 
@@ -218,10 +218,11 @@ public class XmlEditController implements Controller {
     }
     
     @SuppressWarnings("unchecked")
-    private void referenceData(Map model, EditDocument document) 
+    private void referenceData(HttpServletRequest request, Map model, EditDocument document) 
         throws Exception {
         Resource resource = document.getResource();
-        Principal principal = SecurityContext.getSecurityContext().getPrincipal();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        Principal principal = requestContext.getPrincipal();
 
         String token = SecurityContext.getSecurityContext().getToken();
 
@@ -241,8 +242,7 @@ public class XmlEditController implements Controller {
         if (this.browseService != null) {
             try {
                 Resource parentResource = this.repository.retrieve(token, resource.getURI().getParent(), false);
-                URL browseURL = browseService.urlConstructor(
-                        URL.create(RequestContext.getRequestContext().getServletRequest()))
+                URL browseURL = browseService.urlConstructor(requestContext.getRequestURL())
                         .withResource(parentResource)
                         .withPrincipal(principal)
                         .constructURL();
@@ -259,8 +259,7 @@ public class XmlEditController implements Controller {
         }
 
         Path uri = resource.getURI();
-        Service service = RequestContext.getRequestContext().getService();
-        HttpServletRequest request = RequestContext.getRequestContext().getServletRequest();
+        Service service = RequestContext.getRequestContext(request).getService();
         Map<String,String> actionParam = new HashMap<>();
         
         URL serviceURL = service.urlConstructor(URL.create(request)).withURI(uri).constructURL();
@@ -298,7 +297,7 @@ public class XmlEditController implements Controller {
 
     private Map<String, Object> handleModeError(EditDocument document, HttpServletRequest request) {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         SecurityContext securityContext = SecurityContext.getSecurityContext();
 
         StringBuffer sb = new StringBuffer();
@@ -323,7 +322,7 @@ public class XmlEditController implements Controller {
 
     private Map<String, Object> initEditSession(HttpServletRequest request) 
     throws Exception, TransformerException {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         SecurityContext securityContext = SecurityContext.getSecurityContext();
         
         Path uri = requestContext.getResourceURI();
@@ -356,7 +355,7 @@ public class XmlEditController implements Controller {
         
         /* Try to build document */
         try {
-            document = EditDocument.createEditDocument(this.repository, this.lockTimeoutSeconds);
+            document = EditDocument.createEditDocument(request, this.repository, this.lockTimeoutSeconds);
         } catch (JDOMException e) {
             // FIXME: error handling?
             throw new XMLEditException("Document build failure", e);

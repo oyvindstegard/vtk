@@ -70,7 +70,7 @@ public class AudioVideoListingAtomFeedView extends ListingFeedView {
     protected void addPropertySetAsFeedEntry(HttpServletRequest request, Map<String, ?> model,
             Feed feed, PropertySet result) {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
 
@@ -79,7 +79,7 @@ public class AudioVideoListingAtomFeedView extends ListingFeedView {
 
             Property publishedDateProp = getPublishDate(result);
             publishedDateProp = publishedDateProp == null ? result.getProperty(creationTimePropDef) : publishedDateProp;
-            String id = getId(result.getURI(), publishedDateProp, null);
+            String id = getId(request, result.getURI(), publishedDateProp, null);
             entry.setId(id);
             entry.addCategory(result.getResourceType());
 

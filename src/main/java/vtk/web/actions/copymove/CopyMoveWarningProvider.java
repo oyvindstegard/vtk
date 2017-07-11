@@ -69,7 +69,7 @@ public class CopyMoveWarningProvider implements ReferenceDataProvider {
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
 

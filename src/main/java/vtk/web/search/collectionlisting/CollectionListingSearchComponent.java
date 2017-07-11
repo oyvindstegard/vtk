@@ -111,8 +111,9 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
             isMultiHostSearch = true; // Aggregation set is only cached if multi
                                       // host search is required
             isCached = true;
-        } else {
-            clar = aggregationResolver.getAggregatedResources(collection);
+        }
+        else {
+            clar = aggregationResolver.getAggregatedResources(request, collection);
             isMultiHostSearch = multiHostSearcher.isMultiHostSearchEnabled()
                     && (clar != null && clar.includesResourcesFromOtherHosts(localHostBaseURL));
         }
@@ -122,7 +123,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
         Query query = generateQuery(request, collection, clar, localHostBaseURL, isMultiHostSearch);
 
         Search search = new Search();
-        if (RequestContext.getRequestContext().isPreviewUnpublished()) {
+        if (RequestContext.getRequestContext(request).isPreviewUnpublished()) {
             search.removeFilterFlag(Search.FilterFlag.UNPUBLISHED_COLLECTIONS);
         }
         search.setQuery(query);
@@ -147,7 +148,7 @@ public class CollectionListingSearchComponent extends QueryPartsSearchComponent 
                 result = MultiHostUtil.resolveResultSetImageRefProperties(result);
             }
         } else {
-            Repository repository = RequestContext.getRequestContext().getRepository();
+            Repository repository = RequestContext.getRequestContext(request).getRepository();
             result = repository.search(token, search);
         }
 

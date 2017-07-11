@@ -32,6 +32,8 @@ package vtk.web.actions.copymove;
 
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Repository;
@@ -47,10 +49,9 @@ import vtk.web.actions.convert.CopyAction;
 public class UnpublishAfterCopyAction implements CopyAction {
 
     @Override
-    public void process(Path originalUri, Path copyUri,
+    public void process(HttpServletRequest request, Path originalUri, Path copyUri,
             Map<String, Object> properties) throws Exception {
-        
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         repository.copy(token, originalUri, copyUri, false, false);

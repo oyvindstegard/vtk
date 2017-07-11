@@ -35,6 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -70,35 +72,41 @@ public class RepositoryTagElementsDataProvider {
         this.tagService = tagService;
     }
 
-    public List<TagElement> getTagElements(Path scopeUri, String token, int magnitudeMin, int magnitudeMax, int limit,
+    public List<TagElement> getTagElements(HttpServletRequest request,
+            Path scopeUri, String token, int magnitudeMin, int magnitudeMax, int limit,
             int tagOccurenceMin) throws Exception {
-        return this.getTagElements(scopeUri, token, magnitudeMin, magnitudeMax, limit, tagOccurenceMin, null, null,
+        return this.getTagElements(request, scopeUri, token, magnitudeMin, 
+                magnitudeMax, limit, tagOccurenceMin, null, null,
                 null, false);
     }
 
-    public List<TagElement> getTagElements(Path scopeUri, String token, int magnitudeMin, int magnitudeMax, int limit,
+    public List<TagElement> getTagElements(HttpServletRequest request, 
+            Path scopeUri, String token, int magnitudeMin, int magnitudeMax, int limit,
             int tagOccurenceMin, List<ResourceTypeDefinition> resourceTypeDefs, List<String> urlSortingParams,
             String overrideResourceTypeTitle, boolean displayScope) throws Exception {
-        return getTagElements(scopeUri, token, magnitudeMin, magnitudeMax, limit, tagOccurenceMin, resourceTypeDefs,
+        return getTagElements(request, scopeUri, token, magnitudeMin, magnitudeMax, 
+                limit, tagOccurenceMin, resourceTypeDefs,
                 urlSortingParams, overrideResourceTypeTitle, displayScope, null);
     }
 
-    public List<TagElement> getTagElements(Path scopeUri, String token, int magnitudeMin, int magnitudeMax, int limit,
+    public List<TagElement> getTagElements(HttpServletRequest request, Path scopeUri, 
+            String token, int magnitudeMin, int magnitudeMax, int limit,
             int tagOccurenceMin, List<ResourceTypeDefinition> resourceTypeDefs, List<String> urlSortingParams,
             String overrideResourceTypeTitle, boolean displayScope, Set<String> whiteList) throws Exception {
 
         // Do data report query
         List<TagFrequency> result = this.tagsReporter
-                .getTags(scopeUri, resourceTypeDefs, limit, tagOccurenceMin, token, whiteList);
+                .getTags(request, scopeUri, resourceTypeDefs, limit, tagOccurenceMin, token, whiteList);
 
         // Generate list of tag elements
-        List<TagElement> tagElements = generateTagElementList(scopeUri, resourceTypeDefs, urlSortingParams,
+        List<TagElement> tagElements = generateTagElementList(request, scopeUri, resourceTypeDefs, urlSortingParams,
                 overrideResourceTypeTitle, displayScope, result, magnitudeMax, magnitudeMin);
 
         return tagElements;
     }
 
-    private List<TagElement> generateTagElementList(Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs,
+    private List<TagElement> generateTagElementList(HttpServletRequest request, 
+            Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs,
             List<String> urlSortingParmas, String overrideResourceTypeTitle, boolean displayScope,
             List<TagFrequency> freqList, int magnitudeMax, int magnitudeMin) {
 
@@ -112,7 +120,7 @@ public class RepositoryTagElementsDataProvider {
 
             for (TagFrequency tf : freqList) {
                 String tagName = tf.getTag();
-                URL link = this.getUrl(tagName, scopeUri, resourceTypeDefs, urlSortingParmas,
+                URL link = this.getUrl(request, tagName, scopeUri, resourceTypeDefs, urlSortingParmas,
                         overrideResourceTypeTitle, displayScope);
 
                 int magnitude = getNormalizedMagnitude(tf.getFrequency(), maxFreq, minFreq, magnitudeMin, magnitudeMax);
@@ -140,15 +148,16 @@ public class RepositoryTagElementsDataProvider {
         return Math.round(magnitude * (magnitudeMax - magnitudeMin) + magnitudeMin);
     }
 
-    private URL getUrl(String tagName, Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs,
+    private URL getUrl(HttpServletRequest request, String tagName, 
+            Path scopeUri, List<ResourceTypeDefinition> resourceTypeDefs,
             List<String> urlSortingParmas, String overrideResourceTypeTitle, boolean displayScope) {
 
-        URL url = tagService.urlConstructor(RequestContext.getRequestContext().getRequestURL())
+        URL url = tagService.urlConstructor(RequestContext.getRequestContext(request).getRequestURL())
                 .withURI(scopeUri)
                 .constructURL();
         
         if (scopeUri.isRoot() && !this.servesRoot) {
-            scopeUri = RequestContext.getRequestContext().getCurrentCollection();
+            scopeUri = RequestContext.getRequestContext(request).getCurrentCollection();
             
             url = url.setPath(scopeUri);
             url.addParameter(TagsHelper.SCOPE_PARAMETER, Path.ROOT.toString());

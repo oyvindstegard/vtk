@@ -30,34 +30,38 @@
  */
 package vtk.resourcemanagement;
 
+import java.util.Optional;
+
 import vtk.repository.RepositoryContentEvaluationAssertion;
 import vtk.repository.Resource;
 import vtk.repository.content.JsonParseResult;
 import vtk.repository.resourcetype.Content;
 import vtk.security.Principal;
 
-/**
- * XXX Not usable as web service assertion.
- * 
- */
 public class JSONObjectParseableAssertion implements RepositoryContentEvaluationAssertion {
 
-    public boolean matches(Resource resource, Principal principal) {
-        return matches(resource, principal, null);
+    public boolean matches(Optional<Resource> resource, Optional<Principal> principal) {
+        return matches(resource, principal, Optional.empty());
     }
 
-    public boolean matches(Resource resource, Principal principal, Content content) {
+    public boolean matches(Optional<Resource> resource, 
+            Optional<Principal> principal, Optional<Content> content) {
         // Could fallback to Resource.getInputStream instead,but that will not
         // work in all cases when
         // this assertion is called from evaluation framework.
         
-        if (content == null)
+        if (!content.isPresent()) {
             return false;
-        if (resource.isCollection())
+        }
+        if (!resource.isPresent()) {
             return false;
+        }
 
+        if (resource.get().isCollection()) {
+            return false;
+        }
         try {
-            JsonParseResult result = content.getContentRepresentation(JsonParseResult.class);
+            JsonParseResult result = content.get().getContentRepresentation(JsonParseResult.class);
             if (result.value.failure.isPresent()) {
                 return false;
             }

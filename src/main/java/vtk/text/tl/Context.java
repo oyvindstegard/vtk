@@ -42,14 +42,14 @@ public final class Context {
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z_]([a-zA-Z0-9\\-_]*[a-zA-Z0-9_])?");
     private Locale locale = Locale.getDefault();
     // Visible from templates and functions:
-    private Stack<Map<String, Object>> stack = new Stack<Map<String, Object>>();
+    private Stack<Map<String, Object>> stack = new Stack<>();
     // For use by "runtime system":
-    private Map<String, Object> attributes = new HashMap<String, Object>();
+    private Map<String, Object> attributes = new HashMap<>();
     
     private static final String NULL = "null";
 
     public Context(Locale locale) {
-        Map<String, Object> toplevel = new HashMap<String, Object>();
+        Map<String, Object> toplevel = new HashMap<>();
         toplevel.put(NULL, null);
         this.stack.push(toplevel);
         this.locale = locale;
@@ -146,6 +146,7 @@ public final class Context {
         return result.toString();
     }
 
+    @Override
     public String toString() {
         return this.stack.toString();
     }
@@ -166,7 +167,7 @@ public final class Context {
     
     public void setAttribute(String name, Object value) {
         if (this.attributes == null) {
-            this.attributes = new HashMap<String, Object>();
+            this.attributes = new HashMap<>();
         }
         this.attributes.put(name, value);
     }

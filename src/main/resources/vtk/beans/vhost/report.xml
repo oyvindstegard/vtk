@@ -494,7 +494,7 @@
   </bean>
 
   <bean id="queryReporter" class="vtk.web.report.QueryReporter" parent="documentReporter">
-    <constructor-arg ref="searchParser" />
+    <constructor-arg ref="queryParserFactory" />
     <property name="name" value="query" />
   </bean>
 

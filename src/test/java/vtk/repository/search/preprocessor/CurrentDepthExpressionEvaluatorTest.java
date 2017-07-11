@@ -39,10 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import vtk.context.BaseContext;
-import vtk.repository.Path;
-import vtk.repository.store.DefaultPrincipalMetadataDAO;
-import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.ServiceImpl;
 
@@ -84,16 +80,16 @@ public class CurrentDepthExpressionEvaluatorTest {
     }
     
     private int getDepth(String token, String uri) {
-
-        BaseContext.pushContext();
-
-        RequestContext.setRequestContext(
-                new RequestContext(request, null, service, null, null, Path.fromString(uri),
-                        null, false, false, true, null, new DefaultPrincipalMetadataDAO()));
-        String s = evaluator.evaluate(token);
-
-        BaseContext.popContext();
-
-        return Integer.parseInt(s);
+        throw new UnsupportedOperationException("TODO: fix test");
+//        BaseContext.pushContext();
+//
+//        RequestContext.setRequestContext(
+//                new RequestContext(request, null, service, null, null, Path.fromString(uri),
+//                        null, false, false, true, null, new DefaultPrincipalMetadataDAO()));
+//        String s = evaluator.evaluate(token);
+//
+//        BaseContext.popContext();
+//
+//        return Integer.parseInt(s);
     }
 }

@@ -45,7 +45,6 @@
         <#local caption = vrtx.propValue(master, 'caption')!  />
         <div class="vrtx-master">
           <#if introImg?has_content >
-            <#local src = vrtx.propValue(master, 'picture', 'thumbnail')! />
             <#local introImgURI = vrtx.propValue(master, 'picture')! />
             <#if introImgURI?has_content>
     	      <#local thumbnail =  vrtx.relativeLinkConstructor(introImgURI, 'displayThumbnailService') />

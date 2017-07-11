@@ -49,7 +49,6 @@ import vtk.repository.PropertySet;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.search.ConfigurablePropertySelect;
-import vtk.repository.search.Parser;
 import vtk.repository.search.PropertySortField;
 import vtk.repository.search.ResourceSortField;
 import vtk.repository.search.Search;
@@ -66,6 +65,7 @@ import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.UriPrefixQuery;
 import vtk.util.text.Json;
 import vtk.web.RequestContext;
+import vtk.web.search.SearchParser;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
 
@@ -83,7 +83,7 @@ public class BrokenLinksReport extends DocumentReporter {
     }
 
     private SortField.Direction sortOrder;
-    private Parser parser;
+    private SearchParser parser;
     private String queryFilterExpression;
 
     private final static String FILTER_READ_RESTRICTION_PARAM_NAME = "read-restriction";
@@ -111,12 +111,11 @@ public class BrokenLinksReport extends DocumentReporter {
     private void populateMap(String token, Resource resource, 
             Map<String, Object> result, HttpServletRequest request, boolean isCollectionView) {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         URL reportURL = super.getReportService().urlConstructor(requestContext.getRequestURL())
-                .withResource(resource)
-                .matchAssertions(false) // Preserve previous ServiceImpl#constructURL behavior
-                .constructURL()
-                .addParameter(REPORT_TYPE_PARAM, getName());
+                .withURI(resource.getURI())
+                .withParameter(REPORT_TYPE_PARAM, getName())
+                .constructURL();
 
         if (isCollectionView) {
             reportURL.addParameter(getAlternativeName(), "");
@@ -179,13 +178,13 @@ public class BrokenLinksReport extends DocumentReporter {
     }
     
     @Override
-    public Map<String, Object> getReportContent(String token, Resource resource, HttpServletRequest request) {
+    public Map<String, Object> getReportContent(HttpServletRequest request, String token, Resource resource) {
         
         Map<String, Object> result = new HashMap<>();
         
         if (request.getParameter(getAlternativeName()) == null) {
             /* Regular view */
-            result = super.getReportContent(token, resource, request);
+            result = super.getReportContent(request, token, resource);
             
             populateMap(token, resource, result, request, false);
 
@@ -270,9 +269,8 @@ public class BrokenLinksReport extends DocumentReporter {
                 usedFilters.computeIfAbsent(FILTER_READ_RESTRICTION_PARAM_NAME, k -> new ArrayList<>()).add(readRestriction);
 
                 URL exportURL = brokenLinksToTsvReportService.urlConstructor(URL.create(request))
-                        .withResource(resource)
+                        .withURI(resource.getURI())
                         .withParameters(usedFilters)
-                        .matchAssertions(false)
                         .constructURL();
 
                 String[] exclude = request.getParameterValues(EXCLUDE_PATH_PARAM_NAME);
@@ -577,7 +575,7 @@ public class BrokenLinksReport extends DocumentReporter {
         }
 
         // Add clauses for any configured default filter query
-        Query filterQ = getFilterQuery();
+        Query filterQ = getFilterQuery(request);
         if (filterQ != null) {
             topLevelQ.add(filterQ);
         }
@@ -662,13 +660,13 @@ public class BrokenLinksReport extends DocumentReporter {
         }
     }
 
-    private Query getFilterQuery() {
+    private Query getFilterQuery(HttpServletRequest request) {
         if (queryFilterExpression != null) {
             if (parser == null) {
                 throw new IllegalStateException(
                         "parser must be configured when using queryFilterExpression");
             }
-            return parser.parse(queryFilterExpression);
+            return parser.parser(request).parse(queryFilterExpression);
         }
         return null;
     }
@@ -707,7 +705,7 @@ public class BrokenLinksReport extends DocumentReporter {
         this.sortOrder = sortOrder;
     }
 
-    public void setParser(Parser parser) {
+    public void setParser(SearchParser parser) {
         this.parser = parser;
     }
 

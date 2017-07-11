@@ -123,7 +123,7 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
         model.put(ORIGINAL_PARAMETER, showOriginal);
         
         // TODO: Diff service
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         URL originalUrl = viewService.urlConstructor(requestContext.getRequestURL())
                 .withURI(requestContext.getResourceURI())
                 .constructURL();
@@ -167,7 +167,7 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
      * Use internal request to look up a plain version of the given revision of the resource.
      */
     private String getContentForRevision(String revisionName, HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Resource resource = repository.retrieve(token, requestContext.getResourceURI(), false);
@@ -209,7 +209,7 @@ public class DisplayRevisionsDifferenceController extends ParameterizableViewCon
      * Add meta data for current revision, and list all available revisions for the resource
      */
     private void putRevisionInfo(Map<String, Object> model, String revisionNameA, String revisionNameB, HttpServletRequest request, boolean showOriginal) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();

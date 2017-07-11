@@ -32,17 +32,20 @@ package vtk.web.actions.permissions;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
+
 import vtk.repository.Repository;
 import vtk.repository.store.PrincipalSearch.SearchType;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
 import vtk.security.PrincipalManager;
+import vtk.web.SimpleFormController;
 
-public class ACLEditCommandValidator implements Validator {
+public class ACLEditCommandValidator implements SimpleFormController.Validator<ACLEditCommand> {
 
     private PrincipalManager principalManager;
     private PrincipalFactory principalFactory;
@@ -53,15 +56,9 @@ public class ACLEditCommandValidator implements Validator {
     private String illegal;
     private String tooManyMatchedUsers;
 
-    @SuppressWarnings("rawtypes")
     @Override
-    public boolean supports(Class clazz) {
-        return (clazz == ACLEditCommand.class);
-    }
-
-    @Override
-    public void validate(Object command, Errors errors) {
-        ACLEditCommand editCommand = (ACLEditCommand) command;
+    public void validate(HttpServletRequest request, ACLEditCommand editCommand,
+            Errors errors) {
 
         // Don't validate on cancel
         if (editCommand.getCancelAction() != null) {

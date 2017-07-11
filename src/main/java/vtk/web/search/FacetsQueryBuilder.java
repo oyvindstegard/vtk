@@ -39,16 +39,16 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
-import vtk.repository.search.QueryParser;
+import vtk.repository.search.QueryParserFactory;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.Query;
 
 public class FacetsQueryBuilder implements SearchComponentQueryBuilder {
     private Map<String, String> templates;
-    private QueryParser parser;
+    private QueryParserFactory parserFactory;
     
-    public FacetsQueryBuilder(QueryParser parser, Map<String, String> templates) {
-        this.parser = Objects.requireNonNull(parser);
+    public FacetsQueryBuilder(QueryParserFactory parserFactory, Map<String, String> templates) {
+        this.parserFactory = Objects.requireNonNull(parserFactory);
         this.templates = new HashMap<>(Objects.requireNonNull(templates));
     }
 
@@ -65,7 +65,7 @@ public class FacetsQueryBuilder implements SearchComponentQueryBuilder {
                if ("".equals(value.trim())) continue;
                value = escape(escape(value, ' ', '\\'), ' ', '\\');
                String subQuery = template.replaceAll("\\{" + key + "\\}", value);
-               queries.add(parser.parse(subQuery));
+               queries.add(parserFactory.getParser().parse(subQuery));
            }
         }
         if (queries.isEmpty()) {

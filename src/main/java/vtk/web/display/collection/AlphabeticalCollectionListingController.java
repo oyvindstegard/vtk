@@ -131,9 +131,9 @@ public class AlphabeticalCollectionListingController extends CollectionListingCo
             }
         }
 
-        Service service = RequestContext.getRequestContext().getService();
+        Service service = RequestContext.getRequestContext(request).getService();
         URL baseURL = service.urlConstructor(URL.create(request))
-                .withURI(RequestContext.getRequestContext().getResourceURI())
+                .withURI(RequestContext.getRequestContext(request).getResourceURI())
                 .constructURL();
 
         model.put("alpthabeticalOrdredResult", alpthabeticalOrdredResult);

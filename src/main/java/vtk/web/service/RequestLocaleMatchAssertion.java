@@ -31,12 +31,14 @@
 package vtk.web.service;
 
 import java.util.Locale;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.LocaleResolver;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
@@ -54,7 +56,7 @@ import vtk.security.Principal;
  * </ul>
  */
 public class RequestLocaleMatchAssertion
-  implements Assertion, InitializingBean {
+  implements WebAssertion, InitializingBean {
     
     private Locale locale;
     private LocaleResolver localeResolver;
@@ -86,7 +88,7 @@ public class RequestLocaleMatchAssertion
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof RequestLocaleMatchAssertion) {
 
             Locale locale = ((RequestLocaleMatchAssertion) assertion).locale;
@@ -102,12 +104,13 @@ public class RequestLocaleMatchAssertion
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
+        return url;
     }
     
     @Override

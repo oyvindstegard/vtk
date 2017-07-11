@@ -89,7 +89,7 @@ public class MessageListingLocalRepositoryLookupSearchComponent extends Collecti
 
         // Check for action performed and manipulate result set accordingly
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Resource resource = null;
         try {

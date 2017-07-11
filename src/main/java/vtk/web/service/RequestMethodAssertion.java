@@ -32,6 +32,7 @@ package vtk.web.service;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,8 +50,8 @@ import vtk.security.Principal;
  *   HTTP methods can be specified.
  * </ul>
  */
-public class RequestMethodAssertion implements Assertion {
-    private Set<String> methods = new HashSet<String>();
+public class RequestMethodAssertion implements WebAssertion {
+    private Set<String> methods = new HashSet<>();
     
     public void setMethod(String method) {
         this.methods.clear();
@@ -65,7 +66,7 @@ public class RequestMethodAssertion implements Assertion {
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (!(assertion instanceof RequestMethodAssertion)) {
             return false;
         }
@@ -79,12 +80,13 @@ public class RequestMethodAssertion implements Assertion {
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(url);
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
+        return url;
     }
     
     @Override

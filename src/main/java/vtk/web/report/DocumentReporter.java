@@ -65,17 +65,16 @@ public abstract class DocumentReporter extends AbstractReporter {
     protected abstract Search getSearch(String token, Resource currentResource, HttpServletRequest request);
 
     @Override
-    public Map<String, Object> getReportContent(String token, Resource resource, HttpServletRequest request) {
+    public Map<String, Object> getReportContent(HttpServletRequest request, String token, Resource resource) {
         Map<String, Object> result = new HashMap<>();
         result.put(REPORT_NAME, getName());
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
         if (backReportName != null) {
             URL backURL = reportService.urlConstructor(requestContext.getRequestURL())
-                    .withResource(resource)
-                    .matchAssertions(false)
-                    .constructURL()
-                    .addParameter(REPORT_TYPE_PARAM, backReportName);
+                    .withURI(resource.getURI())
+                    .withParameter(REPORT_TYPE_PARAM, backReportName)
+                    .constructURL();
 
             result.put("backURLname", backReportName);
             result.put("backURL", backURL);

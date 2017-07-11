@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -79,6 +80,7 @@ public class ImageListingComponent extends ViewRenderingDecoratorComponent {
 
     private SearchComponent searchComponent;
 
+    @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
@@ -119,7 +121,7 @@ public class ImageListingComponent extends ViewRenderingDecoratorComponent {
             model.put("excludeScripts", excludeScripts);
         }
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         Repository repository = requestContext.getRepository();
         String token = requestContext.isViewUnauthenticated() ? null : requestContext.getSecurityToken(); // VTK-2460
         Resource requestedResource = repository.retrieve(token, path, false);
@@ -128,7 +130,7 @@ public class ImageListingComponent extends ViewRenderingDecoratorComponent {
             return;
         }
 
-        Listing images = searchComponent.execute(RequestContext.getRequestContext().getServletRequest(),
+        Listing images = searchComponent.execute(request.getServletRequest(),
                 requestedResource, 1, searchLimit, 0);
 
         model.put("images", images.getEntries());
@@ -186,12 +188,14 @@ public class ImageListingComponent extends ViewRenderingDecoratorComponent {
         this.searchComponent = searchComponent;
     }
 
+    @Override
     protected String getDescriptionInternal() {
         return "Inserts an image list or gallery, depending on parameter setup.";
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_EXCLUDE_SCRIPTS, PARAMETER_EXCLUDE_SCRIPTS_DESC);
         map.put(PARAMETER_MAX_HEIGHT, PARAMETER_MAX_HEIGHT_DESC);
         map.put(PARAMETER_HIDE_THUMBNAILS, PARAMETER_HIDE_THUMBNAILS_DESC);

@@ -28,17 +28,18 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.service;
+package vtk.repository.resourcetype;
+
+import java.util.Optional;
 
 import vtk.repository.Namespace;
 import vtk.repository.Path;
 import vtk.repository.Property;
+import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
 import vtk.util.repository.RepositoryTraversal;
 import vtk.util.repository.RepositoryTraversal.TraversalCallback;
-import vtk.web.RequestContext;
 
 /**
  * Assertion for matching on whether the current resource has a
@@ -56,8 +57,8 @@ import vtk.web.RequestContext;
  *   the property exists on the resource.
  * </ul>
  */
-public class ResourcePropertyAssertion extends AbstractRepositoryAssertion {
-
+public class ResourcePropertyAssertion implements RepositoryAssertion {
+    private Repository repository;
     private Namespace namespace;
     private String name;
     private String value;
@@ -98,82 +99,61 @@ public class ResourcePropertyAssertion extends AbstractRepositoryAssertion {
         this.checkInherited = checkInherited;
     }
     
+    public void setRepository(Repository repository) {
+        this.repository = repository;
+    }
+    
     public void setToken(String token) {
         this.token = token;
     }
     
-    @Override
-    public boolean conflicts(Assertion assertion) {
-        if (assertion instanceof ResourcePropertyAssertion) {
-            ResourcePropertyAssertion other = (ResourcePropertyAssertion) assertion;
-			
-            if (this.namespace.equals(other.getNamespace()) && 
-                this.name.equals(other.getName())) {
-				
-                boolean same = false;
-
-                if (this.checkExistenceOnly) {
-                    same = this.checkExistenceOnly == other.checkExistenceOnly;
-                } else {
-                    same = (this.value == null && other.getValue() == null)
-                        || (this.value != null && this.value.equals(other.getValue()));
-                    
-                }
-                if (!this.invert && !other.invert)
-                    return  !same;
-                else if (this.invert != other.invert)
-                    return same;
-            }
-        }
-        return false;
-    }
+    
 
     public void setInvert(boolean invert) {
         this.invert = invert;
     }
-
-    @Override
-    public boolean matches(Resource resource, Principal principal) {
-        try {
-            if (resource == null) {
-                return this.invert;
-            }
-            if (this.checkInherited) {
-                return matchInherited(resource);
-            }
-            return matchResource(resource);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
     
+    @Override
+    public boolean matches(Optional<Resource> resource,
+            Optional<Principal> principal) {
+        if (!resource.isPresent()) {
+            return invert;
+        }
+        
+        if (checkInherited) {
+            return matchInherited(resource.get());
+        }
+        return matchResource(resource.get());
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("property.").append(this.name);
         if (this.checkExistenceOnly) {
             sb.append(" exists");
-        } else {
+        }
+        else {
             sb.append(" = ").append(this.value);
         }
         return sb.toString();
     }
-
+    
     private boolean matchResource(Resource resource) {
         Property property = resource.getProperty(this.namespace, this.name);
         if (this.checkExistenceOnly) {
             if (property != null) return !this.invert;
-        } else {
+        }
+        else {
             if (property != null && this.value.equals(property.getStringValue())) return !this.invert;
         }
         return this.invert;
     }
     
-    private boolean matchInherited(Resource resource) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        final String token = this.token != null ? this.token : requestContext.getSecurityToken();
+    private boolean matchInherited(Resource resource) {
+        final String token = this.token;
         
-        RepositoryTraversal traversal = requestContext.rootTraversal(token, resource.getURI());
+        RepositoryTraversal traversal = new RepositoryTraversal(repository, token, resource.getURI());
         Callback callback = new Callback(this.name);
         traversal.traverse(callback);
         if (callback.result == null) {

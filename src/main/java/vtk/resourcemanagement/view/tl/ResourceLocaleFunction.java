@@ -47,7 +47,7 @@ public class ResourceLocaleFunction extends Function {
 
     @Override
     public Object eval(Context ctx, Object... args) {
-//        RequestContext requestContext = RequestContext.getRequestContext();
+//        RequestContext requestContext = RequestContext.getRequestContext(request);
 //        HttpServletRequest request = requestContext.getServletRequest();
         HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
         Locale locale = new org.springframework.web.servlet.support.RequestContext(request, request.getServletContext()).getLocale();

@@ -54,7 +54,7 @@ public final class ServiceFilterInvoker extends AbstractServletFilter {
             HttpServletResponse response, javax.servlet.FilterChain chain)
             throws IOException, ServletException {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         List<Filter> filters = getServiceFilters(service);
         if (filters != null) {

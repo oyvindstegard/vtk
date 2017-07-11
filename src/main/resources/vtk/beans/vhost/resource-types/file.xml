@@ -68,63 +68,68 @@
   <bean id="contentLengthEvaluator" class="vtk.repository.resourcetype.property.ContentLengthEvaluator" />
 
   <!-- Assertion that matches all non-collection resources (files) -->
-  <bean id="fileAssertion" class="vtk.web.service.ResourceIsCollectionAssertion">
-    <property name="invert" value="true" />
+  <bean id="fileAssertion" class="vtk.repository.resourcetype.ResourceIsCollectionAssertion">
+    <constructor-arg name="invert" value="true" />
   </bean>
 
 
   <!-- Content type assertions -->
 
-  <bean id="contentTypeMatchesText" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="(application/(x-)?xml)|(text/(plain|html|xml))" />
+  <bean id="contentTypeMatchesText" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="(application/(x-)?xml)|(text/(plain|html|xml))" />
   </bean>
 
-  <bean id="contentTypeMatchesAnyText" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="text/.+" />
-    <property name="exceptionPattern" value="text/rtf" />
+  <bean id="contentTypeMatchesAnyText" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="text/.+" />
+    <constructor-arg name="exceptionPattern" value="text/rtf" />
   </bean>
 
   <!-- Assertion that matches on all textual content types: -->
   <bean id="contentTypeIsTextual" 
-        class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="(application/(x-)?xml)|(application/x-php)|(application/json)|(text/(.+))" />
-    <property name="exceptionPattern" value="text/rtf" />
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="(application/(x-)?xml)|(application/x-php)|(application/json)|(text/(.+))" />
+    <constructor-arg name="exceptionPattern" value="text/rtf" />
   </bean>
 
 
-  <bean id="contentTypeMatchesXml" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="(text|application)/(x-)?xml" />
+  <bean id="contentTypeMatchesXml" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="(text|application)/(x-)?xml" />
   </bean>
 
-  <bean id="contentTypeMatchesHtml" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="text/html" />
+  <bean id="contentTypeMatchesHtml" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="text/html" />
   </bean>
 
-  <bean id="contentTypeMatchesTextOrHtml" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="text/(plain|html)" />
+  <bean id="contentTypeMatchesTextOrHtml" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="text/(plain|html)" />
   </bean>
 
-  <bean id="contentTypeMatchesXmlOrHtml" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="(application/(x-)?xml)|(text/(xml|html))" />
+  <bean id="contentTypeMatchesXmlOrHtml" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="(application/(x-)?xml)|(text/(xml|html))" />
   </bean>
 
   <bean id="contentTypeMatchesXmlOrHtmlOrCollection"
-    class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="(application/(x-)?xml)|(text/(xml|html))|(application/x-vortex-collection)" />
+    class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="(application/(x-)?xml)|(text/(xml|html))|(application/x-vortex-collection)" />
   </bean>
 
-  <bean id="contentTypeMatchesImage" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="image/.+" />
+  <bean id="contentTypeMatchesImage" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="image/.+" />
   </bean>
 
-  <bean id="contentTypeMatchesAudio" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="audio/.+" />
+  <bean id="contentTypeMatchesAudio" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="^audio/.+$" />
   </bean>
   
-  <bean id="contentTypeMatchesVideo" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="^video/.+|^application/mxf$" />
+  <bean id="contentTypeMatchesVideo" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="^video/.+|^application/mxf$" />
   </bean>
 
+  <bean id="contentTypeMatchesMedia"
+        class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="^audio/.+|^video/.+|^application/mxf$" />
+  </bean>
+  <!--
   <bean id="contentTypeMatchesMedia" class="vtk.web.service.OrAssertion">
     <property name="assertions">
       <list>
@@ -133,14 +138,15 @@
       </list>
     </property>
   </bean>
-
-  <bean id="contentTypeMatchesZip" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/zip" />
+  -->
+  
+  <bean id="contentTypeMatchesZip" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/zip" />
   </bean>
 
 
-  <bean id="contentTypeMatchesJar" class="vtk.web.service.ResourceContentTypeRegexpAssertion">
-    <property name="pattern" value="application/(?:x-)?java-archive" />
+  <bean id="contentTypeMatchesJar" class="vtk.repository.resourcetype.ResourceContentTypeRegexpAssertion">
+    <constructor-arg name="pattern" value="application/(?:x-)?java-archive" />
   </bean>
 
 </beans>

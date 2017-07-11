@@ -42,7 +42,7 @@ import vtk.util.io.SizeLimitException;
 import vtk.util.web.HttpUtil;
 import vtk.web.RequestContext;
 import vtk.web.filter.UploadLimitInputStreamFilter;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 import vtk.web.service.URL;
 
 import javax.servlet.http.HttpServletRequest;
@@ -57,12 +57,12 @@ public class PutController implements Controller {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final long maxUploadSize;
     private final long maxRevisionFileSize;
-    private final List<Assertion> revisionAssertions;
+    private final List<WebAssertion> revisionAssertions;
 
     public PutController(
             long maxUploadSize,
             long maxRevisionFileSize,
-            List<Assertion> revisionAssertions
+            List<WebAssertion> revisionAssertions
     ) {
         if (maxUploadSize == 0) {
             throw new IllegalArgumentException(
@@ -83,7 +83,7 @@ public class PutController implements Controller {
                     "Exceeds maximum number of bytes: " + this.maxUploadSize);
         }
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
@@ -144,8 +144,8 @@ public class PutController implements Controller {
     }
 
     private boolean handleRevisions(HttpServletRequest request, Resource resource) {
-        Principal principal = RequestContext.getRequestContext().getPrincipal();
-        for (Assertion a : this.revisionAssertions) {
+        Principal principal = RequestContext.getRequestContext(request).getPrincipal();
+        for (WebAssertion a : this.revisionAssertions) {
             if (!a.matches(request, resource, principal)) {
                 return false;
             }

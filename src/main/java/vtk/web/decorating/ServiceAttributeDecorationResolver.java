@@ -55,7 +55,7 @@ public class ServiceAttributeDecorationResolver implements DecorationResolver {
 
     public DecorationDescriptor resolve(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         
         String templateName = null;

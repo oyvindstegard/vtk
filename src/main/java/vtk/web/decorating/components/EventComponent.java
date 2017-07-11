@@ -127,8 +127,8 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
         if (uri == null) {
             throw new DecoratorComponentException("Component parameter 'uri' is required");
         }
-
-        Path resourcePath = this.getResourcePath(uri);
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
+        Path resourcePath = this.getResourcePath(requestContext, uri);
         if (resourcePath == null) {
             throw new DecoratorComponentException("Provided uri is not a valid folder reference: " + uri);
         }
@@ -179,15 +179,14 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
 
         model.put("elementOrder", getElementOrder(PARAMETER_EVENT_ELEMENT_ORDER, request));
 
-        RequestContext rc = RequestContext.getRequestContext();
+        RequestContext rc = RequestContext.getRequestContext(request.getServletRequest());
         Repository repo = rc.getRepository();
         String token = rc.getSecurityToken();
         Resource resource = null;
         try {
             resource = repo.retrieve(token, resourcePath, false);
             URL url = viewService.urlConstructor(rc.getRequestURL())
-                    .withResource(resource)
-                    .matchAssertions(false)
+                    .withURI(resource.getURI())
                     .constructURL();
             conf.put("uri", url);
         } catch (AuthenticationException | AuthorizationException e) {
@@ -211,8 +210,7 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
             model.put("eventsTitle", resource.getTitle());
         }
 
-        Listing events;
-        events = search.execute(RequestContext.getRequestContext().getServletRequest(), resource, 1, maxEvents, 0);
+        Listing events = search.execute(request.getServletRequest(), resource, 1, maxEvents, 0);
 
         if (showOnlyOngoing) {
             Calendar startDate, now = Calendar.getInstance();
@@ -446,11 +444,9 @@ public class EventComponent extends ViewRenderingDecoratorComponent {
         }
     }
 
-    private Path getResourcePath(String uri) {
+    private Path getResourcePath(RequestContext rc, String uri) {
         // Be lenient on trailing slash
         uri = uri.endsWith("/") && !uri.equals("/") ? uri.substring(0, uri.lastIndexOf("/")) : uri;
-
-        RequestContext rc = RequestContext.getRequestContext();
 
         try {
             if (!uri.startsWith("/")) {

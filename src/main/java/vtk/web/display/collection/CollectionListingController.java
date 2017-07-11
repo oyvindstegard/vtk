@@ -79,7 +79,7 @@ public class CollectionListingController extends BaseCollectionListingController
         int limit = pageLimit;
         int totalHits = 0;
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
         Principal principal = requestContext.getPrincipal();

@@ -54,7 +54,7 @@ public class RequireAuthenticationController implements Controller {
                                       HttpServletResponse response) 
 	throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         if (requestContext.getPrincipal() == null) {
             throw new AuthenticationException();
         }

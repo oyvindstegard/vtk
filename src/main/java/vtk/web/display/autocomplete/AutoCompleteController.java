@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.web.RequestContext;
 
@@ -88,11 +89,11 @@ public abstract class AutoCompleteController implements Controller {
     }
 
     protected CompletionContext getCompletionContext(HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path contextUri = getContextUri(request);
         Locale preferredLocale = getPreferredLocale(request);
-        return new CompletionContextImpl(contextUri, preferredLocale, token);
+        return new CompletionContextImpl(request, contextUri, preferredLocale, token);
     }
 
     private Path getContextUri(HttpServletRequest request) {
@@ -132,7 +133,7 @@ public abstract class AutoCompleteController implements Controller {
         if (contextUri == null) {
             // No luck (invalid path or missing override param), try request
             // context ..
-            RequestContext requestContext = RequestContext.getRequestContext();
+            RequestContext requestContext = RequestContext.getRequestContext(request);
             contextUri = requestContext.getResourceURI();
         }
 
@@ -163,8 +164,11 @@ public abstract class AutoCompleteController implements Controller {
         private Path contextUri;
         private Locale preferredLocale;
         private String token;
+        private HttpServletRequest request;
 
-        private CompletionContextImpl(Path contextUri, Locale preferredLocale, String token) {
+        private CompletionContextImpl(HttpServletRequest request, Path contextUri, 
+                Locale preferredLocale, String token) {
+            this.request = request;
             this.contextUri = contextUri;
             this.preferredLocale = preferredLocale;
             this.token = token;
@@ -183,6 +187,11 @@ public abstract class AutoCompleteController implements Controller {
         @Override
         public String getToken() {
             return this.token;
+        }
+
+        @Override
+        public HttpServletRequest request() {
+            return request;
         }
     }
 

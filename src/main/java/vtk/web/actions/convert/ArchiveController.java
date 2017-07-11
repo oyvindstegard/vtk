@@ -35,30 +35,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 
 public class ArchiveController extends CopyController<ArchiveCommand> {
 
     @Override
-    protected ArchiveCommand createCommand(String name, String url) {
+    protected ArchiveCommand createCommand(HttpServletRequest request, String name, String url) {
         return new ArchiveCommand(name, url);
     }
 
     @Override
-    protected void processCopyAction(Path originalUri, Path copyUri, ArchiveCommand archiveCommand) 
+    protected void processCopyAction(HttpServletRequest request, 
+            Path originalUri, Path copyUri, ArchiveCommand archiveCommand) 
             throws Exception {
         Map<String, Object> properties = null;
         String ignorableResources = archiveCommand.getIgnorableResources();
         if (ignorableResources != null) {
-            properties = new HashMap<String, Object>();
+            properties = new HashMap<>();
             properties.put("ignore", this.getIgnoreList(ignorableResources));
         }
-
-        this.copyAction.process(originalUri, copyUri, properties);
+        this.copyAction.process(request, originalUri, copyUri, properties);
     }
 
     private List<String> getIgnoreList(String ignorableResources) {
-        List<String> ignoreList = new ArrayList<String>();
+        List<String> ignoreList = new ArrayList<>();
         String[] ss = ignorableResources.split(",");
         for (String s : ss) {
             s = s.trim();

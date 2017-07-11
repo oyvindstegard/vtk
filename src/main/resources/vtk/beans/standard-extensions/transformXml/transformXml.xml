@@ -29,11 +29,14 @@
     </property>
   </bean>
   
-  <bean id="rssXslStylesheetAvailable"
-        class="vtk.web.service.XmlSchemaXPathAssertion">
-    <property name="schemaRegistry" ref="schemaRegistry" />
-    <property name="schemaPropertyDefinition" ref="schemaPropDef" />
-    <property name="xpath" value="${rssXslTransformationSchemaXPath}" />
+  <bean id="rssXslStylesheetAvailable" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.XmlSchemaXPathAssertion">
+        <constructor-arg name="schemaRegistry" ref="schemaRegistry" />
+        <constructor-arg name="schemaPropertyDefinition" ref="schemaPropDef" />
+        <constructor-arg name="xpath" value="${rssXslTransformationSchemaXPath}" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="rawXmlQueryService" class="vtk.web.service.ServiceImpl">
@@ -48,8 +51,8 @@
     <property name="order" value="-2"/>
   </bean>
 
-  <bean id="rawXmlQueryHandler" class="vtk.web.display.search.XmlQueryController">
-    <property name="xmlSearcher" ref="xmlSearcher" />
+  <bean id="rawXmlQueryHandler" class="vtk.web.search.XmlQueryController">
+    <property name="xmlSearcherFactory" ref="xmlSearcher.factory" />
   </bean>
 
 
@@ -67,11 +70,14 @@
     </property>
   </bean>
 
-  <bean id="viewXslStylesheetAvailable"
-        class="vtk.web.service.XmlSchemaXPathAssertion">
-    <property name="schemaRegistry" ref="schemaRegistry" />
-    <property name="schemaPropertyDefinition" ref="schemaPropDef" />
-    <property name="xpath" value="${viewXslTransformationSchemaXPath}" />
+  <bean id="viewXslStylesheetAvailable" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.XmlSchemaXPathAssertion">
+        <constructor-arg name="schemaRegistry" ref="schemaRegistry" />
+        <constructor-arg name="schemaPropertyDefinition" ref="schemaPropDef" />
+        <constructor-arg name="xpath" value="${viewXslTransformationSchemaXPath}" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="xmlQueryParameterSetAssertion"
@@ -110,6 +116,7 @@
     <property name="staticAttributes" ref="xslTransformerParameterMap" />
     <property name="referenceDataProviders">
       <list>
+        <ref bean="xmlSearcher.referenceDataProvider" />
         <ref bean="xslBeanProvider" />
         <bean class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
           <property name="service" ref="rssTransformService" />
@@ -125,7 +132,7 @@
         class="org.springframework.beans.factory.config.MapFactoryBean">
     <property name="sourceMap">
       <map>
-        <entry key="Searcher" value-ref="xmlSearcher" />
+        <!--entry key="Searcher" value-ref="xmlSearcher" /-->
         <entry key="LinkConstructor" value-ref="linkConstructor" />
         <entry key="PropertyAccessor" value-ref="propertyAccessor" />
       </map>
@@ -137,6 +144,7 @@
     <property name="staticAttributes" ref="xslTransformerParameterMap" />
     <property name="referenceDataProviders">
       <list>
+        <ref bean="xmlSearcher.referenceDataProvider" />
         <ref bean="xslBeanProvider" />
         <bean class="vtk.web.referencedata.provider.ResourceServiceURLProvider">
           <property name="service" ref="viewService" />
@@ -158,17 +166,30 @@
     <property name="breadCrumbProvider" ref="viewBreadCrumbProvider" />
   </bean>
 
-  <bean id="xmlSearcher"
-        class="vtk.repository.search.XmlSearcher">
-    <property name="searcher" ref="systemIndexSearcher" />
-    <property name="parser" ref="searchParser" />
-    <property name="resourceTypeTree" ref="resourceTypeTree" />
-    <property name="defaultLocale" value="${view.defaultLocale}" />
+   <bean id="xmlSearcher.referenceDataProvider"
+         class="vtk.web.referencedata.provider.FactoryReferenceDataProvider">
+     <constructor-arg name="modelName">
+       <bean parent="optional.abstractBean">
+         <property name="arguments" value="xsltParameters" />
+       </bean>
+     </constructor-arg>
+     <constructor-arg name="key" value="{http://www.uio.no/vortex/xsl-parameters}Searcher" />
+     <constructor-arg name="factory" ref="xmlSearcher.factory" />
+   </bean>
 
-    <property name="linkToService" ref="viewService" />
-    <property name="collectionResourceTypeDef"
+
+  <bean id="xmlSearcher.factory" 
+        class="vtk.web.search.XmlSearcher" factory-method="xmlSearcherFactory">
+    <constructor-arg name="searcher" ref="systemIndexSearcher" />
+    <constructor-arg name="parser" ref="searchParser" />
+    <constructor-arg name="resourceTypeTree" ref="resourceTypeTree" />
+    <constructor-arg name="maxResults" value="1000" />
+    <constructor-arg name="defaultLocale" value="${view.defaultLocale}" />
+    <constructor-arg name="linkToService" ref="viewService" />
+    <constructor-arg name="collectionResourceTypeDef"
               ref="collectionResourceTypeDefinition" />
   </bean>
+
 
 
   <bean id="rawXmlQueryURLProvider"

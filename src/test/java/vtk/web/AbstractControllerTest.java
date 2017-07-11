@@ -33,7 +33,7 @@ public abstract class AbstractControllerTest {
         SecurityContext.setSecurityContext(securityContext);
         RequestContext requestContext = new RequestContext(mockRequest, securityContext, mockService, null,
                 null, getRequestPath(), null, false, false, true, mockRepository, mockPrincipalMetadataDao);
-        RequestContext.setRequestContext(requestContext);
+        RequestContext.setRequestContext(requestContext, mockRequest);
     }
 
     protected abstract Path getRequestPath();

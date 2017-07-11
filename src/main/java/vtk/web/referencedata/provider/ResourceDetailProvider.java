@@ -105,7 +105,7 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         Map<String, Object> resourceDetailModel = new HashMap<>();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
 
@@ -150,7 +150,7 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
 
             // Resolve inheritable props inheritance
             if (resource != null) {
-                Map<String,Path> inheritanceMap = resolvePropertyInheritance(resource);
+                Map<String,Path> inheritanceMap = resolvePropertyInheritance(request, resource);
                 resourceDetailModel.put("propertyInheritanceMap", inheritanceMap);
             }
             else {
@@ -172,7 +172,7 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
      *         are paths to the resource from which they are inherited. Inheritable
      *         properties directly set on the resource will not be part of this map.
      */
-    private Map<String, Path> resolvePropertyInheritance(Resource resource) {
+    private Map<String, Path> resolvePropertyInheritance(HttpServletRequest request, Resource resource) {
         if (resource.getURI().isRoot()) {
             // Nothing can be inherited for root resource except pre-configured default values,
             // which we don't provide as "source" here.
@@ -186,7 +186,7 @@ public class ResourceDetailProvider implements ReferenceDataProvider {
             }
         }
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         final Map<String, Path> propInheritanceMap = new HashMap<>();
         RepositoryTraversal traversal = requestContext.rootTraversal(token, resource.getURI().getParent());

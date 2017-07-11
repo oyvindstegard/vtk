@@ -179,7 +179,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
             return new Form(this.fieldConfig.getError().getMessage());
         }
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
@@ -229,7 +229,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
     protected void onBindAndValidate(HttpServletRequest request,
             Form object, BindException errors) throws Exception {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
 
         Locale requestLocale = RequestContextUtils.getLocale(request);
@@ -262,7 +262,7 @@ public class ConfigurableJSONPropertyEditor extends SimpleFormController<Form> {
     protected ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response,
                                     Form form, BindException errors) throws Exception {    
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();

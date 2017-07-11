@@ -44,7 +44,7 @@ import vtk.repository.Resource;
 import vtk.security.Principal;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 
 /**
  * A reference data provider that puts a message in the model, based
@@ -66,7 +66,7 @@ import vtk.web.service.Assertion;
  *   resource's name is used as a parameter.
  *   <li><code>modelName</code> - the name to use for the sub-model in
  *   the main model. 
- *   <li><code>assertions</code> - an array of {@link Assertion
+ *   <li><code>assertions</code> - an array of {@link WebAssertion
  *   assertions} that must match in order for the message to be
  *   provided.
  * </ul>
@@ -85,7 +85,7 @@ public class ResourceMessageProvider implements ReferenceDataProvider, Initializ
     private String resourceInModelKey;
     private String localizationKey;
     private String modelName;
-    private Assertion[] assertions;
+    private WebAssertion[] assertions;
 
     public void setResourceInModelKey(String resourceInModelKey) {
         this.resourceInModelKey = resourceInModelKey;
@@ -99,7 +99,7 @@ public class ResourceMessageProvider implements ReferenceDataProvider, Initializ
         this.modelName = modelName;
     }
 
-    public void setAssertions(Assertion[] assertions) {
+    public void setAssertions(WebAssertion[] assertions) {
         this.assertions = assertions;
     }
 
@@ -116,11 +116,11 @@ public class ResourceMessageProvider implements ReferenceDataProvider, Initializ
     
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
-        Resource resource = getResource(model);
+        Resource resource = getResource(requestContext, model);
         String message = null;
         if (resource != null) {
-            RequestContext requestContext = RequestContext.getRequestContext();
             Principal principal = requestContext.getPrincipal();
             boolean proceed = true;
 
@@ -151,8 +151,7 @@ public class ResourceMessageProvider implements ReferenceDataProvider, Initializ
     }
     
 
-    @SuppressWarnings("rawtypes")
-    private Resource getResource(Map model) {
+    private Resource getResource(RequestContext requestContext, Map<String, Object> model) {
         Resource resource = null;
 
         // Try to locate the resource in the model:
@@ -189,7 +188,6 @@ public class ResourceMessageProvider implements ReferenceDataProvider, Initializ
         }
 
         try {
-            RequestContext requestContext = RequestContext.getRequestContext();
             Repository repository = requestContext.getRepository();
             String token = requestContext.getSecurityToken();
             resource = repository.retrieve(token, requestContext.getResourceURI(),

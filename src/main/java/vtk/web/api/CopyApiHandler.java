@@ -82,7 +82,7 @@ public class CopyApiHandler implements HttpRequestHandler {
                 .header("Content-Type", "text/plain;charset=utf-8")
                 .message(copyRequest.failure.get().getMessage());
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Result<ApiResponseBuilder> result = 
                 doCopy(copyRequest.result.get(), requestContext);
         

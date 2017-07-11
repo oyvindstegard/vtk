@@ -31,7 +31,7 @@
 package vtk.repository.search.preprocessor;
 
 import vtk.repository.search.QueryException;
-import vtk.web.RequestContext;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
 
 public class CurrentFolderExpressionEvaluator implements ExpressionEvaluator {
     
@@ -45,17 +45,14 @@ public class CurrentFolderExpressionEvaluator implements ExpressionEvaluator {
         return this.variableName.equals(token);
     }
     
-    public String evaluate(String token) throws QueryException {
+    public String evaluate(String token, ProcessorContext ctx)
+            throws QueryException {
 
         if (!this.variableName.equals(token)) {
             throw new QueryException("Unknown query token: '" + token + "'");
         }
-
-        if (RequestContext.exists()) {
-            RequestContext requestContext = RequestContext.getRequestContext();
-            return requestContext.getCurrentCollection().toString();
-        }
-        return token;
+        return ctx.currentCollection.toString();
     }
+
 }
 

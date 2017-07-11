@@ -30,37 +30,33 @@
  */
 package vtk.web.actions.convert;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.web.RequestContext;
+import vtk.web.SimpleFormController;
 
-public abstract class CopyCommandValidator implements Validator {
+public abstract class CopyCommandValidator implements SimpleFormController.Validator<CopyCommand> {
 
     private static Logger logger = LoggerFactory.getLogger(CopyCommandValidator.class);
 
-    @SuppressWarnings("rawtypes")
-    protected abstract boolean supportsClass(Class clazz);
+    protected abstract Path getCopyToURI(HttpServletRequest request, String name);
 
-    protected abstract Path getCopyToURI(String name);
+    protected abstract boolean validateName(HttpServletRequest request, String name, Errors errors);
 
-    protected abstract boolean validateName(String name, Errors errors);
 
-    @SuppressWarnings("rawtypes")
-    public boolean supports(Class clazz) {
-        return this.supportsClass(clazz);
-    }
-
-    public void validate(Object command, Errors errors) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    public void validate(HttpServletRequest request, CopyCommand command, Errors errors) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         
-        CopyCommand copyCommand = (CopyCommand) command;
+        CopyCommand copyCommand = command;
         if (copyCommand.getCancelAction() != null)
             return;
 
@@ -71,11 +67,11 @@ public abstract class CopyCommandValidator implements Validator {
             return;
 
         }
-        if (!validateName(name, errors)) {
+        if (!validateName(request, name, errors)) {
             return;
         }
 
-        Path newURI = getCopyToURI(name);
+        Path newURI = getCopyToURI(request, name);
 
         try {
             boolean exists = repository.exists(token, newURI);

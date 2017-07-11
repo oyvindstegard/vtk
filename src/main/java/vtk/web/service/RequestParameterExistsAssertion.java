@@ -30,6 +30,8 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
@@ -48,7 +50,7 @@ import vtk.security.Principal;
  * </ul>
  *
  */
-public class RequestParameterExistsAssertion implements Assertion {
+public class RequestParameterExistsAssertion implements WebAssertion {
 
     private String parameterName = null;
     private boolean invert = false;
@@ -73,7 +75,7 @@ public class RequestParameterExistsAssertion implements Assertion {
 
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof RequestParameterExistsAssertion) {
 
             if (this.parameterName.equals(
@@ -103,9 +105,8 @@ public class RequestParameterExistsAssertion implements Assertion {
     }
 
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        processURL(url);
-        return true;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        return Optional.of(processURL(url));
     }
 
     @Override
@@ -114,8 +115,9 @@ public class RequestParameterExistsAssertion implements Assertion {
     }
 
     @Override
-    public void processURL(URL url) {
+    public URL processURL(URL url) {
         if (!this.invert && (url.getParameter(this.parameterName) == null))
             url.addParameter(this.parameterName, "");
+        return url;
     }
 }

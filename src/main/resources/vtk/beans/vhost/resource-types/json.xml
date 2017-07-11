@@ -22,8 +22,8 @@
     </property>
   </bean>
 
-  <bean id="json.contentTypeAssertion" class="vtk.web.service.ResourceContentTypeAssertion">
-    <property name="contentType" value="application/json" />
+  <bean id="json.contentTypeAssertion" class="vtk.repository.resourcetype.ResourceContentTypeAssertion">
+    <constructor-arg name="contentType" value="application/json" />
   </bean>
 
   <bean id="jsonOverriddenGuessedCharacterEncodingPropDef"
@@ -90,7 +90,8 @@
     <property name="resourceManager" ref="structuredResources.resourceManager" />
   </bean>
 
-  <bean id="json.isManagedObjectResourceType" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="json.isManagedObjectResourceType" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+        parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="json.managedObjectResourceType" />
   </bean>
 

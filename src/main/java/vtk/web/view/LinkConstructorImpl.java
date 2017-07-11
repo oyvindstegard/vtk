@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +54,7 @@ import vtk.web.service.URL;
 public class LinkConstructorImpl implements LinkConstructor {
     private static final Logger logger = LoggerFactory.getLogger(LinkConstructorImpl.class);
 
-    public URL construct(Object arg, String parametersCSV, String serviceName) {
+    public URL construct(HttpServletRequest request, Object arg, String parametersCSV, String serviceName) {
         if (arg == null) return null;
         try {
             Path uri = null;
@@ -71,10 +73,10 @@ public class LinkConstructorImpl implements LinkConstructor {
                 if (strUri.contains("://")) {
                     return getUrlFromUrl(strUri);
                 }
-                uri = RequestContext.getRequestContext().getResourceURI();
+                uri = RequestContext.getRequestContext(request).getResourceURI();
 
                 if (isSet(strUri)) {
-                    uri = RequestContext.getRequestContext().getCurrentCollection();
+                    uri = RequestContext.getRequestContext(request).getCurrentCollection();
 
                     if (strUri.startsWith("/")) {
                         uri = Path.ROOT.expand(strUri.substring(1));
@@ -91,18 +93,18 @@ public class LinkConstructorImpl implements LinkConstructor {
             Service.URLConstructor urlBuilder = null;
 
             if (isSet(serviceName)) {
-                Optional<Service> service = RequestContext.getRequestContext().service(serviceName);
+                Optional<Service> service = RequestContext.getRequestContext(request).service(serviceName);
                 if (service.isPresent()) {
-                    urlBuilder = service.get().urlConstructor(RequestContext.getRequestContext().getRequestURL());
+                    urlBuilder = service.get().urlConstructor(RequestContext.getRequestContext(request).getRequestURL());
                 }
             }
 
             if (urlBuilder == null) {
 
-                urlBuilder = RequestContext.getRequestContext().getService().urlConstructor( 
-                        RequestContext.getRequestContext().getRequestURL());
+                urlBuilder = RequestContext.getRequestContext(request).getService().urlConstructor( 
+                        RequestContext.getRequestContext(request).getRequestURL());
             }
-            Principal principal = RequestContext.getRequestContext().getPrincipal();
+            Principal principal = RequestContext.getRequestContext(request).getPrincipal();
             if (resource != null) {
                 return urlBuilder.withResource(resource)
                         .withPrincipal(principal)

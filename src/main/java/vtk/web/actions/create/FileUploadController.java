@@ -68,7 +68,7 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
 
     @Override
     protected FileUploadCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         Repository repository = requestContext.getRepository();
 
@@ -88,7 +88,7 @@ public class FileUploadController extends SimpleFormController<FileUploadCommand
     public ModelAndView onSubmit(HttpServletRequest request, HttpServletResponse response,
             FileUploadCommand command, BindException errors) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         String filenamesToCheck = request.getParameter("filenamesToBeChecked");

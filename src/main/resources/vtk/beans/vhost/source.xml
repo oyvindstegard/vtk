@@ -20,7 +20,7 @@
     <property name="assertions">
       <list>
         <ref bean="vrtxParameterIsSourceAssertion" />
-        <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+        <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
           <property name="resourceTypeDefinition" ref="xmlResource" />
         </bean>
       </list>

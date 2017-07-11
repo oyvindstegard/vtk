@@ -80,7 +80,7 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
 
     @Override
     protected PostCommentCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Service service = requestContext.getService();
@@ -167,7 +167,7 @@ public class PostCommentController extends SimpleFormController<PostCommentComma
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, PostCommentCommand commentCommand,
             BindException errors) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();

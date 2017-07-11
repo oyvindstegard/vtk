@@ -256,23 +256,37 @@
 
   <!-- ^ Multiple -->
 
-  <bean id="resourceIsNotPublishedAssertion" class="vtk.web.service.ResourcePropertyAssertion">
-    <property name="namespace" ref="DEFAULT_NAMESPACE" />
-    <property name="name" value="published" />
-    <property name="value" value="false" />
+  <bean id="resourceIsNotPublishedAssertion"
+        class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourcePropertyAssertion">
+        <property name="namespace" ref="DEFAULT_NAMESPACE" />
+        <property name="name" value="published" />
+        <property name="value" value="false" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-  <bean id="collectionIsNotPublishedAssertion" class="vtk.web.service.ResourcePropertyAssertion">
-    <property name="namespace" ref="DEFAULT_NAMESPACE" />
-    <property name="name" value="unpublishedCollection" />
-    <property name="checkExistenceOnly" value="true" />
+  <bean id="collectionIsNotPublishedAssertion"
+        class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourcePropertyAssertion">
+        <property name="namespace" ref="DEFAULT_NAMESPACE" />
+        <property name="name" value="unpublishedCollection" />
+        <property name="checkExistenceOnly" value="true" />
+      </bean>
+    </constructor-arg>
   </bean>
 
-
-  <bean id="resourceIsPublishedAssertion" class="vtk.web.service.ResourcePropertyAssertion">
-    <property name="namespace" ref="DEFAULT_NAMESPACE" />
-    <property name="name" value="published" />
-    <property name="value" value="true" />
+  <bean id="resourceIsPublishedAssertion"
+        class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourcePropertyAssertion">
+        <property name="namespace" ref="DEFAULT_NAMESPACE" />
+        <property name="name" value="published" />
+        <property name="value" value="true" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="displayUnpublishedMessageService" class="vtk.web.service.ServiceImpl">

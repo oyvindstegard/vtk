@@ -129,7 +129,7 @@ public class ResourceContextProvider implements InitializingBean, ReferenceDataP
 
         Map<String, Object> resourceContextModel = new HashMap<>();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service currentService = requestContext.getService();
         Repository repository = requestContext.getRepository();
 

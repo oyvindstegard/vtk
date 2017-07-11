@@ -28,7 +28,8 @@
     </property>
   </bean>
 
-  <bean id="resourceTypeIsVideoAssertion" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="resourceTypeIsVideoAssertion" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+        parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="videoResourceTypeDefinition" />
     <property name="exactMatch" value="true" />
   </bean>

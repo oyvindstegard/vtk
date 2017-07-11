@@ -1,10 +1,10 @@
-/* Copyright (c) 2009, University of Oslo, Norway
+/* Copyright (c) 2017 University of Oslo, Norway
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- *
+ * 
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
@@ -30,23 +30,23 @@
  */
 package vtk.repository.search;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import vtk.repository.PropertySet;
 import vtk.testing.mocktypes.MockResourceTypeTree;
 
-public class ParserImplTest {
+public class SortingParserImplTest {
 
     @Test
     public void parseSort() {
-        ParserImpl parser = new ParserImpl();
-        parser.setParserFactory(null);
-        parser.setQueryStringPreProcessor(null);
-        parser.setResourceTypeTree(new MockResourceTypeTree());
+        SortingParserImpl parser = new SortingParserImpl(new MockResourceTypeTree());
 
         String sortSpec = "uri ASC,foo:bar desc,baz:bong@bing DESC";
-        Sorting sorting = parser.parseSortString(sortSpec);
+        Sorting sorting = parser.parse(sortSpec);
 
         // URI as first sort field renders all the following fields unnecessary.
         assertEquals(1, sorting.getSortFields().size());
@@ -58,7 +58,7 @@ public class ParserImplTest {
 
 
         sortSpec = "foo:bar desc,baz:bong@bing.bang DESC,uri";
-        sorting = parser.parseSortString(sortSpec);
+        sorting = parser.parse(sortSpec);
 
         assertEquals(3, sorting.getSortFields().size());
         f = sorting.getSortFields().get(0);
@@ -83,4 +83,5 @@ public class ParserImplTest {
         assertTrue(tsf.getIdentifier().equals(PropertySet.URI_IDENTIFIER));
         assertTrue(tsf.getDirection() == SortField.Direction.ASC);
     }
+
 }

@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -49,14 +50,14 @@ public class EventAsICalController implements Controller {
 
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
 
         Resource event = repository.retrieve(token, uri, true);
 
-        String iCal = this.iCalHelper.getAsICal(Collections.singletonList(event));
+        String iCal = this.iCalHelper.getAsICal(Collections.singletonList(event), repository.getId());
         if (iCal == null) {
             return null;
         }

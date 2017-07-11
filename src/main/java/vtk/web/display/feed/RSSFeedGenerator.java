@@ -74,17 +74,18 @@ public abstract class RSSFeedGenerator implements Controller {
 
     // Must be overriden by subclasses to provide content for feed entries and
     // add these to feed
-    protected abstract List<Map<String, Object>> getFeedEntries(Resource feedScope) throws Exception;
+    protected abstract List<Map<String, Object>> getFeedEntries(
+            Resource feedScope, HttpServletRequest request) throws Exception;
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Resource feedScope = requestContext.getRepository().retrieve(token, uri, true);
 
-        Map<String, Object> feedContent = new HashMap<String, Object>();
+        Map<String, Object> feedContent = new HashMap<>();
 
         // Title, link and description are required by spec
         feedContent.put("title", getTitle(feedScope, requestContext));
@@ -101,9 +102,9 @@ public abstract class RSSFeedGenerator implements Controller {
             feedContent.put("feedLogoPath", feedLogoPath);
         }
 
-        feedContent.put("feedItems", getFeedEntries(feedScope));
+        feedContent.put("feedItems", getFeedEntries(feedScope, request));
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("feedContent", feedContent);
 
         return new ModelAndView(viewName, model);

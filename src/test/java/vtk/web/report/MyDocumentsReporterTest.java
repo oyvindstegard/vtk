@@ -30,6 +30,10 @@
  */
 package vtk.web.report;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,9 +42,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
-import vtk.repository.Resource;
 
-import static org.junit.Assert.*;
+import vtk.repository.Resource;
 
 public class MyDocumentsReporterTest {
 	
@@ -68,7 +71,7 @@ public class MyDocumentsReporterTest {
         String token = "";
         Resource resource = null;
         HttpServletRequest request = new MockHttpServletRequest("GET", "http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents");
-        Map<String, Object> result = myReporter.getReportContent(token, resource, request);
+        Map<String, Object> result = myReporter.getReportContent(request, token, resource);
         assertNotNull("result should not be null (did we get here at all?)", result);
     }
 
@@ -76,7 +79,7 @@ public class MyDocumentsReporterTest {
 	public void whenAlwaysShouldReturnSubTypeInformationInMap() {
 		HttpServletRequest request = newRequest("directacl");
 		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 		myReporter.addToMap(map, request);
 		@SuppressWarnings("unchecked")
 		ArrayList<MyDocumentsReporter.ReportSubType> subTypes = (ArrayList<MyDocumentsReporter.ReportSubType>)map.get(MyDocumentsReporter.REPORT_SUB_TYPE_MAP_KEY);

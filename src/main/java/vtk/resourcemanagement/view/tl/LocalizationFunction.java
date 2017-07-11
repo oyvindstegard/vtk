@@ -53,7 +53,7 @@ public class LocalizationFunction extends Function {
     @Override
     public Object eval(Context ctx, Object... args) {
         String key = args[0].toString();
-        //RequestContext requestContext = RequestContext.getRequestContext();
+        //RequestContext requestContext = RequestContext.getRequestContext(request);
         //HttpServletRequest request = requestContext.getServletRequest();
         HttpServletRequest request = (HttpServletRequest) ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
 

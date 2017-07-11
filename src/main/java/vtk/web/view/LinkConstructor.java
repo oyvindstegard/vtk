@@ -30,6 +30,8 @@
  */
 package vtk.web.view;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.web.service.URL;
 
 
@@ -39,6 +41,7 @@ import vtk.web.service.URL;
  */
 public interface LinkConstructor {
     
-    public URL construct(Object resource, String parametersCSV, String serviceName);
+    public URL construct(HttpServletRequest request, Object resource, 
+            String parametersCSV, String serviceName);
 	
 }

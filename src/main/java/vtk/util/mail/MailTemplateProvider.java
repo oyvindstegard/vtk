@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.View;
-import vtk.web.RequestContext;
+
 import vtk.web.referencedata.provider.ResourceDetailProvider;
 import vtk.web.servlet.BufferedResponse;
 
@@ -46,12 +46,13 @@ public class MailTemplateProvider {
     private View view;
     private ResourceDetailProvider resourceDetailProvider;
 
-    public String generateMailBody(String title, String url, String mailFrom,
-            String comment, String userAgentViewport, String site) throws Exception {
-        return generateMailBody(title, url, mailFrom, null, comment, userAgentViewport, site);
+    public String generateMailBody(HttpServletRequest request, String title, String url, 
+            String mailFrom, String comment, String userAgentViewport, String site) throws Exception {
+        return generateMailBody(request, title, url, mailFrom, null, comment, userAgentViewport, site);
     }
 
-    public String generateMailBody(String title, String url, String mailFrom, String replyTo,
+    public String generateMailBody(HttpServletRequest request, String title, 
+            String url, String mailFrom, String replyTo,
             String comment, String userAgentViewport, String site) throws Exception {
 
         Map<String, Object> model = new HashMap<>();
@@ -64,9 +65,6 @@ public class MailTemplateProvider {
         model.put("replyTo", replyTo);
 
         BufferedResponse response = new BufferedResponse();
-
-        RequestContext ctx = RequestContext.getRequestContext();
-        HttpServletRequest request = ctx.getServletRequest();
 
         if (resourceDetailProvider != null) {
             resourceDetailProvider.referenceData(model, request);

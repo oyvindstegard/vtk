@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, University of Oslo, Norway
+/* Copyright (c) 2017 University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -7,15 +7,15 @@
  * 
  *  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 
+ *
  *  * Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of the University of Oslo nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- *      
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -30,10 +30,20 @@
  */
 package vtk.repository.search;
 
-
-public interface Parser extends QueryParser {
-
-    public Sorting parseSortString(String sortString);
-
+public interface SortingParser {
     
+    /**
+     * Parses a sort specification of the syntax
+     * <code>field(:asc|:desc)?(,field(:asc|:desc)?)*</code> and
+     * produces a {@link Sorting} object.
+     *
+     * <p>Always end the sorting with a uri sort, either removing trailing sort
+     * terms (uri is guaranteed to give a definitive sort), or adding if it isn't 
+     * specified (to guarantee consistent sorting for all results).
+     *
+     * @param sorting the sort specification
+     * @return a sort object
+     * @throws QueryException if it encounters an invalid, unknown or duplicated sort field
+     */
+    public Sorting parse(String sorting);
 }

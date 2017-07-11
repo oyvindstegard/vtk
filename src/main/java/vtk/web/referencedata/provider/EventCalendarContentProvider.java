@@ -70,7 +70,7 @@ public class EventCalendarContentProvider implements ReferenceDataProvider {
             String requestedDate = request.getParameter(EventListingHelper.REQUEST_PARAMETER_DATE);
             model.put("requestedDate", requestedDate);
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path resourceURI = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();

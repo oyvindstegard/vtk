@@ -30,11 +30,12 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
 import vtk.security.Principal;
-import vtk.web.RequestContext;
 import vtk.web.actions.copymove.CopyMoveSessionBean;
 
 /**
@@ -48,7 +49,7 @@ import vtk.web.actions.copymove.CopyMoveSessionBean;
  * </ul>
  *
  */
-public class SessionVariableExistsAssertion implements Assertion {
+public class SessionVariableExistsAssertion implements WebAssertion {
 
     private String variableName = null;
     private String action = null;
@@ -70,10 +71,21 @@ public class SessionVariableExistsAssertion implements Assertion {
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        return Optional.of(url);
+    }
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+    
+    @Override
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof SessionVariableExistsAssertion) {
             return ! (this.variableName.equals(
-                    ((SessionVariableExistsAssertion)assertion).getVariableName()) && 
+                    ((SessionVariableExistsAssertion) assertion).getVariableName()) && 
                     this.action.equals(((SessionVariableExistsAssertion)assertion).getAction()));
         }
         return false;
@@ -81,25 +93,12 @@ public class SessionVariableExistsAssertion implements Assertion {
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        CopyMoveSessionBean sessionBean = (CopyMoveSessionBean) request.getSession(true).getAttribute(this.variableName);
+        CopyMoveSessionBean sessionBean = (CopyMoveSessionBean) request.getSession(true)
+                .getAttribute(this.variableName);
 
         return sessionBean != null && this.action.equals(sessionBean.getAction());
     }
 
-    @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        RequestContext requestContext = RequestContext.getRequestContext();
-
-        if (match) {
-            return matches(requestContext.getServletRequest(), resource, principal); 
-        }
-        return true;
-    }
-
-    @Override
-    public void processURL(URL url) {
-    }
-    
     @Override
     public String toString() {
         return "request.session[" + this.variableName + "].exists";

@@ -45,7 +45,6 @@ import org.springframework.beans.factory.annotation.Required;
 
 import vtk.repository.AuthorizationException;
 import vtk.repository.Path;
-import vtk.repository.PropertySet;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.ResourceNotFoundException;
@@ -81,22 +80,24 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
     private final static String PARAMETER_SORTING = "sorting";
     private final static String PARAMETER_SORTING_DESCRIPTION = "Sort the listing according to one or more properties, e.g. 'modifiedBy:asc,lastModified:desc'";
 
+    @Override
     protected void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
 
-        Map<String, Object> conf = new HashMap<String, Object>();
+        Map<String, Object> conf = new HashMap<>();
 
         String uri = request.getStringParameter(PARAMETER_URI);
         if (uri == null) {
             throw new DecoratorComponentException("Component parameter 'uri' is required");
         }
 
-        Path resourcePath = getResourcePath(uri);
+        Path resourcePath = getResourcePath(uri, RequestContext.getRequestContext(request.getServletRequest()));
         if (resourcePath == null) {
             throw new DecoratorComponentException("Provided uri is not a valid folder reference: " + uri);
         }
-        
-        Repository repository = RequestContext.getRequestContext().getRepository();
+        RequestContext requestContext = RequestContext.getRequestContext(
+                request.getServletRequest());
+        Repository repository = requestContext.getRepository();
         String token = SecurityContext.getSecurityContext().getToken();
 
         HttpServletRequest servletRequest = request.getServletRequest();
@@ -155,22 +156,20 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
 
         Locale preferredLocale = localeResolver.resolveResourceLocale(res);
         Map<String, Principal> principalDocuments = helper.getPrincipalDocumentLinks(
-                new HashSet<PropertySet>(listing.getPropertySets()), preferredLocale, null);
+                new HashSet<>(listing.getPropertySets()), preferredLocale, null);
         model.put("principalDocuments", principalDocuments);
 
         model.put("entries", listing.getEntries());
         model.put("conf", conf);
     }
 
-    private Path getResourcePath(String uri) {
+    private Path getResourcePath(String uri, RequestContext requestContext) {
         // Be lenient on trailing slash
         uri = uri.endsWith("/") && !uri.equals("/") ? uri.substring(0, uri.lastIndexOf("/")) : uri;
 
-        RequestContext rc = RequestContext.getRequestContext();
-
         try {
             if (!uri.startsWith("/")) {
-                return rc.getCurrentCollection().extend(uri);
+                return requestContext.getCurrentCollection().extend(uri);
             }
             return Path.fromString(uri);
         } catch (IllegalArgumentException iae) {
@@ -178,8 +177,9 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
         }
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put(PARAMETER_URI, PARAMETER_URI_DESCRIPTION);
         map.put(PARAMETER_MAX_ITEMS, PARAMETER_MAX_ITEMS_DESCRIPTION);
         map.put(PARAMETER_GO_TO_FOLDER_LINK, PARAMETER_GO_TO_FOLDER_LINK_DESCRIPTION);
@@ -197,6 +197,7 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
         final Map<String, String[]> paramsMap = Collections.unmodifiableMap(new HashMap<>(m));
         
         return new HttpServletRequestWrapper(servletRequest) {
+            @Override
             public String getParameter(String name) {
                 String[] vals = paramsMap.get(name);
                 if (vals == null || vals.length == 0) return null;
@@ -242,6 +243,7 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
         this.localeResolver = localeResolver;
     }
 
+    @Override
     protected String getDescriptionInternal() {
         return "Inserts a folder item list component on the page";
     }

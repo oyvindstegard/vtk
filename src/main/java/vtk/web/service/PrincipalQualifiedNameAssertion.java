@@ -30,10 +30,14 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-public class PrincipalQualifiedNameAssertion extends AbstractRepositoryAssertion {
+public class PrincipalQualifiedNameAssertion extends AbstractAssertion {
 
     private String username;
     private boolean equals = true;
@@ -51,16 +55,13 @@ public class PrincipalQualifiedNameAssertion extends AbstractRepositoryAssertion
     }
 
     @Override
-    public boolean matches(Resource resource, Principal principal) {
-        if (principal == null) {
-            return false;
-        }
-        boolean match = this.username.equals(principal.getQualifiedName());
-        return (equals) ? match : !match;
+    public boolean matches(HttpServletRequest request, Resource resource,
+            Principal principal) {
+        return matches(principal);
     }
     
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof PrincipalQualifiedNameAssertion) {
             PrincipalQualifiedNameAssertion other =
                 (PrincipalQualifiedNameAssertion) assertion;
@@ -77,10 +78,34 @@ public class PrincipalQualifiedNameAssertion extends AbstractRepositoryAssertion
     }
     
     @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        if (!matches(principal)) {
+            return Optional.empty();
+        }
+        return Optional.of(url);
+    }
+
+    @Override
+    public URL processURL(URL url) {
+        return url;
+    }
+    
+    @Override
     public String toString() {
         if (equals) {
             return "principal.name = " + this.username;
         }
         return "principal.name != " + this.username;
     }
+
+    private boolean matches(Principal principal) {
+        if (principal == null) {
+            return false;
+        }
+        boolean match = this.username.equals(principal.getQualifiedName());
+        return (equals) ? match : !match;
+    }
+    
+
 }

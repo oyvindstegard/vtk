@@ -79,7 +79,7 @@ public class IndexFileMessageProvider implements ReferenceDataProvider {
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
 
-        RequestContext context = RequestContext.getRequestContext();
+        RequestContext context = RequestContext.getRequestContext(request);
         
         Path index = context.getIndexFileURI();
         if (index == null) {

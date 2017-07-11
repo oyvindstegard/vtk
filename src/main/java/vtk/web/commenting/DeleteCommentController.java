@@ -77,7 +77,7 @@ public class DeleteCommentController extends AbstractController implements Initi
 
     protected ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();

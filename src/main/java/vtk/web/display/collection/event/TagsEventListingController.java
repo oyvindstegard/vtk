@@ -54,7 +54,7 @@ public class TagsEventListingController extends EventListingController {
         // Run the search
         super.runSearch(request, collection, model, pageLimit);
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Resource resource = tagsHelper.getScopedResource(token, request);
 

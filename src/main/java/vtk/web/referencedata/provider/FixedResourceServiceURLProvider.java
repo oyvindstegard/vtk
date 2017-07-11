@@ -132,7 +132,7 @@ public class FixedResourceServiceURLProvider
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
 
@@ -151,9 +151,7 @@ public class FixedResourceServiceURLProvider
         try {
             if (resource != null) {
                 url = service.urlConstructor(URL.create(request))
-                        .withResource(resource)
-                        .withPrincipal(principal)
-                        .matchAssertions(matchAssertions)
+                        .withURI(resource.getURI())
                         .constructURL()
                         .toString();
             }

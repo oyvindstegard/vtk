@@ -169,7 +169,7 @@ public class SinglePropertyEditController implements Controller {
             this.name = name;
             this.defaultValue = request.getParameter("default-value");
             this.value = request.getParameter("value");
-            this.requestContext = RequestContext.getRequestContext();
+            this.requestContext = RequestContext.getRequestContext(request);
             String namespace = request.getParameter("namespace");
 
             String token = requestContext.getSecurityToken();

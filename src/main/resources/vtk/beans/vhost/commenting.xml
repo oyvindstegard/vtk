@@ -221,7 +221,7 @@
   </bean>
 
   <bean id="commenting.commentsEnabled"
-        class="vtk.web.service.ResourcePropertyAssertion">
+        class="vtk.repository.resourcetype.ResourcePropertyAssertion">
     <property name="namespace" ref="DEFAULT_NAMESPACE" />
     <property name="name" value="commentsEnabled" />
     <property name="value" value="true" />

@@ -72,7 +72,7 @@ public class ConfirmPublishController implements Controller, ReferenceDataProvid
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         try {
-            RequestContext requestContext = RequestContext.getRequestContext();
+            RequestContext requestContext = RequestContext.getRequestContext(request);
             Repository repository = requestContext.getRepository();
             Path resourceURI = requestContext.getResourceURI();
             String token = requestContext.getSecurityToken();

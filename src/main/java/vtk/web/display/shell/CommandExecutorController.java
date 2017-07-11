@@ -60,7 +60,7 @@ public class CommandExecutorController extends SimpleFormController<ExecutorComm
 
     @Override
     protected ExecutorCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Service service = requestContext.getService();

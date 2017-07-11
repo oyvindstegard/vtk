@@ -30,6 +30,10 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -45,8 +49,7 @@ import vtk.security.Principal;
  *   <code>false</code>).
  * </ul>
  */
-public class ResourceURIAssertion
-  extends AbstractRepositoryAssertion {
+public class ResourceURIAssertion extends AbstractAssertion {
 
     private Path uri;
     private boolean inverted = false;
@@ -69,7 +72,7 @@ public class ResourceURIAssertion
 
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         if (assertion instanceof ResourceURIAssertion) {
             ResourceURIAssertion other = (ResourceURIAssertion) assertion;
             if (!this.inverted && !other.isInverted()) {
@@ -84,24 +87,42 @@ public class ResourceURIAssertion
     }
 
     @Override
-    public boolean matches(Resource resource, Principal principal) {
-        if (resource == null) {
-            return this.inverted ? true : false;
-        }
-
-        if (this.inverted) {
-            return ! this.uri.equals(resource.getURI());
-        }
-        
-        return this.uri.equals(resource.getURI());
-    }
-
-    @Override
     public String toString() {
         if (this.inverted) {
             return "request.uri != " + this.uri;
         }
         return "request.uri = " + this.uri;
+    }
+
+    @Override
+    public Optional<URL> processURL(URL url, Resource resource,
+            Principal principal) {
+        if (matches(resource)) {
+            return Optional.of(url.setPath(resource.getURI()));
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public URL processURL(URL url) {
+        return url.setPath(uri);
+    }
+
+    @Override
+    public boolean matches(HttpServletRequest request, 
+            Resource resource, Principal principal) {
+        if (resource == null) {
+            return this.inverted ? true : false;
+        }
+        if (this.inverted) {
+            return ! this.uri.equals(resource.getURI());
+        }
+        return this.uri.equals(resource.getURI());
+    }
+
+    private boolean matches(Resource resource) {
+        return inverted ? !uri.equals(resource.getURI()) : 
+            uri.equals(resource.getURI());
     }
 
 }

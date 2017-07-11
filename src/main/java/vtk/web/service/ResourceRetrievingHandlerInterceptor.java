@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.Repository;
 import vtk.repository.RepositoryException;
 import vtk.repository.Resource;
@@ -51,7 +52,7 @@ import vtk.web.RequestContext;
 public class ResourceRetrievingHandlerInterceptor implements HandlerInterceptor {
 
     public final boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        Resource resource = retrieveResource();
+        Resource resource = retrieveResource(request);
         return handleInternal(resource, request);
     }
 
@@ -64,10 +65,10 @@ public class ResourceRetrievingHandlerInterceptor implements HandlerInterceptor 
         return true;
     }
 
-    protected Resource retrieveResource() 
+    protected Resource retrieveResource(HttpServletRequest request) 
         throws RepositoryException, AuthenticationException, Exception {
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
 

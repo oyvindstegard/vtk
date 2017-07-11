@@ -30,9 +30,11 @@
  */
 package vtk.resourcemanagement.view.tl;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.repository.search.Parser;
 import vtk.repository.search.PropertySortField;
 import vtk.repository.search.ResultSet;
 import vtk.repository.search.Search;
@@ -44,17 +46,19 @@ import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
 import vtk.web.RequestContext;
+import vtk.web.decorating.DynamicDecoratorTemplate;
+import vtk.web.search.SearchParser;
 
 public class SearchResultValueProvider extends Function {
 
-    private Parser searchParser;
+    private SearchParser searchParser;
     // private QueryParserFactory queryParserFactory;
     private Searcher searcher;
     private PropertyTypeDefinition titlePropDef;
 
     public SearchResultValueProvider(Symbol symbol,
     // QueryParserFactory queryParserFactory,
-            Parser searchParser, Searcher searcher) {
+            SearchParser searchParser, Searcher searcher) {
         super(symbol, 2);
         // this.queryParserFactory = queryParserFactory;
         this.searchParser = searchParser;
@@ -65,10 +69,16 @@ public class SearchResultValueProvider extends Function {
     public Object eval(Context ctx, Object... args) {
         Object arg = args[0];
         String queryString = arg.toString();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        HttpServletRequest request = (HttpServletRequest) 
+                ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        if (request == null) {
+            throw new RuntimeException("Servlet request not found in context by attribute: "
+                    + DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        }
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         // Query query = queryParserFactory.getParser().parse(queryString);
-        Query query = this.searchParser.parse(queryString);
+        Query query = searchParser.parser(request).parse(queryString);
         Search search = new Search();
         search.setLimit(100);
         search.setQuery(query);

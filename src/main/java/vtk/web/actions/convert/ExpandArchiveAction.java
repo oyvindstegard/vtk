@@ -33,14 +33,17 @@ package vtk.web.actions.convert;
 import java.io.InputStream;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.security.SecurityContext;
 import vtk.util.repository.ResourceArchiver;
+import vtk.web.RequestContext;
 
 public class ExpandArchiveAction implements CopyAction {
 
@@ -49,12 +52,14 @@ public class ExpandArchiveAction implements CopyAction {
     private Repository repository;
     private ResourceArchiver archiver;
 
-    public void process(Path uri, Path copyUri, Map<String, Object> properties) throws Exception {
+    @Override
+    public void process(HttpServletRequest request, Path uri,
+            Path copyUri, Map<String, Object> properties) throws Exception {
 
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
-        String token = securityContext.getToken();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        String token = requestContext.getSecurityToken();
 
-        logger.info("Expanding archive '" + uri + "' to '" + copyUri.toString() + "'");
+        logger.info("Expanding archive '{}' to '{}'", uri, copyUri);
 
         Resource resource = this.repository.retrieve(token, uri, false);
         if (resource.isCollection()) {
@@ -63,7 +68,7 @@ public class ExpandArchiveAction implements CopyAction {
         InputStream source = this.repository.getInputStream(token, uri, false);
         this.archiver.expandArchive(token, source, copyUri, properties);
 
-        logger.info("Done expanding archive '" + uri + "' to '" + copyUri.toString() + "'");
+        logger.info("Done expanding archive '{}' to '{}'", uri, copyUri);
 
     }
 

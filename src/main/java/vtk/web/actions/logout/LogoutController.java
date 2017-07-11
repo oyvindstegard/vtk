@@ -114,7 +114,7 @@ public class LogoutController extends SimpleFormController<LogoutCommand> implem
     @Override
     protected LogoutCommand formBackingObject(HttpServletRequest request)
             throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         
@@ -134,7 +134,7 @@ public class LogoutController extends SimpleFormController<LogoutCommand> implem
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, LogoutCommand command, BindException errors)
             throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         

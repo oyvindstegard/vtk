@@ -85,7 +85,7 @@ public class CommentsProvider implements ReferenceDataProvider {
             }
         }
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(servletRequest);
         Principal principal = requestContext.getPrincipal();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();

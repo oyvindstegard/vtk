@@ -1,5 +1,5 @@
-<#ftl strip_whitespace=true output_format="HTML" auto_esc=true>
-<#attempt>
+<#ftl strip_whitespace=true output_format="HTML" auto_esc=true />
+
 <#import "/spring.ftl" as spring />
 <#import "/lib/vtk.ftl" as vrtx />
 
@@ -16,7 +16,7 @@
 </#if>
 
 <h3>${headerMsg}</h3>
-<#if session.filesToBeCopied?exists>
+<#if (session.filesToBeCopied)?exists>
   <p>
     <abbr tabindex="0" title="<h4 id='title-wrapper'>${filesTipI18n}</h4><@vrtx.fileNamesAsLimitedList session.filesToBeCopied />">
       ${session.filesToBeCopied?size} ${filesI18n}
@@ -42,7 +42,3 @@
     <button class="vrtx-cancel-link" title="${clearTitleMsg}" type="submit" value="clear-action" name="clear-action">x</button>
   </form>
 </#if>
-
-<#recover>
-${.error}
-</#recover>

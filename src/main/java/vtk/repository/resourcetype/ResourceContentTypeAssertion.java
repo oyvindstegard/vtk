@@ -1,4 +1,4 @@
-/* Copyright (c) 2006, University of Oslo, Norway
+/* Copyright (c) 2004, University of Oslo, Norway
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,15 +28,38 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.actions.convert;
+package vtk.repository.resourcetype;
 
+import java.util.Objects;
+import java.util.Optional;
 
-public class ArchiveCommandValidator extends CopyResourceCommandValidator {
+import vtk.repository.Resource;
+import vtk.security.Principal;
 
+/**
+ * Matches on resource content types. The content type specified must
+ * be an exact match.
+ */
+public class ResourceContentTypeAssertion implements RepositoryAssertion {
+    private String contentType;
+
+    public ResourceContentTypeAssertion(String contentType) {
+        this.contentType = Objects.requireNonNull(contentType, 
+                "contentType cannot be null");
+    }
+    
     @Override
-    @SuppressWarnings("rawtypes")
-    protected boolean supportsClass(Class clazz) {
-        return clazz == ArchiveCommand.class;
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("property.contentType = " + this.contentType);
+        return sb.toString();
     }
 
+    @Override
+    public boolean matches(Optional<Resource> resource,
+            Optional<Principal> principal) {
+        return resource.isPresent() && this.contentType
+                .equals(resource.get().getContentType());
+
+    }
 }

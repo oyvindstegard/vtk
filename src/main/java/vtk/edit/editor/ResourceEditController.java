@@ -73,8 +73,8 @@ public class ResourceEditController extends SimpleFormController<ResourceEditWra
 
     @Override
     protected ResourceEditWrapper formBackingObject(HttpServletRequest request) throws Exception {
-        resourceManager.lock();
-        return resourceManager.createResourceEditWrapper();
+        resourceManager.lock(request);
+        return resourceManager.createResourceEditWrapper(request);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ResourceEditController extends SimpleFormController<ResourceEditWra
             BindException errors) throws Exception {
         
         Resource resource = wrapper.getResource();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -94,11 +94,11 @@ public class ResourceEditController extends SimpleFormController<ResourceEditWra
         }
 
         if (!wrapper.isSave()) {
-            this.resourceManager.unlock();
+            this.resourceManager.unlock(request);
             return new ModelAndView(getSuccessView(), new HashMap<String, Object>());
         }
 
-        this.resourceManager.store(wrapper);
+        this.resourceManager.store(request, wrapper);
 
         if (!wrapper.isView()) {
             Map<String, Object> model = getModelProperties(wrapper, resource, principal, repository);
@@ -106,7 +106,7 @@ public class ResourceEditController extends SimpleFormController<ResourceEditWra
             return new ModelAndView(getFormView(), model);
         }
 
-        this.resourceManager.unlock();
+        this.resourceManager.unlock(request);
         return super.onSubmit(request, response, wrapper, errors);
     }
 
@@ -133,7 +133,7 @@ public class ResourceEditController extends SimpleFormController<ResourceEditWra
     @Override
     protected Map<String, Object> referenceData(HttpServletRequest request, ResourceEditWrapper command, Errors errors) throws Exception {
         Resource resource = command.getResource();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
         Repository repository = requestContext.getRepository();
 

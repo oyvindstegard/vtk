@@ -30,9 +30,11 @@
  */
 package vtk.repository;
 
+import java.util.Optional;
+
 import vtk.repository.resourcetype.Content;
+import vtk.repository.resourcetype.RepositoryAssertion;
 import vtk.security.Principal;
-import vtk.web.service.RepositoryAssertion;
 
 /**
  * XXX  Hack/marker for class of assertions that require resource content for matching during evaluation.
@@ -44,6 +46,7 @@ import vtk.web.service.RepositoryAssertion;
  */
 public interface RepositoryContentEvaluationAssertion extends RepositoryAssertion {
 
-    public boolean matches(Resource resource, Principal principal, Content content);
+    public boolean matches(Optional<Resource> resource, 
+            Optional<Principal> principal, Optional<Content> content);
 
 }

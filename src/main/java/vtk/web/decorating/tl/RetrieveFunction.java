@@ -30,6 +30,8 @@
  */
 package vtk.web.decorating.tl;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
@@ -37,6 +39,7 @@ import vtk.text.tl.Context;
 import vtk.text.tl.Symbol;
 import vtk.text.tl.expr.Function;
 import vtk.web.RequestContext;
+import vtk.web.decorating.DynamicDecoratorTemplate;
 import vtk.web.decorating.tl.DomainTypes.Failure;
 import vtk.web.decorating.tl.DomainTypes.Result;
 import vtk.web.decorating.tl.DomainTypes.Success;
@@ -54,7 +57,13 @@ public class RetrieveFunction extends Function {
             return new Failure<>("Reference is NULL");
         }
         
-        RequestContext requestContext = RequestContext.getRequestContext();
+        HttpServletRequest request = (HttpServletRequest) 
+                ctx.getAttribute(DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        if (request == null) {
+            throw new RuntimeException("Servlet request not found in context by attribute: "
+                    + DynamicDecoratorTemplate.SERVLET_REQUEST_CONTEXT_ATTR);
+        }
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         

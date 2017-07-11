@@ -67,7 +67,7 @@ public class CopyController extends AbstractWebdavController {
     public void handleRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
@@ -75,7 +75,7 @@ public class CopyController extends AbstractWebdavController {
         String destHeader = request.getHeader("Destination");
 
         try {
-            Resource resource = repository.retrieve(token, uri, false);
+            repository.retrieve(token, uri, false);
 
             Path destURI = mapToResourceURI(destHeader);
             String depthString = request.getHeader("Depth");

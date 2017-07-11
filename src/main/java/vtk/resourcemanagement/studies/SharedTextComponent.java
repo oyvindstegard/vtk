@@ -59,19 +59,21 @@ public class SharedTextComponent extends ViewRenderingDecoratorComponent {
 
         String sharedText = null;
         if (!StringUtils.isBlank(propName)) {
-            Resource resource = getResource();
+            Resource resource = getResource(request);
             Property prop = resource.getProperty(Namespace.STRUCTURED_RESOURCE_NAMESPACE, propName);
 
             if (prop != null) {
                 model.put("id", propName + ":" + prop.getStringValue());
                 sharedText = sharedTextResolver.resolveSharedText(resource, prop);
-            } else {
+            }
+            else {
                 model.put("id", propName);
                 model.put("nullProp", true);
             }
-        } else if (!StringUtils.isBlank(folder) && !StringUtils.isBlank(file) && !StringUtils.isBlank(key)) {
+        }
+        else if (!StringUtils.isBlank(folder) && !StringUtils.isBlank(file) && !StringUtils.isBlank(key)) {
             model.put("id", file + ":" + key);
-            sharedText = sharedTextResolver.resolveSharedText(getResource(), folder, file, key);
+            sharedText = sharedTextResolver.resolveSharedText(getResource(request), folder, file, key);
         }
 
         if (sharedText != null) {
@@ -79,8 +81,8 @@ public class SharedTextComponent extends ViewRenderingDecoratorComponent {
         }
     }
 
-    private Resource getResource() throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    private Resource getResource(DecoratorRequest request) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         return repository.retrieve(token, requestContext.getResourceURI(), true);

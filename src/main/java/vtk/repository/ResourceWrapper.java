@@ -35,6 +35,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import javax.servlet.http.HttpServletRequest;
+
 import vtk.edit.editor.ResourceWrapperManager;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
@@ -85,7 +87,7 @@ public class ResourceWrapper implements Resource {
 
     }
 
-    public ResourceWrapper getPropResource(PropertyTypeDefinition propDef) {
+    public ResourceWrapper getPropResource(HttpServletRequest request, PropertyTypeDefinition propDef) {
         if (propDef.getType().equals(PropertyType.Type.IMAGE_REF)) {
             try {
                 String ref = resource.getProperty(propDef).getStringValue();
@@ -93,16 +95,18 @@ public class ResourceWrapper implements Resource {
                 Path uri;
                 if (ref.contains("/")) {
                     uri = Path.fromString(ref);
-                } else {
+                }
+                else {
                     if (resource.isCollection()) {
                         uri = resource.getURI().extend(ref);
-                    } else {
+                    }
+                    else {
                         uri = resource.getURI().getParent().extend(ref);
                     }
                 }
-                return this.resourceManager.createResourceWrapper(uri);
-            } catch (Exception e) {
+                return this.resourceManager.createResourceWrapper(request, uri);
             }
+            catch (Exception e) { }
         }
         return null;
     }

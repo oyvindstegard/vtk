@@ -54,10 +54,10 @@ public class CommentsFeedUrlProvider extends ViewRenderingDecoratorComponent {
     protected void processModel(final Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
         super.processModel(model, request, response);
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
-        Path uri = RequestContext.getRequestContext().getResourceURI();
+        Path uri = RequestContext.getRequestContext(request.getServletRequest()).getResourceURI();
         
         boolean commentsAllowed = false;
         boolean commentsEnabled = false;

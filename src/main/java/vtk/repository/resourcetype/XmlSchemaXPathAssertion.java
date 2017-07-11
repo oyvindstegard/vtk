@@ -28,30 +28,26 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package vtk.web.service;
+package vtk.repository.resourcetype;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.xpath.XPath;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import vtk.repository.Property;
 import vtk.repository.Resource;
-import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
 import vtk.xml.XmlSchemaRegistry;
 
 
-/**
- * 
- */
-public class XmlSchemaXPathAssertion extends AbstractRepositoryAssertion
-  implements InitializingBean {
+public class XmlSchemaXPathAssertion implements RepositoryAssertion {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -60,53 +56,37 @@ public class XmlSchemaXPathAssertion extends AbstractRepositoryAssertion
     private String xpath;
     private Pattern matchValue;
     
-
-    public void setSchemaPropertyDefinition(PropertyTypeDefinition schemaPropertyDefinition) {
-        this.schemaPropertyDefinition = schemaPropertyDefinition;
-    }
-    
-    public void setSchemaRegistry(XmlSchemaRegistry schemaRegistry) {
-        this.schemaRegistry = schemaRegistry;
-    }
-
-    public void setXpath(String xpath) {
+    public XmlSchemaXPathAssertion(XmlSchemaRegistry schemaRegistry,
+            PropertyTypeDefinition schemaPropertyDefinition, String xpath) {
         try {
             XPath.newInstance(xpath);
-        } catch (JDOMException e) {
+        }
+        catch (JDOMException e) {
             throw new IllegalArgumentException("Illegal XPath expression '"
                     + xpath + "': " + e.getMessage());
         }
         this.xpath = xpath;
+        this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
+        this.schemaPropertyDefinition = Objects.requireNonNull(schemaPropertyDefinition);
     }
-
+    
+    
     public void setMatchValue(String matchValue) {
         this.matchValue = Pattern.compile(matchValue);
     }
     
-
-    public void afterPropertiesSet() throws Exception {
-        if (this.schemaPropertyDefinition == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'schemaPropertyDefinition' not specified");
+    @Override
+    public boolean matches(Optional<Resource> resource,
+            Optional<Principal> principal) {
+        if (!resource.isPresent()) {
+            return false;
         }
-        if (this.schemaRegistry == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'schemaRegistry' not specified");
-        }
-        if (this.xpath == null) {
-            throw new BeanInitializationException(
-                "JavaBean property 'xpath' not specified");
-        }
+        return matches(resource.get());
+        
     }
 
 
-    public boolean conflicts(Assertion assertion) {
-        return false;
-    }
-
-
-
-    public boolean matches(Resource resource, Principal principal) {
+    private boolean matches(Resource resource) {
 
         if (resource.isCollection()) {
             return false;
@@ -120,7 +100,8 @@ public class XmlSchemaXPathAssertion extends AbstractRepositoryAssertion
         Document schema = null;
         try {
             schema = this.schemaRegistry.getXMLSchema(docType);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             // Unable to get schema
             logger.warn("Unable to obtain XML schema from registry: " + docType, e);
         }
@@ -150,15 +131,15 @@ public class XmlSchemaXPathAssertion extends AbstractRepositoryAssertion
                 }
                 return match;
             }
-
             return true;
-
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(
                 "Unable to match on resource " + resource, e);
         }
     }
 
+    @Override
     public String toString() {
         return "document.xmlschema exists and document.xmlschema.matches(" + this.xpath + ")";
     }

@@ -111,12 +111,13 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
 
     @Override
     protected ACLEditCommand formBackingObject(HttpServletRequest request) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Resource resource = this.repository.retrieve(token, uri, false);
         Locale preferredLocale = this.localeResolver.resolveLocale(request);
-        return getACLEditCommand(resource, resource.getAcl(), requestContext.getPrincipal(), false, false,
+        return getACLEditCommand(request, resource, resource.getAcl(), 
+                requestContext.getPrincipal(), false, false,
                 preferredLocale);
     }
 
@@ -129,12 +130,12 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
         return super.showForm(request, errors, viewName, model);
     }
 
-    private ACLEditCommand getACLEditCommand(Resource resource, Acl acl, Principal principal,
+    private ACLEditCommand getACLEditCommand(HttpServletRequest request, Resource resource, Acl acl, Principal principal,
             boolean isCustomPermissions, boolean losingPrivileges, Locale preferredLocale) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
 
-        URL submitURL = service.urlConstructor(URL.create(requestContext.getServletRequest()))
+        URL submitURL = service.urlConstructor(requestContext.getRequestURL())
                 .withResource(resource)
                 .withPrincipal(principal)
                 .constructURL();
@@ -196,7 +197,7 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
             BindException errors) throws Exception {
         Acl acl = command.getAcl();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
@@ -217,7 +218,8 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
             acl = addToAcl(acl, command.getGroupNames(), Type.GROUP);
             acl = addToAcl(acl, command.getUserNameEntries(), Type.USER, preferredLocale);
             if (errors.hasErrors()) {
-                BindException bex = new BindException(getACLEditCommand(resource, acl, currentPrincipal, true, false,
+                BindException bex = new BindException(getACLEditCommand(
+                        request, resource, acl, currentPrincipal, true, false,
                         preferredLocale), this.getCommandName());
                 bex.addAllErrors(errors);
                 return showForm(request, errors, getFormView(), errors.getModel());
@@ -231,16 +233,16 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
             acl = removeFromAcl(acl, command.getGroupNames(), Type.GROUP, currentPrincipal, errors);
             boolean losingPrivileges = !this.repository.authorize(currentPrincipal, acl, Privilege.ALL);
 
-            BindException bex = new BindException(getACLEditCommand(resource, acl, currentPrincipal, true,
-                    losingPrivileges, preferredLocale), this.getCommandName());
+            BindException bex = new BindException(getACLEditCommand(request, resource, 
+                    acl, currentPrincipal, true, losingPrivileges, preferredLocale), this.getCommandName());
             bex.addAllErrors(errors);
             return showForm(request, bex, getFormView(), null);
         } 
         else if (command.getRemoveUserAction() != null) {
             acl = removeFromAcl(acl, command.getUserNames(), Type.USER, currentPrincipal, errors);
             boolean losingPrivileges = !this.repository.authorize(currentPrincipal, acl, Privilege.ALL);
-            BindException bex = new BindException(getACLEditCommand(resource, acl, currentPrincipal, true,
-                    losingPrivileges, preferredLocale), this.getCommandName());
+            BindException bex = new BindException(getACLEditCommand(request, resource, acl, currentPrincipal, 
+                    true, losingPrivileges, preferredLocale), this.getCommandName());
             bex.addAllErrors(errors);
             return showForm(request, bex, getFormView(), null);
         }
@@ -253,8 +255,8 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
 
             acl = addToAcl(acl, command.getGroupNames(), Type.GROUP);
             BindException bex = new BindException(
-                    getACLEditCommand(resource, acl, currentPrincipal, true, false, preferredLocale),
-                    this.getCommandName());
+                    getACLEditCommand(request, resource, acl, currentPrincipal, true, 
+                            false, preferredLocale), this.getCommandName());
             return showForm(request, bex, getFormView(), null);
         }
         else if (command.getAddUserAction() != null) {
@@ -266,8 +268,8 @@ public class ACLEditController extends SimpleFormController<ACLEditCommand>
             acl = addToAcl(acl, command.getUserNameEntries(), Type.USER, preferredLocale);
             
             BindException bex = new BindException(
-                    getACLEditCommand(resource, acl, currentPrincipal, true, false, preferredLocale),
-                    this.getCommandName());
+                    getACLEditCommand(request, resource, acl, currentPrincipal, true, 
+                            false, preferredLocale), this.getCommandName());
             
             return showForm(request, bex, getFormView(), null);
         }

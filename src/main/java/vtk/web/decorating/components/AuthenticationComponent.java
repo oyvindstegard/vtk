@@ -85,7 +85,7 @@ public class AuthenticationComponent extends ViewRenderingDecoratorComponent {
             throws Exception {
 
         super.processModel(model, request, response);
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         Principal principal = requestContext.getPrincipal();

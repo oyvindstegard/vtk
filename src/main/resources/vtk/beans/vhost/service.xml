@@ -227,17 +227,17 @@
           <property name="parameterName" value="vrtx" />
           <property name="parameterValue" value="thumbnail" />
         </bean>
-        <bean class="vtk.web.service.ResourcePropertyAssertion">
+        <bean class="vtk.repository.resourcetype.ResourcePropertyAssertion">
           <property name="namespace" ref="DEFAULT_NAMESPACE" />
           <property name="name" value="thumbnail" />
           <property name="checkExistenceOnly" value="true" />
           <property name="invert" value="true" />
         </bean>
-        <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+        <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
           <property name="resourceTypeDefinition" ref="imageResourceTypeDefinition" />
           <property name="invert" value="true" />
         </bean>
-        <bean class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+        <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
           <property name="resourceTypeDefinition" ref="audioResourceTypeDefinition" />
           <property name="invert" value="true" />
         </bean>
@@ -542,9 +542,13 @@
     <property name="pattern" value=".*[^/]$" />
   </bean>
 
-  <bean id="resourceTypeInHtml" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
-    <property name="resourceTypeDefinition" ref="htmlResourceTypeDefinition" />
-    <property name="exactMatch" value="false" />
+  <bean id="resourceTypeInHtml" class="vtk.web.service.RepositoryAssertionWrapper">
+    <constructor-arg name="assertion">
+      <bean class="vtk.repository.resourcetype.ResourceTypeAssertion" parent="repositoryAware">
+        <property name="resourceTypeDefinition" ref="htmlResourceTypeDefinition" />
+        <property name="exactMatch" value="false" />
+      </bean>
+    </constructor-arg>
   </bean>
 
   <bean id="abstractResourcePrincipalPermissionAssertion"

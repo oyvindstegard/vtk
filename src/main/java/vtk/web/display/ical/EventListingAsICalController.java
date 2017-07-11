@@ -36,13 +36,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.event.EventListingHelper;
-import vtk.web.display.collection.event.EventListingSearcher;
 import vtk.web.display.collection.event.EventListingHelper.SpecificDateSearchType;
+import vtk.web.display.collection.event.EventListingSearcher;
 import vtk.web.search.Listing;
 
 public class EventListingAsICalController implements Controller {
@@ -54,7 +55,7 @@ public class EventListingAsICalController implements Controller {
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = SecurityContext.getSecurityContext().getToken();
         Resource currentResource = repository.retrieve(token, requestContext.getCurrentCollection(), true);
@@ -67,7 +68,7 @@ public class EventListingAsICalController implements Controller {
             events = this.searcher.searchSpecificDate(request, currentResource, 100, 1);
         }
 
-        String iCal = this.iCalHelper.getAsICal(events.getPropertySets());
+        String iCal = this.iCalHelper.getAsICal(events.getPropertySets(), repository.getId());
         if (iCal == null) {
             return null;
         }

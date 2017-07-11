@@ -11,7 +11,7 @@
     <property name="parentTypeDefinition" ref="resourceResourceTypeDefinition" />
     <property name="assertions">
       <list>
-        <bean class="vtk.web.service.ResourceIsCollectionAssertion" />
+        <bean class="vtk.repository.resourcetype.ResourceIsCollectionAssertion" />
       </list>
     </property>
     <property name="mixinTypeDefinitions">
@@ -512,16 +512,19 @@
     <property name="protectionLevel" ref="PROTECTION_LEVEL_ACL_ADMIN" />
   </bean>
 
-  <bean id="resourceInCollection" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="resourceInCollection" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+        parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="collectionResourceTypeDefinition" />
   </bean>
 
-  <bean id="resourceNotInCollection" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="resourceNotInCollection" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+        parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="collectionResourceTypeDefinition" />
     <property name="invert" value="true" />
   </bean>
 
-  <bean id="resourceIsCollection" class="vtk.web.service.ResourceTypeAssertion" parent="repositoryAware">
+  <bean id="resourceIsCollection" class="vtk.repository.resourcetype.ResourceTypeAssertion" 
+        parent="repositoryAware">
     <property name="resourceTypeDefinition" ref="collectionResourceTypeDefinition" />
     <property name="exactMatch" value="true" />
   </bean>

@@ -51,7 +51,7 @@ public class ListResourceTitleComponent extends ViewRenderingDecoratorComponent 
     @Override
     public void processModel(Map<String, Object> model, DecoratorRequest request, DecoratorResponse response)
             throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request.getServletRequest());
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -64,7 +64,7 @@ public class ListResourceTitleComponent extends ViewRenderingDecoratorComponent 
             token = null;
         }
         
-        List<RelatedDocument> relatedDocuments = new ArrayList<RelatedDocument>();
+        List<RelatedDocument> relatedDocuments = new ArrayList<>();
         if (resourceRefProp != null && resourceRefProp.getValues() != null) {
             for (Value x : resourceRefProp.getValues()) {
                 try {

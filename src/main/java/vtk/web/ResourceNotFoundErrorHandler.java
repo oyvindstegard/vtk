@@ -53,7 +53,7 @@ import vtk.repository.ResourceNotFoundException;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.PreviousLocationsResolver.RelocatedResource;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 import vtk.web.service.Service;
 
 public class ResourceNotFoundErrorHandler implements ErrorHandler {
@@ -61,12 +61,12 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
             LoggerFactory.getLogger(ResourceNotFoundErrorHandler.class);
     private String defaultView;    
     private List<ReferenceDataProvider> referenceDataProviders;
-    private Optional<Assertion> redirectAssertion = Optional.empty();
+    private Optional<WebAssertion> redirectAssertion = Optional.empty();
     private Optional<String> securityToken = Optional.empty();
     
     public ResourceNotFoundErrorHandler(String defaultView, 
             List<ReferenceDataProvider> referenceDataProviders, 
-            Optional<Assertion> redirectAssertion, Optional<String> securityToken) {
+            Optional<WebAssertion> redirectAssertion, Optional<String> securityToken) {
         this.defaultView = defaultView;
         this.referenceDataProviders = referenceDataProviders;
         this.redirectAssertion = redirectAssertion;
@@ -87,7 +87,7 @@ public class ResourceNotFoundErrorHandler implements ErrorHandler {
     public Map<String, Object> getErrorModel(HttpServletRequest request,
             HttpServletResponse response, Throwable error) throws Exception {
         Map<String, Object> model = new HashMap<>();
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getRequestURL().getPath();
         
         PropertyTypeDefinition locationHistoryPropDef = 

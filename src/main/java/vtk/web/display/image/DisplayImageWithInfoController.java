@@ -43,18 +43,18 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.web.RequestContext;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 
 public class DisplayImageWithInfoController implements Controller {
 
     private String viewName;
     private PropertyTypeDefinition titlePropDef;
     private PropertyTypeDefinition descriptionPropDef;
-    private Assertion resourceAssertion;
+    private WebAssertion resourceAssertion;
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
@@ -93,7 +93,7 @@ public class DisplayImageWithInfoController implements Controller {
         this.titlePropDef = titlePropDef;
     }
     
-    public void setResourceAssertion(Assertion resourceAssertion) {
+    public void setResourceAssertion(WebAssertion resourceAssertion) {
         this.resourceAssertion = resourceAssertion;
     }
 

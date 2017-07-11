@@ -169,7 +169,7 @@ implements ServletContextAware {
                 try {
                     URL url = URL.create(request.getServletRequest());
                     url = url.relativeURL(esi);
-                    Map<String, String[]> query = new LinkedHashMap<String, String[]>();
+                    Map<String, String[]> query = new LinkedHashMap<>();
                     for (String p: url.getParameterNames()) {
                         query.put(p, new String[] {url.getParameter(p)});
                     }
@@ -193,7 +193,9 @@ implements ServletContextAware {
         if (uri != null) {
             ignoreNotFound = ! uri.equals(request.getRawParameter(PARAMETER_FILE));
             if (!uri.startsWith("/")) {
-                Path currentCollection = RequestContext.getRequestContext().getCurrentCollection();
+                Path currentCollection = RequestContext
+                        .getRequestContext(request.getServletRequest())
+                        .getCurrentCollection();
                 uri = currentCollection.expand(uri).toString();
             }
             handleDirectInclude(uri, request, response, ignoreNotFound);
@@ -207,7 +209,11 @@ implements ServletContextAware {
         }
 
         if (uriPreProcessor != null) {
-            uri = uriPreProcessor.process(uri);
+            RequestContext rc = RequestContext.getRequestContext(request.getServletRequest());
+            
+            QueryStringPreProcessor.ProcessorContext ctx = 
+                    new QueryStringPreProcessor.ProcessorContext(rc.getResourceURI(), rc.getCurrentCollection());
+            uri = uriPreProcessor.process(uri, ctx);
         }
 
         if (uri.startsWith("http:") || uri.startsWith("https:")) {
@@ -216,7 +222,9 @@ implements ServletContextAware {
         }
 
         if (!uri.startsWith("/")) {
-            Path currentCollection = RequestContext.getRequestContext().getCurrentCollection();
+            Path currentCollection = RequestContext
+                    .getRequestContext(request.getServletRequest())
+                    .getCurrentCollection();
             uri = currentCollection.expand(uri).toString();
         }
 
@@ -226,7 +234,8 @@ implements ServletContextAware {
 
     private void handleDirectInclude(String address, DecoratorRequest request,
             DecoratorResponse response, boolean ignoreNotFound) throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request.getServletRequest());
         Repository repository = requestContext.getRepository();
         String token = null;
 
@@ -294,7 +303,7 @@ implements ServletContextAware {
             DecoratorResponse response) throws Exception {
         String decodedURI = uri;
 
-        Map<String, String[]> queryMap = new HashMap<String, String[]>();
+        Map<String, String[]> queryMap = new HashMap<>();
         String queryString = null;
 
         if (uri.indexOf("?") != -1) {
@@ -421,12 +430,14 @@ implements ServletContextAware {
 
 
 
+    @Override
     protected String getDescriptionInternal() {
         return "Includes the contents of another document in the page";
     }
 
+    @Override
     protected Map<String, String> getParameterDescriptionsInternal() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(PARAMETER_FILE, PARAMETER_FILE_DESC);
         map.put(PARAMETER_VIRTUAL, PARAMETER_VIRTUAL_DESC);
         map.put(PARAMETER_AS_CURRENT_USER, PARAMETER_AS_CURRENT_USER_DESC);

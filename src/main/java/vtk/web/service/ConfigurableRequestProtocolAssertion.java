@@ -31,11 +31,13 @@
 package vtk.web.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.InitializingBean;
+
 import vtk.repository.Path;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -55,7 +57,7 @@ import vtk.security.Principal;
  *   </li>
  * </ul>
  */
-public class ConfigurableRequestProtocolAssertion implements Assertion, InitializingBean {
+public class ConfigurableRequestProtocolAssertion implements WebAssertion, InitializingBean {
 
     private final static String PROTO_HTTP = "http";
     private final static String PROTO_HTTPS = "https";
@@ -94,22 +96,23 @@ public class ConfigurableRequestProtocolAssertion implements Assertion, Initiali
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
+    public boolean conflicts(WebAssertion assertion) {
         return false;
     }
 
     @Override
-    public void processURL(URL url) {
-        processURL(url, null, null, true);
+    public URL processURL(URL url) {
+        return processURL(url, null, null).get();
     }
-
+    
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        Path uri = url.getPath();
-        if (resource != null && resource.isReadRestricted()) {
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+
+       Path uri = url.getPath();
+       if (resource != null && resource.isReadRestricted()) {
             if (this.restrictedProtocol != null && !"*".equals(this.restrictedProtocol)) {
                 url.setProtocol(this.restrictedProtocol);
-                return true;
+                return Optional.of(url);
             }
         }
         if (this.configuration == null || this.configuration.isEmpty()) {
@@ -118,7 +121,7 @@ public class ConfigurableRequestProtocolAssertion implements Assertion, Initiali
                     url.setProtocol(this.defaultProtocol);
                 }
             }
-            return true;
+            return Optional.of(url);
         }
         
         while (uri != null) {
@@ -127,7 +130,7 @@ public class ConfigurableRequestProtocolAssertion implements Assertion, Initiali
                 value = value.trim();
                 if (PROTO_HTTP.equals(value) || PROTO_HTTPS.equals(value)) {
                     url.setProtocol(invertProtocol(value, this.invert));
-                    return true;
+                    return Optional.of(url);
                 }
             }
             uri = uri.getParent();
@@ -136,10 +139,10 @@ public class ConfigurableRequestProtocolAssertion implements Assertion, Initiali
             if (!"*".equals(this.defaultProtocol)) {
                 url.setProtocol(this.defaultProtocol);
             }
-            return true;
+            return Optional.of(url);
         } 
         url.setProtocol(PROTO_HTTP);
-        return true;
+        return Optional.of(url);
     }
 
 

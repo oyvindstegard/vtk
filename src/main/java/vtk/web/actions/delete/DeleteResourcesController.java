@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
 import vtk.repository.Path;
 import vtk.repository.Repository;
 import vtk.web.RequestContext;
@@ -52,7 +53,7 @@ public class DeleteResourcesController implements Controller {
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
 
@@ -65,7 +66,7 @@ public class DeleteResourcesController implements Controller {
         // Map of files that for some reason failed on delete. Separated by a
         // key (String) that specifies type of failure and identifies list of
         // paths to resources that failed.
-        Map<String, List<Path>> failures = new HashMap<String, List<Path>>();
+        Map<String, List<Path>> failures = new HashMap<>();
 
         @SuppressWarnings("rawtypes")
         Enumeration e = request.getParameterNames();
@@ -77,7 +78,7 @@ public class DeleteResourcesController implements Controller {
                 continue;
             }
         }
-        ActionsHelper.addFailureMessages(failures, requestContext);
+        ActionsHelper.addFailureMessages(failures, request);
 
         return new ModelAndView(this.viewName);
     }

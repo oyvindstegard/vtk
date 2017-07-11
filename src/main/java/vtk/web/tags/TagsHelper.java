@@ -68,7 +68,7 @@ public final class TagsHelper {
         Path requestedScope = getScopePath(request);
         Resource scopedResource = null;
         try {
-            scopedResource = vtk.web.RequestContext.getRequestContext().getRepository()
+            scopedResource = vtk.web.RequestContext.getRequestContext(request).getRepository()
                     .retrieve(token, requestedScope, true);
         } catch (ResourceNotFoundException e) {
             throw new IllegalArgumentException("Scope resource doesn't exist: " + requestedScope);
@@ -85,7 +85,7 @@ public final class TagsHelper {
         String scopeFromRequest = request.getParameter(SCOPE_PARAMETER);
 
         if (StringUtils.isBlank(scopeFromRequest) || ".".equals(scopeFromRequest)) {
-            return vtk.web.RequestContext.getRequestContext().getCurrentCollection();
+            return vtk.web.RequestContext.getRequestContext(request).getCurrentCollection();
         } else if (scopeFromRequest.startsWith("/")) {
             return Path.fromString(scopeFromRequest);
         }
@@ -100,7 +100,7 @@ public final class TagsHelper {
     public String getTitle(HttpServletRequest request, Resource resource, String tag, boolean scopeUp,
             Locale preferredLocale) {
 
-        String repositoryID = vtk.web.RequestContext.getRequestContext().getRepository().getId();
+        String repositoryID = vtk.web.RequestContext.getRequestContext(request).getRepository().getId();
         String scopeTitle = (scopeUp && !resource.getURI().isRoot()) ? repositoryID : resource.getTitle();
         String overrideResourceTypeTitle = request.getParameter(OVERRIDE_RESOURCE_TYPE_TITLE_PARAMETER);
         String[] resourceParams = request.getParameterValues(RESOURCE_TYPE_PARAMETER);
@@ -187,7 +187,7 @@ public final class TagsHelper {
 
         if (servesWebRoot && !resource.getURI().equals(Path.ROOT)) {
             Link scopeUpLink = new Link();
-            vtk.web.RequestContext requestContext = vtk.web.RequestContext.getRequestContext();
+            vtk.web.RequestContext requestContext = vtk.web.RequestContext.getRequestContext(request);
             Service service = requestContext.getService();
             URL url = service.urlConstructor(requestContext.getRequestURL())
                     .withURI(Path.ROOT)

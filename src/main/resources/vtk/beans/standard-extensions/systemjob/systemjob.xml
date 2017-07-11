@@ -19,7 +19,9 @@
   <!-- Abstract base bean for index-based repository job path selectors -->
   <bean id="repository.systemjob.indexPathSelector" abstract="true">
     <property name="searcher" ref="systemIndexSearcher" />
-    <property name="parser" ref="searchParser" />
+    <property name="parser" ref="queryParserFactory" />
+    <property name="queryProcessor" ref="queryStringPreProcessor" />
+    <property name="sortingParser" ref="sortingParserFactory" />
     <property name="resourceTypeTree" ref="resourceTypeTree" />
   </bean>
 

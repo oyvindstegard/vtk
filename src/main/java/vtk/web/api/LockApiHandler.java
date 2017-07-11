@@ -30,18 +30,26 @@
  */
 package vtk.web.api;
 
-import org.springframework.web.HttpRequestHandler;
-import vtk.repository.*;
-import vtk.util.Result;
-import vtk.util.web.HttpUtil;
-import vtk.web.RequestContext;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Objects;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Objects;
+
+import org.springframework.web.HttpRequestHandler;
+
+import vtk.repository.AuthorizationException;
+import vtk.repository.Lock;
+import vtk.repository.Path;
+import vtk.repository.Repository;
+import vtk.repository.Resource;
+import vtk.repository.ResourceLockedException;
+import vtk.repository.ResourceNotFoundException;
+import vtk.util.Result;
+import vtk.util.web.HttpUtil;
+import vtk.web.RequestContext;
 
 public class LockApiHandler implements HttpRequestHandler {
     private final Duration refreshTimeout;
@@ -60,8 +68,8 @@ public class LockApiHandler implements HttpRequestHandler {
     public void handleRequest(
             HttpServletRequest request, HttpServletResponse response
     ) throws ServletException, IOException {
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Result<LockRequest> lockRequest = lockRequest(requestContext);
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        Result<LockRequest> lockRequest = lockRequest(request);
 
         Result<ApiResponseBuilder> builder = lockRequest.flatMap(req -> {
             switch(req.action) {
@@ -115,8 +123,8 @@ public class LockApiHandler implements HttpRequestHandler {
         }
     }
 
-    private Result<LockRequest> lockRequest(RequestContext requestContext) {
-        HttpServletRequest request = requestContext.getServletRequest();
+    private Result<LockRequest> lockRequest(HttpServletRequest request) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
 
         Result<LockAction> lockAction = Result.attempt(() -> {
             if (!"POST".equals(request.getMethod()))

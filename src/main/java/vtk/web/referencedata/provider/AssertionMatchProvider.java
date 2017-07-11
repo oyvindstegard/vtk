@@ -39,11 +39,11 @@ import org.springframework.beans.factory.annotation.Required;
 import vtk.repository.Resource;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
-import vtk.web.service.Assertion;
+import vtk.web.service.WebAssertion;
 
 /**
  * Provider which insert a single object in model with value either <code>true</code>
- * or <code>false</code> depending on if the configured {@link Assertion} matches
+ * or <code>false</code> depending on if the configured {@link WebAssertion} matches
  * the current request.
  * 
  * <p>The value will also be <code>false</code> if errors
@@ -56,16 +56,16 @@ import vtk.web.service.Assertion;
  */
 public class AssertionMatchProvider implements ReferenceDataProvider {
 
-    private Assertion assertion;
+    private WebAssertion assertion;
     private String modelKey;
     
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
         boolean match = false;
 
-        if (RequestContext.exists()) {
+        if (RequestContext.exists(request)) {
             try {
-                RequestContext ctx = RequestContext.getRequestContext();
+                RequestContext ctx = RequestContext.getRequestContext(request);
                 Resource resource = ctx.getRepository().retrieve(
                         ctx.getSecurityToken(), ctx.getResourceURI(), true);
                 match = this.assertion.matches(request, resource, ctx.getPrincipal());
@@ -77,7 +77,7 @@ public class AssertionMatchProvider implements ReferenceDataProvider {
     }
 
     @Required
-    public void setAssertion(Assertion assertion) {
+    public void setAssertion(WebAssertion assertion) {
         this.assertion = assertion;
     }
 

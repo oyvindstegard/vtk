@@ -30,6 +30,8 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
@@ -50,8 +52,7 @@ import vtk.security.Principal;
  * exists in the generated URL's query string when the
  * <code>processURL()</code> method is called.
  */
-public interface Assertion {
-
+public interface WebAssertion {
 
     /**
      * Contributes to the construction of a URL. Assertions may
@@ -63,16 +64,19 @@ public interface Assertion {
      * constructed
      * @param principal the authenticated principal for which the URL
      * is being constructed
-     * @return <code>true</code> if the <code>match</code> parameter
-     * is <code>true</code> and the assertion matches, and
-     * <code>false</code> otherwise (this signals that the URL cannot
-     * be constructed).
+     * @return an optional (possibly modified) 
+     * URL ({@code Optional#empty} if the URL cannot be constructed).
      */
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match);
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal);
+
+    /**
+     * Static (without knowledge about current request) URL construction.
+     * @param url the current URL
+     * @return a (possibly modified) version of the URL parameter
+     */
+    public URL processURL(URL url);
 
 
-    public void processURL(URL url);
-    
     /**
      * @return whether the request matches this assertion.
      */
@@ -87,7 +91,7 @@ public interface Assertion {
      * @return <code>true</code> if the two assertions are
      * incompatible, <code>false</code> otherwise.
      */
-    public boolean conflicts(Assertion assertion);
+    public boolean conflicts(WebAssertion assertion);
 
 
 }

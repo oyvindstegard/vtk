@@ -133,7 +133,7 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
     @Override
     protected PlaintextEditCommand formBackingObject(HttpServletRequest request)
         throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Service service = requestContext.getService();
         
         Path uri = requestContext.getResourceURI();
@@ -163,32 +163,32 @@ public class PlaintextEditController extends SimpleFormController<PlaintextEditC
 
         Map<String, Object> model = errors.getModel();
         if (command.getSaveAction() != null) {
-            store(command);
+            store(request, command);
             return new ModelAndView(getFormView(), model);
         }
         else if (command.getSaveViewAction() != null) {
-            store(command);
-            unlock();
+            store(request, command);
+            unlock(request);
             return new ModelAndView(getSuccessView(), model);
         }
         else {
             // Cancel
-            unlock();
+            unlock(request);
             return new ModelAndView(getSuccessView(), model);
         }
     }
     
 
-    private void unlock() throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    private void unlock(HttpServletRequest request) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
 
         Path uri = requestContext.getResourceURI();
         requestContext.getRepository().unlock(token, uri, null);
     }
 
-    private void store(PlaintextEditCommand plaintextEditCommand) throws Exception {        
-        RequestContext requestContext = RequestContext.getRequestContext();
+    private void store(HttpServletRequest request, PlaintextEditCommand plaintextEditCommand) throws Exception {        
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();

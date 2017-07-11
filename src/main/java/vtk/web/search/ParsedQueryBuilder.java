@@ -33,17 +33,18 @@ package vtk.web.search;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Required;
+
 import vtk.repository.Resource;
 import vtk.repository.search.QueryParser;
+import vtk.repository.search.QueryParserFactory;
 import vtk.repository.search.query.Query;
 
 public class ParsedQueryBuilder implements SearchComponentQueryBuilder {
-
     protected String queryString;
     protected QueryParser queryParser;
     
     public Query build(Resource base, HttpServletRequest request) {
-        return this.queryParser.parse(this.queryString);
+        return queryParser.parse(queryString);
     }
 
     @Required
@@ -52,8 +53,8 @@ public class ParsedQueryBuilder implements SearchComponentQueryBuilder {
     }
 
     @Required
-    public void setQueryParser(QueryParser queryParser) {
-        this.queryParser = queryParser;
+    public void setQueryParserFactory(QueryParserFactory queryParserFactory) {
+        this.queryParser = queryParserFactory.getParser();
     }
 
 

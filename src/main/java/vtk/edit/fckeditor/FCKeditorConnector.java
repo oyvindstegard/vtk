@@ -120,7 +120,7 @@ public class FCKeditorConnector implements Controller {
 
         FCKeditorFileBrowserCommand command = new FCKeditorFileBrowserCommand(request);
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
 
         Locale locale = RequestContextUtils.getLocale(request);
@@ -153,7 +153,7 @@ public class FCKeditorConnector implements Controller {
         switch (c) {
         case GetFolders:
             try {
-                model.put("folders", listResources(token, command, COLLECTION_FILTER, locale));
+                model.put("folders", listResources(request, token, command, COLLECTION_FILTER, locale));
             } catch (Exception e) {
                 model.put("error", 1);
                 model.put("customMessage", getErrorMessage(e));
@@ -163,20 +163,21 @@ public class FCKeditorConnector implements Controller {
         case GetFoldersAndFiles:
 
             try {
-                model.put("folders", listResources(token, command, COLLECTION_FILTER, locale));
-                model.put("files", listResources(token, command, fileFilter, locale));
-            } catch (Exception e) {
+                model.put("folders", listResources(request, token, command, COLLECTION_FILTER, locale));
+                model.put("files", listResources(request, token, command, fileFilter, locale));
+            }
+            catch (Exception e) {
                 model.put("error", 1);
                 model.put("customMessage", getErrorMessage(e));
             }
             break;
 
         case CreateFolder:
-            model.put("error", createFolder(command, requestContext));
+            model.put("error", createFolder(request, command));
             break;
 
         case FileUpload:
-            return uploadFile(command, requestContext);
+            return uploadFile(request, command);
 
         default:
             model.put("error", 1);
@@ -186,10 +187,11 @@ public class FCKeditorConnector implements Controller {
         return new ModelAndView(this.browseViewName, model);
     }
 
-    private Map<String, Map<String, Object>> listResources(String token, FCKeditorFileBrowserCommand command,
+    private Map<String, Map<String, Object>> listResources(HttpServletRequest request,
+            String token, FCKeditorFileBrowserCommand command,
             Filter filter, Locale locale) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
 
         Resource[] children = repository.listChildren(token, command.getCurrentFolder(), true);
@@ -215,8 +217,8 @@ public class FCKeditorConnector implements Controller {
         return result;
     }
 
-    private int createFolder(FCKeditorFileBrowserCommand command, RequestContext requestContext) {
-
+    private int createFolder(HttpServletRequest request, FCKeditorFileBrowserCommand command) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Repository repository = requestContext.getRepository();
         Path curFolder = command.getCurrentFolder();
@@ -235,12 +237,11 @@ public class FCKeditorConnector implements Controller {
     }
 
     @SuppressWarnings("unchecked")
-    private ModelAndView uploadFile(FCKeditorFileBrowserCommand command, RequestContext requestContext) {
+    private ModelAndView uploadFile(HttpServletRequest request, FCKeditorFileBrowserCommand command) {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Map<String, Object> model = new HashMap<>();
-
         FileItemFactory factory = new DiskFileItemFactory(maxUploadSize, tempDir);
         ServletFileUpload upload = new ServletFileUpload(factory);
-        HttpServletRequest request = requestContext.getServletRequest();
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
 

@@ -30,6 +30,7 @@
  */
 package vtk.web.service;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.security.Principal;
@@ -57,7 +59,7 @@ import vtk.web.RequestContext;
  * </ul>
  */
 public class SelectiveProtocolManager extends RequestProtocolAssertion 
-    implements Assertion, HandlerInterceptor, URLPostProcessor {
+    implements WebAssertion, HandlerInterceptor, URLPostProcessor {
 
     private Set<Service> genURLFileServices;
     private Set<Service> genURLCollectionServices;
@@ -67,33 +69,18 @@ public class SelectiveProtocolManager extends RequestProtocolAssertion
     
     
     /**
-     * {@link RequestProtocolAssertion#processURL(URL, Resource, Principal, boolean)}
+     * {@link URLPostProcessor#processURL(URL, Service, Optional<Resource>)}
      */
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal,
-            boolean match) {
-        return super.processURL(url, resource, principal, match);
-    }
-
-    /**
-     * {@link RequestProtocolAssertion#processURL(URL)}
-     */
-    @Override
-    public void processURL(URL url) {
-        super.processURL(url);
-    }
-
-    /**
-     * {@link URLPostProcessor#processURL(URL, Resource, Service)}
-     */
-    @Override
-    public void processURL(URL url, Resource resource, Service service) throws Exception {
+    public void processURL(URL url, Service service,
+            Optional<Resource> optResource) {
         if (!this.selectiveAccessEnabled) {
             return;
         }
-        if (resource == null) {
+        if (!optResource.isPresent()) {
             return;
         }
+        Resource resource = optResource.get();
         if (resource.isReadRestricted()) {
             return;
         }
@@ -110,14 +97,6 @@ public class SelectiveProtocolManager extends RequestProtocolAssertion
         // in such cases). However, don't know if fix for such situations is appropriate here.
         url.setProtocol("http");
     }
-
-    /**
-     * {@link URLPostProcessor#processURL(URL, Service)}
-     */
-    @Override
-    public void processURL(URL url, Service service) throws Exception {
-    }
-    
 
     @Override
     public boolean matches(HttpServletRequest request, Resource resource,
@@ -140,8 +119,8 @@ public class SelectiveProtocolManager extends RequestProtocolAssertion
         if (request.isSecure()) {
             return true;
         }
-        RequestContext requestContext = RequestContext.getRequestContext();
-        Resource resource = retrieveResource();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        Resource resource = retrieveResource(request);
 
         if (resource.isReadRestricted()) {
             redirectSSL(request, response);
@@ -199,12 +178,12 @@ public class SelectiveProtocolManager extends RequestProtocolAssertion
         this.selectiveAccessEnabled = selectiveAccessEnabled;
     }
 
-    private Resource retrieveResource() throws Exception {
-        RequestContext requestContext = RequestContext.getRequestContext();
+    private Resource retrieveResource(HttpServletRequest request) throws Exception {
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Resource resource = repository.retrieve(token, requestContext.getResourceURI(), true);
         return resource;
     }
-    
+
 }

@@ -51,19 +51,20 @@ public class ValidDocumentAssertion implements RepositoryContentEvaluationAssert
     private StructuredResourceManager resourceManager;
 	
     @Override
-    public boolean matches(Resource resource, Principal principal) {
-        return matches(resource, principal, null);
+    public boolean matches(Optional<Resource> resource, Optional<Principal> principal) {
+        return matches(resource, principal, Optional.empty());
     }
 
     @Override
-    public boolean matches(Resource resource, Principal principal, Content content) {
+    public boolean matches(Optional<Resource> resource, Optional<Principal> principal, Optional<Content> content) {
         // Could fallback to Resource.getInputStream instead,but that will not work in all cases when
         // this assertion is called from evaluation framework.
-        if (content == null) return false;
-        if (resource.isCollection()) return false;
+        if (!content.isPresent()) return false;
+        if (!resource.isPresent()) return false;
+        if (resource.get().isCollection()) return false;
         
         try {
-            JsonParseResult json = content
+            JsonParseResult json = content.get()
                     .getContentRepresentation(JsonParseResult.class);
             
             if (json.value.failure.isPresent()) {

@@ -111,7 +111,7 @@ public class ACLProvider implements ReferenceDataProvider {
 
         Map<String, Object> aclModel = new HashMap<>();
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         Path uri = requestContext.getResourceURI();
         String token = requestContext.getSecurityToken();

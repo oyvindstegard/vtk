@@ -44,11 +44,10 @@ import vtk.web.RequestContext;
 import vtk.web.decorating.HtmlNodeFilterFactory;
 import vtk.web.decorating.HtmlPageFilterFactory;
 
-public class LinkCheckFilter implements 
-    HtmlPageFilter, HtmlPageFilterFactory, HtmlNodeFilter, HtmlNodeFilterFactory {
+public class LinkCheckFilter implements HtmlPageFilterFactory, HtmlNodeFilterFactory {
 
     private String elementClass = null;
-    
+
     @Required
     public void setElementClass(String elementClass) {
         this.elementClass = elementClass;
@@ -56,93 +55,101 @@ public class LinkCheckFilter implements
 
     @Override
     public HtmlNodeFilter nodeFilter(HttpServletRequest request) {
-        return this;
+        return new Filter(request, elementClass);
     }
 
     @Override
     public HtmlPageFilter pageFilter(HttpServletRequest request) {
-        return this;
-    }
-   
-    @Override
-    public boolean match(HtmlPage page) {
-        return match();
-    }
-    
-    @Override
-    public NodeResult filter(HtmlContent node) {
-        if (!(node instanceof HtmlElement)) {
-            return NodeResult.keep;
-        }
-        HtmlElement element = (HtmlElement) node;
-        String name = element.getName().toLowerCase();
-        if (!"a".equals(name)) {
-            return NodeResult.keep;
-        }
-        HtmlAttribute href = element.getAttribute("href");
-        if (href == null) {
-            return NodeResult.keep;
-        }
-        
-        if (!match()) {
-            return NodeResult.keep;
-        }
-        
-        HtmlAttribute clazz = element.getAttribute("class");
-        if (clazz == null) {
-            clazz = new SimpleAttr("class", this.elementClass);
-        } else {
-            clazz = new SimpleAttr("class", clazz.getValue() + " " + this.elementClass);
-        }
-        element.setAttribute(clazz);
-        return NodeResult.keep;
-    }
-    
-    
-    @Override
-    public HtmlContent filterNode(HtmlContent content) {
-        filter(content);
-        return content;
-    }
-    
-    private boolean match() {
-        if (!RequestContext.exists()) return false;
-        RequestContext requestContext = RequestContext.getRequestContext();
-        if (requestContext.getPrincipal() == null) {
-            return false;
-        }
-        HttpServletRequest request = requestContext.getServletRequest();
-        return "true".equals(request.getParameter("link-check"));
-    }
-        
-    private static class SimpleAttr implements HtmlAttribute {
-        private String name, value;
-        private boolean singleQuotes = false;
-        public SimpleAttr(String name, String value) {
-            this.name = name;
-            this.value = value;
-        }
-        public String getName() {
-            return this.name;
-        }
-        public String getValue() {
-            return this.value;
-        }
-        public void setName(String name) {
-            this.name = name;
-        }
-        public void setValue(String value) {
-            this.value = value;
-        }
-        public boolean hasValue() {
-            return true;
-        }
-        public boolean isSingleQuotes() {
-            return this.singleQuotes;
-        }
-        public void setSingleQuotes(boolean singleQuotes) {
-            this.singleQuotes = singleQuotes;
-        }
+        return new Filter(request, elementClass);
     }
 
+    private static class Filter implements HtmlNodeFilter, HtmlPageFilter {
+        private HttpServletRequest request;
+        private String elementClass;
+
+        public Filter(HttpServletRequest request, String elementClass) {
+            this.request = request;
+            this.elementClass = elementClass;
+        }
+
+        @Override
+        public boolean match(HtmlPage page) {
+            return match();
+        }
+
+        @Override
+        public NodeResult filter(HtmlContent node) {
+            if (!(node instanceof HtmlElement)) {
+                return NodeResult.keep;
+            }
+            HtmlElement element = (HtmlElement) node;
+            String name = element.getName().toLowerCase();
+            if (!"a".equals(name)) {
+                return NodeResult.keep;
+            }
+            HtmlAttribute href = element.getAttribute("href");
+            if (href == null) {
+                return NodeResult.keep;
+            }
+
+            if (!match()) {
+                return NodeResult.keep;
+            }
+
+            HtmlAttribute clazz = element.getAttribute("class");
+            if (clazz == null) {
+                clazz = new SimpleAttr("class", this.elementClass);
+            } else {
+                clazz = new SimpleAttr("class", clazz.getValue() + " " + this.elementClass);
+            }
+            element.setAttribute(clazz);
+            return NodeResult.keep;
+        }
+
+
+        @Override
+        public HtmlContent filterNode(HtmlContent content) {
+            filter(content);
+            return content;
+        }
+
+        private boolean match() {
+            if (!RequestContext.exists(request)) return false;
+            RequestContext requestContext = RequestContext.getRequestContext(request);
+            if (requestContext.getPrincipal() == null) {
+                return false;
+            }
+            return "true".equals(request.getParameter("link-check"));
+        }
+
+        private static class SimpleAttr implements HtmlAttribute {
+            private String name, value;
+            private boolean singleQuotes = false;
+            public SimpleAttr(String name, String value) {
+                this.name = name;
+                this.value = value;
+            }
+            public String getName() {
+                return this.name;
+            }
+            public String getValue() {
+                return this.value;
+            }
+            public void setName(String name) {
+                this.name = name;
+            }
+            public void setValue(String value) {
+                this.value = value;
+            }
+            public boolean hasValue() {
+                return true;
+            }
+            public boolean isSingleQuotes() {
+                return this.singleQuotes;
+            }
+            public void setSingleQuotes(boolean singleQuotes) {
+                this.singleQuotes = singleQuotes;
+            }
+        }
+    }
 }

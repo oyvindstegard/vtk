@@ -31,39 +31,43 @@
 package vtk.web.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import vtk.repository.Resource;
 import vtk.security.Principal;
 
-public class AndAssertion implements Assertion {
-    private List<Assertion> assertions;
+public class AndAssertion implements WebAssertion {
+    private List<WebAssertion> assertions;
 
-    public void setAssertions(List<Assertion> assertions) {
+    public void setAssertions(List<WebAssertion> assertions) {
         this.assertions = assertions;
     }
     
     @Override
-    public void processURL(URL url) {
-        for (Assertion assertion: assertions) {
-            assertion.processURL(url);
+    public URL processURL(URL url) {
+        for (WebAssertion assertion: assertions) {
+            url = assertion.processURL(url);
         }
+        return url;
     }
-    
+
     @Override
-    public boolean processURL(URL url, Resource resource, Principal principal, boolean match) {
-        for (Assertion assertion: assertions) {
-            if (!assertion.processURL(url, resource, principal, match)) {
-                return false;
+    public Optional<URL> processURL(URL url, Resource resource, Principal principal) {
+        for (WebAssertion assertion: assertions) {
+            Optional<URL> opt = assertion.processURL(url, resource, principal);
+            if (!opt.isPresent()) {
+                return opt;
             }
+            url = opt.get();
         }
-        return true;
+        return Optional.of(url);
     }
     
     @Override
     public boolean matches(HttpServletRequest request, Resource resource, Principal principal) {
-        for (Assertion assertion: assertions) {
+        for (WebAssertion assertion: assertions) {
             if (!assertion.matches(request, resource, principal)) {
                 return false;
             }
@@ -72,8 +76,8 @@ public class AndAssertion implements Assertion {
     }
 
     @Override
-    public boolean conflicts(Assertion assertion) {
-        for (Assertion a: assertions) {
+    public boolean conflicts(WebAssertion assertion) {
+        for (WebAssertion a: assertions) {
             if (a.conflicts(assertion)) {
                 return true;
             }

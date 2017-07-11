@@ -61,7 +61,7 @@ public class BrokenLinksToTsvController implements Controller {
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
         String token = requestContext.getSecurityToken();
         Resource resource = repository.retrieve(token, requestContext.getResourceURI(), false);
@@ -75,7 +75,7 @@ public class BrokenLinksToTsvController implements Controller {
                     .withPrincipal(requestContext.getPrincipal())
                     .constructURL();
             model.put("serviceURL", serviceURL);
-            model.put("report", brokenLinksReporter.getReportContent(token, resource, request));
+            model.put("report", brokenLinksReporter.getReportContent(request, token, resource));
             return new ModelAndView(brokenLinksReporter.getViewName(), model);
         }
 

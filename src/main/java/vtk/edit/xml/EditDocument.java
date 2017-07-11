@@ -40,8 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.servlet.http.HttpServletRequest;
+
 import org.jdom.DocType;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -51,6 +51,9 @@ import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import vtk.repository.ContentInputSources;
 import vtk.repository.Namespace;
 import vtk.repository.Path;
@@ -93,10 +96,10 @@ public class EditDocument extends Document {
     }
 
 
-    public static EditDocument createEditDocument(Repository repository, int lockTimeoutSeconds)
-            throws JDOMException, Exception {
+    public static EditDocument createEditDocument(HttpServletRequest request, 
+            Repository repository, int lockTimeoutSeconds) throws JDOMException, Exception {
 
-        RequestContext requestContext = RequestContext.getRequestContext();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
         String token = requestContext.getSecurityToken();
         Principal principal = requestContext.getPrincipal();
         Path uri = requestContext.getResourceURI();
@@ -252,7 +255,7 @@ public class EditDocument extends Document {
 
 
     public void resetElements(List<Element> elements) {
-        HashMap<Element, ProcessingInstruction> removalSet = new HashMap<Element, ProcessingInstruction>();
+        HashMap<Element, ProcessingInstruction> removalSet = new HashMap<>();
 
         for (Element elem : elements) {
             for (Object o : elem.getContent()) {
@@ -275,7 +278,7 @@ public class EditDocument extends Document {
 
 
     protected void removeProcessingInstructions() {
-        Stack<ProcessingInstruction> stack = new Stack<ProcessingInstruction>();
+        Stack<ProcessingInstruction> stack = new Stack<>();
         for (Iterator<?> i = getContent().iterator(); i.hasNext();) {
             Object o = i.next();
             if (o instanceof ProcessingInstruction) {
@@ -301,7 +304,7 @@ public class EditDocument extends Document {
 
         addAttributesToElement(element, parameters);
 
-        Map<Element, String> modifiedElements = new HashMap<Element, String>();
+        Map<Element, String> modifiedElements = new HashMap<>();
 
         String path = Xml.createNumericPath(element);
         String input = parameters.get(path);

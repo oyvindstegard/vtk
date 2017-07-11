@@ -32,7 +32,7 @@
     </bean>
     
     <bean id="schemaIsTreaty" 
-        class="vtk.web.service.ResourcePropertyRegexpAssertion">
+        class="vtk.repository.resourcetype.ResourcePropertyRegexpAssertion">
         <property name="namespace" ref="DEFAULT_NAMESPACE" />
         <property name="name" value="schema" />
         <property name="pattern" value="http://www.uio.no/xsd/jus/treaty/v00.*" />
