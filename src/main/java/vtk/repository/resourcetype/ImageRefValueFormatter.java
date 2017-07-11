@@ -60,47 +60,6 @@ public class ImageRefValueFormatter implements ValueFormatter, ApplicationContex
             throw new IllegalArgumentException("Thumbnail property value format is deprecated");
         }
         return val;
-        /*
-        if (!"thumbnail".equals(format)) {
-            return val;
-        }
-        Service thumbnailService = null;
-        if (this.thumbnailServiceBeanName != null) {
-            Object obj = this.applicationContext.getBean(
-                    this.thumbnailServiceBeanName);
-            if (obj != null && obj instanceof Service) {
-                thumbnailService = (Service) obj;
-            }
-        }
-        if (this.requireThumbnailService && thumbnailService == null) {
-            throw new IllegalStateException(
-                    "No bean named '" + this.thumbnailServiceBeanName 
-                    + "' defined in context");
-        }
-        
-        if (thumbnailService == null) {
-            return val;
-        }
-        return val;
-        try {
-            
-            
-            Path ref = null;
-            if (val.startsWith("/")) {
-                ref = Path.fromString(val);
-            }
-            else {
-                RequestContext requestContext = RequestContext.getRequestContext(request);
-                ref = requestContext.getCurrentCollection().extend(val);
-            }
-            URL url = thumbnailService.urlConstructor(RequestContext.getRequestContext(request).getRequestURL())
-                    .withURI(ref)
-                    .constructURL();
-            return url.getPathRepresentation();
-        } catch (Throwable t) {
-            return val;
-        }
-        */
     }
     
     public void setThumbnailServiceBeanName(String thumbnailServiceBeanName) {

@@ -36,7 +36,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -94,10 +93,10 @@ public class ListingFeedView implements View {
     private static final Logger logger = LoggerFactory.getLogger(ListingFeedView.class);
 
     public static final String TAG_PREFIX = "tag:";
-    private static final String THUMBNAIL = "thumbnail";
 
     private Map<String,String> feedMetadata = null;
     protected Service viewService;
+    protected Service imageThumbnailService;
     protected Abdera abdera;
     protected ResourceTypeTree resourceTypeTree;
     protected PropertyTypeDefinition publishDatePropDef;
@@ -208,8 +207,12 @@ public class ListingFeedView implements View {
 
             Property picture = getProperty(feedScope, picturePropDefPointer);
             if (picture != null) {
-                String val = picture.getFormattedValue(THUMBNAIL, Locale.getDefault());
-                feed.setLogo(val);
+                String val = picture.getStringValue();
+                Path pictureURI = requestContext.getRequestURL().relativeURL(val).getPath();
+                URL thumbnailURL = imageThumbnailService.urlConstructor(requestContext.getRequestURL())
+                        .withURI(pictureURI)
+                        .constructURL();
+                feed.setLogo(thumbnailURL.toString());
             }
         }
         return feed;
@@ -392,20 +395,22 @@ public class ListingFeedView implements View {
             // Include picture in summary only if "regular" format:
             Property picture = getProperty(propSet, picturePropDefPointer);
             if (picture != null) {
-                String imageRef = picture.getStringValue();
-                if (!imageRef.startsWith("/") && !imageRef.startsWith("http://")
-                        && !imageRef.startsWith("https://")) {
-                    try {
-                        imageRef = propSet.getURI().getParent().expand(imageRef).toString();
-                        picture.setValue(new Value(imageRef, PropertyType.Type.STRING));
-                    }
-                    catch (Throwable t) { }
+                URL pictureURL = baseURL.relativeURL(picture.getStringValue());
+                if (pictureURL.getHost().equals(baseURL.getHost())) {
+                    pictureURL = imageThumbnailService.urlConstructor(baseURL)
+                            .withURI(pictureURL.getPath())
+                            .constructURL();
                 }
-
-                String imgPath = picture.getFormattedValue(THUMBNAIL, Locale.getDefault());
-                String imgAlt = getImageAlt(imgPath);
-                sb.append("<img src=\"").append(HtmlUtil.encodeBasicEntities(imgPath)).append("\" alt=\"");
-                sb.append(HtmlUtil.encodeBasicEntities(imgAlt)).append("\"/>");
+                
+                String imgAlt = getImageAlt(pictureURL);
+                
+                String ref = pictureURL.getHost().equals(baseURL.getHost()) ?
+                        pictureURL.getPathRepresentation() : pictureURL.toString();
+                
+                sb.append("<img src=\"")
+                    .append(HtmlUtil.encodeBasicEntities(ref))
+                    .append("\" alt=\"")
+                    .append(HtmlUtil.encodeBasicEntities(imgAlt)).append("\"/>");
             }
         }
 
@@ -471,12 +476,18 @@ public class ListingFeedView implements View {
         if (picture != null) {
             String imageRef;
             if (!MultiHostUtil.isMultiHostPropertySet(propSet)) {
-                // XXX: format does not exist:
-                imageRef = picture.getFormattedValue(THUMBNAIL, Locale.getDefault());
+                URL pictureURL = baseURL.relativeURL(picture.getStringValue());
+                if (pictureURL.getHost().equals(baseURL.getHost())) {
+                    pictureURL = imageThumbnailService.urlConstructor(baseURL)
+                            .withURI(pictureURL.getPath())
+                            .constructURL();
+                }
+                imageRef = pictureURL.getHost().equals(baseURL.getHost()) ?
+                            pictureURL.getPathRepresentation() : pictureURL.toString();
             }
             else {
                 imageRef = MultiHostUtil.resolveImageRefStringValue(picture,
-                        MultiHostUtil.getMultiHostUrlProp(propSet), true); // true = add thumbnail if possible
+                        MultiHostUtil.getMultiHostUrlProp(propSet), true);
             }
 
             if (imageRef.contains("vrtx=thumbnail")) {
@@ -583,12 +594,15 @@ public class ListingFeedView implements View {
         return s.replaceAll("[#%?\\[\\] ]", "");
     }
 
-    private String getImageAlt(String imgPath) {
+    private String getImageAlt(URL imgURL) {
         try {
-            return imgPath.substring(imgPath.lastIndexOf("/") + 1, imgPath.lastIndexOf("."));
+            String name = imgURL.getPath().getName();
+            if (name.indexOf(".") > 0) {
+                name = name.substring(0, name.lastIndexOf("."));
+            }
+            return name;
         }
         catch (Throwable t) {
-            // Don't do anything special, imgAlt isn't all that important
             return "feed_image";
         }
     }
@@ -678,6 +692,11 @@ public class ListingFeedView implements View {
     @Required
     public void setViewService(Service viewService) {
         this.viewService = viewService;
+    }
+
+    @Required
+    public void setImageThumbnailService(Service imageThumbnailService) {
+        this.imageThumbnailService = imageThumbnailService;
     }
 
     @Required
