@@ -47,7 +47,6 @@ import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.TypeTermQuery;
 import vtk.repository.search.query.UriPrefixQuery;
 import vtk.security.Principal;
-import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
 import vtk.web.service.URL;
@@ -77,7 +76,7 @@ public class DiagramReport extends AbstractReporter {
 
         /* Create base URL. */
         RequestContext requestContext = RequestContext.getRequestContext(request);
-        Principal p = SecurityContext.getSecurityContext().getPrincipal();
+        Principal p = requestContext.getPrincipal();
 
         Service service = RequestContext.getRequestContext(request).getService();
         

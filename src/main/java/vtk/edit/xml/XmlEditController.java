@@ -59,7 +59,6 @@ import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
-import vtk.security.SecurityContext;
 import vtk.util.repository.ContentTypeHelper;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
@@ -166,7 +165,7 @@ public class XmlEditController implements Controller {
     
     private void finish(HttpServletRequest request, EditDocument document)
     throws Exception {
-        document.finish();
+        document.finish(request);
         Path uri = RequestContext.getRequestContext(request).getResourceURI();
         String sessionID = XmlEditController.class.getName() + ":" + uri; 
         request.getSession(true).removeAttribute(sessionID);
@@ -186,8 +185,8 @@ public class XmlEditController implements Controller {
 
         /* Check that session map isn't stale (the lock has been released).
            A user can access the same (locked) resource from different clients */
-        String token = SecurityContext.getSecurityContext().getToken();
-        Principal principal = SecurityContext.getSecurityContext().getPrincipal();
+        String token = requestContext.getSecurityToken();
+        Principal principal = requestContext.getPrincipal();
         Resource resource = this.repository.retrieve(token, uri, false);
         
         Lock lock = resource.getLock();
@@ -224,7 +223,7 @@ public class XmlEditController implements Controller {
         RequestContext requestContext = RequestContext.getRequestContext(request);
         Principal principal = requestContext.getPrincipal();
 
-        String token = SecurityContext.getSecurityContext().getToken();
+        String token = requestContext.getSecurityToken();
 
         model.put("resource", document.getResource());
         model.put("jdomDocument", document);
@@ -296,16 +295,11 @@ public class XmlEditController implements Controller {
     }
 
     private Map<String, Object> handleModeError(EditDocument document, HttpServletRequest request) {
-        
         RequestContext requestContext = RequestContext.getRequestContext(request);
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
-
-        StringBuffer sb = new StringBuffer();
-        
+        StringBuilder sb = new StringBuilder();
 
         sb.append("Mismatch in edit state (don't use 'back' button). ");
         sb.append("Request context: [").append(requestContext).append("], ");
-        sb.append("security context: [").append(securityContext).append("], ");
         sb.append("request parameters: ").append(request.getParameterMap()).append(", ");
         sb.append("user agent: [").append(request.getHeader("User-Agent")).append("], ");
         sb.append("remote host: [").append(request.getRemoteHost()).append("]");
@@ -323,10 +317,9 @@ public class XmlEditController implements Controller {
     private Map<String, Object> initEditSession(HttpServletRequest request) 
     throws Exception, TransformerException {
         RequestContext requestContext = RequestContext.getRequestContext(request);
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
         
         Path uri = requestContext.getResourceURI();
-        String token = securityContext.getToken();
+        String token = requestContext.getSecurityToken();
         
         String sessionID = XmlEditController.class.getName() + ":" + uri; 
         

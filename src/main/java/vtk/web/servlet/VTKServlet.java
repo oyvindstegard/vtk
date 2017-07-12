@@ -58,7 +58,6 @@ import vtk.context.ApplicationInitializedEvent;
 import vtk.context.BaseContext;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
-import vtk.security.SecurityContext;
 import vtk.security.web.SecurityInitializer;
 import vtk.util.Version;
 import vtk.web.RepositoryContextInitializer;
@@ -378,23 +377,15 @@ public class VTKServlet extends DispatcherServlet {
         if (!this.requestLogger.isInfoEnabled()) {
             return;
         }
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
         RequestContext requestContext = RequestContext.getRequestContext(req);
-
         String remoteHost = req.getRemoteHost();
-
         URL requestURL = URL.create(req);
 
         String request = req.getMethod() + " " + requestURL + " "
             + req.getProtocol() + " - status: " + resp.getStatus();
 
-        Principal principal = null;
-        String token = null;
-        
-        if (securityContext != null && securityContext.getPrincipal() != null) {
-            token = securityContext.getToken();
-            principal = securityContext.getPrincipal();
-        }
+        Principal principal = requestContext.getPrincipal();
+        String token = requestContext.getSecurityToken();
 
         String service = null;
         if (requestContext != null && requestContext.getService() != null) {

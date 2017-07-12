@@ -62,7 +62,6 @@ import vtk.repository.Repository.Depth;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.security.Principal;
-import vtk.security.SecurityContext;
 import vtk.util.Xml;
 import vtk.web.RequestContext;
 
@@ -129,20 +128,21 @@ public class EditDocument extends Document {
     }
 
 
-    public void finish() throws Exception {
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
-
-        String token = securityContext.getToken();
+    public void finish(HttpServletRequest request) throws Exception {
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
+        String token = requestContext.getSecurityToken();
 
         repository.unlock(token, this.resource.getURI(), null);
     }
 
 
-    public void save() throws XMLEditException, Exception {
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
+    public void save(HttpServletRequest request) throws XMLEditException, Exception {
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
+        String token = requestContext.getSecurityToken();
 
         Path uri = this.resource.getURI();
-        String token = securityContext.getToken();
 
         if (logger.isDebugEnabled())
             logger.debug("Saving document '" + uri + "'");

@@ -54,7 +54,6 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 import vtk.security.AuthenticationException;
-import vtk.security.SecurityContext;
 import vtk.web.ErrorHandler;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
@@ -288,10 +287,6 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
         if (RequestContext.exists(req)) {
             requestContext = Optional.of(RequestContext.getRequestContext(req));
         }
-        Optional<SecurityContext> securityContext = Optional.empty();
-        if (SecurityContext.exists()) {
-            securityContext = Optional.of(SecurityContext.getSecurityContext());
-        }
         String httpMethod = req.getMethod();
 
         Map requestParameters = req.getParameterMap();
@@ -324,12 +319,11 @@ public class ErrorHandlerFilter extends AbstractServletFilter {
         sb.append("Message: ").append(t.getMessage()).append(" - ");
         sb.append("Full request URL: [").append(requestURL).append("], ");
         requestContext.ifPresent(ctx -> sb.append("Request context: [").append(ctx).append("], "));
-        securityContext.ifPresent(ctx -> sb.append("security context: [").append(ctx).append("], "));
         sb.append("method: [").append(httpMethod).append("], ");
         sb.append("request parameters: [").append(params).append("], ");
         sb.append("user agent: [").append(req.getHeader("User-Agent")).append("], ");
         sb.append("host: [").append(req.getServerName()).append("], ");
         sb.append("remote host: [").append(req.getRemoteHost()).append("]");
-        this.errorLogger.error(sb.toString(), t);
+        errorLogger.error(sb.toString(), t);
     }
 }

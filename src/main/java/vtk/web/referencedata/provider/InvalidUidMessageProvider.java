@@ -47,7 +47,6 @@ import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.security.Principal;
 import vtk.security.Principal.Type;
 import vtk.security.PrincipalFactory;
-import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.referencedata.ReferenceDataProvider;
 
@@ -60,11 +59,10 @@ public class InvalidUidMessageProvider implements ReferenceDataProvider {
 
     @Override
     public void referenceData(Map<String, Object> model, HttpServletRequest request) {
-
-        RequestContext context = RequestContext.getRequestContext(request);
-        Repository repository = context.getRepository();
-        Path resourcePath = context.getResourceURI();
-        String token = SecurityContext.getSecurityContext().getToken();
+        RequestContext requestContext = RequestContext.getRequestContext(request);
+        Repository repository = requestContext.getRepository();
+        Path resourcePath = requestContext.getResourceURI();
+        String token = requestContext.getSecurityToken();
         try {
             Resource resource = repository.retrieve(token, resourcePath, false);
             PropertyTypeDefinition ptd = this.resourceTypeTree.getPropertyDefinitionByName("resource:username");

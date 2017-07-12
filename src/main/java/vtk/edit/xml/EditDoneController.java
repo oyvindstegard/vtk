@@ -66,7 +66,7 @@ public class EditDoneController implements ActionHandler {
             document.setClone(null);
 
             try {
-                document.save();
+                document.save(request);
             } catch (Exception e) {
                 throw new XMLEditException("Unable to save document", e);
             }
@@ -83,7 +83,7 @@ public class EditDoneController implements ActionHandler {
             document.setEditingElement(null);
             document.setDocumentMode("default");
         }
-        return new HashMap<String, Object>();
+        return new HashMap<>();
     }
 
 }

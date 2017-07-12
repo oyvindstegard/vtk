@@ -50,7 +50,7 @@ public class NewElementAtController implements ActionHandler {
             EditDocument document,
             SchemaDocumentDefinition documentDefinition) throws XMLEditException {
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         
         String mode = document.getDocumentMode();
         String con = request.getParameter("cont");
@@ -99,8 +99,9 @@ public class NewElementAtController implements ActionHandler {
                 document.resetEditingElement();
                 
                 try {
-                    document.save();
-                } catch (Exception e) {
+                    document.save(request);
+                }
+                catch (Exception e) {
                     throw new XMLEditException("Unable to save document", e);
                 }
 

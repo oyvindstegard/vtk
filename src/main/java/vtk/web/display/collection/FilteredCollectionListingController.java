@@ -62,7 +62,6 @@ import vtk.repository.search.Sorting;
 import vtk.repository.search.query.AndQuery;
 import vtk.repository.search.query.Query;
 import vtk.repository.search.query.UriPrefixQuery;
-import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.decorating.components.menu.SubFolderMenuProvider;
 import vtk.web.display.listing.ListingPager;
@@ -116,8 +115,10 @@ public abstract class FilteredCollectionListingController implements Controller 
         search.setCursor(offset);
         search.setLimit(pageLimit);
 
-        String token = SecurityContext.getSecurityContext().getToken();
-        return RequestContext.getRequestContext(request).getRepository().search(token, search);
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
+        String token = requestContext.getSecurityToken();
+        return requestContext.getRepository().search(token, search);
     }
 
     /* Override if other locations are needed. (Examples: Aggregation or prefix) */

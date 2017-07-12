@@ -56,6 +56,8 @@ public class LinkConstructorImpl implements LinkConstructor {
 
     public URL construct(HttpServletRequest request, Object arg, String parametersCSV, String serviceName) {
         if (arg == null) return null;
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
         try {
             Path uri = null;
             Resource resource = null;
@@ -73,10 +75,10 @@ public class LinkConstructorImpl implements LinkConstructor {
                 if (strUri.contains("://")) {
                     return getUrlFromUrl(strUri);
                 }
-                uri = RequestContext.getRequestContext(request).getResourceURI();
+                uri = requestContext.getResourceURI();
 
                 if (isSet(strUri)) {
-                    uri = RequestContext.getRequestContext(request).getCurrentCollection();
+                    uri = requestContext.getCurrentCollection();
 
                     if (strUri.startsWith("/")) {
                         uri = Path.ROOT.expand(strUri.substring(1));
@@ -93,18 +95,18 @@ public class LinkConstructorImpl implements LinkConstructor {
             Service.URLConstructor urlBuilder = null;
 
             if (isSet(serviceName)) {
-                Optional<Service> service = RequestContext.getRequestContext(request).service(serviceName);
+                Optional<Service> service = requestContext.service(serviceName);
                 if (service.isPresent()) {
-                    urlBuilder = service.get().urlConstructor(RequestContext.getRequestContext(request).getRequestURL());
+                    urlBuilder = service.get().urlConstructor(requestContext.getRequestURL());
                 }
             }
 
             if (urlBuilder == null) {
 
-                urlBuilder = RequestContext.getRequestContext(request).getService().urlConstructor( 
-                        RequestContext.getRequestContext(request).getRequestURL());
+                urlBuilder = requestContext.getService().urlConstructor( 
+                        requestContext.getRequestURL());
             }
-            Principal principal = RequestContext.getRequestContext(request).getPrincipal();
+            Principal principal = requestContext.getPrincipal();
             if (resource != null) {
                 return urlBuilder.withResource(resource)
                         .withPrincipal(principal)
@@ -155,8 +157,7 @@ public class LinkConstructorImpl implements LinkConstructor {
             String parameterName = mapping.substring(0, mapping.indexOf("=")).trim();
 
             List<String> parameterValues = Collections.singletonList(
-                    mapping.substring(mapping.lastIndexOf("=") + 1).trim()
-                    );
+                    mapping.substring(mapping.lastIndexOf("=") + 1).trim());
             parameters.put(parameterName, parameterValues);
         }
         return parameters;

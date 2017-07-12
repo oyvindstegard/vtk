@@ -52,7 +52,6 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
 import vtk.repository.resourcetype.Value;
-import vtk.security.SecurityContext;
 import vtk.util.text.Json;
 import vtk.util.text.JsonStreamer;
 import vtk.web.RequestContext;
@@ -92,10 +91,11 @@ public class ManuallyApproveResourcesHandler implements Controller {
     @Override
     @SuppressWarnings("unchecked")
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-        Repository repository = RequestContext.getRequestContext(request).getRepository();
-        Path currentCollectionPath = RequestContext.getRequestContext(request).getCurrentCollection();
-        String token = SecurityContext.getSecurityContext().getToken();
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
+        Repository repository = requestContext.getRepository();
+        Path currentCollectionPath = requestContext.getCurrentCollection();
+        String token = requestContext.getSecurityToken();
         Resource currentCollection = repository.retrieve(token, currentCollectionPath, false);
         Property manuallyApproveFromProp = currentCollection.getProperty(manuallyApproveFromPropDef);
         Property manuallyApprovedResourcesProp = currentCollection.getProperty(manuallyApprovedResourcesPropDef);

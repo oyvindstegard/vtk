@@ -60,7 +60,6 @@ import vtk.repository.ResourceNotFoundException;
 import vtk.repository.TypeInfo;
 import vtk.repository.resourcetype.PrimaryResourceTypeDefinition;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.security.SecurityContext;
 import vtk.util.text.PathMappingConfig;
 import vtk.util.text.PathMappingConfig.ConfigEntry;
 import vtk.util.text.PathMappingConfig.Qualifier;
@@ -163,7 +162,7 @@ public class ConfigurableDecorationResolver implements DecorationResolver, Initi
         Path uri = requestContext.getResourceURI();
         Resource resource = null;
         TypeInfo typeInfo = null;
-        String token = SecurityContext.getSecurityContext().getToken();
+        String token = requestContext.getSecurityToken();
         try {
             resource = this.repository.retrieve(token, uri, true);
             typeInfo = this.repository.getTypeInfo(resource);

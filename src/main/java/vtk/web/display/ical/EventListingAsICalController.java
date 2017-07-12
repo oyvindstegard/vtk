@@ -39,7 +39,6 @@ import org.springframework.web.servlet.mvc.Controller;
 
 import vtk.repository.Repository;
 import vtk.repository.Resource;
-import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.display.collection.event.EventListingHelper;
 import vtk.web.display.collection.event.EventListingHelper.SpecificDateSearchType;
@@ -57,7 +56,7 @@ public class EventListingAsICalController implements Controller {
 
         RequestContext requestContext = RequestContext.getRequestContext(request);
         Repository repository = requestContext.getRepository();
-        String token = SecurityContext.getSecurityContext().getToken();
+        String token = requestContext.getSecurityToken();
         Resource currentResource = repository.retrieve(token, requestContext.getCurrentCollection(), true);
 
         Listing events = null;

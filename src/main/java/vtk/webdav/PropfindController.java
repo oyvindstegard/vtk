@@ -645,7 +645,7 @@ public class PropfindController extends AbstractWebdavController
         Element unknownProperties = new Element("prop", WebdavConstants.DAV_NAMESPACE);
 
         for (Element prop: requestedProps) {
-            Element foundProp = buildPropertyElement(resource, prop, appendPropertyValues);
+            Element foundProp = buildPropertyElement(request, resource, prop, appendPropertyValues);
 
             if (foundProp != null) {
 
@@ -705,7 +705,8 @@ public class PropfindController extends AbstractWebdavController
      * value, or <code>null</code> if not found.
      * @throws IOException 
      */
-    protected Element buildPropertyElement(Resource resource, Element propElement, 
+    protected Element buildPropertyElement(HttpServletRequest request, 
+            Resource resource, Element propElement, 
             boolean appendValue) throws IOException {
         
         String propertyName = propElement.getName();

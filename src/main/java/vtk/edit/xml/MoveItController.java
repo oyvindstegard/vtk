@@ -38,6 +38,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.jdom.Element;
+
 import vtk.util.Xml;
 
 /**
@@ -51,7 +52,7 @@ public class MoveItController implements ActionHandler {
             EditDocument document, SchemaDocumentDefinition documentDefinition)
             throws XMLEditException {
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         String mode = document.getDocumentMode();
 
         if (!mode.equals("move"))
@@ -93,7 +94,7 @@ public class MoveItController implements ActionHandler {
             }
 
             /* actually insert the elements: */
-            List<Element> turnedElements = new ArrayList<Element>();
+            List<Element> turnedElements = new ArrayList<>();
 
             /* Flip the elements (must be reversed) */
             for (Element e: document.getElements()) {
@@ -114,7 +115,7 @@ public class MoveItController implements ActionHandler {
                 l.remove(elem);
             }
 
-            ArrayList<Element> newChildren = new ArrayList<Element>();
+            ArrayList<Element> newChildren = new ArrayList<>();
             for (Element e: l) {
                 newChildren.add((Element)e.clone());
             }
@@ -124,8 +125,9 @@ public class MoveItController implements ActionHandler {
             document.resetElements();
 
             try {
-                document.save();
-            } catch (Exception e) {
+                document.save(request);
+            }
+            catch (Exception e) {
                 throw new XMLEditException("Unable to save document", e);
             }
         } else {

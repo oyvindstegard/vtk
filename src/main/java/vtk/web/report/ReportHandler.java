@@ -54,7 +54,6 @@ import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyType;
 import vtk.security.Principal;
-import vtk.security.SecurityContext;
 import vtk.util.repository.DocumentPrincipalMetadataRetriever;
 import vtk.web.RequestContext;
 import vtk.web.service.Service;
@@ -86,12 +85,10 @@ public class ReportHandler implements Controller {
 
     @Override
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
         RequestContext requestContext = RequestContext.getRequestContext(request);
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
 
         Path uri = requestContext.getResourceURI();
-        String token = securityContext.getToken();
+        String token = requestContext.getSecurityToken();
         Resource resource = repository.retrieve(token, uri, false);
 
         Service service = requestContext.getService();

@@ -55,12 +55,12 @@ public class DeleteController implements ActionHandler {
 
         String mode = document.getDocumentMode();
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         if (mode.equals("default")) {
             Enumeration<String> enumeration = request.getParameterNames();
 
-            List<Element> elements = new ArrayList<Element>();
+            List<Element> elements = new ArrayList<>();
             while (enumeration.hasMoreElements()) {
                 String param = enumeration.nextElement();
                 if (param.matches("\\d+(\\.\\d+)*")) {
@@ -90,7 +90,7 @@ public class DeleteController implements ActionHandler {
                 document.setDocumentMode("default");
                 document.resetElements();
                 try {
-                    document.save();
+                    document.save(request);
                 } catch (Exception e) {
                     throw new XMLEditException("Unable to save document", e);
                 }

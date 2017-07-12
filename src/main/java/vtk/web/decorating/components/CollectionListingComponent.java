@@ -50,7 +50,6 @@ import vtk.repository.Resource;
 import vtk.repository.ResourceNotFoundException;
 import vtk.security.AuthenticationException;
 import vtk.security.Principal;
-import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.decorating.DecoratorRequest;
 import vtk.web.decorating.DecoratorResponse;
@@ -98,7 +97,7 @@ public class CollectionListingComponent extends ViewRenderingDecoratorComponent 
         RequestContext requestContext = RequestContext.getRequestContext(
                 request.getServletRequest());
         Repository repository = requestContext.getRepository();
-        String token = SecurityContext.getSecurityContext().getToken();
+        String token = requestContext.getSecurityToken();
 
         HttpServletRequest servletRequest = request.getServletRequest();
         final String sorting = request.getStringParameter(PARAMETER_SORTING);

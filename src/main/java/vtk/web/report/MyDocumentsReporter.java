@@ -50,7 +50,7 @@ import vtk.repository.search.query.PropertyTermQuery;
 import vtk.repository.search.query.TermOperator;
 import vtk.repository.search.query.UriPrefixQuery;
 import vtk.security.Principal;
-import vtk.security.SecurityContext;
+import vtk.web.RequestContext;
 import vtk.web.service.URL;
 
 public class MyDocumentsReporter extends DocumentReporter {
@@ -100,8 +100,9 @@ public class MyDocumentsReporter extends DocumentReporter {
 
     @Override
     protected Search getSearch(String token, Resource currentResource, HttpServletRequest request) {
-
-        Principal currentUser = SecurityContext.getSecurityContext().getPrincipal();
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
+        Principal currentUser = requestContext.getPrincipal();
         if (currentUser == null) {
             throw new IllegalStateException("Current user cannot be null");
         }

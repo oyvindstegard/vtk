@@ -37,8 +37,9 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
+
 import vtk.repository.Repository;
-import vtk.security.SecurityContext;
+import vtk.web.RequestContext;
 
 /**
  * Controller that switches read only mode of a specified repository.
@@ -84,17 +85,18 @@ public class RepositoryReadOnlyController
     }
     
 
+    @Override
     protected ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        SecurityContext securityContext = SecurityContext.getSecurityContext();
-        
-        String token = securityContext.getToken();
-
+        RequestContext requestContext = RequestContext
+                .getRequestContext(request);
+        String token = requestContext.getSecurityToken();
         String readOnlyStr = request.getParameter(this.parameterName);
 
         if ("true".equals(readOnlyStr)) {
             this.repository.setReadOnly(token, true);
-        } else if ("false".equals(readOnlyStr)) {
+        }
+        else if ("false".equals(readOnlyStr)) {
             this.repository.setReadOnly(token, false);
         }
 

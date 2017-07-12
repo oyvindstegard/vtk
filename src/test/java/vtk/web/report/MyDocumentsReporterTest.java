@@ -43,130 +43,125 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import vtk.repository.Resource;
+import vtk.context.BaseContext;
+import vtk.repository.Path;
+import vtk.repository.store.DefaultPrincipalMetadataDAO;
+import vtk.security.Principal.Type;
+import vtk.security.PrincipalImpl;
+import vtk.security.SecurityContext;
+import vtk.web.RequestContext;
 
 public class MyDocumentsReporterTest {
-	
-	@Test
-	public void createReporterObject() {
-		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		assertNotNull("reporter should not be null", myReporter);
-	}
 
-	@Test
-	public void createRequest() {
-		MockHttpServletRequest request = newRequest("unknown");
-		assertNotNull("request should not be null", request);
-		assertEquals("req param", "unknown", request.getParameter(MyDocumentsReporter.REPORT_SUB_TYPE_REQ_ARG));
-
-		//we're not testing these yet
-		//String url = "http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents";
-		//assertEquals("getRequestURI", url, request.getRequestURI());
-		//assertEquals("query string", "", request.getQueryString());
-	}
-	
-	@Test(expected = IllegalStateException.class)
-	public void runAReport() {
-        MyDocumentsReporter myReporter = new MyDocumentsReporter();
-        String token = "";
-        Resource resource = null;
-        HttpServletRequest request = new MockHttpServletRequest("GET", "http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents");
-        Map<String, Object> result = myReporter.getReportContent(request, token, resource);
-        assertNotNull("result should not be null (did we get here at all?)", result);
+    @Test
+    public void createRequest() {
+        MockHttpServletRequest request = newRequest("unknown");
+        assertEquals("req param", "unknown", request.getParameter(MyDocumentsReporter.REPORT_SUB_TYPE_REQ_ARG));
     }
 
-	@Test
-	public void whenAlwaysShouldReturnSubTypeInformationInMap() {
-		HttpServletRequest request = newRequest("directacl");
-		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		Map<String, Object> map = new HashMap<>();
-		myReporter.addToMap(map, request);
-		@SuppressWarnings("unchecked")
-		ArrayList<MyDocumentsReporter.ReportSubType> subTypes = (ArrayList<MyDocumentsReporter.ReportSubType>)map.get(MyDocumentsReporter.REPORT_SUB_TYPE_MAP_KEY);
-		assertNotNull("map should contain subtypes", subTypes);
-		assertEquals("isactive #1", false, subTypes.get(0).isActive());
-		assertEquals("name #1", "createdby", subTypes.get(0).getName());
-		assertEquals("url #1", "http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=createdby", subTypes.get(0).getUrl());
-		assertEquals("isactive #2", true, subTypes.get(1).isActive());
-		assertEquals("name #2", "directacl", subTypes.get(1).getName());
-		assertEquals("url #2", "http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=directacl", subTypes.get(1).getUrl());
-	}
+    @Test
+    public void whenAlwaysShouldReturnSubTypeInformationInMap() {
+        HttpServletRequest request = newRequest("directacl");
+        MyDocumentsReporter myReporter = new MyDocumentsReporter();
+        Map<String, Object> map = new HashMap<>();
+        myReporter.addToMap(map, request);
+        @SuppressWarnings("unchecked")
+        ArrayList<MyDocumentsReporter.ReportSubType> subTypes = (ArrayList<MyDocumentsReporter.ReportSubType>)map.get(MyDocumentsReporter.REPORT_SUB_TYPE_MAP_KEY);
+        assertNotNull("map should contain subtypes", subTypes);
+        assertEquals("isactive #1", false, subTypes.get(0).isActive());
+        assertEquals("name #1", "createdby", subTypes.get(0).getName());
+        assertEquals("url #1", "http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=createdby", subTypes.get(0).getUrl());
+        assertEquals("isactive #2", true, subTypes.get(1).isActive());
+        assertEquals("name #2", "directacl", subTypes.get(1).getName());
+        assertEquals("url #2", "http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=directacl", subTypes.get(1).getUrl());
+    }
 
-	@Test
-	public void generateUrlWhenNoneBeforeThenSetNew() {
-		HttpServletRequest request = newRequest(null);
-		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		String url = myReporter.generateUrl(request, "directacl");
-		assertEquals("http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=directacl", url);
-	}
+    @Test
+    public void generateUrlWhenNoneBeforeThenSetNew() {
+        HttpServletRequest request = newRequest(null);
+        MyDocumentsReporter myReporter = new MyDocumentsReporter();
+        String url = myReporter.generateUrl(request, "directacl");
+        assertEquals("http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=directacl", url);
+    }
 
-	@Test
-	public void generateUrlWhenSameThenNoChange() {
-		HttpServletRequest request = newRequest("directacl");
-		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		String url = myReporter.generateUrl(request, "directacl");
-		assertEquals("http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=directacl", url);
-	}
-	
-	@Test
-	public void generateUrlWhenNewIsDifferentThenReplaceWithNew() {
-		HttpServletRequest request = newRequest("createdby");
-		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		String url = myReporter.generateUrl(request, "directacl");
-		assertEquals("http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=directacl", url);
-	}
+    @Test
+    public void generateUrlWhenSameThenNoChange() {
+        HttpServletRequest request = newRequest("directacl");
+        MyDocumentsReporter myReporter = new MyDocumentsReporter();
+        String url = myReporter.generateUrl(request, "directacl");
+        assertEquals("http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=directacl", url);
+    }
 
-	@Test
-	public void nameOfEnumValue() {
-		assertEquals("DirectAcl", MyDocumentsReporter.ReportSubTypeEnum.DirectAcl.name());
-	}
-	
-	@Test
-	public void whenSubTypeNotGivenShouldResultInStandardReport() {
-		HttpServletRequest request = newRequest(null);
-		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		assertSubType("not-given", MyDocumentsReporter.ReportSubTypeEnum.CreatedBy, myReporter.guessSubType(request));
-	}
-	
-	@Test
-	public void whenSubTypeUnknownShouldResultInStandardReport() {
-		HttpServletRequest request = newRequest("xxx");
-		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		assertSubType("unknown", MyDocumentsReporter.ReportSubTypeEnum.CreatedBy, myReporter.guessSubType(request));
-	}
+    @Test
+    public void generateUrlWhenNewIsDifferentThenReplaceWithNew() {
+        HttpServletRequest request = newRequest("createdby");
+        MyDocumentsReporter myReporter = new MyDocumentsReporter();
+        String url = myReporter.generateUrl(request, "directacl");
+        assertEquals("http://localhost:9322/?vrtx=admin&mode=report&report-type=my-documents&report-subtype=directacl", url);
+    }
 
-	@Test
-	public void testWhenSubTypeGivenAsCreatedByShouldResultInCreatedBy() {
-		HttpServletRequest request = newRequest("createdby");
-		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		assertSubType("createdby", MyDocumentsReporter.ReportSubTypeEnum.CreatedBy, myReporter.guessSubType(request));
-	}
-	
-	@Test
-	public void whenSubTypeGivenAsDirectAclShouldResultInDirectAcl() {
-		HttpServletRequest request = newRequest("directacl");
-		MyDocumentsReporter myReporter = new MyDocumentsReporter();
-		assertSubType("directacl", MyDocumentsReporter.ReportSubTypeEnum.DirectAcl, myReporter.guessSubType(request));
-	}
-	
-	private void assertSubType(String message, MyDocumentsReporter.ReportSubTypeEnum expected, MyDocumentsReporter.ReportSubTypeEnum actual) {
-		assertTrue(message, expected == actual);
-	}
+    @Test
+    public void nameOfEnumValue() {
+        assertEquals("DirectAcl", MyDocumentsReporter.ReportSubTypeEnum.DirectAcl.name());
+    }
 
-	private MockHttpServletRequest newRequest(String subType) {
-		String url = "/?vrtx=admin&mode=report&report-type=my-documents";
-		if (subType != null) {
-			url += String.format("&%s=%s", MyDocumentsReporter.REPORT_SUB_TYPE_REQ_ARG, subType);
-		}
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", url);
-		request.setServerName("localhost");
-		request.setServerPort(9322);
-		request.addParameter("mode", "report");
-		request.addParameter("report-type", "my-documents");
-		if (subType != null) {
-			request.addParameter(MyDocumentsReporter.REPORT_SUB_TYPE_REQ_ARG, subType);
-		}
-		return request;
-	}
-	
+    @Test
+    public void whenSubTypeNotGivenShouldResultInStandardReport() {
+        HttpServletRequest request = newRequest(null);
+        MyDocumentsReporter myReporter = new MyDocumentsReporter();
+        assertSubType("not-given", MyDocumentsReporter.ReportSubTypeEnum.CreatedBy, myReporter.guessSubType(request));
+    }
+
+    @Test
+    public void whenSubTypeUnknownShouldResultInStandardReport() {
+        HttpServletRequest request = newRequest("xxx");
+        MyDocumentsReporter myReporter = new MyDocumentsReporter();
+        assertSubType("unknown", MyDocumentsReporter.ReportSubTypeEnum.CreatedBy, myReporter.guessSubType(request));
+    }
+
+    @Test
+    public void testWhenSubTypeGivenAsCreatedByShouldResultInCreatedBy() {
+        HttpServletRequest request = newRequest("createdby");
+        MyDocumentsReporter myReporter = new MyDocumentsReporter();
+        assertSubType("createdby", MyDocumentsReporter.ReportSubTypeEnum.CreatedBy, myReporter.guessSubType(request));
+    }
+
+    @Test
+    public void whenSubTypeGivenAsDirectAclShouldResultInDirectAcl() {
+        HttpServletRequest request = newRequest("directacl");
+        MyDocumentsReporter myReporter = new MyDocumentsReporter();
+        assertSubType("directacl", MyDocumentsReporter.ReportSubTypeEnum.DirectAcl, myReporter.guessSubType(request));
+    }
+
+    private void assertSubType(String message, MyDocumentsReporter.ReportSubTypeEnum expected, MyDocumentsReporter.ReportSubTypeEnum actual) {
+        assertTrue(message, expected == actual);
+    }
+    
+
+    private MockHttpServletRequest newRequest(String subType) {
+        String url = "/?vrtx=admin&mode=report&report-type=my-documents";
+        if (subType != null) {
+            url += String.format("&%s=%s", MyDocumentsReporter.REPORT_SUB_TYPE_REQ_ARG, subType);
+        }
+        String userToken = "userToken";
+        PrincipalImpl user = new PrincipalImpl("user", Type.USER);
+        BaseContext.pushContext();
+        SecurityContext securityContext = new SecurityContext(userToken, user);
+        SecurityContext.setSecurityContext(securityContext);
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", url);
+        RequestContext requestContext = new RequestContext(request, securityContext,
+                null, null, null, Path.ROOT, null, false,
+                false, true, null, new DefaultPrincipalMetadataDAO());
+        RequestContext.setRequestContext(requestContext, request);
+        request.setServerName("localhost");
+        request.setServerPort(9322);
+        request.addParameter("mode", "report");
+        request.addParameter("report-type", "my-documents");
+        if (subType != null) {
+            request.addParameter(MyDocumentsReporter.REPORT_SUB_TYPE_REQ_ARG, subType);
+        }
+        return request;
+    }
+
 }

@@ -46,7 +46,6 @@ import vtk.repository.Property;
 import vtk.repository.Repository;
 import vtk.repository.Resource;
 import vtk.repository.resourcetype.PropertyTypeDefinition;
-import vtk.security.SecurityContext;
 import vtk.web.RequestContext;
 import vtk.web.SimpleFormController;
 import vtk.web.service.Service;
@@ -121,7 +120,7 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
 
     private void removePropertyValue(PropertyTypeDefinition propDef, RequestContext requestContext) throws Exception {
         Repository repository = requestContext.getRepository();
-        String token = SecurityContext.getSecurityContext().getToken();
+        String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Resource resource = repository.retrieve(token, uri, true);
         if (resource.getProperty(propDef) != null) {
@@ -133,7 +132,7 @@ public class AdvancedPublishDialogController extends SimpleFormController<EditPu
     private void setPropertyDateValue(PropertyTypeDefinition datePropDef, Date date, 
             RequestContext requestContext) throws Exception {
         Repository repository = requestContext.getRepository();
-        String token = SecurityContext.getSecurityContext().getToken();
+        String token = requestContext.getSecurityToken();
         Path uri = requestContext.getResourceURI();
         Resource resource = repository.retrieve(token, uri, true);
         Property dateProp = resource.getProperty(datePropDef);
