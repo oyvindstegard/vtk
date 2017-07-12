@@ -30,10 +30,7 @@
         </entry>
         <entry key="HTML" value-ref="htmlFormatter" />
         <entry key="IMAGE_REF">
-          <bean class="vtk.repository.resourcetype.ImageRefValueFormatter">
-            <property name="thumbnailServiceBeanName" value="displayThumbnailService" />
-            <property name="requireThumbnailService" value="true" />
-          </bean>
+          <bean class="vtk.repository.resourcetype.StringValueFormatter" />
         </entry>
         <entry key="JSON">
           <bean class="vtk.repository.resourcetype.StringValueFormatter" />
