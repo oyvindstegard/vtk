@@ -36,6 +36,9 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 
+import vtk.repository.Path;
+import vtk.repository.search.preprocessor.QueryStringPreProcessor.ProcessorContext;
+
 /**
  *
  */
@@ -49,8 +52,8 @@ public class QueryStringPreProcessorImplTest {
 
         QueryStringPreProcessorImpl preproc = new QueryStringPreProcessorImpl();
         Mockery context = new Mockery();
-        final QueryStringPreProcessor.ProcessorContext mockContext = 
-                context.mock(QueryStringPreProcessor.ProcessorContext.class);
+        final ProcessorContext mockContext = 
+                new ProcessorContext(Path.ROOT, Path.ROOT);
         final ExpressionEvaluator evaluator = context.mock(ExpressionEvaluator.class);
         final String var = "dummy";
         context.checking(new Expectations(){

@@ -45,6 +45,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import vtk.text.tl.DefineHandler;
 import vtk.text.tl.DirectiveHandler;
@@ -101,25 +102,28 @@ public class DynamicComponentParserTest {
             }
         };
         
+        MockHttpServletRequest mockServletRequest = new MockHttpServletRequest("GET", "/");
+        
         DynamicComponentParser parser = new DynamicComponentParser(handlers);
         DecoratorComponent component = parser.compile("ns", "name", inputSource);
 
         Map<String, Object> params = new HashMap<>();
         params.put("param1", "foo");
-        MockStringDecoratorRequest req = new MockStringDecoratorRequest("<html></html>", params);
+        MockStringDecoratorRequest req = new MockStringDecoratorRequest(
+                mockServletRequest, "<html></html>", params);
         MockDecoratorResponse resp = new MockDecoratorResponse();
         component.render(req, resp);
         assertEquals("foo", resp.getResult());
         
         params = new HashMap<>();
         params.put("param2", "bar");
-        req = new MockStringDecoratorRequest("<html></html>", params);
+        req = new MockStringDecoratorRequest(mockServletRequest, "<html></html>", params);
         resp = new MockDecoratorResponse();
         component.render(req, resp);
         assertEquals("bar", resp.getResult());
 
         params = new HashMap<>();
-        req = new MockStringDecoratorRequest("<html></html>", params);
+        req = new MockStringDecoratorRequest(mockServletRequest, "<html></html>", params);
         resp = new MockDecoratorResponse();
         component.render(req, resp);
         assertEquals("no parameters", resp.getResult());

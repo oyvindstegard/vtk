@@ -96,7 +96,7 @@ public class CollectionListingAggregationResolverTest {
     @Test
     public void testGetAggregatedResourcesNone() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/foo");
-        RequestContext requestContext = new RequestContext(null, null,
+        RequestContext requestContext = new RequestContext(request, null,
                 null, null, null, Path.ROOT, null, false,
                 false, true, null, new DefaultPrincipalMetadataDAO());
         RequestContext.setRequestContext(requestContext, request);

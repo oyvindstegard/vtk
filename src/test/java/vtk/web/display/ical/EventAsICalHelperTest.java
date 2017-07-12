@@ -63,7 +63,7 @@ public class EventAsICalHelperTest {
         SecurityContext securityContext = new SecurityContext(null, null);
         SecurityContext.setSecurityContext(securityContext);
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-        RequestContext requestContext = new RequestContext(null, securityContext,
+        RequestContext requestContext = new RequestContext(mockRequest, securityContext,
                 null, null, null, Path.ROOT, null, false,
                 false, true, repository, new DefaultPrincipalMetadataDAO());
         RequestContext.setRequestContext(requestContext, mockRequest);

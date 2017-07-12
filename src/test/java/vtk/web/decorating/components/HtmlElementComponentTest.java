@@ -31,11 +31,13 @@
 package vtk.web.decorating.components;
 
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import vtk.text.html.HtmlElement;
 
@@ -58,8 +60,9 @@ public class HtmlElementComponentTest {
         component.setSelect("html.head");
         component.setExclude("title");
         component.setEnclosed(false);
-        
-        MockStringDecoratorRequest req = new MockStringDecoratorRequest(SIMPLE_PAGE);
+        MockHttpServletRequest mockServletRequest = new MockHttpServletRequest("GET", "/");
+
+        MockStringDecoratorRequest req = new MockStringDecoratorRequest(mockServletRequest, SIMPLE_PAGE);
         MockDecoratorResponse resp = new MockDecoratorResponse();
         component.render(req, resp);
         HtmlElement[] result = resp.getParsedResult();
@@ -71,8 +74,9 @@ public class HtmlElementComponentTest {
         HtmlElementComponent component = new HtmlElementComponent();
         component.setSelect("html.body");
         component.setEnclosed(false);
-        
-        MockStringDecoratorRequest req = new MockStringDecoratorRequest(SIMPLE_PAGE);
+        MockHttpServletRequest mockServletRequest = new MockHttpServletRequest("GET", "/");
+
+        MockStringDecoratorRequest req = new MockStringDecoratorRequest(mockServletRequest, SIMPLE_PAGE);
         MockDecoratorResponse resp = new MockDecoratorResponse();
         component.render(req, resp);
         assertEquals("The body", resp.getResult());
@@ -82,11 +86,14 @@ public class HtmlElementComponentTest {
     public void simpleBodyParameters() throws Exception {
         HtmlElementComponent component = new HtmlElementComponent();
         
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("select", "html.head");
         parameters.put("enclosed", "false");
+        
+        MockHttpServletRequest mockServletRequest = new MockHttpServletRequest("GET", "/");
 
-        MockStringDecoratorRequest req = new MockStringDecoratorRequest(SIMPLE_PAGE, parameters);
+        MockStringDecoratorRequest req = new MockStringDecoratorRequest(
+                mockServletRequest, SIMPLE_PAGE, parameters);
         MockDecoratorResponse resp = new MockDecoratorResponse();
         component.render(req, resp);
         HtmlElement[] result = resp.getParsedResult();
